@@ -5,7 +5,8 @@ import hirs.utils.tpm.eventlog.events.EvCompactHash;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.events.EvEfiGptPartition;
 import hirs.utils.tpm.eventlog.events.EvEfiHandoffTable;
-import hirs.utils.tpm.eventlog.events.EvEfiSpdmFirmwareBlob;
+import hirs.utils.tpm.eventlog.events.EvEfiSpdmDevicePolicy;
+import hirs.utils.tpm.eventlog.events.EvEfiSpdmDeviceSecurityEvent;
 import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvEventTag;
 import hirs.utils.tpm.eventlog.events.EvIPL;
@@ -388,14 +389,13 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
+            case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
                 try {
-                    sb.append(new EvEfiSpdmFirmwareBlob(eventContent).toString());
+                    sb.append(new EvEfiSpdmDeviceSecurityEvent(eventContent).toString());
                 } catch (UnsupportedEncodingException ueEx) {
                     log.error(ueEx);
                     sb.append(ueEx.toString());
                 }
-                break;
-            case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
                 break;
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 break;
@@ -563,10 +563,10 @@ public class TpmPcrEvent {
                 vendorTableFileStatus = efiVarAuth.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
-                description += "Event Content:\n" + new EvEfiSpdmFirmwareBlob(content).toString();
+                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
-                description += "Event Content:\n" + new EvEfiSpdmFirmwareConfig(content).toString();
+                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
                 break;
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 description += "Event Content:\n" + new EvEfiSpdmDevicePolicy(content).toString();
