@@ -7,7 +7,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Class to process the EV_EFI_SPDM_FIRMWARE_BLOB event. The event field MUST be a
+ * Abstract class to process any SPDM event that is solely a DEVICE_SECURITY_EVENT_DATA or
+ * DEVICE_SECURITY_EVENT_DATA2. The event field MUST be a
  *    1) DEVICE_SECURITY_EVENT_DATA or
  *    2) DEVICE_SECURITY_EVENT_DATA2
  * DEVICE_SECURITY_EVENT_DATA has 2 structures:
@@ -28,7 +29,7 @@ import java.nio.charset.StandardCharsets;
  * firmware, such as immutable ROM, mutable firmware, firmware version, firmware secure version
  * number, etc.
  */
-public class EvEfiSpdmFirmwareBlob {
+public class EvEfiSpdmDeviceSecurityEvent {
 
     /**
      * Signature (text) data.
@@ -49,7 +50,7 @@ public class EvEfiSpdmFirmwareBlob {
      * @param eventData byte array holding the event to process.
      * @throws java.io.UnsupportedEncodingException if input fails to parse.
      */
-    public EvEfiSpdmFirmwareBlob(final byte[] eventData) throws UnsupportedEncodingException {
+    public EvEfiSpdmDeviceSecurityEvent(final byte[] eventData) throws UnsupportedEncodingException {
 
         byte[] signatureBytes = new byte[UefiConstants.SIZE_15];
         System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_15);
@@ -78,14 +79,14 @@ public class EvEfiSpdmFirmwareBlob {
         }
     }
 
-    /**
-     * Determines if this event is a DeviceSecurityEventData.
-     *
-     * @return true of the event is a DeviceSecurityEventData.
-     */
-    public boolean isSpdmDeviceSecurityEventData() {
-        return bSpdmDeviceSecurityEventData;
-    }
+//    /**
+//     * Determines if this event is a DeviceSecurityEventData.
+//     *
+//     * @return true of the event is a DeviceSecurityEventData.
+//     */
+//    public boolean isSpdmDeviceSecurityEventData() {
+//        return bSpdmDeviceSecurityEventData;
+//    }
 
     /**
      * Returns a description of this event.
@@ -93,12 +94,14 @@ public class EvEfiSpdmFirmwareBlob {
      * @return Human readable description of this event.
      */
     public String toString() {
-        if (bSpdmDeviceSecurityEventData) {
-            spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
-        } else {
-            spdmInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
-                    + " encountered but support for processing it has not been added to this application.\n";
-        }
+
+        spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
+//        if (bSpdmDeviceSecurityEventData) {
+//            spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
+//        } else {
+//            spdmInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
+//                    + " encountered but support for processing it has not been added to this application.\n";
+//        }
         return spdmInfo;
     }
 }
