@@ -395,6 +395,10 @@ public class TpmPcrEvent {
                     sb.append(ueEx.toString());
                 }
                 break;
+            case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
+                break;
+            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+                break;
             default:
                 sb.append("Unknown Event found\n");
         }
@@ -561,6 +565,12 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
                 description += "Event Content:\n" + new EvEfiSpdmFirmwareBlob(content).toString();
                 break;
+            case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
+                description += "Event Content:\n" + new EvEfiSpdmFirmwareConfig(content).toString();
+                break;
+            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+                description += "Event Content:\n" + new EvEfiSpdmDevicePolicy(content).toString();
+                break;
             default:
                 description += " Unknown Event found" + "\n";
         }
@@ -640,6 +650,10 @@ public class TpmPcrEvent {
             return "EV_EFI_VARIABLE_AUTHORITY";
         } else if (event == EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB) {
             return "EV_EFI_SPDM_FIRMWARE_BLOB";
+        } else if (event == EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG) {
+            return "EV_EFI_SPDM_FIRMWARE_CONFIG";
+        } else if (event == EvConstants.EV_EFI_SPDM_DEVICE_POLICY) {
+            return "EV_EFI_SPDM_DEVICE_POLICY";
         } else {
             return "Unknown Event ID " + event + " encountered";
         }
