@@ -35,10 +35,10 @@ public class EvEfiSpdmDeviceSecurityEvent {
      * Signature (text) data.
      */
     private String signature = "";
-    /**
-     * True if the event is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
-     */
-    private boolean bSpdmDeviceSecurityEventData = false;
+//    /**
+//     * True if the event is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
+//     */
+//    private boolean bSpdmDeviceSecurityEventData = false;
     /**
      * Human readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
@@ -58,7 +58,9 @@ public class EvEfiSpdmDeviceSecurityEvent {
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
 
         if (signature.contains("SPDM Device Sec")) {      // implies Device Security event
-            bSpdmDeviceSecurityEventData = true;
+//            bSpdmDeviceSecurityEventData = true;
+
+            spdmInfo = "   Signature = SPDM Device Sec";
 
             byte[] versionBytes = new byte[UefiConstants.SIZE_2];
             System.arraycopy(eventData, UefiConstants.OFFSET_16, versionBytes, 0,
@@ -67,15 +69,19 @@ public class EvEfiSpdmDeviceSecurityEvent {
 
             if (version.equals("0100")) {
                 DeviceSecurityEventData dSED = new DeviceSecurityEventData(eventData);
-                spdmInfo = dSED.toString();
+                spdmInfo += dSED.toString();
             }
             else if (version.equals("0200")) {
                 DeviceSecurityEventData2 dSED2 = new DeviceSecurityEventData2(eventData);
-                spdmInfo = dSED2.toString();
+                spdmInfo += dSED2.toString();
             }
             else {
-                spdmInfo = "    Unknown version of DeviceSecurityEventData structure";
+                spdmInfo += "    Unknown version of DeviceSecurityEventData structure";
             }
+        }
+        else {
+
+            spdmInfo = "   Signature = Undetermined value: " + signature;
         }
     }
 
@@ -95,7 +101,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
      */
     public String toString() {
 
-        spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
+//        spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
 //        if (bSpdmDeviceSecurityEventData) {
 //            spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
 //        } else {
