@@ -718,11 +718,13 @@ public class SwidTagGateway {
                 try {
                     byte[] counterSignature = Base64.getEncoder().encode(
                             Files.readAllBytes(Paths.get(timestampArgument)));
-                    timeStampElement = doc.createElementNS(SwidTagConstants.RFC3852_NS, "TimeStamp");
+                    timeStampElement = doc.createElementNS(SwidTagConstants.RFC3852_NS,
+                            SwidTagConstants.RFC3852_PFX + ":TimeStamp");
                     timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
                             "xmlns:" + SwidTagConstants.RFC3852_PFX,
                             SwidTagConstants.RFC3852_NS);
-                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                    timeStampElement.setAttributeNS(SwidTagConstants.RFC3852_NS,
+                            SwidTagConstants.RFC3852_PFX + ":" + SwidTagConstants.DATETIME,
                             new String(counterSignature));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -730,15 +732,17 @@ public class SwidTagGateway {
                 }
                 break;
             case "RFC3339":
-                timeStampElement = doc.createElementNS(SwidTagConstants.RFC3339_NS, "TimeStamp");
+                timeStampElement = doc.createElementNS(SwidTagConstants.RFC3339_NS,
+                        SwidTagConstants.RFC3339_PFX + ":TimeStamp");
                 timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
-                        "xmlns:" + SwidTagConstants.RFC3339_PFX,
-                        SwidTagConstants.RFC3339_NS);
+                        "xmlns:" + SwidTagConstants.RFC3339_PFX,                 SwidTagConstants.RFC3339_NS);
                 if (timestampArgument.isEmpty()) {
-                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                    timeStampElement.setAttributeNS(SwidTagConstants.RFC3339_NS,
+                            SwidTagConstants.RFC3339_PFX + ":" + SwidTagConstants.DATETIME,
                             LocalDateTime.now().toString());
                 } else {
-                    timeStampElement.setAttribute(SwidTagConstants.DATETIME,
+                    timeStampElement.setAttributeNS(SwidTagConstants.RFC3339_NS,
+                            SwidTagConstants.RFC3339_PFX + ":" + SwidTagConstants.DATETIME,
                             timestampArgument);
                 }
                 break;
