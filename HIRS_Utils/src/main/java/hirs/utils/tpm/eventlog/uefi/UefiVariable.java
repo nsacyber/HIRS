@@ -128,6 +128,8 @@ public class UefiVariable {
             case "dbx":
                 processSigList(uefiVariableData);
                 break;
+            case "devdb":
+                // if it's POLICY, process Sig List; if it's AUTHORITY, process Sig Data
             case "Boot00":
                 bootv = new UefiBootVariable(uefiVariableData);
                 break;
