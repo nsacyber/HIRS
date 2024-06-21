@@ -14,6 +14,9 @@ namespace hirs {
         private Settings settings = null;
         private IHirsDeviceInfoCollector deviceInfoCollector = null;
         private IHirsAcaClient acaClient = null;
+        
+        private const string DefaultCertFileName = "attestationkey.pem";
+
 
         public Provisioner() {
         }
@@ -279,6 +282,20 @@ namespace hirs {
                     }
                     if (cr.HasCertificate) {
                         certificate = cr.Certificate.ToByteArray(); // contains certificate
+                        String certificateDirPath = settings.efi_prefix;
+                        if (certificateDirPath != null) {
+                            String certificateFilePath =  certificateFilePath = certificateDirPath + DefaultCertFileName;
+                            try {
+                                if (!Directory.Exists(certificateDirPath)) {
+                                    Directory.CreateDirectory(certificateDirPath);
+                                }
+                                File.WriteAllBytes(certificateFilePath, certificate);
+                                Log.Debug("Certificate written to local file system: ", certificateFilePath);
+                            }
+                            catch (Exception) {
+                                Log.Debug("Failed to write certificate to local file system.");
+                            }
+                        }
                         Log.Debug("Printing attestation key certificate: " + BitConverter.ToString(certificate));
                     }
                 } else {
