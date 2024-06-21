@@ -35,10 +35,6 @@ public class EvEfiSpdmDeviceSecurityEvent {
      * Signature (text) data.
      */
     private String signature = "";
-//    /**
-//     * True if the event is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
-//     */
-//    private boolean bSpdmDeviceSecurityEventData = false;
     /**
      * Human readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
@@ -58,7 +54,6 @@ public class EvEfiSpdmDeviceSecurityEvent {
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
 
         if (signature.contains("SPDM Device Sec")) {      // implies Device Security event
-//            bSpdmDeviceSecurityEventData = true;
 
             spdmInfo = "   Signature = SPDM Device Sec";
 
@@ -80,19 +75,9 @@ public class EvEfiSpdmDeviceSecurityEvent {
             }
         }
         else {
-
             spdmInfo = "   Signature = Undetermined value: " + signature;
         }
     }
-
-//    /**
-//     * Determines if this event is a DeviceSecurityEventData.
-//     *
-//     * @return true of the event is a DeviceSecurityEventData.
-//     */
-//    public boolean isSpdmDeviceSecurityEventData() {
-//        return bSpdmDeviceSecurityEventData;
-//    }
 
     /**
      * Returns a description of this event.
@@ -100,14 +85,6 @@ public class EvEfiSpdmDeviceSecurityEvent {
      * @return Human readable description of this event.
      */
     public String toString() {
-
-//        spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
-//        if (bSpdmDeviceSecurityEventData) {
-//            spdmInfo = "   Signature = SPDM Device Sec" + spdmInfo;
-//        } else {
-//            spdmInfo = "EV_EFI_SPDM_FIRMWARE_BLOB event named " + signature
-//                    + " encountered but support for processing it has not been added to this application.\n";
-//        }
         return spdmInfo;
     }
 }
