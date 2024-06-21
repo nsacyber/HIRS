@@ -344,6 +344,7 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 try {
                     sb.append(new UefiVariable(eventContent).toString());
                 } catch (CertificateException cEx) {
@@ -396,8 +397,6 @@ public class TpmPcrEvent {
                     log.error(ueEx);
                     sb.append(ueEx.toString());
                 }
-                break;
-            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 break;
             default:
                 sb.append("Unknown Event found\n");
@@ -569,7 +568,9 @@ public class TpmPcrEvent {
                 description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
                 break;
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
-                description += "Event Content:\n" + new EvEfiSpdmDevicePolicy(content).toString();
+                UefiVariable efiSpdmDevPol = new UefiVariable(content);
+                description += "Event Content:\n" + efiSpdmDevPol.toString();
+                vendorTableFileStatus = efiSpdmDevPol.getVendorTableFileStatus();
                 break;
             default:
                 description += " Unknown Event found" + "\n";
