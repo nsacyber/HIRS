@@ -122,7 +122,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         FilteredRecordsList<SupplyChainValidationSummary> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult = supplyChainValidatorSummaryRepository.findAll(paging);
+        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult = supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(paging);
 
         if (pagedResult.hasContent()) {
             records.addAll(pagedResult.getContent());
