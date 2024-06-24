@@ -175,4 +175,8 @@ public final class EvConstants {
      * EFI SPDM Device Policy Event ID.
      */
     public static final int EV_EFI_SPDM_DEVICE_POLICY = 0x800000E3;
+    /**
+     * EFI SPDM Device Authority Event ID.
+     */
+    public static final int EV_EFI_SPDM_DEVICE_AUTHORITY = 0x800000E4;
 }
