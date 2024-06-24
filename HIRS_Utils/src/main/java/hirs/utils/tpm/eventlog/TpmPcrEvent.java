@@ -5,7 +5,6 @@ import hirs.utils.tpm.eventlog.events.EvCompactHash;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.events.EvEfiGptPartition;
 import hirs.utils.tpm.eventlog.events.EvEfiHandoffTable;
-import hirs.utils.tpm.eventlog.events.EvEfiSpdmDevicePolicy;
 import hirs.utils.tpm.eventlog.events.EvEfiSpdmDeviceSecurityEvent;
 import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvEventTag;

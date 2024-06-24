@@ -128,8 +128,10 @@ public class UefiVariable {
             case "dbx":
                 processSigList(uefiVariableData);
                 break;
-            case "devdb":   // SPDM_DEVICE_POLICY and SPDM_DEVICE_AUTHORITY
-                break;      // PFP v1.06 Rev 52, Sec 3.3.4.8 (update when test patterns exist)
+            case "devdb":   // Update when test patterns exist
+                break;      // PFP v1.06 Rev 52, Sec 3.3.4.8
+                            // EV_EFI_SPDM_DEVICE_POLICY: EFI_SIGNATURE_LIST
+                            // EV_EFI_SPDM_DEVICE_AUTHORITY: EFI_SIGNATURE_DATA
             case "Boot00":
                 bootv = new UefiBootVariable(uefiVariableData);
                 break;
