@@ -345,6 +345,7 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_VARIABLE_BOOT:
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 try {
                     sb.append(new UefiVariable(eventContent).toString());
                 } catch (CertificateException cEx) {
@@ -568,6 +569,7 @@ public class TpmPcrEvent {
                 description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
                 break;
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 UefiVariable efiSpdmDevPol = new UefiVariable(content);
                 description += "Event Content:\n" + efiSpdmDevPol.toString();
                 vendorTableFileStatus = efiSpdmDevPol.getVendorTableFileStatus();
@@ -655,6 +657,8 @@ public class TpmPcrEvent {
             return "EV_EFI_SPDM_FIRMWARE_CONFIG";
         } else if (event == EvConstants.EV_EFI_SPDM_DEVICE_POLICY) {
             return "EV_EFI_SPDM_DEVICE_POLICY";
+        } else if (event == EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY) {
+            return "EV_EFI_SPDM_DEVICE_AUTHORITY";
         } else {
             return "Unknown Event ID " + event + " encountered";
         }
