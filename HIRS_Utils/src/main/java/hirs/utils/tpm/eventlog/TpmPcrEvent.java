@@ -527,9 +527,12 @@ public class TpmPcrEvent {
                 vendorTableFileStatus = efiVar.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
-                UefiVariable efiVarBoot = new UefiVariable(content);
-                description += "Event Content:\n" + efiVarBoot.toString();
-                vendorTableFileStatus = efiVarBoot.getVendorTableFileStatus();
+            case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
+                UefiVariable efiVar2 = new UefiVariable(content);
+                description += "Event Content:\n" + efiVar2.toString();
+                vendorTableFileStatus = efiVar2.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
                 EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(content);
@@ -557,22 +560,11 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
-            case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-                UefiVariable efiVarAuth = new UefiVariable(content);
-                description += "Event Content:\n" + efiVarAuth.toString();
-                vendorTableFileStatus = efiVarAuth.getVendorTableFileStatus();
-                break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
                 description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
                 description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
-                break;
-            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
-            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
-                UefiVariable efiSpdmDevPol = new UefiVariable(content);
-                description += "Event Content:\n" + efiSpdmDevPol.toString();
-                vendorTableFileStatus = efiSpdmDevPol.getVendorTableFileStatus();
                 break;
             default:
                 description += " Unknown Event found" + "\n";
