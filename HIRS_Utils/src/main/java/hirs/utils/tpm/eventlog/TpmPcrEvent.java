@@ -396,6 +396,8 @@ public class TpmPcrEvent {
                 } catch (UnsupportedEncodingException ueEx) {
                     log.error(ueEx);
                     sb.append(ueEx.toString());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
                 break;
             default:
