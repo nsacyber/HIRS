@@ -4,6 +4,7 @@ import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiDevicePath;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -57,6 +58,7 @@ public abstract class DeviceSecurityEventHeader {
      */
     @Getter
     private Integer dSEDheaderByteSize = 0;
+
     /**
      * Signature (text) data.
      */
@@ -131,14 +133,14 @@ public abstract class DeviceSecurityEventHeader {
     /**
      * Parse the device type from the Device Security Event Data Header/Header2.
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData/Data2.
+     * @param dsedBytes byte array holding the DeviceSecurityEventData/Data2.
      * @param startByte starting byte of device type (depends on header fields before it).
      */
-    public void extractDeviceType(final byte[] dSEDbytes, int startByte) {
+    public void extractDeviceType(final byte[] dsedBytes, int startByte) {
 
         // get the device type ID
         byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(dSEDbytes, startByte, deviceTypeBytes, 0,
+        System.arraycopy(dsedBytes, startByte, deviceTypeBytes, 0,
                 UefiConstants.SIZE_4);
         deviceType = HexUtils.leReverseInt(deviceTypeBytes);
     }
@@ -147,15 +149,15 @@ public abstract class DeviceSecurityEventHeader {
      * Parse the device path from the Device Security Event Data Header/Header2.
      * Also, determine final length of header (will be used to extract the next data structure).
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData/Data2.
+     * @param dsedBytes byte array holding the DeviceSecurityEventData/Data2.
      * @param startByte starting byte of device path (depends on header fields before it).
      */
-    public void extractDevicePathAndFinalSize(final byte[] dSEDbytes, int startByte)
+    public void extractDevicePathAndFinalSize(final byte[] dsedBytes, int startByte)
             throws UnsupportedEncodingException {
 
         // get the device path length
         byte[] devicePathLengthBytes = new byte[UefiConstants.SIZE_8];
-        System.arraycopy(dSEDbytes, startByte, devicePathLengthBytes, 0,
+        System.arraycopy(dsedBytes, startByte, devicePathLengthBytes, 0,
                 UefiConstants.SIZE_8);
         int devicePathLength = HexUtils.leReverseInt(devicePathLengthBytes);
 
@@ -163,7 +165,7 @@ public abstract class DeviceSecurityEventHeader {
         if (devicePathLength != 0) {
             startByte = startByte + UefiConstants.SIZE_8;
             byte[] devPathBytes = new byte[devicePathLength];
-            System.arraycopy(dSEDbytes, startByte, devPathBytes,
+            System.arraycopy(dsedBytes, startByte, devPathBytes,
                     0, devicePathLength);
             devicePath = new UefiDevicePath(devPathBytes);
             devicePathValid = true;

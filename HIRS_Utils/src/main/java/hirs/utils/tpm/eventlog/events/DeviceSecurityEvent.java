@@ -51,6 +51,12 @@ import lombok.Getter;
 public abstract class DeviceSecurityEvent {
 
     /**
+     * DeviceSecurityEventDataContext Object.
+     */
+    @Getter
+    private DeviceSecurityEventDataDeviceContext dsedDevContext = null;
+
+    /**
      * Human readable description of the data within the
      * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT. DEVICE can be either PCI or USB.
      */
@@ -83,12 +89,15 @@ public abstract class DeviceSecurityEvent {
                 deviceContextLength);
 
         if (deviceType == 0) {
-            deviceContextInfo = "No Device Context (indicated by device type value of 0";
+            deviceContextInfo = "\n    No Device Context (indicated by device type value of 0";
         }
         else if (deviceType == 1) {
-            DeviceSecurityEventDataPciContext dSEDpciContext
+//            DeviceSecurityEventDataPciContext dSEDpciContext
+//                    = new DeviceSecurityEventDataPciContext(deviceContextBytes);
+//            deviceContextInfo = dSEDpciContext.toString();
+            dsedDevContext
                     = new DeviceSecurityEventDataPciContext(deviceContextBytes);
-            deviceContextInfo = dSEDpciContext.toString();
+            deviceContextInfo = dsedDevContext.toString();
         }
         //else if (deviceType == 2) {
             //DeviceSecurityEventDataUsbContext dSEDusbContext

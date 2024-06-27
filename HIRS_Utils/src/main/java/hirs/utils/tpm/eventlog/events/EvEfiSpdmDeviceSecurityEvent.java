@@ -2,7 +2,9 @@ package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import lombok.Getter;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
@@ -32,9 +34,16 @@ import java.nio.charset.StandardCharsets;
 public class EvEfiSpdmDeviceSecurityEvent {
 
     /**
+     * DeviceSecurityEvent Object.
+     */
+    @Getter
+    private DeviceSecurityEvent dSED = null;
+
+    /**
      * Signature (text) data.
      */
     private String signature = "";
+
     /**
      * Human readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
@@ -46,32 +55,43 @@ public class EvEfiSpdmDeviceSecurityEvent {
      * @param eventData byte array holding the event to process.
      * @throws java.io.UnsupportedEncodingException if input fails to parse.
      */
-    public EvEfiSpdmDeviceSecurityEvent(final byte[] eventData) throws UnsupportedEncodingException {
+    public EvEfiSpdmDeviceSecurityEvent(final byte[] eventData) throws IOException {
 
-        byte[] signatureBytes = new byte[UefiConstants.SIZE_15];
-        System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_15);
+        byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
+        System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_16);
         signature = new String(signatureBytes, StandardCharsets.UTF_8);
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
 
-        if (signature.contains("SPDM Device Sec")) {      // implies Device Security event
+        byte[] versionBytes = new byte[UefiConstants.SIZE_2];
+        System.arraycopy(eventData, UefiConstants.OFFSET_16, versionBytes, 0,
+                UefiConstants.SIZE_2);
+        String version = HexUtils.byteArrayToHexString(versionBytes);
+        if (version == "") {
+            version = "version not readable";
+        }
+
+        if (signature.contains("SPDM Device Sec2")) {
+
+            spdmInfo = "   Signature = SPDM Device Sec2";
+
+            if (version.equals("0200")) {
+                dSED = new DeviceSecurityEventData2(eventData);
+                spdmInfo += dSED.toString();
+            }
+            else {
+                spdmInfo += "    Incompatible version for DeviceSecurityEventData2: " + version;
+            }
+        }
+        else if (signature.contains("SPDM Device Sec")) {      // implies Device Security event
 
             spdmInfo = "   Signature = SPDM Device Sec";
 
-            byte[] versionBytes = new byte[UefiConstants.SIZE_2];
-            System.arraycopy(eventData, UefiConstants.OFFSET_16, versionBytes, 0,
-                    UefiConstants.SIZE_2);
-            String version = HexUtils.byteArrayToHexString(versionBytes);
-
             if (version.equals("0100")) {
-                DeviceSecurityEventData dSED = new DeviceSecurityEventData(eventData);
+                dSED = new DeviceSecurityEventData(eventData);
                 spdmInfo += dSED.toString();
             }
-            else if (version.equals("0200")) {
-                DeviceSecurityEventData2 dSED2 = new DeviceSecurityEventData2(eventData);
-                spdmInfo += dSED2.toString();
-            }
             else {
-                spdmInfo += "    Unknown version of DeviceSecurityEventData structure";
+                spdmInfo += "    Incompatible version for DeviceSecurityEventData: " + version;
             }
         }
         else {
