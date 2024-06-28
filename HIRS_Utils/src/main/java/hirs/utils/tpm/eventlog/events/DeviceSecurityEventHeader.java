@@ -151,8 +151,7 @@ public abstract class DeviceSecurityEventHeader {
      * @param dsedBytes byte array holding the DeviceSecurityEventData/Data2.
      * @param startByte starting byte of device path (depends on header fields before it).
      */
-    public void extractDevicePathAndFinalSize(final byte[] dsedBytes, int startByte)
-            throws UnsupportedEncodingException {
+    public void extractDevicePathAndFinalSize(final byte[] dsedBytes, int startByte) {
 
         // get the device path length
         byte[] devicePathLengthBytes = new byte[UefiConstants.SIZE_8];
@@ -166,8 +165,13 @@ public abstract class DeviceSecurityEventHeader {
             byte[] devPathBytes = new byte[devicePathLength];
             System.arraycopy(dsedBytes, startByte, devPathBytes,
                     0, devicePathLength);
-            devicePath = new UefiDevicePath(devPathBytes);
-            devicePathValid = true;
+            try {
+                devicePath = new UefiDevicePath(devPathBytes);
+                devicePathValid = true;
+            }
+            catch (UnsupportedEncodingException e) {
+                devicePathValid = false;
+            }
         }
 
         // header total size

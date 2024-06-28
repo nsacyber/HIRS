@@ -69,7 +69,7 @@ public abstract class DeviceSecurityEvent {
     private int deviceType = -1;
 
     /**
-     * Human readable description of the data within the
+     * Human-readable description of the data within the
      * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT. DEVICE can be either PCI or USB.
      */
     @Getter

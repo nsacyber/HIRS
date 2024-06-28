@@ -62,9 +62,11 @@ public class SpdmMeasurement {
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Lookup for SPDM measurement value type
      *
-     * @return a description of this structure..
+     * @param measValType the numerical representation of the measurement value type.
+     *
+     * @return a description of the measurement value type.
      */
     public String dmtfSpecMeasurementValueTypeToString(final int measValType) {
 
@@ -92,7 +94,7 @@ public class SpdmMeasurement {
                 measValTypeStr = "Mutable firmware's version number";
                 break;
             case 7:
-                measValTypeStr = "Mutable firmware's security verison number";
+                measValTypeStr = "Mutable firmware's security version number";
                 break;
             case 8:
                 measValTypeStr = "Hash-extended measurement";
@@ -109,6 +111,11 @@ public class SpdmMeasurement {
         return measValTypeStr;
     }
 
+    /**
+     * Returns a human-readable description of the data within this structure.
+     *
+     * @return a description of this structure.
+     */
     public String toString() {
         String spdmMeasInfo = "";
 

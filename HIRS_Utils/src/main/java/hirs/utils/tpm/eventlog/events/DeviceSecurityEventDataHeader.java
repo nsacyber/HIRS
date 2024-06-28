@@ -8,6 +8,7 @@ import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER.
@@ -52,7 +53,7 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
      *
      * @param dsedBytes byte array holding the DeviceSecurityEventData.
      */
-    public DeviceSecurityEventDataHeader(final byte[] dsedBytes) throws IOException {
+    public DeviceSecurityEventDataHeader(final byte[] dsedBytes) {
 
         super(dsedBytes);
 
