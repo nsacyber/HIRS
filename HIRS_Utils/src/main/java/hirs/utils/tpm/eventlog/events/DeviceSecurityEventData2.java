@@ -3,6 +3,7 @@ package hirs.utils.tpm.eventlog.events;
 import lombok.Getter;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventDataHeader2.SUBHEADERTYPE_CERT_CHAIN;
 import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventDataHeader2.SUBHEADERTYPE_MEAS_BLOCK;
@@ -46,7 +47,7 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
      *
      * @param dsedBytes byte array holding the DeviceSecurityEventData2.
      */
-    public DeviceSecurityEventData2(final byte[] dsedBytes) throws IOException {
+    public DeviceSecurityEventData2(final byte[] dsedBytes) {
 
         dsedHeader2 = new DeviceSecurityEventDataHeader2(dsedBytes);
         setDeviceType(dsedHeader2.getDeviceType());
@@ -81,7 +82,7 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human-readable description of the data within this structure.
      *
      * @return a description of this structure.
      */

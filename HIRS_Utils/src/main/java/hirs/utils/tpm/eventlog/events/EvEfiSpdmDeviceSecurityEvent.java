@@ -36,7 +36,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
     /**
      * DeviceSecurityEvent Object.
      */
-    private DeviceSecurityEvent dSED = null;
+    private DeviceSecurityEvent dsed = null;
 
     /**
      * Signature (text) data.
@@ -54,7 +54,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
      * @param eventData byte array holding the event to process.
      * @throws java.io.UnsupportedEncodingException if input fails to parse.
      */
-    public EvEfiSpdmDeviceSecurityEvent(final byte[] eventData) throws IOException {
+    public EvEfiSpdmDeviceSecurityEvent(final byte[] eventData) {
 
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_16);
@@ -74,8 +74,8 @@ public class EvEfiSpdmDeviceSecurityEvent {
             spdmInfo = "   Signature = SPDM Device Sec2";
 
             if (version.equals("0200")) {
-                dSED = new DeviceSecurityEventData2(eventData);
-                spdmInfo += dSED.toString();
+                dsed = new DeviceSecurityEventData2(eventData);
+                spdmInfo += dsed.toString();
             }
             else {
                 spdmInfo += "    Incompatible version for DeviceSecurityEventData2: " + version;
@@ -86,8 +86,8 @@ public class EvEfiSpdmDeviceSecurityEvent {
             spdmInfo = "   Signature = SPDM Device Sec";
 
             if (version.equals("0100")) {
-                dSED = new DeviceSecurityEventData(eventData);
-                spdmInfo += dSED.toString();
+                dsed = new DeviceSecurityEventData(eventData);
+                spdmInfo += dsed.toString();
             }
             else {
                 spdmInfo += "    Incompatible version for DeviceSecurityEventData: " + version;
@@ -101,7 +101,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
     /**
      * Returns a description of this event.
      *
-     * @return Human readable description of this event.
+     * @return Human-readable description of this event.
      */
     public String toString() {
         return spdmInfo;

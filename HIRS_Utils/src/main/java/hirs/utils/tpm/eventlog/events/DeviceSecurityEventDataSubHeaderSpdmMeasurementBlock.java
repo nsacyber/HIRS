@@ -51,7 +51,7 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
      *
      * @param dsedSubHBytes byte array holding the DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock.
      */
-    public DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(final byte[] dsedSubHBytes) throws IOException {
+    public DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(final byte[] dsedSubHBytes) {
 
         spdmMeasurementBlockList = new ArrayList<>();
 

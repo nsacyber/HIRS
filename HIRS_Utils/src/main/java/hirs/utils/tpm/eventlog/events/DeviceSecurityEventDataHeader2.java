@@ -92,7 +92,7 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
     public static final int SUBHEADERTYPE_CERT_CHAIN = 1;
 
 
-    public DeviceSecurityEventDataHeader2(final byte[] dsedBytes) throws UnsupportedEncodingException {
+    public DeviceSecurityEventDataHeader2(final byte[] dsedBytes) {
 
         super(dsedBytes);
 
