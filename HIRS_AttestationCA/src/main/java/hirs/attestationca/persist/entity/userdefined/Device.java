@@ -114,8 +114,8 @@ public class Device extends AbstractEntity {
 
     public String toString() {
         return String.format("Device Name: %s%nStatus: %s%nSummary: %s%n",
-                name, healthStatus.getStatus(),
-                supplyChainValidationStatus.toString());
+                name, (healthStatus == null ? "N/A" : healthStatus.getStatus()),
+                (supplyChainValidationStatus == null ? "N/A" : supplyChainValidationStatus.toString()));
     }
 
     @Override

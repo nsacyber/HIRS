@@ -241,6 +241,7 @@ public class ReferenceManifestValidator {
                 if (embeddedCert != null) {
                     if (isCertChainValid(embeddedCert)) {
                         context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
+                        subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
                     }
                 }
             } else {
@@ -465,6 +466,10 @@ public class ReferenceManifestValidator {
             for (X509Certificate trustedCert : trustStore) {
                 boolean isIssuer = areYouMyIssuer(chainCert, trustedCert);
                 boolean isSigner = areYouMySigner(chainCert, trustedCert);
+                boolean itIsMe = areYouMe(chainCert, trustedCert);
+                if (itIsMe) {
+                    continue;
+                }
                 if (isIssuer && isSigner) {
                     if (isSelfSigned(trustedCert)) {
                         log.info("Root CA found.");
@@ -488,6 +493,21 @@ public class ReferenceManifestValidator {
         log.error("CA chain validation failed to validate "
                 + chainCert.getSubjectX500Principal().getName() + ", " + errorMessage);
         return false;
+    }
+
+    /**
+     * This method checks if cert's issuerDN matches issuer's subjectDN.
+     * @param cert the signed certificate
+     * @param issuer the signing certificate
+     * @return true if they match, false if not
+     * @throws Exception if either argument is null
+     */
+    private boolean areYouMe(final X509Certificate cert, final X509Certificate issuer)
+            throws Exception {
+        if (cert == null || issuer == null) {
+            throw new Exception("Cannot verify issuer, null certificate received");
+        }
+        return Arrays.equals(cert.getEncoded(), issuer.getEncoded());
     }
 
     /**
