@@ -562,7 +562,9 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
-                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
+                EvEfiSpdmDeviceSecurityEvent tempp = new EvEfiSpdmDeviceSecurityEvent(content);
+                description += "Event Content:\n" + tempp.toString();
+//                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
                 description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();

@@ -216,6 +216,7 @@ public class UefiVariable {
             case "KEK":
             case "db":
             case "dbx":
+                break;
             case "devdb":           // SPDM_DEVICE_POLICY and SPDM_DEVICE_AUTHORITY
                                     // (update when test patterns exist)
                 efiVariable.append("   EV_EFI_SPDM_DEVICE_POLICY and EV_EFI_SPDM_DEVICE_AUTHORITY: " +

@@ -4,7 +4,6 @@ import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiDevicePath;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -57,7 +56,7 @@ public abstract class DeviceSecurityEventHeader {
      * Contains the size (in bytes) of the header.
      */
     @Getter
-    private Integer dSEDheaderByteSize = 0;
+    private Integer dsedHeaderLength = 0;
 
     /**
      * Signature (text) data.
@@ -120,8 +119,8 @@ public abstract class DeviceSecurityEventHeader {
 
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
-        signature = new String(signatureBytes, StandardCharsets.UTF_8)
-                .substring(0, UefiConstants.SIZE_15);
+        signature = new String(signatureBytes, StandardCharsets.UTF_8);
+        signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
 
         byte[] versionBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_16, versionBytes, 0,
@@ -172,7 +171,7 @@ public abstract class DeviceSecurityEventHeader {
         }
 
         // header total size
-        dSEDheaderByteSize = startByte + devicePathLength;
+        dsedHeaderLength = startByte + devicePathLength;
     }
 
     /**
@@ -183,25 +182,20 @@ public abstract class DeviceSecurityEventHeader {
      * @return name of the device type
      */
     public String deviceTypeToString(final int deviceTypeInt) {
-        String deviceTypeStr;
         switch (deviceTypeInt) {
             case DEVICE_TYPE_NONE:
-                deviceTypeStr = "No device type";
-                break;
+                return "No device type";
             case DEVICE_TYPE_PCI:
-                deviceTypeStr = "PCI";
-                break;
+                return "PCI";
             case DEVICE_TYPE_USB:
-                deviceTypeStr = "USB";
-                break;
+                return "USB";
             default:
-                deviceTypeStr = "Unknown or invalid Device Type";
+                return "Unknown or invalid Device Type";
         }
-        return deviceTypeStr;
     }
 
     /**
-     * Returns a human readable description of the data common to header structures.
+     * Returns a human-readable description of the data common to header structures.
      *
      * @return a description of this structure.
      */

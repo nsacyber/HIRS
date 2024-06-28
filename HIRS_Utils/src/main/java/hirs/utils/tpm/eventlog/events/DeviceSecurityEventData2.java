@@ -1,15 +1,12 @@
 package hirs.utils.tpm.eventlog.events;
 
-import hirs.utils.HexUtils;
 import lombok.Getter;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventDataHeader2.SUBHEADERTYPE_CERT_CHAIN;
 import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventDataHeader2.SUBHEADERTYPE_MEAS_BLOCK;
 
-// TODO Placeholder class to be implemented upon getting test pattern
 /**
  * Class to process DEVICE_SECURITY_EVENT_DATA2.
  * Parses event data per PFP v1.06 Rev52 Table 26.
@@ -47,34 +44,40 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
     /**
      * DeviceSecurityEventData2 Constructor.
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData2.
+     * @param dsedBytes byte array holding the DeviceSecurityEventData2.
      */
-    public DeviceSecurityEventData2(final byte[] dSEDbytes) throws IOException {
+    public DeviceSecurityEventData2(final byte[] dsedBytes) throws IOException {
 
-        dsedHeader2 = new DeviceSecurityEventDataHeader2(dSEDbytes);
-        int dSEDheaderByteSize = dsedHeader2.getDSEDheaderByteSize();
+        dsedHeader2 = new DeviceSecurityEventDataHeader2(dsedBytes);
+        setDeviceType(dsedHeader2.getDeviceType());
+        int dsedHeaderLength = dsedHeader2.getDsedHeaderLength();
         int subHeaderType = dsedHeader2.getSubHeaderType();
         int subHeaderLength = dsedHeader2.getSubHeaderLength();
 
         subHeaderInfo = "\nSub header type: " + subHeaderType;
 
-        byte[] dSEDsubHeaderBytes = new byte[subHeaderLength];
-        System.arraycopy(dSEDbytes, dSEDheaderByteSize, dSEDsubHeaderBytes, 0, subHeaderLength);
+        byte[] dsedSubHeaderBytes = new byte[subHeaderLength];
+        System.arraycopy(dsedBytes, dsedHeaderLength, dsedSubHeaderBytes, 0, subHeaderLength);
 
         if (subHeaderType == SUBHEADERTYPE_MEAS_BLOCK) {
-            dsedSubHeader = new DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(dSEDsubHeaderBytes);
+            dsedSubHeader = new DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(dsedSubHeaderBytes);
             subHeaderInfo += dsedSubHeader.toString();
         }
         else if (subHeaderType == SUBHEADERTYPE_CERT_CHAIN) {
-            // TBD:
             // dsedSubHeader = new DeviceSecurityEventDataSubHeaderCertChain();
+            subHeaderInfo += "    Cert chain to be implemented ";
         }
         else {
-            subHeaderInfo += "Subheader type unknown";
+            subHeaderInfo += "Sub header type unknown";
         }
 
-        // get subheader
-        parseDeviceContext(dSEDbytes, dsedHeader2.getDSEDheaderByteSize(), dsedHeader2.getDeviceType());
+        int dsedDevContextStartByte = dsedHeaderLength + subHeaderLength;
+        int dsedDevContextLength = dsedBytes.length - dsedDevContextStartByte;
+        byte[] dsedDevContextBytes = new byte[dsedDevContextLength];
+        System.arraycopy(dsedBytes, dsedDevContextStartByte, dsedDevContextBytes, 0,
+                dsedDevContextLength);
+
+        instantiateDeviceContext(dsedDevContextBytes);
     }
 
     /**
