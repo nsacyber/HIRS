@@ -36,7 +36,6 @@ public class EvEfiSpdmDeviceSecurityEvent {
     /**
      * DeviceSecurityEvent Object.
      */
-    @Getter
     private DeviceSecurityEvent dSED = null;
 
     /**
