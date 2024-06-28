@@ -128,6 +128,10 @@ public class UefiVariable {
             case "dbx":
                 processSigList(uefiVariableData);
                 break;
+            case "devdb":   // Update when test patterns exist
+                break;      // PFP v1.06 Rev 52, Sec 3.3.4.8
+                            // EV_EFI_SPDM_DEVICE_POLICY: EFI_SIGNATURE_LIST
+                            // EV_EFI_SPDM_DEVICE_AUTHORITY: EFI_SIGNATURE_DATA
             case "Boot00":
                 bootv = new UefiBootVariable(uefiVariableData);
                 break;
@@ -144,8 +148,8 @@ public class UefiVariable {
     /**
      * Processes the data as a list of UEFI defined Signature Lists.
      *
-     * @param data the bye array holding the Signature List.
-     * @throws java.security.cert.CertificateException If there a problem
+     * @param data the bye array holding one or more Signature Lists.
+     * @throws java.security.cert.CertificateException If there's a problem
      *          parsing the X509 certificate.
      * @throws java.security.NoSuchAlgorithmException  if there's a problem
      *          hashing the certificate.
@@ -212,6 +216,10 @@ public class UefiVariable {
             case "KEK":
             case "db":
             case "dbx":
+            case "devdb":           // SPDM_DEVICE_POLICY and SPDM_DEVICE_AUTHORITY
+                                    // (update when test patterns exist)
+                efiVariable.append("   EV_EFI_SPDM_DEVICE_POLICY and EV_EFI_SPDM_DEVICE_AUTHORITY: " +
+                        "To be processed once more test patterns exist\n");
                 break;
             case "Boot00":
                 efiVariable.append(bootv.toString());

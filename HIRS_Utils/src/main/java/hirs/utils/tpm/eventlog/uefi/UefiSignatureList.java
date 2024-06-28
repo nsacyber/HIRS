@@ -150,9 +150,9 @@ public class UefiSignatureList {
     }
 
     /**
-     * Method for processing a set of EFI SignatureList(s).
+     * Method for processing the data in an EFI SignatureList (ex. can be one or more X509 certs)
      *
-     * @param efiSigData Byte array holding one or more SignatureLists
+     * @param efiSigData Byte array holding the SignatureList data
      * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
      * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
      * @throws java.io.IOException                     If there's a problem parsing the signature data.

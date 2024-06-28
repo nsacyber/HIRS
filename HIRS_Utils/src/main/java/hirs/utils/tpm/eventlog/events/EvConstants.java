@@ -167,4 +167,16 @@ public final class EvConstants {
      * EFI SPDM Firmware Blob Event ID.
      */
     public static final int EV_EFI_SPDM_FIRMWARE_BLOB = 0x800000E1;
+    /**
+     * EFI SPDM Firmware Config Event ID.
+     */
+    public static final int EV_EFI_SPDM_FIRMWARE_CONFIG = 0x800000E2;
+    /**
+     * EFI SPDM Device Policy Event ID.
+     */
+    public static final int EV_EFI_SPDM_DEVICE_POLICY = 0x800000E3;
+    /**
+     * EFI SPDM Device Authority Event ID.
+     */
+    public static final int EV_EFI_SPDM_DEVICE_AUTHORITY = 0x800000E4;
 }
