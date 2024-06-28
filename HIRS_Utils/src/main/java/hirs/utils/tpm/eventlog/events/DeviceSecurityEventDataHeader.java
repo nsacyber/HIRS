@@ -8,7 +8,6 @@ import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER.
@@ -76,12 +75,10 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
         int sizeOfSpdmMeas = HexUtils.leReverseInt(sizeOfSpdmMeasBlockBytes);
         int sizeOfSpdmMeasBlock = sizeOfSpdmMeas + 4;   // header is 4 bytes
 
-        // extract the bytes from the SPDM Measurement Block
+        // extract the bytes that comprise the SPDM Measurement Block
         byte[] spdmMeasBlockBytes = new byte[sizeOfSpdmMeasBlock];
         System.arraycopy(dsedBytes, 28, spdmMeasBlockBytes, 0,
                 sizeOfSpdmMeasBlock);
-
-//        spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasBlockBytes);
 
         ByteArrayInputStream spdmMeasurementBlockData =
                 new ByteArrayInputStream(spdmMeasBlockBytes);
@@ -92,7 +89,7 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human-readable description of the data within this structure.
      *
      * @return a description of this structure.
      */

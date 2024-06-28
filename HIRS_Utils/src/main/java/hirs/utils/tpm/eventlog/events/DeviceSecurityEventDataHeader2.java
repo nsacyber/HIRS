@@ -1,9 +1,6 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.spdm.SpdmHa;
-import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
-import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
 import java.io.UnsupportedEncodingException;
@@ -112,23 +109,24 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
         extractDeviceType(dsedBytes, 24);
 
         byte[] subHeaderTypeBytes = new byte[4];
-        System.arraycopy(dsedBytes, 44, subHeaderTypeBytes, 0, 4);
+        System.arraycopy(dsedBytes, 28, subHeaderTypeBytes, 0, 4);
         subHeaderType = HexUtils.leReverseInt(subHeaderTypeBytes);
 
         byte[] subHeaderLengthBytes = new byte[4];
-        System.arraycopy(dsedBytes, 48, subHeaderLengthBytes, 0, 4);
+        System.arraycopy(dsedBytes, 32, subHeaderLengthBytes, 0, 4);
         subHeaderLength = HexUtils.leReverseInt(subHeaderLengthBytes);
 
         byte[] subHeaderUidBytes = new byte[8];
-        System.arraycopy(dsedBytes, 52, subHeaderUidBytes, 0, 8);
+        System.arraycopy(dsedBytes, 36, subHeaderUidBytes, 0, 8);
+        subHeaderUidBytes = HexUtils.leReverseByte(subHeaderUidBytes);
         subHeaderUid = HexUtils.byteArrayToHexString(subHeaderUidBytes);
 
-        int devPathLenStartByte = 60;
+        int devPathLenStartByte = 44;
         extractDevicePathAndFinalSize(dsedBytes, devPathLenStartByte);
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human-readable description of the data within this structure.
      *
      * @return a description of this structure.
      */

@@ -1,14 +1,13 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.spdm.SpdmHa;
 import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
-import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiSignatureList;
 import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,10 +46,6 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
      * List of SPDM Measurement Blocks.
      */
     private List<SpdmMeasurementBlock> spdmMeasurementBlockList;
-//    /**
-//     * SPDM Measurement Block.
-//     */
-//    private SpdmMeasurementBlock spdmMeasurementBlock = null;
 
     /**
      * DeviceSecurityEventDataHeader Constructor.
@@ -58,8 +53,6 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
      * @param dsedSubHBytes byte array holding the DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock.
      */
     public DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(final byte[] dsedSubHBytes) throws IOException {
-
-//        super();
 
         spdmMeasurementBlockList = new ArrayList<>();
 
@@ -77,7 +70,10 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
         System.arraycopy(dsedSubHBytes, 4, spdmMeasurementHashAlgoBytes, 0, 4);
         spdmMeasurementHashAlgo = HexUtils.leReverseInt(spdmMeasurementHashAlgoBytes);
 
+        // get the size of the SPDM Measurement Block List
         int spdmMeasurementBlockListSize = dsedSubHBytes.length - 8;
+
+        // extract the bytes that comprise the SPDM Measurement Block List
         byte[] spdmMeasurementBlockListBytes = new byte[spdmMeasurementBlockListSize];
         System.arraycopy(dsedSubHBytes, 8, spdmMeasurementBlockListBytes, 0,
                 spdmMeasurementBlockListSize);
@@ -85,22 +81,32 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
         ByteArrayInputStream spdmMeasurementBlockListData =
                 new ByteArrayInputStream(spdmMeasurementBlockListBytes);
         while (spdmMeasurementBlockListData.available() > 0) {
-
             SpdmMeasurementBlock spdmMeasurementBlock;
             spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockListData);
-
             spdmMeasurementBlockList.add(spdmMeasurementBlock);
         }
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human-readable description of the data within this structure.
      *
      * @return a description of this structure.
      */
     public String toString() {
         String dsedSubHeaderInfo = "";
-//        dsedSubHeaderInfo += dsedHeader2.toString();
+        dsedSubHeaderInfo += "\n   SPDM Version: " + spdmVersion;
+        String spdmHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmMeasurementHashAlgo);
+        dsedSubHeaderInfo += "\n   SPDM Hash Algorithm = " + spdmHashAlgoStr;
+
+        // SPDM Measurement Block List output
+        dsedSubHeaderInfo += "\n   Number of SPDM Measurement Blocks = " + spdmMeasurementBlockList.size();
+        int spdmMeasBlockCnt = 1;
+        for (SpdmMeasurementBlock spdmMeasBlock : spdmMeasurementBlockList) {
+            dsedSubHeaderInfo += "\n   SPDM Measurement Block # " + spdmMeasBlockCnt++ + " of " +
+                    spdmMeasurementBlockList.size();
+            dsedSubHeaderInfo += spdmMeasBlock.toString();
+        }
+
         return dsedSubHeaderInfo;
     }
 }

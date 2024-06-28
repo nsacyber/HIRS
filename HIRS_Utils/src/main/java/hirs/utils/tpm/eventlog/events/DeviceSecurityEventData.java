@@ -3,7 +3,6 @@ package hirs.utils.tpm.eventlog.events;
 import lombok.Getter;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 /**
  * Class to process DEVICE_SECURITY_EVENT_DATA.
@@ -26,11 +25,19 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
     /**
      * DeviceSecurityEventData Constructor.
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData.
+     * @param dsedBytes byte array holding the DeviceSecurityEventData.
      */
-    public DeviceSecurityEventData(final byte[] dSEDbytes) throws IOException {
-        dsedHeader = new DeviceSecurityEventDataHeader(dSEDbytes);
-        parseDeviceContext(dSEDbytes, dsedHeader.getDSEDheaderByteSize(), dsedHeader.getDeviceType());
+    public DeviceSecurityEventData(final byte[] dsedBytes) throws IOException {
+        dsedHeader = new DeviceSecurityEventDataHeader(dsedBytes);
+        setDeviceType(dsedHeader.getDeviceType());
+        int dsedHeaderLength = dsedHeader.getDsedHeaderLength();
+
+        int dsedDevContextLength = dsedBytes.length - dsedHeaderLength;
+        byte[] dsedDevContextBytes = new byte[dsedDevContextLength];
+        System.arraycopy(dsedBytes, dsedHeaderLength, dsedDevContextBytes, 0,
+                dsedDevContextLength);
+
+        instantiateDeviceContext(dsedDevContextBytes);
     }
 
     /**
