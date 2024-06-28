@@ -26,7 +26,6 @@ import java.io.UnsupportedEncodingException;
  *      UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER2;
  * <p>
- * Assumption: there is only 1 SpdmMeasurementBlock per event. Need more test patterns to verify.
  */
 public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
 
