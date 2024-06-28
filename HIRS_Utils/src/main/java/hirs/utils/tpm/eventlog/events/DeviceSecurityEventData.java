@@ -1,6 +1,8 @@
 package hirs.utils.tpm.eventlog.events;
 
 import lombok.Getter;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -24,15 +26,23 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
     /**
      * DeviceSecurityEventData Constructor.
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData.
+     * @param dsedBytes byte array holding the DeviceSecurityEventData.
      */
-    public DeviceSecurityEventData(final byte[] dSEDbytes) throws UnsupportedEncodingException {
-        dsedHeader = new DeviceSecurityEventDataHeader(dSEDbytes);
-        parseDeviceContext(dSEDbytes, dsedHeader.getDSEDheaderByteSize(), dsedHeader.getDeviceType());
+    public DeviceSecurityEventData(final byte[] dsedBytes) {
+        dsedHeader = new DeviceSecurityEventDataHeader(dsedBytes);
+        setDeviceType(dsedHeader.getDeviceType());
+        int dsedHeaderLength = dsedHeader.getDsedHeaderLength();
+
+        int dsedDevContextLength = dsedBytes.length - dsedHeaderLength;
+        byte[] dsedDevContextBytes = new byte[dsedDevContextLength];
+        System.arraycopy(dsedBytes, dsedHeaderLength, dsedDevContextBytes, 0,
+                dsedDevContextLength);
+
+        instantiateDeviceContext(dsedDevContextBytes);
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human-readable description of the data within this structure.
      *
      * @return a description of this structure.
      */

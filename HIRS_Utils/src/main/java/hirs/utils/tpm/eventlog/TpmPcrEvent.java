@@ -391,12 +391,7 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
-                try {
-                    sb.append(new EvEfiSpdmDeviceSecurityEvent(eventContent).toString());
-                } catch (UnsupportedEncodingException ueEx) {
-                    log.error(ueEx);
-                    sb.append(ueEx.toString());
-                }
+                sb.append(new EvEfiSpdmDeviceSecurityEvent(eventContent).toString());
                 break;
             default:
                 sb.append("Unknown Event found\n");
@@ -560,7 +555,9 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
-                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
+                EvEfiSpdmDeviceSecurityEvent tempp = new EvEfiSpdmDeviceSecurityEvent(content);
+                description += "Event Content:\n" + tempp.toString();
+//                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
                 description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
