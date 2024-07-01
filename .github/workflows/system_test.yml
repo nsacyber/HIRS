@@ -103,13 +103,13 @@ jobs:
         shell: bash
         run: |
             .ci/system-tests/tests/rim_system_tests.sh 1
-            if [ $? -eq 0 ]; then
-              echo "ACA RIM Test 1 passed"
-            else
+            if [ $? -ne 0 ]; then
               echo "ACA RIM Test 1 Failed"
               FAILED_TEST_LIST="${FAILED_TEST_LIST}ACA RIM TEST 1 "
               FAILED_TEST_COUNT=$((FAILED_TEST_COUNT++))
-          fi
+            else
+              echo "ACA RIM Test 1 passed"
+            fi
           echo "Value = ${{env.TEST_STATUS}}"
           echo "${FAILED_TEST_LIST} failed, moving on..."
           
