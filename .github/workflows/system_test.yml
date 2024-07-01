@@ -153,5 +153,5 @@ jobs:
       - name: Check System Test results
         if: success() || failure()
         run: |
-         echo "TEST_RIM_1 is ${env.TEST_RIM_1}"
-         echo "TEST_RIM_2 is ${env.TEST_RIM_2}"
+         echo "TEST_RIM_1 is ${TEST_RIM_1}"
+         echo "TEST_RIM_2 is ${TEST_RIM_2}"
