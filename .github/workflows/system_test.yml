@@ -102,7 +102,8 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          if ( $(.ci/system-tests/tests/rim_system_tests.sh 1) == 0 ); then
+            .ci/system-tests/tests/rim_system_tests.sh 1
+            if [ $? -eq 0 ]; then
               echo "ACA RIM Test 1 passed"
             else
               echo "ACA RIM Test 1 Failed"
