@@ -27,7 +27,8 @@ jobs:
         run: |
           # If on a forked repo, ensure that it has a new secret for the PAT
           # and replace secrets.GITHUB_TOKEN with the secret in the fork
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          #echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          echo "${{ secrets.PKG_PWD }}" | docker login ghcr.io -u $ --password-stdin
           .ci/system-tests/setup_system_tests.sh ${GITHUB_REF#refs/heads/}
       - name: ACA POLICY TEST 1 - Test ACA default policy
         continue-on-error: true
