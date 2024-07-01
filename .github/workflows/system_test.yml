@@ -12,7 +12,7 @@ env:
   TEST_STATUS: 0
   FAILED_TEST_COUNT: 0
   TEST_COUNT: 14
-  FAILED_TEST_LIST: "none"
+  FAILED_TEST_LIST: ""
 jobs:
   DockerTests:
     runs-on: ubuntu-latest
@@ -106,8 +106,8 @@ jobs:
               echo "ACA RIM Test 1 passed"
             else
               echo "ACA RIM Test 1 Failed"
-              FAILED_TEST_LIST=$FAILED_TEST_LIST"ACA RIM TEST 1 "
-              FAILED_TEST_COUNT++
+              FAILED_TEST_LIST="${FAILED_TEST_LIST}ACA RIM TEST 1 "
+              FAILED_TEST_COUNT=$((FAILED_TEST_COUNT++))
           fi
           echo "Value = ${{env.TEST_STATUS}}"
           echo "${FAILED_TEST_LIST} failed, moving on..."
