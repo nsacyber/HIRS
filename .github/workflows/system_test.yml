@@ -101,7 +101,8 @@ jobs:
       #   run: |
       #     .ci/system-tests/tests/platform_cert_tests.sh
       - name: ACA RIM TEST 1 - Test a RIM from an OEM and a Supplemental RIM from a VAR
-        continue-on-error: false
+        if: always()
+        #continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 1
@@ -155,3 +156,5 @@ jobs:
         run: |
          echo "TEST_RIM_1 status is ${TEST_RIM_1}"
          echo "TEST_RIM_2 status is ${TEST_RIM_2}"
+         if [[ ${TEST_RIM_1} == 'failed']]; then exit 1; fi;
+          
