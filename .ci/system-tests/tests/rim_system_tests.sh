@@ -49,7 +49,6 @@ if [ "$test" = "3" ] || [ "$test" = "all" ]; then
 fi
 
 #  Process Test Results, any single failure will send back a failed result.
-echo "failed tests is $failedTests"
 if [[ $failedTests != 0 ]]; then
     #export TEST_STATUS=1;
     echo "TEST_STATUS=1" >> $GITHUB_ENV

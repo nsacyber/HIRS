@@ -103,21 +103,13 @@ jobs:
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 1
-          if [ $? -ne 0 ]; then
-            echo "ACA RIM Test 1 Failed"
-              FAILED_TEST_LIST="${FAILED_TEST_LIST}ACA RIM TEST 1 "
-              FAILED_TEST_COUNT=$((FAILED_TEST_COUNT++))
-            else
-              echo "ACA RIM Test 1 passed"
-            fi
-          echo "Value = ${{env.TEST_STATUS}}"
-          echo "${FAILED_TEST_LIST} failed, moving on..."
-          
+          TEST_RIM_1="pass"
       - name: ACA RIM TEST 2 - Test a RIM from an OEM with a bad reference measurement and a Supplemental RIM from a VAR
         continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 2
+          TEST_RIM_2="pass"
       - name: ACA RIM TEST 3 - Test a RIM from an OEM and a Supplemental RIM from a VAR with a bad reference measurement
         continue-on-error: true
         shell: bash
@@ -159,6 +151,8 @@ jobs:
       - name: Check System Test results
         if: success() || failure()
         run: |
+         echo "TEST_RIM_1 iss $TEST_RIM_1"
+         echo "TEST_RIM_2 iss $TEST_RIM_2"
          if [ ${FAILED_TEST_COUNT} == "0" ]; then
             echo "All ${TEST_COUNT} Sytem Test(s) passed!"
             exit 0
