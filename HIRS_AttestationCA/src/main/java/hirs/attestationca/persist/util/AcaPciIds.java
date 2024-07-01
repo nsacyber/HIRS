@@ -1,14 +1,10 @@
 package hirs.attestationca.persist.util;
 
-import com.github.marandus.pciid.model.Device;
-import com.github.marandus.pciid.model.Vendor;
-import com.google.common.base.Strings;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 
 import lombok.extern.log4j.Log4j2;
-import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
 
 import java.util.ArrayList;
