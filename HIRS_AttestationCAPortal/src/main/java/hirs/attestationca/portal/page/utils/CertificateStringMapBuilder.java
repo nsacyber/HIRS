@@ -12,7 +12,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestati
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
-import hirs.attestationca.persist.util.PciIds;
+import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -371,8 +371,8 @@ public final class CertificateStringMapBuilder {
                     .findByCertificateSerialNumberAndBoardSerialNumber(
                             certificate.getSerialNumber().toString(),
                             certificate.getPlatformSerial());
-            if (PciIds.DB.isReady()) {
-                compResults = PciIds.translateResults(compResults);
+            if (AcaPciIds.DB.isReady()) {
+                compResults = AcaPciIds.translateResults(compResults);
             }
             data.put("componentResults", compResults);
 
@@ -381,8 +381,8 @@ public final class CertificateStringMapBuilder {
             if (platformConfiguration != null) {
                 //Component Identifier - attempt to translate hardware IDs
                 List<ComponentIdentifier> comps = platformConfiguration.getComponentIdentifier();
-                if (PciIds.DB.isReady()) {
-                    comps = PciIds.translate(comps);
+                if (AcaPciIds.DB.isReady()) {
+                    comps = AcaPciIds.translate(comps);
                 }
                 data.put("componentsIdentifier", comps);
                 //Component Identifier URI

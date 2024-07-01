@@ -24,7 +24,7 @@ import java.util.List;
  * Provide Java access to PCI IDs.
  */
 @Log4j2
-public final class PciIds {
+public final class AcaPciIds {
     /**
      * This pci ids file can be in different places on different distributions.
      */
