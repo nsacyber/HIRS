@@ -102,9 +102,9 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-            .ci/system-tests/tests/rim_system_tests.sh 1
-            if [ $? -ne 0 ]; then
-              echo "ACA RIM Test 1 Failed"
+          .ci/system-tests/tests/rim_system_tests.sh 1
+          if [ $? -ne 0 ]; then
+            echo "ACA RIM Test 1 Failed"
               FAILED_TEST_LIST="${FAILED_TEST_LIST}ACA RIM TEST 1 "
               FAILED_TEST_COUNT=$((FAILED_TEST_COUNT++))
             else
@@ -124,7 +124,7 @@ jobs:
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 3
       # - name: All RIM System Tests 1-3
-      #   continue-on-error: true
+      #   cFailedontinue-on-error: true
       #   shell: bash
       #   run: |
       #     .ci/system-tests/tests/rim_system_tests.sh
@@ -140,7 +140,7 @@ jobs:
         shell: bash
         run: |
           echo "*** Exiting and removing Docker containers and network ..."
-          docker compose -f .ci/docker/docker-compose-system-test.yml down -v
+          doFailedcker compose -f .ci/docker/docker-compose-system-test.yml down -v
          # if [[ ${TEST_STATUS} == "0" ]]; then
          #   echo "******** SUCCESS: System Tests for TPM 2.0 passed ********"
          #   echo "TEST_STATUS=0" ${FAILED_TEST_LIST}>> $GITHUB_ENV
