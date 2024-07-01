@@ -3,6 +3,9 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
+import static hirs.utils.PciIds.translateDevice;
+import static hirs.utils.PciIds.translateVendor;
+
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT event per PFP.
  * <p>
@@ -108,11 +111,11 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
 
         dSEDpciContextInfo += super.toString();
         dSEDpciContextInfo += "\n      Device Type = PCI";
-        dSEDpciContextInfo += "\n      VendorID = 0x" + vendorId;
-        dSEDpciContextInfo += "\n      DeviceID = 0x" + deviceId;
+        dSEDpciContextInfo += "\n      Vendor = " + translateVendor(vendorId);
+        dSEDpciContextInfo += "\n      Device = " + translateDevice(vendorId, deviceId);
         dSEDpciContextInfo += "\n      RevisionID = 0x" + revisionId;
         dSEDpciContextInfo += "\n      ClassCode = 0x" + classCode;
-        dSEDpciContextInfo += "\n      SubsystemVendorID = 0x" + subsystemVendorId;
+        dSEDpciContextInfo += "\n      SubsystemVendor = " + translateVendor(subsystemVendorId);
         dSEDpciContextInfo += "\n      SubsystemID = 0x" + subsystemId;
 
         return dSEDpciContextInfo;
