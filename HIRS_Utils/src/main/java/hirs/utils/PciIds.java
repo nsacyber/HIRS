@@ -1,7 +1,12 @@
 package hirs.utils;
 
+import com.github.marandus.pciid.model.Device;
+import com.github.marandus.pciid.model.Vendor;
 import com.github.marandus.pciid.service.PciIdsDatabase;
+import com.google.common.base.Strings;
 import lombok.extern.log4j.Log4j2;
+import org.bouncycastle.asn1.ASN1UTF8String;
+import org.bouncycastle.asn1.DERUTF8String;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,4 +75,86 @@ public final class PciIds {
         }
     }
 
+    /**
+     * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
+     * If any part of this fails, return the original manufacturer value.
+     * @param refManufacturer DERUTF8String, likely from a ComponentIdentifier
+     * @return DERUTF8String with the discovered vendor name, or the original manufacturer value.
+     */
+    public static ASN1UTF8String translateVendor(final ASN1UTF8String refManufacturer) {
+        ASN1UTF8String manufacturer = refManufacturer;
+        if (manufacturer != null && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
+            Vendor ven = DB.findVendor(manufacturer.getString().toLowerCase());
+            if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
+                manufacturer = new DERUTF8String(ven.getName());
+            }
+        }
+        return manufacturer;
+    }
+
+    /**
+     * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
+     * If any part of this fails, return the original manufacturer value.
+     * @param refManufacturer String, likely from a ComponentResult
+     * @return String with the discovered vendor name, or the original manufacturer value.
+     */
+    public static String translateVendor(final String refManufacturer) {
+        String manufacturer = refManufacturer;
+        if (manufacturer != null && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")) {
+            Vendor ven = DB.findVendor(manufacturer.toLowerCase());
+            if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
+                manufacturer = ven.getName();
+            }
+        }
+        return manufacturer;
+    }
+
+    /**
+     * Look up the device name from the PCI IDs list, if the input strings contain IDs.
+     * The Device lookup requires the Vendor ID AND the Device ID to be valid values.
+     * If any part of this fails, return the original model value.
+     * @param refManufacturer ASN1UTF8String, likely from a ComponentIdentifier
+     * @param refModel ASN1UTF8String, likely from a ComponentIdentifier
+     * @return ASN1UTF8String with the discovered device name, or the original model value.
+     */
+    public static ASN1UTF8String translateDevice(final ASN1UTF8String refManufacturer,
+                                                 final ASN1UTF8String refModel) {
+        ASN1UTF8String manufacturer = refManufacturer;
+        ASN1UTF8String model = refModel;
+        if (manufacturer != null
+                && model != null
+                && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")
+                && model.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
+            Device dev = DB.findDevice(manufacturer.getString().toLowerCase(),
+                    model.getString().toLowerCase());
+            if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
+                model = new DERUTF8String(dev.getName());
+            }
+        }
+        return model;
+    }
+
+    /**
+     * Look up the device name from the PCI IDs list, if the input strings contain IDs.
+     * The Device lookup requires the Vendor ID AND the Device ID to be valid values.
+     * If any part of this fails, return the original model value.
+     * @param refManufacturer String, likely from a ComponentResult
+     * @param refModel String, likely from a ComponentResult
+     * @return String with the discovered device name, or the original model value.
+     */
+    public static String translateDevice(final String refManufacturer,
+                                         final String refModel) {
+        String model = refModel;
+        if (refManufacturer != null
+                && model != null
+                && refManufacturer.trim().matches("^[0-9A-Fa-f]{4}$")
+                && model.trim().matches("^[0-9A-Fa-f]{4}$")) {
+            Device dev = DB.findDevice(refManufacturer.toLowerCase(),
+                    model.toLowerCase());
+            if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
+                model = dev.getName();
+            }
+        }
+        return model;
+    }
 }
