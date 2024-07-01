@@ -14,6 +14,7 @@ import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.util.AcaPciIds;
+import hirs.utils.PciIds;
 import hirs.utils.enums.DeviceInfoEnums;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -445,7 +446,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             // is to be displayed as the failure
             fullDeltaChainComponents.clear();
             for (ComponentIdentifier ci : subCompIdList) {
-                if (ci.isVersion2() && AcaPciIds.DB.isReady()) {
+                if (ci.isVersion2() && PciIds.DB.isReady()) {
                     ci = AcaPciIds.translate((ComponentIdentifierV2) ci);
                 }
                 log.error("Unmatched component: " + ci);
@@ -606,7 +607,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
             int unmatchedComponentCounter = 1;
             for (ComponentIdentifier unmatchedComponent : pcUnmatchedComponents) {
-                if (unmatchedComponent.isVersion2() && AcaPciIds.DB.isReady()) {
+                if (unmatchedComponent.isVersion2() && PciIds.DB.isReady()) {
                     unmatchedComponent =
                             AcaPciIds.translate((ComponentIdentifierV2) unmatchedComponent);
                 }
