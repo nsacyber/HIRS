@@ -105,13 +105,13 @@ jobs:
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 1
-          TEST_RIM_1="pass"
+          env.TEST_RIM_1="pass"
       - name: ACA RIM TEST 2 - Test a RIM from an OEM with a bad reference measurement and a Supplemental RIM from a VAR
         continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 2
-          TEST_RIM_2="pass"
+          env.TEST_RIM_2="pass"
       - name: ACA RIM TEST 3 - Test a RIM from an OEM and a Supplemental RIM from a VAR with a bad reference measurement
         continue-on-error: true
         shell: bash
