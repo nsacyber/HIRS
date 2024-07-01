@@ -54,6 +54,8 @@ if [[ $failedTests != 0 ]]; then
     #export TEST_STATUS=1;
     echo "TEST_STATUS=1" >> $GITHUB_ENV
     echo "****  $failedTests out of $totalTests ACA RIM Tests Failed! ****"
+    exit 1;
   else
     echo "****  $totalTests ACA RIM Tests Passed! ****"
+    exit 0
 fi
