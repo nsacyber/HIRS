@@ -108,16 +108,19 @@ jobs:
           .ci/system-tests/tests/rim_system_tests.sh 1
            echo "TEST_RIM_1=passed" >> $GITHUB_ENV
       - name: ACA RIM TEST 2 - Test a RIM from an OEM with a bad reference measurement and a Supplemental RIM from a VAR
-        continue-on-error: true
+        if: always()
+        #continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 2
            echo "TEST_RIM_2=passed" >> $GITHUB_ENV
       - name: ACA RIM TEST 3 - Test a RIM from an OEM and a Supplemental RIM from a VAR with a bad reference measurement
-        continue-on-error: true
+        if: always()
+        #continue-on-error: true
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 3
+          echo "TEST_RIM_3=passed" >> $GITHUB_ENV
       # - name: All RIM System Tests 1-3
       #   cFailedontinue-on-error: true
       #   shell: bash
@@ -156,5 +159,11 @@ jobs:
         run: |
          echo "TEST_RIM_1 status is ${TEST_RIM_1}"
          echo "TEST_RIM_2 status is ${TEST_RIM_2}"
-         if [[ ${TEST_RIM_1} == 'failed']]; then exit 1; fi;
+         echo "TEST_RIM_3 status is ${TEST_RIM_3}"
+         if [[ ${TEST_RIM_1} == 'failed']]; then 
+           exit 1;
+           else
+             exit 0; 
+         fi;
+         
           
