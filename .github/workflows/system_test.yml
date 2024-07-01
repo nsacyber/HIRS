@@ -103,9 +103,9 @@ jobs:
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 1
-          echo "TEST_STATUS = ${TEST_STATUS}"
-          if [ ${TEST_STATUS} != "0" ]; then
-                echo "RIM Test 1 Failed"
+          echo "Value = ${TEST_STATUS}"
+          if [ ${env.TEST_STATUS} != "0" ]; then
+                echo "ACA RIM Test 1 Failed"
                 $FAILED_TEST_COUNT=$(FAILED_TEST_COUNT + 1)
                 $FAILED_TEST_LIST=${FAILED_TEST_LIST}"ACA RIM TEST 1 "
             else echo "RIM Test 1 passed???"

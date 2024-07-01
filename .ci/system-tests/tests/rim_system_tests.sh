@@ -3,7 +3,7 @@
 #    HIRS Reference Integrity Manifest System Tests
 #
 #########################################################################################
-source ./.ci/system-tests/sys_test_common.sh
+
 testResult=false
 totalTests=0;
 failedTests=0;
@@ -13,6 +13,8 @@ case $1 in
     2) test="2" ;;
     3) test="3" ;;
 esac
+
+source ./.ci/system-tests/sys_test_common.sh
 
 # Start ACA Reference Integrity Manifest Tests
 # provisionTpm2 takes 1 parameter (the expected result): "pass" or "fail"
@@ -47,6 +49,7 @@ if [ "$test" = "3" ] || [ "$test" = "all" ]; then
 fi
 
 #  Process Test Results, any single failure will send back a failed result.
+echo "failed tests is $failedTests"
 if [[ $failedTests != 0 ]]; then
     #export TEST_STATUS=1;
     echo "TEST_STATUS=1" >> $GITHUB_ENV
