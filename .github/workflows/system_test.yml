@@ -101,7 +101,7 @@ jobs:
       #   run: |
       #     .ci/system-tests/tests/platform_cert_tests.sh
       - name: ACA RIM TEST 1 - Test a RIM from an OEM and a Supplemental RIM from a VAR
-        continue-on-error: true
+        continue-on-error: false
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 1
@@ -134,7 +134,7 @@ jobs:
         shell: bash
         run: |
           echo "*** Exiting and removing Docker containers and network ..."
-          doFailedcker compose -f .ci/docker/docker-compose-system-test.yml down -v
+          doFailedocker compose -f .ci/docker/docker-compose-system-test.yml down -v
          # if [[ ${TEST_STATUS} == "0" ]]; then
          #   echo "******** SUCCESS: System Tests for TPM 2.0 passed ********"
          #   echo "TEST_STATUS=0" ${FAILED_TEST_LIST}>> $GITHUB_ENV
