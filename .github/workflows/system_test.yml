@@ -13,6 +13,8 @@ env:
   FAILED_TEST_COUNT: 0
   TEST_COUNT: 14
   FAILED_TEST_LIST: ""
+  TEST_RIM_1: ""
+  TEST_RIM_2: ""
 jobs:
   DockerTests:
     runs-on: ubuntu-latest
@@ -151,8 +153,8 @@ jobs:
       - name: Check System Test results
         if: success() || failure()
         run: |
-         echo "TEST_RIM_1 iss $TEST_RIM_1"
-         echo "TEST_RIM_2 iss $TEST_RIM_2"
+         echo "TEST_RIM_1 is $TEST_RIM_1"
+         echo "TEST_RIM_2 is $TEST_RIM_2"
          if [ ${FAILED_TEST_COUNT} == "0" ]; then
             echo "All ${TEST_COUNT} Sytem Test(s) passed!"
             exit 0
