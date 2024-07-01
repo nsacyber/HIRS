@@ -6,6 +6,8 @@ import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -49,43 +51,46 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
     /**
      * DeviceSecurityEventDataHeader Constructor.
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData.
+     * @param dsedBytes byte array holding the DeviceSecurityEventData.
      */
-    public DeviceSecurityEventDataHeader(final byte[] dSEDbytes) throws UnsupportedEncodingException {
+    public DeviceSecurityEventDataHeader(final byte[] dsedBytes) {
 
-        super(dSEDbytes);
+        super(dsedBytes);
 
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(dSEDbytes, 18, lengthBytes, 0,
+        System.arraycopy(dsedBytes, 18, lengthBytes, 0,
                 UefiConstants.SIZE_2);
         length = HexUtils.leReverseInt(lengthBytes);
 
         byte[] spdmHashAlgoBytes = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(dSEDbytes, UefiConstants.OFFSET_20, spdmHashAlgoBytes, 0,
+        System.arraycopy(dsedBytes, UefiConstants.OFFSET_20, spdmHashAlgoBytes, 0,
                 UefiConstants.SIZE_4);
         spdmHashAlgo = HexUtils.leReverseInt(spdmHashAlgoBytes);
 
-        extractDeviceType(dSEDbytes, 24);
+        extractDeviceType(dsedBytes, 24);
 
         // get the size of the SPDM Measurement Block
         byte[] sizeOfSpdmMeasBlockBytes = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(dSEDbytes, 30, sizeOfSpdmMeasBlockBytes, 0,
+        System.arraycopy(dsedBytes, 30, sizeOfSpdmMeasBlockBytes, 0,
                 UefiConstants.SIZE_2);
         int sizeOfSpdmMeas = HexUtils.leReverseInt(sizeOfSpdmMeasBlockBytes);
         int sizeOfSpdmMeasBlock = sizeOfSpdmMeas + 4;   // header is 4 bytes
 
-        // extract the bytes from the SPDM Measurement Block
+        // extract the bytes that comprise the SPDM Measurement Block
         byte[] spdmMeasBlockBytes = new byte[sizeOfSpdmMeasBlock];
-        System.arraycopy(dSEDbytes, 28, spdmMeasBlockBytes, 0,
+        System.arraycopy(dsedBytes, 28, spdmMeasBlockBytes, 0,
                 sizeOfSpdmMeasBlock);
-        spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasBlockBytes);
+
+        ByteArrayInputStream spdmMeasurementBlockData =
+                new ByteArrayInputStream(spdmMeasBlockBytes);
+        spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockData);
 
         int devPathLenStartByte = 28 + sizeOfSpdmMeasBlock;
-        extractDevicePathAndFinalSize(dSEDbytes, devPathLenStartByte);
+        extractDevicePathAndFinalSize(dsedBytes, devPathLenStartByte);
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human-readable description of the data within this structure.
      *
      * @return a description of this structure.
      */
