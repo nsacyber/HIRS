@@ -102,9 +102,9 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human-readable description of the data within this structure.
      *
-     * @return a description of this structure..
+     * @return a description of this structure.
      */
     public String toString() {
         String dSEDpciContextInfo = "";
