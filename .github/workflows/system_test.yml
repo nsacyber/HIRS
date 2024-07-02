@@ -115,7 +115,7 @@ jobs:
         shell: bash
         run: |
           echo "*** Exiting and removing Docker containers and network ..."
-          doFailedocker compose -f .ci/docker/docker-compose-system-test.yml down -v
+          doFaileddocker compose -f .ci/docker/docker-compose-system-test.yml down -v
       - name: Archive System Test Log files
         if: always()
         uses: actions/upload-artifact@v4
