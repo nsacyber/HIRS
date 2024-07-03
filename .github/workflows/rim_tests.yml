@@ -19,14 +19,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: RIM Tests Setup
-        continue-on-error: true
-        shell: bash
-        run: |
-          # If on a forked repo, ensure that it has a new secret for the PAT
-          # and replace secrets.GITHUB_TOKEN with the secret in the fork
-          echo ${{ secrets.SUI }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          .ci/system-tests/setup_system_tests.sh ${GITHUB_REF#refs/heads/}
       - name: Primary_rim_create_pass - Initial Rim Test
         continue-on-error: true
         shell: bash
