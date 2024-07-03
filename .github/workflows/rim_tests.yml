@@ -19,6 +19,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Build RIM Tool
+        run: |
+          cd /HIRS/tools/tcg_rim_tool/ && ./gradlew clean Build && ./gradlew buildDeb
+          dpkg -i /HIRS/tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
       - name: Primary_rim_create_pass - Initial Rim Test
         continue-on-error: true
         shell: bash
