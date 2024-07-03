@@ -1,6 +1,11 @@
 package hirs.utils.tpm.eventlog.events;
 
 import lombok.Getter;
+import lombok.Setter;
+
+import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventHeader.DEVICE_TYPE_NONE;
+import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventHeader.DEVICE_TYPE_PCI;
+import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventHeader.DEVICE_TYPE_USB;
 
 
 /**
@@ -51,7 +56,20 @@ import lombok.Getter;
 public abstract class DeviceSecurityEvent {
 
     /**
-     * Human readable description of the data within the
+     * DeviceSecurityEventDataContext Object.
+     */
+    @Getter
+    private DeviceSecurityEventDataDeviceContext dsedDevContext = null;
+
+    /**
+     * Device type.
+     */
+    @Getter
+    @Setter
+    private int deviceType = -1;
+
+    /**
+     * Human-readable description of the data within the
      * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT. DEVICE can be either PCI or USB.
      */
     @Getter
@@ -68,34 +86,25 @@ public abstract class DeviceSecurityEvent {
     /**
      * Parse the Device Context structure, can be PCI or USB based on device type field.
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData.
-     * @param startByte starting byte of the device structure (depends on length of header).
-     * @param deviceType device type either PCI or USB.
+     * @param dsedDeviceContextBytes byte array holding the DeviceSecurityEventData.
      *
      */
-    public void parseDeviceContext(final byte[] dSEDbytes, int startByte, int deviceType) {
+    public void instantiateDeviceContext(final byte[] dsedDeviceContextBytes) {
 
-        int deviceContextLength = dSEDbytes.length - startByte;
-
-        // get the device context bytes
-        byte[] deviceContextBytes = new byte[deviceContextLength];
-        System.arraycopy(dSEDbytes, startByte, deviceContextBytes, 0,
-                deviceContextLength);
-
-        if (deviceType == 0) {
-            deviceContextInfo = "No Device Context (indicated by device type value of 0";
+        if (deviceType == DEVICE_TYPE_NONE) {
+            deviceContextInfo = "\n    No Device Context (indicated by device type value of 0";
         }
-        else if (deviceType == 1) {
-            DeviceSecurityEventDataPciContext dSEDpciContext
-                    = new DeviceSecurityEventDataPciContext(deviceContextBytes);
-            deviceContextInfo = dSEDpciContext.toString();
+        else if (deviceType == DEVICE_TYPE_PCI) {
+            dsedDevContext
+                    = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
+            deviceContextInfo = dsedDevContext.toString();
         }
-        //else if (deviceType == 2) {
-            //DeviceSecurityEventDataUsbContext dSEDusbContext
-            //        = new DeviceSecurityEventDataUsbContext(deviceContextBytes);
-            //deviceContextInfo = dSEDusbContext.toString();
-            //deviceContextInfo = "Device type is USB - to be implemented in future";
-        //}
+        else if (deviceType == DEVICE_TYPE_USB) {
+        //    dsedDevContext
+        //            = new DeviceSecurityEventDataUsbContext(dsedDeviceContextBytes);
+        //    deviceContextInfo = dsedDevContext.toString();
+            deviceContextInfo = "    Device Type: USB - To be implemented";
+        }
         else {
             deviceContextInfo = "    Unknown device type; cannot process device context";
         }

@@ -31,17 +31,17 @@ public abstract class DeviceSecurityEventDataDeviceContext {
     /**
      * DeviceSecurityEventDataDeviceContext Constructor.
      *
-     * @param dSEDdeviceContextBytes byte array holding the DeviceSecurityEventData.
+     * @param dsedDeviceContextBytes byte array holding the DeviceSecurityEventData.
      */
-    public DeviceSecurityEventDataDeviceContext(final byte[] dSEDdeviceContextBytes) {
+    public DeviceSecurityEventDataDeviceContext(final byte[] dsedDeviceContextBytes) {
 
-        byte[] pciVersionBytes = new byte[2];
-        System.arraycopy(dSEDdeviceContextBytes, 0, pciVersionBytes, 0, 2);
-        version = HexUtils.leReverseInt(pciVersionBytes);
+        byte[] versionBytes = new byte[2];
+        System.arraycopy(dsedDeviceContextBytes, 0, versionBytes, 0, 2);
+        version = HexUtils.leReverseInt(versionBytes);
 
-        byte[] pciLengthBytes = new byte[2];
-        System.arraycopy(dSEDdeviceContextBytes, 2, pciLengthBytes, 0, 2);
-        length = HexUtils.leReverseInt(pciLengthBytes);
+        byte[] lengthBytes = new byte[2];
+        System.arraycopy(dsedDeviceContextBytes, 2, lengthBytes, 0, 2);
+        length = HexUtils.leReverseInt(lengthBytes);
     }
 
     /**
@@ -52,8 +52,7 @@ public abstract class DeviceSecurityEventDataDeviceContext {
     public String toString() {
         String dSEDdeviceContextCommonInfo = "";
 
-        dSEDdeviceContextCommonInfo += "\n   DeviceSecurityEventData Device Info:";
-        dSEDdeviceContextCommonInfo += "\n      Device Structure Version = " + version;
+        dSEDdeviceContextCommonInfo += "\n   DeviceSecurityEventData Device Context:";
 
         return dSEDdeviceContextCommonInfo;
     }

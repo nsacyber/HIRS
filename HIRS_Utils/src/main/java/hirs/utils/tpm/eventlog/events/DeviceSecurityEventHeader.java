@@ -56,7 +56,8 @@ public abstract class DeviceSecurityEventHeader {
      * Contains the size (in bytes) of the header.
      */
     @Getter
-    private Integer dSEDheaderByteSize = 0;
+    private Integer dsedHeaderLength = 0;
+
     /**
      * Signature (text) data.
      */
@@ -118,8 +119,8 @@ public abstract class DeviceSecurityEventHeader {
 
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(dSEDbytes, 0, signatureBytes, 0, UefiConstants.SIZE_16);
-        signature = new String(signatureBytes, StandardCharsets.UTF_8)
-                .substring(0, UefiConstants.SIZE_15);
+        signature = new String(signatureBytes, StandardCharsets.UTF_8);
+        signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
 
         byte[] versionBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_16, versionBytes, 0,
@@ -131,14 +132,14 @@ public abstract class DeviceSecurityEventHeader {
     /**
      * Parse the device type from the Device Security Event Data Header/Header2.
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData/Data2.
+     * @param dsedBytes byte array holding the DeviceSecurityEventData/Data2.
      * @param startByte starting byte of device type (depends on header fields before it).
      */
-    public void extractDeviceType(final byte[] dSEDbytes, int startByte) {
+    public void extractDeviceType(final byte[] dsedBytes, int startByte) {
 
         // get the device type ID
         byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(dSEDbytes, startByte, deviceTypeBytes, 0,
+        System.arraycopy(dsedBytes, startByte, deviceTypeBytes, 0,
                 UefiConstants.SIZE_4);
         deviceType = HexUtils.leReverseInt(deviceTypeBytes);
     }
@@ -147,15 +148,14 @@ public abstract class DeviceSecurityEventHeader {
      * Parse the device path from the Device Security Event Data Header/Header2.
      * Also, determine final length of header (will be used to extract the next data structure).
      *
-     * @param dSEDbytes byte array holding the DeviceSecurityEventData/Data2.
+     * @param dsedBytes byte array holding the DeviceSecurityEventData/Data2.
      * @param startByte starting byte of device path (depends on header fields before it).
      */
-    public void extractDevicePathAndFinalSize(final byte[] dSEDbytes, int startByte)
-            throws UnsupportedEncodingException {
+    public void extractDevicePathAndFinalSize(final byte[] dsedBytes, int startByte) {
 
         // get the device path length
         byte[] devicePathLengthBytes = new byte[UefiConstants.SIZE_8];
-        System.arraycopy(dSEDbytes, startByte, devicePathLengthBytes, 0,
+        System.arraycopy(dsedBytes, startByte, devicePathLengthBytes, 0,
                 UefiConstants.SIZE_8);
         int devicePathLength = HexUtils.leReverseInt(devicePathLengthBytes);
 
@@ -163,14 +163,19 @@ public abstract class DeviceSecurityEventHeader {
         if (devicePathLength != 0) {
             startByte = startByte + UefiConstants.SIZE_8;
             byte[] devPathBytes = new byte[devicePathLength];
-            System.arraycopy(dSEDbytes, startByte, devPathBytes,
+            System.arraycopy(dsedBytes, startByte, devPathBytes,
                     0, devicePathLength);
-            devicePath = new UefiDevicePath(devPathBytes);
-            devicePathValid = true;
+            try {
+                devicePath = new UefiDevicePath(devPathBytes);
+                devicePathValid = true;
+            }
+            catch (UnsupportedEncodingException e) {
+                devicePathValid = false;
+            }
         }
 
         // header total size
-        dSEDheaderByteSize = startByte + devicePathLength;
+        dsedHeaderLength = startByte + devicePathLength;
     }
 
     /**
@@ -181,25 +186,20 @@ public abstract class DeviceSecurityEventHeader {
      * @return name of the device type
      */
     public String deviceTypeToString(final int deviceTypeInt) {
-        String deviceTypeStr;
         switch (deviceTypeInt) {
             case DEVICE_TYPE_NONE:
-                deviceTypeStr = "No device type";
-                break;
+                return "No device type";
             case DEVICE_TYPE_PCI:
-                deviceTypeStr = "PCI";
-                break;
+                return "PCI";
             case DEVICE_TYPE_USB:
-                deviceTypeStr = "USB";
-                break;
+                return "USB";
             default:
-                deviceTypeStr = "Unknown or invalid Device Type";
+                return "Unknown or invalid Device Type";
         }
-        return deviceTypeStr;
     }
 
     /**
-     * Returns a human readable description of the data common to header structures.
+     * Returns a human-readable description of the data common to header structures.
      *
      * @return a description of this structure.
      */
