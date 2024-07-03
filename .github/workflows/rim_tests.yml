@@ -22,7 +22,7 @@ jobs:
       - name: Build RIM Tool
         run: |
           pwd
-          cd /HIRS/tools/tcg_rim_tool/ && ./gradlew clean Build && ./gradlew buildDeb
+          cd tools/tcg_rim_tool/ && ./gradlew clean Build && ./gradlew buildDeb
           dpkg -i /HIRS/tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
       - name: Primary_rim_create_pass - Initial Rim Test
         continue-on-error: true
