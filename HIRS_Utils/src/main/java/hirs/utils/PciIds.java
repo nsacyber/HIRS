@@ -1,6 +1,7 @@
 package hirs.utils;
 
 import com.github.marandus.pciid.model.Device;
+import com.github.marandus.pciid.model.DeviceClass;
 import com.github.marandus.pciid.model.Vendor;
 import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
@@ -156,5 +157,25 @@ public final class PciIds {
             }
         }
         return model;
+    }
+
+    /**
+     * Look up the device class name from the PCI IDs list, if the input string contains an ID.
+     * If any part of this fails, return the original manufacturer value.
+     * @param refDeviceClass String
+     * @return String with the discovered vendor name, or the original manufacturer value.
+     */
+    public static String translateDeviceClass(final String refDeviceClass) {
+        String deviceClass = refDeviceClass;
+        if (deviceClass != null && deviceClass.trim().matches("^[0-9A-Fa-f]{6}$")) {
+            DeviceClass devC = DB.findDeviceClass(deviceClass.toLowerCase());
+            DeviceClass devD = DB.findDeviceClass("010802");
+            System.out.println("XXXX: " + devC);
+            System.out.println("YYYY: " + devD);
+            if (devC != null && !Strings.isNullOrEmpty(devC.getName())) {
+                deviceClass = devC.getName();
+            }
+        }
+        return deviceClass;
     }
 }

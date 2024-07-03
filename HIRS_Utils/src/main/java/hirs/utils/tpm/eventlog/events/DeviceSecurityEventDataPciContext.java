@@ -4,6 +4,7 @@ import hirs.utils.HexUtils;
 import lombok.Getter;
 
 import static hirs.utils.PciIds.translateDevice;
+import static hirs.utils.PciIds.translateDeviceClass;
 import static hirs.utils.PciIds.translateVendor;
 
 /**
@@ -113,10 +114,10 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
         dSEDpciContextInfo += "\n      Device Type = PCI";
         dSEDpciContextInfo += "\n      Vendor = " + translateVendor(vendorId);
         dSEDpciContextInfo += "\n      Device = " + translateDevice(vendorId, deviceId);
-        dSEDpciContextInfo += "\n      RevisionID = 0x" + revisionId;
-        dSEDpciContextInfo += "\n      ClassCode = 0x" + classCode;
+        dSEDpciContextInfo += "\n      RevisionID = " + revisionId;
+        dSEDpciContextInfo += "\n      Device Class = " + translateDeviceClass(classCode);
         dSEDpciContextInfo += "\n      SubsystemVendor = " + translateVendor(subsystemVendorId);
-        dSEDpciContextInfo += "\n      SubsystemID = 0x" + subsystemId;
+        dSEDpciContextInfo += "\n      Subsystem = " + translateDevice(subsystemVendorId, subsystemId);
 
         return dSEDpciContextInfo;
     }
