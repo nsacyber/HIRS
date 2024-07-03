@@ -27,7 +27,12 @@ final class Main {
     private static Commander commander = null;
     private static FileOutputStream outputStream = null;
     private static byte[] eventLog = null;
-    private static boolean bContentFlag, bEventFlag, bHexEvent, bHexFlag, bPcrFlag = false;
+    private static boolean bContentFlag = false;
+    private static boolean bEventFlag = false;
+    private static boolean bHexEvent = false;
+    private static boolean bHexFlag = false;
+    private static boolean bPcrFlag = false;
+
 
     /**
      * Main Constructor.
@@ -131,17 +136,16 @@ final class Main {
                                 + evLog.getEventList().size() + " events:\n\n");
                     }
                     if (evLog.getVendorTableFileStatus() == FILESTATUS_NOT_ACCESSIBLE) {
-                        writeOut("*** WARNING: The file vendor-table.json file was not accessible so data " +
-                                "in some Secure Boot PCR 7 events cannot be processed.\n\n");
-                    }
-                    else if (evLog.getVendorTableFileStatus() == FILESTATUS_FROM_CODE) {
-                        writeOut("*** NOTE: " +
-                                "The file vendor-table.json file was not accessible from the filesystem,\n" +
-                                "          so the vendor-table.json from code was " +
-                                "used. If updates were made in the\n" +
-                                "          filesystem file, they will not be reflected. " +
-                                "This affects parsing in some\n" +
-                                "          Secure Boot PCR 7 events.\n\n");
+                        writeOut("*** WARNING: The file vendor-table.json file was not accessible so data "
+                                + "in some Secure Boot PCR 7 events cannot be processed.\n\n");
+                    } else if (evLog.getVendorTableFileStatus() == FILESTATUS_FROM_CODE) {
+                        writeOut("*** NOTE: "
+                                + "The file vendor-table.json file was not accessible from the filesystem,\n"
+                                + "          so the vendor-table.json from code was "
+                                + "used. If updates were made in the\n"
+                                + "          filesystem file, they will not be reflected. "
+                                + "This affects parsing in some\n"
+                                + "          Secure Boot PCR 7 events.\n\n");
                     }
                 }
                 int eventCount = 0;
@@ -189,7 +193,8 @@ final class Main {
      * @return a byte array holding the entire log
      */
     public static byte[] openLog(final String fileName) {
-        String os = System.getProperty("os.name").toLowerCase(), fName = fileName;
+        String os = System.getProperty("os.name").toLowerCase();
+        String fName = fileName;
         byte[] rawLog = null;
         boolean bDefault = false;
         bHexFlag = commander.getHexFlag();
@@ -248,7 +253,8 @@ final class Main {
      * @return A sting containing human readable results.
      */
     public static String compareLogs(final String logFileName1, final String logFileName2) {
-        TCGEventLog eventLog1 = null, eventLog2 = null;
+        TCGEventLog eventLog1 = null;
+        TCGEventLog eventLog2 = null;
         byte[] evLog = openLog(logFileName1);
         byte[] evLog2 = openLog(logFileName2);
         StringBuilder sb = new StringBuilder();
@@ -337,7 +343,7 @@ final class Main {
      *
      * @param eventLog The Reference Event log.
      * @param event    single event to match.
-     * @return
+     * @return indicator whether match was found.
      */
     private static boolean digestMatch(final Collection<TpmPcrEvent> eventLog,
                                        final TpmPcrEvent event) {
