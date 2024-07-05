@@ -32,8 +32,6 @@ public class SupportReferenceManifest extends ReferenceManifest {
     private int pcrHash = 0;
     @Column
     private boolean updated = false;
-    @Column
-    private boolean processed = false;
 
     /**
      * Main constructor for the RIM object. This takes in a byte array of a
@@ -127,11 +125,11 @@ public class SupportReferenceManifest extends ReferenceManifest {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         SupportReferenceManifest that = (SupportReferenceManifest) o;
-        return pcrHash == that.pcrHash && updated == that.updated && processed == that.processed;
+        return pcrHash == that.pcrHash && updated == that.updated;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), pcrHash, updated, processed);
+        return Objects.hash(super.hashCode(), pcrHash, updated);
     }
 }
