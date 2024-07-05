@@ -36,8 +36,7 @@ jobs:
       - name: install rim tool
         run: |
           sudo dpkg -i tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
-      - name: RIM test 1 
+      - name: RIM tests
         run: | 
-          ls
           ./.ci/tcg-rim-tool/scripts/run_all_tests.sh
           
