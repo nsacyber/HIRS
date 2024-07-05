@@ -217,6 +217,9 @@ public class PcrValidator {
               // other information.
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
+            log.debug("Validating PCR information with the following:" +
+                    System.lineSeparator() + "calculatedString = " + calculatedString +
+                    System.lineSeparator() + "quoteString = " + quoteString);
             validated = quoteString.contains(calculatedString);
             if (!validated) {
                 log.warn(calculatedString + " not found in " + quoteString);
