@@ -26,8 +26,8 @@ jobs:
           cd tools/tcg_rim_tool
           pwd
           ls
-          sh ./gradlew clean Build
-          sh ./gradlew buildDeb
+          sudo ./gradlew clean Build
+          sudo ./gradlew buildDeb
           ls
           sudo dpkg -i /build/distributions/tcg-rim-tool*.deb
       - name: Primary_rim_create_pass - Initial Rim Test
