@@ -38,5 +38,6 @@ jobs:
           sudo dpkg -i tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
       - name: RIM test 1 
         run: | 
-          ./ci/tcg-rim-tool/scripts/primary_rim_create_pass.sh
+          ls
+          ./.ci/tcg-rim-tool/scripts/primary_rim_create_pass.sh
           
