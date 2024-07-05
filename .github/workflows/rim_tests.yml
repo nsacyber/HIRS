@@ -22,6 +22,8 @@ jobs:
       - name: Build RIM Tool
         run: |
           pwd
+          ls
+          cd ..
           cd /HIRS/tools/tcg_rim_tool
           pwd
           ls
