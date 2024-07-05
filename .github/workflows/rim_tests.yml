@@ -23,8 +23,7 @@ jobs:
         run: |
           pwd
           ls
-          cd ..
-          cd /HIRS/tools/tcg_rim_tool
+          cd tools/tcg_rim_tool
           pwd
           ls
           sh ./gradlew clean Build
