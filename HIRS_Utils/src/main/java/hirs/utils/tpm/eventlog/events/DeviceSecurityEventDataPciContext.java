@@ -3,6 +3,9 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static hirs.utils.PciIds.translateDevice;
 import static hirs.utils.PciIds.translateDeviceClass;
 import static hirs.utils.PciIds.translateVendor;
@@ -115,7 +118,12 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
         dSEDpciContextInfo += "\n      Vendor = " + translateVendor(vendorId);
         dSEDpciContextInfo += "\n      Device = " + translateDevice(vendorId, deviceId);
         dSEDpciContextInfo += "\n      RevisionID = " + revisionId;
-        dSEDpciContextInfo += "\n      Device Class = " + translateDeviceClass(classCode);
+
+        List<String> classCodeList = translateDeviceClass(classCode);
+        dSEDpciContextInfo += "\n      Device Class:";
+        dSEDpciContextInfo += "\n        Class = " + classCodeList.get(0);
+        dSEDpciContextInfo += "\n        Subclass = " + classCodeList.get(1);
+        dSEDpciContextInfo += "\n        Programming Interface = " + classCodeList.get(2);
         dSEDpciContextInfo += "\n      SubsystemVendor = " + translateVendor(subsystemVendorId);
         dSEDpciContextInfo += "\n      Subsystem = " + translateDevice(subsystemVendorId, subsystemId);
 

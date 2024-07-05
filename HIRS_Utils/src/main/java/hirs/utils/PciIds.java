@@ -2,6 +2,8 @@ package hirs.utils;
 
 import com.github.marandus.pciid.model.Device;
 import com.github.marandus.pciid.model.DeviceClass;
+import com.github.marandus.pciid.model.DeviceSubclass;
+import com.github.marandus.pciid.model.ProgramInterface;
 import com.github.marandus.pciid.model.Vendor;
 import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
@@ -162,20 +164,40 @@ public final class PciIds {
     /**
      * Look up the device class name from the PCI IDs list, if the input string contains an ID.
      * If any part of this fails, return the original manufacturer value.
-     * @param refDeviceClass String
-     * @return String with the discovered vendor name, or the original manufacturer value.
+     * @param refClassCode String, formatted as 2 characters (1 byte) for each of the 3 categories
+     *    Example "010802":
+     *       Class: "01"
+     *       Subclass: "08"
+     *       Programming Interface: "02"
+     * @return List<String> 3-element list with the class code
+     *       1st element: human-readable description of Class
+     *       2nd element: human-readable description of Subclass
+     *       3rd element: human-readable description of Programming Interface
      */
-    public static String translateDeviceClass(final String refDeviceClass) {
-        String deviceClass = refDeviceClass;
-        if (deviceClass != null && deviceClass.trim().matches("^[0-9A-Fa-f]{6}$")) {
-            DeviceClass devC = DB.findDeviceClass(deviceClass.toLowerCase());
-            DeviceClass devD = DB.findDeviceClass("010802");
-            System.out.println("XXXX: " + devC);
-            System.out.println("YYYY: " + devD);
+    public static List<String> translateDeviceClass(final String refClassCode) {
+        List<String> translatedClassCode = new ArrayList<>();
+
+        String classCode = refClassCode;
+        if (classCode != null && classCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
+            String deviceClass = classCode.substring(0,2).toLowerCase();
+            String deviceSubclass = classCode.substring(2,2).toLowerCase();
+            String programInterface = classCode.substring(4,2).toLowerCase();
+            translatedClassCode.add(deviceClass);
+            translatedClassCode.add(deviceSubclass);
+            translatedClassCode.add(programInterface);
+            DeviceClass devC = DB.findDeviceClass(deviceClass);
+            DeviceSubclass devSc = DB.findDeviceSubclass(deviceClass, deviceSubclass);
+            ProgramInterface progI = DB.findProgramInterface(deviceClass, deviceSubclass, programInterface);
             if (devC != null && !Strings.isNullOrEmpty(devC.getName())) {
-                deviceClass = devC.getName();
+                translatedClassCode.set(0, devC.getName());
+            }
+            if (devSc != null && !Strings.isNullOrEmpty(devSc.getName())) {
+                translatedClassCode.set(1, devSc.getName());
+            }
+            if (progI != null && !Strings.isNullOrEmpty(progI.getName())) {
+                translatedClassCode.set(2, progI.getName());
             }
         }
-        return deviceClass;
+        return translatedClassCode;
     }
 }
