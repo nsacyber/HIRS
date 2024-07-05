@@ -39,5 +39,5 @@ jobs:
       - name: RIM test 1 
         run: | 
           ls
-          ./.ci/tcg-rim-tool/scripts/primary_rim_create_pass.sh
+          ./.ci/tcg-rim-tool/scripts/run_all_tests.sh
           
