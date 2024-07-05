@@ -136,16 +136,13 @@ final class Main {
                                 + evLog.getEventList().size() + " events:\n\n");
                     }
                     if (evLog.getVendorTableFileStatus() == FILESTATUS_NOT_ACCESSIBLE) {
-                        writeOut("*** WARNING: The file vendor-table.json file was not accessible so data "
-                                + "in some Secure Boot PCR 7 events cannot be processed.\n\n");
+                        writeOut("*** WARNING: The file vendor-table.json was not accessible from the "
+                                + "filesystem or the code, so some event data shown in the output of this "
+                                + "tool may be outdated or omitted.\n\n");
                     } else if (evLog.getVendorTableFileStatus() == FILESTATUS_FROM_CODE) {
                         writeOut("*** NOTE: "
                                 + "The file vendor-table.json file was not accessible from the filesystem,\n"
-                                + "          so the vendor-table.json from code was "
-                                + "used. If updates were made in the\n"
-                                + "          filesystem file, they will not be reflected. "
-                                + "This affects parsing in some\n"
-                                + "          Secure Boot PCR 7 events.\n\n");
+                                + "          so the vendor-table.json from code was used.\n\n");
                     }
                 }
                 int eventCount = 0;
