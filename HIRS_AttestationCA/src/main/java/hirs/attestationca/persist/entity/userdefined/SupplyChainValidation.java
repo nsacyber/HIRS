@@ -105,12 +105,8 @@ public class SupplyChainValidation extends ArchivableEntity {
         this.certificatesUsed = new ArrayList<>();
         this.rimId = "";
         for (ArchivableEntity ae : certificatesUsed) {
-            if (ae instanceof ReferenceManifest rm) {
-                if (rm.isBase()) {
-                    this.rimId = rm.getId().toString();
-                } else {
-                    this.rimId = rm.getAssociatedRim().toString();
-                }
+            if (ae instanceof BaseReferenceManifest rm) {
+                this.rimId = rm.getId().toString();
                 break;
             } else if (ae instanceof Certificate) {
                 this.certificatesUsed.add((Certificate) ae);
