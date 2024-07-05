@@ -23,9 +23,6 @@ jobs:
           distribution: 'temurin'
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
-      - name: directory setup
-        run: |
-          mkdir -p artifacts/jars
       - name: install dependencies
         run: |
           sudo apt-get update
@@ -35,38 +32,11 @@ jobs:
       - name: Execute Gradle build
         run: |
           ./gradlew build;
-          ./gradlew bootWar;
           ./gradlew buildDeb;
-          ./gradlew buildRpm;
           cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
-          cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
-          cp HIRS_Structs/build/libs/*.jar artifacts/jars/.
-      - name: Archive RPM files
-        uses: actions/upload-artifact@v3
-        with:
-          name: RPM_Files
-          path: HIRS_AttestationCAPortal/build/distributions/*.rpm
-          if-no-files-found: error
-      - name: Archive DEB files
-        uses: actions/upload-artifact@v3
-        with:
-          name: DEB_Files
-          path: HIRS_AttestationCAPortal/build/distributions/*.deb
-          if-no-files-found: error
-      - name: War files
-        uses: actions/upload-artifact@v3
-        with:
-          name: WAR_Files
-          path: HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war
-          if-no-files-found: error
-      - name: JAR_Files
-        uses: actions/upload-artifact@v3
-        with:
-          name: JAR_Files
-          path: artifacts/jars/
-          if-no-files-found: error
       - name: install rim tool
         run: |
           pwd
+          dpkg -i /tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
         
