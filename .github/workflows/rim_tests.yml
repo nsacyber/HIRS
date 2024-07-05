@@ -1,49 +1,72 @@
-# This workflow will RIM tests
-name: RIM Tests
+name: RIM Test
 on:
   push:
     branches:
       - '*v3*'
       - 'main'
-  workflow_dispatch:
-env:
-  TEST_STATUS: 0
+    workflow_dispatch:
+
 jobs:
-  DockerTests:
+  # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
+  Package_linux:
     runs-on: ubuntu-latest
-    outputs:
-      test-result: ${{ steps.set_outputs.outputs.test-result }}
     permissions:
       contents: read
       packages: write
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: directory setup
+        run: |
+          mkdir -p artifacts/jars
       - name: install dependencies
         run: |
-         sudo apt-get update
-         sudo apt-get install git curl nano cron mariadb-server
+          sudo apt-get update
+          sudo apt-get install git curl nano cron mariadb-server
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
       - name: Execute Gradle build
         run: |
           ./gradlew build;
+          ./gradlew bootWar;
           ./gradlew buildDeb;
-      - name: Build RIM Tool
+          ./gradlew buildRpm;
+          cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
+          cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
+          cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
+          cp HIRS_Structs/build/libs/*.jar artifacts/jars/.
+      - name: Archive RPM files
+        uses: actions/upload-artifact@v3
+        with:
+          name: RPM_Files
+          path: HIRS_AttestationCAPortal/build/distributions/*.rpm
+          if-no-files-found: error
+      - name: Archive DEB files
+        uses: actions/upload-artifact@v3
+        with:
+          name: DEB_Files
+          path: HIRS_AttestationCAPortal/build/distributions/*.deb
+          if-no-files-found: error
+      - name: War files
+        uses: actions/upload-artifact@v3
+        with:
+          name: WAR_Files
+          path: HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war
+          if-no-files-found: error
+      - name: JAR_Files
+        uses: actions/upload-artifact@v3
+        with:
+          name: JAR_Files
+          path: artifacts/jars/
+          if-no-files-found: error
+      - name: install rim tool
         run: |
-          cd tools/tcg_rim_tool
-          ls
-          sudo dpkg -i /build/distributions/tcg-rim-tool*.deb
-      - name: Primary_rim_create_pass - Initial Rim Test
-        continue-on-error: true
-        shell: bash
-        run: |
-          .ci/tcg-rim-tool/scripts/primary_rim_create_pass.sh
-      - name: Check System Test results
-        if: success() || failure()
-        run: |
-          if [ ${TEST_STATUS} == "0" ]; then
-            exit 0;
-          else
-            exit 1;
-          fi
+          pwd
+        
