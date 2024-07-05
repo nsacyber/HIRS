@@ -17,6 +17,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
+import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
@@ -354,9 +355,20 @@ public class SupplyChainValidationService {
                 log.error(ex);
             }
 
+            BaseReferenceManifest bRim = null;
+            if (sRim.getAssociatedRim() != null) {
+                Optional<ReferenceManifest> oRim = referenceManifestRepository.findById(sRim.getAssociatedRim());
+                if (oRim.isPresent()) {
+                    ReferenceManifest rim = oRim.get();
+                    if (rim instanceof BaseReferenceManifest) {
+                        bRim = (BaseReferenceManifest) rim;
+                    }
+                }
+            }
+
             quoteScv = ValidationService.buildValidationRecord(SupplyChainValidation
                             .ValidationType.FIRMWARE,
-                    fwStatus.getAppStatus(), fwStatus.getMessage(), eventLog, level);
+                    fwStatus.getAppStatus(), fwStatus.getMessage(), bRim != null ? bRim : eventLog, level);
 
             // Generate validation summary, save it, and return it.
             List<SupplyChainValidation> validations = new ArrayList<>();
