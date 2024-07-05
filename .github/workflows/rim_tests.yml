@@ -35,6 +35,5 @@ jobs:
           ./gradlew buildDeb;
       - name: install rim tool
         run: |
-          pwd
-          dpkg -i /tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
+          sudo dpkg -i /tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
         
