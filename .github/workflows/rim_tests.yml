@@ -33,8 +33,6 @@ jobs:
         run: |
           ./gradlew build;
           ./gradlew buildDeb;
-          cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
-          cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
       - name: install rim tool
         run: |
           pwd
