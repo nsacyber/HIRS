@@ -15,7 +15,7 @@ mkdir -p tmp
 #Exit 2: Rim verify failure
 failCount=0
 # creating a base rim and checking exit status
-rim -c base -a ../configs/Base_Rim_Config.json -l ../eventlogs/TpmLog.bin -k ../keys/PC_OEM1_rim_signer_rsa_3k_sha384.key -p ../keys/PC_OEM1_rim_signer_rsa_3k_sha384.pem -o tmp/baseRimFile.swidtag
+rim -c base -a ../configs/Base_Rim_Config.json -l ../eventlogs/TpmLog.bin -k ../keys/PC_OEM1_rim_signer_rsa_3k_sha384.key -p ../certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem -o tmp/baseRimFile.swidtag
 rim_create_status $?
 
 # RIM verify and checking exit status
