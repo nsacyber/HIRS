@@ -28,7 +28,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install git curl nano cron mariadb-server
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
       - name: Execute Gradle build
         run: |
           ./gradlew build;
