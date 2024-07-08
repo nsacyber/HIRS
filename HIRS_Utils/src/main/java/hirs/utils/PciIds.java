@@ -180,8 +180,8 @@ public final class PciIds {
         String classCode = refClassCode;
         if (classCode != null && classCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
             String deviceClass = classCode.substring(0,2).toLowerCase();
-            String deviceSubclass = classCode.substring(2,2).toLowerCase();
-            String programInterface = classCode.substring(4,2).toLowerCase();
+            String deviceSubclass = classCode.substring(2,4).toLowerCase();
+            String programInterface = classCode.substring(4,6).toLowerCase();
             translatedClassCode.add(deviceClass);
             translatedClassCode.add(deviceSubclass);
             translatedClassCode.add(programInterface);
