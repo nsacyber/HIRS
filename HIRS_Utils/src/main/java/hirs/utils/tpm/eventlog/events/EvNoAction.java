@@ -48,6 +48,8 @@ public class EvNoAction {
         if (signature.contains("Spec ID Event03")) {      // implies CryptAgileFormat
             specIDEvent = new EvEfiSpecIdEvent(eventData);
             bSpecIDEvent = true;
+        } else if (signature.contains("NvIndexInstance")) {
+            System.out.println("XXXX Nv Index Instance");
         }
     }
 
