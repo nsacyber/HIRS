@@ -1,5 +1,6 @@
 package hirs.utils.tpm.eventlog.events;
 
+import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -84,9 +85,14 @@ public abstract class DeviceSecurityEvent {
             deviceContextInfo = "\n    No Device Context (indicated by device type value of 0";
         }
         else if (deviceType == DEVICE_TYPE_PCI) {
-            dsedDevContext
-                    = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
-            deviceContextInfo = dsedDevContext.toString();
+            try {
+                dsedDevContext
+                        = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
+                deviceContextInfo = dsedDevContext.toString();
+            }
+            catch(NullPointerException e) {
+                deviceContextInfo = "    Could not interpret Device Context info";
+            }
         }
         else if (deviceType == DEVICE_TYPE_USB) {
         //    dsedDevContext

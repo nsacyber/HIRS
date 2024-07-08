@@ -24,21 +24,36 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
     private DeviceSecurityEventDataHeader dsedHeader = null;
 
     /**
+     * Human-readable description of the data within the
+     * DEVICE_SECURITY_EVENT_DATA_HEADER.
+     */
+    @Getter
+    String headerInfo = "";
+
+    /**
      * DeviceSecurityEventData Constructor.
      *
      * @param dsedBytes byte array holding the DeviceSecurityEventData.
      */
     public DeviceSecurityEventData(final byte[] dsedBytes) {
-        dsedHeader = new DeviceSecurityEventDataHeader(dsedBytes);
-        setDeviceType(dsedHeader.getDeviceType());
-        int dsedHeaderLength = dsedHeader.getDsedHeaderLength();
 
-        int dsedDevContextLength = dsedBytes.length - dsedHeaderLength;
-        byte[] dsedDevContextBytes = new byte[dsedDevContextLength];
-        System.arraycopy(dsedBytes, dsedHeaderLength, dsedDevContextBytes, 0,
-                dsedDevContextLength);
+        try {
+            dsedHeader = new DeviceSecurityEventDataHeader(dsedBytes);
+            headerInfo = dsedHeader.toString();
 
-        instantiateDeviceContext(dsedDevContextBytes);
+            setDeviceType(dsedHeader.getDeviceType());
+            int dsedHeaderLength = dsedHeader.getDsedHeaderLength();
+
+            int dsedDevContextLength = dsedBytes.length - dsedHeaderLength;
+            byte[] dsedDevContextBytes = new byte[dsedDevContextLength];
+            System.arraycopy(dsedBytes, dsedHeaderLength, dsedDevContextBytes, 0,
+                    dsedDevContextLength);
+
+            instantiateDeviceContext(dsedDevContextBytes);
+        }
+        catch(NullPointerException e) {
+            headerInfo = "   Could not interpret Header info";
+        }
     }
 
     /**
@@ -48,7 +63,7 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
      */
     public String toString() {
         String dsedInfo = "";
-        dsedInfo += dsedHeader.toString();
+        dsedInfo += headerInfo;
         dsedInfo += getDeviceContextInfo();
         return dsedInfo;
     }

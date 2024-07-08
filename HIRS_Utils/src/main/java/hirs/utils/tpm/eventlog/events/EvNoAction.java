@@ -7,12 +7,15 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Class to process the EV_NO_ACTION event using a structure of TCG_EfiSpecIDEvent.
+ * Class to process the EV_NO_ACTION event.
  * The first 16 bytes of the event data MUST be a String based identifier (Signature).
- * The only currently defined Signature is "Spec ID Event03"
- * which implies the data is a TCG_EfiSpecIDEvent.
- * TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
- * if the format of the Log (SHA1 vs Crypto Agile).
+ * The only currently defined Signatures are
+ * 1) "Spec ID Event03"
+ *      - implies the data is a TCG_EfiSpecIDEvent
+ *      - TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
+ *        if the format of the Log (SHA1 vs Crypto Agile).
+ * 2) "NvIndexInstance"
+ *      - implies the data is a NV_INDEX_INSTANCE_EVENT_LOG_DATA
  * <p>
  * Notes:
  * 1. First 16 bytes of the structure is an ASCII with a fixed Length of 16
@@ -29,10 +32,19 @@ public class EvNoAction {
      */
     private boolean bSpecIDEvent = false;
     /**
+     * True of the event is a NvIndexInstance.
+     */
+    private boolean bNvIndexInstance = false;
+    /**
      * EvEfiSpecIdEvent Object.
      */
     @Getter
     private EvEfiSpecIdEvent specIDEvent = null;
+    /**
+     * NvIndexInstanceEvent Object.
+     */
+    @Getter
+    private NvIndexInstanceEventLogData nvIndexInstanceEvent = null;
 
     /**
      * EvNoAction constructor.
@@ -49,7 +61,8 @@ public class EvNoAction {
             specIDEvent = new EvEfiSpecIdEvent(eventData);
             bSpecIDEvent = true;
         } else if (signature.contains("NvIndexInstance")) {
-            System.out.println("XXXX Nv Index Instance");
+            nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
+            bNvIndexInstance = true;
         }
     }
 
@@ -68,21 +81,23 @@ public class EvNoAction {
      * @return Human readable description of this event.
      */
     public String toString() {
-        String specInfo = "";
+        String noActionInfo = "";
         if (bSpecIDEvent) {
-            specInfo += "   Signature = Spec ID Event03 : ";
+            noActionInfo += "   Signature = Spec ID Event03 : ";
             if (specIDEvent.isCryptoAgile()) {
-                specInfo += "Log format is Crypto Agile\n";
+                noActionInfo += "Log format is Crypto Agile\n";
             } else {
-                specInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
+                noActionInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
             }
-            specInfo += "   Platform Profile Specification version = "
+            noActionInfo += "   Platform Profile Specification version = "
                     + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
                     + " using errata version " + specIDEvent.getErrata();
+        } else if (bNvIndexInstance) {
+            noActionInfo = nvIndexInstanceEvent.toString();
         } else {
-            specInfo = "EV_NO_ACTION event named " + signature
+            noActionInfo = "EV_NO_ACTION event named " + signature
                     + " encountered but support for processing it has not been added to this application.\n";
         }
-        return specInfo;
+        return noActionInfo;
     }
 }

@@ -5,6 +5,7 @@ import hirs.utils.tpm.eventlog.spdm.SpdmHa;
 import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -49,6 +50,12 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
     private SpdmMeasurementBlock spdmMeasurementBlock = null;
 
     /**
+     * Human-readable description of the data within the
+     * SpdmMeasurementBlock.
+     */
+    private String spdmMeasurementBlockInfo = "";
+
+    /**
      * DeviceSecurityEventDataHeader Constructor.
      *
      * @param dsedBytes byte array holding the DeviceSecurityEventData.
@@ -83,7 +90,13 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
 
         ByteArrayInputStream spdmMeasurementBlockData =
                 new ByteArrayInputStream(spdmMeasBlockBytes);
-        spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockData);
+        try {
+            spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockData);
+            spdmMeasurementBlockInfo = spdmMeasurementBlock.toString();
+        }
+        catch(NullPointerException e) {
+            spdmMeasurementBlockInfo = "Could not interpret SPDM Measurement Block info";
+        }
 
         int devPathLenStartByte = 28 + sizeOfSpdmMeasBlock;
         extractDevicePathAndFinalSize(dsedBytes, devPathLenStartByte);
@@ -101,7 +114,7 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
         String spdmHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmHashAlgo);
         dsedHeaderInfo += "\n   SPDM Hash Algorithm = " + spdmHashAlgoStr;
         dsedHeaderInfo += "\n   SPDM Measurement Block:";
-        dsedHeaderInfo += spdmMeasurementBlock.toString();
+        dsedHeaderInfo += spdmMeasurementBlockInfo;
 
         return dsedHeaderInfo;
     }
