@@ -39,14 +39,15 @@ jobs:
       - name: RIM tests
         run: | 
           ./.ci/tcg-rim-tool/scripts/run_all_tests.sh
-      - name: Archive verbose code results
+      - name: Run verbose option
+        run: |
+          cd .ci/tcg-rim-tool/scripts
+          mkdir logs
+          run_all_tests.sh --verbose > log/tcg-rim-tool-test-results.log
+      - name: Archive verbose test results
         uses: actions/upload-artifact@v4
         with:
-          run: |
-            cd .ci/tcg-rim-tool/scripts
-            mkdir logs
-            run_all_tests.sh --verbose > log/tcg-rim-tool-test-results.log
-          name: code-coverage-report
-          path: output/test/code-coverage.html
+          name: tcg-rim-tool-results
+          path: .ci/tcg-rim-tool/scripts/logs/*.log
 
           
