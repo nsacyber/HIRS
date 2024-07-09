@@ -120,10 +120,14 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
         dSEDpciContextInfo += "\n      RevisionID = " + revisionId;
 
         List<String> classCodeList = translateDeviceClass(classCode);
-        dSEDpciContextInfo += "\n      Device Class:";
-        dSEDpciContextInfo += "\n        Class = " + classCodeList.get(0);
-        dSEDpciContextInfo += "\n        Subclass = " + classCodeList.get(1);
-        dSEDpciContextInfo += "\n        Programming Interface = " + classCodeList.get(2);
+        dSEDpciContextInfo += "\n      Device Class: ";
+        if(classCodeList.size() == 3) {
+            dSEDpciContextInfo += "\n        Class = " + classCodeList.get(0);
+            dSEDpciContextInfo += "\n        Subclass = " + classCodeList.get(1);
+            dSEDpciContextInfo += "\n        Programming Interface = " + classCodeList.get(2);
+        } else {
+            dSEDpciContextInfo += " ** Class code could not be determined **";
+        }
         dSEDpciContextInfo += "\n      SubsystemVendor = " + translateVendor(subsystemVendorId);
         dSEDpciContextInfo += "\n      Subsystem = " + translateDevice(subsystemVendorId, subsystemId);
 
