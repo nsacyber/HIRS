@@ -51,6 +51,7 @@ fi
 if [ "$test" = "6" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 6: Test PC Validation Policy with valid PC with no Attribute Check ###"
     clearAcaDb
+    resetTpmForNewTest
     setPolicyEkPc_noAttCheck
     uploadTrustedCerts
     setPlatformCerts "laptop" "default"
@@ -58,8 +59,9 @@ if [ "$test" = "6" ] || [ "$test" = "all" ]; then
 fi
 if [ "$test" = "7" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 7: Test PC Validation Policy with valid PC with Attribute Check ###"
-    writeToLog "Now using appsettings with hardware information"
+    writeToLogs "Now using appsettings with hardware information"
     clearAcaDb
+    resetTpmForNewTest
     setPolicyEkPc
     uploadTrustedCerts
     setPlatformCerts "laptop" "default"
@@ -69,6 +71,7 @@ fi
 if [ "$test" = "8" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 8: Test PC with RIM Validation Policy with valid PC and RIM ###"
     clearAcaDb
+    resetTpmForNewTest
     setPolicyEkPcFw
     uploadTrustedCerts
     setPlatformCerts "laptop" "default"

@@ -356,7 +356,7 @@ public class SupplyChainValidationService {
             }
 
             BaseReferenceManifest bRim = null;
-            if (sRim.getAssociatedRim() != null) {
+            if (sRim != null && sRim.getAssociatedRim() != null) {
                 Optional<ReferenceManifest> oRim = referenceManifestRepository.findById(sRim.getAssociatedRim());
                 if (oRim.isPresent()) {
                     ReferenceManifest rim = oRim.get();

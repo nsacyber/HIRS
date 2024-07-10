@@ -31,6 +31,7 @@ fi
 if [ "$test" = "2" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA RIM TEST 2: Test a RIM from an OEM with a bad reference measurement and a Supplemental RIM from a VAR ###"
     clearAcaDb
+    resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPcFw
     setPlatformCerts "laptop" "badOemInstall"
@@ -40,6 +41,7 @@ fi
 if [ "$test" = "3" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA RIM TEST 3: Test a RIM from an OEM and a Supplemental RIM from a VAR with a bad reference measurement ###"
     clearAcaDb
+    resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPcFw
     setPlatformCerts "laptop" "badVarInstall"
