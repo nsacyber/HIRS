@@ -106,6 +106,10 @@ provisionTpm2() {
   fi
 }
 
+resetTpmForNewTest() {
+  docker exec $tpm2_container -it bash -c "source /hirs/.ci/setup/container/tpm2_common.sh; startFreshTpmServer -f; startupTpm; installEkCert"
+}
+
 # Places platform cert(s) held in the test folder(s) in the provisioners tcg folder
 # setPlatCert <profile> <test>
 setPlatformCerts() {
@@ -120,8 +124,9 @@ docker exec $tpm2_container sh /hirs/.ci/system-tests/container/rim_setup.sh $1 
 #docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
 }
 
-setPlatformOutput() {
-    docker exec $tpm2_container cp /usr/share/hirs/appsettings_hw.json /usr/share/hirs/appsettings.json
+setAppsettings() {
+  OPTIONS=$@
+  docker exec $tpm2_container -it bash -c "source /hirs/.ci/setup/container/tpm2_common.sh; setCiHirsAppsettingsFile $OPTIONS"
 }
 
 # Writes to the Action ouput, ACA log, and Provisioner Log

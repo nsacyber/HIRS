@@ -7,6 +7,7 @@ services:
       command: ["bash", "-c", "tail -f /dev/null;"]
       ports:
          - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
+         - 9123:9123
       hostname: ${HIRS_ACA_HOSTNAME}
       networks:
          hirs_aca_system_tests:
@@ -21,7 +22,7 @@ services:
          - aca
       volumes:
          - ../../:/HIRS
-      command: ["bash", "-c", "/ibmswtpm2/src/tpm_server && tail -f /dev/null"]
+      command: ["bash", "-c", "tail -f /dev/null"]
       networks:
          hirs_aca_system_tests:
             ipv4_address: ${HIRS_ACA_PROVISIONER_TPM2_IP}

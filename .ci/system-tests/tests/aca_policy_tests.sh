@@ -24,6 +24,7 @@ esac
 
 if [ "$test" = "1" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 1: Test ACA default policy  ###"
+    writeToLogs "Now using default appsettings"
     setPlatformCerts "laptop" "empty"
     provisionTpm2 "pass"
 fi
@@ -57,11 +58,12 @@ if [ "$test" = "6" ] || [ "$test" = "all" ]; then
 fi
 if [ "$test" = "7" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 7: Test PC Validation Policy with valid PC with Attribute Check ###"
+    writeToLog "Now using appsettings with hardware information"
     clearAcaDb
     setPolicyEkPc
     uploadTrustedCerts
     setPlatformCerts "laptop" "default"
-    setPlatformOutput
+    setAppsettings --paccor-output-file /ci_test/hw.json --event-log-file /ci_test/binary_bios_measurements --linux-dmi
     provisionTpm2 "pass"
 fi
 if [ "$test" = "8" ] || [ "$test" = "all" ]; then

@@ -21,6 +21,7 @@ esac
 if [ "$test" = "1" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA RIM TEST 1: Test a RIM from an OEM and a Supplemental RIM from a VAR ###"
     clearAcaDb
+    resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPcFw
     setPlatformCerts "laptop" "varOsInstall"
