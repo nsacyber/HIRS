@@ -42,7 +42,7 @@ jobs:
       - name: Run verbose option
         run: |
           mkdir .ci/tcg-rim-tool/scripts/logs
-          logname = "tcg-rim-tests.log"
+          logname="tcg-rim-tests.log"
           ./.ci/tcg-rim-tool/scripts/run_all_tests.sh --verbose > $logname
           more $logname
       - name: Archive verbose test results
