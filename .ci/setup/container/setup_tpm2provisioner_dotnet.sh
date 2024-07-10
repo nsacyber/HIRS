@@ -4,8 +4,8 @@
 #########################################################################################
 
 # Setting configurations
-. /HIRS/.ci/docker/.env
-source /HIRS/.ci/setup/container/tpm2_common.sh
+. /hirs/.ci/docker/.env
+source /hirs/.ci/setup/container/tpm2_common.sh
 
 set -a
 
