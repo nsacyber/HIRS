@@ -42,11 +42,15 @@ jobs:
       - name: Run verbose option
         run: |
           mkdir .ci/tcg-rim-tool/scripts/logs
-          ./.ci/tcg-rim-tool/scripts/run_all_tests.sh --verbose > .ci/tcg-rim-tool/scripts/logs/tcg-rim-tool-test-results.log
+          ./.ci/tcg-rim-tool/scripts/run_all_tests.sh --verbose > .ci/tcg-rim-tool/scripts/logs/tcg-rim-tool-test-results.txt
       - name: Archive verbose test results
         uses: actions/upload-artifact@v4
         with:
           name: tcg-rim-tool-results
-          path: .ci/tcg-rim-tool/scripts/logs/*.log
-
+          path: .ci/tcg-rim-tool/scripts/logs/*.txt
+      - name: Archive script as a test
+        uses: actions/upload-artifact@v4
+        with:
+          name: tcg-rim-tool-results
+          path: .ci/tcg-rim-tool/scripts/primary_rim_create_pass.sh
 
