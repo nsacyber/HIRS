@@ -271,7 +271,6 @@ function startFreshTpmServer {
   while [[ $# -gt 0 ]]; do
     case $1 in
       -f|--force|--restart)
-	echo "Forcing a restart of the TPM server."
 	stopTpmServer
 	sleep 5
 	shift # past argument
