@@ -41,14 +41,13 @@ jobs:
           ./.ci/tcg-rim-tool/scripts/run_all_tests.sh
       - name: Run verbose option
         run: |
-          pwd
           mkdir .ci/tcg-rim-tool/scripts/logs
-          ./.ci/tcg-rim-tool/scripts/run_all_tests.sh --verbose > .ci/tcg-rim-tool/scripts/logs/tcg-rim-tool-test-results.log
-          dos2unix .ci/tcg-rim-tool/scripts/logs/tcg-rim-tool-test-results.log
-      - name: Archive verbose test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: tcg-rim-tool-results
-          path: .ci/tcg-rim-tool/scripts/logs/*.log
-
-          
+          ./.ci/tcg-rim-tool/scripts/run_all_tests.sh --verbose 
+#           > .ci/tcg-rim-tool/scripts/logs/tcg-rim-tool-test-results.log
+#      - name: Archive verbose test results
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: tcg-rim-tool-results
+#          path: .ci/tcg-rim-tool/scripts/logs/*.log
+#
+#
