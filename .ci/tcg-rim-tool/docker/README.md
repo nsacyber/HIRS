@@ -6,4 +6,3 @@ To build the docker image and run the script:
 docker build . -t <image_name>  
 ./start_container.sh <image_name>
 ```  
-The script will ask for gitlab login credentials. 
