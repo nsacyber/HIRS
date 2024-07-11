@@ -7,8 +7,20 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Class to process EFI_DEVICE_PATH_PROTOCOL which is referred to as the UEFI_DEVICE_PATH
+ * Class to process a Device Path. A Device Path is a variable-length binary
+ * structure that is made up of variable-length generic Device Path nodes.
+ * The first Device Path node starts at byte offset zero of the Device Path.
+ * The next Device Path node starts at the end of the previous Device Path node.
+ * There is no limit to the number, type, or sequence of nodes in a Device Path.
  * <p>
+ * Generic Device Path Node Structure:
+ * Name     Byte Offset     Byte Length     Description
+ * Type     0               1               Device path type (such as 0x01 - Hardware Device Path)
+ * Sub-Type 1               1               Sub-Type
+ * Length   2               2               Length of this structure in bytes. Length is 4+n bytes
+ * Data     4               n               Specific Device Path data
+ * <p>
+ * EFI_DEVICE_PATH_PROTOCOL:
  * #define EFI_DEVICE_PATH_PROTOCOL_GUID \09576e91-6d3f-11d2-8e39-00a0c969723b
  * typedef struct _EFI_DEVICE_PATH_PROTOCOL {
  * UINT8 Type;
@@ -23,7 +35,7 @@ import java.nio.charset.StandardCharsets;
  * Type 0x04  Media Device Path
  * Type 0x05  BIOS Boot Specification Device Path
  * Type 0x7F  End of Hardware Device Path
- * Each Type has a sub-type that may or may no be defined in the section
+ * Each Type has a Subtype that may or may not be defined in the section
  * <p>
  * Only a few of the SubTypes have been implemented as there are many,
  * but only those that were reported using the test devices at hand.
@@ -36,11 +48,11 @@ public class UefiDevicePath {
     @Getter
     private String type = "";
     /**
-     * UEFI Device path sub-type.
+     * UEFI Device path subtype.
      */
     private String subType = "";
     /**
-     * UEFI Device path human readable description.
+     * UEFI Device path human-readable description.
      */
     private String devPathInfo = "";
     /**
@@ -111,7 +123,7 @@ public class UefiDevicePath {
      *
      * @param path
      * @param offset
-     * @return human readable string representing the UEFI device path
+     * @return human-readable string representing the UEFI device path
      * @throws java.io.UnsupportedEncodingException
      */
     private String processDev(final byte[] path, final int offset)
@@ -181,12 +193,11 @@ public class UefiDevicePath {
     private String acpiSubType(final byte[] path, final int offset) {
         subType = "";
         switch (path[offset + UefiConstants.OFFSET_1]) {
-            case 0x01:
-                subType = "(Short): ";
+            case 0x01:  // standard version
                 subType += acpiShortSubType(path, offset);
                 break;
             case 0x02:
-                subType = "Expanded ACPI Device Path";
+                subType = "(expanded version): ";
                 break;
             default:
                 subType = "Invalid ACPI Device Path sub type";
@@ -205,9 +216,13 @@ public class UefiDevicePath {
         subType = "";
         byte[] hid = new byte[UefiConstants.SIZE_4];
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, hid, 0, UefiConstants.SIZE_4);
-        subType += "_HID = " + HexUtils.byteArrayToHexString(hid);
+        subType += "\n        _HID = " + HexUtils.byteArrayToHexString(hid);
         System.arraycopy(path, 2 * UefiConstants.SIZE_4 + offset, hid, 0, UefiConstants.SIZE_4);
-        subType += "_UID = " + HexUtils.byteArrayToHexString(hid);
+        String uid = HexUtils.byteArrayToHexString(hid);
+        if(uid.contains("00000000")) {
+            uid = "No _UID exists for this device";
+        }
+        subType += "\n        _UID = " + uid;
         return subType;
     }
 
@@ -219,9 +234,9 @@ public class UefiDevicePath {
      * @return pci device info.
      */
     private String pciSubType(final byte[] path, final int offset) {
-        subType = "PCI: PCI Function Number = ";
+        subType = "\n        PCI Function Number = ";
         subType += String.format("0x%x", path[offset + UefiConstants.SIZE_4]);
-        subType += " PCI Device Number = ";
+        subType += "\n        PCI Device Number = ";
         subType += String.format("0x%x", path[offset + UefiConstants.SIZE_5]);
         return subType;
     }

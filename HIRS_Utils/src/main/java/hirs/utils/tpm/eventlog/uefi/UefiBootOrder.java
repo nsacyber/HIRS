@@ -25,15 +25,15 @@ public class UefiBootOrder {
     }
 
     /**
-     * Provides a human readable Boot Order list on single line.
+     * Provides a human-readable Boot Order list on single line.
      *
-     * @return A human readable Boot Order
+     * @return A human-readable Boot Order
      */
     public String toString() {
         StringBuilder orderList = new StringBuilder();
         orderList.append("BootOrder = ");
         for (int i = 0; i < bootOrder.length; i++) {
-            orderList.append(String.format("Boot %04d", (int) bootOrder[i]));
+            orderList.append(String.format("Boot%04d ", (int) bootOrder[i]));
         }
         //orderList.append("\n");
         return orderList.toString();
