@@ -26,7 +26,7 @@ if [ "$test" = "1" ] || [ "$test" = "all" ]; then
     resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPc
-    setPlatformCerts "laptop" "deltaPlatMem"
+    setPlatformCerts -p "laptop" -t "deltaPlatMem"
     provisionTpm2 "pass"
 fi
 if [ "$test" = "2" ] || [ "$test" = "all" ]; then
@@ -34,7 +34,7 @@ if [ "$test" = "2" ] || [ "$test" = "all" ]; then
     clearAcaDb
     resetTpmForNewTest
     uploadTrustedCerts
-    setPlatformCerts "laptop" "platCertLight"
+    setPlatformCerts -p "laptop" -t "platCertLight"
     provisionTpm2 "pass"
 fi
 if [ "$test" = "3" ] || [ "$test" = "all" ]; then
@@ -42,7 +42,7 @@ if [ "$test" = "3" ] || [ "$test" = "all" ]; then
     clearAcaDb
     resetTpmForNewTest
     uploadTrustedCerts
-    setPlatformCerts "laptop" "badDeltaMem"
+    setPlatformCerts -p "laptop" -t "badDeltaMem"
     provisionTpm2 "fail"
 fi
 

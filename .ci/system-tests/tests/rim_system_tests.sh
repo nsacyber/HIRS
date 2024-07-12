@@ -24,8 +24,8 @@ if [ "$test" = "1" ] || [ "$test" = "all" ]; then
     resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPcFw
-    setPlatformCerts "laptop" "varOsInstall"
-    setRims "laptop" "varOsInstall" "clear"
+    setPlatformCerts -p "laptop" -t "varOsInstall"
+    setRims -p "laptop" -t "varOsInstall"
     provisionTpm2 "pass"
 fi
 if [ "$test" = "2" ] || [ "$test" = "all" ]; then
@@ -34,8 +34,8 @@ if [ "$test" = "2" ] || [ "$test" = "all" ]; then
     resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPcFw
-    setPlatformCerts "laptop" "badOemInstall"
-    setRims "laptop" "badOemInstall" "clear"
+    setPlatformCerts -p "laptop" -t "badOemInstall"
+    setRims -p "laptop" -t "badOemInstall"
     provisionTpm2 "fail"
 fi
 if [ "$test" = "3" ] || [ "$test" = "all" ]; then
@@ -44,8 +44,8 @@ if [ "$test" = "3" ] || [ "$test" = "all" ]; then
     resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPcFw
-    setPlatformCerts "laptop" "badVarInstall"
-    setRims "laptop" "badVarInstall" "clear"
+    setPlatformCerts -p "laptop" -t "badVarInstall"
+    setRims -p "laptop" -t "badVarInstall"
     provisionTpm2 "fail"
 fi
 

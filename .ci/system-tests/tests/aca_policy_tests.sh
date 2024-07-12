@@ -54,7 +54,7 @@ if [ "$test" = "6" ] || [ "$test" = "all" ]; then
     resetTpmForNewTest
     setPolicyEkPc_noAttCheck
     uploadTrustedCerts
-    setPlatformCerts "laptop" "default"
+    setPlatformCerts -p "laptop" -t "default"
     provisionTpm2 "pass"
 fi
 if [ "$test" = "7" ] || [ "$test" = "all" ]; then
@@ -64,7 +64,7 @@ if [ "$test" = "7" ] || [ "$test" = "all" ]; then
     resetTpmForNewTest
     setPolicyEkPc
     uploadTrustedCerts
-    setPlatformCerts "laptop" "default"
+    setPlatformCerts -p "laptop" -t "default"
     setAppsettings --paccor-output-file /ci_test/hw.json --event-log-file /ci_test/binary_bios_measurements --linux-dmi
     provisionTpm2 "pass"
 fi
@@ -74,8 +74,8 @@ if [ "$test" = "8" ] || [ "$test" = "all" ]; then
     resetTpmForNewTest
     setPolicyEkPcFw
     uploadTrustedCerts
-    setPlatformCerts "laptop" "default"
-    setRims "laptop" "default"
+    setPlatformCerts -p "laptop" -t "default"
+    setRims -p "laptop" -t "default"
     provisionTpm2 "pass"
 fi
 

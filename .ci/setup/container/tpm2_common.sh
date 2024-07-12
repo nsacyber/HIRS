@@ -152,11 +152,11 @@ DEFAULT_SITE_CONFIG_FILE
 # Function to update the hirs-site.config file
 function setCiHirsAppsettingsFile {
   # Setting configurations
-  . /HIRS/.ci/docker/.env
+  . /hirs/.ci/docker/.env
 
-  HIRS_APPSETTINGS_FILE="/usr/share/hirs/appsettings.json"
+  HIRS_APPSETTINGS_FILE=$HIRS_DEFAULT_APPSETTINGS_FILE
   ACA_ADDRESS="https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}"
-  EFI_PREFIX_PATH="/ci_test/boot/efi"
+  EFI_PREFIX_PATH=$HIRS_CI_EFI_PATH_ROOT
   PACCOR_OUTPUT_FILE=""
   EVENT_LOG_FILE=""
   HARDWARE_MANIFEST_COLLECTORS="paccor_scripts"
@@ -216,13 +216,13 @@ function setCiHirsAppsettingsFile {
 DEFAULT_APPSETTINGS_FILE
   if [ "$USE_LINUX_DMI" = YES ]; then
     cat <<DEFAULT_APPSETTINGS_FILE >> $HIRS_APPSETTINGS_FILE
-  "linux_bios_vendor_file": "/ci_test/dmi/id/bios_vendor",
-  "linux_bios_version_file": "/ci_test/dmi/id/bios_version",
-  "linux_bios_date_file": "/ci_test/dmi/id/bios_date",
-  "linux_sys_vendor_file": "/ci_test/dmi/id/sys_vendor",
-  "linux_product_name_file": "/ci_test/dmi/id/product_name",
-  "linux_product_version_file": "/ci_test/dmi/id/product_version",
-  "linux_product_serial_file": "/ci_test/dmi/id/product_serial",
+  "linux_bios_vendor_file": "$HIRS_CI_TEST_ROOT/dmi/id/bios_vendor",
+  "linux_bios_version_file": "$HIRS_CI_TEST_ROOT/dmi/id/bios_version",
+  "linux_bios_date_file": "$HIRS_CI_TEST_ROOT/dmi/id/bios_date",
+  "linux_sys_vendor_file": "$HIRS_CI_TEST_ROOT/dmi/id/sys_vendor",
+  "linux_product_name_file": "$HIRS_CI_TEST_ROOT/dmi/id/product_name",
+  "linux_product_version_file": "$HIRS_CI_TEST_ROOT/dmi/id/product_version",
+  "linux_product_serial_file": "$HIRS_CI_TEST_ROOT/dmi/id/product_serial",
 DEFAULT_APPSETTINGS_FILE
   fi
   cat <<DEFAULT_APPSETTINGS_FILE >> $HIRS_APPSETTINGS_FILE
@@ -305,9 +305,12 @@ function startupTpm {
 }
 
 function installEkCert {
-  echo "Installing EK Cert /hirs/.ci/setup/certs/ek_cert.der into TPM NVRAM at index 0x1c00002"
-  tpm2_nvdefine -T mssim -C o -a 0x2000A -s $(cat /hirs/.ci/setup/certs/ek_cert.der | wc -c) 0x1c00002
-  tpm2_nvwrite -T mssim -C o -i /hirs/.ci/setup/certs/ek_cert.der 0x1c00002
+  # Setting configurations
+  . /hirs/.ci/docker/.env
+  
+  echo "Installing EK Cert $HIRS_CI_TPM_EK_CERT_FILE into TPM NVRAM at index $HIRS_CI_TPM_EK_CERT_NV_INDEX"
+  tpm2_nvdefine -T mssim -C o -a $HIRS_CI_TPM_EK_CERT_NV_ATTR -s $(cat $HIRS_CI_TPM_EK_CERT_FILE | wc -c) $HIRS_CI_TPM_EK_CERT_NV_INDEX
+  tpm2_nvwrite -T mssim -C o -i $HIRS_CI_TPM_EK_CERT_FILE $HIRS_CI_TPM_EK_CERT_NV_INDEX
   echo "Finished installing EK cert."
 }
 

@@ -1,23 +1,65 @@
 #!/bin/bash
 #########################################################################################
 #   Setup for platform certificates for testing
-#   Copies platform certs (Base and Delta) to the tcg directory
-#   usage pc_setup.sh <profile> <test>
+#   usage pc_setup.sh -p <profile> -t <test> [-u] [-n]
+#   By default, copies platform certs (Base and Delta) to the tcg directory.
+#   -u: upload the certs to the ACA directly.
+#   -n: disable copy of certs to the tcg directory.
 #########################################################################################
 
-profile=$1
-test=$2
-ciTestDir="/ci_test"
-tcgDir="$ciTestDir/boot/efi/EFI/tcg/cert/platform/"
+# Load env variables
+. ./.ci/docker/.env
+
+profile=laptop
+test=default
+ciTestDir=$HIRS_CI_TEST_ROOT
+ciTestHwJsonFile=$HIRS_CI_TEST_HW_JSON_FILE
+
+# By default save the artifacts in EFI and do not upload to the ACA
+UPLOAD_ARTIFACTS=NO
+PUT_ARTIFACTS_IN_ESP=YES
+
+# Process parameters Argument handling 
+POSITIONAL_ARGS=()
+ORIGINAL_ARGS=("$@")
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -p|--profile)
+      shift # past argument
+      profile=$1
+      shift # past parameter
+      ;;
+    -t|--test)
+      shift # past argument
+      test=$1
+      shift # past parameter
+      ;;
+    -u|--upload)
+      UPLOAD_ARTIFACTS=YES
+      shift # past argument
+      ;;
+    -n|--no-efi)
+      PUT_ARTIFACTS_IN_ESP=NO
+      shift # past argument
+      ;;
+    -*|--*)
+      echo "pc_setup.sh: Unknown option $1"
+      shift # past argument
+      ;;
+    *)
+     POSITIONAL_ARGS+=("$1") # save positional arg
+     # shift # past argument
+     break
+      ;;
+  esac
 
 # Profile selections
-profileDir="/hirs/.ci/system-tests/profiles/$profile"
+profileDir="$HIRS_CI_REPO_ROOT/.ci/system-tests/profiles/$profile"
 testDir="$profileDir/$test"
 pcDir="$testDir/platformcerts"
 dmiZip="$profileDir/$profile"_dmi.zip
 hwJsonFileName="$profile"_"$test"_hw.json
 hwJsonFile="$testDir/$hwJsonFileName"
-ciTestHwJsonFile="$ciTestDir/hw.json"
 
 # Use default settings if profile does not have specific changes
 if [ ! -f "$hwJsonFile" ]; then
@@ -30,9 +72,8 @@ if [ ! -f "$dmiZip" ]; then
     dmiZip="$profileDir"/default/laptop_dmi.zip
 fi
 
-# Current TCG folder for platform certs
-mkdir -p $tcgDir;  # Create the platform cert folder if its not there
-rm -f $tcgDir*;    # Clear out any previous data
+# Ensure platform folder under efi is set up and cleared
+$HIRS_CI_REPO_ROOT/.ci/system-tests/container/efi_setup.sh -p
 
 echo "Test is using platform cert(s) from $profile : $test"
 # Step 1: Copy hw json file, if it exists.
@@ -48,16 +89,21 @@ dnf install -y unzip &> /dev/null
 echo "dmi file used was $dmiZip"
 unzip -o "$dmiZip" -d "$ciTestDir"
 
-# Step 3: Copy the platform cert to tcg folder 
+# Step 3: Copy the platform cert to tcg folder and or upload it to the ACA
 if [[ ! -d $pcDir ]]; then
     pcDir=$profileDir/default/platformcerts;
 fi
+
 pushd $pcDir > /dev/null
 # Skip copy of platform cert if .gitigore exists (empty profile)
-if [[ ! -f ".gitignore" ]]; then
+  if [[ ! -f ".gitignore" ]]; then
     for cert in * ; do
-          cp -f $cert $tcgDir$cert;
+      if [ "$PUT_ARTIFACTS_IN_ESP" = YES ]; then
+        cp $cert $HIRS_CI_EFI_PATH_PLATFORM
+      fi
+      if [ "$UPLOAD_ARTIFACTS" = YES ]; then
+        curl -k -F "file=@$cert" $SERVER_PCERT_POST
+      fi
     done
-fi
-
+  fi
 popd > /dev/null
