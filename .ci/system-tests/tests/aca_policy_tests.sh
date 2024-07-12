@@ -25,6 +25,10 @@ esac
 if [ "$test" = "1" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 1: Test ACA default policy  ###"
     writeToLogs "Now using default appsettings"
+    clearAcaDb
+    resetTpmForNewTest
+    setAppsettings
+    setPolicyNone
     setPlatformCerts -p "laptop" -t "empty"
     provisionTpm2 "pass"
 fi
@@ -76,6 +80,26 @@ if [ "$test" = "8" ] || [ "$test" = "all" ]; then
     uploadTrustedCerts
     setPlatformCerts -p "laptop" -t "default"
     setRims -p "laptop" -t "default"
+    provisionTpm2 "pass"
+fi
+if [ "$test" = "9" ] || [ "$test" = "all" ]; then
+    writeToLogs "### ACA POLICY TEST 9: Test valid PC and RIM with PC only uploaded ###"
+    clearAcaDb
+    resetTpmForNewTest
+    setPolicyEkPcFw
+    uploadTrustedCerts
+    setPlatformCerts -p "laptop" -t "default" -u -n
+    setRims -p "laptop" -t "default"
+    provisionTpm2 "pass"
+fi
+if [ "$test" = "10" ] || [ "$test" = "all" ]; then
+    writeToLogs "### ACA POLICY TEST 10: Test valid PC and RIM with RIM only uploaded ###"
+    clearAcaDb
+    resetTpmForNewTest
+    setPolicyEkPcFw
+    uploadTrustedCerts
+    setPlatformCerts -p "laptop" -t "default"
+    setRims -p "laptop" -t "default" -u -n
     provisionTpm2 "pass"
 fi
 

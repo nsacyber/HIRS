@@ -12,7 +12,6 @@
 
 profile=laptop
 test=default
-ciTestDir=$HIRS_CI_TEST_ROOT
 ciTestHwJsonFile=$HIRS_CI_TEST_HW_JSON_FILE
 
 # By default save the artifacts in EFI and do not upload to the ACA
@@ -75,7 +74,7 @@ fi
 # Ensure platform folder under efi is set up and cleared
 $HIRS_CI_REPO_ROOT/.ci/system-tests/container/efi_setup.sh -p
 
-echo "Test is using platform cert(s) from $profile : $test"
+echo "Platform certs selected from profile: $profile : $test"
 # Step 1: Copy hw json file, if it exists.
 if [ -f "$hwJsonFile" ]; then
     echo "hw file used was $hwJsonFile"
@@ -87,11 +86,11 @@ dnf install -y unzip &> /dev/null
 
 # Step 2: Unpack the dmi files.
 echo "dmi file used was $dmiZip"
-unzip -o "$dmiZip" -d "$ciTestDir"
+unzip -o "$dmiZip" -d $HIRS_CI_TEST_ROOT
 
 # Step 3: Copy the platform cert to tcg folder and or upload it to the ACA
 if [[ ! -d $pcDir ]]; then
-    pcDir=$profileDir/default/platformcerts;
+    pcDir=$profileDir/default/platformcerts
 fi
 
 pushd $pcDir > /dev/null
@@ -99,9 +98,11 @@ pushd $pcDir > /dev/null
   if [[ ! -f ".gitignore" ]]; then
     for cert in * ; do
       if [ "$PUT_ARTIFACTS_IN_ESP" = YES ]; then
+        echo "Saving $cert to $HIRS_CI_EFI_PATH_PLATFORM"
         cp $cert $HIRS_CI_EFI_PATH_PLATFORM
       fi
       if [ "$UPLOAD_ARTIFACTS" = YES ]; then
+        echo "Uploading $cert to $SERVER_PCERT_POST"
         curl -k -F "file=@$cert" $SERVER_PCERT_POST
       fi
     done

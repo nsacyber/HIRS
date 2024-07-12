@@ -115,16 +115,22 @@ resetTpmForNewTest() {
 
 # Places platform cert(s) held in the test folder(s) in the provisioners tcg folder
 setPlatformCerts() {
-  docker exec -i $tpm2_container /bin/bash -c "$HIRS_CI_REPO_ROOT/.ci/system-tests/container/pc_setup.sh $@"
+  OPTIONS="$@"
+  echo "Asking container $tpm2_container to run pc_setup.sh $OPTIONS"
+  docker exec -i $tpm2_container /bin/bash -c "$HIRS_CI_REPO_ROOT/.ci/system-tests/container/pc_setup.sh $OPTIONS"
 }
 
 # Places RIM files held in the test folder in the provisioners tcg folder
 setRims() {
-  docker exec -i $tpm2_container /bin/bash -c "$HIRS_CI_REPO_ROOT/.ci/system-tests/container/rim_setup.sh $@"
+  OPTIONS="$@"
+  echo "Asking container $tpm2_container to run rim_setup.sh $OPTIONS"
+  docker exec -i $tpm2_container /bin/bash -c "$HIRS_CI_REPO_ROOT/.ci/system-tests/container/rim_setup.sh $OPTIONS"
 }
 
 setAppsettings() {
-  docker exec -i $tpm2_container /bin/bash -c "source $HIRS_CI_REPO_ROOT/.ci/setup/container/tpm2_common.sh; setCiHirsAppsettingsFile $@"
+  OPTIONS="$@"
+  echo "Asking container $tpm2_container to set the appsettings file with options: $OPTIONS"
+  docker exec -i $tpm2_container /bin/bash -c "source $HIRS_CI_REPO_ROOT/.ci/setup/container/tpm2_common.sh; setCiHirsAppsettingsFile $OPTIONS"
 }
 
 # Writes to the Action ouput, ACA log, and Provisioner Log

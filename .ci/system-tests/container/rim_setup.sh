@@ -9,11 +9,7 @@
 
 profile=laptop
 test=default
-ciTestDir=$HIRS_CI_TEST_ROOT
 ciTestEventLog=$HIRS_CI_TEST_EVENT_LOG_FILE
-tcgDir=$HIRS_CI_EFI_PATH_TCG
-tcgSwidDir=$HIRS_CI_EFI_PATH_SWIDTAG
-tcgRimDir=$HIRS_CI_EFI_PATH_RIM
 
 # By default save the artifacts in EFI and do not upload to the ACA
 UPLOAD_ARTIFACTS=NO
@@ -83,9 +79,11 @@ pushd $swidDir > /dev/null
   if [[ ! -f ".gitignore" ]]; then
     for swidtag in * ; do
       if [ "$PUT_ARTIFACTS_IN_ESP" = YES ]; then
-        cp $swidtag $tcgSwidDir
+        echo "Saving $swidtag to $HIRS_CI_EFI_PATH_SWIDTAG"
+        cp $swidtag $HIRS_CI_EFI_PATH_SWIDTAG
       fi
       if [ "$UPLOAD_ARTIFACTS" = YES ]; then
+        echo "Uploading $swidtag to $SERVER_RIM_POST"
         curl -k -F "file=@$swidtag" $SERVER_RIM_POST
       fi
     done
@@ -99,9 +97,11 @@ pushd $rimDir > /dev/null
   if [[ ! -f ".gitignore" ]]; then
     for rim in * ; do
       if [ "$PUT_ARTIFACTS_IN_ESP" = YES ]; then
-        cp $rim $tcgRimDir
+        echo "Saving $rim to $HIRS_CI_EFI_PATH_RIM"
+        cp $rim $HIRS_CI_EFI_PATH_RIM
       fi
       if [ "$UPLOAD_ARTIFACTS" = YES ]; then
+        echo "Uploading $rim to $SERVER_RIM_POST"
         curl -k -F "file=@$rim" $SERVER_RIM_POST
       fi
     done
