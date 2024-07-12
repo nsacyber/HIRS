@@ -17,6 +17,8 @@ case $1 in
     6) test="6" ;;
     7) test="7" ;;
     8) test="8" ;;
+    9) test="9" ;;
+    10) test="10" ;;
 esac
 
 # Start ACA Policy Tests
