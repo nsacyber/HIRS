@@ -107,8 +107,9 @@ fi
 
 #  Process Test Results, any single failure will send back a failed result.
 if [[ $failedTests != 0 ]]; then
-    export TEST_STATUS=1;
+    export TEST_STATUS=1
     echo "****  $failedTests out of $totalTests ACA Policy Tests Failed! ****"
+    exit 1
   else
     echo "****  $totalTests ACA Policy Tests Passed! ****"
 fi
