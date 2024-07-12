@@ -234,7 +234,8 @@ public class UefiDevicePath {
      * @return pci device info.
      */
     private String pciSubType(final byte[] path, final int offset) {
-        subType = "\n        PCI Function Number = ";
+        subType = "\n        Hardware Device Path Type = PCI";
+        subType += "\n        PCI Function Number = ";
         subType += String.format("0x%x", path[offset + UefiConstants.SIZE_4]);
         subType += "\n        PCI Device Number = ";
         subType += String.format("0x%x", path[offset + UefiConstants.SIZE_5]);
@@ -242,7 +243,7 @@ public class UefiDevicePath {
     }
 
     /**
-     * processes the SATA sub type.
+     * processes the SATA subtype.
      *
      * @param path
      * @param offset
@@ -261,7 +262,7 @@ public class UefiDevicePath {
     }
 
     /**
-     * Processes the hard drive sub type.
+     * Processes the hard drive subtype.
      *
      * @param path
      * @param offset
@@ -306,7 +307,7 @@ public class UefiDevicePath {
     }
 
     /**
-     * Process the File path sub type.
+     * Process the File path subtype.
      *
      * @param path
      * @param offset
@@ -326,7 +327,7 @@ public class UefiDevicePath {
     }
 
     /**
-     * Process a vendor sub-type on a Media Type.
+     * Process a vendor subtype on a Media Type.
      * Length of this structure in bytes. Length is 20 + n bytes
      * Vendor-assigned GUID that defines the data that follows.
      * Vendor-defined variable size data.
@@ -352,7 +353,7 @@ public class UefiDevicePath {
                     + offset, vendorData, 0, subTypeLength - UefiConstants.SIZE_16);
             subType += " : Vendor Data = " + HexUtils.byteArrayToHexString(vendorData);
         } else {
-            subType += " : No Vendor Data pesent";
+            subType += " : No Vendor Data present";
         }
         return subType;
     }
