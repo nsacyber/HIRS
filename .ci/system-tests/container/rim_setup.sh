@@ -5,7 +5,7 @@
 #########################################################################################
 
 # Load env variables
-. ./.ci/docker/.env
+. /hirs/.ci/docker/.env
 
 profile=laptop
 test=default
@@ -52,7 +52,7 @@ while [[ $# -gt 0 ]]; do
      break
       ;;
   esac
-
+done
 # Profile selections
 profileDir="$HIRS_CI_REPO_ROOT/.ci/system-tests/profiles/$profile"
 defaultDir="$profileDir/default"

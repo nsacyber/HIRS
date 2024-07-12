@@ -34,7 +34,7 @@ while [[ $# -gt 0 ]]; do
      break
       ;;
   esac
-  
+done
 # Ensure file structure is there
 mkdir -p $HIRS_CI_EFI_PATH_PLATFORM
 mkdir -p $HIRS_CI_EFI_PATH_RIM
