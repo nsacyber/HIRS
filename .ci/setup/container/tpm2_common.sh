@@ -292,7 +292,7 @@ function startFreshTpmServer {
   else
     echo -n "Starting TPM server..."
     /ibmswtpm2/src/tpm_server -rm &> /dev/null &
-    sleep 5
+    sleep 2
     pid=$(findTpmServerPid)
     echo "...running with pid: $pid"
   fi
@@ -301,7 +301,7 @@ function startFreshTpmServer {
 function startupTpm {
   echo "Running tpm2_startup"
   tpm2_startup -T mssim -c
-  sleep 5
+  sleep 2
 }
 
 function installEkCert {
