@@ -64,12 +64,12 @@ hwJsonFile="$testDir/$hwJsonFileName"
 # Use default settings if profile does not have specific changes
 if [ ! -f "$hwJsonFile" ]; then
     echo "Test is using a profile with no hardware manifest file. Using default."
-    hwJsonFile="$profileDir"/default/laptop_default_hw.json
+    hwJsonFile=$HIRS_CI_TEST_DEFAULT_HW_JSON_FILE
 fi
 
 if [ ! -f "$dmiZip" ]; then
     echo "Test is using a profile with no DMI data. Using default."
-    dmiZip="$profileDir"/default/laptop_dmi.zip
+    dmiZip=$HIRS_CI_TEST_DEFAULT_DMI_ZIP
 fi
 
 # Ensure platform folder under efi is set up and cleared

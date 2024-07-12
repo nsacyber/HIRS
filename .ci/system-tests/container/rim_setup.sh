@@ -69,7 +69,7 @@ $HIRS_CI_REPO_ROOT/.ci/system-tests/container/efi_setup.sh -r
 
 # Step 1: Copy binary_bios_measurement file
 if [ ! -e "$eventLog" ]; then
-  eventLog="$defaultDir"/laptop_default_binary_bios_measurements
+  eventLog=$HIRS_CI_TEST_DEFAULT_EVENT_LOG
 fi
 echo "eventLog used was  $eventLog"
 cp "$eventLog" "$ciTestEventLog"
@@ -110,7 +110,7 @@ popd > /dev/null
 
 #Step 4, run the setpcr script to make the TPM emulator hold values that correspond the binary_bios_measurement file
 if [[ ! -f $pcrScript ]]; then
-    pcrScript="$profileDir/default/"$profile"_default_setpcrs.sh"
+    pcrScript=$HIRS_CI_TEST_DEFAULT_SETPCRS_SH
 fi
 sh $pcrScript;
 

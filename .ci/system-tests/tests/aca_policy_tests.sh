@@ -25,7 +25,7 @@ esac
 if [ "$test" = "1" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 1: Test ACA default policy  ###"
     writeToLogs "Now using default appsettings"
-    setPlatformCerts "laptop" "empty"
+    setPlatformCerts -p "laptop" -t "empty"
     provisionTpm2 "pass"
 fi
 if [ "$test" = "2" ] || [ "$test" = "all" ]; then
