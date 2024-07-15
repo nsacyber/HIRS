@@ -66,10 +66,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         // In this case, try to look up the event log associated with the device, then get the base rim associated by event log hash
         List<ReferenceManifest> deviceRims = referenceManifestRepository.findByDeviceName(hostName);
         for (ReferenceManifest deviceRim : deviceRims) {
-            if (deviceRim.isArchived()) {
-                continue;
-            }
-
             if (deviceRim instanceof BaseReferenceManifest && !deviceRim.isSwidSupplemental() && !deviceRim.isSwidPatch()) {
                 baseReferenceManifest = (BaseReferenceManifest) deviceRim;
             }
