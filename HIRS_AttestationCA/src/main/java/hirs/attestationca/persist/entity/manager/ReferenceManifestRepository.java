@@ -19,6 +19,7 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     ReferenceManifest findByHexDecHash(String hexDecHash);
     ReferenceManifest findByBase64Hash(String base64Hash);
     ReferenceManifest findByHexDecHashAndRimType(String hexDecHash, String rimType);
+    ReferenceManifest findByEventLogHashAndRimType(String hexDecHash, String rimType);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 AND rimType = 'Base'", nativeQuery = true)
     List<BaseReferenceManifest> getBaseByManufacturerModel(String manufacturer, String model);
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND DTYPE = ?2", nativeQuery = true)
