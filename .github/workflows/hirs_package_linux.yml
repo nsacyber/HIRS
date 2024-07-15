@@ -43,7 +43,7 @@ jobs:
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
           cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
           cp HIRS_Structs/build/libs/*.jar artifacts/jars/.
-          cp tools/tcg_rim_tool/build/distributions/*.zip
+          cp tools/tcg_rim_tool/build/distributions/*.zip .
     - name: Archive RPM files
       uses: actions/upload-artifact@v3
       with:
