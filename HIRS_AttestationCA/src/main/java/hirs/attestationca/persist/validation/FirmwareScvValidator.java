@@ -59,7 +59,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         ReferenceManifest supportReferenceManifest = null;
         EventLogMeasurements measurement = null;
 
-        baseReferenceManifests = referenceManifestRepository.findAllBaseRims();
+        //baseReferenceManifests = referenceManifestRepository.findAllBaseRims();
 
         // This block was looking for a base RIM matching the device name
         // The base rim might not have a device name associated with it- i.e. if it's uploaded to the ACA prior to provisioning
