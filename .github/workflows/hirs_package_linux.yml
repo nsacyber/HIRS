@@ -72,6 +72,7 @@ jobs:
       with:
         name: ZIP_Files
         path: tools/tcg_rim_tool/build/distributions/*.zip
+              package/win/tcg-rim-tool/
         if-no-files-found: error
 
         
