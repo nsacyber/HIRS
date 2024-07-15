@@ -1,5 +1,6 @@
 package hirs.utils.tpm.eventlog.events;
 
+import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
@@ -31,20 +32,22 @@ public class EvNoAction {
      * True of the event is a SpecIDEvent.
      */
     private boolean bSpecIDEvent = false;
+//    /**
+//     * EvEfiSpecIdEvent Object.
+//     */
+//    @Getter
+//    private EvEfiSpecIdEvent specIDEvent = null;
+//    /**
+//     * NvIndexInstanceEvent Object.
+//     */
+//    @Getter
+//    private NvIndexInstanceEventLogData nvIndexInstanceEvent = null;
+
     /**
-     * True of the event is a NvIndexInstance.
-     */
-    private boolean bNvIndexInstance = false;
-    /**
-     * EvEfiSpecIdEvent Object.
+     * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
     @Getter
-    private EvEfiSpecIdEvent specIDEvent = null;
-    /**
-     * NvIndexInstanceEvent Object.
-     */
-    @Getter
-    private NvIndexInstanceEventLogData nvIndexInstanceEvent = null;
+    String noActionInfo = "";
 
     /**
      * EvNoAction constructor.
@@ -58,11 +61,16 @@ public class EvNoAction {
         signature = new String(signatureBytes, StandardCharsets.UTF_8);
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
         if (signature.contains("Spec ID Event03")) {      // implies CryptAgileFormat
-            specIDEvent = new EvEfiSpecIdEvent(eventData);
+            EvEfiSpecIdEvent specIDEvent = new EvEfiSpecIdEvent(eventData);
+            noActionInfo += specIDEventToString(specIDEvent).toString();
             bSpecIDEvent = true;
-        } else if (signature.contains("NvIndexInstance")) {
-            nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
-            bNvIndexInstance = true;
+        } else if (signature.contains("StartupLocality")) {
+            noActionInfo += "   Signature = StartupLocality: ";
+            noActionInfo += "\n     " + getLocality(eventData);
+        }
+        else if (signature.contains("NvIndexInstance")) {
+            NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
+            noActionInfo += nvIndexInstanceEvent.toString();
         }
     }
 
@@ -75,10 +83,47 @@ public class EvNoAction {
         return bSpecIDEvent;
     }
 
+    public String specIDEventToString(EvEfiSpecIdEvent specIDEvent) {
+
+        String specIdInfo = "";
+        specIdInfo += "   Signature = Spec ID Event03 : ";
+        if (specIDEvent.isCryptoAgile()) {
+            specIdInfo += "Log format is Crypto Agile\n";
+        } else {
+            specIdInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
+        }
+        specIdInfo += "   Platform Profile Specification version = "
+                + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
+                + " using errata version " + specIDEvent.getErrata();
+        
+        return specIdInfo;
+    }
+
+    private String getLocality(final byte[] eventData) {
+        byte[] localityBytes = new byte[1];
+        System.arraycopy(eventData, 2, localityBytes, 0, 1);
+        int locality = HexUtils.leReverseInt(localityBytes);
+
+        switch (locality) {
+            case 0:
+                noActionInfo += "Locality 0 without an H-CRTM sequence";
+                break;
+            case 3:
+                noActionInfo += "Locality 3 without an H-CRTM sequence";
+                break;
+            case 4:
+                noActionInfo += "Locality 4 with an H-CRTM sequence initialized";
+                break;
+            default:
+                noActionInfo += "Startup Locality unknown";
+        }
+        return noActionInfo;
+    }
+
     /**
      * Returns a description of this event.
      *
-     * @return Human readable description of this event.
+     * @return Human-readable description of this event.
      */
     public String toString() {
         String noActionInfo = "";
@@ -92,6 +137,8 @@ public class EvNoAction {
             noActionInfo += "   Platform Profile Specification version = "
                     + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
                     + " using errata version " + specIDEvent.getErrata();
+        } else if (b) {
+            noActionInfo = nvIndexInstanceEvent.toString();
         } else if (bNvIndexInstance) {
             noActionInfo = nvIndexInstanceEvent.toString();
         } else {
