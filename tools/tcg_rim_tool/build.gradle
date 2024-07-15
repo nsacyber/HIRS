@@ -131,3 +131,37 @@ buildRpm {
 buildDeb {
     arch = 'amd64'
 }
+
+task buildZip(type: Zip){
+    dependsOn jar
+    from(tasks.jar.archiveFile){
+        into '/'
+    }
+    from('README.md') {
+        into '/'
+    }
+    from('./build/resources/test/rim_fields.json'){
+        into '/'
+    }
+    from('../../package/win/tcg_rim_tool/rim.ps1'){
+        into '/'
+    }
+    from('../../package/win/tcg_rim_tool/hirsshell.ps1'){
+        into '/'
+    }
+    from('../../package/win/tcg_rim_tool/eventLog.ps1'){
+        into '/'
+    }
+    from('../../package/win/tcg_rim_tool/create_hirstools_desktop_shortcut.ps1'){
+        into '/'
+    }
+
+//    arch = 'win'
+    // project_subproject-release version_data-git commit hash-arch.extension
+    archiveBaseName.set(project.name + '-' + jarVersion)
+    archiveExtension.set('zip')
+    destinationDirectory.set(file("$buildDir/distributions"))
+}
+
+buildZip.dependsOn jar
+//build.dependsOn buildZip

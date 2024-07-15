@@ -66,4 +66,9 @@ jobs:
         name: JAR_Files
         path: artifacts/jars/
         if-no-files-found: error
+    - name: ZIP_Files
+      uses: actions/upload-artifact@v3
+      with:
+        path: tools/tcg_rim_tool/build/distributions/*.zip
+
         
