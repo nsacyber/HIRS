@@ -71,7 +71,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ZIP_Files
-        path: tools/tcg-rim-tool/build/distributions/*.zip
+        path: tools/tcg_rim_tool/build/distributions/*.zip
         if-no-files-found: error
 
         
