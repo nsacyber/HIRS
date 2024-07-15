@@ -462,12 +462,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                         supportRim.setPlatformModel(dbBaseRim.getPlatformModel());
                         supportRim.setTagId(dbBaseRim.getTagId());
                         supportRim.setAssociatedRim(dbBaseRim.getId());
+                        dbBaseRim.setAssociatedRim(supportRim.getId());
                         supportRim.setUpdated(true);
                         referenceManifestRepository.save(supportRim);
                         updatedSupportRims.put(supportHash, supportRim);
                     }
                 }
             }
+            referenceManifestRepository.save(dbBaseRim);
         }
 
         return updatedSupportRims;
