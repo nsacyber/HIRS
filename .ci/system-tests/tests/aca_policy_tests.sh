@@ -54,6 +54,8 @@ if [ "$test" = "5" ] || [ "$test" = "all" ]; then
     setPolicyEkPcFw
     provisionTpm2 "fail"
 fi
+writeToLogs "Now using appsettings with hardware information"
+setAppsettings --paccor-output-file /ci_test/hw.json --event-log-file /ci_test/binary_bios_measurements --linux-dmi
 if [ "$test" = "6" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 6: Test PC Validation Policy with valid PC with no Attribute Check ###"
     clearAcaDb
@@ -65,13 +67,11 @@ if [ "$test" = "6" ] || [ "$test" = "all" ]; then
 fi
 if [ "$test" = "7" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 7: Test PC Validation Policy with valid PC with Attribute Check ###"
-    writeToLogs "Now using appsettings with hardware information"
     clearAcaDb
     resetTpmForNewTest
     setPolicyEkPc
     uploadTrustedCerts
     setPlatformCerts -p "laptop" -t "default"
-    setAppsettings --paccor-output-file /ci_test/hw.json --event-log-file /ci_test/binary_bios_measurements --linux-dmi
     provisionTpm2 "pass"
 fi
 if [ "$test" = "8" ] || [ "$test" = "all" ]; then

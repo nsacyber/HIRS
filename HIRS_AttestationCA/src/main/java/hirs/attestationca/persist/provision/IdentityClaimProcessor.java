@@ -490,23 +490,20 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         .getBaseByManufacturerModel(dv.getHw().getManufacturer(),
                                 dv.getHw().getProductName());
                 measurements = temp;
-                if (tagId != null && !tagId.isEmpty()) {
-                    measurements.setTagId(tagId);
-                }
                 measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
                 measurements.setPlatformModel(dv.getHw().getProductName());
-                measurements.setTagId(tagId);
+                if (tagId != null && !tagId.trim().isEmpty()) {
+                    measurements.setTagId(tagId);
+                }
                 measurements.setDeviceName(dv.getNw().getHostname());
                 measurements.archive();
+
+                this.referenceManifestRepository.save(measurements);
 
                 for (BaseReferenceManifest baseRim : baseRims) {
                     if (baseRim != null) {
                         // pull the base versions of the swidtag and rimel and set the
                         // event log hash for use during provision
-                        if ((tagId == null || tagId.trim().isEmpty()) && !baseRim.getTagId().isEmpty()) {
-                            tagId = baseRim.getTagId();
-                            measurements.setTagId(tagId);
-                        }
                         SupportReferenceManifest sBaseRim = referenceManifestRepository
                                 .getSupportRimEntityById(baseRim.getAssociatedRim());
                         baseRim.setEventLogHash(temp.getHexDecHash());
@@ -515,8 +512,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         referenceManifestRepository.save(sBaseRim);
                     }
                 }
-                
-                this.referenceManifestRepository.save(measurements);
             } catch (IOException ioEx) {
                 log.error(ioEx);
             }
