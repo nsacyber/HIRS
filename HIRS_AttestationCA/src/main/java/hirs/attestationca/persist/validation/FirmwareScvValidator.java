@@ -77,7 +77,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
         // Attempt to get an event log from the database matching the expected hash
         if (baseReferenceManifest == null && measurement != null) {
-            baseReferenceManifest = (BaseReferenceManifest)referenceManifestRepository.findByHexDecHashAndRimType(measurement.getEventLogHash(), ReferenceManifest.BASE_RIM);
+            baseReferenceManifest = (BaseReferenceManifest)referenceManifestRepository.findByHexDecHashAndRimType(measurement.getHexDecHash(), ReferenceManifest.BASE_RIM);
         }
 
         String failedString = "";
