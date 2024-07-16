@@ -123,4 +123,22 @@ ospackage {
     buildDeb {
         arch = X86_64
     }
+
 }
+
+//
+//task buildZip(type: Zip){
+//    dependsOn jar
+//    from(tasks.jar.archiveFile){
+//        into '/'
+//    }
+//
+////    arch = 'win'
+//    // project_subproject-release version_data-git commit hash-arch.extension
+//    archiveBaseName.set(project.name + '-' + jarVersion)
+//    archiveExtension.set('zip')
+//    destinationDirectory.set(file("$buildDir/distributions"))
+//}
+//
+//buildZip.dependsOn jar
+////build.dependsOn buildZip

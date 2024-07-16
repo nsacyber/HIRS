@@ -137,28 +137,12 @@ task buildZip(type: Zip){
     from(tasks.jar.archiveFile){
         into '/'
     }
-    from('README.md') {
-        into '/'
-    }
     from('./build/resources/test/rim_fields.json'){
         into '/'
     }
-    from('../../package/win/tcg-rim-tool/rim.ps1'){
-        into '/'
-    }
-    from('../../package/win/tcg-rim-tool/hirsshell.ps1'){
-        into '/'
-    }
-    from('../../package/win/tcg-rim-tool/eventLog.ps1'){
-        into '/'
-    }
-    from('../../package/win/tcg-rim-tool/create_hirstools_desktop_shortcut.ps1'){
-        into '/'
-    }
 
-//    arch = 'win'
-    // project_subproject-release version_data-git commit hash-arch.extension
-    archiveBaseName.set(project.name + '-' + jarVersion)
+
+    archiveBaseName.set(project.name)
     archiveExtension.set('zip')
     destinationDirectory.set(file("$buildDir/distributions"))
 }

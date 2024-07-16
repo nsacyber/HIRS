@@ -47,31 +47,31 @@ jobs:
           cp tools/tcg_rim_tool/build/distributions/*.zip artifacts/win
           cp package/win/tcg-rim-tool/*.ps1 artifacts/win
     - name: Archive RPM files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: RPM_Files
         path: HIRS_AttestationCAPortal/build/distributions/*.rpm
         if-no-files-found: error
     - name: Archive DEB files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: DEB_Files
         path: HIRS_AttestationCAPortal/build/distributions/*.deb
         if-no-files-found: error
     - name: War files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: WAR_Files
         path: HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war
         if-no-files-found: error
     - name: JAR_Files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: JAR_Files
         path: artifacts/jars/
         if-no-files-found: error
     - name: ZIP_Files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ZIP_Files
         path: artifacts/win/
