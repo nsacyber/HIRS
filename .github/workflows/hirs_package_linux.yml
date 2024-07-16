@@ -26,6 +26,7 @@ jobs:
     - name: directory setup
       run: |
        mkdir -p artifacts/jars
+       mkdir -p artifact/win
     - name: install dependencies
       run: |
         sudo apt-get update
@@ -43,6 +44,8 @@ jobs:
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
           cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
           cp HIRS_Structs/build/libs/*.jar artifacts/jars/.
+          cp tools/tcg_rim_tool/build/distributions/*.zip artifacts/win
+          cp package/win/tcg-rim-tool artifacts/win
     - name: Archive RPM files
       uses: actions/upload-artifact@v3
       with:
@@ -71,9 +74,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ZIP_Files
-        path: |
-          package/win/tcg-rim-tool/
-          tools/tcg_rim_tool/build/distributions/*.zip
+        path: artifacts/win/
         if-no-files-found: error
 
         
