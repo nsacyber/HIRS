@@ -143,16 +143,16 @@ task buildZip(type: Zip){
     from('./build/resources/test/rim_fields.json'){
         into '/'
     }
-    from('../../package/win/tcg_rim_tool/rim.ps1'){
+    from('../../package/win/tcg-rim-tool/rim.ps1'){
         into '/'
     }
-    from('../../package/win/tcg_rim_tool/hirsshell.ps1'){
+    from('../../package/win/tcg-rim-tool/hirsshell.ps1'){
         into '/'
     }
-    from('../../package/win/tcg_rim_tool/eventLog.ps1'){
+    from('../../package/win/tcg-rim-tool/eventLog.ps1'){
         into '/'
     }
-    from('../../package/win/tcg_rim_tool/create_hirstools_desktop_shortcut.ps1'){
+    from('../../package/win/tcg-rim-tool/create_hirstools_desktop_shortcut.ps1'){
         into '/'
     }
 
