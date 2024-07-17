@@ -126,19 +126,18 @@ ospackage {
 
 }
 
-//
-//task buildZip(type: Zip){
-//    dependsOn jar
-//    from(tasks.jar.archiveFile){
-//        into '/'
-//    }
-//
-////    arch = 'win'
-//    // project_subproject-release version_data-git commit hash-arch.extension
-//    archiveBaseName.set(project.name + '-' + jarVersion)
-//    archiveExtension.set('zip')
-//    destinationDirectory.set(file("$buildDir/distributions"))
-//}
-//
-//buildZip.dependsOn jar
-////build.dependsOn buildZip
+
+task buildZip(type: Zip){
+    dependsOn jar
+    from(tasks.jar.archiveFile){
+        into '/'
+    }
+
+
+    archiveBaseName.set(project.name)
+    archiveExtension.set('zip')
+    destinationDirectory.set(file("$buildDir/distributions"))
+}
+
+buildZip.dependsOn jar
+//build.dependsOn buildZip
