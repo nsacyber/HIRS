@@ -3,7 +3,7 @@
 $JavaParams = @{
     FilePath =  'java'
     ArgumentList = @(
-        '-jar "{0}"' -f "$PWD\tcg_rim_tool-2.1.0.jar"
+        '-jar "{0}"' -f "$PWD\tcg_rim_tool/tcg_rim_tool.jar"
         "$args"
     )
 }

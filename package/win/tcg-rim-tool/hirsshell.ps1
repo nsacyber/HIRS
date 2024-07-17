@@ -4,8 +4,7 @@ $StartInfo.FileName = "$pshome\powershell.exe"
 $StartInfo.Arguments = "-NoExit -Command 
                `$Host.UI.RawUI.WindowTitle=`'TCG RIM TOOL`'; 
                Set-Alias elt '$PWD\eventlog.ps1';
-	       Set-Alias rim '$PWD\rim.ps1';  
- #              function rim { java -jar 'tcg_rim_tool-2.1.0.jar' $args; };
+	       Set-Alias rim '$PWD\rim.ps1';
                echo 'The TCG RIM TOOL is intended for testing TCG Defined PC Client Reference Integrity Manifests (RIMs)';
                echo 'for usage type: rim -h';
 	       echo 'for eventlog usage type: elt -h'

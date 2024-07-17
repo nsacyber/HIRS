@@ -134,7 +134,10 @@ buildDeb {
 
 task buildZip(type: Zip){
     dependsOn jar
+    dependsOn jar
     from(tasks.jar.archiveFile){
+        rename( filename ->
+                "${project.name}.jar")
         into '/'
     }
     from('./build/resources/test/rim_fields.json'){
@@ -157,8 +160,8 @@ task buildZip(type: Zip){
     }
 
     archiveBaseName.set(project.name)
-    archiveExtension.set('zip')
     destinationDirectory.set(file("$buildDir/distributions"))
+    archiveFileName.set("${project.name}.zip")
 }
 
 buildZip.dependsOn jar

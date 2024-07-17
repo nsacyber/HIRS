@@ -130,13 +130,14 @@ ospackage {
 task buildZip(type: Zip){
     dependsOn jar
     from(tasks.jar.archiveFile){
+        rename( filename ->
+            "${project.name}.jar")
         into '/'
     }
 
-
     archiveBaseName.set(project.name)
-    archiveExtension.set('zip')
     destinationDirectory.set(file("$buildDir/distributions"))
+    archiveFileName.set("${project.name}.zip")
 }
 
 buildZip.dependsOn jar

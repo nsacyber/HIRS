@@ -3,7 +3,7 @@
 $JavaParams = @{
     FilePath =  'java'
     ArgumentList = @(
-        '-jar "{0}"' -f "$PWD\tcg_eventlog_tool-2.1.3.jar"
+        '-jar "{0}"' -f "$PWD\tcg_eventlog_tool/tcg_eventlog_tool.jar"
         "$args"
     )
 }
