@@ -60,7 +60,7 @@ public class SupplyChainValidation extends ArchivableEntity {
     private final List<Certificate> certificatesUsed;
 
     @Getter
-    @Column(length = MAX_MESSAGE_LENGTH)
+    @Column(length = RESULT_MESSAGE_LENGTH)
     private final String message;
 
     @Getter
