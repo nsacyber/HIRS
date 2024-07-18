@@ -80,8 +80,8 @@ public class EvNoAction {
                     specIDEvent.getVersionMinor());
             specErrataVersion = specIDEvent.getErrata();
         } else if (signature.contains("StartupLocality")) {
-            noActionInfo += "   Signature = StartupLocality: ";
-            noActionInfo += "\n     " + getLocality(eventData);
+            noActionInfo += "   Signature = StartupLocality";
+            noActionInfo += "\n   StartupLocality = " + getLocality(eventData);
         } else if (signature.contains("NvIndexInstance")) {
             NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
             noActionInfo += nvIndexInstanceEvent.toString();
@@ -118,24 +118,25 @@ public class EvNoAction {
     }
 
     private String getLocality(final byte[] eventData) {
+        String localityInfo = "";
         byte[] localityBytes = new byte[1];
-        System.arraycopy(eventData, 2, localityBytes, 0, 1);
+        System.arraycopy(eventData, 16, localityBytes, 0, 1);
         int locality = HexUtils.leReverseInt(localityBytes);
 
         switch (locality) {
             case 0:
-                noActionInfo += "Locality 0 without an H-CRTM sequence";
+                localityInfo += "Locality 0 without an H-CRTM sequence";
                 break;
             case 3:
-                noActionInfo += "Locality 3 without an H-CRTM sequence";
+                localityInfo += "Locality 3 without an H-CRTM sequence";
                 break;
             case 4:
-                noActionInfo += "Locality 4 with an H-CRTM sequence initialized";
+                localityInfo += "Locality 4 with an H-CRTM sequence initialized";
                 break;
             default:
-                noActionInfo += "Startup Locality unknown";
+                localityInfo += "Unknown";
         }
-        return noActionInfo;
+        return localityInfo;
     }
 
     /**
