@@ -46,7 +46,7 @@ public class EvSCrtmVersion {
             } else if (EvPostCode.isAscii(data)) {
                 description = new String(data, StandardCharsets.UTF_8);
             } else {
-                description = "Unknown Version format";
+                description = "   Unknown Version format";
             }
         }
         return (description);
