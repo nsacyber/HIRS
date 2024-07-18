@@ -2,12 +2,6 @@ package hirs.utils.tpm.eventlog.events;
 
 import lombok.Getter;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
-import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventDataHeader2.SUBHEADERTYPE_CERT_CHAIN;
-import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventDataHeader2.SUBHEADERTYPE_MEAS_BLOCK;
-
 /**
  * Class to process DEVICE_SECURITY_EVENT_DATA2.
  * Parses event data per PFP v1.06 Rev52 Table 26.
@@ -65,26 +59,35 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
             int subHeaderType = dsedHeader2.getSubHeaderType();
             int subHeaderLength = dsedHeader2.getSubHeaderLength();
 
-            subHeaderInfo = "\nSub header type: " + subHeaderType;
+            subHeaderInfo = "\n   Sub header type: "
+                    + DeviceSecurityEventDataSubHeader.subheaderTypeToString(subHeaderType);
 
             byte[] dsedSubHeaderBytes = new byte[subHeaderLength];
             System.arraycopy(dsedBytes, dsedHeaderLength, dsedSubHeaderBytes, 0, subHeaderLength);
 
-            if (subHeaderType == SUBHEADERTYPE_MEAS_BLOCK) {
+            if (subHeaderType == DeviceSecurityEventDataSubHeader.SUBHEADERTYPE_MEAS_BLOCK) {
                 try {
-                    dsedSubHeader = new DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(dsedSubHeaderBytes);
+                    dsedSubHeader =
+                            new DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(dsedSubHeaderBytes);
                     subHeaderInfo += dsedSubHeader.toString();
                 }
                 catch(NullPointerException e) {
-                    subHeaderInfo = "    Could not interpret Sub header info";
+                    subHeaderInfo = "\n    Could not interpret Sub header info for SPDM measurment block";
                 }
             }
-            else if (subHeaderType == SUBHEADERTYPE_CERT_CHAIN) {
-                // dsedSubHeader = new DeviceSecurityEventDataSubHeaderCertChain();
-                subHeaderInfo += "    Cert chain to be implemented ";
+            else if (subHeaderType == DeviceSecurityEventDataSubHeader.SUBHEADERTYPE_CERT_CHAIN) {
+                subHeaderInfo += "\n    Cert chain to be implemented ";
+                try {
+                    dsedSubHeader =
+                            new DeviceSecurityEventDataSubHeaderCertChain(dsedSubHeaderBytes);
+                    subHeaderInfo += dsedSubHeader.toString();
+                }
+                catch(NullPointerException e) {
+                    subHeaderInfo = "\n    Could not interpret Sub header info for SPDM measurement block";
+                }
             }
             else {
-                subHeaderInfo += "     Sub header type unknown";
+                subHeaderInfo += "\n     Sub header type unknown";
             }
 
             int dsedDevContextStartByte = dsedHeaderLength + subHeaderLength;

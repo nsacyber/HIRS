@@ -90,20 +90,6 @@ public abstract class DeviceSecurityEventHeader {
     private boolean devicePathValid = false;
 
     /**
-     * Device Security Event Data Device Type = no device type.
-     */
-    public static final int DEVICE_TYPE_NONE = 0;
-    /**
-     * Device Security Event Data Device Type = DEVICE_TYPE_PCI.
-     */
-    public static final int DEVICE_TYPE_PCI = 1;
-    /**
-     * Device Security Event Data Device Type = DEVICE_TYPE_USB.
-     */
-    public static final int DEVICE_TYPE_USB = 2;
-
-
-    /**
      * DeviceSecurityEventDataHeaderBase Default Constructor.
      */
     public DeviceSecurityEventHeader() {
@@ -187,11 +173,11 @@ public abstract class DeviceSecurityEventHeader {
      */
     public String deviceTypeToString(final int deviceTypeInt) {
         switch (deviceTypeInt) {
-            case DEVICE_TYPE_NONE:
+            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE:
                 return "No device type";
-            case DEVICE_TYPE_PCI:
+            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI:
                 return "PCI";
-            case DEVICE_TYPE_USB:
+            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB:
                 return "USB";
             default:
                 return "Unknown or invalid Device Type";

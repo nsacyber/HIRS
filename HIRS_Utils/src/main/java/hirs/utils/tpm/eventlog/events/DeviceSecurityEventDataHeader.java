@@ -5,11 +5,8 @@ import hirs.utils.tpm.eventlog.spdm.SpdmHa;
 import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER.

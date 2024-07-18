@@ -6,7 +6,6 @@ import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +46,7 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
     private List<SpdmMeasurementBlock> spdmMeasurementBlockList;
 
     /**
-     * DeviceSecurityEventDataHeader Constructor.
+     * DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock Constructor.
      *
      * @param dsedSubHBytes byte array holding the DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock.
      */

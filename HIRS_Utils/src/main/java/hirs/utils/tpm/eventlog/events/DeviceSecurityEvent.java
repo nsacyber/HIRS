@@ -1,12 +1,7 @@
 package hirs.utils.tpm.eventlog.events;
 
-import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import lombok.Getter;
 import lombok.Setter;
-
-import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventHeader.DEVICE_TYPE_NONE;
-import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventHeader.DEVICE_TYPE_PCI;
-import static hirs.utils.tpm.eventlog.events.DeviceSecurityEventHeader.DEVICE_TYPE_USB;
 
 /**
  * Abstract base class to process the DEVICE_SECURITY_EVENT_DATA or ..DATA2 event.
@@ -81,10 +76,10 @@ public abstract class DeviceSecurityEvent {
      */
     public void instantiateDeviceContext(final byte[] dsedDeviceContextBytes) {
 
-        if (deviceType == DEVICE_TYPE_NONE) {
+        if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE) {
             deviceContextInfo = "\n    No Device Context (indicated by device type value of 0";
         }
-        else if (deviceType == DEVICE_TYPE_PCI) {
+        else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI) {
             try {
                 dsedDevContext
                         = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
@@ -94,7 +89,7 @@ public abstract class DeviceSecurityEvent {
                 deviceContextInfo = "    Could not interpret Device Context info";
             }
         }
-        else if (deviceType == DEVICE_TYPE_USB) {
+        else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB) {
         //    dsedDevContext
         //            = new DeviceSecurityEventDataUsbContext(dsedDeviceContextBytes);
         //    deviceContextInfo = dsedDevContext.toString();

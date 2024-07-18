@@ -83,7 +83,7 @@ public class SpdmMeasurementBlock {
     /**
      * Returns a human-readable description of the data within this structure.
      *
-     * @return a description of this structure..
+     * @return a description of this structure.
      */
     public String toString() {
 

@@ -3,8 +3,6 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
-import java.io.UnsupportedEncodingException;
-
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER2.
  * DEVICE_SECURITY_EVENT_DATA_HEADER2 contains the measurement(s) and hash algorithm identifier
@@ -81,15 +79,6 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      * Auth state - device is not an SPDM-capable device
      */
     public static final int AUTH_NO_SPDM = 0xFF;
-    /**
-     * Sub header type - SPDM measurement block
-     */
-    public static final int SUBHEADERTYPE_MEAS_BLOCK = 0;
-    /**
-     * Sub header type - SPDM cert chain
-     */
-    public static final int SUBHEADERTYPE_CERT_CHAIN = 1;
-
 
     public DeviceSecurityEventDataHeader2(final byte[] dsedBytes) {
 

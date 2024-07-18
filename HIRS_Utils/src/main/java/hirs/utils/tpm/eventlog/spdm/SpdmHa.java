@@ -41,7 +41,7 @@ public class SpdmHa {
 
     /**
      * Returns the hash name via a lookup.
-     * Lookup based upon section 10.4 for the SPDM v1.03 document.
+     * Lookup based upon SPDM Spec v1.03 section 10.4.
      *
      * @param algId int to convert to string
      * @return name of the algorithm
