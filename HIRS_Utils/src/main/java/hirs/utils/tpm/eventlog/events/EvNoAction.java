@@ -32,6 +32,16 @@ public class EvNoAction {
      * True of the event is a SpecIDEvent.
      */
     private boolean bSpecIDEvent = false;
+    /**
+     * TCG Event Log spec version.
+     */
+    @Getter
+    private String specVersion = "Unknown";
+    /**
+     * TCG Event Log errata version.
+     */
+    @Getter
+    private String specErrataVersion = "Unknown";
 //    /**
 //     * EvEfiSpecIdEvent Object.
 //     */
@@ -55,7 +65,8 @@ public class EvNoAction {
      * @param eventData byte array holding the event to process.
      * @throws java.io.UnsupportedEncodingException if input fails to parse.
      */
-    public EvNoAction(final byte[] eventData) throws UnsupportedEncodingException {
+//    public EvNoAction(final byte[] eventData) throws UnsupportedEncodingException {
+    public EvNoAction(final byte[] eventData) {
         byte[] signatureBytes = new byte[UefiConstants.SIZE_15];
         System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_15);
         signature = new String(signatureBytes, StandardCharsets.UTF_8);
@@ -64,13 +75,20 @@ public class EvNoAction {
             EvEfiSpecIdEvent specIDEvent = new EvEfiSpecIdEvent(eventData);
             noActionInfo += specIDEventToString(specIDEvent).toString();
             bSpecIDEvent = true;
+            specVersion = String.format("%s.%s",
+                    specIDEvent.getVersionMajor(),
+                    specIDEvent.getVersionMinor());
+            specErrataVersion = specIDEvent.getErrata();
         } else if (signature.contains("StartupLocality")) {
             noActionInfo += "   Signature = StartupLocality: ";
             noActionInfo += "\n     " + getLocality(eventData);
-        }
-        else if (signature.contains("NvIndexInstance")) {
+        } else if (signature.contains("NvIndexInstance")) {
             NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
             noActionInfo += nvIndexInstanceEvent.toString();
+        } else {
+                noActionInfo = "EV_NO_ACTION event named " + signature
+                        + " encountered but support for processing it has not been"
+                        + " added to this application.\n";
         }
     }
 
@@ -95,7 +113,7 @@ public class EvNoAction {
         specIdInfo += "   Platform Profile Specification version = "
                 + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
                 + " using errata version " + specIDEvent.getErrata();
-        
+
         return specIdInfo;
     }
 
@@ -126,25 +144,6 @@ public class EvNoAction {
      * @return Human-readable description of this event.
      */
     public String toString() {
-        String noActionInfo = "";
-        if (bSpecIDEvent) {
-            noActionInfo += "   Signature = Spec ID Event03 : ";
-            if (specIDEvent.isCryptoAgile()) {
-                noActionInfo += "Log format is Crypto Agile\n";
-            } else {
-                noActionInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
-            }
-            noActionInfo += "   Platform Profile Specification version = "
-                    + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
-                    + " using errata version " + specIDEvent.getErrata();
-        } else if (b) {
-            noActionInfo = nvIndexInstanceEvent.toString();
-        } else if (bNvIndexInstance) {
-            noActionInfo = nvIndexInstanceEvent.toString();
-        } else {
-            noActionInfo = "EV_NO_ACTION event named " + signature
-                    + " encountered but support for processing it has not been added to this application.\n";
-        }
         return noActionInfo;
     }
 }

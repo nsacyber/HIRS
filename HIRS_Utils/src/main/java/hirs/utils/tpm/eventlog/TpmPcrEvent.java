@@ -6,7 +6,6 @@ import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.events.EvEfiGptPartition;
 import hirs.utils.tpm.eventlog.events.EvEfiHandoffTable;
 import hirs.utils.tpm.eventlog.events.EvEfiSpdmDeviceSecurityEvent;
-import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvEventTag;
 import hirs.utils.tpm.eventlog.events.EvIPL;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
@@ -113,7 +112,6 @@ public class TpmPcrEvent {
      * Event hash for Crypto Agile events.
      */
     private byte[] eventDataSha256hash;
-    private EvPostCode evPostCode;
     @Setter @Getter
     private int eventNumber;
     @Setter @Getter
@@ -232,7 +230,7 @@ public class TpmPcrEvent {
      */
     protected void setEventContent(final byte[] eventData) {
         eventContent = new byte[eventData.length];
-        evPostCode = new EvPostCode(eventContent);
+        //EvPostCode evPostCode = new EvPostCode(eventContent);
         System.arraycopy(eventData, 0, eventContent, 0, eventData.length);
     }
 
@@ -263,22 +261,25 @@ public class TpmPcrEvent {
             case EvConstants.EV_UNUSED:
                 break;
             case EvConstants.EV_NO_ACTION:
-                EvNoAction noAction = null;
-                try {
-                    noAction = new EvNoAction(eventContent);
-                    sb.append(noAction.toString());
-                    if (noAction.isSpecIDEvent()) {
-                        // this should be in the constructor
-                        EvEfiSpecIdEvent specID = noAction.getSpecIDEvent();
-                        specVersion = String.format("%s.%s",
-                                specID.getVersionMajor(),
-                                specID.getVersionMinor());
-                        specErrataVersion = specID.getErrata();
-                    }
-                } catch (UnsupportedEncodingException ueEx) {
-                    log.error(ueEx);
-                    sb.append(ueEx.toString());
+//                EvNoAction noAction = null;
+//                try {
+//                noAction = new EvNoAction(eventContent);
+                EvNoAction noAction = new EvNoAction(eventContent);
+                sb.append(noAction.toString());
+                if (noAction.isSpecIDEvent()) {
+//                    // this should be in the constructor
+//                    EvEfiSpecIdEvent specID = noAction.getSpecIDEvent();
+//                    specVersion = String.format("%s.%s",
+//                            specID.getVersionMajor(),
+//                            specID.getVersionMinor());
+//                    specErrataVersion = specID.getErrata();
+                    specVersion = noAction.getSpecVersion();
+                    specErrataVersion = noAction.getSpecErrataVersion();
                 }
+//                } catch (UnsupportedEncodingException ueEx) {
+//                    log.error(ueEx);
+//                    sb.append(ueEx.toString());
+//                }
                 break;
             case EvConstants.EV_SEPARATOR:
                 if (EvPostCode.isAscii(eventContent)
@@ -458,9 +459,11 @@ public class TpmPcrEvent {
                 EvNoAction noAction = new EvNoAction(content);
                 description += "Event Content:\n" + noAction.toString();
                 if (noAction.isSpecIDEvent()) {
-                    EvEfiSpecIdEvent specID = noAction.getSpecIDEvent();
-                    specVersion = specID.getVersionMajor() + "." + specID.getVersionMinor();
-                    specErrataVersion = specID.getErrata();
+//                    EvEfiSpecIdEvent specID = noAction.getSpecIDEvent();
+//                    specVersion = specID.getVersionMajor() + "." + specID.getVersionMinor();
+//                    specErrataVersion = specID.getErrata();
+                    specVersion = noAction.getSpecVersion();
+                    specErrataVersion = noAction.getSpecErrataVersion();
                 }
                 break;
             case EvConstants.EV_SEPARATOR:
