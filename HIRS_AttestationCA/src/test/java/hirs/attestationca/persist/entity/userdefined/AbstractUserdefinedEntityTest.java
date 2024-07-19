@@ -160,7 +160,7 @@ public class AbstractUserdefinedEntityTest {
                 return new PlatformCredential(certPath);
             case "IssuedAttestationCertificate":
                 return new IssuedAttestationCertificate(certPath,
-                        endorsementCredential, platformCredentials);
+                        endorsementCredential, platformCredentials, false);
             default:
                 throw new IllegalArgumentException(
                         String.format("Unknown certificate class %s", certificateClass.getName())

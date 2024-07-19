@@ -32,6 +32,11 @@ namespace hirs {
             get; set;
         }
 
+        [Option("replaceLDevID", Default = false, HelpText = "Clear any existing hirs LDevID and create a new one.")]
+        public bool ReplaceLDevID {
+            get; set;
+        }
+
         public static string[] SplitArgs(string argString) {
             return argString.SplitArgs(true);
         }

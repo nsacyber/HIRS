@@ -16,7 +16,7 @@ namespace hirs {
         private IHirsAcaClient acaClient = null;
         
         private const string DefaultCertFileName = "attestationkey.pem";
-
+        private const string DefaultLDevIDCertFileName = "ldevid.pem";
 
         public Provisioner() {
         }
@@ -140,6 +140,16 @@ namespace hirs {
 
                 Log.Debug("Gathering AK PUBLIC.");
                 byte[] akPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName);
+                
+                Log.Debug("Checking SRK PUBLIC");
+                tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle); // Will not create key if obj already exists at handle
+                byte[] srkPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out byte[] name2, out byte[] qualifiedName2);
+
+                Log.Information("----> " + (cli.ReplaceLDevID ? "Creating new" : "Verifying existence of") + " LDevID Key.");
+                tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, CommandTpm.DefaultLDevIDHandle, cli.ReplaceLDevID);
+
+                Log.Debug("Gathering LDevID PUBLIC.");
+                byte[] ldevidPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultLDevIDHandle, out name, out qualifiedName);
 
                 List<byte[]> pcs = null, baseRims = null, supportRimELs = null, supportRimPCRs = null;
                 if (settings.HasEfiPrefix()) {
@@ -210,7 +220,7 @@ namespace hirs {
                 dv.Pcrslist = ByteString.CopyFromUtf8(pcrsList);
 
                 Log.Debug("Create identity claim");
-                IdentityClaim idClaim = acaClient.CreateIdentityClaim(dv, akPublicArea, ekPublicArea, ekc, pcs, manifest);
+                IdentityClaim idClaim = acaClient.CreateIdentityClaim(dv, akPublicArea, ekPublicArea, ekc, pcs, manifest, ldevidPublicArea);
 
                 Log.Information("----> Sending identity claim to Attestation CA");
                 IdentityClaimResponse icr = await acaClient.PostIdentityClaim(idClaim);
@@ -284,19 +294,37 @@ namespace hirs {
                         certificate = cr.Certificate.ToByteArray(); // contains certificate
                         String certificateDirPath = settings.efi_prefix;
                         if (certificateDirPath != null) {
-                            String certificateFilePath =  certificateFilePath = certificateDirPath + DefaultCertFileName;
+                            String certificateFilePath = certificateDirPath + DefaultCertFileName;
                             try {
                                 if (!Directory.Exists(certificateDirPath)) {
                                     Directory.CreateDirectory(certificateDirPath);
                                 }
                                 File.WriteAllBytes(certificateFilePath, certificate);
-                                Log.Debug("Certificate written to local file system: ", certificateFilePath);
+                                Log.Debug("Attestation key certificate written to local file system: {0}", certificateFilePath);
                             }
                             catch (Exception) {
-                                Log.Debug("Failed to write certificate to local file system.");
+                                Log.Debug("Failed to write attestation key certificate to local file system.");
                             }
                         }
                         Log.Debug("Printing attestation key certificate: " + BitConverter.ToString(certificate));
+                    }
+                    if (cr.HasLdevidCertificate) {
+                        certificate = cr.LdevidCertificate.ToByteArray(); // contains certificate
+                        String certificateDirPath = settings.efi_prefix;
+                        if (certificateDirPath != null) {
+                            String certificateFilePath = certificateDirPath + DefaultLDevIDCertFileName;
+                            try {
+                                if (!Directory.Exists(certificateDirPath)) {
+                                    Directory.CreateDirectory(certificateDirPath);
+                                }
+                                File.WriteAllBytes(certificateFilePath, certificate);
+                                Log.Debug("LDevID certificate written to local file system: {0}", certificateFilePath);
+                            }
+                            catch (Exception) {
+                                Log.Debug("Failed to write LDevID certificate to local file system.");
+                            }
+                        }
+                        Log.Debug("Printing LDevID certificate: " + BitConverter.ToString(certificate));
                     }
                 } else {
                     result = ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;

@@ -270,7 +270,7 @@ namespace hirs {
 
         #region EFI
         private void CheckEfiPrefix() {
-            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.efi_prefix.ToString()])) {
+            if (configFromSettingsFile[Options.efi_prefix.ToString()] != null) {
                 Log.Debug("Checking EFI Prefix setting.");
                 efi_prefix = $"{ configFromSettingsFile[Options.efi_prefix.ToString()] }";
                 if (string.IsNullOrWhiteSpace(efi_prefix)) { // If not explicitly set in appsettings, try to use default EFI location on Linux

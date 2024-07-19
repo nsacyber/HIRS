@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Newtonsoft.Json.Converters;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,6 +26,8 @@ namespace hirs {
         public const uint DefaultEkcNvIndex = 0x1c00002;
         public const uint DefaultEkHandle = 0x81010001;
         public const uint DefaultAkHandle = 0x81010002;
+        public const uint DefaultSrkHandle = 0x81000001;
+        public const uint DefaultLDevIDHandle = 0x81000002;
         
         private readonly Tpm2 tpm;
 
@@ -197,6 +200,20 @@ namespace hirs {
             return inPublic;
         }
 
+        public static TpmPublic GenerateSRKTemplateL1() {
+            TpmAlgId nameAlg = TpmAlgId.Sha256;
+            ObjectAttr attributes = ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | ObjectAttr.UserWithAuth | ObjectAttr.Restricted | ObjectAttr.Decrypt | ObjectAttr.NoDA;
+            byte[] auth_policy = null;
+            // ASYM: RSA 2048 with NULL scheme, SYM: AES-128 with CFB mode
+            RsaParms rsa = new(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb), new NullAsymScheme(), 2048, 0);
+            // unique buffer must be filled with 0 for the EK Template L-1.
+            byte[] zero256 = new byte[256];
+            Array.Fill<byte>(zero256, 0x00);
+            Tpm2bPublicKeyRsa unique = new(zero256);
+            TpmPublic inPublic = new(nameAlg, attributes, auth_policy, rsa, unique);
+            return inPublic;
+        }
+
         public void CreateEndorsementKey(uint ekHandleInt) {
             TpmHandle ekHandle = new(ekHandleInt);
 
@@ -243,6 +260,25 @@ namespace hirs {
         private static TpmPublic GenerateAKTemplate(TpmAlgId nameAlg) {
             RsaParms rsa = AkRsaParms();
             ObjectAttr attributes = AkAttributes();
+            TpmPublic inPublic = new(nameAlg, attributes, null, rsa, new Tpm2bPublicKeyRsa());
+            return inPublic;
+        }
+
+        private static RsaParms LDevIDRSAParms() {
+            TpmAlgId digestAlg = TpmAlgId.Sha256;
+            RsaParms parms = new(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(digestAlg), 2048, 0);
+            return parms;
+        }
+
+        private static ObjectAttr LDevIDAttributes() {
+            ObjectAttr attrib =  ObjectAttr.Sign | ObjectAttr.FixedParent | ObjectAttr.FixedTPM
+                    | ObjectAttr.SensitiveDataOrigin | ObjectAttr.UserWithAuth;
+            return attrib;
+        }
+
+        private static TpmPublic GenerateLDevIDTemplate(TpmAlgId nameAlg) {
+            RsaParms rsa = LDevIDRSAParms();
+            ObjectAttr attributes = LDevIDAttributes();
             TpmPublic inPublic = new(nameAlg, attributes, null, rsa, new Tpm2bPublicKeyRsa());
             return inPublic;
         }
@@ -296,6 +332,88 @@ namespace hirs {
             Log.Debug("Created and persisted new AK at handle 0x" + akHandle.handle.ToString("X") + ".");
 
             tpm.FlushContext(sessEK);
+        }
+
+        public void CreateStorageRootKey(uint srkHandleInt) {
+            TpmHandle srkHandle = new(srkHandleInt);
+
+            TpmPublic existingObject;
+            try {
+                existingObject = tpm.ReadPublic(srkHandle, out byte[] name, out byte[] qualifiedName);
+                Log.Debug("SRK already exists.");
+                return;
+            } catch (TpmException) {
+                Log.Debug("Verified SRK does not exist at expected handle. Creating SRK.");
+            }
+
+            SensitiveCreate inSens = new(); // key password (no params = no key password)
+            TpmPublic inPublic = CommandTpm.GenerateSRKTemplateL1(); 
+
+            TpmHandle newTransientSrkHandle = tpm.CreatePrimary(TpmRh.Owner, inSens, inPublic,
+                                                new byte[] { }, new PcrSelection[] { }, out TpmPublic outPublic,
+                                                out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
+
+            Log.Debug("New SRK Handle: " + BitConverter.ToString(newTransientSrkHandle));
+            Log.Debug("New SRK PUB Name: " + BitConverter.ToString(outPublic.GetName()));
+            Log.Debug("New SRK PUB 2BREP: " + BitConverter.ToString(outPublic.GetTpm2BRepresentation()));
+
+            // Make the object persistent
+            tpm.EvictControl(TpmRh.Owner, newTransientSrkHandle, srkHandle);
+            Log.Debug("Successfully made the new SRK persistent at handle " + BitConverter.ToString(srkHandle) + ".");
+
+            tpm.FlushContext(newTransientSrkHandle);
+            Log.Debug("Flushed the context for the transient SRK.");
+        }
+
+        public void CreateLDevIDKey(uint srkHandleInt, uint ldevidHandleInt, bool replace) {
+            TpmHandle srkHandle = new(srkHandleInt);
+            TpmHandle ldevidHandle = new(ldevidHandleInt);
+
+            TpmPublic existingObject = null;
+            try {
+                existingObject = tpm.ReadPublic(ldevidHandle, out byte[] name, out byte[] qualifiedName);
+            } catch { }
+
+            if (!replace && existingObject != null) {
+                // Do Nothing
+                Log.Debug("LDevID exists at expected handle. Flag to not replace the LDevID is set in the settings file.");
+                return;
+            } else if (replace && existingObject != null) {
+                // Clear the object and continue
+                tpm.EvictControl(TpmRh.Owner, ldevidHandle, ldevidHandle);
+                Log.Debug("Removed previous LDevID.");
+            }  
+
+            // Create a new key and make it persistent at ldevidHandle
+            TpmAlgId nameAlg = TpmAlgId.Sha256;
+
+            SensitiveCreate inSens = new();
+            TpmPublic inPublic = GenerateLDevIDTemplate(nameAlg);
+
+            /*var policySRK = new PolicyTree(nameAlg);
+            policySRK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Owner, false, 0, null, null));
+
+            AuthSession sessSRK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
+            sessSRK.RunPolicy(tpm, policySRK);*/
+
+            TpmPrivate kLDevID = tpm.Create(srkHandle, inSens, inPublic, null, null, out TpmPublic outPublic,
+                                            out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
+
+            Log.Debug("New LDevID PUB Name: " + BitConverter.ToString(outPublic.GetName()));
+            Log.Debug("New LDevID PUB 2BREP: " + BitConverter.ToString(outPublic.GetTpm2BRepresentation()));
+            Log.Debug("New LDevID PUB unique: " + BitConverter.ToString((Tpm2bPublicKeyRsa)(outPublic.unique)));
+
+            /*tpm.FlushContext(sessSRK);
+
+            sessSRK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
+            sessSRK.RunPolicy(tpm, policySRK);*/
+
+            TpmHandle hLDevID = tpm.Load(srkHandle, kLDevID, outPublic);
+
+            tpm.EvictControl(TpmRh.Owner, hLDevID, ldevidHandle);
+            Log.Debug("Created and persisted new LDevID at handle 0x" + ldevidHandle.handle.ToString("X") + ".");
+
+            //tpm.FlushContext(sessSRK);
         }
 
         public Tpm2bDigest[] GetPcrList(TpmAlgId pcrBankDigestAlg, uint[] pcrs = null) {

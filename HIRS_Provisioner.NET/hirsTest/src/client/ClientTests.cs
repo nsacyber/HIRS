@@ -16,12 +16,13 @@ namespace hirsTest {
             DeviceInfo dv = new DeviceInfo();
             byte[] akPub = new byte[] { };
             byte[] ekPub = new byte[] { };
+            byte[] ldevidPub = new byte[] { };
             byte[] ekc = new byte[] { };
             List<byte[]> pcs = new List<byte[]>();
             pcs.Add(new byte[] { });
             string componentList= "";
 
-            IdentityClaim obj = client.CreateIdentityClaim(dv, akPub, ekPub, ekc, pcs, componentList);
+            IdentityClaim obj = client.CreateIdentityClaim(dv, akPub, ekPub, ekc, pcs, componentList, ldevidPub);
             Assert.Multiple(() => {
                 Assert.That(obj.Dv, Is.Not.Null);
                 Assert.That(obj.HasAkPublicArea, Is.True);
@@ -29,6 +30,7 @@ namespace hirsTest {
                 Assert.That(obj.HasEndorsementCredential, Is.True);
                 Assert.That(obj.PlatformCredential, Has.Count.EqualTo(1));
                 Assert.That(obj.HasPaccorOutput, Is.True);
+                Assert.That(obj.HasLdevidPublicArea, Is.True);
             });
         }
 

@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -35,6 +36,9 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
     @JoinColumn(name = "pc_id")
     private List<PlatformCredential> platformCredentials;
 
+    @Column
+    public boolean isLDevID;
+
     /**
      * Constructor.
      * @param certificateBytes the issued certificate bytes
@@ -44,11 +48,12 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      */
     public IssuedAttestationCertificate(final byte[] certificateBytes,
                                         final EndorsementCredential endorsementCredential,
-                                        final List<PlatformCredential> platformCredentials)
+                                        final List<PlatformCredential> platformCredentials, boolean isLDevID)
             throws IOException {
         super(certificateBytes);
         this.endorsementCredential = endorsementCredential;
         this.platformCredentials = new ArrayList<>(platformCredentials);
+        this.isLDevID = isLDevID;
     }
 
     /**
@@ -60,9 +65,10 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      */
     public IssuedAttestationCertificate(final Path certificatePath,
                                         final EndorsementCredential endorsementCredential,
-                                        final List<PlatformCredential> platformCredentials)
+                                        final List<PlatformCredential> platformCredentials,
+                                        final boolean isLDevID)
             throws IOException {
-        this(readBytes(certificatePath), endorsementCredential, platformCredentials);
+        this(readBytes(certificatePath), endorsementCredential, platformCredentials, isLDevID);
     }
 
     public List<PlatformCredential> getPlatformCredentials() {

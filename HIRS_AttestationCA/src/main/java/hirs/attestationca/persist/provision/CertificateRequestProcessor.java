@@ -5,6 +5,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
+import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
 import hirs.attestationca.persist.entity.userdefined.Device;
@@ -44,6 +45,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
      * @param acaCertificate object used to create credential
      * @param validDays int for the time in which a certificate is valid.
      * @param tpm2ProvisionerStateRepository db connector for provisioner state.
+     * @param policyRepository db connector for policies.
      */
     public CertificateRequestProcessor(final SupplyChainValidationService supplyChainValidationService,
                                        final CertificateRepository certificateRepository,
@@ -51,13 +53,15 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                                        final PrivateKey privateKey,
                                        final X509Certificate acaCertificate,
                                        final int validDays,
-                                       final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository) {
+                                       final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
+                                       final PolicyRepository policyRepository) {
         super(privateKey, validDays);
         this.supplyChainValidationService = supplyChainValidationService;
         this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;
         this.acaCertificate = acaCertificate;
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
+        setPolicyRepository(policyRepository);
     }
 
     /**
@@ -107,6 +111,9 @@ public class CertificateRequestProcessor extends AbstractProcessor {
             List<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
                     endorsementCredential, certificateRepository);
 
+            // Get LDevID public key if it exists
+            RSAPublicKey ldevidPub = ProvisionUtils.parsePublicKey(claim.getLdevidPublicArea().toByteArray());
+
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
             Device device = deviceRepository.findByName(deviceName);
@@ -142,22 +149,31 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                 // Create signed, attestation certificate
                 X509Certificate attestationCertificate = generateCredential(akPub,
                         endorsementCredential, platformCredentials, deviceName, acaCertificate);
+                X509Certificate ldevidCertificate = generateCredential(ldevidPub,
+                        endorsementCredential, platformCredentials, deviceName, acaCertificate);
                 byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
                         attestationCertificate);
+                byte[] derEncodedLdevidCertificate = ProvisionUtils.getDerEncodedCertificate(
+                        ldevidCertificate);
 
                 // We validated the nonce and made use of the identity claim so state can be deleted
                 tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
 
-                // Package the signed certificate into a response
+                // Package the signed certificates into a response
                 ByteString certificateBytes = ByteString
                         .copyFrom(derEncodedAttestationCertificate);
+                ByteString ldevidCertificateBytes = ByteString
+                        .copyFrom(derEncodedLdevidCertificate);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
                         .newBuilder().setCertificate(certificateBytes)
+                        .setLdevidCertificate(ldevidCertificateBytes)
                         .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                         .build();
 
                 saveAttestationCertificate(certificateRepository, derEncodedAttestationCertificate,
-                        endorsementCredential, platformCredentials, device);
+                        endorsementCredential, platformCredentials, device, false);
+                saveAttestationCertificate(certificateRepository, derEncodedLdevidCertificate,
+                        endorsementCredential, platformCredentials, device, true);
 
                 return response.toByteArray();
             } else {
