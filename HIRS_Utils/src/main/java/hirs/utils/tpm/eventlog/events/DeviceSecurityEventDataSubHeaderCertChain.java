@@ -45,8 +45,6 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
      */
     public DeviceSecurityEventDataSubHeaderCertChain(final byte[] dsedSubHBytes) {
 
-        spdmMeasurementBlockList = new ArrayList<>();
-
         byte[] spdmVersionBytes = new byte[2];
         System.arraycopy(dsedSubHBytes, 0, spdmVersionBytes, 0, 2);
         spdmVersion = HexUtils.leReverseInt(spdmVersionBytes);
@@ -69,12 +67,12 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
         System.arraycopy(dsedSubHBytes, 8, spdmCertChainBytes, 0,
                 spdmCertChainSize);
 
-        ByteArrayInputStream spdmMeasurementBlockListData =
-                new ByteArrayInputStream(spdmMeasurementBlockListBytes);
-        while (spdmMeasurementBlockListData.available() > 0) {
-            SpdmMeasurementBlock spdmMeasurementBlock;
-            spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockListData);
-            spdmMeasurementBlockList.add(spdmMeasurementBlock);
-        }
+//        ByteArrayInputStream spdmMeasurementBlockListData =
+//                new ByteArrayInputStream(spdmMeasurementBlockListBytes);
+//        while (spdmMeasurementBlockListData.available() > 0) {
+//            SpdmMeasurementBlock spdmMeasurementBlock;
+//            spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockListData);
+//            spdmMeasurementBlockList.add(spdmMeasurementBlock);
+//        }
     }
 }
