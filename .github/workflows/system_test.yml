@@ -69,6 +69,16 @@ jobs:
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 8
+      - name: ACA POLICY TEST 9 - Test valid PC and RIM with PC only uploaded
+        continue-on-error: true
+        shell: bash
+        run: |
+          .ci/system-tests/tests/aca_policy_tests.sh 9
+      - name: ACA POLICY TEST 10 - Test valid PC and RIM with RIM only uploaded
+        continue-on-error: true
+        shell: bash
+        run: |
+          .ci/system-tests/tests/aca_policy_tests.sh 10
       # - name: All ACA Policy Tests 1-8
       #   continue-on-error: true
       #   shell: bash

@@ -26,34 +26,34 @@ fi
 
 # clear all policy settings
 setPolicyNone() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=0, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
+docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=0, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
            utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
 }
 
 # Policy Settings for tests ...
 setPolicyEkOnly() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
+docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
            utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
 }
 
 setPolicyEkPc_noAttCheck() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=1,
+docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=1,
            utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
 }
 
 setPolicyEkPc() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
+docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
            utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
 }
 
 setPolicyEkPcFw() {
-docker exec $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
+docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
            utcValidationEnabled=0, firmwareValidationEnabled=1, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=1, ignoretBootEnabled=0;"
 }
 
 # Clear all ACA DB items excluding policy
 clearAcaDb() {
-docker exec hirs-aca1 mysql -u root -proot -e "use hirs_db; set foreign_key_checks=0; truncate Appraiser;
+docker exec -i $aca_container mysql -u root -proot -e "use hirs_db; set foreign_key_checks=0; truncate Appraiser;
  truncate Certificate;truncate Certificate_Certificate;truncate CertificatesUsedToValidate;truncate ComponentAttributeResult;
  truncate ComponentInfo;truncate ComponentResult;truncate Device;truncate DeviceInfoReport;truncate PortalInfo;
  truncate ReferenceDigestValue;truncate ReferenceManifest;truncate Report;truncate SupplyChainValidation;
@@ -68,15 +68,18 @@ uploadTrustedCerts() {
 #                                     && ./createekcert -rsa 2048 -cakey cakey.pem -capwd rrrr -v 1> /dev/null \
 #                                     && popd > /dev/null"
   # Upload CA Cert from IBMTSS Tools
-  docker exec $tpm2_container sh -c "pushd /ibmtss/utils/certificates > /dev/null \
-                                     && curl -k -s -F 'file=@cacert.pem' https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload \
-                                     && popd > /dev/null"
+  echo "Uploading Trust Certificates to ${HIRS_ACA_HOSTNAME}:${HIRS_ACA_PORTAL_PORT}"
+  echo "Uploading the EK Certificate CA(s)..."
+  docker exec -i $tpm2_container /bin/bash -c "curl -k -F 'file=@/ibmtss/utils/certificates/cacert.pem' $SERVER_CACERT_POST"
+  echo "...done"
   # Upload Trusted Certs from HIRS
-  pushd .ci/setup/certs > /dev/null
-    curl -k -s -F "file=@ca.crt" https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
-    curl -k -s -F "file=@RIMCaCert.pem" https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
-    curl -k -s -F "file=@RimSignCert.pem" https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
-  popd > /dev/null
+  echo "Uploading the Platform Certificate CA(s)..."
+  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/ca.crt' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST"
+  echo "...done"
+  echo "Uploading the RIM CA(s)..."
+  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/RIMCaCert.pem' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST"
+  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/RimSignCert.pem' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST"
+  echo "...done"
 }
 
 # provision_tpm2 takes one parameter which is the expected result of the provion: "pass" or "fail"
@@ -85,7 +88,7 @@ uploadTrustedCerts() {
 provisionTpm2() {
    expected_result=$1
    ((totalTests++))
-   provisionOutput=$(docker exec $tpm2_container sh -c "/usr/share/hirs/tpm_aca_provision --tcp --ip 127.0.0.1:2321 --sim");
+   provisionOutput=$(docker exec -i $tpm2_container /bin/bash -c "/usr/share/hirs/tpm_aca_provision --tcp --ip 127.0.0.1:2321 --sim");
     echo "==========="
     echo "$provisionOutput";
     echo "===========";
@@ -106,22 +109,28 @@ provisionTpm2() {
   fi
 }
 
+resetTpmForNewTest() {
+  docker exec -i $tpm2_container /bin/bash -c "source $HIRS_CI_REPO_ROOT/.ci/setup/container/tpm2_common.sh; startFreshTpmServer -f; startupTpm; installEkCert"
+}
+
 # Places platform cert(s) held in the test folder(s) in the provisioners tcg folder
-# setPlatCert <profile> <test>
 setPlatformCerts() {
-  docker exec $tpm2_container sh /hirs/.ci/system-tests/container/pc_setup.sh $1 $2
-  #docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
+  OPTIONS="$@"
+  echo "Asking container $tpm2_container to run pc_setup.sh $OPTIONS"
+  docker exec -i $tpm2_container /bin/bash -c "$HIRS_CI_REPO_ROOT/.ci/system-tests/container/pc_setup.sh $OPTIONS"
 }
 
 # Places RIM files held in the test folder in the provisioners tcg folder
-# setRims <profile> <test>
 setRims() {
-docker exec $tpm2_container sh /hirs/.ci/system-tests/container/rim_setup.sh $1 $2 $3
-#docker exec $tpm2_container bash -c "find / -name oem_platform_v1_Base.cer"
+  OPTIONS="$@"
+  echo "Asking container $tpm2_container to run rim_setup.sh $OPTIONS"
+  docker exec -i $tpm2_container /bin/bash -c "$HIRS_CI_REPO_ROOT/.ci/system-tests/container/rim_setup.sh $OPTIONS"
 }
 
-setPlatformOutput() {
-    docker exec $tpm2_container cp /usr/share/hirs/appsettings_hw.json /usr/share/hirs/appsettings.json
+setAppsettings() {
+  OPTIONS="$@"
+  echo "Asking container $tpm2_container to set the appsettings file with options: $OPTIONS"
+  docker exec -i $tpm2_container /bin/bash -c "source $HIRS_CI_REPO_ROOT/.ci/setup/container/tpm2_common.sh; setCiHirsAppsettingsFile $OPTIONS"
 }
 
 # Writes to the Action ouput, ACA log, and Provisioner Log
@@ -130,6 +139,5 @@ setPlatformOutput() {
 writeToLogs() {
   line=$1
   echo $line;
-  docker exec $aca_container sh -c "cd .. && echo '$line' >> /var/log/hirs/HIRS_AttestationCA_Portal.log"
- # docker exec $tpm2_container sh -c "echo '$line' >> /var/log/hirs/provisioner/HIRS_provisionerTPM2.log"
+  docker exec -i $aca_container /bin/bash -c "cd .. && echo '$line' >> /var/log/hirs/HIRS_AttestationCA_Portal.log"
 }

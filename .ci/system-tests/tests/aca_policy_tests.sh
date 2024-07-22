@@ -17,6 +17,8 @@ case $1 in
     6) test="6" ;;
     7) test="7" ;;
     8) test="8" ;;
+    9) test="9" ;;
+    10) test="10" ;;
 esac
 
 # Start ACA Policy Tests
@@ -24,7 +26,12 @@ esac
 
 if [ "$test" = "1" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 1: Test ACA default policy  ###"
-    setPlatformCerts "laptop" "empty"
+    writeToLogs "Now using default appsettings"
+    clearAcaDb
+    resetTpmForNewTest
+    setAppsettings
+    setPolicyNone
+    setPlatformCerts -p "laptop" -t "empty"
     provisionTpm2 "pass"
 fi
 if [ "$test" = "2" ] || [ "$test" = "all" ]; then
@@ -47,37 +54,62 @@ if [ "$test" = "5" ] || [ "$test" = "all" ]; then
     setPolicyEkPcFw
     provisionTpm2 "fail"
 fi
+writeToLogs "Now using appsettings with hardware information"
+setAppsettings --paccor-output-file /ci_test/hw.json --event-log-file /ci_test/binary_bios_measurements --linux-dmi
 if [ "$test" = "6" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 6: Test PC Validation Policy with valid PC with no Attribute Check ###"
     clearAcaDb
+    resetTpmForNewTest
     setPolicyEkPc_noAttCheck
     uploadTrustedCerts
-    setPlatformCerts "laptop" "default"
+    setPlatformCerts -p "laptop" -t "default"
     provisionTpm2 "pass"
 fi
 if [ "$test" = "7" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 7: Test PC Validation Policy with valid PC with Attribute Check ###"
     clearAcaDb
+    resetTpmForNewTest
     setPolicyEkPc
     uploadTrustedCerts
-    setPlatformCerts "laptop" "default"
-    setPlatformOutput
+    setPlatformCerts -p "laptop" -t "default"
     provisionTpm2 "pass"
 fi
 if [ "$test" = "8" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA POLICY TEST 8: Test PC with RIM Validation Policy with valid PC and RIM ###"
     clearAcaDb
+    resetTpmForNewTest
     setPolicyEkPcFw
     uploadTrustedCerts
-    setPlatformCerts "laptop" "default"
-    setRims "laptop" "default"
+    setPlatformCerts -p "laptop" -t "default"
+    setRims -p "laptop" -t "default"
+    provisionTpm2 "pass"
+fi
+if [ "$test" = "9" ] || [ "$test" = "all" ]; then
+    writeToLogs "### ACA POLICY TEST 9: Test valid PC and RIM with PC only uploaded ###"
+    clearAcaDb
+    resetTpmForNewTest
+    setPolicyEkPcFw
+    uploadTrustedCerts
+    setPlatformCerts -p "laptop" -t "default" -u -n
+    setRims -p "laptop" -t "default"
+    provisionTpm2 "pass"
+fi
+if [ "$test" = "10" ] || [ "$test" = "all" ]; then
+    writeToLogs "### ACA POLICY TEST 10: Test valid PC and RIM with RIM only uploaded ###"
+    clearAcaDb
+    resetTpmForNewTest
+    setPolicyEkPcFw
+    uploadTrustedCerts
+    setPlatformCerts -p "laptop" -t "default"
+    setRims -p "laptop" -t "default" -u -n
     provisionTpm2 "pass"
 fi
 
 #  Process Test Results, any single failure will send back a failed result.
 if [[ $failedTests != 0 ]]; then
-    export TEST_STATUS=1;
+    export TEST_STATUS=1
     echo "****  $failedTests out of $totalTests ACA Policy Tests Failed! ****"
+    exit 1
   else
     echo "****  $totalTests ACA Policy Tests Passed! ****"
 fi

@@ -21,35 +21,39 @@ esac
 if [ "$test" = "1" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA RIM TEST 1: Test a RIM from an OEM and a Supplemental RIM from a VAR ###"
     clearAcaDb
+    resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPcFw
-    setPlatformCerts "laptop" "varOsInstall"
-    setRims "laptop" "varOsInstall" "clear"
+    setPlatformCerts -p "laptop" -t "varOsInstall"
+    setRims -p "laptop" -t "varOsInstall"
     provisionTpm2 "pass"
 fi
 if [ "$test" = "2" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA RIM TEST 2: Test a RIM from an OEM with a bad reference measurement and a Supplemental RIM from a VAR ###"
     clearAcaDb
+    resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPcFw
-    setPlatformCerts "laptop" "badOemInstall"
-    setRims "laptop" "badOemInstall" "clear"
+    setPlatformCerts -p "laptop" -t "badOemInstall"
+    setRims -p "laptop" -t "badOemInstall"
     provisionTpm2 "fail"
 fi
 if [ "$test" = "3" ] || [ "$test" = "all" ]; then
     writeToLogs "### ACA RIM TEST 3: Test a RIM from an OEM and a Supplemental RIM from a VAR with a bad reference measurement ###"
     clearAcaDb
+    resetTpmForNewTest
     uploadTrustedCerts
     setPolicyEkPcFw
-    setPlatformCerts "laptop" "badVarInstall"
-    setRims "laptop" "badVarInstall" "clear"
+    setPlatformCerts -p "laptop" -t "badVarInstall"
+    setRims -p "laptop" -t "badVarInstall"
     provisionTpm2 "fail"
 fi
 
 #  Process Test Results, any single failure will send back a failed result.
 if [[ $failedTests != 0 ]]; then
-    export TEST_STATUS=1;
+    export TEST_STATUS=1
     echo "****  $failedTests out of $totalTests ACA RIM Tests Failed! ****"
+    exit 1
   else
     echo "****  $totalTests ACA RIM Tests Passed! ****"
 fi
