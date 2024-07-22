@@ -12,8 +12,9 @@ import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestati
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
-import hirs.attestationca.persist.util.PciIds;
+import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
+import hirs.utils.PciIds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -372,7 +373,7 @@ public final class CertificateStringMapBuilder {
                             certificate.getSerialNumber().toString(),
                             certificate.getPlatformSerial());
             if (PciIds.DB.isReady()) {
-                compResults = PciIds.translateResults(compResults);
+                compResults = AcaPciIds.translateResults(compResults);
             }
             data.put("componentResults", compResults);
 
@@ -382,7 +383,7 @@ public final class CertificateStringMapBuilder {
                 //Component Identifier - attempt to translate hardware IDs
                 List<ComponentIdentifier> comps = platformConfiguration.getComponentIdentifier();
                 if (PciIds.DB.isReady()) {
-                    comps = PciIds.translate(comps);
+                    comps = AcaPciIds.translate(comps);
                 }
                 data.put("componentsIdentifier", comps);
                 //Component Identifier URI

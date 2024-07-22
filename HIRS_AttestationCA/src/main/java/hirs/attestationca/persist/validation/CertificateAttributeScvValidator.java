@@ -13,7 +13,8 @@ import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
-import hirs.attestationca.persist.util.PciIds;
+import hirs.attestationca.persist.util.AcaPciIds;
+import hirs.utils.PciIds;
 import hirs.utils.enums.DeviceInfoEnums;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -446,7 +447,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             fullDeltaChainComponents.clear();
             for (ComponentIdentifier ci : subCompIdList) {
                 if (ci.isVersion2() && PciIds.DB.isReady()) {
-                    ci = PciIds.translate((ComponentIdentifierV2) ci);
+                    ci = AcaPciIds.translate((ComponentIdentifierV2) ci);
                 }
                 log.error("Unmatched component: " + ci);
                 fullDeltaChainComponents.add(ci);
@@ -608,7 +609,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             for (ComponentIdentifier unmatchedComponent : pcUnmatchedComponents) {
                 if (unmatchedComponent.isVersion2() && PciIds.DB.isReady()) {
                     unmatchedComponent =
-                            PciIds.translate((ComponentIdentifierV2) unmatchedComponent);
+                            AcaPciIds.translate((ComponentIdentifierV2) unmatchedComponent);
                 }
                 log.error("Unmatched component " + unmatchedComponentCounter++ + ": "
                         + unmatchedComponent);

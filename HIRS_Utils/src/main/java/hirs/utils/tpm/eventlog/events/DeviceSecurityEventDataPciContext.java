@@ -3,6 +3,13 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static hirs.utils.PciIds.translateDevice;
+import static hirs.utils.PciIds.translateDeviceClass;
+import static hirs.utils.PciIds.translateVendor;
+
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT event per PFP.
  * <p>
@@ -99,21 +106,30 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
     }
 
     /**
-     * Returns a human readable description of the data within this structure.
+     * Returns a human-readable description of the data within this structure.
      *
-     * @return a description of this structure..
+     * @return a description of this structure.
      */
     public String toString() {
         String dSEDpciContextInfo = "";
 
         dSEDpciContextInfo += super.toString();
         dSEDpciContextInfo += "\n      Device Type = PCI";
-        dSEDpciContextInfo += "\n      VendorID = 0x" + vendorId;
-        dSEDpciContextInfo += "\n      DeviceID = 0x" + deviceId;
-        dSEDpciContextInfo += "\n      RevisionID = 0x" + revisionId;
-        dSEDpciContextInfo += "\n      ClassCode = 0x" + classCode;
-        dSEDpciContextInfo += "\n      SubsystemVendorID = 0x" + subsystemVendorId;
-        dSEDpciContextInfo += "\n      SubsystemID = 0x" + subsystemId;
+        dSEDpciContextInfo += "\n      Vendor = " + translateVendor(vendorId);
+        dSEDpciContextInfo += "\n      Device = " + translateDevice(vendorId, deviceId);
+        dSEDpciContextInfo += "\n      RevisionID = " + revisionId;
+
+        List<String> classCodeList = translateDeviceClass(classCode);
+        dSEDpciContextInfo += "\n      Device Class: ";
+        if(classCodeList.size() == 3) {
+            dSEDpciContextInfo += "\n        Class = " + classCodeList.get(0);
+            dSEDpciContextInfo += "\n        Subclass = " + classCodeList.get(1);
+            dSEDpciContextInfo += "\n        Programming Interface = " + classCodeList.get(2);
+        } else {
+            dSEDpciContextInfo += " ** Class code could not be determined **";
+        }
+        dSEDpciContextInfo += "\n      SubsystemVendor = " + translateVendor(subsystemVendorId);
+        dSEDpciContextInfo += "\n      Subsystem = " + translateDevice(subsystemVendorId, subsystemId);
 
         return dSEDpciContextInfo;
     }
