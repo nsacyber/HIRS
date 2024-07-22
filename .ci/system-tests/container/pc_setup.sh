@@ -56,7 +56,6 @@ done
 profileDir="$HIRS_CI_REPO_ROOT/.ci/system-tests/profiles/$profile"
 testDir="$profileDir/$test"
 pcDir="$testDir/platformcerts"
-dmiZip="$profileDir/$profile"_dmi.zip
 hwJsonFileName="$profile"_"$test"_hw.json
 hwJsonFile="$testDir/$hwJsonFileName"
 
@@ -64,11 +63,6 @@ hwJsonFile="$testDir/$hwJsonFileName"
 if [ ! -f "$hwJsonFile" ]; then
     echo "Test is using a profile with no hardware manifest file. Using default."
     hwJsonFile=$HIRS_CI_TEST_DEFAULT_HW_JSON_FILE
-fi
-
-if [ ! -f "$dmiZip" ]; then
-    echo "Test is using a profile with no DMI data. Using default."
-    dmiZip=$HIRS_CI_TEST_DEFAULT_DMI_ZIP
 fi
 
 # Ensure platform folder under efi is set up and cleared
@@ -84,11 +78,7 @@ fi
 # Can remove this once unzip is added to the image
 dnf install -y unzip &> /dev/null
 
-# Step 2: Unpack the dmi files.
-echo "dmi file used was $dmiZip"
-unzip -o "$dmiZip" -d $HIRS_CI_TEST_ROOT
-
-# Step 3: Copy the platform cert to tcg folder and or upload it to the ACA
+# Step 2: Copy the platform cert to tcg folder and or upload it to the ACA
 if [[ ! -d $pcDir ]]; then
     pcDir=$profileDir/default/platformcerts
 fi
@@ -108,4 +98,3 @@ pushd $pcDir > /dev/null
     done
   fi
 popd > /dev/null
-

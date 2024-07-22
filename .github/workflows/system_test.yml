@@ -11,7 +11,7 @@ on:
 env:
   TEST_STATUS: 0
 jobs:
-  DockerTests:
+  HIRS_SYSTEM_TESTS:
     runs-on: ubuntu-latest
     outputs:
       test-result: ${{ steps.set_outputs.outputs.test-result }}
