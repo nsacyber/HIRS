@@ -75,9 +75,6 @@ if [ -f "$hwJsonFile" ]; then
     cp "$hwJsonFile" "$ciTestHwJsonFile"
 fi
 
-# Can remove this once unzip is added to the image
-dnf install -y unzip &> /dev/null
-
 # Step 2: Copy the platform cert to tcg folder and or upload it to the ACA
 if [[ ! -d $pcDir ]]; then
     pcDir=$profileDir/default/platformcerts
