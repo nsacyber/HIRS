@@ -132,7 +132,7 @@ jobs:
           docker exec hirs-aca1 bash -c "mkdir -p /HIRS/logs/aca/ && cp -arp /var/log/hirs/* /HIRS/logs/aca/"
           docker exec hirs-provisioner1-tpm2 bash -c "mkdir -p /HIRS/logs/provisioner/ && cp -ap hirs*.log /HIRS/logs/provisioner/ && chmod -R 777 /HIRS/logs"
       - name: Docker Compose Down
-        if: always()e
+        if: always()
         shell: bash
         run: |
           echo "*** Exiting and removing Docker containers and network ..."
