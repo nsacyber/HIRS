@@ -1,0 +1,45 @@
+# workflow is used to run RIM tests
+name: RIM Test
+on:
+  push:
+    branches:
+      - '*v3*'
+      - 'main'
+    workflow_dispatch:
+
+jobs:
+  tcg_rim_tool_tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install git curl nano cron mariadb-server
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Execute Gradle build
+        run: |
+          ./gradlew build;
+          ./gradlew buildDeb;
+      - name: install rim tool
+        run: |
+          sudo dpkg -i tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
+      - name: RIM tests
+        run: | 
+          ./.ci/tcg-rim-tool/scripts/run_all_tests.sh --verbose
+
+
+
+
