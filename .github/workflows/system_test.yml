@@ -75,7 +75,7 @@ jobs:
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 9
       - name: ACA POLICY TEST 10 - Test valid PC and RIM with RIM only uploaded
-        cif: always()
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 10
