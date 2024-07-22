@@ -99,14 +99,14 @@ provisionTpm2() {
      else
         echo "Provisioning failed as expected."
      fi
-     elif [[ $provisionOutput == *"Provisioning successful"* ]];
+  elif [[ $provisionOutput == *"Provisioning successful"* ]]; then
        if [[ $expected_result == "fail" ]]; then
           ((failedTests++))
          echo "!!! Provisioning passed, but was expected to fail."
        else
          echo "Provisioning passed as expected."
-     fi
-   else 
+       fi
+  else
        ((failedTests++))
        echo "Provisioning failed. Provisioner provided an unexpected output."
   fi
