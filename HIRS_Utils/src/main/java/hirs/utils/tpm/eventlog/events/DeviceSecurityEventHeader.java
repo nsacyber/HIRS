@@ -208,7 +208,7 @@ public abstract class DeviceSecurityEventHeader {
 
         dsedHeaderCommonInfo += "\n   SPDM Device Type = " + deviceTypeToString(deviceType);
         if (devicePathValid) {
-            dsedHeaderCommonInfo += "\n   SPDM Device Path =\n";
+            dsedHeaderCommonInfo += "\n   SPDM Device Path:\n";
             dsedHeaderCommonInfo += devicePath;
         }
         else {

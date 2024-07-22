@@ -116,7 +116,7 @@ public class UefiDevicePath {
      */
     private String processDev(final byte[] path, final int offset)
             throws UnsupportedEncodingException {
-        String devInfo = "    ";
+        String devInfo = "      ";
         int devPath = path[offset];
         byte unknownSubType = path[offset + UefiConstants.OFFSET_1];
         switch (path[0 + offset]) {

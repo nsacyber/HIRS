@@ -1,13 +1,12 @@
-package hirs.attestationca.persist.util;
+package hirs.utils;
 
 import com.github.marandus.pciid.model.Device;
+import com.github.marandus.pciid.model.DeviceClass;
+import com.github.marandus.pciid.model.DeviceSubclass;
+import com.github.marandus.pciid.model.ProgramInterface;
 import com.github.marandus.pciid.model.Vendor;
 import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
-import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
-
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -25,6 +24,7 @@ import java.util.List;
  */
 @Log4j2
 public final class PciIds {
+
     /**
      * This pci ids file can be in different places on different distributions.
      */
@@ -79,114 +79,6 @@ public final class PciIds {
     }
 
     /**
-     * The Component Class TCG Registry OID.
-     */
-    public static final String COMPCLASS_TCG_OID = "2.23.133.18.3.1";
-    /**
-     * The Component Class Value mask for NICs.
-     */
-    public static final String COMPCLASS_TCG_CAT_NIC = "00090000";
-    /**
-     * The Component Class Value mask for GFX cards.
-     */
-    public static final String COMPCLASS_TCG_CAT_GFX = "00050000";
-
-    /**
-     * Iterate through all components and translate PCI hardware IDs as necessary.  It will only
-     * translate ComponentIdentifierV2+ objects as it relies on Component Class information.
-     * @param components List of ComponentIdentifiers.
-     * @return the translated list of ComponentIdentifiers.
-     */
-    public static List<ComponentIdentifier> translate(
-            final List<ComponentIdentifier> components) {
-        List<ComponentIdentifier> newList = new ArrayList<>();
-        if (components != null && !components.isEmpty()) {
-            for (final ComponentIdentifier component : components) {
-                // V2 components should not be found alongside V1 components
-                // they pass through just in case
-                if (component.isVersion2()) {
-                    newList.add(translate((ComponentIdentifierV2) component));
-                } else {
-                    newList.add(component);
-                }
-            }
-        }
-        return newList;
-    }
-
-    /**
-     * Iterate through all components and translate PCI hardware IDs as necessary.  It will only
-     * translate ComponentResults objects as it relies on Component Class information.
-     * @param componentResults List of ComponentResults.
-     * @return the translated list of ComponentResults.
-     */
-    public static List<ComponentResult> translateResults(final List<ComponentResult> componentResults) {
-        List<ComponentResult> newList = new ArrayList<>();
-        if (componentResults != null && !componentResults.isEmpty()) {
-            for (final ComponentResult componentResult : componentResults) {
-                newList.add(translateResult(componentResult));
-            }
-        }
-
-        return newList;
-    }
-
-    /**
-     * Translate Vendor and Device IDs, if found, in ComponentIdentifierV2 objects.
-     * It will only translate ID values, any other value will pass through.
-     * @param component ComponentIdentifierV2 object.
-     * @return the translated ComponentIdentifierV2 object.
-     */
-    public static ComponentIdentifierV2 translate(final ComponentIdentifierV2 component) {
-        ComponentIdentifierV2 newComponent = null;
-        if (component != null) {
-            newComponent = component;
-            // This can be updated as we get more accurate component class registries and values
-            // Component Class Registry not accessible: TCG assumed
-            final String compClassValue = component.getComponentClass().getCategory();
-            if (compClassValue.equals(COMPCLASS_TCG_CAT_NIC)
-                    || compClassValue.equals(COMPCLASS_TCG_CAT_GFX)) {
-                DERUTF8String manufacturer = (DERUTF8String) translateVendor(
-                        component.getComponentManufacturer());
-                DERUTF8String model = (DERUTF8String) translateDevice(
-                        component.getComponentManufacturer(),
-                        component.getComponentModel());
-
-                newComponent = new ComponentIdentifierV2(component.getComponentClass(),
-                        manufacturer,
-                        model,
-                        component.getComponentSerial(),
-                        component.getComponentRevision(),
-                        component.getComponentManufacturerId(),
-                        component.getFieldReplaceable(),
-                        component.getComponentAddress(),
-                        component.getCertificateIdentifier(),
-                        component.getComponentPlatformUri(),
-                        component.getAttributeStatus());
-            }
-
-        }
-        return newComponent;
-    }
-
-    /**
-     * Translate Vendor and Device IDs, if found, in ComponentResult objects.
-     * It will only translate ID values, any other value will pass through.
-     * @param componentResult ComponentResult object.
-     * @return the translated ComponentResult object.
-     */
-    public static ComponentResult translateResult(final ComponentResult componentResult) {
-        ComponentResult newComponent = null;
-        if (componentResult != null) {
-            newComponent = componentResult;
-            newComponent.setManufacturer(translateVendor(componentResult.getManufacturer()));
-            newComponent.setModel(translateDevice(componentResult.getManufacturer(),
-                    componentResult.getModel()));
-        }
-        return newComponent;
-    }
-
-    /**
      * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
      * If any part of this fails, return the original manufacturer value.
      * @param refManufacturer DERUTF8String, likely from a ComponentIdentifier
@@ -229,7 +121,7 @@ public final class PciIds {
      * @return ASN1UTF8String with the discovered device name, or the original model value.
      */
     public static ASN1UTF8String translateDevice(final ASN1UTF8String refManufacturer,
-                                                final ASN1UTF8String refModel) {
+                                                 final ASN1UTF8String refModel) {
         ASN1UTF8String manufacturer = refManufacturer;
         ASN1UTF8String model = refModel;
         if (manufacturer != null
@@ -267,5 +159,45 @@ public final class PciIds {
             }
         }
         return model;
+    }
+
+    /**
+     * Look up the device class name from the PCI IDs list, if the input string contains an ID.
+     * If any part of this fails, return the original manufacturer value.
+     * @param refClassCode String, formatted as 2 characters (1 byte) for each of the 3 categories
+     *    Example "010802":
+     *       Class: "01"
+     *       Subclass: "08"
+     *       Programming Interface: "02"
+     * @return List<String> 3-element list with the class code
+     *       1st element: human-readable description of Class
+     *       2nd element: human-readable description of Subclass
+     *       3rd element: human-readable description of Programming Interface
+     */
+    public static List<String> translateDeviceClass(final String refClassCode) {
+        List<String> translatedClassCode = new ArrayList<>();
+
+        String classCode = refClassCode;
+        if (classCode != null && classCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
+            String deviceClass = classCode.substring(0,2).toLowerCase();
+            String deviceSubclass = classCode.substring(2,4).toLowerCase();
+            String programInterface = classCode.substring(4,6).toLowerCase();
+            translatedClassCode.add(deviceClass);
+            translatedClassCode.add(deviceSubclass);
+            translatedClassCode.add(programInterface);
+            DeviceClass devC = DB.findDeviceClass(deviceClass);
+            DeviceSubclass devSc = DB.findDeviceSubclass(deviceClass, deviceSubclass);
+            ProgramInterface progI = DB.findProgramInterface(deviceClass, deviceSubclass, programInterface);
+            if (devC != null && !Strings.isNullOrEmpty(devC.getName())) {
+                translatedClassCode.set(0, devC.getName());
+            }
+            if (devSc != null && !Strings.isNullOrEmpty(devSc.getName())) {
+                translatedClassCode.set(1, devSc.getName());
+            }
+            if (progI != null && !Strings.isNullOrEmpty(progI.getName())) {
+                translatedClassCode.set(2, progI.getName());
+            }
+        }
+        return translatedClassCode;
     }
 }
