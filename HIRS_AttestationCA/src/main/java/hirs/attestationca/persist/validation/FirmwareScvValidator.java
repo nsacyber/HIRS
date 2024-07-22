@@ -59,20 +59,32 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         ReferenceManifest supportReferenceManifest = null;
         EventLogMeasurements measurement = null;
 
-        baseReferenceManifests = referenceManifestRepository.findAllBaseRims();
+        //baseReferenceManifests = referenceManifestRepository.findAllBaseRims();
 
-        for (BaseReferenceManifest bRim : baseReferenceManifests) {
-            if (bRim.getDeviceName().equals(hostName)
-                    && !bRim.isSwidSupplemental() && !bRim.isSwidPatch()) {
-                baseReferenceManifest = bRim;
+        // This block was looking for a base RIM matching the device name
+        // The base rim might not have a device name associated with it- i.e. if it's uploaded to the ACA prior to provisioning
+        // In this case, try to look up the event log associated with the device, then get the base rim associated by event log hash
+        List<ReferenceManifest> deviceRims = referenceManifestRepository.findByDeviceName(hostName);
+        for (ReferenceManifest deviceRim : deviceRims) {
+            if (deviceRim instanceof BaseReferenceManifest && !deviceRim.isSwidSupplemental() && !deviceRim.isSwidPatch()) {
+                baseReferenceManifest = (BaseReferenceManifest) deviceRim;
             }
+
+            if (deviceRim instanceof EventLogMeasurements) {
+                measurement = (EventLogMeasurements) deviceRim;
+            }
+        }
+
+        // Attempt to get an event log from the database matching the expected hash
+        if (baseReferenceManifest == null && measurement != null) {
+            baseReferenceManifest = (BaseReferenceManifest)referenceManifestRepository.findByEventLogHashAndRimType(measurement.getHexDecHash(), ReferenceManifest.BASE_RIM);
         }
 
         String failedString = "";
         if (baseReferenceManifest == null) {
             failedString = "Base Reference Integrity Manifest\n";
             passed = false;
-        } else {
+        } else if (measurement == null) {
             measurement = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(
                     baseReferenceManifest.getEventLogHash(), ReferenceManifest.MEASUREMENT_RIM);
 

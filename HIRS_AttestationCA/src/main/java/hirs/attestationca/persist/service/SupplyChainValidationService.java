@@ -17,6 +17,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
+import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
@@ -35,6 +36,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
@@ -353,32 +355,47 @@ public class SupplyChainValidationService {
                 log.error(ex);
             }
 
+            BaseReferenceManifest bRim = null;
+            if (sRim != null && sRim.getAssociatedRim() != null) {
+                Optional<ReferenceManifest> oRim = referenceManifestRepository.findById(sRim.getAssociatedRim());
+                if (oRim.isPresent()) {
+                    ReferenceManifest rim = oRim.get();
+                    if (rim instanceof BaseReferenceManifest) {
+                        bRim = (BaseReferenceManifest) rim;
+                    }
+                }
+            }
+
             quoteScv = ValidationService.buildValidationRecord(SupplyChainValidation
                             .ValidationType.FIRMWARE,
-                    fwStatus.getAppStatus(), fwStatus.getMessage(), eventLog, level);
+                    fwStatus.getAppStatus(), fwStatus.getMessage(), bRim != null ? bRim : eventLog, level);
 
             // Generate validation summary, save it, and return it.
             List<SupplyChainValidation> validations = new ArrayList<>();
-            SupplyChainValidationSummary previous
+            Optional<SupplyChainValidationSummary> previousOpt
                     //= this.supplyChainValidationSummaryRepository.findByDevice(deviceName);
-                    = this.supplyChainValidationSummaryRepository.findByDevice(device);
-            for (SupplyChainValidation scv : previous.getValidations()) {
-                if (scv.getValidationType() != SupplyChainValidation.ValidationType.FIRMWARE) {
-                    validations.add(ValidationService.buildValidationRecord(scv.getValidationType(),
-                            scv.getValidationResult(), scv.getMessage(),
-                            scv.getCertificatesUsed().get(0), Level.INFO));
+                    //= this.supplyChainValidationSummaryRepository.findByDevice(device);
+                    = this.supplyChainValidationSummaryRepository.findById(UUID.fromString(device.getSummaryId()));
+            if (previousOpt.isPresent()) {
+                SupplyChainValidationSummary previous = previousOpt.get();
+                for (SupplyChainValidation scv : previous.getValidations()) {
+                    if (scv.getValidationType() != SupplyChainValidation.ValidationType.FIRMWARE) {
+                        validations.add(ValidationService.buildValidationRecord(scv.getValidationType(),
+                                scv.getValidationResult(), scv.getMessage(),
+                                scv.getCertificatesUsed().get(0), Level.INFO));
+                    }
                 }
-            }
-            validations.add(quoteScv);
-            previous.archive();
-            supplyChainValidationSummaryRepository.save(previous);
-            summary = new SupplyChainValidationSummary(device, validations);
+                validations.add(quoteScv);
+                previous.archive();
+                supplyChainValidationSummaryRepository.save(previous);
+                summary = new SupplyChainValidationSummary(device, validations);
 
-            // try removing the supply chain validation as well and resaving that
-            try {
-                supplyChainValidationSummaryRepository.save(summary);
-            } catch (DBManagerException dbEx) {
-                log.error("Failed to save Supply Chain Summary", dbEx);
+                // try removing the supply chain validation as well and resaving that
+                try {
+                    supplyChainValidationSummaryRepository.save(summary);
+                } catch (DBManagerException dbEx) {
+                    log.error("Failed to save Supply Chain Summary", dbEx);
+                }
             }
         }
 
