@@ -1,11 +1,11 @@
-This README is part of the ZIP_Files.zip generated from hirs_package_linux.yml the goal of this zip is to have the TCG RIM tool, and the TCG Eventlog tool available on windows.
+This README is part of the ZIP_Files.zip generated from hirs_package_linux.yml the goal of this zip is to have the TCG RIM tool, and the TCG Eventlog tool available on windows.    
 
-To get the tools working on windows follow the instructions below:
+To get the tools working on windows follow the instructions below:   
 
 
-1- Unzip the main folder ("ZIP_Files"), followed by unzipping both the tcg_eventlog_tool.zip and tcg_rim_tool.zip in the working directory.
+1- Unzip the main folder ("ZIP_Files"), followed by unzipping both the tcg_eventlog_tool.zip and tcg_rim_tool.zip in the working directory. \
 
-2- Open PowerShell as administrator and run > Set-ExecutionPolicy unrestricted
+2- Open PowerShell as administrator and run > Set-ExecutionPolicy unrestricted<br />
 To verify run > Get-ExecutionPolicy and it should be set to "unrestricted"
 
 3- Right click on create_hirs_desktop_shortcut.ps1 and run with PowerShell, a PowerShell terminal will pop-up, if prompted type "R" to run the script.
