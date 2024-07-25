@@ -6,9 +6,6 @@ ARG BASE_IMAGE_TAG=latest
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ARG REF=main
 
-RUN echo BASE_IMAGE_TAG: $Env:BASE_IMAGE_TAG
-RUN echo REF: $Env:REF
-
 # Start 
 FROM mcr.microsoft.com/powershell:$Env:BASE_IMAGE_TAG
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
@@ -17,6 +14,10 @@ LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate A
 LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:$Env:BASE_IMAGE_TAG
 
 SHELL ["pwsh", "-Command"]
+
+# Print build args
+RUN echo BASE_IMAGE_TAG: $Env:BASE_IMAGE_TAG
+RUN echo REF: $Env:REF
 
 # Output Powershell Version
 # This Dockerfile requires Powershell 7+.
