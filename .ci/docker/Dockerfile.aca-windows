@@ -17,11 +17,8 @@ ARG REF=main
 SHELL ["pwsh", "-Command"]
 
 # Print build args
-RUN echo BASE_IMAGE_TAG: %BASE_IMAGE_TAG%
-RUN echo REF: %REF%
-RUN echo REF: $Env:REF
-RUN Write-Host REF: $env:REF
-RUN echo REF: $env:REF
+RUN Write-Host BASE_IMAGE_TAG: $Env:BASE_IMAGE_TAG
+RUN Write-Host REF: $Env:REF
 
 # Output Powershell Version
 # This Dockerfile requires Powershell 7+.
