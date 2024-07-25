@@ -1,6 +1,6 @@
 This README is part of the ZIP_Files.zip generated from hirs_package_linux.yml the goal of this zip is to have the TCG RIM tool, and the TCG Eventlog tool available on windows. 
 
-To get the tools working on windows follow the instructions below:   
+To get the tools running on windows follow the instructions below:   
 
 1- Unzip the main folder ("ZIP_Files"), followed by unzipping both the tcg_eventlog_tool.zip and tcg_rim_tool.zip in the working directory. 
 
@@ -13,7 +13,7 @@ To verify run > Get-ExecutionPolicy and it should be set to "unrestricted"
 
 5- The HIRS terminal should popup.
 
-6- To remove the warning messages when running the rim tool and the event log tool:
+6- (optional) To remove the warning messages when running the rim tool and the event log tool:
 Open PowerShell as administrator, navigate to the working directory, and run the following:
 > Unblock-File -Path .\rim.ps1  
 > Unblock-File -Path .\eventLog.ps1
