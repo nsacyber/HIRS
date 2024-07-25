@@ -102,7 +102,7 @@ if [ "$test" = "10" ] || [ "$test" = "all" ]; then
     uploadTrustedCerts
     setPlatformCerts -p "laptop" -t "default"
     setRims -p "laptop" -t "default" -u -n
-    provisionTpm2 "pass"
+    provisionTpm2 "fail"
 fi
 
 #  Process Test Results, any single failure will send back a failed result.
