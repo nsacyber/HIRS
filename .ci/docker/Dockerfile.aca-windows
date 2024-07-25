@@ -64,8 +64,8 @@ RUN Start-Process -FilePath 'C:/vs_buildtools.exe' -ArgumentList \"--quiet --wai
 RUN Write-Host "Finished installing Visual Studio Build Tools."
 
 # Download and extract pre-built openssl
-RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.firedaemon.com/FireDaemon-OpenSSL/openssl-3.1.4.zip', 'C:/openssl-3.1.zip'))
-RUN Expand-Archive C:/openssl-3.1.zip -DestinationPath C:/openssl_files
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.firedaemon.com/FireDaemon-OpenSSL/openssl-3.3.1.zip', 'C:/openssl-3.zip'))
+RUN Expand-Archive C:/openssl-3.zip -DestinationPath C:/openssl_files
 WORKDIR C:/openssl_files/openssl-3
 RUN cp -Recurse -Force C:/openssl_files/openssl-3/x64 'C:/Program Files/openssl'
 
