@@ -70,7 +70,7 @@ uploadTrustedCerts() {
   # Upload CA Cert from IBMTSS Tools
   echo "Uploading Trust Certificates to ${HIRS_ACA_HOSTNAME}:${HIRS_ACA_PORTAL_PORT}"
   echo "Uploading the EK Certificate CA(s)..."
-  docker exec -i $tpm2_container /bin/bash -c "curl -k -F 'file=@/ibmtss/utils/certificates/cacert.pem' $SERVER_CACERT_POST" > /dev/null
+  docker exec -i $tpm2_container /bin/bash -c "curl -k -F 'file=@/ibmtss/utils/certificates/cacert.pem' $SERVER_CACERT_POST" > /dev/null 2>&1
   echo "...done"
   # Upload Trusted Certs from HIRS
   echo "Uploading the Platform Certificate CA(s)..."
