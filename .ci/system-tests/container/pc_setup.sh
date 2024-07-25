@@ -86,7 +86,7 @@ dnf install -y unzip &> /dev/null
 
 # Step 2: Unpack the dmi files.
 echo "dmi file used was $dmiZip"
-unzip -o "$dmiZip" -d $HIRS_CI_TEST_ROOT > /dev/null
+unzip -o "$dmiZip" -d $HIRS_CI_TEST_ROOT > /dev/null 2>&1
 
 # Step 3: Copy the platform cert to tcg folder and or upload it to the ACA
 if [[ ! -d $pcDir ]]; then
@@ -103,7 +103,7 @@ pushd $pcDir > /dev/null
       fi
       if [ "$UPLOAD_ARTIFACTS" = YES ]; then
         echo "Uploading $cert to $SERVER_PCERT_POST"
-        curl -k -F "file=@$cert" $SERVER_PCERT_POST > /dev/null
+        curl -k -F "file=@$cert" $SERVER_PCERT_POST > /dev/null 2>&1
       fi
     done
   fi

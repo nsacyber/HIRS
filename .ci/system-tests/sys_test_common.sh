@@ -74,11 +74,11 @@ uploadTrustedCerts() {
   echo "...done"
   # Upload Trusted Certs from HIRS
   echo "Uploading the Platform Certificate CA(s)..."
-  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/ca.crt' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST" > /dev/null
+  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/ca.crt' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST" > /dev/null 2>&1
   echo "...done"
   echo "Uploading the RIM CA(s)..."
-  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/RIMCaCert.pem' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST" > /dev/null
-  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/RimSignCert.pem' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST" > /dev/null
+  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/RIMCaCert.pem' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST" > /dev/null 2>&1
+  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/RimSignCert.pem' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST" > /dev/null 2>&1
   echo "...done"
 }
 

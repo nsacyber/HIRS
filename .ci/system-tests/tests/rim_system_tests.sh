@@ -46,7 +46,7 @@ if [ "$test" = "3" ] || [ "$test" = "all" ]; then
     setPolicyEkPcFw
     setPlatformCerts -p "laptop" -t "badVarInstall"
     setRims -p "laptop" -t "badVarInstall"
-    provisionTpm2 "pass"
+    provisionTpm2 "fail"
 fi
 
 #  Process Test Results, any single failure will send back a failed result.
