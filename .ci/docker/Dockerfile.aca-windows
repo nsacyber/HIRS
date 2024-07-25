@@ -87,7 +87,9 @@ RUN echo $Env:JAVA_HOME
 # Clone ibmswtpm2 and build
 RUN git clone https://github.com/kgoldman/ibmswtpm2.git C:/ibmswtpm2
 ## tpm_server.sln is looking for the openssl crypto lib in a fixed location
+## Copying twice because sometimes it references either filename
 RUN cp 'C:/Program Files/openssl/lib/libcrypto.lib' 'C:/ibmswtpm2/tpmvstudio/tpm_server/libcrypto64md.lib'
+RUN cp 'C:/Program Files/openssl/lib/libcrypto.lib' 'C:/ibmswtpm2/tpmvstudio/tpm_server/libcrypto.lib'
 ## Assume compatibility with any version of openssl3
 RUN (Get-Content C:/ibmswtpm2/src/BnToOsslMath.h) -replace '0x30200ff0L', '0x40200ff0L' | Out-File C:/ibmswtpm2/src/BnToOsslMath.h
 WORKDIR C:/ibmswtpm2/tpmvstudio/tpm_server
