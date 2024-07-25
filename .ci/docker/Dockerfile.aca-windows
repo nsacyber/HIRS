@@ -3,17 +3,18 @@
 # List of available tags for Microsoft's powershell docker image: https://mcr.microsoft.com/v2/powershell/tags/list.
 # This Dockerfile requires Powershell 7+. e.g. lts-windowsservercore-1809
 ARG BASE_IMAGE_TAG=latest
-FROM mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
-LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
-LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
-LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
-LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
-
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ARG REF=main
 
-RUN echo ${BASE_IMAGE_TAG}
-RUN echo ${REF}
+RUN echo BASE_IMAGE_TAG: $Env:BASE_IMAGE_TAG
+RUN echo REF: $Env:REF
+
+# Start 
+FROM mcr.microsoft.com/powershell:$Env:BASE_IMAGE_TAG
+LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
+LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
+LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
+LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:$Env:BASE_IMAGE_TAG
 
 SHELL ["pwsh", "-Command"]
 
@@ -119,7 +120,7 @@ RUN echo $Env:PATH
 WORKDIR C:/
 RUN git config --global --add core.autocrlf false
 RUN git config --global --add safe.directory '*'
-RUN git clone -b ${REF} https://github.com/nsacyber/hirs.git C:/repo
+RUN git clone -b $Env:REF https://github.com/nsacyber/hirs.git C:/repo
 
 # Defensive copy of the repo so it's easy to start fresh if needed
 WORKDIR C:/repo
