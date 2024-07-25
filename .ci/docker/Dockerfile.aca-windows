@@ -7,7 +7,7 @@ ARG BASE_IMAGE_TAG=latest
 ARG REF=main
 
 # Start 
-FROM mcr.microsoft.com/powershell:$Env:BASE_IMAGE_TAG
+FROM mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
