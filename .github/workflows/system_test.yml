@@ -136,7 +136,7 @@ jobs:
           echo "*** Exiting and removing Docker containers and network ..."
           docker compose -f .ci/docker/docker-compose-system-test.yml down -v
       - name: Archive System Test Log files
-	    if: always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: System_Test_Log_Files
