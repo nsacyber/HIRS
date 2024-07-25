@@ -8,8 +8,6 @@ on:
       - '*v3*'
       - 'main'
   workflow_dispatch:
-env:
-  TEST_STATUS: 0
 jobs:
   DockerTests:
     runs-on: ubuntu-latest
@@ -30,52 +28,52 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           .ci/system-tests/setup_system_tests.sh ${GITHUB_REF#refs/heads/}
       - name: ACA POLICY TEST 1 - Test ACA default policy
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 1
       - name: ACA POLICY TEST 2 - Test EK cert Only Validation Policy without a EK Issuer Cert in the trust store
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 2
       - name: ACA POLICY TEST 3 - Test EK Only Validation Policy
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 3
       - name: ACA POLICY TEST 4 - Test PC Validation Policy with no PC
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 4
       - name: ACA POLICY TEST 5 - Test FW and PC Validation Policy with no PC
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 5
       - name: ACA POLICY TEST 6 - Test PC Validation Policy with valid PC with no Attribute Check
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 6
       - name: ACA POLICY TEST 7 - Test PC Validation Policy with valid PC with Attribute Check
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 7
       - name: ACA POLICY TEST 8 - Test PC with RIM Validation Policy with valid PC and RIM
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 8
       - name: ACA POLICY TEST 9 - Test valid PC and RIM with PC only uploaded
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 9
       - name: ACA POLICY TEST 10 - Test valid PC and RIM with RIM only uploaded
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 10
@@ -85,17 +83,17 @@ jobs:
       #   run: |
       #     .ci/system-tests/tests/aca_policy_tests.sh
       - name: ACA PLATFORM CERTIFICATE TEST 1 - Test a delta Platform Certificate that adds a new memory component
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/platform_cert_tests.sh 1
       - name: ACA PLATFORM CERTIFICATE TEST 2 - Test a Platform Certificate that is missing a memory component
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/platform_cert_tests.sh 2
       - name: ACA PLATFORM CERTIFICATE TEST 3 - Test a Delta Platform Certificate that has a wrong a memory component
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/platform_cert_tests.sh 3
@@ -105,17 +103,17 @@ jobs:
       #   run: |
       #     .ci/system-tests/tests/platform_cert_tests.sh
       - name: ACA RIM TEST 1 - Test a RIM from an OEM and a Supplemental RIM from a VAR
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 1
       - name: ACA RIM TEST 2 - Test a RIM from an OEM with a bad reference measurement and a Supplemental RIM from a VAR
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 2
       - name: ACA RIM TEST 3 - Test a RIM from an OEM and a Supplemental RIM from a VAR with a bad reference measurement
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 3
@@ -125,38 +123,21 @@ jobs:
       #   run: |
       #     .ci/system-tests/tests/rim_system_tests.sh
       - name: Copy System Test Log files
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           echo "*** Extracting ACA and Provisioner.Net logs ..."
           docker exec hirs-aca1 bash -c "mkdir -p /HIRS/logs/aca/ && cp -arp /var/log/hirs/* /HIRS/logs/aca/"
           docker exec hirs-provisioner1-tpm2 bash -c "mkdir -p /HIRS/logs/provisioner/ && cp -ap hirs*.log /HIRS/logs/provisioner/ && chmod -R 777 /HIRS/logs"
       - name: Docker Compose Down
-        continue-on-error: true
+        if: always()
         shell: bash
         run: |
           echo "*** Exiting and removing Docker containers and network ..."
           docker compose -f .ci/docker/docker-compose-system-test.yml down -v
-          if [[ ${TEST_STATUS} == "0" ]]; then
-            echo "******** SUCCESS: System Tests for TPM 2.0 passed ********"
-            echo "TEST_STATUS=0" >> $GITHUB_ENV
-            exit 0;
-          else
-            echo "******** FAILURE: System Tests for TPM 2.0 failed ********"
-            echo "TEST_STATUS=1" >> $GITHUB_ENV
-            exit 1
-          fi
       - name: Archive System Test Log files
         uses: actions/upload-artifact@v4
         with:
           name: System_Test_Log_Files
           path: logs/
           if-no-files-found: ignore
-      - name: Check System Test results
-        if: success() || failure()
-        run: |
-          if [ ${TEST_STATUS} == "0" ]; then
-            exit 0;
-          else
-            exit 1;
-          fi
