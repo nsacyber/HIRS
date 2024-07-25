@@ -110,7 +110,7 @@ jobs:
     - name: Build the docker image for ${{ github.repository }}
       run: |
         cd ./.ci/docker
-        docker build --build-arg "REF=${{ github.ref_name }}" -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} .
+        docker build --build-arg REF=${{ github.ref_name }} -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} .
     
     - name: Push the docker image
       run: |
@@ -135,7 +135,7 @@ jobs:
     - name: Build the docker image for ${{ github.repository }}
       run: |
         cd ./.ci/docker
-        docker build --build-arg "REF=${{ github.ref_name }}" -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} --build-arg BASE_IMAGE_TAG=lts-windowsservercore-1809 .
+        docker build --build-arg REF=${{ github.ref_name }} -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} --build-arg BASE_IMAGE_TAG=lts-windowsservercore-1809 .
         
     - name: Push the docker image
       run: |

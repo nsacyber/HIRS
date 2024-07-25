@@ -43,7 +43,7 @@ $global:SSL_DB_CLIENT_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PA
 $global:SSL_DB_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.key')
 #     HIRS Relative directories assumed structure
 #         package
-#           scripts
+#           linux
 #             aca
 #             db
 #               db_create.sql
@@ -65,7 +65,7 @@ $global:SSL_DB_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PAT
 $global:HIRS_REL_WIN_ACA_HOME=(Split-Path -parent $PSCommandPath)
 $global:HIRS_REL_WIN_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME ..)
 $global:HIRS_REL_PACKAGE_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME ..)
-$global:HIRS_REL_SCRIPTS_HOME=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME 'scripts')
+$global:HIRS_REL_SCRIPTS_HOME=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME 'linux')
 $global:HIRS_REL_SCRIPTS_ACA_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'aca')
 $global:HIRS_REL_SCRIPTS_DB_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'db')
 $global:HIRS_REL_SCRIPTS_DB_CREATE_SQL=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_DB_HOME 'db_create.sql')
