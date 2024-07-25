@@ -47,7 +47,6 @@ jobs:
           cp tools/tcg_rim_tool/build/distributions/*.zip artifacts/win
           cp tools/tcg_eventlog_tool/build/distributions/*.zip artifacts/win
           cp package/win/tcg-rim-tool/* artifacts/win
-
     - name: Archive RPM files
       uses: actions/upload-artifact@v4
       with:
