@@ -3,21 +3,25 @@
 # List of available tags for Microsoft's powershell docker image: https://mcr.microsoft.com/v2/powershell/tags/list.
 # This Dockerfile requires Powershell 7+. e.g. lts-windowsservercore-1809
 ARG BASE_IMAGE_TAG=latest
-# REF can be specified as a docker run environment variable to select the HIRS branch to work with
-ARG REF=main
 
 # Start 
 FROM mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority in a Windows-native image. Expose port 8443 to access the portal from outside the container.
-LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:$Env:BASE_IMAGE_TAG
+LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
+
+# REF can be specified as a docker run environment variable to select the HIRS branch to work with
+ARG REF=main
 
 SHELL ["pwsh", "-Command"]
 
 # Print build args
-RUN echo BASE_IMAGE_TAG: $Env:BASE_IMAGE_TAG
+RUN echo BASE_IMAGE_TAG: %BASE_IMAGE_TAG%
+RUN echo REF: %REF%
 RUN echo REF: $Env:REF
+RUN Write-Host REF: $env:REF
+RUN echo REF: $env:REF
 
 # Output Powershell Version
 # This Dockerfile requires Powershell 7+.
