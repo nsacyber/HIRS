@@ -100,8 +100,8 @@ RUN MSBuild.exe .\tpm_server.sln -t:Build -p:Configuration=Release -p:Platform=x
 # Clone ibmtss and build
 RUN git clone https://github.com/kgoldman/ibmtss.git C:/ibmtss
 ## Again, This VS project is looking for the openssl crypto library in a fixed location. The paths are imported into multiple subprojects. Easier to edit the paths than attempt to copy the library everywhere.
-RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props) -replace 'libcrypto64mdd','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props
-RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props) -replace 'libcrypto64md','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props
+RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props) -replace 'libcrypto','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props
+RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props) -replace 'libcrypto','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props
 WORKDIR C:/ibmtss/tpmutils
 # IF MSBUILD NOT ON PATH: RUN /vsbuildtools/MSBuild/Current/Bin/MSBuild.exe .\tpmutils.sln -t:Build -p:Configuration=Release -p:Platform=x64
 RUN MSBuild.exe .\tpmutils.sln -t:Build -p:Configuration=Release -p:Platform=x64
