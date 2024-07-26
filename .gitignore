@@ -1,4 +1,4 @@
-# compiled python for systems tests
+# compiled python for systems testsG
 *.pyc
 *.pydevproject
 
@@ -146,4 +146,5 @@ HIRS_Provisioner.NET/**/.vs
 HIRS_Provisioner.NET/**/bin
 HIRS_Provisioner.NET/**/generated
 HIRS_Provisioner.NET/**/obj
+HIRS_Provisioner.NET/**/plugins
 HIRS_Provisioner.NET/**/PublishProfiles
