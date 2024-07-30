@@ -2,21 +2,7 @@ This README is part of the ZIP_Files.zip generated from hirs_package_linux.yml t
 
 To get the tools running on windows follow the instructions below:   
 
-1- Unzip the main folder ("ZIP_Files"), followed by unzipping both the tcg_eventlog_tool.zip and tcg_rim_tool.zip in the working directory. 
-
-2- Open PowerShell as administrator and run > Set-ExecutionPolicy unrestricted
-To verify run > Get-ExecutionPolicy and it should be set to "unrestricted"
-
-3- Right click on create_hirs_desktop_shortcut.ps1 and run with PowerShell, a PowerShell terminal will pop-up, if prompted type "R" to run the script.
-
-4- HIRS_tools.ps1 should appear on your desktop, right click on it and run with PowerShell . if prompted type "R" to run the script.
-
-5- The HIRS terminal should popup.
-
-6- (optional) To remove the warning messages when running the rim tool and the event log tool:
-Open PowerShell as administrator, navigate to the working directory, and run the following:
-> Unblock-File -Path .\rim.ps1  
-> Unblock-File -Path .\eventLog.ps1
+1- Double click runTools.bat, a HIRS terminal should open.
 
 To run the rim tool try the following commands
 
