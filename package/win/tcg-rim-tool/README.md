@@ -4,9 +4,11 @@ To get the tools running on windows follow the instructions below:
 
 1- Unzip "ZIP_Files" 
 
-2- Double click runTools.bat, a HIRS terminal should open.
+2- Run the install file under ```hirstools\IntsallTools.bat``` a HIRS_tools shortcut should appear on your desktop
 
-To run the rim tool try the following commands
+3- Double click HIRS_tools.lnk shortcut and HIRS terminal should open.
+
+To run the rim tool try the following commands:
 
 > rim -c base -a .\tcg_rim_tool\Base_Rim_Config.json -l .\tcg_rim_tool\TpmLog.bin -k .\tcg_rim_tool\PC_OEM1_rim_signer_rsa_3k_sha384.key -p .\tcg_rim_tool\PC_OEM1_rim_signer_rsa_3k_sha384.pem -o baseRim.swidtag
 

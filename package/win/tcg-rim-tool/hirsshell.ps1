@@ -1,10 +1,3 @@
-# Unzip tools in the working directory
-if (Test-Path ".\tcg_rim_tool") {
-    Write-Output "tcg_rim_tool already unzipped"
-} else {
-    Expand-Archive -Path .\tcg_rim_tool.zip -DestinationPath .\tcg_rim_tool
-    Expand-Archive -Path .\tcg_eventlog_tool.zip -DestinationPath .\tcg_eventlog_tool
-}
 # Script to start a new shell with a rim alias
 $StartInfo = new-object System.Diagnostics.ProcessStartInfo
 $StartInfo.FileName = "$pshome\powershell.exe"
