@@ -1,8 +1,10 @@
 This README is part of the ZIP_Files.zip generated from hirs_package_linux.yml the goal of this zip is to have the TCG RIM tool, and the TCG Eventlog tool available on windows. 
 
-To get the tools running on windows follow the instructions below:   
+To get the tools running on windows follow the instructions below:  
 
-1- Double click runTools.bat, a HIRS terminal should open.
+1- Unzip "ZIP_Files" 
+
+2- Double click runTools.bat, a HIRS terminal should open.
 
 To run the rim tool try the following commands
 
