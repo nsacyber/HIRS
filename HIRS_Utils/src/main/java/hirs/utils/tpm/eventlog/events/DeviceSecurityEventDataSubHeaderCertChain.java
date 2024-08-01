@@ -1,6 +1,7 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.spdm.SpdmHa;
 import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import lombok.Getter;
 
@@ -74,5 +75,29 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
 //            spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockListData);
 //            spdmMeasurementBlockList.add(spdmMeasurementBlock);
 //        }
+    }
+
+
+    /**
+     * Returns a human-readable description of the data within this structure.
+     *
+     * @return a description of this structure.
+     */
+    public String toString() {
+        String dsedSubHeaderInfo = "";
+//        dsedSubHeaderInfo += "\n   SPDM Version: " + spdmVersion;
+//        String spdmHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmMeasurementHashAlgo);
+//        dsedSubHeaderInfo += "\n   SPDM Hash Algorithm = " + spdmHashAlgoStr;
+//
+//        // SPDM Measurement Block List output
+//        dsedSubHeaderInfo += "\n   Number of SPDM Measurement Blocks = " + spdmMeasurementBlockList.size();
+//        int spdmMeasBlockCnt = 1;
+//        for (SpdmMeasurementBlock spdmMeasBlock : spdmMeasurementBlockList) {
+//            dsedSubHeaderInfo += "\n   SPDM Measurement Block # " + spdmMeasBlockCnt++ + " of " +
+//                    spdmMeasurementBlockList.size();
+//            dsedSubHeaderInfo += spdmMeasBlock.toString();
+//        }
+
+        return dsedSubHeaderInfo;
     }
 }

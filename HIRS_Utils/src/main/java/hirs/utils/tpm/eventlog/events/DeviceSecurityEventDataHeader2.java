@@ -39,6 +39,8 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
     private int length = 0;
     /**
      * Event sub headerType
+     * SUBHEADERTYPE_MEAS_BLOCK = 0
+     * SUBHEADERTYPE_CERT_CHAIN = 1
      */
     @Getter
     private int subHeaderType = 0;
