@@ -123,4 +123,22 @@ ospackage {
     buildDeb {
         arch = X86_64
     }
+
 }
+
+
+task buildZip(type: Zip){
+    dependsOn jar
+    from(tasks.jar.archiveFile){
+        rename( filename ->
+            "${project.name}.jar")
+        into '/'
+    }
+
+    archiveBaseName.set(project.name)
+    destinationDirectory.set(file("$buildDir/distributions"))
+    archiveFileName.set("${project.name}.zip")
+}
+
+buildZip.dependsOn jar
+//build.dependsOn buildZip
