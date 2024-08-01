@@ -4,9 +4,11 @@ To get the tools running on windows follow the instructions below:
 
 1- Unzip "ZIP_Files" 
 
-2- Run the install file under ```hirstools\IntsallTools.bat``` a HIRS_tools shortcut should appear on your desktop
+2- open powershell as administrator and navigate to the hirstools folder. 
 
-3- Double click HIRS_tools.lnk shortcut and HIRS terminal should open.
+3- run the following command: ```powershell -ExecutionPolicy Bypass -File '.\create_hirstools_desktop_shortcut.ps1'```
+
+4- double-click the HIRS_tools shortcut on your desktop. 
 
 To run the rim tool try the following commands:
 

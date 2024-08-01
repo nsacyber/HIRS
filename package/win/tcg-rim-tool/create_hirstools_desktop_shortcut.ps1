@@ -4,6 +4,8 @@ Expand-Archive -Path ..\tcg_eventlog_tool.zip -DestinationPath .\tcg_eventlog_to
 # Create a shortcut to start the RIM shell
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\HIRS_tools.lnk")
-$Shortcut.TargetPath = "$PWD\RunTools.bat"
+$Shortcut.TargetPath = "powershell.exe"
+$ScriptPath = "$PWD\hirsshell.ps1"
+$Shortcut.Arguments = "-ExecutionPolicy Bypass -File `"$ScriptPath`""
 $Shortcut.WorkingDirectory =  "$PWD"
 $Shortcut.Save()
