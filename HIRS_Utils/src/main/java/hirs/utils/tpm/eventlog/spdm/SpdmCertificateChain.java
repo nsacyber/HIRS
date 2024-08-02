@@ -155,11 +155,11 @@ public class SpdmCertificateChain {
 
         if(spdmBaseHashAlgoError != "") {
             spdmCertChainInfo += "\n   *** ERROR with SPDM base hash algorithm size ***";
-            spdmCertChainInfo += "\n     " + spdmBaseHashAlgoError;
-            spdmCertChainInfo += "\n     Stopping processing of this cert chain";
+            spdmCertChainInfo += "\n      " + spdmBaseHashAlgoError;
+            spdmCertChainInfo += "\n      Stopping processing of this cert chain";
         }
         else {
-            spdmCertChainInfo += "\n   Root hash = " + rootHash.toString();
+            spdmCertChainInfo += "\n   Root hash = " + HexUtils.byteArrayToHexString(rootHash);
             spdmCertChainInfo += "\n   Number of certs in chain = " + numberOfCerts + "\n";
 
             int certCnt = 1;
@@ -171,8 +171,8 @@ public class SpdmCertificateChain {
 
             if (certProcessingError != "") {
                 spdmCertChainInfo += "   *** ERROR processing cert ***";
-                spdmCertChainInfo += "\n     " + certProcessingError;
-                spdmCertChainInfo += "\n     Stopping processing of this cert chain";
+                spdmCertChainInfo += "\n      " + certProcessingError;
+                spdmCertChainInfo += "\n      Stopping processing of this cert chain";
             }
         }
         return spdmCertChainInfo;
