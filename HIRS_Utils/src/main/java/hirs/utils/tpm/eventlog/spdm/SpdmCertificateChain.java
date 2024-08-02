@@ -1,8 +1,10 @@
 package hirs.utils.tpm.eventlog.spdm;
 
 import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.events.DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiSignatureData;
+import hirs.utils.tpm.eventlog.uefi.UefiSignatureList;
 import hirs.utils.tpm.eventlog.uefi.UefiX509Cert;
 import lombok.Getter;
 
@@ -31,6 +33,8 @@ import java.util.ArrayList;
  *    hash algorithm is included in the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN
  *    structure as the member "SpdmBaseHashAlg"
  * RootHash: the digest of the Root Certificate.
+ *    size is determined by hash algorithm selected by the most recent SPDM ALGORITHMS response;
+ *    the hash algorithm is the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN SpdmBaseHashAlgo
  * Certificates: Complete cert chain consisting of 1 or more ASN.1 DER-encoded X.509 v3 certs
  *    this field shall be in Encoded ASN.1 byte order
  */
@@ -44,75 +48,99 @@ public class SpdmCertificateChain {
      * Root hash.
      */
     private byte[] rootHash = null;
-
     /**
      * Number of certs in the SPDM cert chain.
      */
-    @Getter
     private int numberOfCerts = 0;
     /**
      * Array List of certs found in the chain.
      */
 //    private ArrayList<X509Certificate> certList = new ArrayList<X509Certificate>();
     private ArrayList<UefiX509Cert> certList = new ArrayList<UefiX509Cert>();
+    /**
+     * Human-readable description of any error associated with SPDM base hash alg.
+     */
+    String spdmBaseHashAlgoError = "";
+    /**
+     * Human-readable description of any error associated with parsing the X509 certs.
+     */
+    String certProcessingError = "";
 
     /**
      * SpdmCertificateChain Constructor.
      *
      * @param spdmCertChainBytes byte array holding the SPDM Cert Chain bytes.
      */
-    public SpdmCertificateChain(final byte[] spdmCertChainBytes, final int rootHashLength) throws CertificateException, NoSuchAlgorithmException, IOException {
+    public SpdmCertificateChain(final byte[] spdmCertChainBytes, final int rootHashLength) {
 
-        byte[] lengthBytes = new byte[2];
-        System.arraycopy(spdmCertChainBytes, 0, lengthBytes, 0, 2);
-        length = HexUtils.leReverseInt(lengthBytes);
+        if(rootHashLength <= 0) {
+            spdmBaseHashAlgoError = "SPDM base hash algorithm size is not >0";
+        }
+        else {
+            byte[] lengthBytes = new byte[2];
+            System.arraycopy(spdmCertChainBytes, 0, lengthBytes, 0, 2);
+            length = HexUtils.leReverseInt(lengthBytes);
 
-        // Reserved: 2 bytes
+            // Reserved: 2 bytes
 
-        rootHash = new byte[rootHashLength];
-        System.arraycopy(spdmCertChainBytes, 4, rootHash, 0, rootHashLength);
+            rootHash = new byte[rootHashLength];
+            System.arraycopy(spdmCertChainBytes, 4, rootHash, 0, rootHashLength);
 
-        int certChainStartPos = 4 + rootHashLength;
-        int certChainLength = spdmCertChainBytes.length - certChainStartPos;
-        byte[] certChainBytes = new byte[certChainLength];
-        System.arraycopy(spdmCertChainBytes, certChainStartPos, certChainBytes, 0, certChainLength);
+            int certChainStartPos = 4 + rootHashLength;
+            int certChainLength = spdmCertChainBytes.length - certChainStartPos;
+            byte[] certChainBytes = new byte[certChainLength];
+            System.arraycopy(spdmCertChainBytes, certChainStartPos, certChainBytes, 0, certChainLength);
 
-        processCertChain(certChainBytes);
+            processCertChain(certChainBytes);
+        }
     }
 
-    //TODO possily get rid of exceptions
     /**
      * Method for processing the data in an EFI SignatureList (ex. can be one or more X509 certs)
      *
      * @param certChainData Byte array holding the cert chain data
-     * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
-     * @throws java.io.IOException                     If there's a problem parsing the signature data.
      */
-    private void processCertChain(final byte[] certChainData)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+        private void processCertChain(final byte[] certChainData) {
 
         UefiX509Cert cert = null;
 
         ByteArrayInputStream certChainDataIS = new ByteArrayInputStream(certChainData);
         while (certChainDataIS.available() > 0) {
 
-            byte[] certType = new byte[UefiConstants.SIZE_2];
-            certChainDataIS.read(certType);
-            byte[] certLength = new byte[UefiConstants.SIZE_2];
-            certChainDataIS.read(certLength);
-            int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
-            byte[] certData = new byte[cLength];
-            certChainDataIS.read(certData);
-            // put the cert back together
-            byte[] certBlob = new byte[cLength + UefiConstants.SIZE_4];
-            System.arraycopy(certType, 0, certBlob, 0, 2);
-            System.arraycopy(certLength, 0, certBlob, 2, 2);
-            System.arraycopy(certData, 0, certBlob, UefiConstants.OFFSET_4, cLength);
-            cert = new UefiX509Cert(certBlob);
+            // java.io.IOException                     If there's a problem parsing the cert chain data.
+            // java.security.cert.CertificateException if there's a problem parsing the X509 certificate.
+            // java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
+            try {
+                byte[] certType = new byte[UefiConstants.SIZE_2];
+                certChainDataIS.read(certType);
+                byte[] certLength = new byte[UefiConstants.SIZE_2];
+                certChainDataIS.read(certLength);
+                int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
+                byte[] certData = new byte[cLength];
+                certChainDataIS.read(certData);
+                // put the cert back together
+                byte[] certBlob = new byte[cLength + UefiConstants.SIZE_4];
+                System.arraycopy(certType, 0, certBlob, 0, 2);
+                System.arraycopy(certLength, 0, certBlob, 2, 2);
+                System.arraycopy(certData, 0, certBlob, UefiConstants.OFFSET_4, cLength);
+
+                cert = new UefiX509Cert(certBlob);
 //            cert = new X509Certificate(certBlob);
-            certList.add(cert);
-            numberOfCerts++;
+                certList.add(cert);
+                numberOfCerts++;
+            } catch (IOException e) {
+                certProcessingError += "Error with Cert # " + (numberOfCerts+1)
+                        + ": IOException (error reading cert data)";
+                break;
+            } catch (CertificateException e) {
+                certProcessingError += "Error with Cert # " + (numberOfCerts+1)
+                        + ": CertificateException";
+                break;
+            } catch (NoSuchAlgorithmException e) {
+                certProcessingError += "Error with Cert # " + numberOfCerts+1
+                        + ": CNoSuchAlgorithmException";
+                break;
+            }
         }
     }
 
@@ -123,17 +151,30 @@ public class SpdmCertificateChain {
      */
     public String toString() {
 
-        String spdmMeasBlockInfo = "";
-//
-//        if(spdmMeasurementBlockReadError) {
-//            spdmMeasBlockInfo += "\n      Error reading SPDM Measurement Block";
-//        }
-//        else {
-//            spdmMeasBlockInfo += "\n      Index = " + index;
-//            spdmMeasBlockInfo += "\n      MeasurementSpec = " +  measurementSpec;
-//            spdmMeasBlockInfo += spdmMeasurement.toString();
-//        }
-//
-        return spdmMeasBlockInfo;
+        String spdmCertChainInfo = "";
+
+        if(spdmBaseHashAlgoError != "") {
+            spdmCertChainInfo += "\n   *** ERROR with SPDM base hash algorithm size ***";
+            spdmCertChainInfo += "\n     " + spdmBaseHashAlgoError;
+            spdmCertChainInfo += "\n     Stopping processing of this cert chain";
+        }
+        else {
+            spdmCertChainInfo += "\n   Root hash = " + rootHash.toString();
+            spdmCertChainInfo += "\n   Number of certs in chain = " + numberOfCerts + "\n";
+
+            int certCnt = 1;
+            for (UefiX509Cert cert : certList) {
+                spdmCertChainInfo += "   Cert # " + certCnt++ + " of " +
+                        numberOfCerts + ": ------------------\n";
+                spdmCertChainInfo += cert.toString();
+            }
+
+            if (certProcessingError != "") {
+                spdmCertChainInfo += "   *** ERROR processing cert ***";
+                spdmCertChainInfo += "\n     " + certProcessingError;
+                spdmCertChainInfo += "\n     Stopping processing of this cert chain";
+            }
+        }
+        return spdmCertChainInfo;
     }
 }

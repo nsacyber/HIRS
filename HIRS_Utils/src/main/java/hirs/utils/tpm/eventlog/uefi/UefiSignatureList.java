@@ -12,12 +12,18 @@ import java.util.ArrayList;
 import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
 /**
- * Class for processing the contents of a Secure Boot DB or DBX contents.
- * used for EFIVariables associated with Secure Boot
- * as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification.
+ * Class for processing either
+ *   1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
+ *      used for EFIVariables associated with Secure Boot,
+ *      as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
+ *   2) the contents of an SPDM devdb,
+ *      used for SPDM Device Policy, whose data is an EFIVariable
+ *      as defined by PFP v1.06 Rev52, Section 10.4
  * <p>
- * An EFI Signature List is actual a list of Certificates used to verify a Signature.
- * This is mainly found in PCR[7] UEFI variables for the Secure Boot PK, KEK, Db and DBx variables.
+ * An EFI Signature List is actually a list of Certificates used to verify a Signature.
+ * This is mainly found in PCR[7] UEFI variables for either the
+ *      Secure Boot PK, KEK, Db and DBx variables
+ *      or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY).
  * <p>
  * typedef struct _EFI_SIGNATURE_LIST {
  * EFI_GUID            SignatureType;
@@ -27,6 +33,27 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIB
  * // UINT8               SignatureHeader[SignatureHeaderSize];
  * // EFI_SIGNATURE_DATA  Signatures[...][SignatureSize];
  * } EFI_SIGNATURE_LIST;
+ *
+ * Signatures[][] is an array of signatures.
+ *      - Each signature is SignatureSize bytes in length.
+ *      - The format of the signature is defined by SignatureType (SHA256, X509)
+ *
+ *                               / |-------------------------| ------- SignatureType
+ *                              /  | Signature List Header   |         SignatureListSize
+ * |---------------------|     /   |-------------------------|\        SignatureHeaderSize
+ * | Signature List #0   |    /    |    Signature Header     | \ _____ SignatureSize
+ * |                     |   /     |-------------------------|
+ * |---------------------|  /      |      Signature #0       |
+ * | Signature List #1   | /       |-------------------------|
+ * |---------------------|/        |      Signature #1       |  --> each Signature is
+ * | Signature List #2   |         |-------------------------|      1 UefiSignatureData
+ * |                     |         |      Signature #2       |      (1 cert or hash)
+ * |                     |         |-------------------------|
+ * |---------------------|         |           ...           |
+ *                         \       |                         |
+ *                           \     |-------------------------|
+ *                             \   |      Signature #n       |
+ *                               \ |-------------------------|
  */
 public class UefiSignatureList {
     /**
@@ -125,7 +152,7 @@ public class UefiSignatureList {
         vendorTableFileStatus = signatureType.getVendorTableFileStatus();
 
         // if signatureType is invalid, don't even process any of the data
-        // however, if signatureTYpe is valid, but some of the data later on is invalid, that will
+        // however, if signatureType is valid, but some of the data later on is invalid, that will
         // be caught when UefiSignatureData is processed
         if (!isValidSigListGUID(signatureType)) {
             //processSignatureData(lists);
@@ -230,7 +257,10 @@ public class UefiSignatureList {
             sigInfo.append("   UEFI Signature List Type = " + signatureType.toString() + "\n");
             sigInfo.append("   Number of Certs or Hashes in UEFI Signature List = " + numberOfCerts + "\n");
 
+            int certOrHashCnt = 1;
             for (int i = 0; i < sigList.size(); i++) {
+                sigInfo.append("   Cert or Hash # " + certOrHashCnt++ + " of " +
+                        numberOfCerts + ": ------------------\n");
                 UefiSignatureData certData = sigList.get(i);
                 sigInfo.append(certData.toString());
             }

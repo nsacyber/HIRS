@@ -75,4 +75,42 @@ public class SpdmHa {
         }
         return alg;
     }
+
+
+    /**
+     * Returns the hash name via a lookup.
+     * Lookup based upon SPDM Spec v1.03 section 10.4.
+     *
+     * @param algId int to convert to string
+     * @return name of the algorithm
+     */
+    public static int tcgAlgIdToByteSize(final int algId) {
+        int byteSize;
+        switch (algId) {
+            //case TPM_ALG_RAW: // add this when have more test data
+            //    byteSize = ;
+            //    break;
+            case TPM_ALG_SHA_256:
+                byteSize = 32;
+                break;
+            case TPM_ALG_SHA_384:
+                byteSize = 48;
+                break;
+            case TPM_ALG_SHA_512:
+                byteSize = 64;
+                break;
+            case TPM_ALG_SHA3_256:
+                byteSize = 32;
+                break;
+            case TPM_ALG_SHA3_384:
+                byteSize = 48;
+                break;
+            case TPM_ALG_SHA3_512:
+                byteSize = 64;
+                break;
+            default:
+                byteSize = -1;
+        }
+        return byteSize;
+    }
 }

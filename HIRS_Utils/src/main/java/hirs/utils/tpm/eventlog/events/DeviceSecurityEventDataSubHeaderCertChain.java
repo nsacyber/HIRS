@@ -1,8 +1,8 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.spdm.SpdmCertificateChain;
 import hirs.utils.tpm.eventlog.spdm.SpdmHa;
-import hirs.utils.tpm.eventlog.spdm.SpdmMeasurementBlock;
 import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
@@ -20,24 +20,33 @@ import java.util.ArrayList;
  *      SPDM_CERT_CHAIN         SpdmCertChain;
  * } DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN;
  * <p>
+ * SpdmVersion: SpdmBaseHashAlgo
+ * SpdmSlotId: SlotId associated with this SPDM Certificate Chain
+ * SpdmBaseHashAlgo: SPDM Base Hash Algorithm for the root certificate in the SPDM Certificate chain
+ * SpdmCertChain: SPDM Certificate Chain
  */
 public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEventDataSubHeader{
 
     /**
      * SPDM version.
      */
-    @Getter
     private int spdmVersion = 0;
     /**
      * SPDM slot ID.
      */
-    @Getter
-    private int spdmLotId = 0;
+    private int spdmSlotId = 0;
     /**
      * SPDM base hash algorithm.
      */
-    @Getter
     private int spdmBaseHashAlgo = -1;
+    /**
+     * SPDM cert chain.
+     */
+    private SpdmCertificateChain spdmCertChain = null;
+    /**
+     * Human-readable description of any error associated with SPDM base hash alg.
+     */
+    String spdmBaseHashAlgoError = "";
 
     /**
      * DeviceSecurityEventDataSubHeaderCertChain Constructor.
@@ -52,7 +61,7 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
 
         byte[] spdmLotIdBytes = new byte[1];
         System.arraycopy(dsedSubHBytes, 2, spdmLotIdBytes, 0, 1);
-        spdmLotId = HexUtils.leReverseInt(spdmLotIdBytes);
+        spdmSlotId = HexUtils.leReverseInt(spdmLotIdBytes);
 
         // byte[] reserved[Bytes]: 1 byte
 
@@ -68,13 +77,15 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
         System.arraycopy(dsedSubHBytes, 8, spdmCertChainBytes, 0,
                 spdmCertChainSize);
 
-//        ByteArrayInputStream spdmMeasurementBlockListData =
-//                new ByteArrayInputStream(spdmMeasurementBlockListBytes);
-//        while (spdmMeasurementBlockListData.available() > 0) {
-//            SpdmMeasurementBlock spdmMeasurementBlock;
-//            spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockListData);
-//            spdmMeasurementBlockList.add(spdmMeasurementBlock);
-//        }
+        int spdmBaseHashAlgoSize = SpdmHa.tcgAlgIdToByteSize(spdmBaseHashAlgo);
+
+        if(spdmBaseHashAlgoSize > 0) {
+            spdmCertChain = new SpdmCertificateChain(spdmCertChainBytes, spdmBaseHashAlgoSize);
+        }
+        else {
+            spdmBaseHashAlgoError += "SPDM base hash algorithm size is not >0";
+        }
+
     }
 
 
@@ -85,18 +96,13 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
      */
     public String toString() {
         String dsedSubHeaderInfo = "";
-//        dsedSubHeaderInfo += "\n   SPDM Version: " + spdmVersion;
-//        String spdmHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmMeasurementHashAlgo);
-//        dsedSubHeaderInfo += "\n   SPDM Hash Algorithm = " + spdmHashAlgoStr;
-//
-//        // SPDM Measurement Block List output
-//        dsedSubHeaderInfo += "\n   Number of SPDM Measurement Blocks = " + spdmMeasurementBlockList.size();
-//        int spdmMeasBlockCnt = 1;
-//        for (SpdmMeasurementBlock spdmMeasBlock : spdmMeasurementBlockList) {
-//            dsedSubHeaderInfo += "\n   SPDM Measurement Block # " + spdmMeasBlockCnt++ + " of " +
-//                    spdmMeasurementBlockList.size();
-//            dsedSubHeaderInfo += spdmMeasBlock.toString();
-//        }
+        dsedSubHeaderInfo += "\n   SPDM Version = " + spdmVersion;
+        dsedSubHeaderInfo += "\n   SPDM Slot ID = " + spdmSlotId;
+        String spdmBaseHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmBaseHashAlgo);
+        dsedSubHeaderInfo += "\n   SPDM Base Hash Algorithm = " + spdmBaseHashAlgoStr;
+
+        // SPDM Certificate Chain output
+        dsedSubHeaderInfo += spdmCertChain.toString();
 
         return dsedSubHeaderInfo;
     }

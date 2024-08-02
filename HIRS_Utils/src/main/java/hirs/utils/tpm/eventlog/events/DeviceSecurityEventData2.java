@@ -76,14 +76,14 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
                 }
             }
             else if (subHeaderType == DeviceSecurityEventDataSubHeader.SUBHEADERTYPE_CERT_CHAIN) {
-                subHeaderInfo += "\n      Cert chain to be implemented ";
+//                subHeaderInfo += "\n      Cert chain to be implemented ";
                 try {
                     dsedSubHeader =
                             new DeviceSecurityEventDataSubHeaderCertChain(dsedSubHeaderBytes);
                     subHeaderInfo += dsedSubHeader.toString();
                 }
                 catch(NullPointerException e) {
-                    subHeaderInfo = "\n    Could not interpret Sub header info for SPDM measurement block";
+                    subHeaderInfo = "\n    Could not interpret Sub header info for SPDM cert chain";
                 }
             }
             else {
