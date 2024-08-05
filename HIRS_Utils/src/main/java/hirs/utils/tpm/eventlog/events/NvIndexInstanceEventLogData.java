@@ -1,8 +1,6 @@
 package hirs.utils.tpm.eventlog.events;
 
-
 import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 
 import java.nio.charset.StandardCharsets;
 
@@ -36,11 +34,6 @@ public class NvIndexInstanceEventLogData {
     private String signature = "";
 
     /**
-     * Version.
-     */
-    private String version = "";
-
-    /**
      * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
     String nvIndexInstanceInfo = "";
@@ -59,10 +52,12 @@ public class NvIndexInstanceEventLogData {
 
         byte[] versionBytes = new byte[2];
         System.arraycopy(eventData, 16, versionBytes, 0, 2);
-        String version = HexUtils.byteArrayToHexString(versionBytes);
-        if (version == "") {
-            version = "version not readable";
+        String nvIndexVersion = HexUtils.byteArrayToHexString(versionBytes);
+        if (nvIndexVersion == "") {
+            nvIndexVersion = "version not readable";
         }
+        nvIndexInstanceInfo = "   Nv Index Instance Signature = " + signature + "\n";
+        nvIndexInstanceInfo += "   Nv Index Instance Version = " + nvIndexVersion + "\n";
 
         // 6 bytes of Reserved data
 
@@ -84,7 +79,7 @@ public class NvIndexInstanceEventLogData {
             byte[] dsedEventData = new byte[dsedEventDataSize];
             System.arraycopy(eventData, 24, dsedEventData, 0, dsedEventDataSize);
 
-            nvIndexInstanceInfo = "   Signature = SPDM Device Sec2\n";
+            nvIndexInstanceInfo += "   Signature = SPDM Device Sec2\n";
 
             if (dsedVersion.equals("0200")) {
                 dsed = new DeviceSecurityEventData2(dsedEventData);

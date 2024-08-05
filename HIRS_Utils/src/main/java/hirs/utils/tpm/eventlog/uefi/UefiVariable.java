@@ -76,6 +76,11 @@ public class UefiVariable {
     private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
+     * Human-readable description of the data within the SPDM devdc (to be updated with more test data).
+     */
+    String spdmDevdcInfo = "";
+
+    /**
      * EFIVariable constructor.
      * The UEFI_VARIABLE_DATA contains a "VariableName" field which is used to determine
      * the class used to parse the data within the "VariableData".
@@ -128,10 +133,16 @@ public class UefiVariable {
             case "dbx":
                 processSigList(uefiVariableData);
                 break;
-            case "devdb":   // Update when test patterns exist
-                break;      // PFP v1.06 Rev 52, Sec 3.3.4.8
+            case "devdb":
+                processSigList(uefiVariableData);
+                break;      // Update when test patterns exist
+                            // PFP v1.06 Rev 52, Sec 3.3.4.8
                             // EV_EFI_SPDM_DEVICE_POLICY: EFI_SIGNATURE_LIST
                             // EV_EFI_SPDM_DEVICE_AUTHORITY: EFI_SIGNATURE_DATA
+                            // for now, differentiate them by using devdc for ..DEVICE_AUTHORITY
+            case "devdc":
+                processSigDataX509(uefiVariableData);
+                break;
             case "Boot00":
                 bootv = new UefiBootVariable(uefiVariableData);
                 break;
@@ -189,6 +200,52 @@ public class UefiVariable {
     }
 
     /**
+     * Method for processing the data in an EFI SignatureList (ex. can be one or more X509 certs)
+     *
+     * @param efiSigData Byte array holding the SignatureList data
+     * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
+     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
+     * @throws java.io.IOException                     If there's a problem parsing the signature data.
+     */
+    private void processSigDataX509(final byte[] efiSigData)
+            throws CertificateException, NoSuchAlgorithmException, IOException {
+
+        ByteArrayInputStream efiSigDataIS = new ByteArrayInputStream(efiSigData);
+        ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
+        spdmDevdcInfo += "";
+
+        // for now, use signature type for X509
+        // in future with more test data, update this
+        byte[] guid = HexUtils.hexStringToByteArray("A159C0A5E494A74A87B5AB155C2BF072");
+        UefiGuid signatureType = new UefiGuid(guid);
+
+        int numberOfCerts = 0;
+        boolean dataValid = true;
+        String dataInvalidStatus = "Signature data validity is undetermined yet";
+        while (efiSigDataIS.available() > 0) {
+            UefiSignatureData tmpSigData = new UefiSignatureData(efiSigDataIS, signatureType);
+            if (!tmpSigData.isValid()) {
+                dataValid = false;
+                dataInvalidStatus = tmpSigData.getStatus();
+                break;
+            }
+            sigList.add(tmpSigData);
+            numberOfCerts++;
+        }
+        spdmDevdcInfo += "   Number of X509 Certs in UEFI Signature Data = " + numberOfCerts + "\n";
+        int certCnt = 0;
+        for (int i = 0; i < sigList.size(); i++) {
+            certCnt++;
+            spdmDevdcInfo += "   Cert # " + certCnt + " of " + numberOfCerts + ": ------------------\n";
+            UefiSignatureData certData = sigList.get(i);
+            spdmDevdcInfo += certData.toString();
+        }
+        if (!dataValid) {
+            spdmDevdcInfo += "   *** Invalid UEFI Signature data encountered: " + dataInvalidStatus + "\n";
+        }
+    }
+
+    /**
      * Print out all the interesting characteristics available on this UEFI Variable.
      *
      * @return human readable description of the UEFi variable.
@@ -216,11 +273,11 @@ public class UefiVariable {
             case "KEK":
             case "db":
             case "dbx":
-                break;
             case "devdb":           // SPDM_DEVICE_POLICY and SPDM_DEVICE_AUTHORITY
+            case "devdc":           // for now use devdb and devdc
                                     // (update when test patterns exist)
-                efiVariable.append("   EV_EFI_SPDM_DEVICE_POLICY and EV_EFI_SPDM_DEVICE_AUTHORITY: " +
-                        "To be processed once more test patterns exist");
+                //efiVariable.append("   EV_EFI_SPDM_DEVICE_POLICY and EV_EFI_SPDM_DEVICE_AUTHORITY: " +
+                //        "To be processed once more test patterns exist");
                 break;
             case "Boot00":
                 efiVariable.append(bootv.toString());
@@ -243,17 +300,22 @@ public class UefiVariable {
         // Signature List output (if there are any Signature Lists)
         if (certSuperList.size() > 0){
             efiVariable.append("Number of UEFI Signature Lists = " + certSuperList.size() + "\n");
-        }
-        int certSuperListCnt = 1;
-        for (UefiSignatureList uefiSigList : certSuperList) {
-            efiVariable.append("UEFI Signature List # " + certSuperListCnt++ + " of " +
-                    certSuperList.size() + ": ------------------\n");
-            efiVariable.append(uefiSigList.toString());
+            int certSuperListCnt = 1;
+            for (UefiSignatureList uefiSigList : certSuperList) {
+                efiVariable.append("UEFI Signature List # " + certSuperListCnt++ + " of " +
+                        certSuperList.size() + ": ------------------\n");
+                efiVariable.append(uefiSigList.toString());
+            }
         }
         if(invalidSignatureListEncountered) {
             efiVariable.append(invalidSignatureListStatus);
             efiVariable.append("*** Encountered invalid Signature Type - " +
                     "Stopped processing of this event data\n");
+        }
+
+        // Signature Data output (if there is a Signature Data)
+        if(!spdmDevdcInfo.isEmpty()) {
+            efiVariable.append(spdmDevdcInfo);
         }
 
         return efiVariable.toString();

@@ -34,9 +34,16 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIB
  * // EFI_SIGNATURE_DATA  Signatures[...][SignatureSize];
  * } EFI_SIGNATURE_LIST;
  *
+ * SignatureListHeader (contents common to any Signature Type)
+ *      - SignatureType
+ *      - SignatureListSize
+ *      - SignatureHeaderSize
+ *      - SignatureSize
+ * SignatureHeader (contents depend on the SignatureType)
+ *      - The format of this header is specified by the SignatureType (SHA256, X509).
  * Signatures[][] is an array of signatures.
  *      - Each signature is SignatureSize bytes in length.
- *      - The format of the signature is defined by SignatureType (SHA256, X509)
+ *      - The format of the signature is defined by SignatureType (SHA256, X509).
  *
  *                               / |-------------------------| ------- SignatureType
  *                              /  | Signature List Header   |         SignatureListSize
@@ -54,6 +61,7 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIB
  *                           \     |-------------------------|
  *                             \   |      Signature #n       |
  *                               \ |-------------------------|
+ *
  */
 public class UefiSignatureList {
     /**
@@ -85,7 +93,7 @@ public class UefiSignatureList {
     /**
      * Current status of Signature List data.
      */
-    private String dataStatus = "Signature List data validity is undetermined yet";
+    private String dataInvalidStatus = "Signature List data validity is undetermined yet";
     /**
      * Array List of Signature found in the list.
      */
@@ -191,7 +199,7 @@ public class UefiSignatureList {
             UefiSignatureData tmpSigData = new UefiSignatureData(efiSigDataIS, signatureType);
             if (!tmpSigData.isValid()) {
                 dataValid = false;
-                dataStatus = tmpSigData.getStatus();
+                dataInvalidStatus = tmpSigData.getStatus();
                 break;
             }
             sigList.add(tmpSigData);
@@ -213,7 +221,7 @@ public class UefiSignatureList {
             UefiSignatureData tmpigData = new UefiSignatureData(sigDataIS, signatureType);
             if (!tmpigData.isValid()) {
                 dataValid = false;
-                dataStatus = tmpigData.getStatus();
+                dataInvalidStatus = tmpigData.getStatus();
                 break;
             }
             sigList.add(tmpigData);
@@ -265,7 +273,7 @@ public class UefiSignatureList {
                 sigInfo.append(certData.toString());
             }
             if (!dataValid) {
-                sigInfo.append("   *** Invalid UEFI Signature data encountered: " + dataStatus + "\n");
+                sigInfo.append("   *** Invalid UEFI Signature data encountered: " + dataInvalidStatus + "\n");
             }
         }
         return sigInfo.toString();

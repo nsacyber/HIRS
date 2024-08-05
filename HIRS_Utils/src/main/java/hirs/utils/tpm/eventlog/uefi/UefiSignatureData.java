@@ -73,8 +73,8 @@ public class UefiSignatureData {
      *
      * @param inputStream The Signature data.
      * @param sigType     UEFI defined signature type.
-     * @throws java.io.IOException                     if there's an problem reading the input stream.
-     * @throws java.security.cert.CertificateException If there a problem parsing the X509 certificate.
+     * @throws java.io.IOException                     if there's a problem reading the input stream.
+     * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
      * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
      */
     UefiSignatureData(final ByteArrayInputStream inputStream, final UefiGuid sigType)

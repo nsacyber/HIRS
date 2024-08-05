@@ -1,19 +1,13 @@
 package hirs.utils.tpm.eventlog.spdm;
 
 import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.events.DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock;
-import hirs.utils.tpm.eventlog.uefi.UefiConstants;
-import hirs.utils.tpm.eventlog.uefi.UefiSignatureData;
-import hirs.utils.tpm.eventlog.uefi.UefiSignatureList;
 import hirs.utils.tpm.eventlog.uefi.UefiX509Cert;
-import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
 /**
@@ -153,7 +147,7 @@ public class SpdmCertificateChain {
 
         String spdmCertChainInfo = "";
 
-        if(spdmBaseHashAlgoError != "") {
+        if(!spdmBaseHashAlgoError.isEmpty()) {
             spdmCertChainInfo += "   *** ERROR with SPDM base hash algorithm size ***\n";
             spdmCertChainInfo += "      " + spdmBaseHashAlgoError + "\n";
             spdmCertChainInfo += "      Stopping processing of this cert chain\n";
@@ -169,7 +163,7 @@ public class SpdmCertificateChain {
                 spdmCertChainInfo += cert.toString();
             }
 
-            if (certProcessingError != "") {
+            if (!certProcessingError.isEmpty()) {
                 spdmCertChainInfo += "   *** ERROR processing cert ***\n";
                 spdmCertChainInfo += "      " + certProcessingError + "\n";
                 spdmCertChainInfo += "      Stopping processing of this cert chain\n";
