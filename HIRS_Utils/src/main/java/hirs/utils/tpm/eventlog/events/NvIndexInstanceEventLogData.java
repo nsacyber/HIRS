@@ -84,21 +84,20 @@ public class NvIndexInstanceEventLogData {
             byte[] dsedEventData = new byte[dsedEventDataSize];
             System.arraycopy(eventData, 24, dsedEventData, 0, dsedEventDataSize);
 
-            nvIndexInstanceInfo = "   Signature = SPDM Device Sec2";
+            nvIndexInstanceInfo = "   Signature = SPDM Device Sec2\n";
 
             if (dsedVersion.equals("0200")) {
-                // TODO this is throwing a nullPointerException
                 dsed = new DeviceSecurityEventData2(dsedEventData);
                 nvIndexInstanceInfo += dsed.toString();
             }
             else {
                 nvIndexInstanceInfo += "    Incompatible version for DeviceSecurityEventData2: "
-                        + dsedVersion;
+                        + dsedVersion + "\n";
             }
         }
         else {
             nvIndexInstanceInfo = "   Signature error: should be \'SPDM Device Sec2\' but is "
-                    + signature;
+                    + signature + "\n";
         }
     }
 

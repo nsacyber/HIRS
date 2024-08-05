@@ -196,10 +196,10 @@ public class UefiVariable {
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
 
-        efiVariable.append("UEFI Variable Name: " + efiVarName + "\n");
-        efiVariable.append("UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
+        efiVariable.append("   UEFI Variable Name: " + efiVarName + "\n");
+        efiVariable.append("   UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
         if (efiVarName != "") {
-            efiVariable.append("UEFI Variable Contents => " + "\n");
+            efiVariable.append("   UEFI Variable Contents => " + "\n");
         }
         String tmpName = "";
         if (efiVarName.contains("Boot00")) {
@@ -233,10 +233,10 @@ public class UefiVariable {
                 break;
             default:
                 if (!tmpName.isEmpty()) {
-                    efiVariable.append(String.format("Data not provided for "
+                    efiVariable.append(String.format("      Data not provided for "
                                     + "UEFI variable named %s   ", tmpName));
                 } else {
-                    efiVariable.append("Data not provided   ");
+                    efiVariable.append("      Data not provided   ");
                 }
         }
 
@@ -247,7 +247,7 @@ public class UefiVariable {
         int certSuperListCnt = 1;
         for (UefiSignatureList uefiSigList : certSuperList) {
             efiVariable.append("UEFI Signature List # " + certSuperListCnt++ + " of " +
-                    certSuperList.size() + ":\n");
+                    certSuperList.size() + ": ------------------\n");
             efiVariable.append(uefiSigList.toString());
         }
         if(invalidSignatureListEncountered) {

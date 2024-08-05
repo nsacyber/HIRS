@@ -90,11 +90,11 @@ public class SpdmMeasurementBlock {
         String spdmMeasBlockInfo = "";
 
         if(spdmMeasurementBlockReadError) {
-            spdmMeasBlockInfo += "\n      Error reading SPDM Measurement Block";
+            spdmMeasBlockInfo += "      Error reading SPDM Measurement Block\n";
         }
         else {
-            spdmMeasBlockInfo += "\n      Index = " + index;
-            spdmMeasBlockInfo += "\n      MeasurementSpec = " +  measurementSpec;
+            spdmMeasBlockInfo += "      Index = " + index + "\n";
+            spdmMeasBlockInfo += "      MeasurementSpec = " +  measurementSpec  + "\n";
             spdmMeasBlockInfo += spdmMeasurement.toString();
         }
 

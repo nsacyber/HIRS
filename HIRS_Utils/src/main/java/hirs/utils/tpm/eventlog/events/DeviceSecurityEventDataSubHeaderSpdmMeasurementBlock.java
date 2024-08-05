@@ -100,16 +100,16 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
      */
     public String toString() {
         String dsedSubHeaderInfo = "";
-        dsedSubHeaderInfo += "\n   SPDM Version = " + spdmVersion;
+        dsedSubHeaderInfo += "   SPDM Version = " + spdmVersion + "\n";
         String spdmHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmMeasurementHashAlgo);
-        dsedSubHeaderInfo += "\n   SPDM Hash Algorithm = " + spdmHashAlgoStr;
+        dsedSubHeaderInfo += "   SPDM Hash Algorithm = " + spdmHashAlgoStr + "\n";
 
         // SPDM Measurement Block List output
-        dsedSubHeaderInfo += "\n   Number of SPDM Measurement Blocks = " + spdmMeasurementBlockList.size();
+        dsedSubHeaderInfo += "   Number of SPDM Measurement Blocks = " + spdmMeasurementBlockList.size() + "\n";
         int spdmMeasBlockCnt = 1;
         for (SpdmMeasurementBlock spdmMeasBlock : spdmMeasurementBlockList) {
-            dsedSubHeaderInfo += "\n   SPDM Measurement Block # " + spdmMeasBlockCnt++ + " of " +
-                    spdmMeasurementBlockList.size();
+            dsedSubHeaderInfo += "   SPDM Measurement Block # " + spdmMeasBlockCnt++ + " of " +
+                    spdmMeasurementBlockList.size() + "\n";
             dsedSubHeaderInfo += spdmMeasBlock.toString();
         }
 

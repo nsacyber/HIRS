@@ -59,8 +59,8 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
             int subHeaderType = dsedHeader2.getSubHeaderType();
             int subHeaderLength = dsedHeader2.getSubHeaderLength();
 
-            subHeaderInfo = "\n   Sub header type: "
-                    + DeviceSecurityEventDataSubHeader.subheaderTypeToString(subHeaderType);
+            subHeaderInfo = "   Sub header type: "
+                    + DeviceSecurityEventDataSubHeader.subheaderTypeToString(subHeaderType) + "\n";
 
             byte[] dsedSubHeaderBytes = new byte[subHeaderLength];
             System.arraycopy(dsedBytes, dsedHeaderLength, dsedSubHeaderBytes, 0, subHeaderLength);
@@ -72,22 +72,21 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
                     subHeaderInfo += dsedSubHeader.toString();
                 }
                 catch(NullPointerException e) {
-                    subHeaderInfo = "\n      Could not interpret Sub header info for SPDM measurment block";
+                    subHeaderInfo = "      Could not interpret Sub header info for SPDM measurment block\n";
                 }
             }
             else if (subHeaderType == DeviceSecurityEventDataSubHeader.SUBHEADERTYPE_CERT_CHAIN) {
-//                subHeaderInfo += "\n      Cert chain to be implemented ";
                 try {
                     dsedSubHeader =
                             new DeviceSecurityEventDataSubHeaderCertChain(dsedSubHeaderBytes);
                     subHeaderInfo += dsedSubHeader.toString();
                 }
                 catch(NullPointerException e) {
-                    subHeaderInfo = "\n    Could not interpret Sub header info for SPDM cert chain";
+                    subHeaderInfo = "    Could not interpret Sub header info for SPDM cert chain\n";
                 }
             }
             else {
-                subHeaderInfo += "\n     Sub header type unknown";
+                subHeaderInfo += "     Sub header type unknown\n";
             }
 
             int dsedDevContextStartByte = dsedHeaderLength + subHeaderLength;
@@ -99,7 +98,7 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
             instantiateDeviceContext(dsedDevContextBytes);
         }
         catch(NullPointerException e) {
-            headerInfo = "   Could not interpret Header info";
+            headerInfo = "   Could not interpret Header info\n";
         }
     }
 

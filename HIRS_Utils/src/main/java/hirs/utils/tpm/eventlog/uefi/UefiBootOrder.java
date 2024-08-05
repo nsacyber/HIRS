@@ -31,7 +31,7 @@ public class UefiBootOrder {
      */
     public String toString() {
         StringBuilder orderList = new StringBuilder();
-        orderList.append("BootOrder = ");
+        orderList.append("      BootOrder = ");
         for (int i = 0; i < bootOrder.length; i++) {
             orderList.append(String.format("Boot%04d ", (int) bootOrder[i]));
         }

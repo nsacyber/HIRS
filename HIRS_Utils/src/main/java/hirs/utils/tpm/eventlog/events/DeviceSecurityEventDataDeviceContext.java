@@ -65,7 +65,7 @@ public abstract class DeviceSecurityEventDataDeviceContext {
     public String toString() {
         String dSEDdeviceContextCommonInfo = "";
 
-        dSEDdeviceContextCommonInfo += "\n   DeviceSecurityEventData Device Context:";
+        dSEDdeviceContextCommonInfo += "   DeviceSecurityEventData Device Context:\n";
 
         return dSEDdeviceContextCommonInfo;
     }

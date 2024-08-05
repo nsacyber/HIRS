@@ -119,10 +119,11 @@ public class SpdmMeasurement {
     public String toString() {
         String spdmMeasInfo = "";
 
-        spdmMeasInfo += "\n      SPDM Measurement Value Type = " +
+        spdmMeasInfo += "      SPDM Measurement Value Type = " +
                 dmtfSpecMeasurementValueTypeToString(dmtfSpecMeasurementValueType);
         spdmMeasInfo += "\n      SPDM Measurement Value = " +
                 HexUtils.byteArrayToHexString(dmtfSpecMeasurementValue);
+        spdmMeasInfo += "\n";
 
         return spdmMeasInfo;
     }

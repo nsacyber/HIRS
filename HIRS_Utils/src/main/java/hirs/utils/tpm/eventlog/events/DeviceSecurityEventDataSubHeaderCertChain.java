@@ -96,10 +96,10 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
      */
     public String toString() {
         String dsedSubHeaderInfo = "";
-        dsedSubHeaderInfo += "\n   SPDM Version = " + spdmVersion;
-        dsedSubHeaderInfo += "\n   SPDM Slot ID = " + spdmSlotId;
+        dsedSubHeaderInfo += "   SPDM Version = " + spdmVersion + "\n";
+        dsedSubHeaderInfo += "   SPDM Slot ID = " + spdmSlotId + "\n";
         String spdmBaseHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmBaseHashAlgo);
-        dsedSubHeaderInfo += "\n   SPDM Base Hash Algorithm = " + spdmBaseHashAlgoStr;
+        dsedSubHeaderInfo += "   SPDM Base Hash Algorithm = " + spdmBaseHashAlgoStr + "\n";
 
         // SPDM Certificate Chain output
         dsedSubHeaderInfo += spdmCertChain.toString();

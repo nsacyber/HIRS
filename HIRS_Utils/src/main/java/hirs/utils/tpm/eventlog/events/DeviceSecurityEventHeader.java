@@ -147,7 +147,7 @@ public abstract class DeviceSecurityEventHeader {
 
         // get the device path
         if (devicePathLength != 0) {
-            startByte = startByte + UefiConstants.SIZE_8;
+            startByte = startByte + 8;
             byte[] devPathBytes = new byte[devicePathLength];
             System.arraycopy(dsedBytes, startByte, devPathBytes,
                     0, devicePathLength);
@@ -192,13 +192,13 @@ public abstract class DeviceSecurityEventHeader {
     public String toString() {
         String dsedHeaderCommonInfo = "";
 
-        dsedHeaderCommonInfo += "\n   SPDM Device Type = " + deviceTypeToString(deviceType);
+        dsedHeaderCommonInfo += "   SPDM Device Type = " + deviceTypeToString(deviceType) + "\n";
         if (devicePathValid) {
-            dsedHeaderCommonInfo += "\n   SPDM Device Path:\n";
+            dsedHeaderCommonInfo += "   SPDM Device Path:\n";
             dsedHeaderCommonInfo += devicePath;
         }
         else {
-            dsedHeaderCommonInfo += "\n   SPDM Device Path = Unknown or invalid";
+            dsedHeaderCommonInfo += "   SPDM Device Path = Unknown or invalid\n";
         }
 
         return dsedHeaderCommonInfo;

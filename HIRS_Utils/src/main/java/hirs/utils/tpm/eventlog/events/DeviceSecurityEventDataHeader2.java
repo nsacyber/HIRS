@@ -124,8 +124,8 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
         String dsedHeader2Info = "";
 
         dsedHeader2Info += super.toString();
-        dsedHeader2Info += "\n   AuthState: " + getAuthStateString();
-        dsedHeader2Info += "\n   Sub header UID: " + subHeaderUid;
+        dsedHeader2Info += "   AuthState: " + getAuthStateString() + "\n";
+        dsedHeader2Info += "   Sub header UID: " + subHeaderUid + "\n";
 
         return dsedHeader2Info;
     }

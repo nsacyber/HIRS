@@ -67,30 +67,30 @@ public class EvEfiSpdmDeviceSecurityEvent {
 
         if (dsedSignature.contains("SPDM Device Sec2")) {
 
-            spdmInfo = "   Signature = SPDM Device Sec2";
+            spdmInfo = "   Signature = SPDM Device Sec2\n";
 
             if (dsedVersion.equals("0200")) {
                 dsed = new DeviceSecurityEventData2(eventData);
                 spdmInfo += dsed.toString();
             }
             else {
-                spdmInfo += "    Incompatible version for DeviceSecurityEventData2: " + dsedVersion;
+                spdmInfo += "    Incompatible version for DeviceSecurityEventData2: " + dsedVersion + "\n";
             }
         }
         else if (dsedSignature.contains("SPDM Device Sec")) {      // implies Device Security event
 
-            spdmInfo = "   Signature = SPDM Device Sec";
+            spdmInfo = "   Signature = SPDM Device Sec\n";
 
             if (dsedVersion.equals("0100")) {
                 dsed = new DeviceSecurityEventData(eventData);
                 spdmInfo += dsed.toString();
             }
             else {
-                spdmInfo += "    Incompatible version for DeviceSecurityEventData: " + dsedVersion;
+                spdmInfo += "    Incompatible version for DeviceSecurityEventData: " + dsedVersion + "\n";
             }
         }
         else {
-            spdmInfo = "   Signature = Undetermined value: " + dsedSignature;
+            spdmInfo = "   Signature = Undetermined value: " + dsedSignature + "\n";
         }
     }
 
