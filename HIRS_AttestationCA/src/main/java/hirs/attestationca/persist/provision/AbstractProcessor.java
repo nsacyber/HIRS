@@ -236,10 +236,11 @@ public class AbstractProcessor {
      * @param platformCredentials the platform credentials used to generate the AC
      * @param device the device to which the attestation certificate is tied
      * @param isLDevID whether the certificate is a ldevid
+     * @return whether the certificate was saved successfully
      * @throws {@link CertificateProcessingException} if error occurs in persisting the Attestation
      *                                             Certificate
      */
-    public void saveAttestationCertificate(final CertificateRepository certificateRepository,
+    public boolean saveAttestationCertificate(final CertificateRepository certificateRepository,
                                            final byte[] derEncodedAttestationCertificate,
                                             final EndorsementCredential endorsementCredential,
                                             final List<PlatformCredential> platformCredentials,
@@ -264,7 +265,7 @@ public class AbstractProcessor {
                 generateCertificate = isLDevID ? policySettings.isIssueDevIdCertificate()
                         : policySettings.isIssueAttestationCertificate();
 
-                if (issuedAc != null && (isLDevID ? policySettings.isDevIdExpirationFlag()
+                if (issuedAc != null && issuedAc.size() > 0 && (isLDevID ? policySettings.isDevIdExpirationFlag()
                         : policySettings.isGenerateOnExpiration())) {
                     if (issuedAc.get(0).getEndValidity().after(currentDate)) {
                         // so the issued AC is not expired
@@ -291,6 +292,8 @@ public class AbstractProcessor {
                     "Encountered error while storing Attestation Certificate: "
                             + e.getMessage(), e);
         }
+
+        return generateCertificate;
     }
 
     private List<PlatformCredential> getPlatformCredentials(final CertificateRepository certificateRepository,

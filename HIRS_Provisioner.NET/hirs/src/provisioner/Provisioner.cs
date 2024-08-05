@@ -15,6 +15,9 @@ namespace hirs {
         private IHirsDeviceInfoCollector deviceInfoCollector = null;
         private IHirsAcaClient acaClient = null;
         
+        private const string DefaultLDevIDPubKeyFileName = "ldevid.pub";
+        private const string DefaultLDevIDPrivKeyFileName = "ldevid.priv";
+
         private const string DefaultCertFileName = "attestationkey.pem";
         private const string DefaultLDevIDCertFileName = "ldevid.pem";
 
@@ -146,10 +149,12 @@ namespace hirs {
                 byte[] srkPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out byte[] name2, out byte[] qualifiedName2);
 
                 Log.Information("----> " + (cli.ReplaceLDevID ? "Creating new" : "Verifying existence of") + " LDevID Key.");
-                tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, CommandTpm.DefaultLDevIDHandle, cli.ReplaceLDevID);
+                string ldevidPubPath = settings.ldevid_prefix + DefaultLDevIDPubKeyFileName;
+                string ldevidPrivPath = settings.ldevid_prefix + DefaultLDevIDPrivKeyFileName;
+                tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, ldevidPubPath, ldevidPrivPath, cli.ReplaceLDevID);
 
                 Log.Debug("Gathering LDevID PUBLIC.");
-                byte[] ldevidPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultLDevIDHandle, out name, out qualifiedName);
+                byte[] ldevidPublicArea = tpm.ConvertLDevIDPublic(ldevidPubPath);
 
                 List<byte[]> pcs = null, baseRims = null, supportRimELs = null, supportRimPCRs = null;
                 if (settings.HasEfiPrefix()) {
@@ -281,7 +286,7 @@ namespace hirs {
                     Log.Debug("Communicate certificate request to the ACA.");
                     CertificateResponse cr = await acaClient.PostCertificateRequest(akCertReq);
                     Log.Debug("Response received from the ACA regarding the certificate request.");
-                    if (cr.HasStatus) {
+                     if (cr.HasStatus) {
                         if (cr.Status == ResponseStatus.Pass) {
                             Log.Debug("ACA returned a positive response to the Certificate Request.");
                         } else {

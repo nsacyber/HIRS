@@ -24,7 +24,8 @@ namespace hirs {
             linux_sys_vendor_file,
             linux_product_name_file,
             linux_product_version_file,
-            linux_product_serial_file
+            linux_product_serial_file,
+            ldevid_prefix
         }
 
         private static readonly string DEFAULT_SETTINGS_FILE = "appsettings.json";
@@ -70,6 +71,9 @@ namespace hirs {
             get; private set;
         }
         public virtual string linux_product_serial {
+            get; private set;
+        }
+        public virtual string ldevid_prefix {
             get; private set;
         }
         private List<IHardwareManifest> hardwareManifests = new();
@@ -125,6 +129,8 @@ namespace hirs {
                 CheckAutoDetectTpm();
 
                 CheckEfiPrefix();
+
+                CheckLDevIDPrefix();
 
                 IngestEventLogFromFile();
 
@@ -268,9 +274,30 @@ namespace hirs {
         }
         #endregion
 
+        #region
+        private void CheckLDevIDPrefix() {
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.ldevid_prefix.ToString()])) {
+                Log.Debug("Checking LDevID Prefix setting.");
+                ldevid_prefix = $"{ configFromSettingsFile[Options.ldevid_prefix.ToString()] }";
+                if (!string.IsNullOrWhiteSpace(ldevid_prefix)) {
+                    if (!Directory.Exists(ldevid_prefix)) {
+                        Log.Debug(Options.ldevid_prefix.ToString() + ": " + ldevid_prefix + " did not exist.");
+                        ldevid_prefix = null;
+                    }
+                }
+            }
+            if (ldevid_prefix == null) {
+                Log.Warning(Options.ldevid_prefix.ToString() + " not set in the settings file. Defaulting to the current working directory.");
+                ldevid_prefix = "";
+            } else {
+                Log.Debug("  Will scan for LDevID keys in " + ldevid_prefix);
+            }
+        }
+        #endregion
+
         #region EFI
         private void CheckEfiPrefix() {
-            if (configFromSettingsFile[Options.efi_prefix.ToString()] != null) {
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.efi_prefix.ToString()])) {
                 Log.Debug("Checking EFI Prefix setting.");
                 efi_prefix = $"{ configFromSettingsFile[Options.efi_prefix.ToString()] }";
                 if (string.IsNullOrWhiteSpace(efi_prefix)) { // If not explicitly set in appsettings, try to use default EFI location on Linux

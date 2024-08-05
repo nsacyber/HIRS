@@ -112,7 +112,10 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     endorsementCredential, certificateRepository);
 
             // Get LDevID public key if it exists
-            RSAPublicKey ldevidPub = ProvisionUtils.parsePublicKey(claim.getLdevidPublicArea().toByteArray());
+            RSAPublicKey ldevidPub = null;
+            if (claim.hasLdevidPublicArea()) {
+                ldevidPub = ProvisionUtils.parsePublicKey(claim.getLdevidPublicArea().toByteArray());
+            }
 
             // Get device name and device
             String deviceName = claim.getDv().getNw().getHostname();
@@ -149,33 +152,63 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                 // Create signed, attestation certificate
                 X509Certificate attestationCertificate = generateCredential(akPub,
                         endorsementCredential, platformCredentials, deviceName, acaCertificate);
-                X509Certificate ldevidCertificate = generateCredential(ldevidPub,
-                        endorsementCredential, platformCredentials, deviceName, acaCertificate);
-                byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
-                        attestationCertificate);
-                byte[] derEncodedLdevidCertificate = ProvisionUtils.getDerEncodedCertificate(
-                        ldevidCertificate);
+                if (ldevidPub != null) {
+                    // Create signed LDevID certificate
+                    X509Certificate ldevidCertificate = generateCredential(ldevidPub,
+                            endorsementCredential, platformCredentials, deviceName, acaCertificate);
+                    byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
+                            attestationCertificate);
+                    byte[] derEncodedLdevidCertificate = ProvisionUtils.getDerEncodedCertificate(
+                            ldevidCertificate);
 
-                // We validated the nonce and made use of the identity claim so state can be deleted
-                tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
+                    // We validated the nonce and made use of the identity claim so state can be deleted
+                    tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
 
-                // Package the signed certificates into a response
-                ByteString certificateBytes = ByteString
-                        .copyFrom(derEncodedAttestationCertificate);
-                ByteString ldevidCertificateBytes = ByteString
-                        .copyFrom(derEncodedLdevidCertificate);
-                ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
-                        .newBuilder().setCertificate(certificateBytes)
-                        .setLdevidCertificate(ldevidCertificateBytes)
-                        .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
-                        .build();
+                    // Package the signed certificates into a response
+                    ByteString certificateBytes = ByteString
+                            .copyFrom(derEncodedAttestationCertificate);
+                    ByteString ldevidCertificateBytes = ByteString
+                            .copyFrom(derEncodedLdevidCertificate);
 
-                saveAttestationCertificate(certificateRepository, derEncodedAttestationCertificate,
-                        endorsementCredential, platformCredentials, device, false);
-                saveAttestationCertificate(certificateRepository, derEncodedLdevidCertificate,
-                        endorsementCredential, platformCredentials, device, true);
+                    boolean generateAtt = saveAttestationCertificate(certificateRepository, derEncodedAttestationCertificate,
+                            endorsementCredential, platformCredentials, device, false);
+                    boolean generateLDevID = saveAttestationCertificate(certificateRepository, derEncodedLdevidCertificate,
+                            endorsementCredential, platformCredentials, device, true);
 
-                return response.toByteArray();
+                    ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
+                            newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+                    if (generateAtt) {
+                        builder = builder.setCertificate(certificateBytes);
+                    }
+                    if (generateLDevID) {
+                        builder = builder.setLdevidCertificate(ldevidCertificateBytes);
+                    }
+                    ProvisionerTpm2.CertificateResponse response = builder.build();
+
+                    return response.toByteArray();
+                }
+                else {
+                    byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
+                            attestationCertificate);
+
+                    // We validated the nonce and made use of the identity claim so state can be deleted
+                    tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
+
+                    // Package the signed certificates into a response
+                    ByteString certificateBytes = ByteString
+                            .copyFrom(derEncodedAttestationCertificate);
+                    ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
+                            newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+
+                    boolean generateAtt = saveAttestationCertificate(certificateRepository, derEncodedAttestationCertificate,
+                            endorsementCredential, platformCredentials, device, false);
+                    if (generateAtt) {
+                        builder = builder.setCertificate(certificateBytes);
+                    }
+                    ProvisionerTpm2.CertificateResponse response = builder.build();
+
+                    return response.toByteArray();
+                }
             } else {
                 log.error("Supply chain validation did not succeed. "
                         + "Firmware Quote Validation failed. Result is: "

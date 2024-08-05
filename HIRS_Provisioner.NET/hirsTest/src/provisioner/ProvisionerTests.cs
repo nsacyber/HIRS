@@ -45,8 +45,7 @@ namespace hirsTest {
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
             A.CallTo(() => tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
-            A.CallTo(() => tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, CommandTpm.DefaultLDevIDHandle, false)).DoesNothing();
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultLDevIDHandle, out name, out qualifiedName)).Returns(ldevidPublic);
+            A.CallTo(() => tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, "", "", false)).DoesNothing();
             //A.CallTo(() => tpm.getPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
             //A.CallTo(() => tpm.getPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
             A.CallTo(() => tpm.GetQuote(CommandTpm.DefaultAkHandle, TpmAlgId.Sha256, secret, out ctqr, A<uint[]>.Ignored)).DoesNothing();
@@ -103,8 +102,7 @@ namespace hirsTest {
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(ekPublic);
             A.CallTo(() => tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
-            A.CallTo(() => tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, CommandTpm.DefaultLDevIDHandle, false)).DoesNothing();
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultLDevIDHandle, out name, out qualifiedName)).Returns(ldevidPublic);
+            A.CallTo(() => tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, "", "", false)).DoesNothing();
             A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
             A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
 

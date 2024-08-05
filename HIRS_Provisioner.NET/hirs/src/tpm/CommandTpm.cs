@@ -27,7 +27,6 @@ namespace hirs {
         public const uint DefaultEkHandle = 0x81010001;
         public const uint DefaultAkHandle = 0x81010002;
         public const uint DefaultSrkHandle = 0x81000001;
-        public const uint DefaultLDevIDHandle = 0x81000002;
         
         private readonly Tpm2 tpm;
 
@@ -266,7 +265,7 @@ namespace hirs {
 
         private static RsaParms LDevIDRSAParms() {
             TpmAlgId digestAlg = TpmAlgId.Sha256;
-            RsaParms parms = new(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(digestAlg), 2048, 0);
+            RsaParms parms = new(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), null, 2048, 0);
             return parms;
         }
 
@@ -365,36 +364,20 @@ namespace hirs {
             Log.Debug("Flushed the context for the transient SRK.");
         }
 
-        public void CreateLDevIDKey(uint srkHandleInt, uint ldevidHandleInt, bool replace) {
+        public void CreateLDevIDKey(uint srkHandleInt, string pubPath, string privPath, bool replace) {
             TpmHandle srkHandle = new(srkHandleInt);
-            TpmHandle ldevidHandle = new(ldevidHandleInt);
 
-            TpmPublic existingObject = null;
-            try {
-                existingObject = tpm.ReadPublic(ldevidHandle, out byte[] name, out byte[] qualifiedName);
-            } catch { }
-
-            if (!replace && existingObject != null) {
+            if (!replace && File.Exists(privPath) && File.Exists(pubPath)) {
                 // Do Nothing
-                Log.Debug("LDevID exists at expected handle. Flag to not replace the LDevID is set in the settings file.");
+                Log.Debug("LDevID exists at local file system path. Flag to not replace the LDevID is set in the settings file.");
                 return;
-            } else if (replace && existingObject != null) {
-                // Clear the object and continue
-                tpm.EvictControl(TpmRh.Owner, ldevidHandle, ldevidHandle);
-                Log.Debug("Removed previous LDevID.");
-            }  
+            }
 
-            // Create a new key and make it persistent at ldevidHandle
+            // Create a new transient key
             TpmAlgId nameAlg = TpmAlgId.Sha256;
 
             SensitiveCreate inSens = new();
             TpmPublic inPublic = GenerateLDevIDTemplate(nameAlg);
-
-            /*var policySRK = new PolicyTree(nameAlg);
-            policySRK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Owner, false, 0, null, null));
-
-            AuthSession sessSRK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
-            sessSRK.RunPolicy(tpm, policySRK);*/
 
             TpmPrivate kLDevID = tpm.Create(srkHandle, inSens, inPublic, null, null, out TpmPublic outPublic,
                                             out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
@@ -403,17 +386,20 @@ namespace hirs {
             Log.Debug("New LDevID PUB 2BREP: " + BitConverter.ToString(outPublic.GetTpm2BRepresentation()));
             Log.Debug("New LDevID PUB unique: " + BitConverter.ToString((Tpm2bPublicKeyRsa)(outPublic.unique)));
 
-            /*tpm.FlushContext(sessSRK);
+            Tpm2bPublic ldevidPublic = new Tpm2bPublic(outPublic);
 
-            sessSRK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
-            sessSRK.RunPolicy(tpm, policySRK);*/
+            File.WriteAllBytes(pubPath, ldevidPublic);
+            File.WriteAllBytes(privPath, kLDevID);
+            Log.Debug("Created new LDevID at local file system paths.");
+            Log.Debug("    LDevID Pub Path: {0}", pubPath);
+            Log.Debug("    LDevID Priv Path: {0}", privPath);
+        }
 
-            TpmHandle hLDevID = tpm.Load(srkHandle, kLDevID, outPublic);
-
-            tpm.EvictControl(TpmRh.Owner, hLDevID, ldevidHandle);
-            Log.Debug("Created and persisted new LDevID at handle 0x" + ldevidHandle.handle.ToString("X") + ".");
-
-            //tpm.FlushContext(sessSRK);
+        public byte[] ConvertLDevIDPublic(string ldevidPubPath) {
+            byte[] ldevidPubBytes = File.ReadAllBytes(ldevidPubPath);
+            var marshaller = new Marshaller(ldevidPubBytes, DataRepresentation.Tpm);
+            Tpm2bPublic ldevidPublic = marshaller.Get<Tpm2bPublic>();
+            return ldevidPublic.publicArea;
         }
 
         public Tpm2bDigest[] GetPcrList(TpmAlgId pcrBankDigestAlg, uint[] pcrs = null) {

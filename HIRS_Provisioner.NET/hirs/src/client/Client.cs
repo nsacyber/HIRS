@@ -69,7 +69,7 @@ namespace hirs {
 
         public IdentityClaim CreateIdentityClaim(DeviceInfo dv, byte[] akPublicArea, byte[] ekPublicArea,
                                        byte[] endorsementCredential, List<byte[]> platformCredentials,
-                                       string paccoroutput, byte[] ldevidPublicArea) {
+                                       string paccoroutput, byte[] ldevidPublicArea = null) {
             IdentityClaim identityClaim = new();
             identityClaim.Dv = dv;
             identityClaim.AkPublicArea = ByteString.CopyFrom(akPublicArea);
@@ -81,7 +81,7 @@ namespace hirs {
                 }
             }
             identityClaim.PaccorOutput = paccoroutput;
-            identityClaim.LdevidPublicArea = ByteString.CopyFrom(ldevidPublicArea);
+            if (ldevidPublicArea != null) identityClaim.LdevidPublicArea = ByteString.CopyFrom(ldevidPublicArea);
             
             return identityClaim;
         }
