@@ -60,7 +60,7 @@ public class SupplyChainValidation extends ArchivableEntity {
     private final List<Certificate> certificatesUsed;
 
     @Getter
-    @Column(length = MAX_MESSAGE_LENGTH)
+    @Column(length = RESULT_MESSAGE_LENGTH)
     private final String message;
 
     @Getter
@@ -105,8 +105,8 @@ public class SupplyChainValidation extends ArchivableEntity {
         this.certificatesUsed = new ArrayList<>();
         this.rimId = "";
         for (ArchivableEntity ae : certificatesUsed) {
-            if (ae instanceof ReferenceManifest) {
-                this.rimId = ae.getId().toString();
+            if (ae instanceof BaseReferenceManifest rm) {
+                this.rimId = rm.getId().toString();
                 break;
             } else if (ae instanceof Certificate) {
                 this.certificatesUsed.add((Certificate) ae);

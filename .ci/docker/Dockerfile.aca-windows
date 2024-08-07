@@ -3,6 +3,8 @@
 # List of available tags for Microsoft's powershell docker image: https://mcr.microsoft.com/v2/powershell/tags/list.
 # This Dockerfile requires Powershell 7+. e.g. lts-windowsservercore-1809
 ARG BASE_IMAGE_TAG=latest
+
+# Start 
 FROM mcr.microsoft.com/powershell:${BASE_IMAGE_TAG}
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
@@ -13,6 +15,10 @@ LABEL org.opencontainers.image.base.name mcr.microsoft.com/powershell:${BASE_IMA
 ARG REF=main
 
 SHELL ["pwsh", "-Command"]
+
+# Print build args
+RUN Write-Host BASE_IMAGE_TAG: $Env:BASE_IMAGE_TAG
+RUN Write-Host REF: $Env:REF
 
 # Output Powershell Version
 # This Dockerfile requires Powershell 7+.
@@ -64,8 +70,8 @@ RUN Start-Process -FilePath 'C:/vs_buildtools.exe' -ArgumentList \"--quiet --wai
 RUN Write-Host "Finished installing Visual Studio Build Tools."
 
 # Download and extract pre-built openssl
-RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.firedaemon.com/FireDaemon-OpenSSL/openssl-3.1.4.zip', 'C:/openssl-3.1.zip'))
-RUN Expand-Archive C:/openssl-3.1.zip -DestinationPath C:/openssl_files
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.firedaemon.com/FireDaemon-OpenSSL/openssl-3.3.1.zip', 'C:/openssl-3.zip'))
+RUN Expand-Archive C:/openssl-3.zip -DestinationPath C:/openssl_files
 WORKDIR C:/openssl_files/openssl-3
 RUN cp -Recurse -Force C:/openssl_files/openssl-3/x64 'C:/Program Files/openssl'
 
@@ -87,7 +93,11 @@ RUN echo $Env:JAVA_HOME
 # Clone ibmswtpm2 and build
 RUN git clone https://github.com/kgoldman/ibmswtpm2.git C:/ibmswtpm2
 ## tpm_server.sln is looking for the openssl crypto lib in a fixed location
+## Copying twice because sometimes it references either filename
 RUN cp 'C:/Program Files/openssl/lib/libcrypto.lib' 'C:/ibmswtpm2/tpmvstudio/tpm_server/libcrypto64md.lib'
+RUN cp 'C:/Program Files/openssl/lib/libcrypto.lib' 'C:/ibmswtpm2/tpmvstudio/tpm_server/libcrypto.lib'
+## Assume compatibility with any version of openssl3
+RUN (Get-Content C:/ibmswtpm2/src/BnToOsslMath.h) -replace '0x30200ff0L', '0x40200ff0L' | Out-File C:/ibmswtpm2/src/BnToOsslMath.h
 WORKDIR C:/ibmswtpm2/tpmvstudio/tpm_server
 #IF MSBUILD NOT ON PATH: RUN /vsbuildtools/MSBuild/Current/Bin/MSBuild.exe .\tpm_server.sln -t:Build -p:Configuration=Release -p:Platform=x64
 RUN MSBuild.exe .\tpm_server.sln -t:Build -p:Configuration=Release -p:Platform=x64
@@ -96,8 +106,8 @@ RUN MSBuild.exe .\tpm_server.sln -t:Build -p:Configuration=Release -p:Platform=x
 # Clone ibmtss and build
 RUN git clone https://github.com/kgoldman/ibmtss.git C:/ibmtss
 ## Again, This VS project is looking for the openssl crypto library in a fixed location. The paths are imported into multiple subprojects. Easier to edit the paths than attempt to copy the library everywhere.
-RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props) -replace 'libcrypto64mdd','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props
-RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props) -replace 'libcrypto64md','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props
+RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props) -replace 'libcrypto','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64.props
+RUN ((Get-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props) -replace 'libcrypto','C:/program files/openssl/lib/libcrypto') | Set-Content C:/ibmtss/tpmutils/CommonPropertiesx64Release.props
 WORKDIR C:/ibmtss/tpmutils
 # IF MSBUILD NOT ON PATH: RUN /vsbuildtools/MSBuild/Current/Bin/MSBuild.exe .\tpmutils.sln -t:Build -p:Configuration=Release -p:Platform=x64
 RUN MSBuild.exe .\tpmutils.sln -t:Build -p:Configuration=Release -p:Platform=x64
@@ -112,7 +122,7 @@ RUN echo $Env:PATH
 WORKDIR C:/
 RUN git config --global --add core.autocrlf false
 RUN git config --global --add safe.directory '*'
-RUN git clone -b ${REF} https://github.com/nsacyber/hirs.git C:/repo
+RUN git clone -b $Env:REF https://github.com/nsacyber/hirs.git C:/repo
 
 # Defensive copy of the repo so it's easy to start fresh if needed
 WORKDIR C:/repo

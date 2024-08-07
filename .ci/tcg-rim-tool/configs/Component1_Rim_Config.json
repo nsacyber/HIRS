@@ -1,0 +1,54 @@
+{
+        "SoftwareIdentity": {
+                "name": "Example.com BIOS",
+                "version": "01",
+                "tagId": "94f6b457-9ac9-4d35-9b3f-78804173b65as",
+                "tagVersion": "0",
+                "patch": false,
+                "supplemental": false
+        },
+	"Entity": {
+                "name": "Example Inc",
+                "regid": "http://Example.com",
+                "role": "softwareCreator,tagCreator"
+        },
+	"Link": {
+                "href": "https://Example.com/support/ProductA/firmware/installfiles",
+                "rel": "installationmedia"
+        },
+	"Meta": {
+                "colloquialVersion": "Firmware_2019",
+                "edition": "12",
+                "product": "ProductA",
+                "revision": "r2",
+                "PayloadType": "direct",
+                "platformManufacturerStr": "Example.com",
+                "platformManufacturerId": "00201234",
+                "platformModel": "ProductA",
+                "platformVersion": "01",
+                "firmwareManufacturerStr": "BIOSVendorA",
+                "firmwareManufacturerId": "00213022",
+                "firmwareModel": "A0",
+                "firmwareVersion": "12",
+                "bindingSpec": "PC Client RIM",
+                "bindingSpecVersion": "1.2",
+                "pcURIlocal": "/boot/tcg/manifest/switag/",
+                "pcURIGlobal": "https://Example.com/support/ProductA/"
+        },
+	"Payload": {
+                "supportRIMURIGlobal": "https://Example.com/support/ProductA/firmware/rims/",
+                "supportRIMFormat":"TCG_EventLog_Assertion",
+                "supportRimType": "BaseRim",
+                "Directory": {
+                        "name": "rim",
+                        "root": "/boot/tcg/manifest/rim/",
+                        "File": {
+                                "version":"01",
+                                "name": "Example.com.BIOS.01.rimel",
+                                "size": "7549",
+                                "hash": "4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848"
+                                }
+                }
+        }
+}
+
