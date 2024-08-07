@@ -7,20 +7,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Class to process a Device Path. A Device Path is a variable-length binary
- * structure that is made up of variable-length generic Device Path nodes.
- * The first Device Path node starts at byte offset zero of the Device Path.
- * The next Device Path node starts at the end of the previous Device Path node.
- * There is no limit to the number, type, or sequence of nodes in a Device Path.
+ * Class to process EFI_DEVICE_PATH_PROTOCOL which is referred to as the UEFI_DEVICE_PATH
  * <p>
- * Generic Device Path Node Structure:
- * Name     Byte Offset     Byte Length     Description
- * Type     0               1               Device path type (such as 0x01 - Hardware Device Path)
- * Sub-Type 1               1               Sub-Type
- * Length   2               2               Length of this structure in bytes. Length is 4+n bytes
- * Data     4               n               Specific Device Path data
- * <p>
- * EFI_DEVICE_PATH_PROTOCOL:
  * #define EFI_DEVICE_PATH_PROTOCOL_GUID \09576e91-6d3f-11d2-8e39-00a0c969723b
  * typedef struct _EFI_DEVICE_PATH_PROTOCOL {
  * UINT8 Type;
@@ -35,7 +23,7 @@ import java.nio.charset.StandardCharsets;
  * Type 0x04  Media Device Path
  * Type 0x05  BIOS Boot Specification Device Path
  * Type 0x7F  End of Hardware Device Path
- * Each Type has a Subtype that may or may not be defined in the section
+ * Each Type has a sub-type that may or may no be defined in the section
  * <p>
  * Only a few of the SubTypes have been implemented as there are many,
  * but only those that were reported using the test devices at hand.
@@ -48,11 +36,11 @@ public class UefiDevicePath {
     @Getter
     private String type = "";
     /**
-     * UEFI Device path subtype.
+     * UEFI Device path sub-type.
      */
     private String subType = "";
     /**
-     * UEFI Device path human-readable description.
+     * UEFI Device path human readable description.
      */
     private String devPathInfo = "";
     /**
@@ -67,7 +55,7 @@ public class UefiDevicePath {
      * @param path byte array holding device path data
      * @throws java.io.UnsupportedEncodingException if path byte array contains unexpected values
      */
-    public UefiDevicePath(final byte[] path) {
+    public UefiDevicePath(final byte[] path) throws UnsupportedEncodingException {
         devPathInfo = processDevPath(path);
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(path, UefiConstants.OFFSET_2, lengthBytes, 0, UefiConstants.OFFSET_2);
@@ -75,9 +63,9 @@ public class UefiDevicePath {
     }
 
     /**
-     * Returns the UEFI device subtype.
+     * Returns the UEFI device sub-type.
      *
-     * @return uefi subtype
+     * @return uefi sub-type
      */
     public String getSubType() {
         return subType.trim();
@@ -93,7 +81,7 @@ public class UefiDevicePath {
      * @return Human readable string containing the device path description.
      * @throws java.io.UnsupportedEncodingException
      */
-    private String processDevPath(final byte[] path) {
+    private String processDevPath(final byte[] path) throws UnsupportedEncodingException {
         StringBuilder pInfo = new StringBuilder();
         int devLength = 0, pathOffset = 0, devCount = 0;
         while (true) {
@@ -101,6 +89,9 @@ public class UefiDevicePath {
             if ((devPath.intValue() == UefiConstants.TERMINATOR)
                     || (devPath.intValue() == UefiConstants.END_FLAG)) {
                 break;
+            }
+            if (devCount++ > 0) {
+                pInfo.append("\n");
             }
             pInfo.append(processDev(path, pathOffset));
             devLength = path[pathOffset + UefiConstants.OFFSET_3] * UefiConstants.SIZE_256
@@ -120,10 +111,11 @@ public class UefiDevicePath {
      *
      * @param path
      * @param offset
-     * @return human-readable string representing the UEFI device path
+     * @return human readable string representing the UEFI device path
      * @throws java.io.UnsupportedEncodingException
      */
-    private String processDev(final byte[] path, final int offset) {
+    private String processDev(final byte[] path, final int offset)
+            throws UnsupportedEncodingException {
         String devInfo = "      ";
         int devPath = path[offset];
         byte unknownSubType = path[offset + UefiConstants.OFFSET_1];
@@ -131,50 +123,50 @@ public class UefiDevicePath {
             case UefiConstants.DEV_HW:
                 type = "Hardware Device Path";
                 if (devPath == UefiConstants.DEVPATH_HARWARE) {
-                    devInfo += type + ":\n" + pciSubType(path, offset);
+                    devInfo += type + ": " + pciSubType(path, offset);
                 }
                 break;
             case UefiConstants.DEV_ACPI:
                 type = "ACPI Device Path";
-                devInfo += type + ":\n" + acpiSubType(path, offset);
+                devInfo += type + ": " + acpiSubType(path, offset);
                 break;
             case UefiConstants.DEV_MSG:
                 type = "Messaging Device Path";
                 if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEV_SUB_SATA) {
-                    devInfo += type + ":\n" + sataSubType(path, offset);
+                    devInfo += type + ": " + sataSubType(path, offset);
                 } else if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEV_SUB_NVM) {
-                    devInfo += type + ":\n" + nvmSubType(path, offset);
+                    devInfo += type + ": " + nvmSubType(path, offset);
                 } else if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEV_SUB_USB) {
-                    devInfo += type + ":\n" + usbSubType(path, offset);
+                    devInfo += type + ": " + usbSubType(path, offset);
                 } else {
-                    devInfo += "UEFI Messaging Device Path Type " + Integer.valueOf(unknownSubType) + "\n";
+                    devInfo += "UEFI Messaging Device Path Type " + Integer.valueOf(unknownSubType);
                 }
                 break;
             case UefiConstants.DEV_MEDIA:
                 type = "Media Device Path";
                 if (path[offset + UefiConstants.OFFSET_1] == 0x01) {
-                    devInfo += type + ":\n" + hardDriveSubType(path, offset);
+                    devInfo += type + ": " + hardDriveSubType(path, offset);
                 } else if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEVPATH_VENDOR) {
-                    devInfo += type + ":\n" + vendorSubType(path, offset);
+                    devInfo += type + ": " + vendorSubType(path, offset);
                 } else if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEVPATH_FILE) {
-                    devInfo += type + ":\n" + filePathSubType(path, offset);
+                    devInfo += type + ": " + filePathSubType(path, offset);
                 } else if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEVPATH_PWIG_FILE) {
-                    devInfo += type + ":\n" + piwgFirmVolFile(path, offset);
+                    devInfo += type + ": " + piwgFirmVolFile(path, offset);
                 } else if (path[offset + UefiConstants.OFFSET_1] == UefiConstants.DEVPATH_PWIG_VOL) {
-                    devInfo += type + ":\n" + piwgFirmVolPath(path, offset);
+                    devInfo += type + ": " + piwgFirmVolPath(path, offset);
                 } else {
-                    devInfo += "UEFI Media Device Path Type " + Integer.valueOf(unknownSubType) + "\n";
+                    devInfo += "UEFI Media Device Path Type " + Integer.valueOf(unknownSubType);
                 }
                 break;
             case UefiConstants.DEV_BIOS:
                 type = "BIOS Device Path";
-                devInfo += type + ":\n" + biosDevicePath(path, offset);
+                devInfo += type + ": " + biosDevicePath(path, offset);
                 break;
             case UefiConstants.TERMINATOR:
-                devInfo += "End of Hardware Device Path\n";
+                devInfo += "End of Hardware Device Path";
                 break;
             default:
-                devInfo += "UEFI Device Path Type " + Integer.valueOf(unknownSubType) + "\n";
+                devInfo += "UEFI Device Path Type " + Integer.valueOf(unknownSubType);
         }
         return devInfo;
     }
@@ -187,17 +179,17 @@ public class UefiDevicePath {
      * @return acpi device info
      */
     private String acpiSubType(final byte[] path, final int offset) {
-        subType = "        Sub Type = ACPI\n";
+        subType = "";
         switch (path[offset + UefiConstants.OFFSET_1]) {
-            case 0x01:  // standard version
+            case 0x01:
+                subType = "(Short): ";
                 subType += acpiShortSubType(path, offset);
                 break;
             case 0x02:
-                subType = "(expanded version):\n";
-                // tbd
+                subType = "Expanded ACPI Device Path";
                 break;
             default:
-                subType = "Invalid ACPI Device Path sub type\n";
+                subType = "Invalid ACPI Device Path sub type";
         }
         return subType;
     }
@@ -213,13 +205,9 @@ public class UefiDevicePath {
         subType = "";
         byte[] hid = new byte[UefiConstants.SIZE_4];
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, hid, 0, UefiConstants.SIZE_4);
-        subType += "        _HID = " + HexUtils.byteArrayToHexString(hid) + "\n";
+        subType += "_HID = " + HexUtils.byteArrayToHexString(hid);
         System.arraycopy(path, 2 * UefiConstants.SIZE_4 + offset, hid, 0, UefiConstants.SIZE_4);
-        String uid = HexUtils.byteArrayToHexString(hid);
-        if(uid.contains("00000000")) {
-            uid = "No _UID exists for this device";
-        }
-        subType += "        _UID = " + uid + "\n";
+        subType += "_UID = " + HexUtils.byteArrayToHexString(hid);
         return subType;
     }
 
@@ -231,25 +219,22 @@ public class UefiDevicePath {
      * @return pci device info.
      */
     private String pciSubType(final byte[] path, final int offset) {
-        subType = "        Sub Type = PCI\n";
-        subType += "        PCI Function Number = ";
+        subType = "PCI: PCI Function Number = ";
         subType += String.format("0x%x", path[offset + UefiConstants.SIZE_4]);
-        subType += "\n        PCI Device Number = ";
+        subType += " PCI Device Number = ";
         subType += String.format("0x%x", path[offset + UefiConstants.SIZE_5]);
-        subType += "\n";
         return subType;
     }
 
     /**
-     * processes the SATA subtype.
+     * processes the SATA sub type.
      *
      * @param path
      * @param offset
      * @return SATA drive info.
      */
     private String sataSubType(final byte[] path, final int offset) {
-        subType = "        Sub Type = SATA\n";
-        subType += "        SATA: HBA Port Number = ";
+        subType = "SATA: HBA Port Number = ";
         byte[] data = new byte[UefiConstants.SIZE_2];
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, data, 0, UefiConstants.SIZE_2);
         subType += HexUtils.byteArrayToHexString(data);
@@ -257,20 +242,18 @@ public class UefiDevicePath {
         subType += " Port Multiplier  = " + HexUtils.byteArrayToHexString(data);
         System.arraycopy(path, UefiConstants.OFFSET_8 + offset, data, 0, UefiConstants.SIZE_2);
         subType += " Logical Unit Number  = " + HexUtils.byteArrayToHexString(data);
-        subType += "\n";
         return subType;
     }
 
     /**
-     * Processes the hard drive subtype.
+     * Processes the hard drive sub type.
      *
      * @param path
      * @param offset
      * @return hard drive info.
      */
     private String hardDriveSubType(final byte[] path, final int offset) {
-        subType = "        Sub Type = Hard Drive\n";
-        subType += "        Partition Number = ";
+        subType = "Partition Number = ";
         byte[] partnumber = new byte[UefiConstants.SIZE_4];
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, partnumber,
                 0, UefiConstants.SIZE_4);
@@ -278,14 +261,14 @@ public class UefiDevicePath {
         byte[] data = new byte[UefiConstants.SIZE_8];
         System.arraycopy(path, UefiConstants.OFFSET_8 + offset, data, 0,
                 UefiConstants.SIZE_8);
-        subType += "\n        Partition Start = " + HexUtils.byteArrayToHexString(data);
+        subType += " Partition Start = " + HexUtils.byteArrayToHexString(data);
         System.arraycopy(path, UefiConstants.OFFSET_16 + offset, data, 0,
                 UefiConstants.SIZE_8);
-        subType += "\n        Partition Size = " + HexUtils.byteArrayToHexString(data);
+        subType += " Partition Size = " + HexUtils.byteArrayToHexString(data);
         byte[] signature = new byte[UefiConstants.SIZE_16];
         System.arraycopy(path, UefiConstants.OFFSET_24 + offset, signature, 0,
                 UefiConstants.SIZE_16);
-        subType += "\n        Partition Signature = ";
+        subType += "\n       Partition Signature = ";
         if (path[UefiConstants.OFFSET_41 + offset] == UefiConstants.DRIVE_SIG_NONE) {
             subType += "None";
         } else if (path[UefiConstants.OFFSET_41 + offset] == UefiConstants.DRIVE_SIG_32BIT) {
@@ -296,28 +279,26 @@ public class UefiDevicePath {
         } else {
             subType += "invalid partition signature type";
         }
-        subType += "\n        Partition Format = ";
+        subType += " Partition Format = ";
         if (path[UefiConstants.OFFSET_40 + offset] == UefiConstants.DRIVE_TYPE_PC_AT) {
-            subType += "PC-AT compatible legacy MBR";
+            subType += " PC-AT compatible legacy MBR";
         } else if (path[UefiConstants.OFFSET_40 + offset] == UefiConstants.DRIVE_TYPE_GPT) {
-            subType += "GUID Partition Table";
+            subType += " GUID Partition Table";
         } else {
-            subType += "Invalid partition table type";
+            subType += " Invalid partition table type";
         }
-        subType += "\n";
         return subType;
     }
 
     /**
-     * Process the File path subtype.
+     * Process the File path sub type.
      *
      * @param path
      * @param offset
      * @return file path info.
      */
     private String filePathSubType(final byte[] path, final int offset) {
-        subType = "        Sub Type = File Path\n";
-        subType += "        File Path = ";
+        subType = "File Path = ";
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(path, 2 + offset, lengthBytes, 0, UefiConstants.SIZE_2);
         int subTypeLength = HexUtils.leReverseInt(lengthBytes);
@@ -326,12 +307,11 @@ public class UefiDevicePath {
                 0, subTypeLength);
         byte[] fileName = convertChar16tobyteArray(filePath);
         subType += new String(fileName, StandardCharsets.UTF_8);
-        subType += "\n";
         return subType;
     }
 
     /**
-     * Process a vendor subtype on a Media Type.
+     * Process a vendor sub-type on a Media Type.
      * Length of this structure in bytes. Length is 20 + n bytes
      * Vendor-assigned GUID that defines the data that follows.
      * Vendor-defined variable size data.
@@ -341,8 +321,7 @@ public class UefiDevicePath {
      * @return vendor device info.
      */
     private String vendorSubType(final byte[] path, final int offset) {
-        subType = "        Sub Type = Vendor\n";
-        subType += "        Vendor Subtype GUID = ";
+        subType = "Vendor Subtype GUID = ";
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes,
                 0, UefiConstants.SIZE_2);
@@ -358,9 +337,8 @@ public class UefiDevicePath {
                     + offset, vendorData, 0, subTypeLength - UefiConstants.SIZE_16);
             subType += " : Vendor Data = " + HexUtils.byteArrayToHexString(vendorData);
         } else {
-            subType += " : No Vendor Data present";
+            subType += " : No Vendor Data pesent";
         }
-        subType += "\n";
         return subType;
     }
 
@@ -373,8 +351,8 @@ public class UefiDevicePath {
      * @return USB device info.
      */
     private String usbSubType(final byte[] path, final int offset) {
-        subType = "        Sub Type = USB\n";
-        subType += "        port = " + Integer.valueOf(path[offset + UefiConstants.OFFSET_4]);
+        subType = " USB ";
+        subType += " port = " + Integer.valueOf(path[offset + UefiConstants.OFFSET_4]);
         subType += " interface = " + Integer.valueOf(path[offset + UefiConstants.OFFSET_5]);
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes,
@@ -383,7 +361,6 @@ public class UefiDevicePath {
         byte[] usbData = new byte[subTypeLength];
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, usbData,
                 0, subTypeLength);
-        subType += "\n";
         // Todo add further USB processing ...
         return subType;
     }
@@ -400,8 +377,7 @@ public class UefiDevicePath {
      * @return NVM device info.
      */
     private String nvmSubType(final byte[] path, final int offset) {
-        subType = "        Sub Type = NVM\n";
-        subType += "        NVM Express Namespace = ";
+        subType = "NVM Express Namespace = ";
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(path, UefiConstants.OFFSET_2 + offset, lengthBytes,
                 0, UefiConstants.SIZE_2);
@@ -410,7 +386,6 @@ public class UefiDevicePath {
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, nvmData,
                 0, subTypeLength);
         subType += HexUtils.byteArrayToHexString(nvmData);
-        subType += "\n";
         return subType;
     }
 
@@ -425,8 +400,7 @@ public class UefiDevicePath {
      * @return String that represents the UEFI defined BIOS Device Type.
      */
     private String biosDevicePath(final byte[] path, final int offset) {
-        subType = "        Sub Type = Bios Device Path\n";
-        subType += "        Legacy BIOS : Type = ";
+        subType = "Legacy BIOS : Type = ";
         Byte pathType = Byte.valueOf(path[offset + 1]);
         switch (pathType.intValue()) {
             case UefiConstants.DEVPATH_BIOS_RESERVED:
@@ -458,7 +432,6 @@ public class UefiDevicePath {
                 subType += "Unknown";
                 break;
         }
-        subType += "\n";
         return subType;
     }
 
@@ -473,13 +446,12 @@ public class UefiDevicePath {
      * @return String that represents the PIWG Firmware Volume Path
      */
     private String piwgFirmVolFile(final byte[] path, final int offset) {
-        subType = "        Sub Type = PIWG Firmware Volume File\n";
+        subType = "PIWG Firmware File ";
         byte[] guidData = new byte[UefiConstants.SIZE_16];
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, guidData,
                 0, UefiConstants.SIZE_16);
         UefiGuid guid = new UefiGuid(guidData);
         subType += guid.toString();
-        subType += "\n";
         return subType;
     }
 
@@ -494,13 +466,12 @@ public class UefiDevicePath {
      * @return String that represents the PIWG Firmware Volume Path
      */
     private String piwgFirmVolPath(final byte[] path, final int offset) {
-        subType = "        Sub Type = PIWG Firmware Volume Path\n";
+        subType = "PIWG Firmware Volume ";
         byte[] guidData = new byte[UefiConstants.SIZE_16];
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, guidData,
                 0, UefiConstants.SIZE_16);
         UefiGuid guid = new UefiGuid(guidData);
         subType += guid.toString();
-        subType += "\n";
         return subType;
     }
 
