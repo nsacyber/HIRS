@@ -76,27 +76,23 @@ public abstract class DeviceSecurityEvent {
      */
     public void instantiateDeviceContext(final byte[] dsedDeviceContextBytes) {
 
-        if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE) {
-            deviceContextInfo = "\n    No Device Context (indicated by device type value of 0";
-        }
-        else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI) {
-            try {
-                dsedDevContext
-                        = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
-                deviceContextInfo = dsedDevContext.toString();
-            }
-            catch(NullPointerException e) {
-                deviceContextInfo = "    Could not interpret Device Context info";
-            }
-        }
-        else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB) {
-        //    dsedDevContext
-        //            = new DeviceSecurityEventDataUsbContext(dsedDeviceContextBytes);
-        //    deviceContextInfo = dsedDevContext.toString();
-            deviceContextInfo = "    Device Type: USB - To be implemented";
+        if(dsedDeviceContextBytes.length == 0) {
+            deviceContextInfo = "\n    DeviceSecurityEventDataDeviceContext object is empty";
         }
         else {
-            deviceContextInfo = "    Unknown device type; cannot process device context";
+            if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE) {
+                deviceContextInfo = "\n    No Device Context (indicated by device type value of 0)";
+            }
+            else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI) {
+                dsedDevContext = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
+                deviceContextInfo = dsedDevContext.toString();
+            }
+            else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB) {
+                deviceContextInfo = "    Device Type: USB - To be implemented";
+            }
+            else {
+                deviceContextInfo = "    Unknown device type; cannot process device context";
+            }
         }
     }
 }

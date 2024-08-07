@@ -37,7 +37,7 @@ public class SpdmCertificateChain {
     /**
      * Length of the certificate chain to include all fields in this structure.
      */
-    private int length = 0;
+    //private int length = 0;
     /**
      * Root hash.
      */
@@ -49,7 +49,6 @@ public class SpdmCertificateChain {
     /**
      * Array List of certs found in the chain.
      */
-//    private ArrayList<X509Certificate> certList = new ArrayList<X509Certificate>();
     private ArrayList<UefiX509Cert> certList = new ArrayList<UefiX509Cert>();
     /**
      * Human-readable description of any error associated with SPDM base hash alg.
@@ -73,7 +72,7 @@ public class SpdmCertificateChain {
         else {
             byte[] lengthBytes = new byte[2];
             System.arraycopy(spdmCertChainBytes, 0, lengthBytes, 0, 2);
-            length = HexUtils.leReverseInt(lengthBytes);
+            //length = HexUtils.leReverseInt(lengthBytes);
 
             // Reserved: 2 bytes
 

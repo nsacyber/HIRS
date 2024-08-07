@@ -58,9 +58,9 @@ public abstract class DeviceSecurityEventDataDeviceContext {
     }
 
     /**
-     * Returns a human readable description of the data common to device context structures.
+     * Returns a human-readable description of the data common to device context structures.
      *
-     * @return a description of this structure..
+     * @return a description of this structure.
      */
     public String toString() {
         String dSEDdeviceContextCommonInfo = "";

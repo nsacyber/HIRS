@@ -7,6 +7,7 @@ import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER.
@@ -87,13 +88,9 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
 
         ByteArrayInputStream spdmMeasurementBlockData =
                 new ByteArrayInputStream(spdmMeasBlockBytes);
-        try {
-            spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockData);
-            spdmMeasurementBlockInfo = spdmMeasurementBlock.toString();
-        }
-        catch(NullPointerException e) {
-            spdmMeasurementBlockInfo = "Could not interpret SPDM Measurement Block info";
-        }
+
+        spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockData);
+        spdmMeasurementBlockInfo = spdmMeasurementBlock.toString();
 
         int devPathLenStartByte = 28 + sizeOfSpdmMeasBlock;
         extractDevicePathAndFinalSize(dsedBytes, devPathLenStartByte);
@@ -105,9 +102,7 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
      * @return a description of this structure.
      */
     public String toString() {
-        String dsedHeaderInfo = "";
-
-        dsedHeaderInfo += super.toString();
+        String dsedHeaderInfo = super.toString();
         String spdmHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmHashAlgo);
         dsedHeaderInfo += "   SPDM Hash Algorithm = " + spdmHashAlgoStr + "\n";
         dsedHeaderInfo += "   SPDM Measurement Block:\n";

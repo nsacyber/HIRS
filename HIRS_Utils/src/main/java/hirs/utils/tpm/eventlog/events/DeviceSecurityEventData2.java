@@ -2,6 +2,8 @@ package hirs.utils.tpm.eventlog.events;
 
 import lombok.Getter;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * Class to process DEVICE_SECURITY_EVENT_DATA2.
  * Parses event data per PFP v1.06 Rev52 Table 26.
@@ -50,7 +52,10 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
      */
     public DeviceSecurityEventData2(final byte[] dsedBytes) {
 
-        try {
+        if(dsedBytes.length == 0) {
+            headerInfo = "   DeviceSecurityEventData2 object is empty";
+        }
+        else {
             dsedHeader2 = new DeviceSecurityEventDataHeader2(dsedBytes);
             headerInfo = dsedHeader2.toString();
 
@@ -66,24 +71,12 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
             System.arraycopy(dsedBytes, dsedHeaderLength, dsedSubHeaderBytes, 0, subHeaderLength);
 
             if (subHeaderType == DeviceSecurityEventDataSubHeader.SUBHEADERTYPE_MEAS_BLOCK) {
-                try {
-                    dsedSubHeader =
-                            new DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(dsedSubHeaderBytes);
-                    subHeaderInfo += dsedSubHeader.toString();
-                }
-                catch(NullPointerException e) {
-                    subHeaderInfo = "      Could not interpret Sub header info for SPDM measurment block\n";
-                }
+                dsedSubHeader = new DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(dsedSubHeaderBytes);
+                subHeaderInfo += dsedSubHeader.toString();
             }
             else if (subHeaderType == DeviceSecurityEventDataSubHeader.SUBHEADERTYPE_CERT_CHAIN) {
-                try {
-                    dsedSubHeader =
-                            new DeviceSecurityEventDataSubHeaderCertChain(dsedSubHeaderBytes);
-                    subHeaderInfo += dsedSubHeader.toString();
-                }
-                catch(NullPointerException e) {
-                    subHeaderInfo = "    Could not interpret Sub header info for SPDM cert chain\n";
-                }
+                dsedSubHeader = new DeviceSecurityEventDataSubHeaderCertChain(dsedSubHeaderBytes);
+                subHeaderInfo += dsedSubHeader.toString();
             }
             else {
                 subHeaderInfo += "     Sub header type unknown\n";
@@ -97,9 +90,6 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
 
             instantiateDeviceContext(dsedDevContextBytes);
         }
-        catch(NullPointerException e) {
-            headerInfo = "   Could not interpret Header info\n";
-        }
     }
 
     /**
@@ -108,8 +98,7 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
      * @return a description of this structure.
      */
     public String toString() {
-        String dsedInfo = "";
-        dsedInfo += headerInfo;
+        String dsedInfo = headerInfo;
         dsedInfo += subHeaderInfo;
         dsedInfo += getDeviceContextInfo();
         return dsedInfo;

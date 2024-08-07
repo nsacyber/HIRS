@@ -37,7 +37,10 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
      */
     public DeviceSecurityEventData(final byte[] dsedBytes) {
 
-        try {
+        if(dsedBytes.length == 0) {
+            headerInfo = "   DeviceSecurityEventData object is empty";
+        }
+        else {
             dsedHeader = new DeviceSecurityEventDataHeader(dsedBytes);
             headerInfo = dsedHeader.toString();
 
@@ -51,9 +54,6 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
 
             instantiateDeviceContext(dsedDevContextBytes);
         }
-        catch(NullPointerException e) {
-            headerInfo = "   Could not interpret Header info";
-        }
     }
 
     /**
@@ -62,8 +62,7 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
      * @return a description of this structure.
      */
     public String toString() {
-        String dsedInfo = "";
-        dsedInfo += headerInfo;
+        String dsedInfo = headerInfo;
         dsedInfo += getDeviceContextInfo();
         return dsedInfo;
     }

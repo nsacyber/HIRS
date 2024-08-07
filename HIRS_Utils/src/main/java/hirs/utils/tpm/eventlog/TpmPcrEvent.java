@@ -261,11 +261,17 @@ public class TpmPcrEvent {
             case EvConstants.EV_UNUSED:
                 break;
             case EvConstants.EV_NO_ACTION:
-                EvNoAction noAction = new EvNoAction(eventContent);
-                sb.append(noAction.toString());
-                if (noAction.isSpecIDEvent()) {
-                    specVersion = noAction.getSpecVersion();
-                    specErrataVersion = noAction.getSpecErrataVersion();
+                EvNoAction noAction = null;
+                try {
+                    noAction = new EvNoAction(eventContent);
+                    sb.append(noAction.toString());
+                    if (noAction.isSpecIDEvent()) {
+                        specVersion = noAction.getSpecVersion();
+                        specErrataVersion = noAction.getSpecErrataVersion();
+                    }
+                } catch (UnsupportedEncodingException ueEx) {
+                    log.error(ueEx);
+                    sb.append(ueEx.toString());
                 }
                 break;
             case EvConstants.EV_SEPARATOR:

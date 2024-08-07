@@ -200,9 +200,9 @@ public class UefiVariable {
     }
 
     /**
-     * Method for processing the data in an EFI SignatureList (ex. can be one or more X509 certs)
+     * Method for processing the data in an EFI Signature Data, where the data is known to be an X509 cert
      *
-     * @param efiSigData Byte array holding the SignatureList data
+     * @param efiSigData Byte array holding the SignatureData data
      * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
      * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
      * @throws java.io.IOException                     If there's a problem parsing the signature data.
@@ -214,8 +214,8 @@ public class UefiVariable {
         ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
         spdmDevdcInfo += "";
 
-        // for now, use signature type for X509
-        // in future with more test data, update this
+        // for now, hard-code the signature type for X509
+        // in future with more test data, update this (potentially need to look at previous SPDM event)
         byte[] guid = HexUtils.hexStringToByteArray("A159C0A5E494A74A87B5AB155C2BF072");
         UefiGuid signatureType = new UefiGuid(guid);
 
@@ -274,10 +274,8 @@ public class UefiVariable {
             case "db":
             case "dbx":
             case "devdb":           // SPDM_DEVICE_POLICY and SPDM_DEVICE_AUTHORITY
-            case "devdc":           // for now use devdb and devdc
-                                    // (update when test patterns exist)
-                //efiVariable.append("   EV_EFI_SPDM_DEVICE_POLICY and EV_EFI_SPDM_DEVICE_AUTHORITY: " +
-                //        "To be processed once more test patterns exist");
+            case "devdc":           // for now use devdb and devdc respectively
+                                    // (update when more test patterns exist)
                 break;
             case "Boot00":
                 efiVariable.append(bootv.toString());

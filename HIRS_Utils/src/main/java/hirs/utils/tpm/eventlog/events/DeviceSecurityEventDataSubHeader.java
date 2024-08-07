@@ -23,10 +23,8 @@ public abstract class DeviceSecurityEventDataSubHeader {
      */
     public static final int SUBHEADERTYPE_CERT_CHAIN = 1;
 
-
     public DeviceSecurityEventDataSubHeader() {
     }
-
 
     /**
      * Returns the device type via a lookup.
@@ -42,7 +40,7 @@ public abstract class DeviceSecurityEventDataSubHeader {
             case SUBHEADERTYPE_CERT_CHAIN:
                 return "SPDM Cert Chain";
             default:
-                return "Unknown or invalid Subheader Type";
+                return "Unknown or invalid Subheader Type of value " + subheaderTypeInt;
         }
     }
 }

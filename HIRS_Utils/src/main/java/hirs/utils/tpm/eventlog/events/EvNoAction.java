@@ -4,6 +4,7 @@ import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -54,7 +55,7 @@ public class EvNoAction {
      * @param eventData byte array holding the event to process.
      * @throws java.io.UnsupportedEncodingException if input fails to parse.
      */
-    public EvNoAction(final byte[] eventData) {
+    public EvNoAction(final byte[] eventData) throws UnsupportedEncodingException {
         byte[] signatureBytes = new byte[UefiConstants.SIZE_15];
         System.arraycopy(eventData, 0, signatureBytes, 0, UefiConstants.SIZE_15);
         signature = new String(signatureBytes, StandardCharsets.UTF_8);

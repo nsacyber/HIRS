@@ -2,6 +2,7 @@ package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**

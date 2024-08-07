@@ -67,7 +67,7 @@ public class UefiDevicePath {
      * @param path byte array holding device path data
      * @throws java.io.UnsupportedEncodingException if path byte array contains unexpected values
      */
-    public UefiDevicePath(final byte[] path) throws UnsupportedEncodingException {
+    public UefiDevicePath(final byte[] path) {
         devPathInfo = processDevPath(path);
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
         System.arraycopy(path, UefiConstants.OFFSET_2, lengthBytes, 0, UefiConstants.OFFSET_2);
@@ -93,7 +93,7 @@ public class UefiDevicePath {
      * @return Human readable string containing the device path description.
      * @throws java.io.UnsupportedEncodingException
      */
-    private String processDevPath(final byte[] path) throws UnsupportedEncodingException {
+    private String processDevPath(final byte[] path) {
         StringBuilder pInfo = new StringBuilder();
         int devLength = 0, pathOffset = 0, devCount = 0;
         while (true) {
@@ -123,8 +123,7 @@ public class UefiDevicePath {
      * @return human-readable string representing the UEFI device path
      * @throws java.io.UnsupportedEncodingException
      */
-    private String processDev(final byte[] path, final int offset)
-            throws UnsupportedEncodingException {
+    private String processDev(final byte[] path, final int offset) {
         String devInfo = "      ";
         int devPath = path[offset];
         byte unknownSubType = path[offset + UefiConstants.OFFSET_1];

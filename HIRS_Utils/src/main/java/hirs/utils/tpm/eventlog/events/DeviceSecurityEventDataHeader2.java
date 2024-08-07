@@ -3,6 +3,8 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER2.
  * DEVICE_SECURITY_EVENT_DATA_HEADER2 contains the measurement(s) and hash algorithm identifier
@@ -43,7 +45,7 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      * SUBHEADERTYPE_CERT_CHAIN = 1
      */
     @Getter
-    private int subHeaderType = 0;
+    private int subHeaderType = -1;
     /**
      * Event sub header length.
      */
@@ -121,9 +123,7 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      * @return a description of this structure.
      */
     public String toString() {
-        String dsedHeader2Info = "";
-
-        dsedHeader2Info += super.toString();
+        String dsedHeader2Info = super.toString();
         dsedHeader2Info += "   AuthState: " + getAuthStateString() + "\n";
         dsedHeader2Info += "   Sub header UID: " + subHeaderUid + "\n";
 

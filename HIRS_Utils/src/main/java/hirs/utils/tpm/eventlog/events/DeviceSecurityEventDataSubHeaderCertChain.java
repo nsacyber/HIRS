@@ -88,7 +88,6 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
 
     }
 
-
     /**
      * Returns a human-readable description of the data within this structure.
      *
