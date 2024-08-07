@@ -69,6 +69,5 @@ public abstract class DeviceSecurityEventDataDeviceContext {
 
         return dSEDdeviceContextCommonInfo;
     }
-
 }
 

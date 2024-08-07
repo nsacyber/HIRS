@@ -112,37 +112,37 @@ public class UefiSignatureList {
     @Getter
     private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
 
-    /**
-     * UefiSignatureList constructor.
-     *
-     * @param list byte array holding the signature list.
-     * @throws java.security.cert.CertificateException If there a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
-     * @throws java.io.IOException                     If there's a problem parsing the signature data.
-     */
-    UefiSignatureList(final byte[] list)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
-
-        byte[] guid = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(list, 0, guid, 0, UefiConstants.SIZE_16);
-        signatureType = new UefiGuid(guid);
-        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
-
-        byte[] lSize = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(list, UefiConstants.OFFSET_16, lSize, 0, UefiConstants.SIZE_4);
-        listSize = HexUtils.leReverseInt(lSize);
-
-        byte[] hSize = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(list, UefiConstants.OFFSET_20, hSize, 0, UefiConstants.SIZE_4);
-
-        byte[] sSize = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(list, UefiConstants.OFFSET_24, sSize, 0, UefiConstants.SIZE_4);
-        signatureSize = HexUtils.leReverseInt(sSize);
-
-        sigData = new byte[signatureSize];
-        System.arraycopy(list, UefiConstants.OFFSET_28, sigData, 0, signatureSize);
-        processSignatureList(sigData);
-    }
+//    /**
+//     * UefiSignatureList constructor.
+//     *
+//     * @param list byte array holding the signature list.
+//     * @throws java.security.cert.CertificateException If there a problem parsing the X509 certificate.
+//     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
+//     * @throws java.io.IOException                     If there's a problem parsing the signature data.
+//     */
+//    UefiSignatureList(final byte[] list)
+//            throws CertificateException, NoSuchAlgorithmException, IOException {
+//
+//        byte[] guid = new byte[UefiConstants.SIZE_16];
+//        System.arraycopy(list, 0, guid, 0, UefiConstants.SIZE_16);
+//        signatureType = new UefiGuid(guid);
+//        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
+//
+//        byte[] lSize = new byte[UefiConstants.SIZE_4];
+//        System.arraycopy(list, UefiConstants.OFFSET_16, lSize, 0, UefiConstants.SIZE_4);
+//        listSize = HexUtils.leReverseInt(lSize);
+//
+//        byte[] hSize = new byte[UefiConstants.SIZE_4];
+//        System.arraycopy(list, UefiConstants.OFFSET_20, hSize, 0, UefiConstants.SIZE_4);
+//
+//        byte[] sSize = new byte[UefiConstants.SIZE_4];
+//        System.arraycopy(list, UefiConstants.OFFSET_24, sSize, 0, UefiConstants.SIZE_4);
+//        signatureSize = HexUtils.leReverseInt(sSize);
+//
+//        sigData = new byte[signatureSize];
+//        System.arraycopy(list, UefiConstants.OFFSET_28, sigData, 0, signatureSize);
+//        processSignatureList(sigData);
+//    }
 
     /**
      * EFI Signature list constructor.
@@ -163,7 +163,6 @@ public class UefiSignatureList {
         // however, if signatureType is valid, but some of the data later on is invalid, that will
         // be caught when UefiSignatureData is processed
         if (!isValidSigListGUID(signatureType)) {
-            //processSignatureData(lists);
             signatureTypeValid = false;
         } else { // valid SigData Processing
             signatureTypeValid = true;
@@ -203,28 +202,6 @@ public class UefiSignatureList {
                 break;
             }
             sigList.add(tmpSigData);
-            numberOfCerts++;
-        }
-    }
-
-    /**
-     * Method for processing a set of EFI SignatureList(s).
-     *
-     * @param sigDataIS Byte array holding one or more SignatureLists.
-     * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
-     * @throws java.io.IOException                     If there's a problem parsing the signature data.
-     */
-    private void processSignatureData(final ByteArrayInputStream sigDataIS)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
-        while (sigDataIS.available() > 0) {
-            UefiSignatureData tmpigData = new UefiSignatureData(sigDataIS, signatureType);
-            if (!tmpigData.isValid()) {
-                dataValid = false;
-                dataInvalidStatus = tmpigData.getStatus();
-                break;
-            }
-            sigList.add(tmpigData);
             numberOfCerts++;
         }
     }

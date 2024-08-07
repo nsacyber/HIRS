@@ -39,7 +39,7 @@ public class EvSCrtmVersion {
                 if (UefiGuid.isValidUUID(data)) {
                     guid = new UefiGuid(data);
                     String guidInfo = guid.toStringNoLookup();
-                    description = " SCRM Version = " + guidInfo;
+                    description = "   SCRM Version = " + guidInfo;
                 }
             } else if (data.length < UefiConstants.SIZE_4) {
                 description = HexUtils.byteArrayToHexString(data);

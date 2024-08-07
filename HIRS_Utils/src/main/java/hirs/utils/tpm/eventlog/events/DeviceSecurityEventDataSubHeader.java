@@ -1,6 +1,5 @@
 package hirs.utils.tpm.eventlog.events;
 
-
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER event per PFP.
  *
@@ -23,6 +22,10 @@ public abstract class DeviceSecurityEventDataSubHeader {
      */
     public static final int SUBHEADERTYPE_CERT_CHAIN = 1;
 
+    /**
+     * DeviceSecurityEventDataSubHeader Default Constructor.
+     *
+     */
     public DeviceSecurityEventDataSubHeader() {
     }
 

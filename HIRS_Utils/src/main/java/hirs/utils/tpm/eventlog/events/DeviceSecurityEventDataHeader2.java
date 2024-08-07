@@ -3,8 +3,6 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
-import java.io.UnsupportedEncodingException;
-
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER2.
  * DEVICE_SECURITY_EVENT_DATA_HEADER2 contains the measurement(s) and hash algorithm identifier
@@ -84,6 +82,11 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      */
     public static final int AUTH_NO_SPDM = 0xFF;
 
+    /**
+     * DeviceSecurityEventDataHeader2 Constructor.
+     *
+     * @param dsedBytes byte array holding the DeviceSecurityEventData2.
+     */
     public DeviceSecurityEventDataHeader2(final byte[] dsedBytes) {
 
         super(dsedBytes);
@@ -130,6 +133,11 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
         return dsedHeader2Info;
     }
 
+    /**
+     * Returns a human-readable description of auth state based on numeric representation lookup.
+     *
+     * @return a description of the auth state.
+     */
     public String getAuthStateString() {
 
         switch (authState) {

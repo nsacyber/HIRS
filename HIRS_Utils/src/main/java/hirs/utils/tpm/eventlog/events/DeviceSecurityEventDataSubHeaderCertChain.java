@@ -3,10 +3,6 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.spdm.SpdmCertificateChain;
 import hirs.utils.tpm.eventlog.spdm.SpdmHa;
-import lombok.Getter;
-
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
 
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN event per PFP.
@@ -85,7 +81,6 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
         else {
             spdmBaseHashAlgoError += "SPDM base hash algorithm size is not >0";
         }
-
     }
 
     /**

@@ -106,6 +106,11 @@ public class EvNoAction {
         return specIdInfo;
     }
 
+    /**
+     * Returns a human-readable description of locality based on numeric representation lookup.
+     *
+     * @return a description of the locality.
+     */
     private String getLocality(final byte[] eventData) {
         String localityInfo = "";
         byte[] localityBytes = new byte[1];

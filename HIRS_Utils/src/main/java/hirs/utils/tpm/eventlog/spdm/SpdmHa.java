@@ -76,13 +76,12 @@ public class SpdmHa {
         return alg;
     }
 
-
     /**
-     * Returns the hash name via a lookup.
+     * Returns the hash value size based on the hash algorithm.
      * Lookup based upon SPDM Spec v1.03 section 10.4.
      *
      * @param algId int to convert to string
-     * @return name of the algorithm
+     * @return size of the algorithm output
      */
     public static int tcgAlgIdToByteSize(final int algId) {
         int byteSize;

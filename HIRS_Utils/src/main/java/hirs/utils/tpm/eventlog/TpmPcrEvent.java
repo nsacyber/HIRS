@@ -318,12 +318,8 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_EVENT_BASE:
                 break;
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-                UefiVariable efiVar = null;
                 try {
-                    efiVar = new UefiVariable(eventContent);
-                    String efiVarDescription = efiVar.toString().replace("\n", "\n   ");
-                    sb.append(efiVarDescription.substring(0,
-                            efiVarDescription.length() - INDENT_3));
+                    sb.append(new UefiVariable(eventContent).toString());
                 } catch (CertificateException cEx) {
                     log.error(cEx);
                     sb.append(cEx.toString());
@@ -508,9 +504,7 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
                 UefiVariable efiVar = new UefiVariable(content);
-                String efiVarDescription = efiVar.toString().replace("\n", "\n   ");
-                description += "Event Content:\n   " + efiVarDescription.substring(0,
-                        efiVarDescription.length() - INDENT_3);
+                description += "Event Content:\n" + efiVar.toString();
                 vendorTableFileStatus = efiVar.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:

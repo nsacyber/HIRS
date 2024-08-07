@@ -7,7 +7,7 @@ import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER.
@@ -89,8 +89,12 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
         ByteArrayInputStream spdmMeasurementBlockData =
                 new ByteArrayInputStream(spdmMeasBlockBytes);
 
-        spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockData);
-        spdmMeasurementBlockInfo = spdmMeasurementBlock.toString();
+        try {
+            spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockData);
+            spdmMeasurementBlockInfo = spdmMeasurementBlock.toString();
+        } catch (IOException e) {
+            spdmMeasurementBlockInfo = "      Error reading SPDM Measurement Block";
+        }
 
         int devPathLenStartByte = 28 + sizeOfSpdmMeasBlock;
         extractDevicePathAndFinalSize(dsedBytes, devPathLenStartByte);

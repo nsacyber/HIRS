@@ -3,7 +3,6 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static hirs.utils.PciIds.translateDevice;
@@ -102,7 +101,6 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
         byte[] pciSubsystemIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 14, pciSubsystemIdBytes, 0, 2);
         subsystemId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciSubsystemIdBytes));
-
     }
 
     /**

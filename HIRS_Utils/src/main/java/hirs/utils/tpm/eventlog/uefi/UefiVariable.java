@@ -248,7 +248,7 @@ public class UefiVariable {
     /**
      * Print out all the interesting characteristics available on this UEFI Variable.
      *
-     * @return human readable description of the UEFi variable.
+     * @return human-readable description of the UEFi variable.
      */
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
@@ -320,11 +320,11 @@ public class UefiVariable {
     }
 
     /**
-     * Retrieves human readable description from a Certificate.
+     * Retrieves human-readable description from a Certificate.
      *
      * @param data   byte[] holding the certificate.
      * @param offset offset to start of the certificate within the byte array.
-     * @return human readable description of a certificate.
+     * @return human-readable description of a certificate.
      */
     public String printCert(final byte[] data, final int offset) {
         String certInfo = "";

@@ -5,7 +5,6 @@ import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiDevicePath;
 import lombok.Getter;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**

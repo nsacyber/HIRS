@@ -63,6 +63,7 @@ public class SpdmCertificateChain {
      * SpdmCertificateChain Constructor.
      *
      * @param spdmCertChainBytes byte array holding the SPDM Cert Chain bytes.
+     * @param rootHashLength length of RootHash.
      */
     public SpdmCertificateChain(final byte[] spdmCertChainBytes, final int rootHashLength) {
 
@@ -108,7 +109,7 @@ public class SpdmCertificateChain {
                 certChainDataIS.read(certType);
                 byte[] certLength = new byte[2];
                 certChainDataIS.read(certLength);
-//                int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
+                //int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
                 int cLength = new BigInteger(certLength).intValue();
                 byte[] certData = new byte[cLength];
                 certChainDataIS.read(certData);

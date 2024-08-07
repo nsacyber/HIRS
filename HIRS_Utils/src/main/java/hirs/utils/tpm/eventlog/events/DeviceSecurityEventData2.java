@@ -2,8 +2,6 @@ package hirs.utils.tpm.eventlog.events;
 
 import lombok.Getter;
 
-import java.io.UnsupportedEncodingException;
-
 /**
  * Class to process DEVICE_SECURITY_EVENT_DATA2.
  * Parses event data per PFP v1.06 Rev52 Table 26.
