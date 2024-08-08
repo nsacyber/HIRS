@@ -129,11 +129,13 @@ namespace hirs {
         public static string FormatCertificatePath(DeviceInfo dv, string certificateDirPath, string certificateFileName) {
             StringBuilder sb = new StringBuilder();
             sb.Append(certificateDirPath);
-            if (dv.Hw.HasSystemSerialNumber && !dv.Hw.SystemSerialNumber.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
-                sb.AppendFormat("{0}-", dv.Hw.SystemSerialNumber);
-            }
-            if (dv.Hw.HasManufacturer && !dv.Hw.Manufacturer.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
-                sb.AppendFormat("{0}-", dv.Hw.Manufacturer);
+            if (dv?.Hw != null) {
+                if (dv.Hw.HasSystemSerialNumber && !dv.Hw.SystemSerialNumber.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
+                    sb.AppendFormat("{0}-", dv.Hw.SystemSerialNumber);
+                }
+                if (dv.Hw.HasManufacturer && !dv.Hw.Manufacturer.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
+                    sb.AppendFormat("{0}-", dv.Hw.Manufacturer);
+                }
             }
             sb.Append(certificateFileName);
             return sb.ToString();
