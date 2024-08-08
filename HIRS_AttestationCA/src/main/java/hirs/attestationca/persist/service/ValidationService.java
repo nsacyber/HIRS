@@ -190,16 +190,22 @@ public class ValidationService {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.FIRMWARE;
 
-        List<ReferenceManifest> rims = rimRepo.findByDeviceName(device.getName());
-        ReferenceManifest baseRim = null;
-        for (ReferenceManifest rim : rims) {
-            if (rim.getRimType().equals(ReferenceManifest.BASE_RIM)) {
-                baseRim = rim;
-            }
-        }
         AppraisalStatus result = FirmwareScvValidator.validateFirmware(device, policySettings,
                 rimRepo, rdvRepo, caRepo);
         Level logLevel;
+        List<ReferenceManifest> rims = rimRepo.findByDeviceName(device.getName());
+        ReferenceManifest referenceManifest = null;
+        String rimType = "";
+        if (result.getAdditionalInfo().equals(ReferenceManifest.MEASUREMENT_RIM)) {
+            rimType = ReferenceManifest.MEASUREMENT_RIM;
+        } else {
+            rimType = ReferenceManifest.BASE_RIM;
+        }
+        for (ReferenceManifest rim : rims) {
+            if (rim.getRimType().equals(rimType)) {
+                referenceManifest = rim;
+            }
+        }
 
         switch (result.getAppStatus()) {
             case PASS:
@@ -213,7 +219,7 @@ public class ValidationService {
                 logLevel = Level.ERROR;
         }
         return buildValidationRecord(validationType, result.getAppStatus(),
-                result.getMessage(), baseRim, logLevel);
+                result.getMessage(), referenceManifest, logLevel);
     }
 
     /**
