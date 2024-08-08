@@ -25,7 +25,7 @@ namespace hirs {
             linux_product_name_file,
             linux_product_version_file,
             linux_product_serial_file,
-            ldevid_prefix
+            cert_prefix
         }
 
         private static readonly string DEFAULT_SETTINGS_FILE = "appsettings.json";
@@ -73,7 +73,7 @@ namespace hirs {
         public virtual string linux_product_serial {
             get; private set;
         }
-        public virtual string ldevid_prefix {
+        public virtual string cert_prefix {
             get; private set;
         }
         private List<IHardwareManifest> hardwareManifests = new();
@@ -130,7 +130,7 @@ namespace hirs {
 
                 CheckEfiPrefix();
 
-                CheckLDevIDPrefix();
+                CheckCertPrefix();
 
                 IngestEventLogFromFile();
 
@@ -275,22 +275,22 @@ namespace hirs {
         #endregion
 
         #region
-        private void CheckLDevIDPrefix() {
-            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.ldevid_prefix.ToString()])) {
-                Log.Debug("Checking LDevID Prefix setting.");
-                ldevid_prefix = $"{ configFromSettingsFile[Options.ldevid_prefix.ToString()] }";
-                if (!string.IsNullOrWhiteSpace(ldevid_prefix)) {
-                    if (!Directory.Exists(ldevid_prefix)) {
-                        Log.Debug(Options.ldevid_prefix.ToString() + ": " + ldevid_prefix + " did not exist.");
-                        ldevid_prefix = null;
+        private void CheckCertPrefix() {
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.cert_prefix.ToString()])) {
+                Log.Debug("Checking Certificate Prefix setting.");
+                cert_prefix = $"{ configFromSettingsFile[Options.cert_prefix.ToString()] }";
+                if (!string.IsNullOrWhiteSpace(cert_prefix)) {
+                    if (!Directory.Exists(cert_prefix)) {
+                        Log.Debug(Options.cert_prefix.ToString() + ": " + cert_prefix + " did not exist.");
+                        cert_prefix = null;
                     }
                 }
             }
-            if (ldevid_prefix == null) {
-                Log.Warning(Options.ldevid_prefix.ToString() + " not set in the settings file. Defaulting to the current working directory.");
-                ldevid_prefix = "";
+            if (cert_prefix == null) {
+                Log.Warning(Options.cert_prefix.ToString() + " not set in the settings file. Defaulting to the current working directory.");
+                cert_prefix = "";
             } else {
-                Log.Debug("  Will scan for LDevID keys in " + ldevid_prefix);
+                Log.Debug("  Will scan for certificates in " + cert_prefix);
             }
         }
         #endregion

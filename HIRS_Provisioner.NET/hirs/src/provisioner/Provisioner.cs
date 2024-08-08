@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace hirs {
@@ -18,7 +19,7 @@ namespace hirs {
         private const string DefaultLDevIDPubKeyFileName = "ldevid.pub";
         private const string DefaultLDevIDPrivKeyFileName = "ldevid.priv";
 
-        private const string DefaultCertFileName = "attestationkey.pem";
+        private const string DefaultAKCertFileName = "ak.pem";
         private const string DefaultLDevIDCertFileName = "ldevid.pem";
 
         public Provisioner() {
@@ -125,6 +126,19 @@ namespace hirs {
             }
         }
 
+        public static string FormatCertificatePath(DeviceInfo dv, string certificateDirPath, string certificateFileName) {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(certificateDirPath);
+            if (dv.Hw.HasSystemSerialNumber && !dv.Hw.SystemSerialNumber.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
+                sb.AppendFormat("{0}-", dv.Hw.SystemSerialNumber);
+            }
+            if (dv.Hw.HasManufacturer && !dv.Hw.Manufacturer.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
+                sb.AppendFormat("{0}-", dv.Hw.Manufacturer);
+            }
+            sb.Append(certificateFileName);
+            return sb.ToString();
+        }
+
         public async Task<int> Provision(IHirsAcaTpm tpm) {
             ClientExitCodes result = ClientExitCodes.SUCCESS;
             if (tpm != null) {
@@ -149,8 +163,8 @@ namespace hirs {
                 byte[] srkPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out byte[] name2, out byte[] qualifiedName2);
 
                 Log.Information("----> " + (cli.ReplaceLDevID ? "Creating new" : "Verifying existence of") + " LDevID Key.");
-                string ldevidPubPath = settings.ldevid_prefix + DefaultLDevIDPubKeyFileName;
-                string ldevidPrivPath = settings.ldevid_prefix + DefaultLDevIDPrivKeyFileName;
+                string ldevidPubPath = settings.cert_prefix + DefaultLDevIDPubKeyFileName;
+                string ldevidPrivPath = settings.cert_prefix + DefaultLDevIDPrivKeyFileName;
                 tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, ldevidPubPath, ldevidPrivPath, cli.ReplaceLDevID);
 
                 Log.Debug("Gathering LDevID PUBLIC.");
@@ -297,13 +311,10 @@ namespace hirs {
                     }
                     if (cr.HasCertificate) {
                         certificate = cr.Certificate.ToByteArray(); // contains certificate
-                        String certificateDirPath = settings.efi_prefix;
+                        String certificateDirPath = settings.cert_prefix;
                         if (certificateDirPath != null) {
-                            String certificateFilePath = certificateDirPath + DefaultCertFileName;
+                            String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultAKCertFileName);
                             try {
-                                if (!Directory.Exists(certificateDirPath)) {
-                                    Directory.CreateDirectory(certificateDirPath);
-                                }
                                 File.WriteAllBytes(certificateFilePath, certificate);
                                 Log.Debug("Attestation key certificate written to local file system: {0}", certificateFilePath);
                             }
@@ -315,13 +326,10 @@ namespace hirs {
                     }
                     if (cr.HasLdevidCertificate) {
                         certificate = cr.LdevidCertificate.ToByteArray(); // contains certificate
-                        String certificateDirPath = settings.efi_prefix;
+                        String certificateDirPath = settings.cert_prefix;
                         if (certificateDirPath != null) {
-                            String certificateFilePath = certificateDirPath + DefaultLDevIDCertFileName;
+                            String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultLDevIDCertFileName);
                             try {
-                                if (!Directory.Exists(certificateDirPath)) {
-                                    Directory.CreateDirectory(certificateDirPath);
-                                }
                                 File.WriteAllBytes(certificateFilePath, certificate);
                                 Log.Debug("LDevID certificate written to local file system: {0}", certificateFilePath);
                             }
