@@ -70,7 +70,8 @@ message IdentityClaim {
   optional bytes endorsement_credential = 4;
   repeated bytes platform_credential = 5;
   optional string client_version = 6;
-  optional string paccorOutput = 7;
+  optional string paccorOutput = 7; 
+  optional bytes ldevid_public_area = 8;
 }
 
 message TpmQuote {
@@ -96,5 +97,6 @@ message CertificateRequest {
 message CertificateResponse {
   optional bytes certificate = 1;
   optional ResponseStatus status = 2 [default = FAIL];
+  optional bytes ldevidCertificate = 3;
 }
 

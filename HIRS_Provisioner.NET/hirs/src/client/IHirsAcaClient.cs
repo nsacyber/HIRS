@@ -36,10 +36,12 @@ namespace hirs {
         /// <param name="platformCredentials">Any platform certificates relevant to the Device,
         /// encoded in DER or PEM.</param>
         /// <param name="paccoroutput">Platform Manifest in a JSON format.</param>
+        /// <param name="ldevidPublicArea">The public LDevID retrieved as a TPM2B_PUBLIC.</param>
         /// <returns>An <see cref="IdentityClaim"/> object that can be sent to the ACA.</returns>
         IdentityClaim CreateIdentityClaim(DeviceInfo dv, byte[] akPublicArea, byte[] ekPublicArea,
                                        byte[] endorsementCredential,
-                                       List<byte[]> platformCredentials, string paccoroutput);
+                                       List<byte[]> platformCredentials, string paccoroutput,
+                                       byte[] ldevidPublicArea);
         /// <summary>
         /// Collect answers to verification requirements regarding a Device into an object that
         /// can be interpreted by the ACA.

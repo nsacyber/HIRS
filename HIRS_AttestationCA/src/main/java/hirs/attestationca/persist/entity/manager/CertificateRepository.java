@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -35,5 +36,6 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
     Certificate findByCertificateHash(int certificateHash, String dType);
     EndorsementCredential findByPublicKeyModulusHexValue(String publicKeyModulusHexValue);
     IssuedAttestationCertificate findByDeviceId(UUID deviceId);
+    List<IssuedAttestationCertificate> findByDeviceIdAndIsLDevID(UUID deviceId, boolean isLDevID, Sort sort);
     Certificate findByCertificateHash(int certificateHash);
 }

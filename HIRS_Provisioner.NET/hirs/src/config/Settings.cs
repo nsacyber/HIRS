@@ -24,7 +24,8 @@ namespace hirs {
             linux_sys_vendor_file,
             linux_product_name_file,
             linux_product_version_file,
-            linux_product_serial_file
+            linux_product_serial_file,
+            cert_prefix
         }
 
         private static readonly string DEFAULT_SETTINGS_FILE = "appsettings.json";
@@ -70,6 +71,9 @@ namespace hirs {
             get; private set;
         }
         public virtual string linux_product_serial {
+            get; private set;
+        }
+        public virtual string cert_prefix {
             get; private set;
         }
         private List<IHardwareManifest> hardwareManifests = new();
@@ -125,6 +129,8 @@ namespace hirs {
                 CheckAutoDetectTpm();
 
                 CheckEfiPrefix();
+
+                CheckCertPrefix();
 
                 IngestEventLogFromFile();
 
@@ -264,6 +270,27 @@ namespace hirs {
             } else {
                 auto_detect_tpm = false;
                 Log.Debug(Options.auto_detect_tpm.ToString() + " not set in the settings file. Setting to default of false.");
+            }
+        }
+        #endregion
+
+        #region
+        private void CheckCertPrefix() {
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.cert_prefix.ToString()])) {
+                Log.Debug("Checking Certificate Prefix setting.");
+                cert_prefix = $"{ configFromSettingsFile[Options.cert_prefix.ToString()] }";
+                if (!string.IsNullOrWhiteSpace(cert_prefix)) {
+                    if (!Directory.Exists(cert_prefix)) {
+                        Log.Debug(Options.cert_prefix.ToString() + ": " + cert_prefix + " did not exist.");
+                        cert_prefix = null;
+                    }
+                }
+            }
+            if (cert_prefix == null) {
+                Log.Warning(Options.cert_prefix.ToString() + " not set in the settings file. Defaulting to the current working directory.");
+                cert_prefix = "";
+            } else {
+                Log.Debug("  Will scan for certificates in " + cert_prefix);
             }
         }
         #endregion
