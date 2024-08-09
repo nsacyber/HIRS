@@ -128,14 +128,15 @@ public class EvEfiHandoffTable {
      */
     public String toString() {
         StringBuilder tableInfo = new StringBuilder();
-        tableInfo.append("Number of UEFI_CONFIGURATION_TABLEs = " + numberOfTables + "\n");
+        tableInfo.append("   Number of UEFI_CONFIGURATION_TABLEs = " + numberOfTables + "\n");
         for (int i = 0; i < numberOfTables; i++) {
             UefiGuid currentGuid = vendorGuids.get(i);
-            tableInfo.append("  Table " + i + ": " + currentGuid.toString());
-            tableInfo.append("  UEFI industry standard table type = "
+            tableInfo.append("      Table " + i + ":\n");
+            tableInfo.append("        GUID = " + currentGuid.toString() + "\n");
+            tableInfo.append("        UEFI industry standard table type = "
                     + currentGuid.getVendorTableReference() + "\n");
-            tableInfo.append("  VendorTable " + i + " address: "
-                    + HexUtils.byteArrayToHexString(vendorTables.get(i)));
+            tableInfo.append("        VendorTable " + i + " address: "
+                    + HexUtils.byteArrayToHexString(vendorTables.get(i)) + "\n");
         }
         return tableInfo.toString();
     }

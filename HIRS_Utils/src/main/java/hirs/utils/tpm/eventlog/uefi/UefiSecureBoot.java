@@ -38,18 +38,18 @@ public class UefiSecureBoot {
     }
 
     /**
-     * Provides a human readable value for the Secure Boot variable.
+     * Provides a human-readable value for the Secure Boot variable.
      *
      * @return Human readable description.
      */
     public String toString() {
         if (!berror) {
             if (secureBootVariable == 1) {
-                info += " Secure Boot is enabled   ";
+                info += "      Secure Boot is enabled   ";
             } else if (secureBootVariable == 0) {
-                info += " Secure Boot is NOT enabled   ";
+                info += "      Secure Boot is NOT enabled   ";
             } else {
-                info += " Unkown State: Secure Variable is undefined   ";
+                info += "      Unknown State: Secure Variable is undefined   ";
             }
         }
         return info;

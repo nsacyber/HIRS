@@ -117,15 +117,15 @@ public class EvEfiBootServicesApp {
      * @return a human readable string.
      */
     public String toString() {
-        String info = "Image info: ";
-        info += "  Image physical address: " + HexUtils.byteArrayToHexString(physicalAddress);
-        info += " Image length = " + imageLength;
-        info += " Image link time address: " + HexUtils.byteArrayToHexString(physicalAddress);
-        info += " Device path length = " + devicePathLength;
+        String info = "   Image info:\n";
+        info += "      Image physical address = " + HexUtils.byteArrayToHexString(physicalAddress) + "\n";
+        info += "      Image length = " + imageLength + "\n";
+        info += "      Image link time address = " + HexUtils.byteArrayToHexString(physicalAddress) + "\n";
+        info += "      Device path length = " + devicePathLength + "\n";
         if (devicePathValid) {
-            info += "\n" + devicePath.toString();
+            info += devicePath.toString() + "\n";
         } else {
-            info += "\n   No uefi device paths were specified";
+            info += "      No uefi device paths were specified\n";
         }
         return info;
     }

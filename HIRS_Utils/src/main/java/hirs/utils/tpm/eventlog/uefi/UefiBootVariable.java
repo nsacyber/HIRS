@@ -23,7 +23,7 @@ import java.util.Arrays;
  */
 public class UefiBootVariable {
     /**
-     * Human readable description of the variable.
+     * Human-readable description of the variable.
      */
     private String description = "";
     /**
@@ -81,7 +81,7 @@ public class UefiBootVariable {
      * @return string that represents a UEFI boot variable.
      */
     public String toString() {
-        StringBuilder bootInfo = new StringBuilder("Description = ");
+        StringBuilder bootInfo = new StringBuilder("      EFI Load Option = ");
         // remove all non ascii chars
         String bootVar = description.replaceAll("[^a-zA-Z_0-0\\s]", "");
         bootInfo.append(bootVar + "\n" + efiDevPath.toString());

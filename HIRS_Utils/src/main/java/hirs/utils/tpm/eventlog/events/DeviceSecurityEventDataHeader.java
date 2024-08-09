@@ -8,7 +8,6 @@ import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER.
@@ -49,6 +48,12 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
     private SpdmMeasurementBlock spdmMeasurementBlock = null;
 
     /**
+     * Human-readable description of the data within the
+     * SpdmMeasurementBlock.
+     */
+    private String spdmMeasurementBlockInfo = "";
+
+    /**
      * DeviceSecurityEventDataHeader Constructor.
      *
      * @param dsedBytes byte array holding the DeviceSecurityEventData.
@@ -83,7 +88,13 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
 
         ByteArrayInputStream spdmMeasurementBlockData =
                 new ByteArrayInputStream(spdmMeasBlockBytes);
-        spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockData);
+
+        try {
+            spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockData);
+            spdmMeasurementBlockInfo = spdmMeasurementBlock.toString();
+        } catch (IOException e) {
+            spdmMeasurementBlockInfo = "      Error reading SPDM Measurement Block";
+        }
 
         int devPathLenStartByte = 28 + sizeOfSpdmMeasBlock;
         extractDevicePathAndFinalSize(dsedBytes, devPathLenStartByte);
@@ -95,13 +106,11 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
      * @return a description of this structure.
      */
     public String toString() {
-        String dsedHeaderInfo = "";
-
-        dsedHeaderInfo += super.toString();
+        String dsedHeaderInfo = super.toString();
         String spdmHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmHashAlgo);
-        dsedHeaderInfo += "\n   SPDM Hash Algorithm = " + spdmHashAlgoStr;
-        dsedHeaderInfo += "\n   SPDM Measurement Block:";
-        dsedHeaderInfo += spdmMeasurementBlock.toString();
+        dsedHeaderInfo += "   SPDM Hash Algorithm = " + spdmHashAlgoStr + "\n";
+        dsedHeaderInfo += "   SPDM Measurement Block:\n";
+        dsedHeaderInfo += spdmMeasurementBlockInfo;
 
         return dsedHeaderInfo;
     }

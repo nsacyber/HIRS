@@ -3,7 +3,6 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static hirs.utils.PciIds.translateDevice;
@@ -102,7 +101,6 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
         byte[] pciSubsystemIdBytes = new byte[2];
         System.arraycopy(dSEDpciContextBytes, 14, pciSubsystemIdBytes, 0, 2);
         subsystemId = HexUtils.byteArrayToHexString(HexUtils.leReverseByte(pciSubsystemIdBytes));
-
     }
 
     /**
@@ -114,22 +112,22 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
         String dSEDpciContextInfo = "";
 
         dSEDpciContextInfo += super.toString();
-        dSEDpciContextInfo += "\n      Device Type = PCI";
-        dSEDpciContextInfo += "\n      Vendor = " + translateVendor(vendorId);
-        dSEDpciContextInfo += "\n      Device = " + translateDevice(vendorId, deviceId);
-        dSEDpciContextInfo += "\n      RevisionID = " + revisionId;
+        dSEDpciContextInfo += "      Device Type = PCI\n";
+        dSEDpciContextInfo += "      Vendor = " + translateVendor(vendorId) + "\n";
+        dSEDpciContextInfo += "      Device = " + translateDevice(vendorId, deviceId) + "\n";
+        dSEDpciContextInfo += "      RevisionID = " + revisionId + "\n";
 
         List<String> classCodeList = translateDeviceClass(classCode);
-        dSEDpciContextInfo += "\n      Device Class: ";
+        dSEDpciContextInfo += "      Device Class: \n";
         if(classCodeList.size() == 3) {
-            dSEDpciContextInfo += "\n        Class = " + classCodeList.get(0);
-            dSEDpciContextInfo += "\n        Subclass = " + classCodeList.get(1);
-            dSEDpciContextInfo += "\n        Programming Interface = " + classCodeList.get(2);
+            dSEDpciContextInfo += "        Class = " + classCodeList.get(0) + "\n";
+            dSEDpciContextInfo += "        Subclass = " + classCodeList.get(1) + "\n";
+            dSEDpciContextInfo += "        Programming Interface = " + classCodeList.get(2) + "\n";
         } else {
             dSEDpciContextInfo += " ** Class code could not be determined **";
         }
-        dSEDpciContextInfo += "\n      SubsystemVendor = " + translateVendor(subsystemVendorId);
-        dSEDpciContextInfo += "\n      Subsystem = " + translateDevice(subsystemVendorId, subsystemId);
+        dSEDpciContextInfo += "      SubsystemVendor = " + translateVendor(subsystemVendorId) + "\n";
+        dSEDpciContextInfo += "      Subsystem = " + translateDevice(subsystemVendorId, subsystemId) + "\n";
 
         return dSEDpciContextInfo;
     }

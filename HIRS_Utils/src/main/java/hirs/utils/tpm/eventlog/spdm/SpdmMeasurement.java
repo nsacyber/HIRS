@@ -1,7 +1,6 @@
 package hirs.utils.tpm.eventlog.spdm;
 
 import hirs.utils.HexUtils;
-import lombok.AccessLevel;
 import lombok.Getter;
 
 /**
@@ -36,7 +35,7 @@ public class SpdmMeasurement {
     /**
      * Measurement value (digest).
      */
-    private byte[] dmtfSpecMeasurementValue = null;
+    private byte[] dmtfSpecMeasurementValue;
 
     /**
      * SpdmMeasurement Constructor.
@@ -119,10 +118,11 @@ public class SpdmMeasurement {
     public String toString() {
         String spdmMeasInfo = "";
 
-        spdmMeasInfo += "\n      SPDM Measurement Value Type = " +
+        spdmMeasInfo += "      SPDM Measurement Value Type = " +
                 dmtfSpecMeasurementValueTypeToString(dmtfSpecMeasurementValueType);
         spdmMeasInfo += "\n      SPDM Measurement Value = " +
                 HexUtils.byteArrayToHexString(dmtfSpecMeasurementValue);
+        spdmMeasInfo += "\n";
 
         return spdmMeasInfo;
     }

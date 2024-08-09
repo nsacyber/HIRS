@@ -3,8 +3,6 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
-import java.io.UnsupportedEncodingException;
-
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER2.
  * DEVICE_SECURITY_EVENT_DATA_HEADER2 contains the measurement(s) and hash algorithm identifier
@@ -41,9 +39,11 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
     private int length = 0;
     /**
      * Event sub headerType
+     * SUBHEADERTYPE_MEAS_BLOCK = 0
+     * SUBHEADERTYPE_CERT_CHAIN = 1
      */
     @Getter
-    private int subHeaderType = 0;
+    private int subHeaderType = -1;
     /**
      * Event sub header length.
      */
@@ -81,16 +81,12 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      * Auth state - device is not an SPDM-capable device
      */
     public static final int AUTH_NO_SPDM = 0xFF;
-    /**
-     * Sub header type - SPDM measurement block
-     */
-    public static final int SUBHEADERTYPE_MEAS_BLOCK = 0;
-    /**
-     * Sub header type - SPDM cert chain
-     */
-    public static final int SUBHEADERTYPE_CERT_CHAIN = 1;
 
-
+    /**
+     * DeviceSecurityEventDataHeader2 Constructor.
+     *
+     * @param dsedBytes byte array holding the DeviceSecurityEventData2.
+     */
     public DeviceSecurityEventDataHeader2(final byte[] dsedBytes) {
 
         super(dsedBytes);
@@ -130,15 +126,18 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      * @return a description of this structure.
      */
     public String toString() {
-        String dsedHeader2Info = "";
-
-        dsedHeader2Info += super.toString();
-        dsedHeader2Info += "\n   AuthState: " + getAuthStateString();
-        dsedHeader2Info += "\n   Sub header UID: " + subHeaderUid;
+        String dsedHeader2Info = super.toString();
+        dsedHeader2Info += "   AuthState: " + getAuthStateString() + "\n";
+        dsedHeader2Info += "   Sub header UID: " + subHeaderUid + "\n";
 
         return dsedHeader2Info;
     }
 
+    /**
+     * Returns a human-readable description of auth state based on numeric representation lookup.
+     *
+     * @return a description of the auth state.
+     */
     public String getAuthStateString() {
 
         switch (authState) {
