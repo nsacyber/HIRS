@@ -270,7 +270,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                                 fwStatus = new AppraisalStatus(FAIL, String.format("%s%n%s",
                                         fwStatus.getMessage(), sb.toString()));
                             } else {
-                                fwStatus = new AppraisalStatus(FAIL, sb.toString());
+                                fwStatus = new AppraisalStatus(FAIL,
+                                        sb.toString(), ReferenceManifest.MEASUREMENT_RIM);
                             }
                         }
                     }
