@@ -102,7 +102,7 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
 
         // SPDM Certificate Chain output
         if(!spdmCertChainError.isEmpty()) {
-            dsedSubHeaderInfo += "   SPDM cert chain error: " + spdmCertChainError;
+            dsedSubHeaderInfo += "   SPDM cert chain error: " + spdmCertChainError + "\n";
         }
         else if(spdmCertChain == null) {
             dsedSubHeaderInfo += "   SPDM cert chain error: Could not parse cert chain\n";
