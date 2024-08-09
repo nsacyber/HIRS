@@ -318,19 +318,6 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_EVENT_BASE:
                 break;
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-                try {
-                    sb.append(new UefiVariable(eventContent).toString());
-                } catch (CertificateException cEx) {
-                    log.error(cEx);
-                    sb.append(cEx.toString());
-                } catch (NoSuchAlgorithmException noSaEx) {
-                    log.error(noSaEx);
-                    sb.append(noSaEx.toString());
-                } catch (IOException ioEx) {
-                    log.error(ioEx);
-                    sb.append(ioEx.toString());
-                }
-                break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
@@ -503,25 +490,18 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_EVENT_BASE:
                 break;
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-                UefiVariable efiVar = new UefiVariable(content);
-                description += "Event Content:\n" + efiVar.toString();
-                vendorTableFileStatus = efiVar.getVendorTableFileStatus();
-                break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
-                UefiVariable efiVar2 = new UefiVariable(content);
-                description += "Event Content:\n" + efiVar2.toString();
-                vendorTableFileStatus = efiVar2.getVendorTableFileStatus();
+                UefiVariable efiVar = new UefiVariable(content);
+                description += "Event Content:\n" + efiVar.toString();
+                vendorTableFileStatus = efiVar.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
+            case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER:
                 EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(content);
                 description += "Event Content:\n" + bootServices.toString();
-                break;
-            case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER: // same as EV_EFI_BOOT_SERVICES_APP
-                EvEfiBootServicesApp bootDriver = new EvEfiBootServicesApp(content);
-                description += "Event Content:\n" + bootDriver.toString();
                 break;
             case EvConstants.EV_EFI_RUNTIME_SERVICES_DRIVER:
                 break;
@@ -542,8 +522,6 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
-                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
-                break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
                 description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
                 break;
