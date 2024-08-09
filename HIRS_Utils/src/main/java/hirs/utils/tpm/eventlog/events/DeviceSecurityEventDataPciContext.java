@@ -113,21 +113,21 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
 
         dSEDpciContextInfo += super.toString();
         dSEDpciContextInfo += "      Device Type = PCI\n";
-        dSEDpciContextInfo += "      Vendor = " + translateVendor(vendorId) + "\n";
-        dSEDpciContextInfo += "      Device = " + translateDevice(vendorId, deviceId) + "\n";
-        dSEDpciContextInfo += "      RevisionID = " + revisionId + "\n";
+//        dSEDpciContextInfo += "      Vendor = " + translateVendor(vendorId) + "\n";
+//        dSEDpciContextInfo += "      Device = " + translateDevice(vendorId, deviceId) + "\n";
+//        dSEDpciContextInfo += "      RevisionID = " + revisionId + "\n";
 
-        List<String> classCodeList = translateDeviceClass(classCode);
-        dSEDpciContextInfo += "      Device Class: \n";
-        if(classCodeList.size() == 3) {
-            dSEDpciContextInfo += "        Class = " + classCodeList.get(0) + "\n";
-            dSEDpciContextInfo += "        Subclass = " + classCodeList.get(1) + "\n";
-            dSEDpciContextInfo += "        Programming Interface = " + classCodeList.get(2) + "\n";
-        } else {
-            dSEDpciContextInfo += " ** Class code could not be determined **";
-        }
-        dSEDpciContextInfo += "      SubsystemVendor = " + translateVendor(subsystemVendorId) + "\n";
-        dSEDpciContextInfo += "      Subsystem = " + translateDevice(subsystemVendorId, subsystemId) + "\n";
+//        List<String> classCodeList = translateDeviceClass(classCode);
+//        dSEDpciContextInfo += "      Device Class: \n";
+//        if(classCodeList.size() == 3) {
+//            dSEDpciContextInfo += "        Class = " + classCodeList.get(0) + "\n";
+//            dSEDpciContextInfo += "        Subclass = " + classCodeList.get(1) + "\n";
+//            dSEDpciContextInfo += "        Programming Interface = " + classCodeList.get(2) + "\n";
+//        } else {
+//            dSEDpciContextInfo += " ** Class code could not be determined **";
+//        }
+//        dSEDpciContextInfo += "      SubsystemVendor = " + translateVendor(subsystemVendorId) + "\n";
+//        dSEDpciContextInfo += "      Subsystem = " + translateDevice(subsystemVendorId, subsystemId) + "\n";
 
         return dSEDpciContextInfo;
     }

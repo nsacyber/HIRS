@@ -81,14 +81,14 @@ public class NvIndexInstanceEventLogData {
 
             nvIndexInstanceInfo += "   Signature = SPDM Device Sec2\n";
 
-//            if (dsedVersion.equals("0200")) {
-//                dsed = new DeviceSecurityEventData2(dsedEventData);
-//                nvIndexInstanceInfo += dsed.toString();
-//            }
-//            else {
-//                nvIndexInstanceInfo += "    Incompatible version for DeviceSecurityEventData2: "
-//                        + dsedVersion + "\n";
-//            }
+            if (dsedVersion.equals("0200")) {
+                dsed = new DeviceSecurityEventData2(dsedEventData);
+                nvIndexInstanceInfo += dsed.toString();
+            }
+            else {
+                nvIndexInstanceInfo += "    Incompatible version for DeviceSecurityEventData2: "
+                        + dsedVersion + "\n";
+            }
         }
         else {
             nvIndexInstanceInfo = "   Signature error: should be \'SPDM Device Sec2\' but is "
