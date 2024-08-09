@@ -48,7 +48,6 @@ fi
 
 #  Process Test Results, any single failure will send back a failed result.
 if [[ $failedTests != 0 ]]; then
-    export TEST_STATUS=1
     echo "****  $failedTests out of $totalTests Platform Certificate Tests Failed! ****"
     exit 1
   else

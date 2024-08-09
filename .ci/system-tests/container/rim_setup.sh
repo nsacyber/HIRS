@@ -84,7 +84,7 @@ pushd $swidDir > /dev/null
       fi
       if [ "$UPLOAD_ARTIFACTS" = YES ]; then
         echo "Uploading $swidtag to $SERVER_RIM_POST"
-        curl -k -F "file=@$swidtag" $SERVER_RIM_POST
+        curl -k -F "file=@$swidtag" $SERVER_RIM_POST > /dev/null  2>&1
       fi
     done
   fi
@@ -102,7 +102,7 @@ pushd $rimDir > /dev/null
       fi
       if [ "$UPLOAD_ARTIFACTS" = YES ]; then
         echo "Uploading $rim to $SERVER_RIM_POST"
-        curl -k -F "file=@$rim" $SERVER_RIM_POST
+        curl -k -F "file=@$rim" $SERVER_RIM_POST > /dev/null  2>&1
       fi
     done
   fi
