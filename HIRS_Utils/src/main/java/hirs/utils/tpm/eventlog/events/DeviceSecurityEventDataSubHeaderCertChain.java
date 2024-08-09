@@ -42,7 +42,7 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
     /**
      * Human-readable description of any error associated with SPDM base hash alg.
      */
-    String spdmBaseHashAlgoError = "";
+    String spdmCertChainError = "";
 
     /**
      * DeviceSecurityEventDataSubHeaderCertChain Constructor.
@@ -75,11 +75,16 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
 
         int spdmBaseHashAlgoSize = SpdmHa.tcgAlgIdToByteSize(spdmBaseHashAlgo);
 
-        if(spdmBaseHashAlgoSize > 0) {
-            spdmCertChain = new SpdmCertificateChain(spdmCertChainBytes, spdmBaseHashAlgoSize);
+        if(spdmCertChainSize <= 0) {
+            spdmCertChainError += "SPDM cert chain length is not >0, " +
+                    "stopping cert chain processing";
         }
-        else {
-            spdmBaseHashAlgoError += "SPDM base hash algorithm size is not >0";
+        else if(spdmBaseHashAlgoSize <= 0) {
+            spdmCertChainError += "SPDM base hash algorithm size is not >0 " +
+                    "stopping cert chain processing";
+        }
+        if(spdmCertChainError.isEmpty()) {
+            spdmCertChain = new SpdmCertificateChain(spdmCertChainBytes, spdmBaseHashAlgoSize);
         }
     }
 
@@ -96,7 +101,15 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
         dsedSubHeaderInfo += "   SPDM Base Hash Algorithm = " + spdmBaseHashAlgoStr + "\n";
 
         // SPDM Certificate Chain output
-        dsedSubHeaderInfo += spdmCertChain.toString();
+        if(!spdmCertChainError.isEmpty()) {
+            dsedSubHeaderInfo += "   SPDM cert chain error: " + spdmCertChainError;
+        }
+        else if(spdmCertChain == null) {
+            dsedSubHeaderInfo += "   SPDM cert chain error: Could not parse cert chain\n";
+        }
+        else {
+            dsedSubHeaderInfo += spdmCertChain.toString();
+        }
 
         return dsedSubHeaderInfo;
     }
