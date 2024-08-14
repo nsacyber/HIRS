@@ -43,17 +43,16 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
     implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
     implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.1'
+    implementation 'org.slf4j:slf4j-simple:1.7.30'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
     testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
     testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation project(path: ':HIRS_AttestationCA')
-
     testImplementation 'org.mockito:mockito-core:4.2.0'
+    testImplementation project(path: ':HIRS_AttestationCA')
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
-
 }
 
 checkstyle {
