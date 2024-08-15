@@ -128,7 +128,6 @@ namespace hirs {
 
         public static string FormatCertificatePath(DeviceInfo dv, string certificateDirPath, string certificateFileName) {
             StringBuilder sb = new StringBuilder();
-            sb.Append(certificateDirPath);
             if (dv?.Hw != null) {
                 if (dv.Hw.HasSystemSerialNumber && !dv.Hw.SystemSerialNumber.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
                     sb.AppendFormat("{0}-", dv.Hw.SystemSerialNumber);
@@ -138,7 +137,7 @@ namespace hirs {
                 }
             }
             sb.Append(certificateFileName);
-            return sb.ToString();
+            return Path.GetFullPath(Path.Join(certificateDirPath, sb.ToString()));
         }
 
         public async Task<int> Provision(IHirsAcaTpm tpm) {
@@ -163,14 +162,6 @@ namespace hirs {
                 Log.Debug("Checking SRK PUBLIC");
                 tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle); // Will not create key if obj already exists at handle
                 byte[] srkPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out byte[] name2, out byte[] qualifiedName2);
-
-                Log.Information("----> " + (cli.ReplaceLDevID ? "Creating new" : "Verifying existence of") + " LDevID Key.");
-                string ldevidPubPath = settings.cert_prefix + DefaultLDevIDPubKeyFileName;
-                string ldevidPrivPath = settings.cert_prefix + DefaultLDevIDPrivKeyFileName;
-                tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, ldevidPubPath, ldevidPrivPath, cli.ReplaceLDevID);
-
-                Log.Debug("Gathering LDevID PUBLIC.");
-                byte[] ldevidPublicArea = tpm.ConvertLDevIDPublic(ldevidPubPath);
 
                 List<byte[]> pcs = null, baseRims = null, supportRimELs = null, supportRimPCRs = null;
                 if (settings.HasEfiPrefix()) {
@@ -239,6 +230,14 @@ namespace hirs {
                 Log.Debug("Result of formatting pcr values for the ACA:");
                 Log.Debug("\n" + pcrsList);
                 dv.Pcrslist = ByteString.CopyFromUtf8(pcrsList);
+
+                Log.Information("----> " + (cli.ReplaceLDevID ? "Creating new" : "Verifying existence of") + " LDevID Key.");
+                string ldevidPubPath = FormatCertificatePath(dv, settings.certificate_output_directory, DefaultLDevIDPubKeyFileName);
+                string ldevidPrivPath = FormatCertificatePath(dv, settings.certificate_output_directory, DefaultLDevIDPrivKeyFileName);
+                tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, ldevidPubPath, ldevidPrivPath, cli.ReplaceLDevID);
+
+                Log.Debug("Gathering LDevID PUBLIC.");
+                byte[] ldevidPublicArea = tpm.ConvertLDevIDPublic(ldevidPubPath);
 
                 Log.Debug("Create identity claim");
                 IdentityClaim idClaim = acaClient.CreateIdentityClaim(dv, akPublicArea, ekPublicArea, ekc, pcs, manifest, ldevidPublicArea);
@@ -313,7 +312,7 @@ namespace hirs {
                     }
                     if (cr.HasCertificate) {
                         certificate = cr.Certificate.ToByteArray(); // contains certificate
-                        String certificateDirPath = settings.cert_prefix;
+                        String certificateDirPath = settings.certificate_output_directory;
                         if (certificateDirPath != null) {
                             String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultAKCertFileName);
                             try {
@@ -328,7 +327,7 @@ namespace hirs {
                     }
                     if (cr.HasLdevidCertificate) {
                         certificate = cr.LdevidCertificate.ToByteArray(); // contains certificate
-                        String certificateDirPath = settings.cert_prefix;
+                        String certificateDirPath = settings.certificate_output_directory;
                         if (certificateDirPath != null) {
                             String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultLDevIDCertFileName);
                             try {

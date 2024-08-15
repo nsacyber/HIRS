@@ -25,7 +25,7 @@ namespace hirs {
             linux_product_name_file,
             linux_product_version_file,
             linux_product_serial_file,
-            cert_prefix
+            certificate_output_directory
         }
 
         private static readonly string DEFAULT_SETTINGS_FILE = "appsettings.json";
@@ -73,7 +73,7 @@ namespace hirs {
         public virtual string linux_product_serial {
             get; private set;
         }
-        public virtual string cert_prefix {
+        public virtual string certificate_output_directory {
             get; private set;
         }
         private List<IHardwareManifest> hardwareManifests = new();
@@ -130,7 +130,7 @@ namespace hirs {
 
                 CheckEfiPrefix();
 
-                CheckCertPrefix();
+                CheckCertificateOutputDirectory();
 
                 IngestEventLogFromFile();
 
@@ -275,22 +275,28 @@ namespace hirs {
         #endregion
 
         #region
-        private void CheckCertPrefix() {
-            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.cert_prefix.ToString()])) {
-                Log.Debug("Checking Certificate Prefix setting.");
-                cert_prefix = $"{ configFromSettingsFile[Options.cert_prefix.ToString()] }";
-                if (!string.IsNullOrWhiteSpace(cert_prefix)) {
-                    if (!Directory.Exists(cert_prefix)) {
-                        Log.Debug(Options.cert_prefix.ToString() + ": " + cert_prefix + " did not exist.");
-                        cert_prefix = null;
+        private void CheckCertificateOutputDirectory() {
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.certificate_output_directory.ToString()])) {
+                Log.Debug("Checking Certificate Output Directory setting.");
+                certificate_output_directory = $"{ configFromSettingsFile[Options.certificate_output_directory.ToString()] }";
+                if (!string.IsNullOrWhiteSpace(certificate_output_directory)) {
+                    if (HasEfiPrefix()) {
+                        certificate_output_directory = Path.GetFullPath(Path.Join(efi_prefix, certificate_output_directory));
+                        if (!Directory.Exists(certificate_output_directory)) {
+                            Log.Debug(Options.certificate_output_directory.ToString() + ": " + certificate_output_directory + " did not exist.");
+                            certificate_output_directory = null;
+                        }
+                    }
+                    else {
+                        certificate_output_directory = null;
                     }
                 }
             }
-            if (cert_prefix == null) {
-                Log.Warning(Options.cert_prefix.ToString() + " not set in the settings file. Defaulting to the current working directory.");
-                cert_prefix = "";
+            if (certificate_output_directory == null) {
+                Log.Warning(Options.certificate_output_directory.ToString() + " not set in the settings file. Defaulting to the current working directory.");
+                certificate_output_directory = "";
             } else {
-                Log.Debug("  Will scan for certificates in " + cert_prefix);
+                Log.Debug("  Will write certificates to " + certificate_output_directory);
             }
         }
         #endregion
