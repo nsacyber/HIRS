@@ -42,11 +42,11 @@ public class UefiVariable {
     @Getter
     private String efiVarName = "";
     /**
-     * Encountered invalid UEFI Signature List
+     * Encountered invalid UEFI Signature List.
      */
     private boolean invalidSignatureListEncountered = false;
     /**
-     * Invalid UEFI Signature List
+     * Invalid UEFI Signature List.
      */
     private String invalidSignatureListStatus = "";
     /**
@@ -78,7 +78,7 @@ public class UefiVariable {
     /**
      * Human-readable description of the data within the SPDM devdc (to be updated with more test data).
      */
-    String spdmDevdcInfo = "";
+    private String spdmDevdcInfo = "";
 
     /**
      * EFIVariable constructor.
@@ -184,13 +184,13 @@ public class UefiVariable {
             // the if statement is executed
             // [new event file status = list.getVendorTableFileStatus()]
             // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if((vendorTableFileStatus != FILESTATUS_NOT_ACCESSIBLE) &&
-                    (list.getVendorTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
+            if ((vendorTableFileStatus != FILESTATUS_NOT_ACCESSIBLE)
+                    && (list.getVendorTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
                         vendorTableFileStatus = list.getVendorTableFileStatus();
             }
 
 //            efiVariableSigListContents += list.toString();
-            if(!list.isSignatureTypeValid()) {
+            if (!list.isSignatureTypeValid()) {
                 invalidSignatureListEncountered = true;
                 invalidSignatureListStatus = list.toString();
                 break;
@@ -200,7 +200,7 @@ public class UefiVariable {
     }
 
     /**
-     * Method for processing the data in an EFI Signature Data, where the data is known to be an X509 cert
+     * Method for processing the data in an EFI Signature Data, where the data is known to be an X509 cert.
      *
      * @param efiSigData Byte array holding the SignatureData data
      * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
@@ -296,23 +296,23 @@ public class UefiVariable {
         }
 
         // Signature List output (if there are any Signature Lists)
-        if (certSuperList.size() > 0){
+        if (certSuperList.size() > 0) {
             efiVariable.append("Number of UEFI Signature Lists = " + certSuperList.size() + "\n");
             int certSuperListCnt = 1;
             for (UefiSignatureList uefiSigList : certSuperList) {
-                efiVariable.append("UEFI Signature List # " + certSuperListCnt++ + " of " +
-                        certSuperList.size() + ": ------------------\n");
+                efiVariable.append("UEFI Signature List # " + certSuperListCnt++ + " of "
+                        + certSuperList.size() + ": ------------------\n");
                 efiVariable.append(uefiSigList.toString());
             }
         }
-        if(invalidSignatureListEncountered) {
+        if (invalidSignatureListEncountered) {
             efiVariable.append(invalidSignatureListStatus);
-            efiVariable.append("*** Encountered invalid Signature Type - " +
-                    "Stopped processing of this event data\n");
+            efiVariable.append("*** Encountered invalid Signature Type - "
+                    + "Stopped processing of this event data\n");
         }
 
         // Signature Data output (if there is a Signature Data)
-        if(!spdmDevdcInfo.isEmpty()) {
+        if (!spdmDevdcInfo.isEmpty()) {
             efiVariable.append(spdmDevdcInfo);
         }
 

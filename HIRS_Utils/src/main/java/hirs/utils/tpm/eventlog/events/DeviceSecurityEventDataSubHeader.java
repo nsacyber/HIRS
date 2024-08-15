@@ -14,11 +14,11 @@ package hirs.utils.tpm.eventlog.events;
 public abstract class DeviceSecurityEventDataSubHeader {
 
     /**
-     * Sub header type - SPDM measurement block
+     * Sub header type - SPDM measurement block.
      */
     public static final int SUBHEADERTYPE_MEAS_BLOCK = 0;
     /**
-     * Sub header type - SPDM cert chain
+     * Sub header type - SPDM cert chain.
      */
     public static final int SUBHEADERTYPE_CERT_CHAIN = 1;
 

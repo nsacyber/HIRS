@@ -25,7 +25,7 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
      * DEVICE_SECURITY_EVENT_DATA_HEADER.
      */
     @Getter
-    String headerInfo = "";
+    private String headerInfo = "";
 
     /**
      * DeviceSecurityEventData Constructor.
@@ -34,10 +34,9 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
      */
     public DeviceSecurityEventData(final byte[] dsedBytes) {
 
-        if(dsedBytes.length == 0) {
+        if (dsedBytes.length == 0) {
             headerInfo = "   DeviceSecurityEventData object is empty";
-        }
-        else {
+        } else {
             dsedHeader = new DeviceSecurityEventDataHeader(dsedBytes);
             headerInfo = dsedHeader.toString();
 

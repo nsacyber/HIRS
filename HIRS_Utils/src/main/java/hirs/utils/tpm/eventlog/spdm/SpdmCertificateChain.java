@@ -34,9 +34,9 @@ import java.util.ArrayList;
  */
 public class SpdmCertificateChain {
 
-    /**
-     * Length of the certificate chain to include all fields in this structure.
-     */
+    ///**
+    // * Length of the certificate chain to include all fields in this structure.
+    // */
     //private int length = 0;
     /**
      * Root hash.
@@ -53,11 +53,11 @@ public class SpdmCertificateChain {
     /**
      * Human-readable description of any error associated with SPDM base hash alg.
      */
-    String spdmBaseHashAlgoError = "";
+    private String spdmBaseHashAlgoError = "";
     /**
      * Human-readable description of any error associated with parsing the X509 certs.
      */
-    String certProcessingError = "";
+    private String certProcessingError = "";
 
     /**
      * SpdmCertificateChain Constructor.
@@ -67,10 +67,9 @@ public class SpdmCertificateChain {
      */
     public SpdmCertificateChain(final byte[] spdmCertChainBytes, final int rootHashLength) {
 
-        if(rootHashLength <= 0) {
+        if (rootHashLength <= 0) {
             spdmBaseHashAlgoError = "SPDM base hash algorithm size is not >0";
-        }
-        else {
+        } else {
             byte[] lengthBytes = new byte[2];
             System.arraycopy(spdmCertChainBytes, 0, lengthBytes, 0, 2);
             //length = HexUtils.leReverseInt(lengthBytes);
@@ -123,15 +122,15 @@ public class SpdmCertificateChain {
                 certList.add(cert);
                 numberOfCerts++;
             } catch (IOException e) {
-                certProcessingError += "Error with Cert # " + (numberOfCerts+1)
+                certProcessingError += "Error with Cert # " + (numberOfCerts + 1)
                         + ": IOException (error reading cert data)";
                 break;
             } catch (CertificateException e) {
-                certProcessingError += "Error with Cert # " + (numberOfCerts+1)
+                certProcessingError += "Error with Cert # " + (numberOfCerts + 1)
                         + ": CertificateException";
                 break;
             } catch (NoSuchAlgorithmException e) {
-                certProcessingError += "Error with Cert # " + numberOfCerts+1
+                certProcessingError += "Error with Cert # " + (numberOfCerts + 1)
                         + ": CNoSuchAlgorithmException";
                 break;
             }
@@ -147,19 +146,18 @@ public class SpdmCertificateChain {
 
         String spdmCertChainInfo = "";
 
-        if(!spdmBaseHashAlgoError.isEmpty()) {
+        if (!spdmBaseHashAlgoError.isEmpty()) {
             spdmCertChainInfo += "   *** ERROR with SPDM base hash algorithm size ***\n";
             spdmCertChainInfo += "      " + spdmBaseHashAlgoError + "\n";
             spdmCertChainInfo += "      Stopping processing of this cert chain\n";
-        }
-        else {
+        } else {
             spdmCertChainInfo += "   Root hash = " + HexUtils.byteArrayToHexString(rootHash) + "\n";
             spdmCertChainInfo += "   Number of certs in chain = " + numberOfCerts + "\n";
 
             int certCnt = 1;
             for (UefiX509Cert cert : certList) {
-                spdmCertChainInfo += "   Cert # " + certCnt++ + " of " +
-                        numberOfCerts + ": ------------------\n";
+                spdmCertChainInfo += "   Cert # " + certCnt++ + " of "
+                        + numberOfCerts + ": ------------------\n";
                 spdmCertChainInfo += cert.toString();
             }
 

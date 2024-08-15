@@ -47,7 +47,7 @@ public class EvNoAction {
      * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
     @Getter
-    String noActionInfo = "";
+    private String noActionInfo = "";
 
     /**
      * EvNoAction constructor.
@@ -90,7 +90,13 @@ public class EvNoAction {
         return bSpecIDEvent;
     }
 
-    public String specIDEventToString(EvEfiSpecIdEvent specIDEvent) {
+    /**
+     * Returns a human-readable description of a SpecId event.
+     *
+     * @param specIDEvent byte array holding the event.
+     * @return a description of the event.
+     */
+    public String specIDEventToString(final EvEfiSpecIdEvent specIDEvent) {
 
         String specIdInfo = "";
         specIdInfo += "   Signature = Spec ID Event03 : ";
@@ -109,6 +115,7 @@ public class EvNoAction {
     /**
      * Returns a human-readable description of locality based on numeric representation lookup.
      *
+     * @param eventData byte array holding the event from which to grab locality
      * @return a description of the locality.
      */
     private String getLocality(final byte[] eventData) {

@@ -115,17 +115,17 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
         dsedSubHeaderInfo += "   SPDM Hash Algorithm = " + spdmHashAlgoStr + "\n";
 
         // SPDM Measurement Block List output
-        dsedSubHeaderInfo += "   Number of SPDM Measurement Blocks = " +
-                spdmMeasurementBlockList.size() + "\n";
+        dsedSubHeaderInfo += "   Number of SPDM Measurement Blocks = "
+                + spdmMeasurementBlockList.size() + "\n";
         int spdmMeasBlockCnt = 1;
         for (SpdmMeasurementBlock spdmMeasBlock : spdmMeasurementBlockList) {
-            dsedSubHeaderInfo += "   SPDM Measurement Block # " + spdmMeasBlockCnt++ + " of " +
-                    spdmMeasurementBlockList.size() + "\n";
+            dsedSubHeaderInfo += "   SPDM Measurement Block # " + spdmMeasBlockCnt++ + " of "
+                    + spdmMeasurementBlockList.size() + "\n";
             dsedSubHeaderInfo += spdmMeasBlock.toString();
         }
-        if(spdmMeasurementBlockReadError) {
-            dsedSubHeaderInfo += "      Error reading SPDM Measurement Block #" +
-                    spdmMeasBlockCnt + ", halting processing\n";
+        if (spdmMeasurementBlockReadError) {
+            dsedSubHeaderInfo += "      Error reading SPDM Measurement Block #"
+                    + spdmMeasBlockCnt + ", halting processing\n";
         }
 
         return dsedSubHeaderInfo;

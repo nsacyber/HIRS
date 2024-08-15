@@ -119,7 +119,7 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
 
         List<String> classCodeList = translateDeviceClass(classCode);
         dSEDpciContextInfo += "      Device Class: \n";
-        if(classCodeList.size() == 3) {
+        if (classCodeList.size() == 3) {
             dSEDpciContextInfo += "        Class = " + classCodeList.get(0) + "\n";
             dSEDpciContextInfo += "        Subclass = " + classCodeList.get(1) + "\n";
             dSEDpciContextInfo += "        Programming Interface = " + classCodeList.get(2) + "\n";

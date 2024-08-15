@@ -21,7 +21,7 @@ import hirs.utils.tpm.eventlog.spdm.SpdmHa;
  * SpdmBaseHashAlgo: SPDM Base Hash Algorithm for the root certificate in the SPDM Certificate chain
  * SpdmCertChain: SPDM Certificate Chain
  */
-public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEventDataSubHeader{
+public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEventDataSubHeader {
 
     /**
      * SPDM version.
@@ -42,7 +42,7 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
     /**
      * Human-readable description of any error associated with SPDM base hash alg.
      */
-    String spdmCertChainError = "";
+    private String spdmCertChainError = "";
 
     /**
      * DeviceSecurityEventDataSubHeaderCertChain Constructor.
@@ -75,15 +75,14 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
 
         int spdmBaseHashAlgoSize = SpdmHa.tcgAlgIdToByteSize(spdmBaseHashAlgo);
 
-        if(spdmCertChainSize <= 0) {
-            spdmCertChainError += "SPDM cert chain length is not >0, " +
-                    "stopping cert chain processing";
+        if (spdmCertChainSize <= 0) {
+            spdmCertChainError += "SPDM cert chain length is not >0, "
+                    + "stopping cert chain processing";
+        } else if (spdmBaseHashAlgoSize <= 0) {
+            spdmCertChainError += "SPDM base hash algorithm size is not >0 "
+                    + "stopping cert chain processing";
         }
-        else if(spdmBaseHashAlgoSize <= 0) {
-            spdmCertChainError += "SPDM base hash algorithm size is not >0 " +
-                    "stopping cert chain processing";
-        }
-        if(spdmCertChainError.isEmpty()) {
+        if (spdmCertChainError.isEmpty()) {
             spdmCertChain = new SpdmCertificateChain(spdmCertChainBytes, spdmBaseHashAlgoSize);
         }
     }
@@ -101,13 +100,11 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
         dsedSubHeaderInfo += "   SPDM Base Hash Algorithm = " + spdmBaseHashAlgoStr + "\n";
 
         // SPDM Certificate Chain output
-        if(!spdmCertChainError.isEmpty()) {
+        if (!spdmCertChainError.isEmpty()) {
             dsedSubHeaderInfo += "   SPDM cert chain error: " + spdmCertChainError + "\n";
-        }
-        else if(spdmCertChain == null) {
+        } else if (spdmCertChain == null) {
             dsedSubHeaderInfo += "   SPDM cert chain error: Could not parse cert chain\n";
-        }
-        else {
+        } else {
             dsedSubHeaderInfo += spdmCertChain.toString();
         }
 

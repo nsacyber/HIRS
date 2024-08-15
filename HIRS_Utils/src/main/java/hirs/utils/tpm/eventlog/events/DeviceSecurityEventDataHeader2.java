@@ -28,7 +28,7 @@ import lombok.Getter;
 public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
 
     /**
-     * Event auth state
+     * Event auth state.
      */
     @Getter
     private int authState = 0;
@@ -38,7 +38,7 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
     @Getter
     private int length = 0;
     /**
-     * Event sub headerType
+     * Event sub headerType.
      * SUBHEADERTYPE_MEAS_BLOCK = 0
      * SUBHEADERTYPE_CERT_CHAIN = 1
      */
@@ -56,12 +56,12 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
     private String subHeaderUid = "";
 
     /**
-     * Auth state - success
+     * Auth state - success.
      */
     public static final int AUTH_SUCCESS = 0;
     /**
      * Auth state - digital signature of the data is valid, but the public key certificate chain is not
-     *              validated with the entry in in the UEFI device signature variable
+     *              validated with the entry in the UEFI device signature variable.
      */
     public static final int AUTH_NO_AUTHORITY = 1;
     /**
@@ -70,15 +70,15 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      */
     public static final int AUTH_NO_BINDING = 2;
     /**
-     * Auth state - data has no digital signature
+     * Auth state - data has no digital signature.
      */
     public static final int AUTH_FAIL_NO_SIG = 3;
     /**
-     * Auth state - data is invalid
+     * Auth state - data is invalid.
      */
     public static final int AUTH_FAIL_INVALID = 4;
     /**
-     * Auth state - device is not an SPDM-capable device
+     * Auth state - device is not an SPDM-capable device.
      */
     public static final int AUTH_NO_SPDM = 0xFF;
 

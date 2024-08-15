@@ -43,7 +43,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
     /**
      * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
-    String spdmInfo = "";
+    private String spdmInfo = "";
 
     /**
      * EvEfiSpdmFirmwareBlob constructor.
@@ -72,24 +72,20 @@ public class EvEfiSpdmDeviceSecurityEvent {
             if (dsedVersion.equals("0200")) {
                 dsed = new DeviceSecurityEventData2(eventData);
                 spdmInfo += dsed.toString();
-            }
-            else {
+            } else {
                 spdmInfo += "    Incompatible version for DeviceSecurityEventData2: " + dsedVersion + "\n";
             }
-        }
-        else if (dsedSignature.contains("SPDM Device Sec")) {      // implies Device Security event
+        } else if (dsedSignature.contains("SPDM Device Sec")) {      // implies Device Security event
 
             spdmInfo = "   Signature = SPDM Device Sec\n";
 
             if (dsedVersion.equals("0100")) {
                 dsed = new DeviceSecurityEventData(eventData);
                 spdmInfo += dsed.toString();
-            }
-            else {
+            } else {
                 spdmInfo += "    Incompatible version for DeviceSecurityEventData: " + dsedVersion + "\n";
             }
-        }
-        else {
+        } else {
             spdmInfo = "   Signature = Undetermined value: " + dsedSignature + "\n";
         }
     }

@@ -28,20 +28,20 @@ public class UefiGuid {
      */
     private static final int UUID_EPOCH_DIVISOR = 10000;
     /**
-     * Filesystem path of vendor-table.json
+     * Filesystem path of vendor-table.json.
      */
     private static final Path JSON_PATH = FileSystems.getDefault().getPath("/etc",
             "hirs", "aca", "default-properties", "vendor-table.json");
     /**
-     * Name of vendor-table file in code
+     * Name of vendor-table file in code.
      */
     private static final String JSON_FILENAME = "vendor-table.json";
     /**
-     * Reference to the vendor-table json object
+     * Reference to the vendor-table json object.
      */
     private JsonObject uefiVendorRef;
     /**
-     * Track status of vendor-table.json
+     * Track status of vendor-table.json.
      */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
@@ -77,13 +77,12 @@ public class UefiGuid {
         uefiVendorRef = JsonUtils.getSpecificJsonObject(vendorPathString,
                 "VendorTable");
 
-        if(!isVendorTableReferenceHandleEmpty()) {
+        if (!isVendorTableReferenceHandleEmpty()) {
             vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
-        }
-        else {
+        } else {
             // could not access vendor-table.json from filesystem, so attempt to access from code
             uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_FILENAME, "VendorTable");
-            if(!isVendorTableReferenceHandleEmpty()) {
+            if (!isVendorTableReferenceHandleEmpty()) {
                 vendorTableFileStatus = FILESTATUS_FROM_CODE;
             }
         }

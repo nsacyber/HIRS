@@ -58,7 +58,7 @@ public abstract class DeviceSecurityEvent {
      * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT. DEVICE can be either PCI or USB.
      */
     @Getter
-    String deviceContextInfo = "";
+    private String deviceContextInfo = "";
 
     /**
      * DeviceSecurityEventData Default Constructor.
@@ -76,21 +76,17 @@ public abstract class DeviceSecurityEvent {
      */
     public void instantiateDeviceContext(final byte[] dsedDeviceContextBytes) {
 
-        if(dsedDeviceContextBytes.length == 0) {
+        if (dsedDeviceContextBytes.length == 0) {
             deviceContextInfo = "\n    DeviceSecurityEventDataDeviceContext object is empty";
-        }
-        else {
+        } else {
             if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE) {
                 deviceContextInfo = "\n    No Device Context (indicated by device type value of 0)";
-            }
-            else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI) {
+            } else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI) {
                 dsedDevContext = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
                 deviceContextInfo = dsedDevContext.toString();
-            }
-            else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB) {
+            } else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB) {
                 deviceContextInfo = "    Device Type: USB - To be implemented";
-            }
-            else {
+            } else {
                 deviceContextInfo = "    Unknown device type; cannot process device context";
             }
         }

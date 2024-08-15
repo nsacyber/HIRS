@@ -32,7 +32,7 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
      * DEVICE_SECURITY_EVENT_DATA_HEADER2.
      */
     @Getter
-    String headerInfo = "";
+    private String headerInfo = "";
 
     /**
      * Human-readable description of the data within the
@@ -41,7 +41,7 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
      * DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN
      */
     @Getter
-    String subHeaderInfo = "";
+    private String subHeaderInfo = "";
 
     /**
      * DeviceSecurityEventData2 Constructor.
@@ -50,10 +50,9 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
      */
     public DeviceSecurityEventData2(final byte[] dsedBytes) {
 
-        if(dsedBytes.length == 0) {
+        if (dsedBytes.length == 0) {
             headerInfo = "   DeviceSecurityEventData2 object is empty";
-        }
-        else {
+        } else {
             dsedHeader2 = new DeviceSecurityEventDataHeader2(dsedBytes);
             headerInfo = dsedHeader2.toString();
 
@@ -71,12 +70,10 @@ public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
             if (subHeaderType == DeviceSecurityEventDataSubHeader.SUBHEADERTYPE_MEAS_BLOCK) {
                 dsedSubHeader = new DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock(dsedSubHeaderBytes);
                 subHeaderInfo += dsedSubHeader.toString();
-            }
-            else if (subHeaderType == DeviceSecurityEventDataSubHeader.SUBHEADERTYPE_CERT_CHAIN) {
+            } else if (subHeaderType == DeviceSecurityEventDataSubHeader.SUBHEADERTYPE_CERT_CHAIN) {
                 dsedSubHeader = new DeviceSecurityEventDataSubHeaderCertChain(dsedSubHeaderBytes);
                 subHeaderInfo += dsedSubHeader.toString();
-            }
-            else {
+            } else {
                 subHeaderInfo += "     Sub header type unknown\n";
             }
 

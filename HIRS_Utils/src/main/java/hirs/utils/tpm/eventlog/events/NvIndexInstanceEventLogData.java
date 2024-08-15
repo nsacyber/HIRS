@@ -36,7 +36,7 @@ public class NvIndexInstanceEventLogData {
     /**
      * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
-    String nvIndexInstanceInfo = "";
+    private String nvIndexInstanceInfo = "";
 
     /**
      * NvIndexInstanceEventLogData constructor.
@@ -84,13 +84,11 @@ public class NvIndexInstanceEventLogData {
             if (dsedVersion.equals("0200")) {
                 dsed = new DeviceSecurityEventData2(dsedEventData);
                 nvIndexInstanceInfo += dsed.toString();
-            }
-            else {
+            } else {
                 nvIndexInstanceInfo += "    Incompatible version for DeviceSecurityEventData2: "
                         + dsedVersion + "\n";
             }
-        }
-        else {
+        } else {
             nvIndexInstanceInfo = "   Signature error: should be \'SPDM Device Sec2\' but is "
                     + signature + "\n";
         }

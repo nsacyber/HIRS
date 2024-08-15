@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class SpdmHa {
 
     /**
-     * Spdm Hash Alg = Raw bit stream
+     * Spdm Hash Alg = Raw bit stream.
      */
     public static final int TPM_ALG_RAW = 1;
     /**

@@ -61,7 +61,7 @@ public class SpdmMeasurement {
     }
 
     /**
-     * Lookup for SPDM measurement value type
+     * Lookup for SPDM measurement value type.
      *
      * @param measValType the numerical representation of the measurement value type.
      *
@@ -118,10 +118,10 @@ public class SpdmMeasurement {
     public String toString() {
         String spdmMeasInfo = "";
 
-        spdmMeasInfo += "      SPDM Measurement Value Type = " +
-                dmtfSpecMeasurementValueTypeToString(dmtfSpecMeasurementValueType);
-        spdmMeasInfo += "\n      SPDM Measurement Value = " +
-                HexUtils.byteArrayToHexString(dmtfSpecMeasurementValue);
+        spdmMeasInfo += "      SPDM Measurement Value Type = "
+                + dmtfSpecMeasurementValueTypeToString(dmtfSpecMeasurementValueType);
+        spdmMeasInfo += "\n      SPDM Measurement Value = "
+                + HexUtils.byteArrayToHexString(dmtfSpecMeasurementValue);
         spdmMeasInfo += "\n";
 
         return spdmMeasInfo;

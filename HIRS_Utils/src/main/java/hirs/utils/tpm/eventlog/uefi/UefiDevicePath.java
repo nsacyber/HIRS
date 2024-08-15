@@ -93,7 +93,9 @@ public class UefiDevicePath {
      */
     private String processDevPath(final byte[] path) {
         StringBuilder pInfo = new StringBuilder();
-        int devLength = 0, pathOffset = 0, devCount = 0;
+        int devLength = 0;
+        int pathOffset = 0;
+        int devCount = 0;
         while (true) {
             Byte devPath = Byte.valueOf(path[pathOffset]);
             if ((devPath.intValue() == UefiConstants.TERMINATOR)
@@ -214,7 +216,7 @@ public class UefiDevicePath {
         subType += "        _HID = " + HexUtils.byteArrayToHexString(hid) + "\n";
         System.arraycopy(path, 2 * UefiConstants.SIZE_4 + offset, hid, 0, UefiConstants.SIZE_4);
         String uid = HexUtils.byteArrayToHexString(hid);
-        if(uid.contains("00000000")) {
+        if (uid.contains("00000000")) {
             uid = "No _UID exists for this device";
         }
         subType += "        _UID = " + uid + "\n";

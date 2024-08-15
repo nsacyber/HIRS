@@ -63,8 +63,8 @@ public abstract class DeviceSecurityEventHeader {
     @Getter
     private String signature = "";
     /**
-     * Version determines data structure used (..DATA or ..DATA2),
-     * which determines whether ..HEADER or ..HEADER2 is used
+     * Version determines data structure used (..DATA or ..DATA2).
+     * This determines whether ..HEADER or ..HEADER2 is used.
      */
     @Getter
     private String version = "";
@@ -108,7 +108,7 @@ public abstract class DeviceSecurityEventHeader {
      * @param dsedBytes byte array holding the DeviceSecurityEventData/Data2.
      * @param startByte starting byte of device type (depends on header fields before it).
      */
-    public void extractDeviceType(final byte[] dsedBytes, int startByte) {
+    public void extractDeviceType(final byte[] dsedBytes, final int startByte) {
 
         // get the device type ID
         byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
@@ -124,24 +124,26 @@ public abstract class DeviceSecurityEventHeader {
      * @param dsedBytes byte array holding the DeviceSecurityEventData/Data2.
      * @param startByte starting byte of device path (depends on header fields before it).
      */
-    public void extractDevicePathAndFinalSize(final byte[] dsedBytes, int startByte) {
+    public void extractDevicePathAndFinalSize(final byte[] dsedBytes, final int startByte) {
+
+        int startByteUpdated = startByte;
 
         // get the device path length
         byte[] devicePathLengthBytes = new byte[8];
-        System.arraycopy(dsedBytes, startByte, devicePathLengthBytes, 0, 8);
+        System.arraycopy(dsedBytes, startByteUpdated, devicePathLengthBytes, 0, 8);
         int devicePathLength = HexUtils.leReverseInt(devicePathLengthBytes);
 
         // get the device path
         if (devicePathLength > 0) {
-            startByte = startByte + 8;
+            startByteUpdated = startByteUpdated + 8;
             byte[] devPathBytes = new byte[devicePathLength];
-            System.arraycopy(dsedBytes, startByte, devPathBytes,
+            System.arraycopy(dsedBytes, startByteUpdated, devPathBytes,
                     0, devicePathLength);
             devicePath = new UefiDevicePath(devPathBytes);
         }
 
         // header total size
-        dsedHeaderLength = startByte + devicePathLength;
+        dsedHeaderLength = startByteUpdated + devicePathLength;
     }
 
     /**
@@ -176,8 +178,7 @@ public abstract class DeviceSecurityEventHeader {
         if (devicePath != null) {
             dsedHeaderCommonInfo += "   SPDM Device Path:\n";
             dsedHeaderCommonInfo += devicePath;
-        }
-        else {
+        } else {
             dsedHeaderCommonInfo += "   SPDM Device Path = Unknown or invalid\n";
         }
 

@@ -107,7 +107,7 @@ public class UefiSignatureList {
      */
     private UefiGuid signatureType = null;
     /**
-     * Track status of vendor-table.json
+     * Track status of vendor-table.json.
      */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
@@ -235,17 +235,16 @@ public class UefiSignatureList {
         StringBuilder sigInfo = new StringBuilder();
 
         if (!signatureTypeValid) {
-            sigInfo.append("   *** Unknown UEFI Signature Type encountered:\n" +
-                    "       " + signatureType.toString() + "\n");
-        }
-        else {
+            sigInfo.append("   *** Unknown UEFI Signature Type encountered:\n"
+                    + "       " + signatureType.toString() + "\n");
+        } else {
             sigInfo.append("   UEFI Signature List Type = " + signatureType.toString() + "\n");
             sigInfo.append("   Number of Certs or Hashes in UEFI Signature List = " + numberOfCerts + "\n");
 
             int certOrHashCnt = 1;
             for (int i = 0; i < sigList.size(); i++) {
-                sigInfo.append("   Cert or Hash # " + certOrHashCnt++ + " of " +
-                        numberOfCerts + ": ------------------\n");
+                sigInfo.append("   Cert or Hash # " + certOrHashCnt++ + " of "
+                        + numberOfCerts + ": ------------------\n");
                 UefiSignatureData certData = sigList.get(i);
                 sigInfo.append(certData.toString());
             }
