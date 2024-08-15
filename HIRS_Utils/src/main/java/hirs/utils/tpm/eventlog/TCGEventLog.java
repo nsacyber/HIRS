@@ -170,7 +170,8 @@ public final class TCGEventLog {
             // [new event file status = eventList.get(eventNumber-1).getVendorTableFileStatus()]
             // (ie. if the new file status is not-accessible or from-code, then want to update)
             if ((vendorTableFileStatus != FILESTATUS_NOT_ACCESSIBLE)
-                    && (eventList.get(eventNumber - 1).getVendorTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
+                    && (eventList.get(eventNumber - 1).getVendorTableFileStatus()
+                    != FILESTATUS_FROM_FILESYSTEM)) {
                 vendorTableFileStatus = eventList.get(eventNumber - 1).getVendorTableFileStatus();
             }
         }
