@@ -27,6 +27,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -234,15 +235,17 @@ public class AbstractProcessor {
      * @param endorsementCredential the endorsement credential used to generate the AC
      * @param platformCredentials the platform credentials used to generate the AC
      * @param device the device to which the attestation certificate is tied
+     * @param isLDevID whether the certificate is a ldevid
+     * @return whether the certificate was saved successfully
      * @throws {@link CertificateProcessingException} if error occurs in persisting the Attestation
      *                                             Certificate
      */
-    public void saveAttestationCertificate(final CertificateRepository certificateRepository,
+    public boolean saveAttestationCertificate(final CertificateRepository certificateRepository,
                                            final byte[] derEncodedAttestationCertificate,
                                             final EndorsementCredential endorsementCredential,
                                             final List<PlatformCredential> platformCredentials,
-                                            final Device device) {
-        IssuedAttestationCertificate issuedAc;
+                                            final Device device, boolean isLDevID) {
+        List<IssuedAttestationCertificate> issuedAc;
         boolean generateCertificate = true;
         PolicyRepository scp = getPolicyRepository();
         PolicySettings policySettings;
@@ -251,19 +254,25 @@ public class AbstractProcessor {
         try {
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
-                    derEncodedAttestationCertificate, endorsementCredential, platformCredentials);
+                    derEncodedAttestationCertificate, endorsementCredential, platformCredentials, isLDevID);
 
             if (scp != null) {
                 policySettings = scp.findByName("Default");
-                issuedAc = certificateRepository.findByDeviceId(device.getId());
 
-                generateCertificate = policySettings.isIssueAttestationCertificate();
-                if (issuedAc != null && policySettings.isGenerateOnExpiration()) {
-                    if (issuedAc.getEndValidity().after(currentDate)) {
+                Sort sortCriteria = Sort.by(Sort.Direction.DESC, "endValidity");
+                issuedAc = certificateRepository.findByDeviceIdAndIsLDevID(device.getId(), isLDevID, sortCriteria);
+
+                generateCertificate = isLDevID ? policySettings.isIssueDevIdCertificate()
+                        : policySettings.isIssueAttestationCertificate();
+
+                if (issuedAc != null && issuedAc.size() > 0 && (isLDevID ? policySettings.isDevIdExpirationFlag()
+                        : policySettings.isGenerateOnExpiration())) {
+                    if (issuedAc.get(0).getEndValidity().after(currentDate)) {
                         // so the issued AC is not expired
                         // however are we within the threshold
-                        days = ProvisionUtils.daysBetween(currentDate, issuedAc.getEndValidity());
-                        if (days < Integer.parseInt(policySettings.getReissueThreshold())) {
+                        days = ProvisionUtils.daysBetween(currentDate, issuedAc.get(0).getEndValidity());
+                        if (days < Integer.parseInt(isLDevID ? policySettings.getDevIdReissueThreshold()
+                                : policySettings.getReissueThreshold())) {
                             generateCertificate = true;
                         } else {
                             generateCertificate = false;
@@ -271,6 +280,7 @@ public class AbstractProcessor {
                     }
                 }
             }
+
             if (generateCertificate) {
                 attCert.setDeviceId(device.getId());
                 attCert.setDeviceName(device.getName());
@@ -282,6 +292,8 @@ public class AbstractProcessor {
                     "Encountered error while storing Attestation Certificate: "
                             + e.getMessage(), e);
         }
+
+        return generateCertificate;
     }
 
     private List<PlatformCredential> getPlatformCredentials(final CertificateRepository certificateRepository,

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace hirs {
@@ -15,8 +16,11 @@ namespace hirs {
         private IHirsDeviceInfoCollector deviceInfoCollector = null;
         private IHirsAcaClient acaClient = null;
         
-        private const string DefaultCertFileName = "attestationkey.pem";
+        private const string DefaultLDevIDPubKeyFileName = "ldevid.pub";
+        private const string DefaultLDevIDPrivKeyFileName = "ldevid.priv";
 
+        private const string DefaultAKCertFileName = "ak.pem";
+        private const string DefaultLDevIDCertFileName = "ldevid.pem";
 
         public Provisioner() {
         }
@@ -122,6 +126,20 @@ namespace hirs {
             }
         }
 
+        public static string FormatCertificatePath(DeviceInfo dv, string certificateDirPath, string certificateFileName) {
+            StringBuilder sb = new StringBuilder();
+            if (dv?.Hw != null) {
+                if (dv.Hw.HasSystemSerialNumber && !dv.Hw.SystemSerialNumber.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
+                    sb.AppendFormat("{0}-", dv.Hw.SystemSerialNumber);
+                }
+                if (dv.Hw.HasManufacturer && !dv.Hw.Manufacturer.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
+                    sb.AppendFormat("{0}-", dv.Hw.Manufacturer);
+                }
+            }
+            sb.Append(certificateFileName);
+            return Path.GetFullPath(Path.Join(certificateDirPath, sb.ToString()));
+        }
+
         public async Task<int> Provision(IHirsAcaTpm tpm) {
             ClientExitCodes result = ClientExitCodes.SUCCESS;
             if (tpm != null) {
@@ -140,6 +158,10 @@ namespace hirs {
 
                 Log.Debug("Gathering AK PUBLIC.");
                 byte[] akPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName);
+                
+                Log.Debug("Checking SRK PUBLIC");
+                tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle); // Will not create key if obj already exists at handle
+                byte[] srkPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out byte[] name2, out byte[] qualifiedName2);
 
                 List<byte[]> pcs = null, baseRims = null, supportRimELs = null, supportRimPCRs = null;
                 if (settings.HasEfiPrefix()) {
@@ -209,8 +231,16 @@ namespace hirs {
                 Log.Debug("\n" + pcrsList);
                 dv.Pcrslist = ByteString.CopyFromUtf8(pcrsList);
 
+                Log.Information("----> " + (cli.ReplaceLDevID ? "Creating new" : "Verifying existence of") + " LDevID Key.");
+                string ldevidPubPath = FormatCertificatePath(dv, settings.certificate_output_directory, DefaultLDevIDPubKeyFileName);
+                string ldevidPrivPath = FormatCertificatePath(dv, settings.certificate_output_directory, DefaultLDevIDPrivKeyFileName);
+                tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, ldevidPubPath, ldevidPrivPath, cli.ReplaceLDevID);
+
+                Log.Debug("Gathering LDevID PUBLIC.");
+                byte[] ldevidPublicArea = tpm.ConvertLDevIDPublic(ldevidPubPath);
+
                 Log.Debug("Create identity claim");
-                IdentityClaim idClaim = acaClient.CreateIdentityClaim(dv, akPublicArea, ekPublicArea, ekc, pcs, manifest);
+                IdentityClaim idClaim = acaClient.CreateIdentityClaim(dv, akPublicArea, ekPublicArea, ekc, pcs, manifest, ldevidPublicArea);
 
                 Log.Information("----> Sending identity claim to Attestation CA");
                 IdentityClaimResponse icr = await acaClient.PostIdentityClaim(idClaim);
@@ -271,7 +301,7 @@ namespace hirs {
                     Log.Debug("Communicate certificate request to the ACA.");
                     CertificateResponse cr = await acaClient.PostCertificateRequest(akCertReq);
                     Log.Debug("Response received from the ACA regarding the certificate request.");
-                    if (cr.HasStatus) {
+                     if (cr.HasStatus) {
                         if (cr.Status == ResponseStatus.Pass) {
                             Log.Debug("ACA returned a positive response to the Certificate Request.");
                         } else {
@@ -282,21 +312,33 @@ namespace hirs {
                     }
                     if (cr.HasCertificate) {
                         certificate = cr.Certificate.ToByteArray(); // contains certificate
-                        String certificateDirPath = settings.efi_prefix;
+                        String certificateDirPath = settings.certificate_output_directory;
                         if (certificateDirPath != null) {
-                            String certificateFilePath =  certificateFilePath = certificateDirPath + DefaultCertFileName;
+                            String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultAKCertFileName);
                             try {
-                                if (!Directory.Exists(certificateDirPath)) {
-                                    Directory.CreateDirectory(certificateDirPath);
-                                }
                                 File.WriteAllBytes(certificateFilePath, certificate);
-                                Log.Debug("Certificate written to local file system: ", certificateFilePath);
+                                Log.Debug("Attestation key certificate written to local file system: {0}", certificateFilePath);
                             }
                             catch (Exception) {
-                                Log.Debug("Failed to write certificate to local file system.");
+                                Log.Debug("Failed to write attestation key certificate to local file system.");
                             }
                         }
                         Log.Debug("Printing attestation key certificate: " + BitConverter.ToString(certificate));
+                    }
+                    if (cr.HasLdevidCertificate) {
+                        certificate = cr.LdevidCertificate.ToByteArray(); // contains certificate
+                        String certificateDirPath = settings.certificate_output_directory;
+                        if (certificateDirPath != null) {
+                            String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultLDevIDCertFileName);
+                            try {
+                                File.WriteAllBytes(certificateFilePath, certificate);
+                                Log.Debug("LDevID certificate written to local file system: {0}", certificateFilePath);
+                            }
+                            catch (Exception) {
+                                Log.Debug("Failed to write LDevID certificate to local file system.");
+                            }
+                        }
+                        Log.Debug("Printing LDevID certificate: " + BitConverter.ToString(certificate));
                     }
                 } else {
                     result = ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;

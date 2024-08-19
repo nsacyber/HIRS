@@ -24,13 +24,15 @@ namespace hirs {
             linux_sys_vendor_file,
             linux_product_name_file,
             linux_product_version_file,
-            linux_product_serial_file
+            linux_product_serial_file,
+            certificate_output_directory
         }
 
         private static readonly string DEFAULT_SETTINGS_FILE = "appsettings.json";
         private static readonly string EFI_ARTIFACT_PATH_COMPAT = "/boot/tcg/";
         private static readonly string EFI_ARTIFACT_PATH = "/EFI/tcg/";
         private static readonly string EFI_ARTIFACT_LINUX_PREFIX = "/boot/efi";
+        private static readonly string DEFAULT_CERTIFICATE_OUTPUT_PATH = "/EFI/hirs";
 
         private readonly string settingsFile;
         private readonly IConfiguration configFromSettingsFile;
@@ -70,6 +72,9 @@ namespace hirs {
             get; private set;
         }
         public virtual string linux_product_serial {
+            get; private set;
+        }
+        public virtual string certificate_output_directory {
             get; private set;
         }
         private List<IHardwareManifest> hardwareManifests = new();
@@ -125,6 +130,8 @@ namespace hirs {
                 CheckAutoDetectTpm();
 
                 CheckEfiPrefix();
+
+                CheckCertificateOutputDirectory();
 
                 IngestEventLogFromFile();
 
@@ -264,6 +271,55 @@ namespace hirs {
             } else {
                 auto_detect_tpm = false;
                 Log.Debug(Options.auto_detect_tpm.ToString() + " not set in the settings file. Setting to default of false.");
+            }
+        }
+        #endregion
+
+        #region
+        private void CheckCertificateOutputDirectory() {
+            if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.certificate_output_directory.ToString()])) {
+                Log.Debug("Checking Certificate Output Directory setting.");
+                certificate_output_directory = $"{ configFromSettingsFile[Options.certificate_output_directory.ToString()] }";
+                if (!string.IsNullOrWhiteSpace(certificate_output_directory)) {
+                    // Attempt to write to Certificate Output Directory
+                    if (!Directory.Exists(certificate_output_directory)) {
+                        try {
+                            Directory.CreateDirectory(certificate_output_directory);
+                            Log.Debug("  Created directory: " + certificate_output_directory);
+                        }
+                        catch (Exception e) {
+                            Log.Debug("  Could not create directory: " + certificate_output_directory);
+                            certificate_output_directory = null;
+                        }
+                    }
+                }
+            }
+            if (certificate_output_directory == null) {
+                if (HasEfiPrefix()) {
+                    certificate_output_directory = Path.GetFullPath(Path.Join(efi_prefix, DEFAULT_CERTIFICATE_OUTPUT_PATH));
+                    Log.Debug("  Certificate Output Directory not set. Attempting to use EFI Prefix setting.");
+                    // Attempt to write to default EFI path (fallback)
+                    if (!Directory.Exists(certificate_output_directory)) {
+                        try {
+                            Directory.CreateDirectory(certificate_output_directory);
+                            Log.Debug("  Created directory: " + certificate_output_directory);
+                        }
+                        catch (Exception e) {
+                            Log.Debug("  Could not create directory: " + certificate_output_directory);
+                            certificate_output_directory = null;
+                        }
+                    }
+                }
+                if (certificate_output_directory == null) {
+                    // Use current working directory (fallback)
+                    Log.Warning(Options.certificate_output_directory.ToString() + " not set in the settings file. Defaulting to current working directory.");
+                    certificate_output_directory = "";
+                }
+                else {
+                    Log.Debug("  Will write certificates to " + certificate_output_directory);
+                }
+            } else {
+                Log.Debug("  Will write certificates to " + certificate_output_directory);
             }
         }
         #endregion

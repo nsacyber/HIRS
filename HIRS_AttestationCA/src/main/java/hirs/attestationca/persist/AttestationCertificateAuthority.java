@@ -114,7 +114,7 @@ public abstract class AttestationCertificateAuthority {
 
         this.certificateRequestHandler = new CertificateRequestProcessor(supplyChainValidationService,
                 certificateRepository, deviceRepository,
-                privateKey, acaCertificate, validDays, tpm2ProvisionerStateRepository);
+                privateKey, acaCertificate, validDays, tpm2ProvisionerStateRepository, policyRepository);
         this.identityClaimHandler = new IdentityClaimProcessor(supplyChainValidationService,
                 certificateRepository, componentResultRepository, componentInfoRepository,
                 referenceManifestRepository, referenceDigestValueRepository,

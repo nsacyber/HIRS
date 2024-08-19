@@ -169,7 +169,7 @@ public abstract class PageControllerTest {
                 return new CertificateAuthorityCredential(fPath);
             case "IssuedAttestationCertificate":
                 return new IssuedAttestationCertificate(fPath,
-                        endorsementCredential, platformCredentials);
+                        endorsementCredential, platformCredentials, false);
             default:
                 throw new IllegalArgumentException(
                         String.format("Unknown certificate class %s", certificateClass.getName())
