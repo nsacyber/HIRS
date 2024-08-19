@@ -32,6 +32,7 @@ namespace hirs {
         private static readonly string EFI_ARTIFACT_PATH_COMPAT = "/boot/tcg/";
         private static readonly string EFI_ARTIFACT_PATH = "/EFI/tcg/";
         private static readonly string EFI_ARTIFACT_LINUX_PREFIX = "/boot/efi";
+        private static readonly string DEFAULT_CERTIFICATE_OUTPUT_PATH = "/EFI/hirs";
 
         private readonly string settingsFile;
         private readonly IConfiguration configFromSettingsFile;
@@ -280,21 +281,43 @@ namespace hirs {
                 Log.Debug("Checking Certificate Output Directory setting.");
                 certificate_output_directory = $"{ configFromSettingsFile[Options.certificate_output_directory.ToString()] }";
                 if (!string.IsNullOrWhiteSpace(certificate_output_directory)) {
-                    if (HasEfiPrefix()) {
-                        certificate_output_directory = Path.GetFullPath(Path.Join(efi_prefix, certificate_output_directory));
-                        if (!Directory.Exists(certificate_output_directory)) {
-                            Log.Debug(Options.certificate_output_directory.ToString() + ": " + certificate_output_directory + " did not exist.");
+                    // Attempt to write to Certificate Output Directory
+                    if (!Directory.Exists(certificate_output_directory)) {
+                        try {
+                            Directory.CreateDirectory(certificate_output_directory);
+                            Log.Debug("  Created directory: " + certificate_output_directory);
+                        }
+                        catch (Exception e) {
+                            Log.Debug("  Could not create directory: " + certificate_output_directory);
                             certificate_output_directory = null;
                         }
-                    }
-                    else {
-                        certificate_output_directory = null;
                     }
                 }
             }
             if (certificate_output_directory == null) {
-                Log.Warning(Options.certificate_output_directory.ToString() + " not set in the settings file. Defaulting to the current working directory.");
-                certificate_output_directory = "";
+                if (HasEfiPrefix()) {
+                    certificate_output_directory = Path.GetFullPath(Path.Join(efi_prefix, DEFAULT_CERTIFICATE_OUTPUT_PATH));
+                    Log.Debug("  Certificate Output Directory not set. Attempting to use EFI Prefix setting.");
+                    // Attempt to write to default EFI path (fallback)
+                    if (!Directory.Exists(certificate_output_directory)) {
+                        try {
+                            Directory.CreateDirectory(certificate_output_directory);
+                            Log.Debug("  Created directory: " + certificate_output_directory);
+                        }
+                        catch (Exception e) {
+                            Log.Debug("  Could not create directory: " + certificate_output_directory);
+                            certificate_output_directory = null;
+                        }
+                    }
+                }
+                if (certificate_output_directory == null) {
+                    // Use current working directory (fallback)
+                    Log.Warning(Options.certificate_output_directory.ToString() + " not set in the settings file. Defaulting to current working directory.");
+                    certificate_output_directory = "";
+                }
+                else {
+                    Log.Debug("  Will write certificates to " + certificate_output_directory);
+                }
             } else {
                 Log.Debug("  Will write certificates to " + certificate_output_directory);
             }
