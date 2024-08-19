@@ -1,8 +1,0 @@
-install-provisioner/bin/ usr/share/hirs/provisioner
-install-provisioner/lib/ usr/share/hirs/provisioner
-install-provisioner/scripts/install/hirs-provisioner.sh usr/share/hirs/provisioner
-install-provisioner/scripts/hirs-provisioner-config.sh etc/hirs/provisioner
-install-provisioner/logging.properties etc/hirs/provisioner
-install-provisioner/setup/provisioner.properties etc/hirs/provisioner
-install-provisioner/setup/hirs-provisioner.properties etc/hirs/provisioner/setup
-install-provisioner/setup/tpm-module.properties etc/hirs/provisioner/setup
