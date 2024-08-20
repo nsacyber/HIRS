@@ -29,6 +29,19 @@ public abstract class DeviceSecurityEventDataDeviceContext {
     private int length = 0;
 
     /**
+     * Device Security Event Data Device Type = no device type.
+     */
+    public static final int DEVICE_TYPE_NONE = 0;
+    /**
+     * Device Security Event Data Device Type = DEVICE_TYPE_PCI.
+     */
+    public static final int DEVICE_TYPE_PCI = 1;
+    /**
+     * Device Security Event Data Device Type = DEVICE_TYPE_USB.
+     */
+    public static final int DEVICE_TYPE_USB = 2;
+
+    /**
      * DeviceSecurityEventDataDeviceContext Constructor.
      *
      * @param dsedDeviceContextBytes byte array holding the DeviceSecurityEventData.
@@ -45,17 +58,16 @@ public abstract class DeviceSecurityEventDataDeviceContext {
     }
 
     /**
-     * Returns a human readable description of the data common to device context structures.
+     * Returns a human-readable description of the data common to device context structures.
      *
-     * @return a description of this structure..
+     * @return a description of this structure.
      */
     public String toString() {
         String dSEDdeviceContextCommonInfo = "";
 
-        dSEDdeviceContextCommonInfo += "\n   DeviceSecurityEventData Device Context:";
+        dSEDdeviceContextCommonInfo += "   DeviceSecurityEventData Device Context:\n";
 
         return dSEDdeviceContextCommonInfo;
     }
-
 }
 

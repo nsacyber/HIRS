@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class SpdmHa {
 
     /**
-     * Spdm Hash Alg = Raw bit stream
+     * Spdm Hash Alg = Raw bit stream.
      */
     public static final int TPM_ALG_RAW = 1;
     /**
@@ -41,7 +41,7 @@ public class SpdmHa {
 
     /**
      * Returns the hash name via a lookup.
-     * Lookup based upon section 10.4 for the SPDM v1.03 document.
+     * Lookup based upon SPDM Spec v1.03 section 10.4.
      *
      * @param algId int to convert to string
      * @return name of the algorithm
@@ -74,5 +74,42 @@ public class SpdmHa {
                 alg = "Unknown or invalid Hash";
         }
         return alg;
+    }
+
+    /**
+     * Returns the hash value size based on the hash algorithm.
+     * Lookup based upon SPDM Spec v1.03 section 10.4.
+     *
+     * @param algId int to convert to string
+     * @return size of the algorithm output
+     */
+    public static int tcgAlgIdToByteSize(final int algId) {
+        int byteSize;
+        switch (algId) {
+            //case TPM_ALG_RAW: // add this when have more test data
+            //    byteSize = ;
+            //    break;
+            case TPM_ALG_SHA_256:
+                byteSize = 32;
+                break;
+            case TPM_ALG_SHA_384:
+                byteSize = 48;
+                break;
+            case TPM_ALG_SHA_512:
+                byteSize = 64;
+                break;
+            case TPM_ALG_SHA3_256:
+                byteSize = 32;
+                break;
+            case TPM_ALG_SHA3_384:
+                byteSize = 48;
+                break;
+            case TPM_ALG_SHA3_512:
+                byteSize = 64;
+                break;
+            default:
+                byteSize = -1;
+        }
+        return byteSize;
     }
 }

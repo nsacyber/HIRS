@@ -3,8 +3,6 @@ package hirs.utils.tpm.eventlog.events;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
-import java.io.UnsupportedEncodingException;
-
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER2.
  * DEVICE_SECURITY_EVENT_DATA_HEADER2 contains the measurement(s) and hash algorithm identifier
@@ -30,7 +28,7 @@ import java.io.UnsupportedEncodingException;
 public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
 
     /**
-     * Event auth state
+     * Event auth state.
      */
     @Getter
     private int authState = 0;
@@ -40,10 +38,12 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
     @Getter
     private int length = 0;
     /**
-     * Event sub headerType
+     * Event sub headerType.
+     * SUBHEADERTYPE_MEAS_BLOCK = 0
+     * SUBHEADERTYPE_CERT_CHAIN = 1
      */
     @Getter
-    private int subHeaderType = 0;
+    private int subHeaderType = -1;
     /**
      * Event sub header length.
      */
@@ -56,12 +56,12 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
     private String subHeaderUid = "";
 
     /**
-     * Auth state - success
+     * Auth state - success.
      */
     public static final int AUTH_SUCCESS = 0;
     /**
      * Auth state - digital signature of the data is valid, but the public key certificate chain is not
-     *              validated with the entry in in the UEFI device signature variable
+     *              validated with the entry in the UEFI device signature variable.
      */
     public static final int AUTH_NO_AUTHORITY = 1;
     /**
@@ -70,27 +70,23 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      */
     public static final int AUTH_NO_BINDING = 2;
     /**
-     * Auth state - data has no digital signature
+     * Auth state - data has no digital signature.
      */
     public static final int AUTH_FAIL_NO_SIG = 3;
     /**
-     * Auth state - data is invalid
+     * Auth state - data is invalid.
      */
     public static final int AUTH_FAIL_INVALID = 4;
     /**
-     * Auth state - device is not an SPDM-capable device
+     * Auth state - device is not an SPDM-capable device.
      */
     public static final int AUTH_NO_SPDM = 0xFF;
-    /**
-     * Sub header type - SPDM measurement block
-     */
-    public static final int SUBHEADERTYPE_MEAS_BLOCK = 0;
-    /**
-     * Sub header type - SPDM cert chain
-     */
-    public static final int SUBHEADERTYPE_CERT_CHAIN = 1;
 
-
+    /**
+     * DeviceSecurityEventDataHeader2 Constructor.
+     *
+     * @param dsedBytes byte array holding the DeviceSecurityEventData2.
+     */
     public DeviceSecurityEventDataHeader2(final byte[] dsedBytes) {
 
         super(dsedBytes);
@@ -130,15 +126,18 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      * @return a description of this structure.
      */
     public String toString() {
-        String dsedHeader2Info = "";
-
-        dsedHeader2Info += super.toString();
-        dsedHeader2Info += "\n   AuthState: " + getAuthStateString();
-        dsedHeader2Info += "\n   Sub header UID: " + subHeaderUid;
+        String dsedHeader2Info = super.toString();
+        dsedHeader2Info += "   AuthState: " + getAuthStateString() + "\n";
+        dsedHeader2Info += "   Sub header UID: " + subHeaderUid + "\n";
 
         return dsedHeader2Info;
     }
 
+    /**
+     * Returns a human-readable description of auth state based on numeric representation lookup.
+     *
+     * @return a description of the auth state.
+     */
     public String getAuthStateString() {
 
         switch (authState) {

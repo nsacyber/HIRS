@@ -98,7 +98,6 @@ public class EvEfiSpecIdEvent {
         algList = new ArrayList<>();
         byte[] signatureBytes = new byte[UefiConstants.SIZE_16];
         System.arraycopy(efiSpecId, 0, signatureBytes, 0, UefiConstants.SIZE_16);
-        signature = HexUtils.byteArrayToHexString(signatureBytes);
         signature = new String(signatureBytes, StandardCharsets.UTF_8)
                 .substring(0, UefiConstants.SIZE_15);
 

@@ -1,5 +1,9 @@
 package hirs.tcg_eventlog;
 
+import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.TCGEventLog;
+import hirs.utils.tpm.eventlog.TpmPcrEvent;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -11,10 +15,6 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-
-import hirs.utils.tpm.eventlog.TCGEventLog;
-import hirs.utils.tpm.eventlog.TpmPcrEvent;
-import hirs.utils.HexUtils;
 
 import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_CODE;
 import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;

@@ -42,11 +42,11 @@ public class UefiVariable {
     @Getter
     private String efiVarName = "";
     /**
-     * Encountered invalid UEFI Signature List
+     * Encountered invalid UEFI Signature List.
      */
     private boolean invalidSignatureListEncountered = false;
     /**
-     * Invalid UEFI Signature List
+     * Invalid UEFI Signature List.
      */
     private String invalidSignatureListStatus = "";
     /**
@@ -74,6 +74,11 @@ public class UefiVariable {
      */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
+
+    /**
+     * Human-readable description of the data within the SPDM devdc (to be updated with more test data).
+     */
+    private String spdmDevdcInfo = "";
 
     /**
      * EFIVariable constructor.
@@ -128,10 +133,16 @@ public class UefiVariable {
             case "dbx":
                 processSigList(uefiVariableData);
                 break;
-            case "devdb":   // Update when test patterns exist
-                break;      // PFP v1.06 Rev 52, Sec 3.3.4.8
+            case "devdb":
+                processSigList(uefiVariableData);
+                break;      // Update when test patterns exist
+                            // PFP v1.06 Rev 52, Sec 3.3.4.8
                             // EV_EFI_SPDM_DEVICE_POLICY: EFI_SIGNATURE_LIST
                             // EV_EFI_SPDM_DEVICE_AUTHORITY: EFI_SIGNATURE_DATA
+                            // for now, differentiate them by using devdc for ..DEVICE_AUTHORITY
+            case "devdc":
+                processSigDataX509(uefiVariableData);
+                break;
             case "Boot00":
                 bootv = new UefiBootVariable(uefiVariableData);
                 break;
@@ -173,13 +184,13 @@ public class UefiVariable {
             // the if statement is executed
             // [new event file status = list.getVendorTableFileStatus()]
             // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if((vendorTableFileStatus != FILESTATUS_NOT_ACCESSIBLE) &&
-                    (list.getVendorTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
+            if ((vendorTableFileStatus != FILESTATUS_NOT_ACCESSIBLE)
+                    && (list.getVendorTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
                         vendorTableFileStatus = list.getVendorTableFileStatus();
             }
 
 //            efiVariableSigListContents += list.toString();
-            if(!list.isSignatureTypeValid()) {
+            if (!list.isSignatureTypeValid()) {
                 invalidSignatureListEncountered = true;
                 invalidSignatureListStatus = list.toString();
                 break;
@@ -189,17 +200,63 @@ public class UefiVariable {
     }
 
     /**
+     * Method for processing the data in an EFI Signature Data, where the data is known to be an X509 cert.
+     *
+     * @param efiSigData Byte array holding the SignatureData data
+     * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
+     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
+     * @throws java.io.IOException                     If there's a problem parsing the signature data.
+     */
+    private void processSigDataX509(final byte[] efiSigData)
+            throws CertificateException, NoSuchAlgorithmException, IOException {
+
+        ByteArrayInputStream efiSigDataIS = new ByteArrayInputStream(efiSigData);
+        ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
+        spdmDevdcInfo += "";
+
+        // for now, hard-code the signature type for X509
+        // in future with more test data, update this (potentially need to look at previous SPDM event)
+        byte[] guid = HexUtils.hexStringToByteArray("A159C0A5E494A74A87B5AB155C2BF072");
+        UefiGuid signatureType = new UefiGuid(guid);
+
+        int numberOfCerts = 0;
+        boolean dataValid = true;
+        String dataInvalidStatus = "Signature data validity is undetermined yet";
+        while (efiSigDataIS.available() > 0) {
+            UefiSignatureData tmpSigData = new UefiSignatureData(efiSigDataIS, signatureType);
+            if (!tmpSigData.isValid()) {
+                dataValid = false;
+                dataInvalidStatus = tmpSigData.getStatus();
+                break;
+            }
+            sigList.add(tmpSigData);
+            numberOfCerts++;
+        }
+        spdmDevdcInfo += "   Number of X509 Certs in UEFI Signature Data = " + numberOfCerts + "\n";
+        int certCnt = 0;
+        for (int i = 0; i < sigList.size(); i++) {
+            certCnt++;
+            spdmDevdcInfo += "   Cert # " + certCnt + " of " + numberOfCerts + ": ------------------\n";
+            UefiSignatureData certData = sigList.get(i);
+            spdmDevdcInfo += certData.toString();
+        }
+        if (!dataValid) {
+            spdmDevdcInfo += "   *** Invalid UEFI Signature data encountered: " + dataInvalidStatus + "\n";
+        }
+    }
+
+    /**
      * Print out all the interesting characteristics available on this UEFI Variable.
      *
-     * @return human readable description of the UEFi variable.
+     * @return human-readable description of the UEFi variable.
      */
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
 
-        efiVariable.append("UEFI Variable Name: " + efiVarName + "\n");
-        efiVariable.append("UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
+        efiVariable.append("   UEFI Variable Name: " + efiVarName + "\n");
+        efiVariable.append("   UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
         if (efiVarName != "") {
-            efiVariable.append("UEFI Variable Contents => " + "\n");
+            efiVariable.append("   UEFI Variable Contents => " + "\n");
         }
         String tmpName = "";
         if (efiVarName.contains("Boot00")) {
@@ -216,11 +273,9 @@ public class UefiVariable {
             case "KEK":
             case "db":
             case "dbx":
-                break;
             case "devdb":           // SPDM_DEVICE_POLICY and SPDM_DEVICE_AUTHORITY
-                                    // (update when test patterns exist)
-                efiVariable.append("   EV_EFI_SPDM_DEVICE_POLICY and EV_EFI_SPDM_DEVICE_AUTHORITY: " +
-                        "To be processed once more test patterns exist");
+            case "devdc":           // for now use devdb and devdc respectively
+                                    // (update when more test patterns exist)
                 break;
             case "Boot00":
                 efiVariable.append(bootv.toString());
@@ -233,38 +288,43 @@ public class UefiVariable {
                 break;
             default:
                 if (!tmpName.isEmpty()) {
-                    efiVariable.append(String.format("Data not provided for "
+                    efiVariable.append(String.format("      Data not provided for "
                                     + "UEFI variable named %s   ", tmpName));
                 } else {
-                    efiVariable.append("Data not provided   ");
+                    efiVariable.append("      Data not provided   ");
                 }
         }
 
         // Signature List output (if there are any Signature Lists)
-        if (certSuperList.size() > 0){
+        if (certSuperList.size() > 0) {
             efiVariable.append("Number of UEFI Signature Lists = " + certSuperList.size() + "\n");
+            int certSuperListCnt = 1;
+            for (UefiSignatureList uefiSigList : certSuperList) {
+                efiVariable.append("UEFI Signature List # " + certSuperListCnt++ + " of "
+                        + certSuperList.size() + ": ------------------\n");
+                efiVariable.append(uefiSigList.toString());
+            }
         }
-        int certSuperListCnt = 1;
-        for (UefiSignatureList uefiSigList : certSuperList) {
-            efiVariable.append("UEFI Signature List # " + certSuperListCnt++ + " of " +
-                    certSuperList.size() + ":\n");
-            efiVariable.append(uefiSigList.toString());
-        }
-        if(invalidSignatureListEncountered) {
+        if (invalidSignatureListEncountered) {
             efiVariable.append(invalidSignatureListStatus);
-            efiVariable.append("*** Encountered invalid Signature Type - " +
-                    "Stopped processing of this event data\n");
+            efiVariable.append("*** Encountered invalid Signature Type - "
+                    + "Stopped processing of this event data\n");
+        }
+
+        // Signature Data output (if there is a Signature Data)
+        if (!spdmDevdcInfo.isEmpty()) {
+            efiVariable.append(spdmDevdcInfo);
         }
 
         return efiVariable.toString();
     }
 
     /**
-     * Retrieves human readable description from a Certificate.
+     * Retrieves human-readable description from a Certificate.
      *
      * @param data   byte[] holding the certificate.
      * @param offset offset to start of the certificate within the byte array.
-     * @return human readable description of a certificate.
+     * @return human-readable description of a certificate.
      */
     public String printCert(final byte[] data, final int offset) {
         String certInfo = "";

@@ -2,9 +2,6 @@ package hirs.utils.tpm.eventlog.events;
 
 import lombok.Getter;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
 /**
  * Class to process DEVICE_SECURITY_EVENT_DATA.
  * Parses event data per PFP v1.06 Rev52 Table 20.
@@ -24,21 +21,35 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
     private DeviceSecurityEventDataHeader dsedHeader = null;
 
     /**
+     * Human-readable description of the data within the
+     * DEVICE_SECURITY_EVENT_DATA_HEADER.
+     */
+    @Getter
+    private String headerInfo = "";
+
+    /**
      * DeviceSecurityEventData Constructor.
      *
      * @param dsedBytes byte array holding the DeviceSecurityEventData.
      */
     public DeviceSecurityEventData(final byte[] dsedBytes) {
-        dsedHeader = new DeviceSecurityEventDataHeader(dsedBytes);
-        setDeviceType(dsedHeader.getDeviceType());
-        int dsedHeaderLength = dsedHeader.getDsedHeaderLength();
 
-        int dsedDevContextLength = dsedBytes.length - dsedHeaderLength;
-        byte[] dsedDevContextBytes = new byte[dsedDevContextLength];
-        System.arraycopy(dsedBytes, dsedHeaderLength, dsedDevContextBytes, 0,
-                dsedDevContextLength);
+        if (dsedBytes.length == 0) {
+            headerInfo = "   DeviceSecurityEventData object is empty";
+        } else {
+            dsedHeader = new DeviceSecurityEventDataHeader(dsedBytes);
+            headerInfo = dsedHeader.toString();
 
-        instantiateDeviceContext(dsedDevContextBytes);
+            setDeviceType(dsedHeader.getDeviceType());
+            int dsedHeaderLength = dsedHeader.getDsedHeaderLength();
+
+            int dsedDevContextLength = dsedBytes.length - dsedHeaderLength;
+            byte[] dsedDevContextBytes = new byte[dsedDevContextLength];
+            System.arraycopy(dsedBytes, dsedHeaderLength, dsedDevContextBytes, 0,
+                    dsedDevContextLength);
+
+            instantiateDeviceContext(dsedDevContextBytes);
+        }
     }
 
     /**
@@ -47,8 +58,7 @@ public class DeviceSecurityEventData extends DeviceSecurityEvent {
      * @return a description of this structure.
      */
     public String toString() {
-        String dsedInfo = "";
-        dsedInfo += dsedHeader.toString();
+        String dsedInfo = headerInfo;
         dsedInfo += getDeviceContextInfo();
         return dsedInfo;
     }

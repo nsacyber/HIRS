@@ -1,5 +1,6 @@
 package hirs.utils.tpm.eventlog.events;
 
+import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
@@ -7,12 +8,15 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Class to process the EV_NO_ACTION event using a structure of TCG_EfiSpecIDEvent.
+ * Class to process the EV_NO_ACTION event.
  * The first 16 bytes of the event data MUST be a String based identifier (Signature).
- * The only currently defined Signature is "Spec ID Event03"
- * which implies the data is a TCG_EfiSpecIDEvent.
- * TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
- * if the format of the Log (SHA1 vs Crypto Agile).
+ * The only currently defined Signatures are
+ * 1) "Spec ID Event03"
+ *      - implies the data is a TCG_EfiSpecIDEvent
+ *      - TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
+ *        if the format of the Log (SHA1 vs Crypto Agile).
+ * 2) "NvIndexInstance"
+ *      - implies the data is a NV_INDEX_INSTANCE_EVENT_LOG_DATA
  * <p>
  * Notes:
  * 1. First 16 bytes of the structure is an ASCII with a fixed Length of 16
@@ -29,10 +33,21 @@ public class EvNoAction {
      */
     private boolean bSpecIDEvent = false;
     /**
-     * EvEfiSpecIdEvent Object.
+     * TCG Event Log spec version.
      */
     @Getter
-    private EvEfiSpecIdEvent specIDEvent = null;
+    private String specVersion = "Unknown";
+    /**
+     * TCG Event Log errata version.
+     */
+    @Getter
+    private String specErrataVersion = "Unknown";
+
+    /**
+     * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
+     */
+    @Getter
+    private String noActionInfo = "";
 
     /**
      * EvNoAction constructor.
@@ -46,8 +61,23 @@ public class EvNoAction {
         signature = new String(signatureBytes, StandardCharsets.UTF_8);
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
         if (signature.contains("Spec ID Event03")) {      // implies CryptAgileFormat
-            specIDEvent = new EvEfiSpecIdEvent(eventData);
+            EvEfiSpecIdEvent specIDEvent = new EvEfiSpecIdEvent(eventData);
+            noActionInfo += specIDEventToString(specIDEvent).toString();
             bSpecIDEvent = true;
+            specVersion = String.format("%s.%s",
+                    specIDEvent.getVersionMajor(),
+                    specIDEvent.getVersionMinor());
+            specErrataVersion = specIDEvent.getErrata();
+        } else if (signature.contains("StartupLocality")) {
+            noActionInfo += "   Signature = StartupLocality";
+            noActionInfo += "\n   StartupLocality = " + getLocality(eventData);
+        } else if (signature.contains("NvIndexInstance")) {
+            NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
+            noActionInfo += nvIndexInstanceEvent.toString();
+        } else {
+                noActionInfo = "EV_NO_ACTION event named " + signature
+                        + " encountered but support for processing it has not been"
+                        + " added to this application.\n";
         }
     }
 
@@ -61,26 +91,61 @@ public class EvNoAction {
     }
 
     /**
+     * Returns a human-readable description of a SpecId event.
+     *
+     * @param specIDEvent byte array holding the event.
+     * @return a description of the event.
+     */
+    public String specIDEventToString(final EvEfiSpecIdEvent specIDEvent) {
+
+        String specIdInfo = "";
+        specIdInfo += "   Signature = Spec ID Event03 : ";
+        if (specIDEvent.isCryptoAgile()) {
+            specIdInfo += "Log format is Crypto Agile\n";
+        } else {
+            specIdInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
+        }
+        specIdInfo += "   Platform Profile Specification version = "
+                + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
+                + " using errata version " + specIDEvent.getErrata();
+
+        return specIdInfo;
+    }
+
+    /**
+     * Returns a human-readable description of locality based on numeric representation lookup.
+     *
+     * @param eventData byte array holding the event from which to grab locality
+     * @return a description of the locality.
+     */
+    private String getLocality(final byte[] eventData) {
+        String localityInfo = "";
+        byte[] localityBytes = new byte[1];
+        System.arraycopy(eventData, 16, localityBytes, 0, 1);
+        int locality = HexUtils.leReverseInt(localityBytes);
+
+        switch (locality) {
+            case 0:
+                localityInfo += "Locality 0 without an H-CRTM sequence";
+                break;
+            case 3:
+                localityInfo += "Locality 3 without an H-CRTM sequence";
+                break;
+            case 4:
+                localityInfo += "Locality 4 with an H-CRTM sequence initialized";
+                break;
+            default:
+                localityInfo += "Unknown";
+        }
+        return localityInfo;
+    }
+
+    /**
      * Returns a description of this event.
      *
-     * @return Human readable description of this event.
+     * @return Human-readable description of this event.
      */
     public String toString() {
-        String specInfo = "";
-        if (bSpecIDEvent) {
-            specInfo += "   Signature = Spec ID Event03 : ";
-            if (specIDEvent.isCryptoAgile()) {
-                specInfo += "Log format is Crypto Agile\n";
-            } else {
-                specInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
-            }
-            specInfo += "   Platform Profile Specification version = "
-                    + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
-                    + " using errata version " + specIDEvent.getErrata();
-        } else {
-            specInfo = "EV_NO_ACTION event named " + signature
-                    + " encountered but support for processing it has not been added to this application.\n";
-        }
-        return specInfo;
+        return noActionInfo;
     }
 }

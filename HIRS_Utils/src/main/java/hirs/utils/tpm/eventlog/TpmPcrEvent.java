@@ -6,7 +6,6 @@ import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.events.EvEfiGptPartition;
 import hirs.utils.tpm.eventlog.events.EvEfiHandoffTable;
 import hirs.utils.tpm.eventlog.events.EvEfiSpdmDeviceSecurityEvent;
-import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvEventTag;
 import hirs.utils.tpm.eventlog.events.EvIPL;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
@@ -113,7 +112,6 @@ public class TpmPcrEvent {
      * Event hash for Crypto Agile events.
      */
     private byte[] eventDataSha256hash;
-    private EvPostCode evPostCode;
     @Setter @Getter
     private int eventNumber;
     @Setter @Getter
@@ -232,7 +230,7 @@ public class TpmPcrEvent {
      */
     protected void setEventContent(final byte[] eventData) {
         eventContent = new byte[eventData.length];
-        evPostCode = new EvPostCode(eventContent);
+        //EvPostCode evPostCode = new EvPostCode(eventContent);
         System.arraycopy(eventData, 0, eventContent, 0, eventData.length);
     }
 
@@ -268,12 +266,8 @@ public class TpmPcrEvent {
                     noAction = new EvNoAction(eventContent);
                     sb.append(noAction.toString());
                     if (noAction.isSpecIDEvent()) {
-                        // this should be in the constructor
-                        EvEfiSpecIdEvent specID = noAction.getSpecIDEvent();
-                        specVersion = String.format("%s.%s",
-                                specID.getVersionMajor(),
-                                specID.getVersionMinor());
-                        specErrataVersion = specID.getErrata();
+                        specVersion = noAction.getSpecVersion();
+                        specErrataVersion = noAction.getSpecErrataVersion();
                     }
                 } catch (UnsupportedEncodingException ueEx) {
                     log.error(ueEx);
@@ -324,23 +318,6 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_EVENT_BASE:
                 break;
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-                UefiVariable efiVar = null;
-                try {
-                    efiVar = new UefiVariable(eventContent);
-                    String efiVarDescription = efiVar.toString().replace("\n", "\n   ");
-                    sb.append(efiVarDescription.substring(0,
-                            efiVarDescription.length() - INDENT_3));
-                } catch (CertificateException cEx) {
-                    log.error(cEx);
-                    sb.append(cEx.toString());
-                } catch (NoSuchAlgorithmException noSaEx) {
-                    log.error(noSaEx);
-                    sb.append(noSaEx.toString());
-                } catch (IOException ioEx) {
-                    log.error(ioEx);
-                    sb.append(ioEx.toString());
-                }
-                break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
@@ -458,9 +435,8 @@ public class TpmPcrEvent {
                 EvNoAction noAction = new EvNoAction(content);
                 description += "Event Content:\n" + noAction.toString();
                 if (noAction.isSpecIDEvent()) {
-                    EvEfiSpecIdEvent specID = noAction.getSpecIDEvent();
-                    specVersion = specID.getVersionMajor() + "." + specID.getVersionMinor();
-                    specErrataVersion = specID.getErrata();
+                    specVersion = noAction.getSpecVersion();
+                    specErrataVersion = noAction.getSpecErrataVersion();
                 }
                 break;
             case EvConstants.EV_SEPARATOR:
@@ -514,27 +490,18 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_EVENT_BASE:
                 break;
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-                UefiVariable efiVar = new UefiVariable(content);
-                String efiVarDescription = efiVar.toString().replace("\n", "\n   ");
-                description += "Event Content:\n   " + efiVarDescription.substring(0,
-                        efiVarDescription.length() - INDENT_3);
-                vendorTableFileStatus = efiVar.getVendorTableFileStatus();
-                break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
-                UefiVariable efiVar2 = new UefiVariable(content);
-                description += "Event Content:\n" + efiVar2.toString();
-                vendorTableFileStatus = efiVar2.getVendorTableFileStatus();
+                UefiVariable efiVar = new UefiVariable(content);
+                description += "Event Content:\n" + efiVar.toString();
+                vendorTableFileStatus = efiVar.getVendorTableFileStatus();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
+            case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER:
                 EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(content);
                 description += "Event Content:\n" + bootServices.toString();
-                break;
-            case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER: // same as EV_EFI_BOOT_SERVICES_APP
-                EvEfiBootServicesApp bootDriver = new EvEfiBootServicesApp(content);
-                description += "Event Content:\n" + bootDriver.toString();
                 break;
             case EvConstants.EV_EFI_RUNTIME_SERVICES_DRIVER:
                 break;
@@ -555,10 +522,6 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
-                EvEfiSpdmDeviceSecurityEvent tempp = new EvEfiSpdmDeviceSecurityEvent(content);
-                description += "Event Content:\n" + tempp.toString();
-//                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
-                break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
                 description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
                 break;

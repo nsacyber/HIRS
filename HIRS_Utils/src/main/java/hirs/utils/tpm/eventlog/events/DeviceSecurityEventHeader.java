@@ -5,7 +5,6 @@ import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiDevicePath;
 import lombok.Getter;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -64,8 +63,8 @@ public abstract class DeviceSecurityEventHeader {
     @Getter
     private String signature = "";
     /**
-     * Version determines data structure used (..DATA or ..DATA2),
-     * which determines whether ..HEADER or ..HEADER2 is used
+     * Version determines data structure used (..DATA or ..DATA2).
+     * This determines whether ..HEADER or ..HEADER2 is used.
      */
     @Getter
     private String version = "";
@@ -84,34 +83,9 @@ public abstract class DeviceSecurityEventHeader {
      */
     @Getter
     private UefiDevicePath devicePath = null;
-    /**
-     * Is the Device Path Valid.
-     */
-    private boolean devicePathValid = false;
 
     /**
-     * Device Security Event Data Device Type = no device type.
-     */
-    public static final int DEVICE_TYPE_NONE = 0;
-    /**
-     * Device Security Event Data Device Type = DEVICE_TYPE_PCI.
-     */
-    public static final int DEVICE_TYPE_PCI = 1;
-    /**
-     * Device Security Event Data Device Type = DEVICE_TYPE_USB.
-     */
-    public static final int DEVICE_TYPE_USB = 2;
-
-
-    /**
-     * DeviceSecurityEventDataHeaderBase Default Constructor.
-     */
-    public DeviceSecurityEventHeader() {
-
-    }
-
-    /**
-     * DeviceSecurityEventDataHeaderBase Constructor.
+     * DeviceSecurityEventDataHeader Constructor.
      *
      * @param dSEDbytes byte array holding the DeviceSecurityEventData.
      */
@@ -126,7 +100,6 @@ public abstract class DeviceSecurityEventHeader {
         System.arraycopy(dSEDbytes, UefiConstants.OFFSET_16, versionBytes, 0,
                 UefiConstants.SIZE_2);
         version = HexUtils.byteArrayToHexString(versionBytes);
-
     }
 
     /**
@@ -135,7 +108,7 @@ public abstract class DeviceSecurityEventHeader {
      * @param dsedBytes byte array holding the DeviceSecurityEventData/Data2.
      * @param startByte starting byte of device type (depends on header fields before it).
      */
-    public void extractDeviceType(final byte[] dsedBytes, int startByte) {
+    public void extractDeviceType(final byte[] dsedBytes, final int startByte) {
 
         // get the device type ID
         byte[] deviceTypeBytes = new byte[UefiConstants.SIZE_4];
@@ -151,31 +124,26 @@ public abstract class DeviceSecurityEventHeader {
      * @param dsedBytes byte array holding the DeviceSecurityEventData/Data2.
      * @param startByte starting byte of device path (depends on header fields before it).
      */
-    public void extractDevicePathAndFinalSize(final byte[] dsedBytes, int startByte) {
+    public void extractDevicePathAndFinalSize(final byte[] dsedBytes, final int startByte) {
+
+        int startByteUpdated = startByte;
 
         // get the device path length
-        byte[] devicePathLengthBytes = new byte[UefiConstants.SIZE_8];
-        System.arraycopy(dsedBytes, startByte, devicePathLengthBytes, 0,
-                UefiConstants.SIZE_8);
+        byte[] devicePathLengthBytes = new byte[8];
+        System.arraycopy(dsedBytes, startByteUpdated, devicePathLengthBytes, 0, 8);
         int devicePathLength = HexUtils.leReverseInt(devicePathLengthBytes);
 
         // get the device path
-        if (devicePathLength != 0) {
-            startByte = startByte + UefiConstants.SIZE_8;
+        if (devicePathLength > 0) {
+            startByteUpdated = startByteUpdated + 8;
             byte[] devPathBytes = new byte[devicePathLength];
-            System.arraycopy(dsedBytes, startByte, devPathBytes,
+            System.arraycopy(dsedBytes, startByteUpdated, devPathBytes,
                     0, devicePathLength);
-            try {
-                devicePath = new UefiDevicePath(devPathBytes);
-                devicePathValid = true;
-            }
-            catch (UnsupportedEncodingException e) {
-                devicePathValid = false;
-            }
+            devicePath = new UefiDevicePath(devPathBytes);
         }
 
         // header total size
-        dsedHeaderLength = startByte + devicePathLength;
+        dsedHeaderLength = startByteUpdated + devicePathLength;
     }
 
     /**
@@ -187,11 +155,11 @@ public abstract class DeviceSecurityEventHeader {
      */
     public String deviceTypeToString(final int deviceTypeInt) {
         switch (deviceTypeInt) {
-            case DEVICE_TYPE_NONE:
+            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE:
                 return "No device type";
-            case DEVICE_TYPE_PCI:
+            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI:
                 return "PCI";
-            case DEVICE_TYPE_USB:
+            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB:
                 return "USB";
             default:
                 return "Unknown or invalid Device Type";
@@ -206,13 +174,12 @@ public abstract class DeviceSecurityEventHeader {
     public String toString() {
         String dsedHeaderCommonInfo = "";
 
-        dsedHeaderCommonInfo += "\n   SPDM Device Type = " + deviceTypeToString(deviceType);
-        if (devicePathValid) {
-            dsedHeaderCommonInfo += "\n   SPDM Device Path:\n";
+        dsedHeaderCommonInfo += "   SPDM Device Type = " + deviceTypeToString(deviceType) + "\n";
+        if (devicePath != null) {
+            dsedHeaderCommonInfo += "   SPDM Device Path:\n";
             dsedHeaderCommonInfo += devicePath;
-        }
-        else {
-            dsedHeaderCommonInfo += "\n   SPDM Device Path = Unknown or invalid";
+        } else {
+            dsedHeaderCommonInfo += "   SPDM Device Path = Unknown or invalid\n";
         }
 
         return dsedHeaderCommonInfo;

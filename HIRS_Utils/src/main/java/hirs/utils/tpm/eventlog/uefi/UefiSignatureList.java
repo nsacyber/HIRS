@@ -12,12 +12,18 @@ import java.util.ArrayList;
 import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
 /**
- * Class for processing the contents of a Secure Boot DB or DBX contents.
- * used for EFIVariables associated with Secure Boot
- * as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification.
+ * Class for processing either
+ *   1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
+ *      used for EFIVariables associated with Secure Boot,
+ *      as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
+ *   2) the contents of an SPDM devdb,
+ *      used for SPDM Device Policy, whose data is an EFIVariable
+ *      as defined by PFP v1.06 Rev52, Section 10.4
  * <p>
- * An EFI Signature List is actual a list of Certificates used to verify a Signature.
- * This is mainly found in PCR[7] UEFI variables for the Secure Boot PK, KEK, Db and DBx variables.
+ * An EFI Signature List is actually a list of Certificates used to verify a Signature.
+ * This is mainly found in PCR[7] UEFI variables for either the
+ *      Secure Boot PK, KEK, Db and DBx variables
+ *      or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY).
  * <p>
  * typedef struct _EFI_SIGNATURE_LIST {
  * EFI_GUID            SignatureType;
@@ -27,6 +33,35 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIB
  * // UINT8               SignatureHeader[SignatureHeaderSize];
  * // EFI_SIGNATURE_DATA  Signatures[...][SignatureSize];
  * } EFI_SIGNATURE_LIST;
+ *
+ * SignatureListHeader (contents common to any Signature Type)
+ *      - SignatureType
+ *      - SignatureListSize
+ *      - SignatureHeaderSize
+ *      - SignatureSize
+ * SignatureHeader (contents depend on the SignatureType)
+ *      - The format of this header is specified by the SignatureType (SHA256, X509).
+ * Signatures[][] is an array of signatures.
+ *      - Each signature is SignatureSize bytes in length.
+ *      - The format of the signature is defined by SignatureType (SHA256, X509).
+ *
+ *                               / |-------------------------| ------- SignatureType
+ *                              /  | Signature List Header   |         SignatureListSize
+ * |---------------------|     /   |-------------------------|\        SignatureHeaderSize
+ * | Signature List #0   |    /    |    Signature Header     | \ _____ SignatureSize
+ * |                     |   /     |-------------------------|
+ * |---------------------|  /      |      Signature #0       |
+ * | Signature List #1   | /       |-------------------------|
+ * |---------------------|/        |      Signature #1       |  --> each Signature is
+ * | Signature List #2   |         |-------------------------|      1 UefiSignatureData
+ * |                     |         |      Signature #2       |      (1 cert or hash)
+ * |                     |         |-------------------------|
+ * |---------------------|         |           ...           |
+ *                         \       |                         |
+ *                           \     |-------------------------|
+ *                             \   |      Signature #n       |
+ *                               \ |-------------------------|
+ *
  */
 public class UefiSignatureList {
     /**
@@ -58,7 +93,7 @@ public class UefiSignatureList {
     /**
      * Current status of Signature List data.
      */
-    private String dataStatus = "Signature List data validity is undetermined yet";
+    private String dataInvalidStatus = "Signature List data validity is undetermined yet";
     /**
      * Array List of Signature found in the list.
      */
@@ -72,42 +107,42 @@ public class UefiSignatureList {
      */
     private UefiGuid signatureType = null;
     /**
-     * Track status of vendor-table.json
+     * Track status of vendor-table.json.
      */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
 
-    /**
-     * UefiSignatureList constructor.
-     *
-     * @param list byte array holding the signature list.
-     * @throws java.security.cert.CertificateException If there a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
-     * @throws java.io.IOException                     If there's a problem parsing the signature data.
-     */
-    UefiSignatureList(final byte[] list)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
-
-        byte[] guid = new byte[UefiConstants.SIZE_16];
-        System.arraycopy(list, 0, guid, 0, UefiConstants.SIZE_16);
-        signatureType = new UefiGuid(guid);
-        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
-
-        byte[] lSize = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(list, UefiConstants.OFFSET_16, lSize, 0, UefiConstants.SIZE_4);
-        listSize = HexUtils.leReverseInt(lSize);
-
-        byte[] hSize = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(list, UefiConstants.OFFSET_20, hSize, 0, UefiConstants.SIZE_4);
-
-        byte[] sSize = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(list, UefiConstants.OFFSET_24, sSize, 0, UefiConstants.SIZE_4);
-        signatureSize = HexUtils.leReverseInt(sSize);
-
-        sigData = new byte[signatureSize];
-        System.arraycopy(list, UefiConstants.OFFSET_28, sigData, 0, signatureSize);
-        processSignatureList(sigData);
-    }
+//    /**
+//     * UefiSignatureList constructor.
+//     *
+//     * @param list byte array holding the signature list.
+//     * @throws java.security.cert.CertificateException If there a problem parsing the X509 certificate.
+//     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
+//     * @throws java.io.IOException                     If there's a problem parsing the signature data.
+//     */
+//    UefiSignatureList(final byte[] list)
+//            throws CertificateException, NoSuchAlgorithmException, IOException {
+//
+//        byte[] guid = new byte[UefiConstants.SIZE_16];
+//        System.arraycopy(list, 0, guid, 0, UefiConstants.SIZE_16);
+//        signatureType = new UefiGuid(guid);
+//        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
+//
+//        byte[] lSize = new byte[UefiConstants.SIZE_4];
+//        System.arraycopy(list, UefiConstants.OFFSET_16, lSize, 0, UefiConstants.SIZE_4);
+//        listSize = HexUtils.leReverseInt(lSize);
+//
+//        byte[] hSize = new byte[UefiConstants.SIZE_4];
+//        System.arraycopy(list, UefiConstants.OFFSET_20, hSize, 0, UefiConstants.SIZE_4);
+//
+//        byte[] sSize = new byte[UefiConstants.SIZE_4];
+//        System.arraycopy(list, UefiConstants.OFFSET_24, sSize, 0, UefiConstants.SIZE_4);
+//        signatureSize = HexUtils.leReverseInt(sSize);
+//
+//        sigData = new byte[signatureSize];
+//        System.arraycopy(list, UefiConstants.OFFSET_28, sigData, 0, signatureSize);
+//        processSignatureList(sigData);
+//    }
 
     /**
      * EFI Signature list constructor.
@@ -125,10 +160,9 @@ public class UefiSignatureList {
         vendorTableFileStatus = signatureType.getVendorTableFileStatus();
 
         // if signatureType is invalid, don't even process any of the data
-        // however, if signatureTYpe is valid, but some of the data later on is invalid, that will
+        // however, if signatureType is valid, but some of the data later on is invalid, that will
         // be caught when UefiSignatureData is processed
         if (!isValidSigListGUID(signatureType)) {
-            //processSignatureData(lists);
             signatureTypeValid = false;
         } else { // valid SigData Processing
             signatureTypeValid = true;
@@ -164,32 +198,10 @@ public class UefiSignatureList {
             UefiSignatureData tmpSigData = new UefiSignatureData(efiSigDataIS, signatureType);
             if (!tmpSigData.isValid()) {
                 dataValid = false;
-                dataStatus = tmpSigData.getStatus();
+                dataInvalidStatus = tmpSigData.getStatus();
                 break;
             }
             sigList.add(tmpSigData);
-            numberOfCerts++;
-        }
-    }
-
-    /**
-     * Method for processing a set of EFI SignatureList(s).
-     *
-     * @param sigDataIS Byte array holding one or more SignatureLists.
-     * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
-     * @throws java.io.IOException                     If there's a problem parsing the signature data.
-     */
-    private void processSignatureData(final ByteArrayInputStream sigDataIS)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
-        while (sigDataIS.available() > 0) {
-            UefiSignatureData tmpigData = new UefiSignatureData(sigDataIS, signatureType);
-            if (!tmpigData.isValid()) {
-                dataValid = false;
-                dataStatus = tmpigData.getStatus();
-                break;
-            }
-            sigList.add(tmpigData);
             numberOfCerts++;
         }
     }
@@ -223,19 +235,21 @@ public class UefiSignatureList {
         StringBuilder sigInfo = new StringBuilder();
 
         if (!signatureTypeValid) {
-            sigInfo.append("   *** Unknown UEFI Signature Type encountered:\n" +
-                    "       " + signatureType.toString() + "\n");
-        }
-        else {
+            sigInfo.append("   *** Unknown UEFI Signature Type encountered:\n"
+                    + "       " + signatureType.toString() + "\n");
+        } else {
             sigInfo.append("   UEFI Signature List Type = " + signatureType.toString() + "\n");
             sigInfo.append("   Number of Certs or Hashes in UEFI Signature List = " + numberOfCerts + "\n");
 
+            int certOrHashCnt = 1;
             for (int i = 0; i < sigList.size(); i++) {
+                sigInfo.append("   Cert or Hash # " + certOrHashCnt++ + " of "
+                        + numberOfCerts + ": ------------------\n");
                 UefiSignatureData certData = sigList.get(i);
                 sigInfo.append(certData.toString());
             }
             if (!dataValid) {
-                sigInfo.append("   *** Invalid UEFI Signature data encountered: " + dataStatus + "\n");
+                sigInfo.append("   *** Invalid UEFI Signature data encountered: " + dataInvalidStatus + "\n");
             }
         }
         return sigInfo.toString();

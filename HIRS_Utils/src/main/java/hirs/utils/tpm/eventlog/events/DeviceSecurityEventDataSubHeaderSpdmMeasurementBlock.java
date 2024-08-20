@@ -22,6 +22,14 @@ import java.util.List;
  *      SPDM_MEASUREMENT_BLOCK  SpdmMeasurementBlock[SpdmMeasurementBlockCount];
  * } DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK;
  * <p>
+ *
+ * SpdmMeasurementBlock is an array of SPDM_MEASUREMENT_BLOCKs
+ *     The size of each block is the same and can be found by either:
+ *         1) 4 + SpdmMeasurementBlock MeasurementSize
+ *         OR
+ *         2) 4 + hash length of the hash algorithm found in
+ *                DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK SpdmMeasurementHashAlgo
+ *         where 4 is the size of the SpdmMeasurementBlock header
  */
 public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends DeviceSecurityEventDataSubHeader {
 
@@ -45,9 +53,13 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
      * List of SPDM Measurement Blocks.
      */
     private List<SpdmMeasurementBlock> spdmMeasurementBlockList;
+    /**
+     * Error reading SPDM Measurement Block.
+     */
+    private boolean spdmMeasurementBlockReadError = false;
 
     /**
-     * DeviceSecurityEventDataHeader Constructor.
+     * DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock Constructor.
      *
      * @param dsedSubHBytes byte array holding the DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock.
      */
@@ -69,7 +81,7 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
         System.arraycopy(dsedSubHBytes, 4, spdmMeasurementHashAlgoBytes, 0, 4);
         spdmMeasurementHashAlgo = HexUtils.leReverseInt(spdmMeasurementHashAlgoBytes);
 
-        // get the size of the SPDM Measurement Block List
+        // get the total size of the SPDM Measurement Block List
         int spdmMeasurementBlockListSize = dsedSubHBytes.length - 8;
 
         // extract the bytes that comprise the SPDM Measurement Block List
@@ -80,9 +92,14 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
         ByteArrayInputStream spdmMeasurementBlockListData =
                 new ByteArrayInputStream(spdmMeasurementBlockListBytes);
         while (spdmMeasurementBlockListData.available() > 0) {
-            SpdmMeasurementBlock spdmMeasurementBlock;
-            spdmMeasurementBlock = new SpdmMeasurementBlock(spdmMeasurementBlockListData);
-            spdmMeasurementBlockList.add(spdmMeasurementBlock);
+            try {
+                SpdmMeasurementBlock spdmMeasurementBlock =
+                        new SpdmMeasurementBlock(spdmMeasurementBlockListData);
+                spdmMeasurementBlockList.add(spdmMeasurementBlock);
+            } catch (IOException e) {
+                spdmMeasurementBlockReadError = true;
+                break;
+            }
         }
     }
 
@@ -93,17 +110,22 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
      */
     public String toString() {
         String dsedSubHeaderInfo = "";
-        dsedSubHeaderInfo += "\n   SPDM Version: " + spdmVersion;
+        dsedSubHeaderInfo += "   SPDM Version = " + spdmVersion + "\n";
         String spdmHashAlgoStr = SpdmHa.tcgAlgIdToString(spdmMeasurementHashAlgo);
-        dsedSubHeaderInfo += "\n   SPDM Hash Algorithm = " + spdmHashAlgoStr;
+        dsedSubHeaderInfo += "   SPDM Hash Algorithm = " + spdmHashAlgoStr + "\n";
 
         // SPDM Measurement Block List output
-        dsedSubHeaderInfo += "\n   Number of SPDM Measurement Blocks = " + spdmMeasurementBlockList.size();
+        dsedSubHeaderInfo += "   Number of SPDM Measurement Blocks = "
+                + spdmMeasurementBlockList.size() + "\n";
         int spdmMeasBlockCnt = 1;
         for (SpdmMeasurementBlock spdmMeasBlock : spdmMeasurementBlockList) {
-            dsedSubHeaderInfo += "\n   SPDM Measurement Block # " + spdmMeasBlockCnt++ + " of " +
-                    spdmMeasurementBlockList.size();
+            dsedSubHeaderInfo += "   SPDM Measurement Block # " + spdmMeasBlockCnt++ + " of "
+                    + spdmMeasurementBlockList.size() + "\n";
             dsedSubHeaderInfo += spdmMeasBlock.toString();
+        }
+        if (spdmMeasurementBlockReadError) {
+            dsedSubHeaderInfo += "      Error reading SPDM Measurement Block #"
+                    + spdmMeasBlockCnt + ", halting processing\n";
         }
 
         return dsedSubHeaderInfo;
