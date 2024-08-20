@@ -2,8 +2,8 @@ package hirs.utils;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+//import lombok.AccessLevel;
+//import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.FileInputStream;
@@ -20,7 +20,7 @@ import java.nio.file.Path;
  * library.
  */
 @Log4j2
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+//@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JsonUtils {
 
     /**

@@ -1,14 +1,14 @@
 package hirs.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+//import lombok.AccessLevel;
+//import lombok.NoArgsConstructor;
 
 import java.math.BigInteger;
 
 /**
  * Utilities for working with hex strings and byte arrays.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+//@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class HexUtils {
 
     /**
