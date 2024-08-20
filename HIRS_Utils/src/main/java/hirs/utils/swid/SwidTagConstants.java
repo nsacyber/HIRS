@@ -3,13 +3,17 @@ package hirs.utils.swid;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
-
 /**
  * This class contains the String constants that are referenced by the gateway
  * class. It is expected that member properties of this class will expand as
  * more functionality is added to SwidTagGateway.
  */
 public class SwidTagConstants {
+
+    /**
+     * Default private constructor so checkstyles doesn't complain
+     */
+    private SwidTagConstants() { }
 
     public static final String DEFAULT_KEYSTORE_FILE = "keystore.jks";//"/opt/hirs/rimtool/keystore.jks";
     public static final String DEFAULT_KEYSTORE_PASSWORD = "password";

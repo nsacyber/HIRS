@@ -7,6 +7,11 @@ package hirs.utils.tpm.eventlog.spdm;
 public class SpdmHa {
 
     /**
+     * Default private constructor so checkstyles doesn't complain
+     */
+    private SpdmHa() { }
+
+    /**
      * Spdm Hash Alg = Raw bit stream.
      */
     public static final int TPM_ALG_RAW = 1;

@@ -1,6 +1,12 @@
 package hirs.utils.enums;
 
 public final class DeviceInfoEnums {
+
+    /**
+     * Default private constructor so checkstyles doesn't complain
+     */
+    private DeviceInfoEnums() { }
+
     /**
      * A variable used to describe unavailable hardware, firmware, or OS info.
      */

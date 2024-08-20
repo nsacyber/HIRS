@@ -26,6 +26,11 @@ import java.util.List;
 public final class PciIds {
 
     /**
+     * Default private constructor so checkstyles doesn't complain
+     */
+    private PciIds() { }
+
+    /**
      * This pci ids file can be in different places on different distributions.
      */
     public static final List<String> PCI_IDS_PATH =
