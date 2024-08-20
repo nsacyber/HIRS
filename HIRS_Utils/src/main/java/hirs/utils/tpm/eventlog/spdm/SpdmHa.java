@@ -1,13 +1,9 @@
 package hirs.utils.tpm.eventlog.spdm;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
 /**
  * Class for defining hash algorithms referenced in the DMTF SPDM specification.
  * SPDM 1.3.0, Table 21, MeasurementHashAlgo.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SpdmHa {
 
     /**

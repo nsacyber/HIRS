@@ -34,7 +34,7 @@ public class NvIndexDynamicEventLogData {
     /**
      * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
-    String nvIndexDynamicInfo = "";
+    private String nvIndexDynamicInfo = "";
 
     /**
      * NvIndexInstanceEventLogData constructor.
