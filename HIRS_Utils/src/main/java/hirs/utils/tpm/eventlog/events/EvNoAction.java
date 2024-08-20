@@ -10,13 +10,17 @@ import java.nio.charset.StandardCharsets;
 /**
  * Class to process the EV_NO_ACTION event.
  * The first 16 bytes of the event data MUST be a String based identifier (Signature).
- * The only currently defined Signatures are
- * 1) "Spec ID Event03"
+ * Currently defined Signatures are
+ *    "Spec ID Event03"
  *      - implies the data is a TCG_EfiSpecIDEvent
  *      - TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
  *        if the format of the Log (SHA1 vs Crypto Agile).
- * 2) "NvIndexInstance"
+ *    "StartupLocality"
+ *      - implies the data represents locality info (use lookup to interpret)
+ *    "NvIndexInstance"
  *      - implies the data is a NV_INDEX_INSTANCE_EVENT_LOG_DATA
+ *    "NvIndexDynamic"
+ *      - implies the data is a NV_INDEX_DYNAMIC_EVENT_LOG_DATA
  * <p>
  * Notes:
  * 1. First 16 bytes of the structure is an ASCII with a fixed Length of 16
@@ -74,10 +78,13 @@ public class EvNoAction {
         } else if (signature.contains("NvIndexInstance")) {
             NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
             noActionInfo += nvIndexInstanceEvent.toString();
+        } else if (signature.contains("NvIndexDynamic")) {
+            NvIndexDynamicEventLogData nvIndexDynamicEvent = new NvIndexDynamicEventLogData(eventData);
+            noActionInfo += nvIndexDynamicEvent.toString();
         } else {
-                noActionInfo = "EV_NO_ACTION event named " + signature
-                        + " encountered but support for processing it has not been"
-                        + " added to this application.\n";
+            noActionInfo = "   EV_NO_ACTION event named \"" + signature
+                    + "\" encountered but support for processing it has not been"
+                    + " added to this application.\n";
         }
     }
 
