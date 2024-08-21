@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.provision;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
@@ -375,11 +376,20 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                                         support.getHexDecHash().length() - NUM_OF_VARIABLES)));
                         support.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestRepository.save(support);
-                    } else {
-                        log.info("Client provided Support RIM already loaded in database.");
+                    } else if (support.isArchived()) {
+                        List<ReferenceManifest> rims = referenceManifestRepository.findByArchiveFlag(false);
+                        for (ReferenceManifest rim : rims) {
+                            if (rim.isSupport() &&
+                                    rim.getTagId().equals(support.getTagId()) &&
+                                    rim.getCreateTime().after(support.getCreateTime())) {
+                                support.setDeviceName(null);
+                                support = (SupportReferenceManifest) rim;
+                                support.setDeviceName(dv.getNw().getHostname());
+                            }
+                        }
                         if (support.isArchived()) {
-                            support.restore();
-                            support.resetCreateTime();
+                            throw new Exception("Unable to locate an unarchived support RIM.");
+                        } else {
                             this.referenceManifestRepository.save(support);
                         }
                     }
@@ -408,21 +418,25 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                                 swidFile.toByteArray());
                         dbBaseRim.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestRepository.save(dbBaseRim);
-                    } else {
-                        log.info("Client provided Base RIM already loaded in database.");
-                        /**
-                         * Leaving this as is for now, however can there be a condition
-                         * in which the provisioner sends swidtags without support rims?
-                         */
+                    } else if (dbBaseRim.isArchived()) {
+                        List<ReferenceManifest> rims = referenceManifestRepository.findByArchiveFlag(false);
+                        for (ReferenceManifest rim : rims) {
+                            if (rim.isBase() && rim.getTagId().equals(dbBaseRim.getTagId()) &&
+                                    rim.getCreateTime().after(dbBaseRim.getCreateTime())) {
+                                dbBaseRim.setDeviceName(null);
+                                dbBaseRim = (BaseReferenceManifest) rim;
+                                dbBaseRim.setDeviceName(dv.getNw().getHostname());
+                            }
+                        }
                         if (dbBaseRim.isArchived()) {
-                            dbBaseRim.restore();
-                            dbBaseRim.resetCreateTime();
-                            this.referenceManifestRepository.save(dbBaseRim);
+                            throw new Exception("Unable to locate an unarchived base RIM.");
                         }
                     }
                     tagId = dbBaseRim.getTagId();
                 } catch (UnmarshalException e) {
                     log.error(e);
+                } catch (Exception ex) {
+                    log.error(String.format("Failed to load base rim: %s", ex.getMessage()));
                 }
             }
         } else {
