@@ -1,15 +1,16 @@
 package hirs.utils.tpm.eventlog.uefi;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
 /**
  * This class contains the String constants that are referenced by UEFI.
  * It is expected that member properties of this class will expand as
  * more functionality is added.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class UefiConstants {
+
+    /**
+     * Default private constructor so checkstyles doesn't complain
+     */
+    private UefiConstants() { }
 
     /**
      * 2 byte size.

@@ -1,14 +1,15 @@
 package hirs.utils.tpm.eventlog.events;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
 /**
  * Class for defining constants referenced in the PC Client
  * Platform Firmware Profile specification.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EvConstants {
+
+    /**
+     * Default private constructor so checkstyles doesn't complain
+     */
+    private EvConstants() { }
 
     /**
      * Type length = 4 bytes.
