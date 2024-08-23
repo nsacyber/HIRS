@@ -5,8 +5,8 @@
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
 The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Certificate](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain validation capability.
-completely
-<p align="center">Identity
+
+<p align="center">
   <img src="images/TCG_AcceptanceTest.png" />
 </p>
 
