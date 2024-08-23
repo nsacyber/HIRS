@@ -4,19 +4,16 @@
 
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
-The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Identity Certificate (AIC)](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain validation capability.
-completely
+The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Identity Certificate (AIC)](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured perform an Acceptance Test which enforces the Validation of Endorsement and Platform Certificates as well as Reference Integrity Manifests (RIM)s. This serves to illustrate a supply Chain validation capability.
 <p align="center">
   <img src="images/TCG_AcceptanceTest.png" />
 </p>
 
-The HIRS ACA can be used to perform the Acceptance Test. The HIRS ACA is a web based server which processes Attestation Identity Requests.
-The ACA provides a “provisioner” application to be installed on all devices which will be requesting Attestation Certificates.
-
 **Notice:** Github Discussions have been enabled for this repo. Please refer to the Discussion entitled "[HIRS development changes](https://github.com/nsacyber/HIRS/discussions/498)" for development and support notifications.
  
 ## Features
-
+The HIRS ACA is a web based server which processes Attestation Identity Requests.
+The ACA provides a “provisioner” application to be installed on all devices which will be requesting Attestation Certificates.
 ### Attestation Certificate Authority (ACA)
 <p align="center">
   <img src="images/ACA_ValidationReport_PC_Policy.jpg" />
@@ -24,22 +21,23 @@ The ACA provides a “provisioner” application to be installed on all devices 
 
   * Issues Attestation Identity Certificates or TPM based [Local Device ID (LDevID) certificates](https://github.com/nsacyber/HIRS/wiki/DevID-Certificates) to validated devices holding a TPM
   * Configures policies for enabling/disabling validation procedures
-  * Performs TCG-based Supply Chain Validation of connecting clients
+  * Performs TCG-based Supply Chain Validation concepts
       * Optionally validates Endorsement, Platform Certificates, and Reference Integrity Manifests
-  * Endorsement Certificate Certificate Chain Validation
+  * Endorsement Certificate Chain Validation
       * Process EK Certificates per [TCG EK Credential Profile For TPM Family 2.0](https://trustedcomputinggroup.org/resource/tcg-ek-credential-profile-for-tpm-family-2-0/)
-     * Verifies the endorsement key used by the TPM was placed there by the original equipment manufacturer (OEM)
-     * Platform Certificate - Certificate Chain Validation
+     * Verifies the EK Certificate came from a trusted TPM Vendor
+  * Platform Certificate Chain Validation
+     * Verifies the Platform Certificate came from a trusted OEM
      * Process Platform Certificates per [TCG Platform Attribute Credential Profile Specification Version 1.1 Revision 15](https://trustedcomputinggroup.org/wp-content/uploads/IWG_Platform_Certificate_Profile_v1p1_r15_pubrev.pdf)
         * Updates for the [Platform Certificate Version 2.0](https://trustedcomputinggroup.org/wp-content/uploads/TCG-Platform-Certificate-Profile-Version-2.0-Revision-39.pdf) are in the current development cycle 
     * Verifies the provenance of the system's hardware components, such as the motherboard and chassis, by comparing measured component information against the manufacturers, models, and serial numbers listed in the Platform Certificate
  * Firmware Integrity Validation
     * Uploads and processes [TCG PC Client Reference Integrity Manifests](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/) (RIM)s
+        * Validates the signature of All RIM files imported to the ACA 
+        * Insures all RIM files were signed by trusted sources
     * Creates and verifies a nonce for the TPM Quote
     * Process TMP Event Logs and checks digests against the TPM Quote
     * Verifies individual event digests against the OEM provided Reference Integrity Measurements
-    * Checks that firmware and boot related file hashes match those provided by OEMs.
-    * Validates the import of All RIM files imported to the ACA (insure all RIM files were signed by trusted sources)
     * Verifies that the firmware hashes captured by the TPMs Platform Configuration Registers (PCRs) match the firmware hashes obtained from the OEM(s).
     * Verifies TCG/UEFI boot variables (e.g. BIOS setup data) have not been altered (e.g secure boot).
  * Attestation CA Dashboard
@@ -56,7 +54,7 @@ The ACA provides a “provisioner” application to be installed on all devices 
 
 ### [TCG RIM Tool](https://github.com/nsacyber/HIRS/tree/main/tools/tcg_rim_tool)
   * Creates , Formats, and Digitally Signs [TCG PC Client Base RIMs](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/)
-  * Validates the signature of TCG PC CLient Base RIMs
+  * Validates the signature of TCG PC Client Base RIMs
   
 ### [TCG Event Log Tool](https://github.com/nsacyber/HIRS/tree/main/tools/tcg_eventlog_tool)
   * Parses binary TPM Event Logs and displays event data in a human readable form
@@ -120,7 +118,7 @@ Then follow the instructions for setting up the HIRS_provisioner.NET in the [HIR
 
 ## Usage
 
-On Linux: To kick off a procompletelyvision on the client, open a  terminal and run the command 
+On Linux: To kick off a provision on the client, open a  terminal and run the command 
 
 ```
 sudo tpm_aca_provision
@@ -156,7 +154,7 @@ Background
 * [Getting started with the ACA and Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Gettingstarted)
 
 HIRS Documentation
-* [HIRS ACA and TPM provisioner Users Guide](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/HIRS_ACA_UsersGuide_2.1.pdf)
+* [HIRS ACA and TPM provisioner Users Guide](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPort when configured to al/src/main/webapp/docs/HIRS_ACA_UsersGuide_2.1.pdf)
 * [HIRS_Provisioner.NET Readme](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/HIRS%20.NET%20Provisioner%20Readme_2.2.pdf)
 * [TCG RIM Tool Users Guide](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/TCG%20Rim%20Tool%20User%20Guide%202.1.pdf)
 * [TCG Event Log Tool Users Guide](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/TCG%20Event%20Log%20Tool%20User%20Guide%202.1.pdf)
