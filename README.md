@@ -4,9 +4,9 @@
 
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
-The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Identity Certificate (AIC)](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain validation capability.
+The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Certificate](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain validation capability.
 completely
-<p align="center">
+<p align="center">Identity
   <img src="images/TCG_AcceptanceTest.png" />
 </p>
 
@@ -22,7 +22,7 @@ The ACA provides a “provisioner” application to be installed on all devices 
   <img src="images/ACA_ValidationReport_PC_Policy.jpg" />
 </p>
 
-  * Issues Attestation Identity Certificates or TPM based [Local Device ID (LDevID) certificates](https://github.com/nsacyber/HIRS/wiki/DevID-Certificates) to validated devices holding a TPM
+  * Issues Attestation Certificates or TPM based [Local Device ID (LDevID) certificates](https://github.com/nsacyber/HIRS/wiki/DevID-Certificates) to validated devices holding a TPM
   * Configures policies for enabling/disabling validation procedures
   * Performs TCG-based Supply Chain Validation of connecting clients
       * Optionally validates Endorsement, Platform Certificates, and Reference Integrity Manifests
@@ -49,7 +49,7 @@ The ACA provides a “provisioner” application to be installed on all devices 
     * Optionally allows uploaded Certificates of trusted parties
 
 ### [TPM Provisioner](https://github.com/nsacyber/HIRS/tree/main/HIRS_Provisioner.NET)
-  * Requests an Attestation Identity Certificate for the TPM from the ACA.
+  * Requests an Attestation Certificate for the TPM from the ACA.
   * Transfer's TCG Artifacts to the ACA (TPM Endorsement Certificates, Platform Certificates, Reference Integrity Manifests, Event Logs, etc.) 
   * Reads the device's hardware, network, firmware, and OS info for platform and component validation
   * Provides a TPM Quote for Firmware Integrity Checking
