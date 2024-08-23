@@ -4,19 +4,17 @@
 
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
-The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Certificate](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain validation capability.
+The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Certificate](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement Certificates, Platform Certificates, and Refernce Intregrity Manifests (RIMs) to illustrate a supply chain validation capability known as an "Acceptance Test".
 
 <p align="center">
   <img src="images/TCG_AcceptanceTest.png" />
 </p>
-
-The HIRS ACA can be used to perform the Acceptance Test. The HIRS ACA is a web based server which processes Attestation Identity Requests.
-The ACA provides a “provisioner” application to be installed on all devices which will be requesting Attestation Certificates.
-
+ 
 **Notice:** Github Discussions have been enabled for this repo. Please refer to the Discussion entitled "[HIRS development changes](https://github.com/nsacyber/HIRS/discussions/498)" for development and support notifications.
  
 ## Features
-
+The HIRS ACA is a web based server which processes Attestation Identity Requests.
+The ACA provides a “provisioner” application to be installed on all devices which will be requesting Attestation Certificates.
 ### Attestation Certificate Authority (ACA)
 <p align="center">
   <img src="images/ACA_ValidationReport_PC_Policy.jpg" />
