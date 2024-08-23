@@ -67,7 +67,7 @@ The ACA provides a “provisioner” application to be installed on all devices 
   * Validates signatures on TCG Platform Certificates
      
 ## Installation Instructions
-
+NOTEL The HIRS ACA, tcg_rim_tool, and tcg_eventLog_tool require Java 17 jre be installed before attempting to install these packages. 
 For detailed instructions, see [Installation notes](https://github.com/nsacyber/HIRS/wiki/installation_notes).
 
 Packages used for installation can be found on the [release page](https://github.com/nsacyber/HIRS/releases). 
@@ -91,7 +91,7 @@ To install the ACA on a Ubuntu Linux download the latest rpm from the [release p
 then run the command 
 
 ```
-sudo apt-get install HIRS_AttestationCA*.deb.
+sudo apt-get install ./HIRS_AttestationCA*.deb.
 ```
 
 ### Installing the HIRS_Provisioner.NET
@@ -105,7 +105,7 @@ sudo dnf install HIRS_Provisioner.NET.*.rpm
 To install the HIRS_Provisioner.NET on Ubuntu Linux download the latest deb package from the [release page](https://github.com/nsacyber/HIRS/releases) then open a terminal and run the command
 
 ```
-sudo apt-get install HIRS_Provisioner.NET.*.deb
+sudo apt-get install ./HIRS_Provisioner.NET.*.deb
 ```
 
 To install the HIRS_Provisioner.NET on Windows download the latest msi package from the [release page](https://github.com/nsacyber/HIRS/releases) then open a powershell windows as an administrator then run the command
