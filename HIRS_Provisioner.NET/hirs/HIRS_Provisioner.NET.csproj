@@ -8,7 +8,7 @@
     <PublishSingleFile>true</PublishSingleFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageVersion>2.2.0</PackageVersion>
+    <PackageVersion>3.0.0</PackageVersion>
     <Release></Release> 
 </PropertyGroup>
 

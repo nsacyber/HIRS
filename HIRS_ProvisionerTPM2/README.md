@@ -1,5 +1,8 @@
 # HIRS TPM 2.0 Provisioner
 
+Notice: The HIRS TPM 2.0 Provisioner is being deprecated. 
+Please refer to the [HIRS_Provisioner.Net](https://github.com/nsacyber/HIRS/tree/main/HIRS_Provisioner.NET) for currently supported HIRS provisioner. 
+
 ### Overview
 
 This document describes the HIRS TPM 2.0 Provisioner, a program that can leverage a machine and its TPM to:

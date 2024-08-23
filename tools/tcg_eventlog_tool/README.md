@@ -1,12 +1,12 @@
-To support the [PC Client RIM Specification](https://trustedcomputinggroup.org/wp-content/uploads/TCG_PC_Client_RIM_r0p15_15june2020.pdf) which utilizes the TPM Event Log as a Support RIM type , it was useful to have a tool for inspecting the contents of the [TPM event log](https://github.com/nsacyber/HIRS/wiki/TPM-Event-Logs). A Linux command line tool named "elt" (event log tool) has been created to parse and print human readable output, provide hexidecimal events which can be used as test patterns, and to compare event logs for providing details on what events miscompared. 
+To support the [PC Client RIM Specification](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/) which utilizes the TPM Event Log as a Support RIM type , it was useful to have a tool for inspecting the contents of the [TPM event log](https://github.com/nsacyber/HIRS/wiki/TPM-Event-Logs). A Linux command line tool named "elt" (event log tool) has been created to parse and print human readable output, provide hexidecimal events which can be used as test patterns, and to compare event logs for providing details on what events mis-compared. 
 
 Note that a TCG Event Log will only be populated on a given device if the device:
 1. Utilizes TCG compliant UEFI Firmware.
-2. Has a TPM 1.2 or 2.0 that has been activated prior to the current boot.
-3. Has a TCG aware OS (Most flavors of Linux and Windows 10).
+2. Has a TPM 2.0.
+3. Has a TPM aware OS (Most flavors of Linux and Windows).
 
 The default locations for the TCG Event Log are:
-* Windows:  C:\Windows\Logs\MeasuredBoot\  
+* Windows:  C:\Windows\Logs\MeasuredBoot\
 * Linux:    /sys/kernel/security/tpm0/    with a default name of "binary_bios_measurements"
 
 # Building
@@ -15,8 +15,8 @@ The default locations for the TCG Event Log are:
 To build this tool navigate to the tcg_eventlog-tool directory and use the following command: 
 > ./gradlew clean build
 
-## Windows 10
-Several options exist for building on Windows 10:
+## Windows 
+Several options exist for building on Windows 11:
 
 1. Windows command shell (CMD.exe):
    *  Navigate to the tcg_eventlog_tool folder and run the widows gradle wrapper:
@@ -28,16 +28,26 @@ Several options exist for building on Windows 10:
 In both cases the tcg_eventlog_tool-X.X.jar file should have been placed in the build\libs\tools\ (Windows) or build/libs/tools/ (Linux) folder.
 
 # Packaging
-Currenty only a install file for Linux RPM is supported.
+Packages for this tool can be found on the [HIRS release page](https://github.com/nsacyber/HIRS/releases)
 
-To create an RPM on a linux device use the following command in the same directory:
-> ./gradlew buildRPM
+Currently only a packaging for Linux is supported.
+
+To create an RPM on a Redhat or Rocky linux device use the following command in the same directory:
+> ./gradlew buildRpm
+
+or for a Debian or Ubuntu Linux device:
+> ./gradlew buildDeb
+
+the package can be found under the build/distributions/ folder
 
 # Installing
-Currenty only a install package for Linux is supported. 
+Currently only a install package for Linux is supported. 
 
-To install this tool use the following commmand from the same directory:
-> sudo yum localinstall build/distributions/tcg_eventlog_tool*.rpm
+To install this tool on a Redhat or Rocky Linux distro use the following command from the same directory:
+> sudo  dnf install build/distributions/tcg_eventlog_tool*.rpm
+
+or for a Debian or Ubuntu Linux distro:
+> sudo  apt-get install build/distributions/tcg_eventlog_tool*.deb
 
 # Usage
 ## Linux
