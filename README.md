@@ -118,7 +118,7 @@ Then follow the instructions for setting up the HIRS_provisioner.NET in the [HIR
 
 ## Usage
 
-On Linux: To kick off a procompletelyvision on the client, open a  terminal and run the command 
+On Linux: To kick off a provision on the client, open a  terminal and run the command 
 
 ```
 sudo tpm_aca_provision
