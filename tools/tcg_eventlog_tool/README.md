@@ -80,7 +80,7 @@ To run the tcg_eventlog_tool from a command shell:
 navigate to the tcg_eventlog_tool folder
 invoke using java -jar option to the tcg_eventlog_tool jar file with options:
 
-> java -jar build\libs\tools\tcg_eventlog_tool-1.0.jar -h
+> java -jar build\libs\tcg_eventlog_tool-1.0.jar -h
 
 another example:
 
