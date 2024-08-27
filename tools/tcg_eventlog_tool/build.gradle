@@ -121,6 +121,6 @@ ospackage {
         arch = X86_64
     }
     buildDeb {
-        arch = X86_64
+        arch = 'amd64'
     }
 }
