@@ -25,7 +25,7 @@ Several options exist for building on Windows 11:
    *  Navigate to the tcg_eventlog_tool folder and run the Linux gradle wrapper:
    > ./gradlew clean build
 
-The tcg_eventlog_tool-X.X.jar file should populate in the build\libs\tools\ (Windows) or build/libs/tools/ (Linux) folder.
+The tcg_eventlog_tool-X.X.jar file should populate in the build\libs\ (Windows) or build/libs/tools/ (Linux) folder.
 
 # Packaging
 Packages for this tool can be found on the [HIRS release page](https://github.com/nsacyber/HIRS/releases). Download the RPM files which apply to the latest release.  Currently installation packages for HIRS V3 are only available for Rocky and RHEL version 8 and 9, and Ubuntu 22 and 24. 
