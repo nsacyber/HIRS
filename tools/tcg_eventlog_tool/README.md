@@ -48,9 +48,9 @@ or for a Debian or Ubuntu Linux distro:
 > sudo  apt-get install build/distributions/tcg_eventlog_tool*.deb
 
 Notes:
-> Package naming convention: tcg_eventlog_tool-X.X.X-Y.Z.el8-1.x86_64.rpm
-    Where X.X.X is the latest version of the tcg_eventlog_tool package, Y is the date and Z is the git commit hash associated with that version tag
-> Once installed, the tcg_eventlog_tool can be run from any directory in Linux
+* Package naming convention: tcg_eventlog_tool-X.X.X-Y.Z.el8-1.x86_64.rpm
+  * Where X.X.X is the latest version of the tcg_eventlog_tool package, Y is the date and Z is the git commit hash associated with that version tag
+* Once installed, the tcg_eventlog_tool can be run from any directory in Linux
 
 # Usage
 ## Linux
