@@ -84,4 +84,4 @@ invoke using java -jar option to the tcg_eventlog_tool jar file with options:
 
 another example:
 
-> java -jar build\libs\tools\tcg_eventlog_tool-1.0.jar -f C:\Windows\Logs\MeasuredBoot\0000000059-0000000000.log -e
+> java -jar build\libs\tcg_eventlog_tool-1.0.jar -f C:\Windows\Logs\MeasuredBoot\0000000059-0000000000.log -e
