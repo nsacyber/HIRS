@@ -1,9 +1,9 @@
 The tcg_eventlog_tool is a command line application that allows a user to inspect the Trusted Platform Module (TPM) Event Log's contents. This command tool supports the [PC Client RIM Specification](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/), which specifies the use of the TPM Event Log as a Support RIM type. This tool can be used to parse and print human readable output, provide hexadecimal events which can be used as test patterns, and provide details in the case of events failing comparison. 
 
 Note that a TPM Event Log will only be populated on a given device if the device:
-1. Utilizes TCG compliant UEFI Firmware.
-2. Has a TPM 2.0.
-3. Has a TPM aware OS (true for most flavors of Linux and Windows).
+1. Utilizes TCG compliant UEFI Firmware
+2. Has a TPM 2.0
+3. Has a TPM aware OS (true for most flavors of Linux and Windows)
 
 The default locations for the TPM Event Log are:
 * Windows:  C:\Windows\Logs\MeasuredBoot\
@@ -12,20 +12,20 @@ The default locations for the TPM Event Log are:
 # Building
 
 ## Linux
-To build this tool navigate to the tcg_eventlog_tool directory and use the following command: 
+To build this tool, navigate to the tcg_eventlog_tool directory and use the following command: 
 > ./gradlew clean build
 
 ## Windows 
 Several options exist for building on Windows 11:
 
 1. Windows command shell (CMD.exe):
-   *  Navigate to the tcg_eventlog_tool folder and run the widows gradle wrapper:
+   *  Navigate to the tcg_eventlog_tool folder and run the Windows gradle wrapper:
    >  gradlew.bat clean build
 2. Windows powershell with Windows Subsystem for Linux enabled:
    *  Navigate to the tcg_eventlog_tool folder and run the Linux gradle wrapper:
    > ./gradlew clean build
 
-The tcg_eventlog_tool-X.X.jar file should have been placed in the build\libs\tools\ (Windows) or build/libs/tools/ (Linux) folder.
+The tcg_eventlog_tool-X.X.jar file should populate in the build\libs\tools\ (Windows) or build/libs/tools/ (Linux) folder.
 
 # Packaging
 Packages for this tool can be found on the [HIRS release page](https://github.com/nsacyber/HIRS/releases). Download the RPM files which apply to the latest release.  Currently installation packages for HIRS V3 are only available for Rocky and RHEL version 8 and 9, and Ubuntu 22 and 24. 
@@ -53,10 +53,12 @@ Notes:
 * Once installed, the tcg_eventlog_tool can be run from any directory in Linux
 
 # Usage
+
+Additional details on using the tcg_eventlog_tool can be found in the TCG Event Log Tool user Guide. A quick summary is listed below.
+
 ## Linux
 
-The tcg_eventlog_tool installation package provides an elt command. The elt command has various command line options to view all event , specific events,
-or to display expected PCRs. 
+The tcg_eventlog_tool installation package provides an elt command. The elt command has various command line options to view all events, specific events, or to display expected PCRs. 
 
 Current options for the tool can be found using the -h option:
 
