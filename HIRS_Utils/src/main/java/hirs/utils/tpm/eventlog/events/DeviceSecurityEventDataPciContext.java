@@ -124,7 +124,7 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
             dSEDpciContextInfo += "        Subclass = " + classCodeList.get(1) + "\n";
             dSEDpciContextInfo += "        Programming Interface = " + classCodeList.get(2) + "\n";
         } else {
-            dSEDpciContextInfo += "        ** Class code could not be determined **\n";
+            dSEDpciContextInfo += "        (Class code could not be determined)\n";
         }
         dSEDpciContextInfo += "      SubsystemVendor = " + translateVendor(subsystemVendorId) + "\n";
         dSEDpciContextInfo += "      Subsystem = " + translateDevice(subsystemVendorId, subsystemId) + "\n";
