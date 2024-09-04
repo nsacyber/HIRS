@@ -25,10 +25,7 @@ import java.util.List;
 @Log4j2
 public final class PciIds {
 
-    /**
-     * Default private constructor so checkstyles doesn't complain
-     */
-    private PciIds() { }
+    private static boolean pciIdsFileNotFound = true;
 
     /**
      * This pci ids file can be in different places on different distributions.
@@ -80,8 +77,17 @@ public final class PciIds {
                     }
                 }
             }
+            else {
+                pciIdsFileNotFound = true;
+                log.info("PCI IDs file was NOT found");
+            }
         }
     }
+
+    /**
+     * Default private constructor so checkstyles doesn't complain
+     */
+    private PciIds() { }
 
     /**
      * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
@@ -91,7 +97,8 @@ public final class PciIds {
      */
     public static ASN1UTF8String translateVendor(final ASN1UTF8String refManufacturer) {
         ASN1UTF8String manufacturer = refManufacturer;
-        if (manufacturer != null && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
+        if (!pciIdsFileNotFound && manufacturer != null
+                && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
             Vendor ven = DB.findVendor(manufacturer.getString().toLowerCase());
             if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
                 manufacturer = new DERUTF8String(ven.getName());
@@ -108,7 +115,8 @@ public final class PciIds {
      */
     public static String translateVendor(final String refManufacturer) {
         String manufacturer = refManufacturer;
-        if (manufacturer != null && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")) {
+        if (!pciIdsFileNotFound && manufacturer != null
+                && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")) {
             Vendor ven = DB.findVendor(manufacturer.toLowerCase());
             if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
                 manufacturer = ven.getName();
@@ -129,7 +137,8 @@ public final class PciIds {
                                                  final ASN1UTF8String refModel) {
         ASN1UTF8String manufacturer = refManufacturer;
         ASN1UTF8String model = refModel;
-        if (manufacturer != null
+        if (!pciIdsFileNotFound
+                && manufacturer != null
                 && model != null
                 && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")
                 && model.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
@@ -153,7 +162,8 @@ public final class PciIds {
     public static String translateDevice(final String refManufacturer,
                                          final String refModel) {
         String model = refModel;
-        if (refManufacturer != null
+        if (!pciIdsFileNotFound
+                && refManufacturer != null
                 && model != null
                 && refManufacturer.trim().matches("^[0-9A-Fa-f]{4}$")
                 && model.trim().matches("^[0-9A-Fa-f]{4}$")) {
@@ -183,7 +193,8 @@ public final class PciIds {
         List<String> translatedClassCode = new ArrayList<>();
 
         String classCode = refClassCode;
-        if (classCode != null && classCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
+        if (!pciIdsFileNotFound && classCode != null
+                && classCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
             String deviceClass = classCode.substring(0, 2).toLowerCase();
             String deviceSubclass = classCode.substring(2, 4).toLowerCase();
             String programInterface = classCode.substring(4, 6).toLowerCase();
