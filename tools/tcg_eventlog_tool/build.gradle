@@ -119,8 +119,10 @@ ospackage {
 
     buildRpm {
         arch = X86_64
+        requires('pciutils', '3.7.0', GREATER | EQUAL)
     }
     buildDeb {
         arch = 'amd64'
+        requires('pciutils', '3.7.0', GREATER | EQUAL)
     }
 }
