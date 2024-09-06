@@ -35,7 +35,7 @@
     <PackageReference Include="paccor.HardwareManifestPlugin" Version="1.0.0" />
     <PackageReference Include="paccor.HardwareManifestPluginManager" Version="1.0.0" />
     <PackageReference Include="paccor.paccor_scripts" Version="1.0.1" />
-    <PackageReference Include="Packaging.Targets" Version="0.1.220">
+    <PackageReference Include="Packaging.Targets" Version="0.1.226">
       <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
