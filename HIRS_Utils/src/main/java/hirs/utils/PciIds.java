@@ -7,6 +7,8 @@ import com.github.marandus.pciid.model.ProgramInterface;
 import com.github.marandus.pciid.model.Vendor;
 import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
+import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -19,19 +21,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
+
 /**
  * Provide Java access to PCI IDs.
  */
 @Log4j2
 public final class PciIds {
 
-    private static boolean pciIdsFileFound = false;
+    /**
+     * Track status of pciids file.
+     */
+    @Getter
+    private static String pciidsFileStatus = FILESTATUS_NOT_ACCESSIBLE;
+
+    /**
+     * Name of pciids file in code.
+     */
+    private static final String PCIIDS_FILENAME = "pci.ids";
 
     /**
      * This pci ids file can be in different places on different distributions.
-     * Fedora/RHEL/Rocky/CentOS: /usr/share/hwdata/pci.ids
-     * Debian/Ubuntu: /usr/share/misc/pci.ids
-     * For windows, the file will have to be accessed from code (in the future can change this)
+     *    Fedora/RHEL/Rocky/CentOS: /usr/share/hwdata/pci.ids
+     *    Debian/Ubuntu: /usr/share/misc/pci.ids
+     * If the file is not found on the system (such as with Windows systems),
+     * the file will have to be accessed from code.
      */
     public static final List<String> PCI_IDS_PATH =
             Collections.unmodifiableList(new ArrayList<>() {
@@ -52,6 +66,9 @@ public final class PciIds {
      */
     public static final PciIdsDatabase DB = new PciIdsDatabase();
 
+    /**
+     * Configure the PCI IDs Database object.
+     */
     static {
         if (!DB.isReady()) {
             String dbFile = null;
@@ -62,8 +79,17 @@ public final class PciIds {
                     break;
                 }
             }
+            // if pciids file is not found on the system, then attempt to grab it from code
+            if(dbFile != null) {
+                pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+            }
+            else {
+                dbFile = PciIds.class.getResource(PCIIDS_FILENAME).getPath();
+            }
             if (dbFile != null) {
-                pciIdsFileFound = true;
+                if (pciidsFileStatus != UefiConstants.FILESTATUS_FROM_FILESYSTEM) {
+                    pciidsFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
+                }
                 InputStream is = null;
                 try {
                     is = new FileInputStream(new File(dbFile));
@@ -100,7 +126,8 @@ public final class PciIds {
      */
     public static ASN1UTF8String translateVendor(final ASN1UTF8String refManufacturer) {
         ASN1UTF8String manufacturer = refManufacturer;
-        if (pciIdsFileFound && manufacturer != null
+        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
+                && manufacturer != null
                 && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
             Vendor ven = DB.findVendor(manufacturer.getString().toLowerCase());
             if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
@@ -118,7 +145,8 @@ public final class PciIds {
      */
     public static String translateVendor(final String refManufacturer) {
         String manufacturer = refManufacturer;
-        if (pciIdsFileFound && manufacturer != null
+        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
+                && manufacturer != null
                 && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")) {
             Vendor ven = DB.findVendor(manufacturer.toLowerCase());
             if (ven != null && !Strings.isNullOrEmpty(ven.getName())) {
@@ -140,7 +168,7 @@ public final class PciIds {
                                                  final ASN1UTF8String refModel) {
         ASN1UTF8String manufacturer = refManufacturer;
         ASN1UTF8String model = refModel;
-        if (pciIdsFileFound
+        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
                 && manufacturer != null
                 && model != null
                 && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")
@@ -165,7 +193,7 @@ public final class PciIds {
     public static String translateDevice(final String refManufacturer,
                                          final String refModel) {
         String model = refModel;
-        if (pciIdsFileFound
+        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
                 && refManufacturer != null
                 && model != null
                 && refManufacturer.trim().matches("^[0-9A-Fa-f]{4}$")
@@ -196,7 +224,8 @@ public final class PciIds {
         List<String> translatedClassCode = new ArrayList<>();
 
         String classCode = refClassCode;
-        if (pciIdsFileFound && classCode != null
+        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
+                && classCode != null
                 && classCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
             String deviceClass = classCode.substring(0, 2).toLowerCase();
             String deviceSubclass = classCode.substring(2, 4).toLowerCase();
