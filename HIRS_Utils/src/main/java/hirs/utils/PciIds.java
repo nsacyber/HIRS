@@ -29,6 +29,9 @@ public final class PciIds {
 
     /**
      * This pci ids file can be in different places on different distributions.
+     * Fedora/RHEL/Rocky/CentOS: /usr/share/hwdata/pci.ids
+     * Debian/Ubuntu: /usr/share/misc/pci.ids
+     * For windows, the file will have to be accessed from code (in the future can change this)
      */
     public static final List<String> PCI_IDS_PATH =
             Collections.unmodifiableList(new ArrayList<>() {

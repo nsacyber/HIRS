@@ -160,7 +160,7 @@ ospackage {
         requires('mariadb-server' , '10.3' , GREATER | EQUAL)
         requires('procps-ng', '3.3.15', GREATER | EQUAL)
         requires('alternatives', '1.19', GREATER | EQUAL)
-        requires('pciutils', '3.7.0', GREATER | EQUAL)
+        requires('hwdata', '0.314', GREATER | EQUAL)
         // Post Trans stage (Occurs after required app and postInstall stage)
         // Note postInstall wont wait for required apps
         postTrans 'update-alternatives --set java java-17-openjdk.x86_64'
@@ -182,7 +182,7 @@ ospackage {
         requires('openjdk-17-jdk', '17.0', GREATER | EQUAL)
         requires('mariadb-server' , '10.3' , GREATER | EQUAL)
         requires('curl')
-        requires('pciutils', '3.7.0', GREATER | EQUAL)
+        requires('hwdata', '0.314', GREATER | EQUAL)
         // Install after required packages
         postInstall 'bash /opt/hirs/aca/scripts/aca/aca_setup.sh -u'
         postInstall 'bash /opt/hirs/aca/scripts/systemd/aca_enable_service.sh'
