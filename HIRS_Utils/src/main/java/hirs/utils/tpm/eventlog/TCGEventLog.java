@@ -20,9 +20,6 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
-
 /**
  * Class for handling different formats of TCG Event logs.
  */
@@ -88,7 +85,16 @@ public final class TCGEventLog {
      * and if that event causes a different status.
      */
     @Getter
-    private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
+    private String vendorTableFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+    /**
+     * Track status of pci.ids
+     * This is only used if there is an event that uses functions from the pciids class.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF there is an event that uses pciids file, and the file
+     * causes a different status.
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * Default blank object constructor.
@@ -169,11 +175,18 @@ public final class TCGEventLog {
             // the if statement is executed
             // [new event file status = eventList.get(eventNumber-1).getVendorTableFileStatus()]
             // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if ((vendorTableFileStatus != FILESTATUS_NOT_ACCESSIBLE)
+            if ((vendorTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
                     && (eventList.get(eventNumber - 1).getVendorTableFileStatus()
-                    != FILESTATUS_FROM_FILESYSTEM)) {
+                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
                 vendorTableFileStatus = eventList.get(eventNumber - 1).getVendorTableFileStatus();
             }
+            if ((vendorTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+                    && (eventList.get(eventNumber - 1).getVendorTableFileStatus()
+                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+                vendorTableFileStatus = eventList.get(eventNumber - 1).getVendorTableFileStatus();
+            }
+
+            //add pci here
         }
         calculatePcrValues();
     }

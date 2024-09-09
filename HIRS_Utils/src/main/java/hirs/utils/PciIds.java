@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
-
 /**
  * Provide Java access to PCI IDs.
  */
@@ -33,7 +31,7 @@ public final class PciIds {
      * Track status of pciids file.
      */
     @Getter
-    private static String pciidsFileStatus = FILESTATUS_NOT_ACCESSIBLE;
+    private static String pciidsFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
     /**
      * Name of pciids file in code.
@@ -59,16 +57,12 @@ public final class PciIds {
 
     /**
      * The PCI IDs Database object.
-     *
      * This only needs to be loaded one time.
-     *
      * The pci ids library protects the data inside the object by making it immutable.
      */
     public static final PciIdsDatabase DB = new PciIdsDatabase();
 
-    /**
-     * Configure the PCI IDs Database object.
-     */
+    //Configure the PCI IDs Database object.
     static {
         if (!DB.isReady()) {
             String dbFile = null;
@@ -87,7 +81,7 @@ public final class PciIds {
                 dbFile = PciIds.class.getResource(PCIIDS_FILENAME).getPath();
             }
             if (dbFile != null) {
-                if (pciidsFileStatus != UefiConstants.FILESTATUS_FROM_FILESYSTEM) {
+                if (!pciidsFileStatus.equals(UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
                     pciidsFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
                 }
                 InputStream is = null;
@@ -126,7 +120,7 @@ public final class PciIds {
      */
     public static ASN1UTF8String translateVendor(final ASN1UTF8String refManufacturer) {
         ASN1UTF8String manufacturer = refManufacturer;
-        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
+        if (!pciidsFileStatus.equals(UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
                 && manufacturer != null
                 && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
             Vendor ven = DB.findVendor(manufacturer.getString().toLowerCase());
@@ -145,7 +139,7 @@ public final class PciIds {
      */
     public static String translateVendor(final String refManufacturer) {
         String manufacturer = refManufacturer;
-        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
+        if (!pciidsFileStatus.equals(UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
                 && manufacturer != null
                 && manufacturer.trim().matches("^[0-9A-Fa-f]{4}$")) {
             Vendor ven = DB.findVendor(manufacturer.toLowerCase());
@@ -168,7 +162,7 @@ public final class PciIds {
                                                  final ASN1UTF8String refModel) {
         ASN1UTF8String manufacturer = refManufacturer;
         ASN1UTF8String model = refModel;
-        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
+        if (!pciidsFileStatus.equals(UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
                 && manufacturer != null
                 && model != null
                 && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")
@@ -193,7 +187,7 @@ public final class PciIds {
     public static String translateDevice(final String refManufacturer,
                                          final String refModel) {
         String model = refModel;
-        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
+        if (!pciidsFileStatus.equals(UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
                 && refManufacturer != null
                 && model != null
                 && refManufacturer.trim().matches("^[0-9A-Fa-f]{4}$")
@@ -224,7 +218,7 @@ public final class PciIds {
         List<String> translatedClassCode = new ArrayList<>();
 
         String classCode = refClassCode;
-        if (pciidsFileStatus != FILESTATUS_NOT_ACCESSIBLE
+        if (!pciidsFileStatus.equals(UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
                 && classCode != null
                 && classCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
             String deviceClass = classCode.substring(0, 2).toLowerCase();

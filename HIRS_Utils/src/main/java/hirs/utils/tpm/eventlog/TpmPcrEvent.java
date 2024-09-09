@@ -128,6 +128,16 @@ public class TpmPcrEvent {
     private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
+     * Track status of pci.ids
+     * This is only used for events that access the pci.ids file.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that uses this file,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String pciidsFileStatus = FILESTATUS_FROM_FILESYSTEM;
+
+    /**
      * Constructor.
      *
      * @param baIs ByteArrayInputStream holding the event
@@ -523,7 +533,9 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
-                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
+                EvEfiSpdmDeviceSecurityEvent efiSpdmDse = new EvEfiSpdmDeviceSecurityEvent(content);
+                description += "Event Content:\n" + efiSpdmDse.toString();
+                pciidsFileStatus = efiSpdmDse.getPciidsFileStatus();
                 break;
             default:
                 description += " Unknown Event found" + "\n";

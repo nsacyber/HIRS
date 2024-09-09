@@ -1,5 +1,6 @@
 package hirs.utils.tpm.eventlog.events;
 
+import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -44,7 +45,7 @@ public abstract class DeviceSecurityEvent {
      * DeviceSecurityEventDataContext Object.
      */
     @Getter
-    private DeviceSecurityEventDataDeviceContext dsedDevContext = null;
+    private DeviceSecurityEventDataPciContext dsedPciContext = null;
 
     /**
      * Device type.
@@ -59,6 +60,13 @@ public abstract class DeviceSecurityEvent {
      */
     @Getter
     private String deviceContextInfo = "";
+
+    /**
+     * Track status of pci.ids file.
+     * This is only needed if DeviceSecurityEvent includes a DeviceSecurityEventDataPciContext
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * DeviceSecurityEventData Default Constructor.
@@ -82,8 +90,9 @@ public abstract class DeviceSecurityEvent {
             if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE) {
                 deviceContextInfo = "\n    No Device Context (indicated by device type value of 0)";
             } else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI) {
-                dsedDevContext = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
-                deviceContextInfo = dsedDevContext.toString();
+                dsedPciContext = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
+                deviceContextInfo = dsedPciContext.toString();
+                pciidsFileStatus = dsedPciContext.getPciidsFileStatus();
             } else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB) {
                 deviceContextInfo = "    Device Type: USB - To be implemented";
             } else {
