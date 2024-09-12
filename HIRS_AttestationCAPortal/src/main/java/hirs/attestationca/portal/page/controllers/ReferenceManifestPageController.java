@@ -239,9 +239,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 messages.addError(notFoundMessage);
                 log.warn(notFoundMessage);
             } else {
-                // if support rim, update associated events
-                referenceManifest.archive();
-                referenceManifestRepository.save(referenceManifest);
+                referenceManifestRepository.delete(referenceManifest);
                 String deleteCompletedMessage = "RIM successfully deleted";
                 messages.addInfo(deleteCompletedMessage);
                 log.info(deleteCompletedMessage);
