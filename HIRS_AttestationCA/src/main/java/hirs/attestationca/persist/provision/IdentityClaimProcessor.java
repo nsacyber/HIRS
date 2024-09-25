@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.provision;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
@@ -61,6 +62,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -346,13 +349,78 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
         BaseReferenceManifest dbBaseRim = null;
-        SupportReferenceManifest support;
+        SupportReferenceManifest support = null;
         EventLogMeasurements measurements;
+        boolean isReplacement = false;
+        String replacementRimId = "";
         String tagId = "";
         String fileName = "";
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
         MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
+
+        if (dv.getSwidfileCount() > 0) {
+            for (ByteString swidFile : dv.getSwidfileList()) {
+                try {
+                    dbBaseRim = (BaseReferenceManifest) referenceManifestRepository
+                            .findByBase64Hash(Base64.getEncoder()
+                                    .encodeToString(messageDigest
+                                            .digest(swidFile.toByteArray())));
+                    if (dbBaseRim == null) {
+                        /*
+                        Either the swidFile does not have a corresponding base RIM in the backend
+                        or it was deleted. Check if there is a replacement by comparing tagId against
+                        all other base RIMs, and then set the corresponding support rim's deviceName.
+                         */
+                        dbBaseRim = new BaseReferenceManifest(
+                                String.format("%s.swidtag",
+                                        defaultClientName),
+                                swidFile.toByteArray());
+                        List<BaseReferenceManifest> baseRims = referenceManifestRepository.findAllBaseRims();
+                        for (BaseReferenceManifest bRim : baseRims) {
+                            if (bRim.getTagId().equals(dbBaseRim.getTagId())) {
+                                dbBaseRim = bRim;
+                                replacementRimId = dbBaseRim.getAssociatedRim().toString();
+                                isReplacement = true;
+                                break;
+                            }
+                        }
+                        dbBaseRim.setDeviceName(dv.getNw().getHostname());
+                        this.referenceManifestRepository.save(dbBaseRim);
+                    } else if (dbBaseRim.isArchived()) {
+                        /*
+                        This block accounts for RIMs that may have been soft-deleted (archived)
+                        in an older version of the ACA.
+                         */
+                        List<ReferenceManifest> rims = referenceManifestRepository.findByArchiveFlag(false);
+                        for (ReferenceManifest rim : rims) {
+                            if (rim.isBase() && rim.getTagId().equals(dbBaseRim.getTagId()) &&
+                                    rim.getCreateTime().after(dbBaseRim.getCreateTime())) {
+                                dbBaseRim.setDeviceName(null);
+                                dbBaseRim = (BaseReferenceManifest) rim;
+                                dbBaseRim.setDeviceName(dv.getNw().getHostname());
+                            }
+                        }
+                        if (dbBaseRim.isArchived()) {
+                            throw new Exception("Unable to locate an unarchived base RIM.");
+                        } else {
+                            this.referenceManifestRepository.save(dbBaseRim);
+                        }
+                    } else {
+                        dbBaseRim.setDeviceName(dv.getNw().getHostname());
+                        this.referenceManifestRepository.save(dbBaseRim);
+                    }
+                    tagId = dbBaseRim.getTagId();
+                } catch (UnmarshalException e) {
+                    log.error(e);
+                } catch (Exception ex) {
+                    log.error(String.format("Failed to load base rim: %s", ex.getMessage()));
+                }
+            }
+        } else {
+            log.warn(String.format("%s did not send swid tag file...",
+                    dv.getNw().getHostname()));
+        }
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
@@ -361,27 +429,59 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                                     Hex.encodeHexString(messageDigest.digest(logFile.toByteArray())),
                             ReferenceManifest.SUPPORT_RIM);
                     if (support == null) {
-                        support = new SupportReferenceManifest(
-                                String.format("%s.rimel",
-                                        defaultClientName),
-                                logFile.toByteArray());
-                        // this is a validity check
-                        new TCGEventLog(support.getRimBytes());
-                        // no issues, continue
-                        support.setPlatformManufacturer(dv.getHw().getManufacturer());
-                        support.setPlatformModel(dv.getHw().getProductName());
-                        support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
-                                support.getHexDecHash().substring(
-                                        support.getHexDecHash().length() - NUM_OF_VARIABLES)));
+                        /*
+                        Either the logFile does not have a corresponding support RIM in the backend
+                        or it was deleted. The support RIM for a replacement base RIM is handled
+                        in the previous loop block.
+                         */
+                        if (isReplacement) {
+                            Optional<ReferenceManifest> replacementRim =
+                                    referenceManifestRepository.findById(UUID.fromString(replacementRimId));
+                            if (replacementRim.isPresent()) {
+                                support = (SupportReferenceManifest) replacementRim.get();
+                                support.setDeviceName(dv.getNw().getHostname());
+                            } else {
+                                throw new Exception("Unable to locate support RIM " + replacementRimId);
+                            }
+                        } else {
+                            support = new SupportReferenceManifest(
+                                    String.format("%s.rimel",
+                                            defaultClientName),
+                                    logFile.toByteArray());
+                            // this is a validity check
+                            new TCGEventLog(support.getRimBytes());
+                            // no issues, continue
+                            support.setPlatformManufacturer(dv.getHw().getManufacturer());
+                            support.setPlatformModel(dv.getHw().getProductName());
+                            support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
+                                    support.getHexDecHash().substring(
+                                            support.getHexDecHash().length() - NUM_OF_VARIABLES)));
+                        }
                         support.setDeviceName(dv.getNw().getHostname());
                         this.referenceManifestRepository.save(support);
-                    } else {
-                        log.info("Client provided Support RIM already loaded in database.");
+                    } else if (support.isArchived()) {
+                        /*
+                        This block accounts for RIMs that may have been soft-deleted (archived)
+                        in an older version of the ACA.
+                         */
+                        List<ReferenceManifest> rims = referenceManifestRepository.findByArchiveFlag(false);
+                        for (ReferenceManifest rim : rims) {
+                            if (rim.isSupport() &&
+                                    rim.getTagId().equals(support.getTagId()) &&
+                                    rim.getCreateTime().after(support.getCreateTime())) {
+                                support.setDeviceName(null);
+                                support = (SupportReferenceManifest) rim;
+                                support.setDeviceName(dv.getNw().getHostname());
+                            }
+                        }
                         if (support.isArchived()) {
-                            support.restore();
-                            support.resetCreateTime();
+                            throw new Exception("Unable to locate an unarchived support RIM.");
+                        } else {
                             this.referenceManifestRepository.save(support);
                         }
+                    } else {
+                        support.setDeviceName(dv.getNw().getHostname());
+                        this.referenceManifestRepository.save(support);
                     }
                 } catch (IOException ioEx) {
                     log.error(ioEx);
@@ -391,42 +491,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             }
         } else {
             log.warn(String.format("%s did not send support RIM file...",
-                    dv.getNw().getHostname()));
-        }
-
-        if (dv.getSwidfileCount() > 0) {
-            for (ByteString swidFile : dv.getSwidfileList()) {
-                try {
-                    dbBaseRim = (BaseReferenceManifest) referenceManifestRepository
-                            .findByBase64Hash(Base64.getEncoder()
-                            .encodeToString(messageDigest
-                                    .digest(swidFile.toByteArray())));
-                    if (dbBaseRim == null) {
-                        dbBaseRim = new BaseReferenceManifest(
-                                String.format("%s.swidtag",
-                                        defaultClientName),
-                                swidFile.toByteArray());
-                        dbBaseRim.setDeviceName(dv.getNw().getHostname());
-                        this.referenceManifestRepository.save(dbBaseRim);
-                    } else {
-                        log.info("Client provided Base RIM already loaded in database.");
-                        /**
-                         * Leaving this as is for now, however can there be a condition
-                         * in which the provisioner sends swidtags without support rims?
-                         */
-                        if (dbBaseRim.isArchived()) {
-                            dbBaseRim.restore();
-                            dbBaseRim.resetCreateTime();
-                            this.referenceManifestRepository.save(dbBaseRim);
-                        }
-                    }
-                    tagId = dbBaseRim.getTagId();
-                } catch (UnmarshalException e) {
-                    log.error(e);
-                }
-            }
-        } else {
-            log.warn(String.format("%s did not send swid tag file...",
                     dv.getNw().getHostname()));
         }
 
