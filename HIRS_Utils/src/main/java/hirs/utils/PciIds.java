@@ -36,7 +36,7 @@ public final class PciIds {
     /**
      * Name of pciids file in code.
      */
-    private static final String PCIIDS_FILENAME = "pci.ids";
+    private static final String PCIIDS_FILENAME = "/pci.ids";
 
     /**
      * This pci ids file can be in different places on different distributions.
@@ -65,6 +65,8 @@ public final class PciIds {
     //Configure the PCI IDs Database object.
     static {
         if (!DB.isReady()) {
+
+            // if pciids file is found on the system, then process using this
             String dbFile = null;
             for (final String path : PCI_IDS_PATH) {
                 if ((new File(path)).exists()) {
@@ -73,21 +75,13 @@ public final class PciIds {
                     break;
                 }
             }
-            // if pciids file is not found on the system, then attempt to grab it from code
+
             if(dbFile != null) {
-                pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
-            }
-            else {
-                dbFile = PciIds.class.getResource(PCIIDS_FILENAME).getPath();
-            }
-            if (dbFile != null) {
-                if (!pciidsFileStatus.equals(UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-                    pciidsFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
-                }
                 InputStream is = null;
                 try {
                     is = new FileInputStream(new File(dbFile));
                     DB.loadStream(is);
+                    pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
                 } catch (IOException e) {
                     // DB will not be ready, hardware IDs will not be translated
                     dbFile = null;
@@ -101,8 +95,28 @@ public final class PciIds {
                     }
                 }
             }
-            else {
-                log.info("PCI IDs file was NOT found");
+
+            // if pciids file is not found on the system or not accessible, then attempt to grab it from code
+            if(pciidsFileStatus == UefiConstants.FILESTATUS_NOT_ACCESSIBLE) {
+                InputStream istemp = PciIds.class.getResourceAsStream(PCIIDS_FILENAME);
+                try {
+                    DB.loadStream(istemp);
+                    pciidsFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
+                } catch (IOException e) {
+                    // DB will not be ready, hardware IDs will not be translated
+                } finally {
+                    if (istemp != null) {
+                        try {
+                            istemp.close();
+                        } catch (IOException e) {
+                        }
+                    }
+                }
+            }
+
+            // if pciids file is not accessible on system or from within code, then log error
+            if(pciidsFileStatus == UefiConstants.FILESTATUS_NOT_ACCESSIBLE) {
+                log.info("PCI IDs file was NOT accessible from within the system or within the code");
             }
         }
     }
