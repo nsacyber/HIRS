@@ -92,7 +92,6 @@ public class EvNoAction {
         } else if (signature.contains("NvIndexDynamic")) {
             NvIndexDynamicEventLogData nvIndexDynamicEvent = new NvIndexDynamicEventLogData(eventData);
             noActionInfo += nvIndexDynamicEvent.toString();
-            pciidsFileStatus = nvIndexDynamicEvent.getPciidsFileStatus();
         } else {
             noActionInfo = "   EV_NO_ACTION event named \"" + signature
                     + "\" encountered but support for processing it has not been"

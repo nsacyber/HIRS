@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
  *      UINT16                          DescriptionSize;
  *      UINT8                           Description[DescriptionSize];
  *      UINT16                          DataSize;
- *      DEVICE_SECURITY_EVENT_DATA2     Data[DataSize];
+ *      UINT8                           Data[DataSize];
  * } NV_INDEX_DYNAMIC_EVENT_LOG_DATA;
  * <p>
  */
@@ -37,16 +37,6 @@ public class NvIndexDynamicEventLogData {
      * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
     private String nvIndexDynamicInfo = "";
-
-    /**
-     * Track status of pci.ids
-     * This is only used for events that access the pci.ids file.
-     * Default is normal status (normal status is from-filesystem).
-     * Status will only change IF this is an event that uses this file,
-     * and if that event causes a different status.
-     */
-    @Getter
-    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * NvIndexInstanceEventLogData constructor.
