@@ -62,8 +62,12 @@ public abstract class DeviceSecurityEvent {
     private String deviceContextInfo = "";
 
     /**
-     * Track status of pci.ids file.
-     * This is only needed if DeviceSecurityEvent includes a DeviceSecurityEventDataPciContext
+     * Track status of pci.ids
+     * This is only used for events that access the pci.ids file.
+     * (In this class, this is only needed if DeviceSecurityEvent includes a DeviceSecurityEventDataPciContext)
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that uses this file,
+     * and if that event causes a different status.
      */
     @Getter
     private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
@@ -92,6 +96,8 @@ public abstract class DeviceSecurityEvent {
             } else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI) {
                 dsedPciContext = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
                 deviceContextInfo = dsedPciContext.toString();
+                // getPciidsFileStatus() must be called after DeviceSecurityEventDataPciContext.toString(),
+                // because the toString function is where the pciids db gets set up and used
                 pciidsFileStatus = dsedPciContext.getPciidsFileStatus();
             } else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB) {
                 deviceContextInfo = "    Device Type: USB - To be implemented";

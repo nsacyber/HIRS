@@ -66,7 +66,7 @@ public final class PciIds {
     static {
         if (!DB.isReady()) {
 
-            // if pciids file is found on the system, then process using this
+            // if pciids file is found on the system, then process using this file
             String dbFile = null;
             for (final String path : PCI_IDS_PATH) {
                 if ((new File(path)).exists()) {
@@ -79,7 +79,7 @@ public final class PciIds {
             if(dbFile != null) {
                 InputStream is = null;
                 try {
-                    is = new FileInputStream(new File(dbFile));
+                    is = new FileInputStream(dbFile);
                     DB.loadStream(is);
                     pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
                 } catch (IOException e) {
@@ -98,17 +98,19 @@ public final class PciIds {
 
             // if pciids file is not found on the system or not accessible, then attempt to grab it from code
             if(pciidsFileStatus == UefiConstants.FILESTATUS_NOT_ACCESSIBLE) {
-                InputStream istemp = PciIds.class.getResourceAsStream(PCIIDS_FILENAME);
-                try {
-                    DB.loadStream(istemp);
-                    pciidsFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
-                } catch (IOException e) {
-                    // DB will not be ready, hardware IDs will not be translated
-                } finally {
-                    if (istemp != null) {
-                        try {
-                            istemp.close();
-                        } catch (IOException e) {
+                InputStream isFromCode = PciIds.class.getResourceAsStream(PCIIDS_FILENAME);
+                if(isFromCode != null) {
+                    try {
+                        DB.loadStream(isFromCode);
+                        pciidsFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
+                    } catch (IOException e) {
+                        // DB will not be ready, hardware IDs will not be translated
+                    } finally {
+                        if (isFromCode != null) {
+                            try {
+                                isFromCode.close();
+                            } catch (IOException e) {
+                            }
                         }
                     }
                 }

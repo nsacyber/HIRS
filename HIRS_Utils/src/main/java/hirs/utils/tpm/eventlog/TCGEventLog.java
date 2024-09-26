@@ -180,13 +180,12 @@ public final class TCGEventLog {
                     != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
                 vendorTableFileStatus = eventList.get(eventNumber - 1).getVendorTableFileStatus();
             }
-            if ((vendorTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                    && (eventList.get(eventNumber - 1).getVendorTableFileStatus()
+            //similar to above with vendor-table.json file, but here with pci.ids file
+            if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+                    && (eventList.get(eventNumber - 1).getPciidsFileStatus()
                     != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-                vendorTableFileStatus = eventList.get(eventNumber - 1).getVendorTableFileStatus();
+                pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
             }
-
-            //add pci here
         }
         calculatePcrValues();
     }

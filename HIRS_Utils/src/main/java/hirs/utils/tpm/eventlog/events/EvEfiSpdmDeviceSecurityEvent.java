@@ -6,8 +6,6 @@ import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;
 
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
-
 /**
  * Abstract class to process any SPDM event that is solely a DEVICE_SECURITY_EVENT_DATA or
  * DEVICE_SECURITY_EVENT_DATA2. The event field MUST be a
@@ -56,7 +54,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
      * and if that event causes a different status.
      */
     @Getter
-    private String pciidsFileStatus = FILESTATUS_FROM_FILESYSTEM;
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * EvEfiSpdmFirmwareBlob constructor.

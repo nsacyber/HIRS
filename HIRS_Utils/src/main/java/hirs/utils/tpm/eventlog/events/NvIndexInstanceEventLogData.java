@@ -1,6 +1,8 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;
 
@@ -37,6 +39,16 @@ public class NvIndexInstanceEventLogData {
      * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
     private String nvIndexInstanceInfo = "";
+
+    /**
+     * Track status of pci.ids
+     * This is only used for events that access the pci.ids file.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that uses this file,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * NvIndexInstanceEventLogData constructor.
@@ -84,6 +96,7 @@ public class NvIndexInstanceEventLogData {
             if (dsedVersion.equals("0200")) {
                 dsed = new DeviceSecurityEventData2(dsedEventData);
                 nvIndexInstanceInfo += dsed.toString();
+                pciidsFileStatus = dsed.getPciidsFileStatus();
             } else {
                 nvIndexInstanceInfo += "    Incompatible version for DeviceSecurityEventData2: "
                         + dsedVersion + "\n";

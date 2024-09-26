@@ -448,6 +448,7 @@ public class TpmPcrEvent {
                     specVersion = noAction.getSpecVersion();
                     specErrataVersion = noAction.getSpecErrataVersion();
                 }
+                pciidsFileStatus = noAction.getPciidsFileStatus();
                 break;
             case EvConstants.EV_SEPARATOR:
                 if (EvPostCode.isAscii(content)) {
