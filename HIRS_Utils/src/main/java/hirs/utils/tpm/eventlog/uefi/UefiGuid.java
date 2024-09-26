@@ -10,10 +10,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.UUID;
 
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_CODE;
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
-
 /**
  * Class to process GUID per the UEFI specification
  * GUIDs are essentially UUID as defined by RFC-1422, however Microsoft refers to GUIDS.
@@ -44,7 +40,7 @@ public class UefiGuid {
      * Track status of vendor-table.json.
      */
     @Getter
-    private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
+    private String vendorTableFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
     /**
      * guid byte array.
@@ -78,12 +74,12 @@ public class UefiGuid {
                 "VendorTable");
 
         if (!isVendorTableReferenceHandleEmpty()) {
-            vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
+            vendorTableFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
         } else {
             // could not access vendor-table.json from filesystem, so attempt to access from code
             uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_FILENAME, "VendorTable");
             if (!isVendorTableReferenceHandleEmpty()) {
-                vendorTableFileStatus = FILESTATUS_FROM_CODE;
+                vendorTableFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
             }
         }
     }
