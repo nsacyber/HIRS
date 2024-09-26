@@ -106,11 +106,9 @@ public final class PciIds {
                     } catch (IOException e) {
                         // DB will not be ready, hardware IDs will not be translated
                     } finally {
-                        if (isFromCode != null) {
-                            try {
-                                isFromCode.close();
-                            } catch (IOException e) {
-                            }
+                        try {
+                            isFromCode.close();
+                        } catch (IOException e) {
                         }
                     }
                 }
