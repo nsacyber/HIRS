@@ -131,3 +131,38 @@ buildRpm {
 buildDeb {
     arch = 'amd64'
 }
+
+task buildZip(type: Zip){
+    dependsOn jar
+    dependsOn jar
+    from(tasks.jar.archiveFile){
+        rename( filename ->
+                "${project.name}.jar")
+        into '/'
+    }
+    from('./build/resources/test/rim_fields.json'){
+        into '/'
+    }
+    from('../../.ci/tcg-rim-tool/configs/Base_Rim_Config.json'){
+        into '/'
+    }
+    from('../../.ci/tcg-rim-tool/eventlogs/TpmLog.bin'){
+        into '/'
+    }
+    from('../../.ci/tcg-rim-tool/keys/PC_OEM1_rim_signer_rsa_3k_sha384.key'){
+        into '/'
+    }
+    from('../../.ci/tcg-rim-tool/certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem'){
+        into '/'
+    }
+    from('../../.ci/tcg-rim-tool/certs/PC_OEM1_Cert_Chain.pem'){
+        into '/'
+    }
+
+    archiveBaseName.set(project.name)
+    destinationDirectory.set(file("$buildDir/distributions"))
+    archiveFileName.set("${project.name}.zip")
+}
+
+buildZip.dependsOn jar
+//build.dependsOn buildZip

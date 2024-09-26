@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64;win-x64</RuntimeIdentifiers>
     <StartupObject>hirs.Program</StartupObject>
     <PublishSingleFile>true</PublishSingleFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageVersion>3.0.0</PackageVersion>
+    <PackageVersion>3.0.1</PackageVersion>
     <Release></Release> 
 </PropertyGroup>
 
@@ -35,7 +35,7 @@
     <PackageReference Include="paccor.HardwareManifestPlugin" Version="1.0.0" />
     <PackageReference Include="paccor.HardwareManifestPluginManager" Version="1.0.0" />
     <PackageReference Include="paccor.paccor_scripts" Version="1.0.1" />
-    <PackageReference Include="Packaging.Targets" Version="0.1.220">
+    <PackageReference Include="Packaging.Targets" Version="0.1.226">
       <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
