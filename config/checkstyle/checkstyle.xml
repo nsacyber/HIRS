@@ -171,7 +171,12 @@
         </module>
         <module name="IllegalInstantiation"/>
         <module name="InnerAssignment"/>
-        <module name="MagicNumber"/>
+        <module name="MagicNumber">
+            <property name="ignoreAnnotation" value="true"/>
+            <property name="ignoreFieldDeclaration" value="true"/>
+            <property name="constantWaiverParentToken" value="ASSIGN,ARRAY_INIT,EXPR,
+      UNARY_PLUS, UNARY_MINUS, TYPECAST, ELIST, LITERAL_NEW"/>
+        </module>
         <module name="MissingSwitchDefault"/>
         <module name="MultipleVariableDeclarations"/>
         <module name="SimplifyBooleanExpression"/>

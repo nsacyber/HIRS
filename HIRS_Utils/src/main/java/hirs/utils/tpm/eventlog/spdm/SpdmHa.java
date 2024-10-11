@@ -7,11 +7,6 @@ package hirs.utils.tpm.eventlog.spdm;
 public class SpdmHa {
 
     /**
-     * Default private constructor so checkstyles doesn't complain
-     */
-    private SpdmHa() { }
-
-    /**
      * Spdm Hash Alg = Raw bit stream.
      */
     public static final int TPM_ALG_RAW = 1;
@@ -39,6 +34,12 @@ public class SpdmHa {
      * Spdm Hash Alg = TPM_ALG_SHA3_512.
      */
     public static final int TPM_ALG_SHA3_512 = 64;
+
+    /**
+     * Default private constructor so checkstyles doesn't complain.
+     */
+    private SpdmHa() {
+    }
 
     /**
      * Returns the hash name via a lookup.
@@ -93,20 +94,14 @@ public class SpdmHa {
             case TPM_ALG_SHA_256:
                 byteSize = 32;
                 break;
-            case TPM_ALG_SHA_384:
+            case TPM_ALG_SHA_384, TPM_ALG_SHA3_384:
                 byteSize = 48;
                 break;
-            case TPM_ALG_SHA_512:
+            case TPM_ALG_SHA_512, TPM_ALG_SHA3_512:
                 byteSize = 64;
                 break;
             case TPM_ALG_SHA3_256:
                 byteSize = 32;
-                break;
-            case TPM_ALG_SHA3_384:
-                byteSize = 48;
-                break;
-            case TPM_ALG_SHA3_512:
-                byteSize = 64;
                 break;
             default:
                 byteSize = -1;
