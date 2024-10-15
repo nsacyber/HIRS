@@ -2,10 +2,10 @@ package hirs.data.persist;
 
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 import org.apache.commons.lang3.StringUtils;
-import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
 
 /**
  * FirmwareInfoTest is a unit test class for FirmwareInfo.
@@ -15,18 +15,20 @@ public class FirmwareInfoTest {
     private static final String BIOS_VENDOR = "test bios vendor";
     private static final String BIOS_VERSION = "test bios version";
     private static final String BIOS_RELEASE_DATE = "test bios release date";
+    private static final int PRIMARY_SIZE = 257;
+    private static final int SECONDARY_SIZE = 33;
 
     private static final String LONG_BIOS_VENDOR = StringUtils.rightPad(
-            "test bios vendor",
-            257
+            BIOS_VENDOR,
+            PRIMARY_SIZE
     );
     private static final String LONG_BIOS_VERSION = StringUtils.rightPad(
-            "test bios version",
-            257
+            BIOS_VERSION,
+            PRIMARY_SIZE
     );
     private static final String LONG_BIOS_RELEASE_DATE = StringUtils.rightPad(
-            "test bios release date",
-            33
+            BIOS_RELEASE_DATE,
+            SECONDARY_SIZE
     );
 
     /**
@@ -44,8 +46,8 @@ public class FirmwareInfoTest {
     public final void firmwareInfoNoParams() {
         FirmwareInfo firmwareInfo = new FirmwareInfo();
         Assertions.assertEquals(NOT_SPECIFIED, firmwareInfo.getBiosVendor());
-        Assertions.assertEquals(NOT_SPECIFIED,firmwareInfo.getBiosVersion());
-        Assertions.assertEquals(NOT_SPECIFIED,firmwareInfo.getBiosReleaseDate());
+        Assertions.assertEquals(NOT_SPECIFIED, firmwareInfo.getBiosVersion());
+        Assertions.assertEquals(NOT_SPECIFIED, firmwareInfo.getBiosReleaseDate());
     }
 
     /**

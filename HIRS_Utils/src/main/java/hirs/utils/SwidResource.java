@@ -19,14 +19,30 @@ import java.util.Map;
 public class SwidResource {
 
     @Getter
+    private static final boolean VALID_FILE_SIZE = false;
+
+    @Getter
     @Setter
-    private String name, size, hashValue;
+    private String name;
+
     @Getter
-    private String rimFormat, rimType, rimUriGlobal;
-//    private TpmWhiteListBaseline tpmWhiteList;
+    @Setter
+    private String size;
+
+    @Getter
+    @Setter
+    private String hashValue;
+
+    @Getter
+    private String rimFormat;
+
+    @Getter
+    private String rimType;
+
+    @Getter
+    private String rimUriGlobal;
+    //    private TpmWhiteListBaseline tpmWhiteList;
     private DigestAlgorithm digest = DigestAlgorithm.SHA1;
-    @Getter
-    private boolean validFileSize = false;
 
     /**
      * Default constructor.
@@ -43,7 +59,7 @@ public class SwidResource {
     /**
      * The main constructor that processes a {@code hirs.utils.xjc.File}.
      *
-     * @param file {@link File}
+     * @param file   {@link File}
      * @param digest algorithm associated with pcr values
      */
     public SwidResource(final File file, final DigestAlgorithm digest) {

@@ -21,16 +21,17 @@ import java.nio.file.Path;
 public final class JsonUtils {
 
     /**
-     * Default private constructor so checkstyles doesn't complain
+     * Default private constructor so checkstyles doesn't complain.
      */
-    private JsonUtils() { }
+    private JsonUtils() {
+    }
 
     /**
      * Getter for the JSON Object that is associated with the elementName value
      * mapped in the associated JSON file.
      * Default {@link java.nio.charset.Charset} is UTF 8
      *
-     * @param jsonPath the object holding the location of the file to parse.
+     * @param jsonPath    the object holding the location of the file to parse.
      * @param elementName the specific object to pull from the file
      * @return a JSON object
      */
@@ -44,9 +45,9 @@ public final class JsonUtils {
      * mapped in the associated JSON file.
      * Default {@link java.nio.charset.Charset} is UTF 8
      *
-     * @param jsonPath the object holding the location of the file to parse.
+     * @param jsonPath    the object holding the location of the file to parse.
      * @param elementName the specific object to pull from the file
-     * @param charset the character set to use
+     * @param charset     the character set to use
      * @return a JSON object
      */
     public static JsonObject getSpecificJsonObject(final Path jsonPath,
@@ -77,7 +78,7 @@ public final class JsonUtils {
      * Getter for the JSON Object that is mapped in the associated JSON file.
      *
      * @param jsonPath the object holding the location of the file to parse.
-     * @param charset the character set to use
+     * @param charset  the character set to use
      * @return a JSON object
      */
     public static JsonObject getJsonObject(final Path jsonPath, final Charset charset) {
@@ -85,7 +86,7 @@ public final class JsonUtils {
         JsonObject jsonObject = new JsonObject();
 
         if (Files.notExists(jsonPath)) {
-            log.warn(String.format("No file found at %s.", jsonPath.toString()));
+            log.warn("No file found at {}.", jsonPath.toString());
         } else {
             try {
                 InputStream inputStream = new FileInputStream(jsonPath.toString());
@@ -106,7 +107,7 @@ public final class JsonUtils {
      * Default {@link java.nio.charset.Charset} is UTF 8
      *
      * @param jsonFilename the object holding the name of the file in classpath to parse.
-     * @param elementName the specific object to pull from the file
+     * @param elementName  the specific object to pull from the file
      * @return a JSON object
      */
     public static JsonObject getSpecificJsonObject(final String jsonFilename, final String elementName) {
@@ -120,8 +121,8 @@ public final class JsonUtils {
      * Default {@link java.nio.charset.Charset} is UTF 8
      *
      * @param jsonFilename the object holding the name of the file in classpath to parse.
-     * @param elementName the specific object to pull from the file
-     * @param charset the character set to use
+     * @param elementName  the specific object to pull from the file
+     * @param charset      the character set to use
      * @return a JSON object
      */
     public static JsonObject getSpecificJsonObject(final String jsonFilename,
@@ -152,7 +153,7 @@ public final class JsonUtils {
      * Getter for the JSON Object that is mapped in the associated JSON file.
      *
      * @param jsonFilename the object holding the name of the file in classpath to parse.
-     * @param charset the character set to use
+     * @param charset      the character set to use
      * @return a JSON object
      */
     public static JsonObject getJsonObject(final String jsonFilename, final Charset charset) {

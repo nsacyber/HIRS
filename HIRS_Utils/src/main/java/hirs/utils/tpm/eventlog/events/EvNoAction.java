@@ -11,16 +11,16 @@ import java.nio.charset.StandardCharsets;
  * Class to process the EV_NO_ACTION event.
  * The first 16 bytes of the event data MUST be a String based identifier (Signature).
  * Currently defined Signatures are
- *    "Spec ID Event03"
- *      - implies the data is a TCG_EfiSpecIDEvent
- *      - TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
- *        if the format of the Log (SHA1 vs Crypto Agile).
- *    "StartupLocality"
- *      - implies the data represents locality info (use lookup to interpret)
- *    "NvIndexInstance"
- *      - implies the data is a NV_INDEX_INSTANCE_EVENT_LOG_DATA
- *    "NvIndexDynamic"
- *      - implies the data is a NV_INDEX_DYNAMIC_EVENT_LOG_DATA
+ * "Spec ID Event03"
+ * - implies the data is a TCG_EfiSpecIDEvent
+ * - TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
+ * if the format of the Log (SHA1 vs Crypto Agile).
+ * "StartupLocality"
+ * - implies the data represents locality info (use lookup to interpret)
+ * "NvIndexInstance"
+ * - implies the data is a NV_INDEX_INSTANCE_EVENT_LOG_DATA
+ * "NvIndexDynamic"
+ * - implies the data is a NV_INDEX_DYNAMIC_EVENT_LOG_DATA
  * <p>
  * Notes:
  * 1. First 16 bytes of the structure is an ASCII with a fixed Length of 16
@@ -66,7 +66,7 @@ public class EvNoAction {
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
         if (signature.contains("Spec ID Event03")) {      // implies CryptAgileFormat
             EvEfiSpecIdEvent specIDEvent = new EvEfiSpecIdEvent(eventData);
-            noActionInfo += specIDEventToString(specIDEvent).toString();
+            noActionInfo += specIDEventToString(specIDEvent);
             bSpecIDEvent = true;
             specVersion = String.format("%s.%s",
                     specIDEvent.getVersionMajor(),
@@ -126,25 +126,21 @@ public class EvNoAction {
      * @return a description of the locality.
      */
     private String getLocality(final byte[] eventData) {
-        String localityInfo = "";
+        final int eventDataSrcIndex = 16;
         byte[] localityBytes = new byte[1];
-        System.arraycopy(eventData, 16, localityBytes, 0, 1);
-        int locality = HexUtils.leReverseInt(localityBytes);
+        System.arraycopy(eventData, eventDataSrcIndex, localityBytes, 0, 1);
+        final int locality = HexUtils.leReverseInt(localityBytes);
 
-        switch (locality) {
-            case 0:
-                localityInfo += "Locality 0 without an H-CRTM sequence";
-                break;
-            case 3:
-                localityInfo += "Locality 3 without an H-CRTM sequence";
-                break;
-            case 4:
-                localityInfo += "Locality 4 with an H-CRTM sequence initialized";
-                break;
-            default:
-                localityInfo += "Unknown";
-        }
-        return localityInfo;
+        final int locality0 = 0;
+        final int locality3 = 3;
+        final int locality4 = 4;
+
+        return switch (locality) {
+            case locality0 -> "Locality 0 without an H-CRTM sequence";
+            case locality3 -> "Locality 3 without an H-CRTM sequence";
+            case locality4 -> "Locality 4 with an H-CRTM sequence initialized";
+            default -> "Unknown";
+        };
     }
 
     /**

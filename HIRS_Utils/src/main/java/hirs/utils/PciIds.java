@@ -26,28 +26,23 @@ import java.util.List;
 public final class PciIds {
 
     /**
-     * Default private constructor so checkstyles doesn't complain
-     */
-    private PciIds() { }
-
-    /**
      * This pci ids file can be in different places on different distributions.
      */
     public static final List<String> PCI_IDS_PATH =
             Collections.unmodifiableList(new ArrayList<>() {
                 private static final long serialVersionUID = 1L;
+
                 {
                     add("/usr/share/hwdata/pci.ids");
                     add("/usr/share/misc/pci.ids");
                     add("/tmp/pci.ids");
                 }
             });
-
     /**
      * The PCI IDs Database object.
-     *
+     * <p>
      * This only needs to be loaded one time.
-     *
+     * <p>
      * The pci ids library protects the data inside the object by making it immutable.
      */
     public static final PciIdsDatabase DB = new PciIdsDatabase();
@@ -65,7 +60,7 @@ public final class PciIds {
             if (dbFile != null) {
                 InputStream is = null;
                 try {
-                    is = new FileInputStream(new File(dbFile));
+                    is = new FileInputStream(dbFile);
                     DB.loadStream(is);
                 } catch (IOException e) {
                     // DB will not be ready, hardware IDs will not be translated
@@ -84,8 +79,15 @@ public final class PciIds {
     }
 
     /**
+     * Default private constructor so checkstyles doesn't complain.
+     */
+    private PciIds() {
+    }
+
+    /**
      * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
      * If any part of this fails, return the original manufacturer value.
+     *
      * @param refManufacturer DERUTF8String, likely from a ComponentIdentifier
      * @return DERUTF8String with the discovered vendor name, or the original manufacturer value.
      */
@@ -103,6 +105,7 @@ public final class PciIds {
     /**
      * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
      * If any part of this fails, return the original manufacturer value.
+     *
      * @param refManufacturer String, likely from a ComponentResult
      * @return String with the discovered vendor name, or the original manufacturer value.
      */
@@ -121,8 +124,9 @@ public final class PciIds {
      * Look up the device name from the PCI IDs list, if the input strings contain IDs.
      * The Device lookup requires the Vendor ID AND the Device ID to be valid values.
      * If any part of this fails, return the original model value.
+     *
      * @param refManufacturer ASN1UTF8String, likely from a ComponentIdentifier
-     * @param refModel ASN1UTF8String, likely from a ComponentIdentifier
+     * @param refModel        ASN1UTF8String, likely from a ComponentIdentifier
      * @return ASN1UTF8String with the discovered device name, or the original model value.
      */
     public static ASN1UTF8String translateDevice(final ASN1UTF8String refManufacturer,
@@ -146,8 +150,9 @@ public final class PciIds {
      * Look up the device name from the PCI IDs list, if the input strings contain IDs.
      * The Device lookup requires the Vendor ID AND the Device ID to be valid values.
      * If any part of this fails, return the original model value.
+     *
      * @param refManufacturer String, likely from a ComponentResult
-     * @param refModel String, likely from a ComponentResult
+     * @param refModel        String, likely from a ComponentResult
      * @return String with the discovered device name, or the original model value.
      */
     public static String translateDevice(final String refManufacturer,
@@ -169,24 +174,39 @@ public final class PciIds {
     /**
      * Look up the device class name from the PCI IDs list, if the input string contains an ID.
      * If any part of this fails, return the original manufacturer value.
+     *
      * @param refClassCode String, formatted as 2 characters (1 byte) for each of the 3 categories
-     *    Example "010802":
-     *       Class: "01"
-     *       Subclass: "08"
-     *       Programming Interface: "02"
+     *                     Example "010802":
+     *                     Class: "01"
+     *                     Subclass: "08"
+     *                     Programming Interface: "02"
      * @return List<String> 3-element list with the class code
-     *       1st element: human-readable description of Class
-     *       2nd element: human-readable description of Subclass
-     *       3rd element: human-readable description of Programming Interface
+     * 1st element: human-readable description of Class
+     * 2nd element: human-readable description of Subclass
+     * 3rd element: human-readable description of Programming Interface
      */
     public static List<String> translateDeviceClass(final String refClassCode) {
         List<String> translatedClassCode = new ArrayList<>();
 
         String classCode = refClassCode;
         if (classCode != null && classCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
-            String deviceClass = classCode.substring(0, 2).toLowerCase();
-            String deviceSubclass = classCode.substring(2, 4).toLowerCase();
-            String programInterface = classCode.substring(4, 6).toLowerCase();
+            final int startIndexOfDeviceClass = 0;
+            final int endIndexOfDeviceClass = 2;
+            String deviceClass =
+                    classCode.substring(startIndexOfDeviceClass, endIndexOfDeviceClass).toLowerCase();
+
+            final int startIndexOfDeviceSubclass = 2;
+            final int endIndexOfDeviceSubclass = 4;
+            String deviceSubclass =
+                    classCode.substring(startIndexOfDeviceSubclass, endIndexOfDeviceSubclass)
+                            .toLowerCase();
+
+            final int startIndexOfProgramInterface = 4;
+            final int endIndexOfProgramInterface = 6;
+            final String programInterface =
+                    classCode.substring(startIndexOfProgramInterface, endIndexOfProgramInterface)
+                            .toLowerCase();
+
             translatedClassCode.add(deviceClass);
             translatedClassCode.add(deviceSubclass);
             translatedClassCode.add(programInterface);

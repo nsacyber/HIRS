@@ -2,8 +2,9 @@ package hirs.utils;
 
 import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests methods in the (@link BouncyCastleUtils) utility class.
