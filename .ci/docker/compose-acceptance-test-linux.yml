@@ -12,6 +12,7 @@ services:
   hat:
     image: ghcr.io/nsacyber/hirs/hat
     container_name: hat
+    privileged: true
     ports:
        - 53:53/tcp
        - 53:53/udp
