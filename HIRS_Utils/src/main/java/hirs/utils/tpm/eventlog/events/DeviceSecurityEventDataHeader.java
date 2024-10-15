@@ -13,18 +13,18 @@ import java.io.IOException;
  * Class to process the DEVICE_SECURITY_EVENT_DATA_HEADER.
  * DEVICE_SECURITY_EVENT_DATA_HEADER contains the measurement(s) and hash algorithm identifier
  * returned by the SPDM "GET_MEASUREMENTS" function.
- *
+ * <p>
  * HEADERS defined by PFP v1.06 Rev 52:
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER {
- *      UINT8                           Signature[16];
- *      UINT16                          Version;
- *      UINT16                          Length;
- *      UINT32                          SpdmHashAlg;
- *      UINT32                          DeviceType;
- *      SPDM_MEASUREMENT_BLOCK          SpdmMeasurementBlock;
- *      UINT64                          DevicePathLength;
- *      UNIT8                           DevicePath[DevicePathLength]
+ * UINT8                           Signature[16];
+ * UINT16                          Version;
+ * UINT16                          Length;
+ * UINT32                          SpdmHashAlg;
+ * UINT32                          DeviceType;
+ * SPDM_MEASUREMENT_BLOCK          SpdmMeasurementBlock;
+ * UINT64                          DevicePathLength;
+ * UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER;
  * <p>
  * Assumption: there is only 1 SpdmMeasurementBlock per event. Need more test patterns to verify.
@@ -62,8 +62,9 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
 
         super(dsedBytes);
 
+        final int dsedBytesSrcIndex1 = 18;
         byte[] lengthBytes = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(dsedBytes, 18, lengthBytes, 0,
+        System.arraycopy(dsedBytes, dsedBytesSrcIndex1, lengthBytes, 0,
                 UefiConstants.SIZE_2);
         length = HexUtils.leReverseInt(lengthBytes);
 
@@ -72,18 +73,22 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
                 UefiConstants.SIZE_4);
         spdmHashAlgo = HexUtils.leReverseInt(spdmHashAlgoBytes);
 
-        extractDeviceType(dsedBytes, 24);
+        final int dsedBytesStartByte = 24;
+        extractDeviceType(dsedBytes, dsedBytesStartByte);
 
         // get the size of the SPDM Measurement Block
+        final int dsedBytesSrcIndex2 = 30;
         byte[] sizeOfSpdmMeasBlockBytes = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(dsedBytes, 30, sizeOfSpdmMeasBlockBytes, 0,
+        System.arraycopy(dsedBytes, dsedBytesSrcIndex2, sizeOfSpdmMeasBlockBytes, 0,
                 UefiConstants.SIZE_2);
-        int sizeOfSpdmMeas = HexUtils.leReverseInt(sizeOfSpdmMeasBlockBytes);
-        int sizeOfSpdmMeasBlock = sizeOfSpdmMeas + 4;   // header is 4 bytes
+        final int sizeOfSpdmMeas = HexUtils.leReverseInt(sizeOfSpdmMeasBlockBytes);
+        final int offSetBytesForSpdm = 4;
+        final int sizeOfSpdmMeasBlock = sizeOfSpdmMeas + offSetBytesForSpdm;   // header is 4 bytes
 
         // extract the bytes that comprise the SPDM Measurement Block
+        final int dsedBytesSrcIndex3 = 28;
         byte[] spdmMeasBlockBytes = new byte[sizeOfSpdmMeasBlock];
-        System.arraycopy(dsedBytes, 28, spdmMeasBlockBytes, 0,
+        System.arraycopy(dsedBytes, dsedBytesSrcIndex3, spdmMeasBlockBytes, 0,
                 sizeOfSpdmMeasBlock);
 
         ByteArrayInputStream spdmMeasurementBlockData =
@@ -96,7 +101,8 @@ public class DeviceSecurityEventDataHeader extends DeviceSecurityEventHeader {
             spdmMeasurementBlockInfo = "      Error reading SPDM Measurement Block";
         }
 
-        int devPathLenStartByte = 28 + sizeOfSpdmMeasBlock;
+        final int offSetBytesForDevPath = 28;
+        final int devPathLenStartByte = offSetBytesForDevPath + sizeOfSpdmMeasBlock;
         extractDevicePathAndFinalSize(dsedBytes, devPathLenStartByte);
     }
 

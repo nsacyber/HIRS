@@ -9,11 +9,11 @@ import hirs.utils.tpm.eventlog.spdm.SpdmHa;
  *
  * <p>
  * typedef union tdDEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN {
- *      UINT16                  SpdmVersion;
- *      UINT8                   SpdmSlotId;
- *      UINT8                   Reserved;
- *      UINT32                  SpdmBaseHashAlgo;
- *      SPDM_CERT_CHAIN         SpdmCertChain;
+ * UINT16                  SpdmVersion;
+ * UINT8                   SpdmSlotId;
+ * UINT8                   Reserved;
+ * UINT32                  SpdmBaseHashAlgo;
+ * SPDM_CERT_CHAIN         SpdmCertChain;
  * } DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN;
  * <p>
  * SpdmVersion: SpdmBaseHashAlgo
@@ -61,16 +61,21 @@ public class DeviceSecurityEventDataSubHeaderCertChain extends DeviceSecurityEve
 
         // byte[] reserved[Bytes]: 1 byte
 
-        byte[] spdmBaseHashAlgoBytes = new byte[4];
-        System.arraycopy(dsedSubHBytes, 4, spdmBaseHashAlgoBytes, 0, 4);
+        final int dsedSybHBytesSrcIndex1 = 4;
+        final int spdmBaseHashAlgoBytesSize = 4;
+        byte[] spdmBaseHashAlgoBytes = new byte[spdmBaseHashAlgoBytesSize];
+        System.arraycopy(dsedSubHBytes, dsedSybHBytesSrcIndex1, spdmBaseHashAlgoBytes, 0,
+                spdmBaseHashAlgoBytesSize);
         spdmBaseHashAlgo = HexUtils.leReverseInt(spdmBaseHashAlgoBytes);
 
         // get the size of the SPDM Cert Chain
-        int spdmCertChainSize = dsedSubHBytes.length - 8;
+        final int offsetForSpdmCertChain = 8;
+        int spdmCertChainSize = dsedSubHBytes.length - offsetForSpdmCertChain;
 
         // extract the bytes that comprise the SPDM Cert Chain
+        final int dsedSybHBytesSrcIndex2 = 8;
         byte[] spdmCertChainBytes = new byte[spdmCertChainSize];
-        System.arraycopy(dsedSubHBytes, 8, spdmCertChainBytes, 0,
+        System.arraycopy(dsedSubHBytes, dsedSybHBytesSrcIndex2, spdmCertChainBytes, 0,
                 spdmCertChainSize);
 
         int spdmBaseHashAlgoSize = SpdmHa.tcgAlgIdToByteSize(spdmBaseHashAlgo);

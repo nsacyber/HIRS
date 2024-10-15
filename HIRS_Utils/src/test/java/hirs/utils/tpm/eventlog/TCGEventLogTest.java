@@ -58,40 +58,45 @@ public class TCGEventLogTest {
             NoSuchAlgorithmException {
         LOGGER.debug("Testing the parsing of a Crypto Agile formatted TCG Event Log");
 
-        // setup
-        final InputStream log = this.getClass().getResourceAsStream(DEFAULT_EVENT_LOG);
-        final InputStream pcrs = this.getClass().getResourceAsStream(DEFAULT_EXPECTED_PCRS);
-        final byte[] rawLogBytes = IOUtils.toByteArray(log);
-        final TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
-        final String[] pcrFromLog = evlog.getExpectedPCRValues();
-        final Object[] pcrObj = IOUtils.readLines(pcrs, "UTF-8").toArray();
-        final String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
 
-        boolean testPass = true;
+        try {
+            // setup
+            final InputStream log = this.getClass().getResourceAsStream(DEFAULT_EVENT_LOG);
+            final InputStream pcrs = this.getClass().getResourceAsStream(DEFAULT_EXPECTED_PCRS);
+            final byte[] rawLogBytes = IOUtils.toByteArray(log);
+            final TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
+            final String[] pcrFromLog = evlog.getExpectedPCRValues();
+            final Object[] pcrObj = IOUtils.readLines(pcrs, "UTF-8").toArray();
+            final String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
 
-        // Test 1 get all PCRs
-        for (int i = 0; i < PCR_COUNT; i++) {
-            if (pcrFromLog[i].compareToIgnoreCase(pcrTxt[i]) != 0) {
-                testPass = false;
-                LOGGER.error("\ntestTCGEventLogProcessorParser error with PCR {}", i);
+            boolean testPass = true;
+
+            // Test 1 get all PCRs
+            for (int i = 0; i < PCR_COUNT; i++) {
+                if (pcrFromLog[i].compareToIgnoreCase(pcrTxt[i]) != 0) {
+                    testPass = false;
+                    LOGGER.error("\ntestTCGEventLogProcessorParser error with PCR {}", i);
+                }
             }
+            assertTrue(testPass);
+
+            // Test 2 get an individual PCR
+            final int pcrIndex = 3;
+            String pcr3 = evlog.getExpectedPCRValue(pcrIndex);
+            assertThat(pcrFromLog[pcrIndex], equalTo(pcr3));
+
+            // Test 3 check the Algorithm String Identifier used in the log
+            String algStr = evlog.getEventLogHashAlgorithm();
+            assertThat("TPM_ALG_SHA256", equalTo(algStr));
+
+            // Test 4 check the Algorithm # Identifier used in the log
+            int id = evlog.getEventLogHashAlgorithmID();
+            assertThat(TcgTpmtHa.TPM_ALG_SHA256, equalTo(id));
+
+            LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
+        } catch (Throwable throwable) {
+            throw throwable;
         }
-        assertTrue(testPass);
-
-        // Test 2 get an individual PCR
-        final int pcrIndex = 3;
-        String pcr3 = evlog.getExpectedPCRValue(pcrIndex);
-        assertThat(pcrFromLog[pcrIndex], equalTo(pcr3));
-
-        // Test 3 check the Algorithm String Identifier used in the log
-        String algStr = evlog.getEventLogHashAlgorithm();
-        assertThat("TPM_ALG_SHA256", equalTo(algStr));
-
-        // Test 4 check the Algorithm # Identifier used in the log
-        int id = evlog.getEventLogHashAlgorithmID();
-        assertThat(TcgTpmtHa.TPM_ALG_SHA256, equalTo(id));
-
-        LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
     }
 
     /**
@@ -106,38 +111,42 @@ public class TCGEventLogTest {
             NoSuchAlgorithmException {
         LOGGER.debug("Testing the parsing of a SHA1 formated TCG Event Log");
 
-        // setup
-        final InputStream log = this.getClass().getResourceAsStream(SHA1_EVENT_LOG);
-        final InputStream pcrs = this.getClass().getResourceAsStream(SHA1_EXPECTED_PCRS);
-        final byte[] rawLogBytes = IOUtils.toByteArray(log);
-        final TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
-        final String[] pcrFromLog = evlog.getExpectedPCRValues();
-        final Object[] pcrObj = IOUtils.readLines(pcrs, "UTF-8").toArray();
-        final String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
+        try {
+            // setup
+            final InputStream log = this.getClass().getResourceAsStream(SHA1_EVENT_LOG);
+            final InputStream pcrs = this.getClass().getResourceAsStream(SHA1_EXPECTED_PCRS);
+            final byte[] rawLogBytes = IOUtils.toByteArray(log);
+            final TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
+            final String[] pcrFromLog = evlog.getExpectedPCRValues();
+            final Object[] pcrObj = IOUtils.readLines(pcrs, "UTF-8").toArray();
+            final String[] pcrTxt = Arrays.copyOf(pcrObj, pcrObj.length, String[].class);
 
-        boolean testPass = true;
+            boolean testPass = true;
 
-        // Test 1 get all PCRs
-        for (int i = 0; i < PCR_COUNT; i++) {
-            if (pcrFromLog[i].compareToIgnoreCase(pcrTxt[i]) != 0) {
-                testPass = false;
-                LOGGER.error("\ntestTCGEventLogProcessorParser error with PCR {}", i);
+            // Test 1 get all PCRs
+            for (int i = 0; i < PCR_COUNT; i++) {
+                if (pcrFromLog[i].compareToIgnoreCase(pcrTxt[i]) != 0) {
+                    testPass = false;
+                    LOGGER.error("\ntestTCGEventLogProcessorParser error with PCR {}", i);
+                }
             }
+            assertTrue(testPass);
+
+            // Test 2 get an individual PCR
+            String pcr0 = evlog.getExpectedPCRValue(0);
+            assertThat(pcrFromLog[0], equalTo(pcr0));
+
+            // Test 3 check the Algorithm String Identifier used in the log
+            String algStr = evlog.getEventLogHashAlgorithm();
+            assertThat("TPM_ALG_SHA1", equalTo(algStr));
+
+            // Test 4 check the Algorithm # Identifier used in the log
+            int id = evlog.getEventLogHashAlgorithmID();
+            assertThat(TcgTpmtHa.TPM_ALG_SHA1, equalTo(id));
+
+            LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
+        } catch (Throwable throwable) {
+            throw throwable;
         }
-        assertTrue(testPass);
-
-        // Test 2 get an individual PCR
-        String pcr0 = evlog.getExpectedPCRValue(0);
-        assertThat(pcrFromLog[0], equalTo(pcr0));
-
-        // Test 3 check the Algorithm String Identifier used in the log
-        String algStr = evlog.getEventLogHashAlgorithm();
-        assertThat("TPM_ALG_SHA1", equalTo(algStr));
-
-        // Test 4 check the Algorithm # Identifier used in the log
-        int id = evlog.getEventLogHashAlgorithmID();
-        assertThat(TcgTpmtHa.TPM_ALG_SHA1, equalTo(id));
-
-        LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
     }
 }

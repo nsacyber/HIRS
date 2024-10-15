@@ -19,7 +19,7 @@ import java.util.Map;
 public class SwidResource {
 
     @Getter
-    private final boolean validFileSize = false;
+    private static final boolean VALID_FILE_SIZE = false;
 
     @Getter
     @Setter

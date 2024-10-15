@@ -28,6 +28,61 @@ import lombok.Getter;
 public class SpdmMeasurement {
 
     /**
+     * MEASUREMENT_VALUE_0 = Immutable ROM.
+     */
+    private static final int MEASUREMENT_VALUE_0 = 0;
+
+    /**
+     * MEASUREMENT_VALUE_1 = Mutable firmware.
+     */
+    private static final int MEASUREMENT_VALUE_1 = 1;
+
+    /**
+     * MEASUREMENT_VALUE_2 = Hardware configuration.
+     */
+    private static final int MEASUREMENT_VALUE_2 = 2;
+
+    /**
+     * MEASUREMENT_VALUE_3 = Firmware configuration.
+     */
+    private static final int MEASUREMENT_VALUE_3 = 3;
+
+    /**
+     * MEASUREMENT_VALUE_4 = Freeform measurement manifest.
+     */
+    private static final int MEASUREMENT_VALUE_4 = 4;
+
+    /**
+     * MEASUREMENT_VALUE_5 = Structured representation of debug and device mode.
+     */
+    private static final int MEASUREMENT_VALUE_5 = 5;
+
+    /**
+     * MEASUREMENT_VALUE_6 = Mutable firmware's version number.
+     */
+    private static final int MEASUREMENT_VALUE_6 = 6;
+
+    /**
+     * MEASUREMENT_VALUE_7 = Mutable firmware's security version number.
+     */
+    private static final int MEASUREMENT_VALUE_7 = 7;
+
+    /**
+     * MEASUREMENT_VALUE_8 = Hash-extended measurement.
+     */
+    private static final int MEASUREMENT_VALUE_8 = 8;
+
+    /**
+     * MEASUREMENT_VALUE_9 = Informational.
+     */
+    private static final int MEASUREMENT_VALUE_9 = 9;
+
+    /**
+     * MEASUREMENT_VALUE_10 = Structured measurement manifest.
+     */
+    private static final int MEASUREMENT_VALUE_10 = 10;
+
+    /**
      * Measurement value (digest).
      */
     private final byte[] dmtfSpecMeasurementValue;
@@ -69,22 +124,20 @@ public class SpdmMeasurement {
      * @return a description of the measurement value type.
      */
     public String dmtfSpecMeasurementValueTypeToString(final int measValType) {
-
-        String measValTypeStr = switch (measValType) {
-            case 0 -> "Immutable ROM";
-            case 1 -> "Mutable firmware";
-            case 2 -> "Hardware configuration";
-            case 3 -> "Firmware configuration";
-            case 4 -> "Freeform measurement manifest";
-            case 5 -> "Structured representation of debug and device mode";
-            case 6 -> "Mutable firmware's version number";
-            case 7 -> "Mutable firmware's security version number";
-            case 8 -> "Hash-extended measurement";
-            case 9 -> "Informational";
-            case 10 -> "Structured measurement manifest";
+        return switch (measValType) {
+            case MEASUREMENT_VALUE_0 -> "Immutable ROM";
+            case MEASUREMENT_VALUE_1 -> "Mutable firmware";
+            case MEASUREMENT_VALUE_2 -> "Hardware configuration";
+            case MEASUREMENT_VALUE_3 -> "Firmware configuration";
+            case MEASUREMENT_VALUE_4 -> "Freeform measurement manifest";
+            case MEASUREMENT_VALUE_5 -> "Structured representation of debug and device mode";
+            case MEASUREMENT_VALUE_6 -> "Mutable firmware's version number";
+            case MEASUREMENT_VALUE_7 -> "Mutable firmware's security version number";
+            case MEASUREMENT_VALUE_8 -> "Hash-extended measurement";
+            case MEASUREMENT_VALUE_9 -> "Informational";
+            case MEASUREMENT_VALUE_10 -> "Structured measurement manifest";
             default -> "Unknown or invalid DMTF Spec Measurement Value Type";
         };
-        return measValTypeStr;
     }
 
     /**

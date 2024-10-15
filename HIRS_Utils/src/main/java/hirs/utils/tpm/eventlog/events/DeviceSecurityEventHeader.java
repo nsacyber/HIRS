@@ -55,7 +55,7 @@ public abstract class DeviceSecurityEventHeader {
      * UEFI Device Path Length.
      */
     @Getter
-    private final int devicePathLength = 0;
+    private static final int DEVICE_PATH_LENGTH = 0;
     /**
      * Contains the size (in bytes) of the header.
      */
@@ -128,13 +128,15 @@ public abstract class DeviceSecurityEventHeader {
         int startByteUpdated = startByte;
 
         // get the device path length
-        byte[] devicePathLengthBytes = new byte[8];
-        System.arraycopy(dsedBytes, startByteUpdated, devicePathLengthBytes, 0, 8);
+        final int devicePathLengthBytesSize = 8;
+        byte[] devicePathLengthBytes = new byte[devicePathLengthBytesSize];
+        System.arraycopy(dsedBytes, startByteUpdated, devicePathLengthBytes, 0, devicePathLengthBytesSize);
         int retrievedDevicePathLength = HexUtils.leReverseInt(devicePathLengthBytes);
 
         // get the device path
         if (retrievedDevicePathLength > 0) {
-            startByteUpdated = startByteUpdated + 8;
+            final int startByteUpdatedOffset = 8;
+            startByteUpdated = startByteUpdated + startByteUpdatedOffset;
             byte[] devPathBytes = new byte[retrievedDevicePathLength];
             System.arraycopy(dsedBytes, startByteUpdated, devPathBytes,
                     0, retrievedDevicePathLength);
@@ -153,16 +155,12 @@ public abstract class DeviceSecurityEventHeader {
      * @return name of the device type
      */
     public String deviceTypeToString(final int deviceTypeInt) {
-        switch (deviceTypeInt) {
-            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE:
-                return "No device type";
-            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI:
-                return "PCI";
-            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB:
-                return "USB";
-            default:
-                return "Unknown or invalid Device Type";
-        }
+        return switch (deviceTypeInt) {
+            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE -> "No device type";
+            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI -> "PCI";
+            case DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB -> "USB";
+            default -> "Unknown or invalid Device Type";
+        };
     }
 
     /**

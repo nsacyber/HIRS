@@ -8,7 +8,7 @@ import javax.xml.namespace.QName;
  * class. It is expected that member properties of this class will expand as
  * more functionality is added to SwidTagGateway.
  */
-public class SwidTagConstants {
+public final class SwidTagConstants {
 
     public static final String DEFAULT_KEYSTORE_FILE = "keystore.jks"; //"/opt/hirs/rimtool/keystore.jks";
     public static final String DEFAULT_KEYSTORE_PASSWORD = "password";

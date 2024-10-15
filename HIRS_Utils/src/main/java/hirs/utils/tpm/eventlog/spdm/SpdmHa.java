@@ -4,7 +4,7 @@ package hirs.utils.tpm.eventlog.spdm;
  * Class for defining hash algorithms referenced in the DMTF SPDM specification.
  * SPDM 1.3.0, Table 21, MeasurementHashAlgo.
  */
-public class SpdmHa {
+public final class SpdmHa {
 
     /**
      * Spdm Hash Alg = Raw bit stream.
@@ -49,32 +49,16 @@ public class SpdmHa {
      * @return name of the algorithm
      */
     public static String tcgAlgIdToString(final int algId) {
-        String alg;
-        switch (algId) {
-            case TPM_ALG_RAW:
-                alg = "Raw Bit Stream";
-                break;
-            case TPM_ALG_SHA_256:
-                alg = "TPM_ALG_SHA_256";
-                break;
-            case TPM_ALG_SHA_384:
-                alg = "TPM_ALG_SHA_384";
-                break;
-            case TPM_ALG_SHA_512:
-                alg = "TPM_ALG_SHA_512";
-                break;
-            case TPM_ALG_SHA3_256:
-                alg = "TPM_ALG_SHA3_256";
-                break;
-            case TPM_ALG_SHA3_384:
-                alg = "TPM_ALG_SHA3_384";
-                break;
-            case TPM_ALG_SHA3_512:
-                alg = "TPM_ALG_SHA3_512";
-                break;
-            default:
-                alg = "Unknown or invalid Hash";
-        }
+        String alg = switch (algId) {
+            case TPM_ALG_RAW -> "Raw Bit Stream";
+            case TPM_ALG_SHA_256 -> "TPM_ALG_SHA_256";
+            case TPM_ALG_SHA_384 -> "TPM_ALG_SHA_384";
+            case TPM_ALG_SHA_512 -> "TPM_ALG_SHA_512";
+            case TPM_ALG_SHA3_256 -> "TPM_ALG_SHA3_256";
+            case TPM_ALG_SHA3_384 -> "TPM_ALG_SHA3_384";
+            case TPM_ALG_SHA3_512 -> "TPM_ALG_SHA3_512";
+            default -> "Unknown or invalid Hash";
+        };
         return alg;
     }
 
@@ -86,26 +70,17 @@ public class SpdmHa {
      * @return size of the algorithm output
      */
     public static int tcgAlgIdToByteSize(final int algId) {
-        int byteSize;
-        switch (algId) {
-            //case TPM_ALG_RAW: // add this when have more test data
-            //    byteSize = ;
-            //    break;
-            case TPM_ALG_SHA_256:
-                byteSize = 32;
-                break;
-            case TPM_ALG_SHA_384, TPM_ALG_SHA3_384:
-                byteSize = 48;
-                break;
-            case TPM_ALG_SHA_512, TPM_ALG_SHA3_512:
-                byteSize = 64;
-                break;
-            case TPM_ALG_SHA3_256:
-                byteSize = 32;
-                break;
-            default:
-                byteSize = -1;
-        }
-        return byteSize;
+        final int byteSize256 = 32;
+        final int byteSize384 = 48;
+        final int byteSize512 = 64;
+
+        return switch (algId) {
+//            case TPM_ALG_RAW: // add this when have more test data
+//                return ;
+            case TPM_ALG_SHA_256, TPM_ALG_SHA3_256 -> byteSize256;
+            case TPM_ALG_SHA_384, TPM_ALG_SHA3_384 -> byteSize384;
+            case TPM_ALG_SHA_512, TPM_ALG_SHA3_512 -> byteSize512;
+            default -> -1;
+        };
     }
 }
