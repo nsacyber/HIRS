@@ -12,7 +12,26 @@ import java.util.UUID;
 @Repository
 public interface IssuedCertificateRepository extends JpaRepository<IssuedAttestationCertificate, UUID> {
 
+    /**
+     * Query that retrieves a
+     *
+     * @param archiveFlag
+     * @return
+     */
     List<IssuedAttestationCertificate> findByArchiveFlag(boolean archiveFlag);
+
+    /**
+     * Query that retrieves a
+     *
+     * @param archiveFlag
+     * @param pageable
+     * @return
+     */
     Page<IssuedAttestationCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
+
+    /**
+     * @param deviceId
+     * @return
+     */
     List<IssuedAttestationCertificate> findByDeviceId(UUID deviceId);
 }

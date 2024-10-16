@@ -7,5 +7,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TPM2ProvisionerStateRepository extends JpaRepository<TPM2ProvisionerState, Long> {
 
+    /**
+     * Query that retrieves the TPM2 Provisioner State using the provided first part of nonce.
+     *
+     * @param findByFirstPartOfNonce
+     * @return TPM2 Provisioner State
+     */
     TPM2ProvisionerState findByFirstPartOfNonce(Long findByFirstPartOfNonce);
 }

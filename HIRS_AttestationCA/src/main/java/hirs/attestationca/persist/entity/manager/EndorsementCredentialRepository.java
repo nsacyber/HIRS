@@ -13,9 +13,44 @@ import java.util.UUID;
 @Repository
 public interface EndorsementCredentialRepository extends JpaRepository<EndorsementCredential, UUID> {
 
+    /**
+     * Query that retrieves a
+     *
+     * @param archiveFlag
+     * @return
+     */
     List<EndorsementCredential> findByArchiveFlag(boolean archiveFlag);
+
+    /**
+     * Query that retrieves a
+     *
+     * @param archiveFlag
+     * @param pageable
+     * @return
+     */
     Page<EndorsementCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
+
+    /**
+     * Query that retrieves a
+     *
+     * @param holderSerialNumber
+     * @return
+     */
     EndorsementCredential findByHolderSerialNumber(BigInteger holderSerialNumber);
+
+    /**
+     * Query that retrieves a
+     *
+     * @param serialNumber
+     * @return
+     */
     EndorsementCredential findBySerialNumber(BigInteger serialNumber);
+
+    /**
+     * Query that retrieves a
+     *
+     * @param deviceId
+     * @return
+     */
     List<EndorsementCredential> findByDeviceId(UUID deviceId);
 }

@@ -12,8 +12,21 @@ import java.util.UUID;
 @Repository
 public interface IDevIDCertificateRepository extends JpaRepository<IDevIDCertificate, UUID> {
 
+    /**
+     * Query that retrieves a
+     *
+     * @param archiveFlag
+     * @return
+     */
     List<IDevIDCertificate> findByArchiveFlag(boolean archiveFlag);
 
+    /**
+     * Query that retrieves a
+     *
+     * @param archiveFlag
+     * @param pageable
+     * @return
+     */
     Page<IDevIDCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
     /*List<IDevIDCertificate> findBySubject(String subject);
     List<IDevIDCertificate> findBySubjectSorted(String subject);
