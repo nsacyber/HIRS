@@ -10,7 +10,7 @@ public interface TPM2ProvisionerStateRepository extends JpaRepository<TPM2Provis
     /**
      * Query that retrieves the TPM2 Provisioner State using the provided first part of nonce.
      *
-     * @param findByFirstPartOfNonce
+     * @param findByFirstPartOfNonce long representation of the first part of nonce
      * @return TPM2 Provisioner State
      */
     TPM2ProvisionerState findByFirstPartOfNonce(Long findByFirstPartOfNonce);

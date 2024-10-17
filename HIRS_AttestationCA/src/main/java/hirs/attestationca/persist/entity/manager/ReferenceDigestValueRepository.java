@@ -11,51 +11,51 @@ import java.util.UUID;
 public interface ReferenceDigestValueRepository extends JpaRepository<ReferenceDigestValue, UUID> {
 
     /**
-     * Query that retrieves a
+     * Query that retrieves a list of reference digest values using the provided model.
      *
-     * @param model
-     * @return
+     * @param model string representation of the model
+     * @return a list of reference digest values
      */
     List<ReferenceDigestValue> findByModel(String model);
 
     /**
-     * Query that retrieves a
+     * Query that retrieves a list of reference digest values using the provided manufacturer.
      *
-     * @param manufacturer
-     * @return
+     * @param manufacturer string representation of the manufacturer
+     * @return a list of reference digest values
      */
     List<ReferenceDigestValue> findByManufacturer(String manufacturer);
 
     /**
-     * Query that retrieves a
+     * Query that retrieves a list of reference digest values using the provided associated rim id.
      *
-     * @param associatedRimId
-     * @return
+     * @param associatedRimId uuid representation of the associated rim ID
+     * @return a list of reference digest values
      */
     List<ReferenceDigestValue> findValuesByBaseRimId(UUID associatedRimId);
 
     /**
-     * Query that retrieves a
+     * Query that retrieves a list of reference digest values using the provided support rim id.
      *
-     * @param supportRimId
-     * @return
+     * @param supportRimId uuid representation of the support rim ID
+     * @return a list of reference digest values
      */
     List<ReferenceDigestValue> findBySupportRimId(UUID supportRimId);
 
     /**
-     * Query that retrieves a
+     * Query that retrieves a list of reference digest values using the provided support rim hash.
      *
-     * @param supportRimHash
-     * @return
+     * @param supportRimHash a string representation of the support rim hash
+     * @return a list of reference digest values
      */
     List<ReferenceDigestValue> findBySupportRimHash(String supportRimHash);
 
     /**
-     * Query that retrieves a
+     * Query that retrieves a list of reference digest values using the provided manufacturer and model.
      *
-     * @param manufacturer
-     * @param model
-     * @return
+     * @param manufacturer string representation of the manufacturer
+     * @param model        string representation of the model
+     * @return a list of reference digest values
      */
     List<ReferenceDigestValue> findByManufacturerAndModel(String manufacturer, String model);
 }

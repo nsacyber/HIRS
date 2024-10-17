@@ -15,19 +15,26 @@ public interface SupplyChainValidationSummaryRepository
         extends JpaRepository<SupplyChainValidationSummary, UUID> {
 
     /**
-     * @param device
-     * @return
+     * Query that retrieves a supply chain validation summary using the provided device.
+     *
+     * @param device device
+     * @return a supply chain validation summary
      */
     SupplyChainValidationSummary findByDevice(Device device);
 
     /**
-     * @return
+     * Query that retrieves a list of supply chain validation summaries where the archive flag is false.
+     *
+     * @return a list of supply chain validation summary
      */
     List<SupplyChainValidationSummary> findByArchiveFlagFalse();
 
     /**
-     * @param pageable
-     * @return
+     * Query that retrieves a page of supply chain validation summaries using the provided pageable value
+     * and where the archive flag is false.
+     *
+     * @param pageable pageable
+     * @return a page of supply chain validation summary
      */
     Page<SupplyChainValidationSummary> findByArchiveFlagFalse(Pageable pageable);
 }

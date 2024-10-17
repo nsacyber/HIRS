@@ -11,7 +11,11 @@ import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
-import hirs.attestationca.persist.entity.userdefined.*;
+import hirs.attestationca.persist.entity.userdefined.Device;
+import hirs.attestationca.persist.entity.userdefined.PolicySettings;
+import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
+import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -27,12 +31,10 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.events.Event;
 
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,28 +48,28 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 @Service
 public class SupplyChainValidationService {
 
-    private CACredentialRepository caCredentialRepository;
-    private PolicyRepository policyRepository;
-    private ReferenceManifestRepository referenceManifestRepository;
-    private ReferenceDigestValueRepository referenceDigestValueRepository;
-    private ComponentResultRepository componentResultRepository;
-    private ComponentAttributeRepository componentAttributeRepository;
-    private CertificateRepository certificateRepository;
-    private SupplyChainValidationRepository supplyChainValidationRepository;
-    private SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
+    private final CACredentialRepository caCredentialRepository;
+    private final PolicyRepository policyRepository;
+    private final ReferenceManifestRepository referenceManifestRepository;
+    private final ReferenceDigestValueRepository referenceDigestValueRepository;
+    private final ComponentResultRepository componentResultRepository;
+    private final ComponentAttributeRepository componentAttributeRepository;
+    private final CertificateRepository certificateRepository;
+    private final SupplyChainValidationRepository supplyChainValidationRepository;
+    private final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
     private UUID provisionSessionId;
 
     /**
      * Constructor.
      *
-     * @param caCredentialRepository    ca credential repository
-     * @param policyRepository                      the policy manager
-     * @param certificateRepository                 the cert manager
-     * @param componentResultRepository             the comp result manager
-     * @param referenceManifestRepository           the RIM manager
-     * @param supplyChainValidationRepository       the scv manager
+     * @param caCredentialRepository                 ca credential repository
+     * @param policyRepository                       the policy manager
+     * @param certificateRepository                  the cert manager
+     * @param componentResultRepository              the comp result manager
+     * @param referenceManifestRepository            the RIM manager
+     * @param supplyChainValidationRepository        the scv manager
      * @param supplyChainValidationSummaryRepository the summary manager
-     * @param referenceDigestValueRepository              the even manager
+     * @param referenceDigestValueRepository         the even manager
      */
     @Autowired
     @SuppressWarnings("ParameterNumberCheck")
@@ -97,13 +99,12 @@ public class SupplyChainValidationService {
      * an identity request and validates the supply chain in accordance to the
      * current supply chain policy.
      *
-     * @param ec     The endorsement credential from the identity request.
-     * @param pcs    The platform credentials from the identity request.
-     * @param device The device to be validated.
+     * @param ec             The endorsement credential from the identity request.
+     * @param pcs            The platform credentials from the identity request.
+     * @param device         The device to be validated.
      * @param componentInfos list of components from the device
      * @return A summary of the validation results.
      */
-    @SuppressWarnings("methodlength")
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
                                                             final List<PlatformCredential> pcs,
                                                             final Device device,
@@ -250,8 +251,8 @@ public class SupplyChainValidationService {
 
                 updateComponentStatus(componentResultRepository
                         .findByCertificateSerialNumberAndBoardSerialNumber(
-                        baseCredential.getSerialNumber().toString(),
-                        baseCredential.getPlatformSerial()));
+                                baseCredential.getSerialNumber().toString(),
+                                baseCredential.getPlatformSerial()));
             }
             if (!attrErrorMessage.isEmpty()) {
                 //combine platform and platform attributes
@@ -323,9 +324,10 @@ public class SupplyChainValidationService {
                                     deviceName));
                 } else {
                     ReferenceManifest manifest = referenceManifestRepository
-                            .findByHexDecHashAndRimType(sRim.getEventLogHash(), ReferenceManifest.MEASUREMENT_RIM);
+                            .findByHexDecHashAndRimType(sRim.getEventLogHash(),
+                                    ReferenceManifest.MEASUREMENT_RIM);
                     if (manifest instanceof EventLogMeasurements) {
-                        eventLog = (EventLogMeasurements)manifest;
+                        eventLog = (EventLogMeasurements) manifest;
                     }
                 }
                 if (eventLog == null) {
@@ -357,7 +359,8 @@ public class SupplyChainValidationService {
 
             BaseReferenceManifest bRim = null;
             if (sRim != null && sRim.getAssociatedRim() != null) {
-                Optional<ReferenceManifest> oRim = referenceManifestRepository.findById(sRim.getAssociatedRim());
+                Optional<ReferenceManifest> oRim =
+                        referenceManifestRepository.findById(sRim.getAssociatedRim());
                 if (oRim.isPresent()) {
                     ReferenceManifest rim = oRim.get();
                     if (rim instanceof BaseReferenceManifest) {
@@ -375,7 +378,8 @@ public class SupplyChainValidationService {
             Optional<SupplyChainValidationSummary> previousOpt
                     //= this.supplyChainValidationSummaryRepository.findByDevice(deviceName);
                     //= this.supplyChainValidationSummaryRepository.findByDevice(device);
-                    = this.supplyChainValidationSummaryRepository.findById(UUID.fromString(device.getSummaryId()));
+                    = this.supplyChainValidationSummaryRepository.findById(
+                    UUID.fromString(device.getSummaryId()));
             if (previousOpt.isPresent()) {
                 SupplyChainValidationSummary previous = previousOpt.get();
                 for (SupplyChainValidation scv : previous.getValidations()) {
@@ -421,6 +425,7 @@ public class SupplyChainValidationService {
      * If the platform attributes policy is enabled, this method updates the matched
      * status for the component result.  This is done so that the details page for the
      * platform certificate highlights the title card red.
+     *
      * @param componentResults list of associated component results
      */
     private void updateComponentStatus(final List<ComponentResult> componentResults) {

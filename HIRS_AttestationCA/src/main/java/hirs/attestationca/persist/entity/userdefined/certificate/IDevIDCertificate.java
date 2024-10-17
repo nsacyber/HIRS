@@ -6,8 +6,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.codec.binary.Hex;
-import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.x509.CertificatePolicies;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.PolicyInformation;
@@ -15,21 +19,13 @@ import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Log4j2
@@ -154,6 +150,7 @@ public class IDevIDCertificate extends Certificate {
 
     /**
      * Parses fields related to IDevID certificates.
+     *
      * @throws IOException if a problem is encountered during parsing
      */
     private void parseIDevIDCertificate() throws IOException {
@@ -207,12 +204,12 @@ public class IDevIDCertificate extends Certificate {
                                 } catch (IllegalArgumentException e) {
                                     // Some certs have been found to contain tagged objects for hwSerialNum.
                                     // Handle this as a special case.
-                                    log.warn("Could not parse octet string for hwSerialNum. Attempting to parse tag.");
+                                    log.warn(
+                                            "Could not parse octet string for hwSerialNum. Attempting to parse tag.");
                                     try {
                                         tagObj1 = ASN1TaggedObject.getInstance(seq1.getObjectAt(1));
                                         obj2 = ASN1OctetString.getInstance(tagObj1, false);
-                                    }
-                                    catch (Exception i) {  // Invalid object found
+                                    } catch (Exception i) {  // Invalid object found
                                         log.warn("Invalid object found for hwSerialNum.");
                                         break;
                                     }
@@ -223,7 +220,7 @@ public class IDevIDCertificate extends Certificate {
                                 // the hwSerialNum field will be parsed accordingly.
                                 hwType = obj1.toString();
                                 if (hasTCGOIDs()) {
-                                        tcgOid = true;
+                                    tcgOid = true;
                                 }
 
                                 // Convert octet string to byte array
@@ -237,7 +234,8 @@ public class IDevIDCertificate extends Certificate {
             // Check for certificate policy qualifiers, which should be present for IDevIDs if in compliance with the
             // TCG specification.
             // For interoperability reasons, this will only log a warning if a TCG OID is specified above.
-            byte[] policyBytes = getX509Certificate().getExtensionValue(Extension.certificatePolicies.getId());
+            byte[] policyBytes =
+                    getX509Certificate().getExtensionValue(Extension.certificatePolicies.getId());
             Map<String, Boolean> policyQualifiers = null;
 
             if (policyBytes != null) {
@@ -264,8 +262,9 @@ public class IDevIDCertificate extends Certificate {
                     failCondition = true;
                 }
                 if (failCondition) {
-                    log.warn("TPM policy qualifiers not found, or do not meet logical criteria. Certificate may not " +
-                            "be in compliance with TCG specification.");
+                    log.warn(
+                            "TPM policy qualifiers not found, or do not meet logical criteria. Certificate may not " +
+                                    "be in compliance with TCG specification.");
                 }
             }
 
@@ -288,8 +287,7 @@ public class IDevIDCertificate extends Certificate {
     public boolean hasTCGOIDs() {
         if (this.getHwType() != null) {
             return this.getHwType().equals(HWTYPE_TCG_TPM2_OID);
-        }
-        else {
+        } else {
             return false;
         }
     }

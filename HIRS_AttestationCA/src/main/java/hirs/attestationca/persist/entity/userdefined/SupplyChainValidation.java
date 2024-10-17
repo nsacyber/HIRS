@@ -2,7 +2,6 @@ package hirs.attestationca.persist.entity.userdefined;
 
 import com.google.common.base.Preconditions;
 import hirs.attestationca.persist.entity.ArchivableEntity;
-import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,48 +20,19 @@ import java.util.List;
  */
 @Entity
 public class SupplyChainValidation extends ArchivableEntity {
-    /**
-     * Used to indicate which type of validation a result is related to.
-     */
-    public enum ValidationType {
-        /**
-         * Validation of an endorsement credential.
-         */
-        ENDORSEMENT_CREDENTIAL,
-
-        /**
-         * Validation of a platform credential and also delta platform credentials from spec 1.1.
-         */
-        PLATFORM_CREDENTIAL,
-
-        /**
-         * Validation of a platform credential's attributes.
-         */
-        PLATFORM_CREDENTIAL_ATTRIBUTES,
-
-        /**
-         * Validation of the device firmware.
-         */
-        FIRMWARE
-    }
-
     @Getter
     @Column
     private final ValidationType validationType;
-
     @Getter
     @Column
     private final AppraisalStatus.Status validationResult;
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "CertificatesUsedToValidate",
-            joinColumns = { @JoinColumn(name = "validation_id", nullable = false) })
+            joinColumns = {@JoinColumn(name = "validation_id", nullable = false)})
     private final List<Certificate> certificatesUsed;
-
     @Getter
     @Column(length = RESULT_MESSAGE_LENGTH)
     private final String message;
-
     @Getter
     @Column
     private String rimId;
@@ -81,10 +51,10 @@ public class SupplyChainValidation extends ArchivableEntity {
     /**
      * Construct a new SupplyChainValidation instance.
      *
-     * @param validationType the type of validation this instance will represent; not null
+     * @param validationType   the type of validation this instance will represent; not null
      * @param validationResult whether the validation was successful or not
      * @param certificatesUsed certificates used, if any, in the validation process; not null
-     * @param message a related information or error message; may be null
+     * @param message          a related information or error message; may be null
      */
     public SupplyChainValidation(final ValidationType validationType,
                                  final AppraisalStatus.Status validationResult,
@@ -121,5 +91,30 @@ public class SupplyChainValidation extends ArchivableEntity {
      */
     public List<Certificate> getCertificatesUsed() {
         return Collections.unmodifiableList(certificatesUsed);
+    }
+
+    /**
+     * Used to indicate which type of validation a result is related to.
+     */
+    public enum ValidationType {
+        /**
+         * Validation of an endorsement credential.
+         */
+        ENDORSEMENT_CREDENTIAL,
+
+        /**
+         * Validation of a platform credential and also delta platform credentials from spec 1.1.
+         */
+        PLATFORM_CREDENTIAL,
+
+        /**
+         * Validation of a platform credential's attributes.
+         */
+        PLATFORM_CREDENTIAL_ATTRIBUTES,
+
+        /**
+         * Validation of the device firmware.
+         */
+        FIRMWARE
     }
 }

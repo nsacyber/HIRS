@@ -49,10 +49,11 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
     private static final String LC_UNKNOWN = "unknown";
 
     /**
+     * Validates platform credential attributes v1 p2.
      *
-     * @param platformCredential
-     * @param deviceInfoReport
-     * @return
+     * @param platformCredential platform credential
+     * @param deviceInfoReport   device information report
+     * @return an appraisal status
      */
     public static AppraisalStatus validatePlatformCredentialAttributesV1p2(
             final PlatformCredential platformCredential,
@@ -159,7 +160,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @param componentAttributeRepository db access to component attribute match status
      * @param componentInfos               list of device components
      * @param provisionSessionId           UUID associated with the SCV Summary
-     * @param ignoreRevisionAttribute policy flag to ignore the revision attribute
+     * @param ignoreRevisionAttribute      policy flag to ignore the revision attribute
      * @return either PASS or FAIL
      */
     public static AppraisalStatus validatePlatformCredentialAttributesV2p0(
@@ -275,10 +276,10 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             numOfAttributes = attributeResults.size();
             boolean saveAttributeResult;
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
-                 saveAttributeResult = true;
+                saveAttributeResult = true;
                 if (ignoreRevisionAttribute) {
-                   saveAttributeResult = !componentAttributeResult.getAttribute()
-                           .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION);
+                    saveAttributeResult = !componentAttributeResult.getAttribute()
+                            .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION);
                 }
                 if (saveAttributeResult) {
                     componentAttributeResult.setProvisionSessionId(provisionSessionId);
@@ -318,7 +319,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      *                         base cert for this specific chain
      * @return Appraisal Status of delta being validated.
      */
-    @SuppressWarnings("methodlength")
+
     static AppraisalStatus validateDeltaAttributesChainV2p0(
             final DeviceInfoReport deviceInfoReport,
             final Map<PlatformCredential, SupplyChainValidation> deltaMapping,
@@ -366,7 +367,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         if (!componentAttributeResults.isEmpty()) {
             resultMessage.append(String.format("There are %d errors with Delta "
-                    + "Components associated with: %s%n",
+                            + "Components associated with: %s%n",
                     componentAttributeResults.size(),
                     deltaCertificates.get(0).getPlatformSerial()));
             fieldValidation = false;
@@ -856,7 +857,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
     /**
      * This method uses a specific hash to match device components with certificate components.
-     * @param componentInfos list of device component infos
+     *
+     * @param componentInfos        list of device component infos
      * @param compiledComponentList list of the remaining unmatched component results
      * @return remaining component results not matched
      */
@@ -892,7 +894,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
     /**
      * This method is used to find matches based on the component class value.
-     * @param componentInfos list of device component infos
+     *
+     * @param componentInfos            list of device component infos
      * @param remainingComponentResults list of the remaining unmatched component results
      * @return a generated list of component attributes results
      */
@@ -1019,7 +1022,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
     }
 
     /**
-     *
      * @param deltaCertificates
      * @param componentResultRepository
      * @param componentAttributeRepository

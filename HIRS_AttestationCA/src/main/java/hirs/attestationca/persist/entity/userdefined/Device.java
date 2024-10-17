@@ -65,6 +65,11 @@ public class Device extends AbstractEntity {
     @Column(name = "summary_id")
     private String summaryId;
 
+    /**
+     * Constructor creates a Device object using the provided device info report.
+     *
+     * @param deviceInfoReport device information report
+     */
     public Device(final DeviceInfoReport deviceInfoReport) {
         super();
         if (deviceInfoReport != null) {
@@ -94,6 +99,7 @@ public class Device extends AbstractEntity {
 
     /**
      * Getter for the report time stamp.
+     *
      * @return a cloned version
      */
     public Timestamp getLastReportTimestamp() {
@@ -106,12 +112,14 @@ public class Device extends AbstractEntity {
 
     /**
      * Setter for the report time stamp.
+     *
      * @param lastReportTimestamp
      */
     public void setLastReportTimestamp(final Timestamp lastReportTimestamp) {
         this.lastReportTimestamp = (Timestamp) lastReportTimestamp.clone();
     }
 
+    @Override
     public String toString() {
         return String.format("Device Name: %s%nStatus: %s%nSummary: %s%n",
                 name, (healthStatus == null ? "N/A" : healthStatus.getStatus()),
@@ -119,13 +127,14 @@ public class Device extends AbstractEntity {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Device)) {
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Device device)) {
             return false;
         }
 
-        Device device = (Device) o;
         return isStateOverridden == device.isStateOverridden
                 && Objects.equals(name, device.name)
                 && healthStatus == device.healthStatus
