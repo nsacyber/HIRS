@@ -53,16 +53,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * This class persists an Endorsement Credential by extending the base Certificate
  * class with fields unique to Endorsement credentials, as defined in the Trusted
  * Computing Group Credential Profiles, specification v.1.2.
- *
+ * <p>
  * trustedcomputinggroup.org/wp-content/uploads/Credential_Profiles_V1.2_Level2_Revision8.pdf
  */
 @Log4j2
 @EqualsAndHashCode(callSuper = false)
-@NoArgsConstructor(access= AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class EndorsementCredential extends DeviceAssociatedCertificate {
 
@@ -105,11 +104,27 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
     /**
      * this field is part of the TCG EC specification, but has not yet been found in
-     * manufacturer-provided ECs, and is therefore not currently parsed
+     * manufacturer-provided ECs, and is therefore not currently parsed.
      */
     @Getter
     @Column
-    private String credentialType = "TCPA Trusted Platform Module Endorsement";
+    private final String credentialType = "TCPA Trusted Platform Module Endorsement";
+
+    /**
+     * this field is part of the TCG EC specification, but has not yet been found in
+     * manufacturer-provided ECs, and is therefore not currently parsed.
+     */
+    @Getter
+    @Column(nullable = true)
+    private final String policyReference = null; // optional
+
+    /**
+     * this field is part of the TCG EC specification, but has not yet been found in
+     * manufacturer-provided ECs, and is therefore not currently parsed.
+     */
+    @Getter
+    @Column(nullable = true)
+    private final String revocationLocator = null; // optional
 
     @Getter
     @Column
@@ -130,22 +145,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     @Getter
     @Embedded
     private TPMSecurityAssertions tpmSecurityAssertions = null; //optional
-
-    /*
-     * this field is part of the TCG EC specification, but has not yet been found in
-     * manufacturer-provided ECs, and is therefore not currently parsed
-     */
-    @Getter
-    @Column(nullable = true)
-    private String policyReference = null; // optional
-
-    /*
-     * this field is part of the TCG EC specification, but has not yet been found in
-     * manufacturer-provided ECs, and is therefore not currently parsed
-     */
-    @Getter
-    @Column(nullable = true)
-    private String revocationLocator = null; // optional
 
     @Transient
     private Set<String> expectedOids;
@@ -180,6 +179,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * Parses the bytes as an EK. If parsing fails initially, the optionally present header
      * is removed and tried again. The cert header, if present, contains some certificate length
      * information which isn't needed for parsing.
+     *
      * @param certificateBytes the bytes of the EC
      * @return the EC if a valid credential, null otherwise
      */
@@ -228,6 +228,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * ASN1Primitives in the certificate and searches for matching OID keys of specific values. If
      * matching OID keys are found, their values are encoded in the fields of the current
      * EndorsementCredential object.
+     *
      * @throws IOException the input certificate bytes were not readable into an X509
      *                     certificate format
      */
@@ -280,9 +281,10 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * however, the method is set to add the sequence to the OID mapping, it may search for
      * patterns that correspond to the TPM Security Assertions and TPM Specification and set
      * those fields appropriately.
-     * @param seq the sequence to parse
+     *
+     * @param seq          the sequence to parse
      * @param addToMapping whether or not to store the sequence value as an OID key/value value
-     * @param key the associated OID key with this value necessary if addToMapping is true
+     * @param key          the associated OID key with this value necessary if addToMapping is true
      * @throws IOException parsing individual subcomponents failed
      */
     private void parseSequence(final ASN1Sequence seq, final boolean addToMapping,
@@ -315,7 +317,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             ASN1Integer revision = (ASN1Integer) seq.getObjectAt(ASN1_REV_INDEX);
             tpmSpecification = new TPMSpecification(family.getString(), level.getValue(),
                     revision.getValue());
-            log.debug("Found TPM Spec:" + tpmSpecification.toString());
+            log.debug("Found TPM Spec:" + tpmSpecification);
         } else if (addToMapping && key.equals(TPM_SECURITY_ASSERTIONS)) {
             // Parse TPM Security Assertions
             int seqPosition = 0;
@@ -341,7 +343,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             tpmSecurityAssertions = new TPMSecurityAssertions(ver.getValue(),
                     fieldUpgradeable.isTrue());
 
-            log.debug("Found TPM Assertions: " + tpmSecurityAssertions.toString());
+            log.debug("Found TPM Assertions: " + tpmSecurityAssertions);
             // Iterate through remaining fields to set optional attributes
             int tag;
             ASN1TaggedObject obj;
@@ -392,10 +394,11 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * Parses the many different types of ASN1Primitives and searches for specific OID
      * key/value pairs. Works by traversing the entire ASN1Primitive tree with a single
      * pass and populates relevant fields in the EndorsementCredential object.
-     * @param component the ASN1Primitive to parse
+     *
+     * @param component    the ASN1Primitive to parse
      * @param addToMapping whether or not the current component has been matched as the
      *                     value in an expected TPM OID key/value pair
-     * @param key if addToMapping is true, the key in the OID key/value pair
+     * @param key          if addToMapping is true, the key in the OID key/value pair
      * @throws IOException parsing of subcomponents in the tree failed.
      */
     @SuppressWarnings("checkstyle:methodlength")
@@ -421,13 +424,11 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                 parsedFields.put(key, ((ASN1ObjectIdentifier) component).getId());
             }
 
-        } else if (component instanceof ASN1TaggedObject) {
-            ASN1TaggedObject taggedObj = (ASN1TaggedObject) component;
+        } else if (component instanceof ASN1TaggedObject taggedObj) {
             parseSingle(taggedObj.getBaseObject().toASN1Primitive(), addToMapping, key);
 
-        } else if (component instanceof ASN1OctetString) {
+        } else if (component instanceof ASN1OctetString octStr) {
             // this may contain parseable data or may just be a OID key-pair value
-            ASN1OctetString octStr = (ASN1OctetString) component;
             byte[] bytes = octStr.getOctets();
             ByteArrayInputStream inStream = new ByteArrayInputStream(bytes);
             ASN1InputStream octIn = new ASN1InputStream(inStream);
@@ -446,12 +447,11 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                 }
             }
 
-        } else if (component instanceof ASN1Set) {
+        } else if (component instanceof ASN1Set set) {
             // all ECs seen to this point use sets differently than sequences and their sets
             // don't contain top level OIDs, so we can parse everything term by term, if that
             // ceases to be the case, we need to switch to this parsing to be more like
             // parseSequences in the future
-            ASN1Set set = (ASN1Set) component;
             Enumeration setContents = set.getObjects();
             ASN1Encodable subComp;
             while (setContents.hasMoreElements()) {

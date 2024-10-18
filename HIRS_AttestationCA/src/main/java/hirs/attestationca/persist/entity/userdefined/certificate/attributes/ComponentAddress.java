@@ -62,25 +62,16 @@ public class ComponentAddress {
 
     /**
      * Get the string value for the address type.
+     *
      * @return the string value for the address type
      */
     public String getAddressTypeValue() {
-        String typeValue;
-        switch (this.addressType.getId()) {
-            case ETHERNET_MAC:
-                typeValue = "ethernet mac";
-                break;
-            case WLAN_MAC:
-                typeValue = "wlan mac";
-                break;
-            case BLUETOOTH_MAC:
-                typeValue = "bluetooth mac";
-                break;
-            default:
-                typeValue = "unknown mac";
-                break;
-        }
-        return typeValue;
+        return switch (this.addressType.getId()) {
+            case ETHERNET_MAC -> "ethernet mac";
+            case WLAN_MAC -> "wlan mac";
+            case BLUETOOTH_MAC -> "bluetooth mac";
+            default -> "unknown mac";
+        };
     }
 
     @Override

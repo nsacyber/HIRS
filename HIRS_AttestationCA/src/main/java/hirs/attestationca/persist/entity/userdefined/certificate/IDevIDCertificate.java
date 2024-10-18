@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -21,13 +22,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 
 @Entity
+@Getter
+@EqualsAndHashCode
 @Log4j2
 public class IDevIDCertificate extends Certificate {
 
@@ -45,28 +46,24 @@ public class IDevIDCertificate extends Certificate {
     private static final String POLICY_QUALIFIER_VERIFIED_TPM_FIXED = "2.23.133.11.1.2";
     private static final String POLICY_QUALIFIER_VERIFIED_TPM_RESTRICTED = "2.23.133.11.1.3";
 
-    @Getter
     @Transient
     private byte[] subjectAltName;
 
     /**
      * Corresponds to the hwType field found in a Hardware Module Name (if present).
      */
-    @Getter
     @Column
     private String hwType;
 
     /**
      * Corresponds to the serial number found in a Hardware Module Name (if present).
      */
-    @Getter
     @Column
     private byte[] hwSerialNum;
 
     /**
      * TPM policy qualifiers (TCG only).
      */
-    @Getter
     @Column
     private String tpmPolicies;
 
@@ -106,13 +103,14 @@ public class IDevIDCertificate extends Certificate {
     }
 
     /**
-     * Obtains TPM policy qualifiers from the Certificate Policies extension, if present. These policy qualifiers are
-     * specified in the TCG document "TPM 2.0 Keys for Device Identity and Attestation".
+     * Obtains TPM policy qualifiers from the Certificate Policies extension, if present. These policy
+     * qualifiers are specified in the TCG document "TPM 2.0 Keys for Device Identity and Attestation".
      *
+     * @param policyBytes byte array representation of the policy
      * @return A {@link java.util.Map} containing the policy qualifiers obtained.
      * @throws IOException if policy qualifiers cannot be parsed from extension value
      */
-    public Map<String, Boolean> getTPMPolicyQualifiers(byte[] policyBytes) throws IOException {
+    public Map<String, Boolean> getTPMPolicyQualifiers(final byte[] policyBytes) throws IOException {
         CertificatePolicies certPolicies =
                 CertificatePolicies.getInstance(JcaX509ExtensionUtils.parseExtensionValue(policyBytes));
         Map<String, Boolean> policyQualifiers = new HashMap<>();
@@ -167,13 +165,13 @@ public class IDevIDCertificate extends Certificate {
             ASN1OctetString obj = (ASN1OctetString) input.readObject();
             boolean tcgOid = false;
 
-            // Parse the otherName structure. According to the specification "TPM 2.0 Keys for Device Identity and
-            // Attestation", otherName can contain up to two structures: HardwareModuleName and PermanentIdentifier.
-            // Currently, this parser only supports HardwareModuleName (if present).
+            // Parse the otherName structure. According to the specification "TPM 2.0 Keys for Device Identity
+            // and Attestation", otherName can contain up to two structures: HardwareModuleName and
+            // PermanentIdentifier. Currently, this parser only supports HardwareModuleName (if present).
 
             if (obj != null) {
-                // Parse Hardware Module Name structure, comprised of a hwType and hwSerialNum, and associated OID
-                // See also RFC 4108
+                // Parse Hardware Module Name structure, comprised of a hwType and hwSerialNum,
+                // and associated OID. See also RFC 4108
                 ASN1Sequence seq1 = ASN1Sequence.getInstance(obj.getOctets());
 
                 // Iterate over GeneralNames sequence until HardwareModuleName is found
@@ -205,7 +203,8 @@ public class IDevIDCertificate extends Certificate {
                                     // Some certs have been found to contain tagged objects for hwSerialNum.
                                     // Handle this as a special case.
                                     log.warn(
-                                            "Could not parse octet string for hwSerialNum. Attempting to parse tag.");
+                                            "Could not parse octet string for hwSerialNum. "
+                                                    + "Attempting to parse tag.");
                                     try {
                                         tagObj1 = ASN1TaggedObject.getInstance(seq1.getObjectAt(1));
                                         obj2 = ASN1OctetString.getInstance(tagObj1, false);
@@ -215,9 +214,9 @@ public class IDevIDCertificate extends Certificate {
                                     }
                                 }
 
-                                // If an OID corresponding to TPM 2.0 for hwType is supported, according to the
-                                // specification "TPM 2.0 Keys for Device Identity and Attestation", the contents of
-                                // the hwSerialNum field will be parsed accordingly.
+                                // If an OID corresponding to TPM 2.0 for hwType is supported, according
+                                // to the specification "TPM 2.0 Keys for Device Identity and Attestation",
+                                // the contents of the hwSerialNum field will be parsed accordingly.
                                 hwType = obj1.toString();
                                 if (hasTCGOIDs()) {
                                     tcgOid = true;
@@ -231,9 +230,9 @@ public class IDevIDCertificate extends Certificate {
                 }
             }
 
-            // Check for certificate policy qualifiers, which should be present for IDevIDs if in compliance with the
-            // TCG specification.
-            // For interoperability reasons, this will only log a warning if a TCG OID is specified above.
+            // Check for certificate policy qualifiers, which should be present for IDevIDs if in compliance
+            // with the TCG specification. For interoperability reasons, this will only log a warning
+            // if a TCG OID is specified above.
             byte[] policyBytes =
                     getX509Certificate().getExtensionValue(Extension.certificatePolicies.getId());
             Map<String, Boolean> policyQualifiers = null;
@@ -255,23 +254,23 @@ public class IDevIDCertificate extends Certificate {
                     });
                     tpmPolicies = qualifierSB.toString();
 
-                    failCondition = !(policyQualifiers.get("verifiedTPMResidency") &&
-                            (policyQualifiers.get("verifiedTPMFixed") ||
-                                    policyQualifiers.get("verifiedTPMRestricted")));
+                    failCondition = !(policyQualifiers.get("verifiedTPMResidency")
+                            && (policyQualifiers.get("verifiedTPMFixed")
+                            || policyQualifiers.get("verifiedTPMRestricted")));
                 } else {
                     failCondition = true;
                 }
                 if (failCondition) {
                     log.warn(
-                            "TPM policy qualifiers not found, or do not meet logical criteria. Certificate may not " +
-                                    "be in compliance with TCG specification.");
+                            "TPM policy qualifiers not found, or do not meet logical criteria. "
+                                    + "Certificate may not be in compliance with TCG specification.");
                 }
             }
 
             // Log a warning if notAfter field has an expiry date that is not indefinite
             if (!this.getEndValidity().toInstant().equals(Instant.ofEpochSecond(UNDEFINED_EXPIRY_DATE))) {
-                log.warn("IDevID does not contain an indefinite expiry date. This may indicate an invalid " +
-                        "certificate.");
+                log.warn("IDevID does not contain an indefinite expiry date. This may indicate an invalid "
+                        + "certificate.");
             }
 
             input.close();
@@ -279,8 +278,8 @@ public class IDevIDCertificate extends Certificate {
     }
 
     /**
-     * Function to check whether a given IDevID certificate has TCG OIDs, in order to check compliance with various
-     * fields.
+     * Function to check whether a given IDevID certificate has TCG OIDs, in order to check compliance with
+     * various fields.
      *
      * @return a boolean value
      */
@@ -290,42 +289,5 @@ public class IDevIDCertificate extends Certificate {
         } else {
             return false;
         }
-    }
-
-    @Override
-    @SuppressWarnings("checkstyle:avoidinlineconditionals")
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-
-        IDevIDCertificate that = (IDevIDCertificate) o;
-
-        if (!Objects.equals(getTpmPolicies(), that.getTpmPolicies())) {
-            return false;
-        }
-
-        if (!Objects.equals(getHwType(), that.getHwType())) {
-            return false;
-        }
-
-        return Arrays.equals(getHwSerialNum(), that.getHwSerialNum());
-    }
-
-    @Override
-    @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:avoidinlineconditionals"})
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (getTpmPolicies() != null ? getTpmPolicies().hashCode() : 0);
-        result = 31 * result + (getHwType() != null ? getHwType().hashCode() : 0);
-        result = 31 * result + (getHwSerialNum() != null ? Arrays.hashCode(getHwSerialNum()) : 0);
-
-        return result;
     }
 }

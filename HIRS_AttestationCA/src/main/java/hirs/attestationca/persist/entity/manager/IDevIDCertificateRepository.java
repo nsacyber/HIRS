@@ -29,54 +29,55 @@ public interface IDevIDCertificateRepository extends JpaRepository<IDevIDCertifi
      */
     Page<IDevIDCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 
-    /**
-     * Query that retrieves a list of IDevId certificates using the provided subject.
-     *
-     * @param subject string representation of the subject
-     * @return a list of IDevId certificates
-     */
-    List<IDevIDCertificate> findBySubject(String subject);
 
-    /**
-     * Query that retrieves a sorted list of IDevId certificates using the provided subject.
-     *
-     * @param subject string representation of the subject
-     * @return a sorted list of IDevId certificates
-     */
-    List<IDevIDCertificate> findBySubjectSorted(String subject);
-
-    /**
-     * Query that retrieves a list of IDevId certificates using the provided subject and archive flag.
-     *
-     * @param subject     string representation of the subject
-     * @param archiveFlag archive flag
-     * @return a list of IDevId certificates
-     */
-    List<IDevIDCertificate> findBySubjectAndArchiveFlag(String subject, boolean archiveFlag);
-
-    /**
-     * Query that retrieves a sorted list of IDevId certificates using the provided subject and archive flag.
-     *
-     * @param subject     string representation of the subject
-     * @param archiveFlag archive flag
-     * @return a sorted list of IDevId certificates
-     */
-    List<IDevIDCertificate> findBySubjectSortedAndArchiveFlag(String subject, boolean archiveFlag);
-
-    /**
-     * Query that retrieves an IDevId certificate using the provided subject key identifier.
-     *
-     * @param subjectKeyIdentifier byte representation of the subject key identifier
-     * @return an IDevId certificate
-     */
-    IDevIDCertificate findBySubjectKeyIdentifier(byte[] subjectKeyIdentifier);
-
-    /**
-     * Query that retrieves an IDevId certificate using the provided subject key and archive flag.
-     *
-     * @param subjectKeyIdString string representation of the subject key id
-     * @param archiveFlag        archive flag
-     * @return an IDevId certificate
-     */
-    IDevIDCertificate findBySubjectKeyIdStringAndArchiveFlag(String subjectKeyIdString, boolean archiveFlag);
+//    /**
+//     * Query that retrieves a list of IDevId certificates using the provided subject.
+//     *
+//     * @param subject string representation of the subject
+//     * @return a list of IDevId certificates
+//     */
+//    List<IDevIDCertificate> findBySubject(String subject);
+//
+//    /**
+//     * Query that retrieves a sorted list of IDevId certificates using the provided subject.
+//     *
+//     * @param subject string representation of the subject
+//     * @return a sorted list of IDevId certificates
+//     */
+//    List<IDevIDCertificate> findBySubjectSorted(String subject);
+//
+//    /**
+//     * Query that retrieves a list of IDevId certificates using the provided subject and archive flag.
+//     *
+//     * @param subject     string representation of the subject
+//     * @param archiveFlag archive flag
+//     * @return a list of IDevId certificates
+//     */
+//    List<IDevIDCertificate> findBySubjectAndArchiveFlag(String subject, boolean archiveFlag);
+//
+//    /**
+//     * Query that retrieves a sorted list of IDevId certificates using the provided subject and archive flag.
+//     *
+//     * @param subject     string representation of the subject
+//     * @param archiveFlag archive flag
+//     * @return a sorted list of IDevId certificates
+//     */
+//    List<IDevIDCertificate> findBySubjectSortedAndArchiveFlag(String subject, boolean archiveFlag);
+//
+//    /**
+//     * Query that retrieves an IDevId certificate using the provided subject key identifier.
+//     *
+//     * @param subjectKeyIdentifier byte representation of the subject key identifier
+//     * @return an IDevId certificate
+//     */
+//    IDevIDCertificate findBySubjectKeyIdentifier(byte[] subjectKeyIdentifier);
+//
+//    /**
+//     * Query that retrieves an IDevId certificate using the provided subject key and archive flag.
+//     *
+//     * @param subjectKeyIdString string representation of the subject key id
+//     * @param archiveFlag        archive flag
+//     * @return an IDevId certificate
+//     */
+//    IDevIDCertificate findBySubjectKeyIdStringAndArchiveFlag(String subjectKeyIdString, boolean archiveFlag);
 }

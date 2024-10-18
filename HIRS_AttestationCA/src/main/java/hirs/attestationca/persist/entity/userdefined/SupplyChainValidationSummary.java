@@ -203,6 +203,7 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
          * Construct the criterion that can be used to query for supply chain validation summaries
          * matching the configuration of this Selector.
          *
+         * @param criteriaBuilder criteria builder
          * @return a Criterion that can be used to query for supply chain validation summaries
          * matching the configuration of this instance
          */

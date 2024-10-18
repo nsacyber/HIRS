@@ -36,8 +36,9 @@ public class CertificateVariables {
      *
      */
     public static final int MAX_NUMERIC_PRECISION = 49;
+    
     /**
-     * Can store up to 160 bit values
+     * Can store up to 160 bit values.
      */
     public static final int MAX_PUB_KEY_MODULUS_HEX_LENGTH = 1024;
 
@@ -206,5 +207,8 @@ public class CertificateVariables {
      */
     public static final String ECDSA_STRING = "SHA256WithECDSA";
 
+    /**
+     *
+     */
     public static final String ECDSA_SHA224_STRING = "SHA224WithECDSA";
 }

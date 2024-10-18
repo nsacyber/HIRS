@@ -44,13 +44,11 @@ public class ComponentIdentifier {
      * Maximum number of configurations.
      */
     public static final int CONFIGMAX = 32;
-
-    private static final int MANDATORY_ELEMENTS = 2;
-    // optional sequence objects
     /**
      * Static variable indicated array position for the serial number.
      */
     protected static final int COMPONENT_SERIAL = 0;
+    // optional sequence objects
     /**
      * Static variable indicated array position for the revision info.
      */
@@ -68,13 +66,22 @@ public class ComponentIdentifier {
      */
     protected static final int COMPONENT_ADDRESS = 4;
 
+    private static final int MANDATORY_ELEMENTS = 2;
+
     private DERUTF8String componentManufacturer;
+
     private DERUTF8String componentModel;
+
     private DERUTF8String componentSerial;
+
     private DERUTF8String componentRevision;
+
     private ASN1ObjectIdentifier componentManufacturerId;
+
     private ASN1Boolean fieldReplaceable;
+
     private List<ComponentAddress> componentAddress;
+
     private boolean validationResult = true;
 
     /**
@@ -93,13 +100,13 @@ public class ComponentIdentifier {
     /**
      * Constructor given the components values.
      *
-     * @param componentManufacturer represents the component manufacturer
-     * @param componentModel represents the component model
-     * @param componentSerial  represents the component serial number
-     * @param componentRevision represents the component revision
+     * @param componentManufacturer   represents the component manufacturer
+     * @param componentModel          represents the component model
+     * @param componentSerial         represents the component serial number
+     * @param componentRevision       represents the component revision
      * @param componentManufacturerId represents the component manufacturer ID
-     * @param fieldReplaceable represents if the component is replaceable
-     * @param componentAddress represents a list of addresses
+     * @param fieldReplaceable        represents if the component is replaceable
+     * @param componentAddress        represents a list of addresses
      */
     public ComponentIdentifier(final DERUTF8String componentManufacturer,
                                final DERUTF8String componentModel,
@@ -119,6 +126,7 @@ public class ComponentIdentifier {
 
     /**
      * Constructor given the SEQUENCE that contains Component Identifier.
+     *
      * @param sequence containing the component identifier
      * @throws IllegalArgumentException if there was an error on the parsing
      */
@@ -193,22 +201,6 @@ public class ComponentIdentifier {
         return false;
     }
 
-    /**
-     * Getter for the component addresses.
-     * @return a collection of component addresses
-     */
-    public List<ComponentAddress> getComponentAddress() {
-        return componentAddress.stream().toList();
-    }
-
-    /**
-     * Setter for the list of component addresses.
-     * @param componentAddress collection of addresses
-     */
-    public void setComponentAddress(List<ComponentAddress> componentAddress) {
-        this.componentAddress = componentAddress.stream().toList();
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -230,7 +222,7 @@ public class ComponentIdentifier {
         }
         sb.append(", fieldReplaceable=");
         if (fieldReplaceable != null) {
-            sb.append(fieldReplaceable.toString());
+            sb.append(fieldReplaceable);
         }
         sb.append(", componentAddress=");
         if (!componentAddress.isEmpty()) {

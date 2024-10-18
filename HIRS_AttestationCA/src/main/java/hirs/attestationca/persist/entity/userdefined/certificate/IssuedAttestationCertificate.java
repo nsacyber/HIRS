@@ -28,6 +28,9 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      */
     public static final String AIC_TYPE_LABEL = "TCPA Trusted Platform Identity";
 
+    @Column
+    public boolean isLDevID;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ek_id")
     private EndorsementCredential endorsementCredential;
@@ -36,14 +39,12 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
     @JoinColumn(name = "pc_id")
     private List<PlatformCredential> platformCredentials;
 
-    @Column
-    public boolean isLDevID;
-
     /**
      * Constructor.
-     * @param certificateBytes the issued certificate bytes
+     *
+     * @param certificateBytes      the issued certificate bytes
      * @param endorsementCredential the endorsement credential
-     * @param platformCredentials the platform credentials
+     * @param platformCredentials   the platform credentials
      * @throws IOException if there is a problem extracting information from the certificate
      */
     public IssuedAttestationCertificate(final byte[] certificateBytes,
@@ -58,9 +59,11 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
 
     /**
      * Constructor.
-     * @param certificatePath path to certificate
+     *
+     * @param certificatePath       path to certificate
      * @param endorsementCredential the endorsement credential
-     * @param platformCredentials the platform credentials
+     * @param platformCredentials   the platform credentials
+     * @param isLDevID              is it an LDev ID
      * @throws IOException if there is a problem extracting information from the certificate
      */
     public IssuedAttestationCertificate(final Path certificatePath,
@@ -69,9 +72,5 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
                                         final boolean isLDevID)
             throws IOException {
         this(readBytes(certificatePath), endorsementCredential, platformCredentials, isLDevID);
-    }
-
-    public List<PlatformCredential> getPlatformCredentials() {
-        return new ArrayList<>(platformCredentials);
     }
 }

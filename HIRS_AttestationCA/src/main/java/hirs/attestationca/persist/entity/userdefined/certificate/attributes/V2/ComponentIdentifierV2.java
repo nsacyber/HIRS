@@ -67,19 +67,18 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     /**
      * Constructor given the components values.
      *
-     * @param componentClass represent the component type
-     * @param componentManufacturer represents the component manufacturer
-     * @param componentModel represents the component model
-     * @param componentSerial  represents the component serial number
-     * @param componentRevision represents the component revision
+     * @param componentClass          represent the component type
+     * @param componentManufacturer   represents the component manufacturer
+     * @param componentModel          represents the component model
+     * @param componentSerial         represents the component serial number
+     * @param componentRevision       represents the component revision
      * @param componentManufacturerId represents the component manufacturer ID
-     * @param fieldReplaceable represents if the component is replaceable
-     * @param componentAddress represents a list of addresses
-     * @param certificateIdentifier object representing certificate Id
-     * @param componentPlatformUri object containing the URI Reference
-     * @param attributeStatus object containing enumerated status
+     * @param fieldReplaceable        represents if the component is replaceable
+     * @param componentAddress        represents a list of addresses
+     * @param certificateIdentifier   object representing certificate Id
+     * @param componentPlatformUri    object containing the URI Reference
+     * @param attributeStatus         object containing enumerated status
      */
-    @SuppressWarnings("checkstyle:parameternumber")
     public ComponentIdentifierV2(final ComponentClass componentClass,
                                  final DERUTF8String componentManufacturer,
                                  final DERUTF8String componentModel,
@@ -103,6 +102,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
 
     /**
      * Constructor given the SEQUENCE that contains Component Identifier.
+     *
      * @param sequence containing the component identifier
      * @throws IllegalArgumentException if there was an error on the parsing
      */
@@ -120,7 +120,8 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                 ASN1OctetString.getInstance(componentIdSeq.getObjectAt(tag)).toString());
 
         // Mandatory values
-        this.setComponentManufacturer((DERUTF8String) ASN1UTF8String.getInstance(sequence.getObjectAt(tag++)));
+        this.setComponentManufacturer(
+                (DERUTF8String) ASN1UTF8String.getInstance(sequence.getObjectAt(tag++)));
         this.setComponentModel((DERUTF8String) ASN1UTF8String.getInstance(sequence.getObjectAt(tag++)));
 
         // Continue reading the sequence if it does contain more than 2 values
@@ -202,9 +203,15 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         ComponentIdentifierV2 that = (ComponentIdentifierV2) o;
         return Objects.equals(componentClass, that.componentClass)
                 && Objects.equals(certificateIdentifier, that.certificateIdentifier)
@@ -241,7 +248,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         }
         sb.append(", fieldReplaceable=");
         if (getFieldReplaceable() != null) {
-            sb.append(getFieldReplaceable().toString());
+            sb.append(getFieldReplaceable());
         }
         sb.append(", componentAddress=");
         if (getComponentAddress().size() > 0) {
@@ -252,11 +259,11 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         }
         sb.append(", certificateIdentifier=");
         if (certificateIdentifier != null) {
-            sb.append(certificateIdentifier.toString());
+            sb.append(certificateIdentifier);
         }
         sb.append(", componentPlatformUri=");
         if (componentPlatformUri != null) {
-            sb.append(componentPlatformUri.toString());
+            sb.append(componentPlatformUri);
         }
         sb.append(", status=");
         if (attributeStatus != null) {
