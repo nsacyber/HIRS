@@ -1,6 +1,8 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;
 
@@ -20,7 +22,7 @@ import java.nio.charset.StandardCharsets;
  *      UINT16                          DescriptionSize;
  *      UINT8                           Description[DescriptionSize];
  *      UINT16                          DataSize;
- *      DEVICE_SECURITY_EVENT_DATA2     Data[DataSize];
+ *      UINT8                           Data[DataSize];
  * } NV_INDEX_DYNAMIC_EVENT_LOG_DATA;
  * <p>
  */

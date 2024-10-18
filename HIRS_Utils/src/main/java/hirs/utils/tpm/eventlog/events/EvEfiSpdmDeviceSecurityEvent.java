@@ -2,6 +2,7 @@ package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;
 
@@ -46,6 +47,16 @@ public class EvEfiSpdmDeviceSecurityEvent {
     private String spdmInfo = "";
 
     /**
+     * Track status of pci.ids
+     * This is only used for events that access the pci.ids file.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that uses this file,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+
+    /**
      * EvEfiSpdmFirmwareBlob constructor.
      *
      * @param eventData byte array holding the event to process.
@@ -72,6 +83,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
             if (dsedVersion.equals("0200")) {
                 dsed = new DeviceSecurityEventData2(eventData);
                 spdmInfo += dsed.toString();
+                pciidsFileStatus = dsed.getPciidsFileStatus();
             } else {
                 spdmInfo += "    Incompatible version for DeviceSecurityEventData2: " + dsedVersion + "\n";
             }
@@ -82,6 +94,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
             if (dsedVersion.equals("0100")) {
                 dsed = new DeviceSecurityEventData(eventData);
                 spdmInfo += dsed.toString();
+                pciidsFileStatus = dsed.getPciidsFileStatus();
             } else {
                 spdmInfo += "    Incompatible version for DeviceSecurityEventData: " + dsedVersion + "\n";
             }

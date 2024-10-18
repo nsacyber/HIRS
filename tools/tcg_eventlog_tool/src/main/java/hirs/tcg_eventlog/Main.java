@@ -136,13 +136,24 @@ final class Main {
                                 + evLog.getEventList().size() + " events:\n\n");
                     }
                     if (evLog.getVendorTableFileStatus() == FILESTATUS_NOT_ACCESSIBLE) {
-                        writeOut("*** WARNING: The file vendor-table.json was not accessible from the "
-                                + "filesystem or the code, so some event data shown in the output of this "
-                                + "tool may be outdated or omitted.\n\n");
+                        writeOut("*** WARNING: "
+                                + "The file vendor-table.json was not accessible from the filesystem or the code,\n"
+                                + "             so some event data shown in the output of this tool may be outdated\n"
+                                + "             or omitted.\n\n");
                     } else if (evLog.getVendorTableFileStatus() == FILESTATUS_FROM_CODE) {
-                        writeOut("*** NOTE: "
+                        writeOut("*** NOTE:    "
                                 + "The file vendor-table.json file was not accessible from the filesystem,\n"
-                                + "          so the vendor-table.json from code was used.\n\n");
+                                + "             so the vendor-table.json from code was used.\n\n");
+                    }
+                    if (evLog.getPciidsFileStatus() == FILESTATUS_NOT_ACCESSIBLE) {
+                        writeOut("*** WARNING: "
+                                + "The file pci.ids was not accessible from the filesystem or the code,\n"
+                                + "             so some pci device info lookups in the output of this tool\n"
+                                + "             may be omitted or the hex code may be used instead.\n\n");
+                    } else if (evLog.getPciidsFileStatus() == FILESTATUS_FROM_CODE) {
+                        writeOut("*** NOTE:    "
+                                + "The file pci.ids file was not accessible from the filesystem,\n"
+                                + "             so the pci.ids from code was used.\n\n");
                     }
                 }
                 int eventCount = 0;

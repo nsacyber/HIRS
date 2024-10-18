@@ -1,5 +1,6 @@
 package hirs.utils.tpm.eventlog.events;
 
+import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -44,7 +45,7 @@ public abstract class DeviceSecurityEvent {
      * DeviceSecurityEventDataContext Object.
      */
     @Getter
-    private DeviceSecurityEventDataDeviceContext dsedDevContext = null;
+    private DeviceSecurityEventDataPciContext dsedPciContext = null;
 
     /**
      * Device type.
@@ -59,6 +60,17 @@ public abstract class DeviceSecurityEvent {
      */
     @Getter
     private String deviceContextInfo = "";
+
+    /**
+     * Track status of pci.ids
+     * This is only used for events that access the pci.ids file.
+     * (In this class, this is only needed if DeviceSecurityEvent includes a DeviceSecurityEventDataPciContext)
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that uses this file,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * DeviceSecurityEventData Default Constructor.
@@ -82,8 +94,11 @@ public abstract class DeviceSecurityEvent {
             if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_NONE) {
                 deviceContextInfo = "\n    No Device Context (indicated by device type value of 0)";
             } else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_PCI) {
-                dsedDevContext = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
-                deviceContextInfo = dsedDevContext.toString();
+                dsedPciContext = new DeviceSecurityEventDataPciContext(dsedDeviceContextBytes);
+                deviceContextInfo = dsedPciContext.toString();
+                // getPciidsFileStatus() must be called after DeviceSecurityEventDataPciContext.toString(),
+                // because the toString function is where the pciids db gets set up and used
+                pciidsFileStatus = dsedPciContext.getPciidsFileStatus();
             } else if (deviceType == DeviceSecurityEventDataDeviceContext.DEVICE_TYPE_USB) {
                 deviceContextInfo = "    Device Type: USB - To be implemented";
             } else {

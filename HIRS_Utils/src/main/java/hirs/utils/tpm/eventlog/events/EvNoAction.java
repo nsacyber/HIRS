@@ -54,6 +54,16 @@ public class EvNoAction {
     private String noActionInfo = "";
 
     /**
+     * Track status of pci.ids
+     * This is only used for events that access the pci.ids file.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that uses this file,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+
+    /**
      * EvNoAction constructor.
      *
      * @param eventData byte array holding the event to process.
@@ -78,6 +88,7 @@ public class EvNoAction {
         } else if (signature.contains("NvIndexInstance")) {
             NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
             noActionInfo += nvIndexInstanceEvent.toString();
+            pciidsFileStatus = nvIndexInstanceEvent.getPciidsFileStatus();
         } else if (signature.contains("NvIndexDynamic")) {
             NvIndexDynamicEventLogData nvIndexDynamicEvent = new NvIndexDynamicEventLogData(eventData);
             noActionInfo += nvIndexDynamicEvent.toString();
