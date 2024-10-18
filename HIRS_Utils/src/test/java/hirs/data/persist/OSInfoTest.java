@@ -1,11 +1,11 @@
 package hirs.data.persist;
 
 import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
-import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
 
 /**
  * OSInfoTest is a unit test class for OSInfo.
@@ -17,10 +17,12 @@ public class OSInfoTest {
     private static final String OS_ARCH = "test osArch";
     private static final String DISTRIBUTION = "test distribution";
     private static final String DISTRIBUTION_RELEASE = "test distribution release";
+    private static final int PRIMARY_SIZE = 257;
+    private static final int SECONDARY_SIZE = 33;
 
-    private static final String LONG_OS_NAME = StringUtils.rightPad("test os", 257);
-    private static final String LONG_OS_VERSION = StringUtils.rightPad("test osVersion", 257);
-    private static final String LONG_OS_ARCH = StringUtils.rightPad("test osArch", 33);
+    private static final String LONG_OS_NAME = StringUtils.rightPad(OS_NAME, PRIMARY_SIZE);
+    private static final String LONG_OS_VERSION = StringUtils.rightPad(OS_VERSION, PRIMARY_SIZE);
+    private static final String LONG_OS_ARCH = StringUtils.rightPad(OS_ARCH, SECONDARY_SIZE);
 
     /**
      * Tests instantiation of an OSInfo object.
@@ -63,7 +65,7 @@ public class OSInfoTest {
     @Test
     public final void osNameNullTest() {
         Assertions.assertThrows(IllegalArgumentException.class, () ->
-            new OSInfo(null, OS_VERSION, OS_ARCH, DISTRIBUTION, DISTRIBUTION_RELEASE));
+                new OSInfo(null, OS_VERSION, OS_ARCH, DISTRIBUTION, DISTRIBUTION_RELEASE));
     }
 
     /**
@@ -72,7 +74,7 @@ public class OSInfoTest {
     @Test
     public final void osVersionNullTest() {
         Assertions.assertThrows(IllegalArgumentException.class, () ->
-            new OSInfo(OS_NAME, null, OS_ARCH, DISTRIBUTION, DISTRIBUTION_RELEASE));
+                new OSInfo(OS_NAME, null, OS_ARCH, DISTRIBUTION, DISTRIBUTION_RELEASE));
     }
 
     /**
@@ -81,7 +83,7 @@ public class OSInfoTest {
     @Test
     public final void osArchNullTest() {
         Assertions.assertThrows(IllegalArgumentException.class, () ->
-            new OSInfo(OS_NAME, OS_VERSION, null, DISTRIBUTION, DISTRIBUTION_RELEASE));
+                new OSInfo(OS_NAME, OS_VERSION, null, DISTRIBUTION, DISTRIBUTION_RELEASE));
     }
 
     /**
@@ -108,7 +110,7 @@ public class OSInfoTest {
     @Test
     public final void osArchLongTest() {
         Assertions.assertThrows(IllegalArgumentException.class, () ->
-            new OSInfo(OS_NAME, OS_VERSION, LONG_OS_ARCH, DISTRIBUTION, DISTRIBUTION_RELEASE));
+                new OSInfo(OS_NAME, OS_VERSION, LONG_OS_ARCH, DISTRIBUTION, DISTRIBUTION_RELEASE));
     }
 
     /**

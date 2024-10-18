@@ -23,14 +23,16 @@ import java.util.Properties;
 public class BannerConfiguration {
 
     private static final Path BANNER_PROPERTIES_PATH = FileSystems.getDefault()
-            .getPath("/opt/tomcat/webapps/HIRS_AttestationCAPortal", "WEB-INF", "classes", "banner.properties");
+            .getPath("/opt/tomcat/webapps/HIRS_AttestationCAPortal",
+                    "WEB-INF", "classes", "banner.properties");
 
     private static final String BANNER_COLOR = "banner.color";
     private static final String BANNER_STRING = "banner.string";
     private static final String BANNER_DYNAMIC = "banner.dynamic";
     private static final String LEFT_CONTENT = "left.content";
     private static final String RIGHT_CONTENT = "right.content";
-
+    private final ArrayList<String> leftContent = new ArrayList<>();
+    private final ArrayList<String> rightContent = new ArrayList<>();
     @Getter
     private String bannerColor = "";
     @Getter
@@ -38,21 +40,18 @@ public class BannerConfiguration {
     @Getter
     private String bannerDynamic = "";
 
-    private final ArrayList<String> leftContent = new ArrayList<>();
-    private final ArrayList<String> rightContent = new ArrayList<>();
-
     /**
      * Banner Configuration default constructor.
      * Verify if the file exist, if it does it will get all the
      * properties values and save them on the class.
      *
-     * @throws IOException the banner level for the web site.
+     * @throws IOException the banner level for the website.
      */
     public BannerConfiguration() throws IOException {
         if (!Files.exists(BANNER_PROPERTIES_PATH)) {
             log.info(String.format(
                     "No file found at %s. Banner will not display.",
-                    BANNER_PROPERTIES_PATH.toString()
+                    BANNER_PROPERTIES_PATH
             ));
             return;
         }
@@ -69,8 +68,8 @@ public class BannerConfiguration {
     /**
      * This method applies any dynamically configuration found in the properties file,
      * if it exists.
-     * @param bannerProps
-     * @return the banner level for the web site.
+     *
+     * @param bannerProps banner props
      */
     private void setBannerProperties(final Properties bannerProps) {
 
@@ -103,10 +102,7 @@ public class BannerConfiguration {
      * @return if the banner was set.
      */
     public Boolean getHasBanner() {
-        if (!bannerColor.isEmpty() || !bannerString.isEmpty()) {
-            return true;
-        }
-        return false;
+        return !bannerColor.isEmpty() || !bannerString.isEmpty();
     }
 
     /**

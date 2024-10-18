@@ -1,11 +1,12 @@
 package hirs.utils;
 
 import org.apache.logging.log4j.Logger;
-import org.mockito.Mockito;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import org.mockito.Mockito;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 
 /**
@@ -114,10 +115,10 @@ public class StringValidatorTest {
     @Test
     public void testValidateMaxLengthFailOnLongString() {
         assertThrows(IllegalArgumentException.class, () ->
-            assertEquals(
-                    StringValidator.check(NONEMPTY_VALUE, FIELD_NAME).maxLength(SMALL_LENGTH).getValue(),
-                    NONEMPTY_VALUE
-            ));
+                assertEquals(
+                        StringValidator.check(NONEMPTY_VALUE, FIELD_NAME).maxLength(SMALL_LENGTH).getValue(),
+                        NONEMPTY_VALUE
+                ));
     }
 
     /**
@@ -138,8 +139,8 @@ public class StringValidatorTest {
     @Test
     public void testValidateSeveralConditionsFailOnLast() {
         assertThrows(IllegalArgumentException.class, () ->
-            StringValidator.check(NONEMPTY_VALUE, FIELD_NAME)
-                    .notNull().notBlank().maxLength(SMALL_LENGTH));
+                StringValidator.check(NONEMPTY_VALUE, FIELD_NAME)
+                        .notNull().notBlank().maxLength(SMALL_LENGTH));
     }
 
     /**

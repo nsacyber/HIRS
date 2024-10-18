@@ -1,24 +1,28 @@
 package hirs.tpm.eventlog.uefi;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-
 import com.eclipsesource.json.JsonObject;
+import hirs.utils.HexUtils;
 import hirs.utils.JsonUtils;
-import hirs.utils.tpm.eventlog.uefi.*;
+import hirs.utils.tpm.eventlog.uefi.UefiDevicePath;
+import hirs.utils.tpm.eventlog.uefi.UefiFirmware;
+import hirs.utils.tpm.eventlog.uefi.UefiGuid;
+import hirs.utils.tpm.eventlog.uefi.UefiPartition;
+import hirs.utils.tpm.eventlog.uefi.UefiVariable;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import hirs.utils.HexUtils;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 /**
  * Class for testing TCG Event Log processing of UEFI defined Data.
@@ -61,7 +65,7 @@ public class UefiProcessingTest {
      * @throws IOException              when processing the test fails.
      * @throws NoSuchAlgorithmException if non TCG Algorithm is encountered.
      * @throws CertificateException     if parsing issue for X509 cert is encountered.
-     * @throws URISyntaxException File location exception
+     * @throws URISyntaxException       File location exception
      */
     @Test
     public final void testUefiVariables() throws IOException,
@@ -70,7 +74,7 @@ public class UefiProcessingTest {
         Path jsonPath = Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI());
         String uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(UEFI_VARIABLE_BOOT),
-                "UTF-8");
+                StandardCharsets.UTF_8);
         byte[] uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
         UefiVariable uefiVariable = new UefiVariable(uefiVariableBytes);
         UefiGuid guid = uefiVariable.getUefiVarGuid();
@@ -83,7 +87,7 @@ public class UefiProcessingTest {
 
         uefiTxt = IOUtils.toString(this.getClass()
                         .getResourceAsStream(UEFI_VARIABLE_BOOT_SECURE_BOOT),
-                "UTF-8");
+                StandardCharsets.UTF_8);
         uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
         uefiVariable = new UefiVariable(uefiVariableBytes);
         guid = uefiVariable.getUefiVarGuid();
@@ -94,7 +98,7 @@ public class UefiProcessingTest {
         Assertions.assertEquals("SecureBoot", varName);
 
         uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(
-                UEFI_VARIABLE_BOOT_DRIVER_CONFIG_KEK), "UTF-8");
+                UEFI_VARIABLE_BOOT_DRIVER_CONFIG_KEK), StandardCharsets.UTF_8);
         uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
         uefiVariable = new UefiVariable(uefiVariableBytes);
         varName = uefiVariable.getEfiVarName();
@@ -107,7 +111,7 @@ public class UefiProcessingTest {
      * @throws IOException              when processing the test fails.
      * @throws NoSuchAlgorithmException if non TCG Algorithm is encountered.
      * @throws CertificateException     if parsing issue for X509 cert is encountered.
-     * @throws URISyntaxException File location exception
+     * @throws URISyntaxException       File location exception
      */
     @Test
     public final void testUefiPartiton() throws IOException,
@@ -116,7 +120,7 @@ public class UefiProcessingTest {
         Path jsonPath = Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI());
         String uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(UEFI_GPT_EVENT),
-                "UTF-8");
+                StandardCharsets.UTF_8);
         byte[] uefiPartitionBytes = HexUtils.hexStringToByteArray(uefiTxt);
         UefiPartition gptPart = new UefiPartition(uefiPartitionBytes);
         String gptPartName = gptPart.getPartitionName();
@@ -143,26 +147,30 @@ public class UefiProcessingTest {
             CertificateException, NoSuchAlgorithmException {
         LOGGER.debug("Testing the parsing of Uefi Firmware Blob");
         String uefiTxt = IOUtils.toString(this.getClass()
-                .getResourceAsStream(UEFI_FW_BLOB), "UTF-8");
+                .getResourceAsStream(UEFI_FW_BLOB), StandardCharsets.UTF_8);
         byte[] uefiFwBlobBytes = HexUtils.hexStringToByteArray(uefiTxt);
         UefiFirmware uefiFWBlob = new UefiFirmware(uefiFwBlobBytes);
         int fwAddress = uefiFWBlob.getPhysicalBlobAddress();
         int fwLength = uefiFWBlob.getBlobLength();
-        Assertions.assertEquals(1797287936, fwAddress);
-        Assertions.assertEquals(851968, fwLength);
+
+        final int expectedFwAddress = 1797287936;
+        Assertions.assertEquals(expectedFwAddress, fwAddress);
+
+        final int expectedFwLength = 851968;
+        Assertions.assertEquals(expectedFwLength, fwLength);
     }
 
     /**
      * Tests the processing of a UEFI defined Device Path.
      *
-     * @throws IOException when processing the test fails.
+     * @throws IOException        when processing the test fails.
      * @throws URISyntaxException File location exception
      */
     @Test
     public final void testUefiDevicePath() throws IOException, URISyntaxException {
         LOGGER.debug("Testing the parsing of Uefi Device Path");
         String uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(UEFI_DEVICE_PATH),
-                "UTF-8");
+                StandardCharsets.UTF_8);
         byte[] uefiFwBlobBytes = HexUtils.hexStringToByteArray(uefiTxt);
         UefiDevicePath uefiDevPath = new UefiDevicePath(uefiFwBlobBytes);
         String devPathType = uefiDevPath.getType();

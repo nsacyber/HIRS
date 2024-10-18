@@ -5,10 +5,11 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.Unmarshaller;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.jcajce.provider.asymmetric.X509;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -47,7 +48,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
@@ -86,105 +87,29 @@ public class ReferenceManifestValidator {
 
     private Document rim;
     private Unmarshaller unmarshaller;
+
+    @Getter
     private PublicKey publicKey;
+
     private Schema schema;
+
+    @Getter
     private String subjectKeyIdentifier;
+
+    @Setter
     private String rimEventLog;
+
+    @Setter
     private String trustStoreFile;
+
+    @Setter
     private List<X509Certificate> trustStore;
-    private boolean signatureValid, supportRimValid;
 
-    /**
-     * Setter for the RIM to be validated.  The ReferenceManifest object is converted into a
-     * Document for processing.
-     *
-     * @param rimBytes ReferenceManifest object bytes
-     */
-    public void setRim(final byte[] rimBytes) {
-        try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
-                    new ByteArrayInputStream(rimBytes))));
-            this.rim = doc;
-        } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes: " + e.getMessage());
-        }
-    }
+    @Getter
+    private boolean signatureValid;
 
-    /**
-     * Setter for the swidtag XML to be validated.  The XML is passed in via a filepath
-     * and converted into a Document for processing.
-     *
-     * @param path String filepath
-     */
-    public void setRim(final String path) {
-        File swidtagFile = new File(path);
-        try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
-            this.rim = doc;
-        } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Getter for signatureValid.
-     *
-     * @return true if valid, false if not.
-     */
-    public boolean isSignatureValid() {
-        return signatureValid;
-    }
-
-    /**
-     * Getter for supportRimValid.
-     *
-     * @return true if valid, false if not.
-     */
-    public boolean isSupportRimValid() {
-        return supportRimValid;
-    }
-
-    /**
-     * Getter for certificate PublicKey.
-     *
-     * @return PublicKey
-     */
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-
-    /**
-     * Getter for subjectKeyIdentifier.
-     *
-     * @return subjectKeyIdentifier
-     */
-    public String getSubjectKeyIdentifier() {
-        return subjectKeyIdentifier;
-    }
-
-    /**
-     * Setter for the truststore file path.
-     * @param trustStoreFile the file path to reference
-     */
-    public void setTrustStoreFile(String trustStoreFile) {
-        this.trustStoreFile = trustStoreFile;
-    }
-
-    /**
-     * Setter for truststore
-     * @param trustStore the List of X509Certificates
-     */
-    public void setTrustStore(List<X509Certificate> trustStore) {
-        this.trustStore = trustStore;
-    }
-
-    /**
-     * Setter for rimel file path.
-     * @param rimEventLog the rimel file
-     */
-    public void setRimEventLog(String rimEventLog) {
-        this.rimEventLog = rimEventLog;
-    }
+    @Getter
+    private boolean supportRimValid;
 
     /**
      * This default constructor creates the Schema object from SCHEMA_URL immediately to save
@@ -210,14 +135,46 @@ public class ReferenceManifestValidator {
     }
 
     /**
+     * Setter for the RIM to be validated.  The ReferenceManifest object is converted into a
+     * Document for processing.
+     *
+     * @param rimBytes ReferenceManifest object bytes
+     */
+    public void setRim(final byte[] rimBytes) {
+        try {
+            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
+                    new ByteArrayInputStream(rimBytes))));
+            this.rim = doc;
+        } catch (IOException e) {
+            log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Setter for the swidtag XML to be validated.  The XML is passed in via a filepath
+     * and converted into a Document for processing.
+     *
+     * @param path String filepath
+     */
+    public void setRim(final String path) {
+        File swidtagFile = new File(path);
+        try {
+            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
+            this.rim = doc;
+        } catch (IOException e) {
+            log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
+        }
+    }
+
+    /**
      * This method attempts to validate the signature element of the instance's RIM
      * using a given cert.  The cert is compared to either the RIM's embedded certificate
      * or the RIM's subject key identifier.  If the cert is matched then validation proceeds,
      * otherwise validation ends.
      *
-     * @param publicKey public key from the CA credential
+     * @param publicKey          public key from the CA credential
      * @param subjectKeyIdString string version of the subjet key id of the CA credential
-     * @param encodedPublicKey the encoded public key
+     * @param encodedPublicKey   the encoded public key
      * @return true if the signature element is validated, false otherwise
      */
     @SuppressWarnings("magicnumber")
@@ -257,7 +214,7 @@ public class ReferenceManifestValidator {
                 return signatureValid;
             }
         } catch (IOException e) {
-            log.warn("Error while parsing certificate data: " + e.getMessage());
+            log.warn("Error while parsing certificate data: {}", e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -267,26 +224,27 @@ public class ReferenceManifestValidator {
 
     /**
      * This method validates the rim with a public key cert.
+     *
      * @param signingCertPath to the public key certificate used to sign the rim
      * @return true if both the file element and signature are valid, false otherwise
      */
-    public boolean validateRim(String signingCertPath) {
+    public boolean validateRim(final String signingCertPath) {
         Element fileElement = (Element) rim.getElementsByTagNameNS(
                 SwidTagConstants.SWIDTAG_NAMESPACE, "File").item(0);
         X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
         if (signingCert == null) {
             return failWithError("Unable to parse the signing cert from " + signingCertPath);
         }
-        String subjectKeyIdentifier = "";
+        String retrievedSubjectKeyIdentifier = "";
         try {
-            subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
+            retrievedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
         } catch (IOException e) {
             return failWithError("Error while parsing SKID: " + e.getMessage());
         }
 
         boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
-                                                        subjectKeyIdentifier,
-                                                        signingCert.getPublicKey().getEncoded());
+                retrievedSubjectKeyIdentifier,
+                signingCert.getPublicKey().getEncoded());
         return isSignatureValid && validateFile(fileElement);
     }
 
@@ -301,13 +259,15 @@ public class ReferenceManifestValidator {
         String calculatedHash = getHashValue(input, SHA256);
         supportRimValid = calculatedHash.equals(expected);
         if (!supportRimValid) {
-            log.info("Unmatched support RIM hash! Expected: " + expected
-                    + ", actual: " + calculatedHash);
+            log.info("Unmatched support RIM hash! Expected: {}, actual: {}", expected, calculatedHash);
         }
     }
 
     /**
-     * This method validates a hirs.swid.xjc.File from an indirect payload
+     * This method validates a hirs.swid.xjc.File from an indirect payload.
+     *
+     * @param file file extracted from element
+     * @return true if the provided file is valid, false otherwise
      */
     private boolean validateFile(final Element file) {
         String filepath;
@@ -317,9 +277,9 @@ public class ReferenceManifestValidator {
             filepath = file.getAttribute(SwidTagConstants.NAME);
         }
         if (getHashValue(filepath, "SHA256").equals(
-                file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":" +
-                        SwidTagConstants._SHA256_HASH.getLocalPart()))) {
-            log.info("Support RIM hash verified for " + filepath);
+                file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":"
+                        + SwidTagConstants._SHA256_HASH.getLocalPart()))) {
+            log.info("Support RIM hash verified for {}", filepath);
             return true;
         } else {
             return failWithError("Support RIM hash does not match Base RIM!");
@@ -333,10 +293,10 @@ public class ReferenceManifestValidator {
      * @return X509Certificate signing cert
      */
     private X509Certificate getCertFromTruststore() throws IOException {
-        String subjectKeyIdentifier = getKeyName(rim);
+        String retrievedSubjectKeyIdentifier = getKeyName(rim);
         for (X509Certificate trustedCert : trustStore) {
             String trustedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(trustedCert);
-            if (subjectKeyIdentifier.equals(trustedSubjectKeyIdentifier)) {
+            if (retrievedSubjectKeyIdentifier.equals(trustedSubjectKeyIdentifier)) {
                 return trustedCert;
             }
         }
@@ -345,10 +305,10 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method calculates the digest of the file at filepath based on algorithm sha
+     * This method calculates the digest of the file at filepath based on algorithm sha.
      *
      * @param filepath the file to hash
-     * @param sha the algorithm to use
+     * @param sha      the algorithm to use
      * @return String digest
      */
     private String getHashValue(final String filepath, final String sha) {
@@ -359,11 +319,12 @@ public class ReferenceManifestValidator {
         } catch (NoSuchAlgorithmException e) {
             log.warn(e.getMessage());
         } catch (IOException e) {
-            log.warn("Error reading " + filepath + " for hashing: " + e.getMessage());
+            log.warn("Error reading {} for hashing: {}", filepath, e.getMessage());
         }
 
         return null;
     }
+
     /**
      * This method calculates the digest of a byte array based on the hashing algorithm passed in.
      *
@@ -401,9 +362,9 @@ public class ReferenceManifestValidator {
                 whySignatureInvalid(signature, context);
             }
         } catch (MarshalException e) {
-            log.warn("Error while unmarshalling XML signature: " + e.getMessage());
+            log.warn("Error while unmarshalling XML signature: {}", e.getMessage());
         } catch (XMLSignatureException e) {
-            log.warn("Error while validating XML signature: " + e.getMessage());
+            log.warn("Error while validating XML signature: {}", e.getMessage());
         }
 
         return false;
@@ -415,11 +376,11 @@ public class ReferenceManifestValidator {
      * results are logged.
      *
      * @param signature the signature that failed to validate
-     * @param context the context used for validation
+     * @param context   the context used for validation
      * @throws XMLSignatureException
      */
     private void whySignatureInvalid(final XMLSignature signature, final DOMValidateContext context)
-        throws XMLSignatureException{
+            throws XMLSignatureException {
         boolean cryptoValidity = signature.getSignatureValue().validate(context);
         if (cryptoValidity) {
             log.error("Signature value is valid.");
@@ -435,9 +396,9 @@ public class ReferenceManifestValidator {
                 refUri = "whole document";
             }
             if (refValidity) {
-                log.error("Reference for " + refUri + " is valid.");
+                log.error("Reference for {} is valid.", refUri);
             } else {
-                log.error("Reference for " + refUri + " is invalid!");
+                log.error("Reference for {} is invalid!", refUri);
             }
         }
     }
@@ -445,6 +406,7 @@ public class ReferenceManifestValidator {
     /**
      * This method validates the cert chain for a given certificate. The truststore is iterated
      * over until a root CA is found, otherwise an error is returned.
+     *
      * @param cert the certificate at the start of the chain
      * @return true if the chain is valid
      * @throws Exception if a valid chain is not found in the truststore
@@ -462,7 +424,7 @@ public class ReferenceManifestValidator {
         boolean isChainCertValid;
         do {
             isChainCertValid = false;
-            log.info("Validating " + chainCert.getSubjectX500Principal().getName());
+            log.info("Validating {}", chainCert.getSubjectX500Principal().getName());
             for (X509Certificate trustedCert : trustStore) {
                 boolean isIssuer = areYouMyIssuer(chainCert, trustedCert);
                 boolean isSigner = areYouMySigner(chainCert, trustedCert);
@@ -490,14 +452,15 @@ public class ReferenceManifestValidator {
             }
         } while (isChainCertValid);
 
-        log.error("CA chain validation failed to validate "
-                + chainCert.getSubjectX500Principal().getName() + ", " + errorMessage);
+        log.error("CA chain validation failed to validate {}, {}",
+                chainCert.getSubjectX500Principal().getName(), errorMessage);
         return false;
     }
 
     /**
      * This method checks if cert's issuerDN matches issuer's subjectDN.
-     * @param cert the signed certificate
+     *
+     * @param cert   the signed certificate
      * @param issuer the signing certificate
      * @return true if they match, false if not
      * @throws Exception if either argument is null
@@ -512,7 +475,8 @@ public class ReferenceManifestValidator {
 
     /**
      * This method checks if cert's issuerDN matches issuer's subjectDN.
-     * @param cert the signed certificate
+     *
+     * @param cert   the signed certificate
      * @param issuer the signing certificate
      * @return true if they match, false if not
      * @throws Exception if either argument is null
@@ -528,7 +492,8 @@ public class ReferenceManifestValidator {
 
     /**
      * This method checks if cert's signature matches signer's public key.
-     * @param cert the signed certificate
+     *
+     * @param cert   the signed certificate
      * @param signer the signing certificate
      * @return true if they match
      * @throws Exception if an error occurs or there is no match
@@ -562,133 +527,12 @@ public class ReferenceManifestValidator {
 
     /**
      * This method checks if a given certificate is self signed or not.
+     *
      * @param cert the cert to check
      * @return true if self signed, false if not
      */
     private boolean isSelfSigned(final X509Certificate cert) {
         return cert.getIssuerX500Principal().equals(cert.getSubjectX500Principal());
-    }
-
-    /**
-     * This internal class handles selecting an X509 certificate embedded in a KeyInfo element.
-     * It is passed as a parameter to a DOMValidateContext that uses it to validate
-     * an XML signature.
-     */
-    public class X509KeySelector extends KeySelector {
-        PublicKey publicKey;
-        X509Certificate signingCert;
-        /**
-         * This method selects a public key for validation.
-         * PKs are parsed preferentially from the following elements:
-         * - X509Data
-         * - KeyValue
-         * The parsed PK is then verified based on the provided algorithm before
-         * being returned in a KeySelectorResult.
-         *
-         * @param keyinfo   object containing the cert.
-         * @param purpose   purpose.
-         * @param algorithm algorithm.
-         * @param context   XMLCryptoContext.
-         * @return KeySelectorResult holding the PublicKey.
-         * @throws KeySelectorException exception.
-         */
-        public KeySelectorResult select(final KeyInfo keyinfo,
-                                        final KeySelector.Purpose purpose,
-                                        final AlgorithmMethod algorithm,
-                                        final XMLCryptoContext context)
-                throws KeySelectorException {
-            Iterator keyinfoItr = keyinfo.getContent().iterator();
-            while (keyinfoItr.hasNext()) {
-                XMLStructure element = (XMLStructure) keyinfoItr.next();
-                if (element instanceof X509Data) {
-                    X509Data data = (X509Data) element;
-                    Iterator dataItr = data.getContent().iterator();
-                    while (dataItr.hasNext()) {
-                        Object object = dataItr.next();
-                        if (object instanceof X509Certificate) {
-                            X509Certificate embeddedCert = (X509Certificate) object;
-                            try {
-                                if (isCertChainValid(embeddedCert)) {
-                                    publicKey = ((X509Certificate) embeddedCert).getPublicKey();
-                                    signingCert = embeddedCert;
-                                    log.info("Certificate chain valid.");
-                                }
-                            } catch (Exception e) {
-                                log.error("Certificate chain invalid: " + e.getMessage());
-                            }
-                        }
-                    }
-                } else if (element instanceof KeyValue) {
-                    try {
-                        PublicKey pk = ((KeyValue) element).getPublicKey();
-                        if (isPublicKeyTrusted(pk)) {
-                            publicKey = pk;
-                            try {
-                                if (isCertChainValid(signingCert)) {
-                                    log.info("Certificate chain valid.");
-                                } else {
-                                    log.error("Certificate chain invalid.");
-                                }
-                            } catch (Exception e) {
-                                log.error("Certificate chain invalid: " + e.getMessage());
-                            }
-                        }
-                    } catch (KeyException e) {
-                        log.error("Unable to convert KeyValue data to PK.");
-                    }
-                }
-                if (publicKey != null) {
-                    if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
-                        return new ReferenceManifestValidator.X509KeySelector
-                                        .RIMKeySelectorResult(publicKey);
-                    }
-                }
-            }
-            throw new KeySelectorException("No key found!");
-        }
-
-        /**
-         * This method checks that the signature and public key algorithms match.
-         * @param uri to match the signature algorithm
-         * @param name to match the public key algorithm
-         * @return true if both match, false otherwise
-         */
-        public boolean areAlgorithmsEqual(String uri, String name) {
-            return uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
-                    && name.equalsIgnoreCase("RSA");
-        }
-
-        /**
-         * This method compares a public key against those in the truststore.
-         * @param pk a public key
-         * @return true if pk is found in the trust store, false otherwise
-         */
-        private boolean isPublicKeyTrusted(final PublicKey pk) {
-            for (X509Certificate trustedCert : trustStore) {
-                if (Arrays.equals(trustedCert.getPublicKey().getEncoded(),
-                        pk.getEncoded())) {
-                    signingCert = trustedCert;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /**
-         * This internal class creates a KeySelectorResult from the public key.
-         */
-        private static class RIMKeySelectorResult implements KeySelectorResult {
-            private Key key;
-
-            RIMKeySelectorResult(final Key key) {
-                this.key = key;
-            }
-
-            public Key getKey() {
-                return key;
-            }
-        }
     }
 
     /**
@@ -709,12 +553,10 @@ public class ReferenceManifestValidator {
                     + System.lineSeparator()
                     + pemString
                     + System.lineSeparator()
-                    + certificateFooter).getBytes("UTF-8"));
+                    + certificateFooter).getBytes(StandardCharsets.UTF_8));
             return (X509Certificate) factory.generateCertificate(inputStream);
         } catch (CertificateException e) {
-            log.warn("Error creating CertificateFactory instance: " + e.getMessage());
-        } catch (UnsupportedEncodingException e) {
-            log.warn("Error while parsing cert from PEM string: " + e.getMessage());
+            log.warn("Error creating CertificateFactory instance: {}", e.getMessage());
         }
 
         return null;
@@ -724,11 +566,12 @@ public class ReferenceManifestValidator {
      * This method returns the X509Certificates found in a PEM file.
      * Unchecked type case warnings are suppressed because the CertificateFactory
      * implements X509Certificate objects explicitly.
+     *
      * @param filename pem file
      * @return a list containing all X509Certificates extracted
      */
     @SuppressWarnings("unchecked")
-    private List<X509Certificate> parseCertificatesFromPem(String filename) {
+    private List<X509Certificate> parseCertificatesFromPem(final String filename) {
         List<X509Certificate> certificates = null;
         FileInputStream fis = null;
         BufferedInputStream bis = null;
@@ -742,14 +585,14 @@ public class ReferenceManifestValidator {
                         (List<X509Certificate>) certificateFactory.generateCertificates(bis);
             }
 
-            if (certificates.size() < 1) {
+            if (certificates.isEmpty()) {
                 System.out.println("ERROR: No certificates parsed from " + filename);
             }
             bis.close();
         } catch (CertificateException e) {
-            log.error("Error in certificate factory: " + e.getMessage());
+            log.error("Error in certificate factory: {}", e.getMessage());
         } catch (IOException e) {
-            log.error("Error reading from input stream: " + e.getMessage());
+            log.error("Error reading from input stream: {}", e.getMessage());
         } finally {
             try {
                 if (fis != null) {
@@ -759,7 +602,7 @@ public class ReferenceManifestValidator {
                     bis.close();
                 }
             } catch (IOException e) {
-                log.warn("Error closing input stream: " + e.getMessage());
+                log.warn("Error closing input stream: {}", e.getMessage());
             }
         }
 
@@ -854,11 +697,135 @@ public class ReferenceManifestValidator {
 
     /**
      * This method logs an error message and returns a false to signal failed validation.
+     *
      * @param errorMessage String description of what went wrong
      * @return false to represent failed validation
      */
-    private boolean failWithError(String errorMessage) {
+    private boolean failWithError(final String errorMessage) {
         log.error(errorMessage);
         return false;
+    }
+
+    /**
+     * This internal class handles selecting an X509 certificate embedded in a KeyInfo element.
+     * It is passed as a parameter to a DOMValidateContext that uses it to validate
+     * an XML signature.
+     */
+    @Setter
+    @Getter
+    public class X509KeySelector extends KeySelector {
+
+        private PublicKey publicKey;
+        private X509Certificate signingCert;
+
+        /**
+         * This method selects a public key for validation.
+         * PKs are parsed preferentially from the following elements:
+         * - X509Data
+         * - KeyValue
+         * The parsed PK is then verified based on the provided algorithm before
+         * being returned in a KeySelectorResult.
+         *
+         * @param keyinfo   object containing the cert.
+         * @param purpose   purpose.
+         * @param algorithm algorithm.
+         * @param context   XMLCryptoContext.
+         * @return KeySelectorResult holding the PublicKey.
+         * @throws KeySelectorException exception.
+         */
+        public KeySelectorResult select(final KeyInfo keyinfo,
+                                        final KeySelector.Purpose purpose,
+                                        final AlgorithmMethod algorithm,
+                                        final XMLCryptoContext context)
+                throws KeySelectorException {
+            Iterator keyinfoItr = keyinfo.getContent().iterator();
+            while (keyinfoItr.hasNext()) {
+                XMLStructure element = (XMLStructure) keyinfoItr.next();
+                if (element instanceof X509Data data) {
+                    Iterator dataItr = data.getContent().iterator();
+                    while (dataItr.hasNext()) {
+                        Object object = dataItr.next();
+                        if (object instanceof X509Certificate embeddedCert) {
+                            try {
+                                if (isCertChainValid(embeddedCert)) {
+                                    publicKey = embeddedCert.getPublicKey();
+                                    signingCert = embeddedCert;
+                                    log.info("Certificate chain valid.");
+                                }
+                            } catch (Exception e) {
+                                log.error("Certificate chain invalid: {}", e.getMessage());
+                            }
+                        }
+                    }
+                } else if (element instanceof KeyValue) {
+                    try {
+                        PublicKey pk = ((KeyValue) element).getPublicKey();
+                        if (isPublicKeyTrusted(pk)) {
+                            publicKey = pk;
+                            try {
+                                if (isCertChainValid(signingCert)) {
+                                    log.info("Certificate chain valid.");
+                                } else {
+                                    log.error("Certificate chain invalid.");
+                                }
+                            } catch (Exception e) {
+                                log.error("Certificate chain invalid: {}", e.getMessage());
+                            }
+                        }
+                    } catch (KeyException e) {
+                        log.error("Unable to convert KeyValue data to PK.");
+                    }
+                }
+                if (publicKey != null) {
+                    if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
+                        return new ReferenceManifestValidator.X509KeySelector
+                                .RIMKeySelectorResult(publicKey);
+                    }
+                }
+            }
+            throw new KeySelectorException("No key found!");
+        }
+
+        /**
+         * This method checks that the signature and public key algorithms match.
+         *
+         * @param uri  to match the signature algorithm
+         * @param name to match the public key algorithm
+         * @return true if both match, false otherwise
+         */
+        public boolean areAlgorithmsEqual(final String uri, final String name) {
+            return uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
+                    && name.equalsIgnoreCase("RSA");
+        }
+
+        /**
+         * This method compares a public key against those in the truststore.
+         *
+         * @param pk a public key
+         * @return true if pk is found in the trust store, false otherwise
+         */
+        private boolean isPublicKeyTrusted(final PublicKey pk) {
+            for (X509Certificate trustedCert : trustStore) {
+                if (Arrays.equals(trustedCert.getPublicKey().getEncoded(),
+                        pk.getEncoded())) {
+                    signingCert = trustedCert;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /**
+         * This internal class creates a KeySelectorResult from the public key.
+         */
+        @Getter
+        private static class RIMKeySelectorResult implements KeySelectorResult {
+            private final Key key;
+
+            RIMKeySelectorResult(final Key key) {
+                this.key = key;
+            }
+        }
     }
 }

@@ -15,24 +15,28 @@ import java.util.List;
  *
  * <p>
  * typedef union tdDEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK {
- *      UINT16                  SpdmVersion;
- *      UINT8                   SpdmMeasurementBlockCount;
- *      UINT8                   Reserved;
- *      UINT32                  SpdmMeasurementHashAlgo;
- *      SPDM_MEASUREMENT_BLOCK  SpdmMeasurementBlock[SpdmMeasurementBlockCount];
+ * UINT16                  SpdmVersion;
+ * UINT8                   SpdmMeasurementBlockCount;
+ * UINT8                   Reserved;
+ * UINT32                  SpdmMeasurementHashAlgo;
+ * SPDM_MEASUREMENT_BLOCK  SpdmMeasurementBlock[SpdmMeasurementBlockCount];
  * } DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK;
  * <p>
- *
+ * <p>
  * SpdmMeasurementBlock is an array of SPDM_MEASUREMENT_BLOCKs
- *     The size of each block is the same and can be found by either:
- *         1) 4 + SpdmMeasurementBlock MeasurementSize
- *         OR
- *         2) 4 + hash length of the hash algorithm found in
- *                DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK SpdmMeasurementHashAlgo
- *         where 4 is the size of the SpdmMeasurementBlock header
+ * The size of each block is the same and can be found by either:
+ * 1) 4 + SpdmMeasurementBlock MeasurementSize
+ * OR
+ * 2) 4 + hash length of the hash algorithm found in
+ * DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK SpdmMeasurementHashAlgo
+ * where 4 is the size of the SpdmMeasurementBlock header
  */
 public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends DeviceSecurityEventDataSubHeader {
 
+    /**
+     * List of SPDM Measurement Blocks.
+     */
+    private final List<SpdmMeasurementBlock> spdmMeasurementBlockList;
     /**
      * SPDM version.
      */
@@ -48,11 +52,6 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
      */
     @Getter
     private int spdmMeasurementHashAlgo = -1;
-
-    /**
-     * List of SPDM Measurement Blocks.
-     */
-    private List<SpdmMeasurementBlock> spdmMeasurementBlockList;
     /**
      * Error reading SPDM Measurement Block.
      */
@@ -77,16 +76,21 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
 
         // byte[] reserved[Bytes]: 1 byte
 
-        byte[] spdmMeasurementHashAlgoBytes = new byte[4];
-        System.arraycopy(dsedSubHBytes, 4, spdmMeasurementHashAlgoBytes, 0, 4);
+        final int spdmMeasurementHashAlgoBytesSize = 4;
+        final int dsedSubHBytesSrcIndex1 = 4;
+        byte[] spdmMeasurementHashAlgoBytes = new byte[spdmMeasurementHashAlgoBytesSize];
+        System.arraycopy(dsedSubHBytes, dsedSubHBytesSrcIndex1, spdmMeasurementHashAlgoBytes, 0,
+                spdmMeasurementHashAlgoBytesSize);
         spdmMeasurementHashAlgo = HexUtils.leReverseInt(spdmMeasurementHashAlgoBytes);
 
         // get the total size of the SPDM Measurement Block List
-        int spdmMeasurementBlockListSize = dsedSubHBytes.length - 8;
+        final int offsetForspdmMeasurementBlockList = 8;
+        final int spdmMeasurementBlockListSize = dsedSubHBytes.length - offsetForspdmMeasurementBlockList;
 
         // extract the bytes that comprise the SPDM Measurement Block List
+        final int dsedSubHBytesSrcIndex2 = 8;
         byte[] spdmMeasurementBlockListBytes = new byte[spdmMeasurementBlockListSize];
-        System.arraycopy(dsedSubHBytes, 8, spdmMeasurementBlockListBytes, 0,
+        System.arraycopy(dsedSubHBytes, dsedSubHBytesSrcIndex2, spdmMeasurementBlockListBytes, 0,
                 spdmMeasurementBlockListSize);
 
         ByteArrayInputStream spdmMeasurementBlockListData =

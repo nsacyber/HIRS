@@ -1,11 +1,11 @@
 package hirs.data.persist;
 
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
-import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
 
 /**
  * HardwareInfoTest is a unit test class for HardwareInfo.
@@ -18,30 +18,32 @@ public class HardwareInfoTest {
     private static final String SERIAL_NUMBER = "test serial number";
     private static final String CHASSIS_SERIAL_NUMBER = "test chassis serial number";
     private static final String BASEBOARD_SERIAL_NUMBER = "test baseboard serial number";
+    private static final int PRIMARY_SIZE = 257;
+    private static final int SECONDARY_SIZE = 65;
 
     private static final String LONG_MANUFACTURER = StringUtils.rightPad(
-            "test manufacturer",
-            257
+            MANUFACTURER,
+            PRIMARY_SIZE
     );
     private static final String LONG_PRODUCT_NAME = StringUtils.rightPad(
-            "test product name",
-            257
+            PRODUCT_NAME,
+            PRIMARY_SIZE
     );
     private static final String LONG_VERSION = StringUtils.rightPad(
-            "test version",
-            65
+            VERSION,
+            SECONDARY_SIZE
     );
     private static final String LONG_SERIAL_NUMBER = StringUtils.rightPad(
-            "test serial number",
-            257
+            SERIAL_NUMBER,
+            PRIMARY_SIZE
     );
     private static final String LONG_CHASSIS_SERIAL_NUMBER = StringUtils.rightPad(
-            "test chassis serial number",
-            257
+            CHASSIS_SERIAL_NUMBER,
+            PRIMARY_SIZE
     );
     private static final String LONG_BASEBOARD_SERIAL_NUMBER = StringUtils.rightPad(
-            "test baseboard serial number",
-            257
+            BASEBOARD_SERIAL_NUMBER,
+            PRIMARY_SIZE
     );
 
     /**
