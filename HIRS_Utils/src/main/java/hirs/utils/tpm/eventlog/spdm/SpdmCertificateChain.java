@@ -15,22 +15,22 @@ import java.util.ArrayList;
  * <p>
  * Certificate chain format, defined by SPDM v1.03, Sect 10.6.1, Table 33:
  * Certificate chain format {
- *      Length                          2 bytes;
- *      Reserved                        2 bytes;
- *      RootHash                        <H> bytes;
- *      Certificates                    <Length> - (4 + <H>) bytes;
+ * Length                          2 bytes;
+ * Reserved                        2 bytes;
+ * RootHash                        <H> bytes;
+ * Certificates                    <Length> - (4 + <H>) bytes;
  * }
  * <p>
  * Length: total length of cert chain including all fields in this block
  * H: the output size of the hash algorithm selected by the most recent ALGORITHMS response
- *    this field shall be in hash byte order
- *    hash algorithm is included in the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN
- *    structure as the member "SpdmBaseHashAlg"
+ * this field shall be in hash byte order
+ * hash algorithm is included in the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN
+ * structure as the member "SpdmBaseHashAlg"
  * RootHash: the digest of the Root Certificate.
- *    size is determined by hash algorithm selected by the most recent SPDM ALGORITHMS response;
- *    the hash algorithm is the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN SpdmBaseHashAlgo
+ * size is determined by hash algorithm selected by the most recent SPDM ALGORITHMS response;
+ * the hash algorithm is the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN SpdmBaseHashAlgo
  * Certificates: Complete cert chain consisting of 1 or more ASN.1 DER-encoded X.509 v3 certs
- *    this field shall be in Encoded ASN.1 byte order
+ * this field shall be in Encoded ASN.1 byte order
  */
 public class SpdmCertificateChain {
 
@@ -39,6 +39,10 @@ public class SpdmCertificateChain {
     // */
     //private int length = 0;
     /**
+     * Array List of certs found in the chain.
+     */
+    private final ArrayList<UefiX509Cert> certList = new ArrayList<UefiX509Cert>();
+    /**
      * Root hash.
      */
     private byte[] rootHash = null;
@@ -46,10 +50,6 @@ public class SpdmCertificateChain {
      * Number of certs in the SPDM cert chain.
      */
     private int numberOfCerts = 0;
-    /**
-     * Array List of certs found in the chain.
-     */
-    private ArrayList<UefiX509Cert> certList = new ArrayList<UefiX509Cert>();
     /**
      * Human-readable description of any error associated with SPDM base hash alg.
      */
@@ -63,7 +63,7 @@ public class SpdmCertificateChain {
      * SpdmCertificateChain Constructor.
      *
      * @param spdmCertChainBytes byte array holding the SPDM Cert Chain bytes.
-     * @param rootHashLength length of RootHash.
+     * @param rootHashLength     length of RootHash.
      */
     public SpdmCertificateChain(final byte[] spdmCertChainBytes, final int rootHashLength) {
 
@@ -76,11 +76,13 @@ public class SpdmCertificateChain {
 
             // Reserved: 2 bytes
 
+            final int spdmCertChainBytesSrcIndex = 4;
             rootHash = new byte[rootHashLength];
-            System.arraycopy(spdmCertChainBytes, 4, rootHash, 0, rootHashLength);
+            System.arraycopy(spdmCertChainBytes, spdmCertChainBytesSrcIndex, rootHash, 0, rootHashLength);
 
-            int certChainStartPos = 4 + rootHashLength;
-            int certChainLength = spdmCertChainBytes.length - certChainStartPos;
+            final int offsetForCertChain = 4;
+            final int certChainStartPos = offsetForCertChain + rootHashLength;
+            final int certChainLength = spdmCertChainBytes.length - certChainStartPos;
             byte[] certChainBytes = new byte[certChainLength];
             System.arraycopy(spdmCertChainBytes, certChainStartPos, certChainBytes, 0, certChainLength);
 
@@ -93,7 +95,7 @@ public class SpdmCertificateChain {
      *
      * @param certChainData Byte array holding the cert chain data
      */
-        private void processCertChain(final byte[] certChainData) {
+    private void processCertChain(final byte[] certChainData) {
 
         UefiX509Cert cert = null;
 
@@ -113,10 +115,11 @@ public class SpdmCertificateChain {
                 byte[] certData = new byte[cLength];
                 certChainDataIS.read(certData);
                 // put the cert back together
-                byte[] certBlob = new byte[cLength + 4];
+                final int certBlobStartIndex = 4;
+                byte[] certBlob = new byte[cLength + certBlobStartIndex];
                 System.arraycopy(certType, 0, certBlob, 0, 2);
                 System.arraycopy(certLength, 0, certBlob, 2, 2);
-                System.arraycopy(certData, 0, certBlob, 4, cLength);
+                System.arraycopy(certData, 0, certBlob, certBlobStartIndex, cLength);
                 cert = new UefiX509Cert(certBlob);
                 //cert = new X509Certificate(certBlob);
                 certList.add(cert);
