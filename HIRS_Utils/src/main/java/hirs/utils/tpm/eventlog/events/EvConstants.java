@@ -7,11 +7,6 @@ package hirs.utils.tpm.eventlog.events;
 public final class EvConstants {
 
     /**
-     * Default private constructor so checkstyles doesn't complain
-     */
-    private EvConstants() { }
-
-    /**
      * Type length = 4 bytes.
      */
     public static final int EV_TYPE_SIZE = 4;
@@ -39,11 +34,11 @@ public final class EvConstants {
      * Each PCR bank holds 24 registers.
      */
     public static final int PCR_COUNT = 24;
-    // Event IDs
     /**
      * Pre boot cert Event ID.
      */
     public static final int EV_PREBOOT_CERT = 0x00000000;
+    // Event IDs
     /**
      * POST Code Event ID.
      */
@@ -180,4 +175,9 @@ public final class EvConstants {
      * EFI SPDM Device Authority Event ID.
      */
     public static final int EV_EFI_SPDM_DEVICE_AUTHORITY = 0x800000E4;
+    /**
+     * Default private constructor so checkstyles doesn't complain.
+     */
+    private EvConstants() {
+    }
 }

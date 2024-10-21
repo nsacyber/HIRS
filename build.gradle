@@ -1,5 +1,4 @@
 import java.util.concurrent.TimeUnit
-import org.gradle.api.tasks.Copy
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
@@ -8,7 +7,7 @@ plugins {
 }
 
 // Global checkstyle file
-    ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
+ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
 subprojects {
     apply plugin: "com.github.spotbugs"
@@ -19,12 +18,11 @@ subprojects {
 
     tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
         reports {
-            html {
-                enabled = true
-            }
+            html.required = true
         }
     }
 }
+
 
 dependencies {
     repositories {
@@ -36,10 +34,10 @@ dependencies {
 def projectVersion = rootProject.file('VERSION').text.trim()
 
 def buildTime = { ->
-    Date latestdate = new Date();
-    def time = latestdate.getTime();
-    long seconds = TimeUnit.MILLISECONDS.toSeconds(time);
-    return seconds;
+    Date latestdate = new Date()
+    def time = latestdate.getTime()
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(time)
+    return seconds
 }
 
 def gitHash = { ->

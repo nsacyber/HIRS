@@ -50,12 +50,11 @@ public enum DigestAlgorithm {
      * options for standardAlgorithmName. Throws an IllegalArgumentException if no Enum exists with
      * that value.
      *
-     * @param standardAlgorithmName
-     *            String value of the Enum
+     * @param standardAlgorithmName String value of the Enum
      * @return DigestAlgorithm object
      */
     public static DigestAlgorithm findByString(final String standardAlgorithmName) {
-        for (DigestAlgorithm algorithm: DigestAlgorithm.values()) {
+        for (DigestAlgorithm algorithm : DigestAlgorithm.values()) {
             if (algorithm.getStandardAlgorithmName().equals(standardAlgorithmName)) {
                 return algorithm;
             }
