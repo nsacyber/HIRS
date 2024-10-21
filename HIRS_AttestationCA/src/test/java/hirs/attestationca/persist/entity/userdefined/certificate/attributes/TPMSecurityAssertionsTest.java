@@ -1,9 +1,10 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the TPMSecurityAssertions class.
@@ -28,7 +29,6 @@ public class TPMSecurityAssertionsTest {
             assertNull(TPMSecurityAssertions.EkGenerationType.values()[4]);
             fail();
         } catch (ArrayIndexOutOfBoundsException e) {
-            return;
         }
     }
 
@@ -48,7 +48,6 @@ public class TPMSecurityAssertionsTest {
             assertNull(TPMSecurityAssertions.EkGenerationLocation.values()[3]);
             fail();
         } catch (ArrayIndexOutOfBoundsException e) {
-            return;
         }
     }
 }

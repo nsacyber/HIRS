@@ -63,13 +63,38 @@ public class PcrValidator {
      */
     public PcrValidator(final String[] pcrValues) {
         baselinePcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
-        for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-            baselinePcrs[i] = pcrValues[i];
+        System.arraycopy(pcrValues, 0, baselinePcrs, 0, TPMMeasurementRecord.MAX_PCR_ID + 1);
+    }
+
+    public static String[] buildStoredPcrs(final String pcrContent, final int algorithmLength) {
+        // we have a full set of PCR values
+        String[] pcrSet = pcrContent.split("\\n");
+        String[] storedPcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+
+        // we need to scroll through the entire list until we find
+        // a matching hash length
+        int offset = 1;
+
+        for (int i = 0; i < pcrSet.length; i++) {
+            if (pcrSet[i].contains("sha")) {
+                // entered a new set, check size
+                if (pcrSet[i + offset].split(":")[1].trim().length()
+                        == algorithmLength) {
+                    // found the matching set
+                    for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
+                        storedPcrs[j] = pcrSet[++i].split(":")[1].trim();
+                    }
+                    break;
+                }
+            }
         }
+
+        return storedPcrs;
     }
 
     /**
      * Getter for the array of baseline PCRs.
+     *
      * @return instance of the PCRs.
      */
     public String[] getBaselinePcrs() {
@@ -78,6 +103,7 @@ public class PcrValidator {
 
     /**
      * Setter for the array of baseline PCRs.
+     *
      * @param baselinePcrs instance of the PCRs.
      */
     public void setBaselinePcrs(final String[] baselinePcrs) {
@@ -88,7 +114,7 @@ public class PcrValidator {
      * Compares the baseline pcr list and the quote pcr list.  If the
      * ignore flags are set, 10 and 17-19 will be skipped for comparison.
      *
-     * @param storedPcrs non-baseline pcr list
+     * @param storedPcrs     non-baseline pcr list
      * @param policySettings db entity that holds all of policy
      * @return a StringBuilder that is empty if everything passes.
      */
@@ -128,9 +154,10 @@ public class PcrValidator {
     /**
      * Checks that the expected FM events occurring. There are policy options that
      * will ignore certin PCRs, Event Types and Event Variables present.
+     *
      * @param tcgMeasurementLog Measurement log from the client
-     * @param eventValueMap The events stored as baseline to compare
-     * @param policySettings db entity that holds all of policy
+     * @param eventValueMap     The events stored as baseline to compare
+     * @param policySettings    db entity that holds all of policy
      * @return the events that didn't pass
      */
     public List<TpmPcrEvent> validateTpmEvents(final TCGEventLog tcgMeasurementLog,
@@ -151,11 +178,11 @@ public class PcrValidator {
                     log.info(String.format("GPT Ignored -> %s", tpe));
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
-                        || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
+                                || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
                     log.info(String.format("OS Evt Ignored -> %s", tpe));
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_CFG)
-                        && tpe.getEventContentStr().contains("SecureBoot"))) {
+                                && tpe.getEventContentStr().contains("SecureBoot"))) {
                     log.info(String.format("OS Evt Config Ignored -> %s", tpe));
                 } else {
                     if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
@@ -171,8 +198,8 @@ public class PcrValidator {
     /**
      * Compares hashs to validate the quote from the client.
      *
-     * @param tpmQuote the provided quote
-     * @param storedPcrs values from the RIM file
+     * @param tpmQuote       the provided quote
+     * @param storedPcrs     values from the RIM file
      * @param policySettings db entity that holds all of policy
      * @return true if validated, false if not
      */
@@ -211,10 +238,10 @@ public class PcrValidator {
 
         try {
 
-              // The calculated string is being used in the contains method
-              // because the TPM Quote's hash isn't just for PCR values,
-              // it contains the calculated digest of the PCRs, along with
-              // other information.
+            // The calculated string is being used in the contains method
+            // because the TPM Quote's hash isn't just for PCR values,
+            // it contains the calculated digest of the PCRs, along with
+            // other information.
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
             log.debug("Validating PCR information with the following:" +
@@ -229,31 +256,5 @@ public class PcrValidator {
         }
 
         return validated;
-    }
-
-    public static String[] buildStoredPcrs(final String pcrContent, final int algorithmLength) {
-        // we have a full set of PCR values
-        String[] pcrSet = pcrContent.split("\\n");
-        String[] storedPcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
-
-        // we need to scroll through the entire list until we find
-        // a matching hash length
-        int offset = 1;
-
-        for (int i = 0; i < pcrSet.length; i++) {
-            if (pcrSet[i].contains("sha")) {
-                // entered a new set, check size
-                if (pcrSet[i + offset].split(":")[1].trim().length()
-                        == algorithmLength) {
-                    // found the matching set
-                    for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
-                        storedPcrs[j] = pcrSet[++i].split(":")[1].trim();
-                    }
-                    break;
-                }
-            }
-        }
-
-        return storedPcrs;
     }
 }

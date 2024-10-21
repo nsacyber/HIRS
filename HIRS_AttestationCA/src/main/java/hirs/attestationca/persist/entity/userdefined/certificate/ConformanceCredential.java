@@ -12,12 +12,13 @@ import java.nio.file.Path;
  * This class persists Conformance credentials by extending the base Certificate
  * class with fields unique to Conformance credentials.
  */
-@NoArgsConstructor(access= AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class ConformanceCredential extends Certificate {
-    /**
-     * This class enables the retrieval of ConformanceCredentials by their attributes.
-     */
+
+//    /**
+//     * This class enables the retrieval of ConformanceCredentials by their attributes.
+//     */
 //    public static class Selector extends CertificateSelector<ConformanceCredential> {
 //        /**
 //         * Construct a new CertificateSelector that will use the given {@link CertificateManager} to
@@ -30,12 +31,12 @@ public class ConformanceCredential extends Certificate {
 //        }
 //    }
 
-    /**
-     * Get a Selector for use in retrieving ConformanceCredentials.
-     *
-     * @param certMan the CertificateManager to be used to retrieve persisted certificates
-     * @return a ConformanceCredential.Selector instance to use for retrieving certificates
-     */
+//    /**
+//     * Get a Selector for use in retrieving ConformanceCredentials.
+//     *
+//     * @param certMan the CertificateManager to be used to retrieve persisted certificates
+//     * @return a ConformanceCredential.Selector instance to use for retrieving certificates
+//     */
 //    public static Selector select(final CertificateManager certMan) {
 //        return new Selector(certMan);
 //    }

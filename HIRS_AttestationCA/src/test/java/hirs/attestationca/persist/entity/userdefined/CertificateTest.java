@@ -21,11 +21,12 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This class tests functionality of the {@link Certificate} class.
@@ -88,6 +89,37 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     private static final String EK_CERT_WITH_PADDED_BYTES =
             "/certificates/ek_cert_with_padded_bytes.cer";
 
+    /**
+     * Construct a CertificateAuthorityCredential from the given parameters.
+     *
+     * @param filename the location of the certificate to be used
+     * @return the newly-constructed Certificate
+     * @throws IOException if there is a problem constructing the test certificate
+     */
+    public static Certificate getTestCertificate(
+            final String filename) throws IOException {
+        return getTestCertificate(CertificateAuthorityCredential.class, filename);
+    }
+
+    private static X509Certificate readX509Certificate(final String resourceName)
+            throws IOException {
+
+        CertificateFactory cf;
+        try {
+            cf = CertificateFactory.getInstance("X.509");
+        } catch (CertificateException e) {
+            throw new IOException("Cannot get X509 CertificateFactory instance", e);
+        }
+
+        try (FileInputStream certInputStream = new FileInputStream(Paths.get(
+                Objects.requireNonNull(CertificateTest.class.getResource(
+                        resourceName)).toURI()).toFile()
+        )) {
+            return (X509Certificate) cf.generateCertificate(certInputStream);
+        } catch (CertificateException | URISyntaxException e) {
+            throw new IOException("Cannot read certificate", e);
+        }
+    }
 
     /**
      * Tests that a certificate can be constructed from a byte array.
@@ -132,7 +164,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     public void testConstructCertFromEmptyByteArray()
             throws IOException, CertificateException {
         assertThrows(IllegalArgumentException.class, () ->
-                new CertificateAuthorityCredential(new byte[]{}));
+                new CertificateAuthorityCredential(new byte[] {}));
     }
 
     /**
@@ -293,7 +325,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
                 attrCertHolder.getIssuer().getNames()[0].toString(),
                 platformCert.getIssuer()
         );
-        assertEquals(null, platformCert.getSubject());
+        assertNull(platformCert.getSubject());
         assertArrayEquals(null, platformCert.getEncodedPublicKey());
         assertArrayEquals(attrCertHolder.getSignature(), platformCert.getSignature());
         assertEquals(attrCertHolder.getNotBefore(), platformCert.getBeginValidity());
@@ -491,37 +523,5 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
                         CertificateAuthorityCredential.class, FAKE_INTEL_INT_CA_FILE
                 ).hashCode()
         );
-    }
-
-    /**
-     * Construct a CertificateAuthorityCredential from the given parameters.
-     *
-     * @param filename the location of the certificate to be used
-     * @return the newly-constructed Certificate
-     * @throws IOException if there is a problem constructing the test certificate
-     */
-    public static Certificate getTestCertificate(
-            final String filename) throws IOException {
-        return getTestCertificate(CertificateAuthorityCredential.class, filename);
-    }
-
-    private static X509Certificate readX509Certificate(final String resourceName)
-            throws IOException {
-
-        CertificateFactory cf;
-        try {
-            cf = CertificateFactory.getInstance("X.509");
-        } catch (CertificateException e) {
-            throw new IOException("Cannot get X509 CertificateFactory instance", e);
-        }
-
-        try (FileInputStream certInputStream = new FileInputStream(Paths.get(
-                Objects.requireNonNull(CertificateTest.class.getResource(
-                        resourceName)).toURI()).toFile()
-        )) {
-            return (X509Certificate) cf.generateCertificate(certInputStream);
-        } catch (CertificateException | URISyntaxException e) {
-            throw new IOException("Cannot read certificate", e);
-        }
     }
 }

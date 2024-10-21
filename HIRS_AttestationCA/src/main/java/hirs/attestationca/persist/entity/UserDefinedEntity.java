@@ -4,9 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.NonNull;
 
 /**
  * An abstract archivable entity that can be given a user-defined name and description.
@@ -18,11 +18,13 @@ import lombok.NonNull;
 public abstract class UserDefinedEntity extends ArchivableEntity {
 
     @Column(nullable = false, unique = true)
-    @NonNull private String name;
+    @NonNull
+    private String name;
 
     @ToString.Exclude
     @Column(nullable = false, unique = false)
-    @NonNull private String description = "";
+    @NonNull
+    private String description = "";
 
     /**
      * Default empty constructor is required for Hibernate. It is protected to
@@ -47,8 +49,7 @@ public abstract class UserDefinedEntity extends ArchivableEntity {
      * an instance of <code>UserDefinedEntity</code> and its name is the same as this
      * <code>UserDefinedEntity</code>. Otherwise this returns false.
      *
-     * @param other
-     *            other object to test for equals
+     * @param other other object to test for equals
      * @return true if other is <code>Baseline</code> and has same name
      */
     @Override
@@ -56,11 +57,10 @@ public abstract class UserDefinedEntity extends ArchivableEntity {
         if (this == other) {
             return true;
         }
-        if (!(other instanceof UserDefinedEntity)) {
+        if (!(other instanceof UserDefinedEntity entity)) {
             return false;
         }
 
-        final UserDefinedEntity entity = (UserDefinedEntity) other;
         return this.getName().equals(entity.getName());
     }
 

@@ -30,7 +30,7 @@ public interface IDevIDCertificateRepository extends JpaRepository<IDevIDCertifi
     Page<IDevIDCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 
 
-//    /**
+    //    /**
 //     * Query that retrieves a list of IDevId certificates using the provided subject.
 //     *
 //     * @param subject string representation of the subject
@@ -56,7 +56,8 @@ public interface IDevIDCertificateRepository extends JpaRepository<IDevIDCertifi
 //    List<IDevIDCertificate> findBySubjectAndArchiveFlag(String subject, boolean archiveFlag);
 //
 //    /**
-//     * Query that retrieves a sorted list of IDevId certificates using the provided subject and archive flag.
+//     * Query that retrieves a sorted list of IDevId certificates using the provided subject
+//     * and archive flag.
 //     *
 //     * @param subject     string representation of the subject
 //     * @param archiveFlag archive flag
@@ -79,5 +80,6 @@ public interface IDevIDCertificateRepository extends JpaRepository<IDevIDCertifi
 //     * @param archiveFlag        archive flag
 //     * @return an IDevId certificate
 //     */
-//    IDevIDCertificate findBySubjectKeyIdStringAndArchiveFlag(String subjectKeyIdString, boolean archiveFlag);
+//      IDevIDCertificate findBySubjectKeyIdStringAndArchiveFlag(String subjectKeyIdString,
+//      boolean archiveFlag);
 }

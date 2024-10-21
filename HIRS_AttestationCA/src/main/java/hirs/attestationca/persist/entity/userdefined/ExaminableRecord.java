@@ -23,6 +23,29 @@ import lombok.extern.log4j.Log4j2;
 @XmlAccessorType(XmlAccessType.FIELD)
 public abstract class ExaminableRecord {
 
+    @Getter
+    @Column(nullable = false)
+    // Decided on ORDINAL instead of STRING due to concerns surrounding overall size and retrieval
+    // time of field from database. Consistent with other implementations of ExaminableRecord.
+    @Enumerated(EnumType.ORDINAL)
+    private ExamineState examineState = ExamineState.UNEXAMINED;
+
+    /**
+     * Sets the examine state for this record.
+     *
+     * @param examineState the examine state
+     */
+    public void setExamineState(final ExamineState examineState) {
+        if (examineState == ExamineState.UNEXAMINED) {
+            log.error("Can't set ExamineState on ExaminableRecord to Unexamined");
+            throw new IllegalArgumentException(
+                    "Can't set ExamineState on ExaminableRecord to Unexamined"
+            );
+        }
+
+        this.examineState = examineState;
+    }
+
     /**
      * State capturing if a record was examined during appraisal or not.
      */
@@ -41,27 +64,5 @@ public abstract class ExaminableRecord {
          * If a record was visited but ignored.
          */
         IGNORED
-    }
-
-    @Getter
-    @Column(nullable = false)
-    // Decided on ORDINAL instead of STRING due to concerns surrounding overall size and retrieval
-    // time of field from database. Consistent with other implementations of ExaminableRecord.
-    @Enumerated(EnumType.ORDINAL)
-    private ExamineState examineState = ExamineState.UNEXAMINED;
-
-    /**
-     * Sets the examine state for this record.
-     * @param examineState the examine state
-     */
-    public void setExamineState(final ExamineState examineState) {
-        if (examineState == ExamineState.UNEXAMINED) {
-            log.error("Can't set ExamineState on ExaminableRecord to Unexamined");
-            throw new IllegalArgumentException(
-                    "Can't set ExamineState on ExaminableRecord to Unexamined"
-            );
-        }
-
-        this.examineState = examineState;
     }
 }

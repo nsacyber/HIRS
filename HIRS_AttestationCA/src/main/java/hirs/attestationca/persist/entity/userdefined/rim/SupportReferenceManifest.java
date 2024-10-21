@@ -71,6 +71,7 @@ public class SupportReferenceManifest extends ReferenceManifest {
     /**
      * Getter method for the expected PCR values contained within the support
      * RIM.
+     *
      * @return a string array of the pcr values.
      */
     public String[] getExpectedPCRList() {
@@ -113,6 +114,7 @@ public class SupportReferenceManifest extends ReferenceManifest {
     /**
      * This is a method to indicate whether or not this support
      * rim is a base log file.
+     *
      * @return flag for base.
      */
     public boolean isBaseSupport() {
@@ -121,9 +123,15 @@ public class SupportReferenceManifest extends ReferenceManifest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         SupportReferenceManifest that = (SupportReferenceManifest) o;
         return pcrHash == that.pcrHash && updated == that.updated;
     }

@@ -8,7 +8,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +24,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @Entity
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 @Table(name = "ReferenceDigestValue")
 @Access(AccessType.FIELD)
 public class ReferenceDigestValue extends AbstractEntity {
@@ -88,18 +87,19 @@ public class ReferenceDigestValue extends AbstractEntity {
 
     /**
      * Default Constructor with parameters for all associated data.
-     * @param baseRimId the UUID of the associated record
-     * @param supportRimId the UUID of the associated record
-     * @param manufacturer associated creator for this information
-     * @param model the specific device type
-     * @param pcrIndex the event number
-     * @param digestValue the key digest value
+     *
+     * @param baseRimId      the UUID of the associated record
+     * @param supportRimId   the UUID of the associated record
+     * @param manufacturer   associated creator for this information
+     * @param model          the specific device type
+     * @param pcrIndex       the event number
+     * @param digestValue    the key digest value
      * @param supportRimHash the support file's hash value
-     * @param eventType the event type to store
-     * @param matchFail the status of the baseline check
-     * @param patched the status of the value being updated to patch
-     * @param updated the status of the value being updated with info
-     * @param contentBlob the data value of the content
+     * @param eventType      the event type to store
+     * @param matchFail      the status of the baseline check
+     * @param patched        the status of the value being updated to patch
+     * @param updated        the status of the value being updated with info
+     * @param contentBlob    the data value of the content
      */
     public ReferenceDigestValue(final UUID baseRimId, final UUID supportRimId,
                                 final String manufacturer, final String model,
@@ -124,6 +124,7 @@ public class ReferenceDigestValue extends AbstractEntity {
 
     /**
      * the object that contains the raw bytes for this RDV.
+     *
      * @return the raw bytes
      */
     public byte[] getContentBlob() {
@@ -132,7 +133,8 @@ public class ReferenceDigestValue extends AbstractEntity {
 
     /**
      * Helper method to update the attributes of this object.
-     * @param support the associated RIM.
+     *
+     * @param support   the associated RIM.
      * @param baseRimId the main id to update
      */
     public void updateInfo(final SupportReferenceManifest support, final UUID baseRimId) {
@@ -151,6 +153,7 @@ public class ReferenceDigestValue extends AbstractEntity {
 
     /**
      * Returns a string of the classes fields.
+     *
      * @return a string
      */
     public String toString() {

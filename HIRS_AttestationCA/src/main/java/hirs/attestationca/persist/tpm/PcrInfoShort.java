@@ -39,7 +39,7 @@ import java.util.List;
 @XmlType(name = "PcrInfoShort",
         namespace = "http://www.trustedcomputinggroup.org/XML/SCHEMA/"
                 + "Integrity_Report_v1_0#", propOrder = {"pcrSelection",
-        "localityAtRelease", "compositeHash", "pcrComposite" })
+        "localityAtRelease", "compositeHash", "pcrComposite"})
 @Embeddable
 public class PcrInfoShort {
 
@@ -77,16 +77,12 @@ public class PcrInfoShort {
     /**
      * Constructor used to create a PcrInfoShort object.
      *
-     * @param pcrSelection
-     *            PcrSelection defines which TPM PCRs are used in the TPM Quote.
-     * @param localityAtRelease
-     *            short value includes locality information to provide the
-     *            requestor a more complete view of the current platform
-     *            configuration
-     * @param compositeHash
-     *            A hash of PcrComposite
-     * @param pcrComposite
-     *            A structure containing the actual values of the PCRs quoted.
+     * @param pcrSelection      PcrSelection defines which TPM PCRs are used in the TPM Quote.
+     * @param localityAtRelease short value includes locality information to provide the
+     *                          requestor a more complete view of the current platform
+     *                          configuration
+     * @param compositeHash     A hash of PcrComposite
+     * @param pcrComposite      A structure containing the actual values of the PCRs quoted.
      */
     public PcrInfoShort(final PcrSelection pcrSelection,
                         final short localityAtRelease, final byte[] compositeHash,
@@ -126,8 +122,7 @@ public class PcrInfoShort {
      * collected PCR values match the digest in the quote.
      *
      * @return byte array containing the digest
-     * @throws NoSuchAlgorithmException
-     *             if MessageDigest doesn't recognize "SHA-1" or "SHA-256"
+     * @throws NoSuchAlgorithmException if MessageDigest doesn't recognize "SHA-1" or "SHA-256"
      */
     public final byte[] getCalculatedDigest() throws NoSuchAlgorithmException {
         if (this.isTpm1()) {
@@ -159,7 +154,7 @@ public class PcrInfoShort {
         byteBuffer.put(this.pcrSelection.getValue());
         byteBuffer.putInt(pcrComposite.getValueSize());
 
-        for (TPMMeasurementRecord record: pcrComposite.getPcrValueList()) {
+        for (TPMMeasurementRecord record : pcrComposite.getPcrValueList()) {
             byteBuffer.put(record.getHash().getDigest());
         }
 

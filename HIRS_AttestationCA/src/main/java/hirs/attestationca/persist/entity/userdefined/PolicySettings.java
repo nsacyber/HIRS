@@ -105,8 +105,7 @@ public class PolicySettings extends UserDefinedEntity {
     /**
      * Constructor used to initialize PolicySettings object.
      *
-     * @param name
-     *        A name used to uniquely identify and reference the Supply Chain policy.
+     * @param name A name used to uniquely identify and reference the Supply Chain policy.
      */
     public PolicySettings(final String name) {
         super(name);
@@ -115,10 +114,8 @@ public class PolicySettings extends UserDefinedEntity {
     /**
      * Constructor used to initialize PolicySettings object.
      *
-     * @param name
-     *        A name used to uniquely identify and reference the supply chain policy.
-     * @param description
-     *        Optional description of the policy that can be added by the user
+     * @param name        A name used to uniquely identify and reference the supply chain policy.
+     * @param description Optional description of the policy that can be added by the user
      */
     public PolicySettings(final String name, final String description) {
         super(name, description);

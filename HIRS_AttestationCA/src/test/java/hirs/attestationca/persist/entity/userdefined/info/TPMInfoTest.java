@@ -1,15 +1,16 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
-import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
-
 import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Test;
+
+import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.Test;
 
 /**
  * TPMInfoTest is a unit test class for TPMInfo.
@@ -53,7 +54,7 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
         assertEquals(tpmInfo.getTpmVersionMinor(), (short) 0);
         assertEquals(tpmInfo.getTpmVersionRevMajor(), (short) 0);
         assertEquals(tpmInfo.getTpmVersionRevMinor(), (short) 0);
-        assertEquals(tpmInfo.getIdentityCertificate(), null);
+        assertNull(tpmInfo.getIdentityCertificate());
     }
 
     /**
@@ -63,7 +64,7 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     public final void tpmMakeNullTest() {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(null, VERSION_MAJOR, VERSION_MINOR, VERSION_REV_MAJOR,
-                    VERSION_REV_MINOR, getTestIdentityCertificate()));
+                        VERSION_REV_MINOR, getTestIdentityCertificate()));
     }
 
     /**
@@ -73,7 +74,7 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     public final void tpmMakeLongTest() {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(LONG_TPM_MAKE, VERSION_MAJOR, VERSION_MINOR, VERSION_REV_MAJOR,
-                    VERSION_REV_MINOR, getTestIdentityCertificate()));
+                        VERSION_REV_MINOR, getTestIdentityCertificate()));
     }
 
     /**
@@ -84,7 +85,7 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     public final void testTPMInfoInvalidVersionMajor() {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(TPM_MAKE, (short) -1, VERSION_MINOR, VERSION_REV_MAJOR,
-                    VERSION_REV_MINOR, getTestIdentityCertificate()));
+                        VERSION_REV_MINOR, getTestIdentityCertificate()));
     }
 
     /**
@@ -95,7 +96,7 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     public final void testTPMInfoInvalidVersionMinor() {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(TPM_MAKE, VERSION_MAJOR, (short) -1, VERSION_REV_MAJOR,
-                    VERSION_REV_MINOR, getTestIdentityCertificate()));
+                        VERSION_REV_MINOR, getTestIdentityCertificate()));
     }
 
     /**
@@ -106,7 +107,7 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     public final void testTPMInfoInvalidVersionRevMajor() {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(TPM_MAKE, VERSION_MAJOR, VERSION_MINOR, (short) -1,
-                    VERSION_REV_MINOR, getTestIdentityCertificate()));
+                        VERSION_REV_MINOR, getTestIdentityCertificate()));
     }
 
     /**
@@ -117,7 +118,7 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     public final void testTPMInfoInvalidVersionRevMinor() {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(TPM_MAKE, VERSION_MAJOR, VERSION_MINOR, VERSION_REV_MAJOR,
-                    (short) -1, getTestIdentityCertificate()));
+                        (short) -1, getTestIdentityCertificate()));
     }
 
     /**

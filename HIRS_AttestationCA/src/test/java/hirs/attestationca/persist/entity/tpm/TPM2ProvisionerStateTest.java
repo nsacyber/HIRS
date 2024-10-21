@@ -1,19 +1,19 @@
 package hirs.attestationca.persist.entity.tpm;
 
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
-
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Random;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Contains unit tests for {@link TPM2ProvisionerState}.
@@ -88,9 +88,10 @@ public class TPM2ProvisionerStateTest {
 
     /**
      * Test that {@link TPM2ProvisionerState#getTPM2ProvisionerState(
-     *        TPM2ProvisionerStateRepository, byte[])} works.
+     *TPM2ProvisionerStateRepository, byte[])} works.
      * {@link TPM2ProvisionerState#getTPM2ProvisionerState(
-     *        TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     *TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     *
      * @throws IOException this will never happen
      */
     @Test
@@ -116,7 +117,8 @@ public class TPM2ProvisionerStateTest {
     /**
      * Test that if a null is passed as a nonce to
      * {@link TPM2ProvisionerState#getTPM2ProvisionerState(
-     *        TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     *TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     *
      * @throws IOException this will never happen
      */
     @Test
@@ -139,7 +141,8 @@ public class TPM2ProvisionerStateTest {
     /**
      * Test that if a nonce that is less than 8 bytes is passed to
      * {@link TPM2ProvisionerState#getTPM2ProvisionerState(
-     *        TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     *TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     *
      * @throws IOException this will never happen
      */
     @Test

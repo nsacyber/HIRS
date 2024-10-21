@@ -72,62 +72,10 @@ import static org.mockito.Mockito.when;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)              // needed to use non-static BeforeAll
 public class AttestationCertificateAuthorityTest {
 
-    /**
-     * This internal class handles setup for testing the function
-     * generateCredential() from class AbstractProcessor. Because the
-     * function is Protected and in a different package than the test,
-     * it cannot be accessed directly.
-     */
-    @Nested
-    public class AccessAbstractProcessor extends AbstractProcessor {
-
-        /**
-         * Constructor.
-         *
-         * @param privateKey the private key of the ACA
-         * @param validDays int for the time in which a certificate is valid.
-         */
-        public AccessAbstractProcessor(final PrivateKey privateKey,
-                                       final int validDays) {
-            super(privateKey, validDays);
-        }
-
-        /**
-         * Public wrapper for the protected function generateCredential(), to access for testing.
-         *
-         * @param publicKey cannot be null
-         * @param endorsementCredential the endorsement credential
-         * @param platformCredentials the set of platform credentials
-         * @param deviceName The host name used in the subject alternative name
-         * @param acaCertificate the aca certificate
-         * @return the generated X509 certificate
-         */
-        public X509Certificate accessGenerateCredential(final PublicKey publicKey,
-                                            final EndorsementCredential endorsementCredential,
-                                            final List<PlatformCredential> platformCredentials,
-                                            final String deviceName,
-                                            final X509Certificate acaCertificate) {
-
-            return generateCredential(publicKey,
-                                    endorsementCredential,
-                                    platformCredentials,
-                                    deviceName,
-                                    acaCertificate);
-        }
-    }
-
-    // object in test
-    private AttestationCertificateAuthority aca;
-    private AccessAbstractProcessor abstractProcessor;
-
-    // test key pair
-    private KeyPair keyPair;
-
     // length of IV used in PKI
     private static final int ENCRYPTION_IV_LEN = 16;
     // length of secret key used in PKI
     private static final int SECRETKEY_LEN = 128;
-
     private static final String EK_PUBLIC_PATH = "/tpm2/ek.pub";
     private static final String AK_PUBLIC_PATH = "/tpm2/ak.pub";
     private static final String AK_NAME_PATH = "/tpm2/ak.name";
@@ -167,7 +115,11 @@ public class AttestationCertificateAuthorityTest {
     private static final String AK_NAME_HEX = "00 0b 6e 8f 79 1c 7e 16  96 1b 11 71 65 9c e0 cd"
             + "ae 0d 4d aa c5 41 be 58  89 74 67 55 96 c2 5e 38"
             + "e2 94";
-
+    // object in test
+    private AttestationCertificateAuthority aca;
+    private AccessAbstractProcessor abstractProcessor;
+    // test key pair
+    private KeyPair keyPair;
 
     /**
      * Registers bouncy castle as a security provider. Normally the JEE container will handle this,
@@ -199,7 +151,7 @@ public class AttestationCertificateAuthorityTest {
     @Test
     public void testProcessIdentityClaimTpm2NullRequest() {
         assertThrows(IllegalArgumentException.class, () ->
-        aca.processIdentityClaimTpm2(null));
+                aca.processIdentityClaimTpm2(null));
     }
 
     /**
@@ -209,7 +161,7 @@ public class AttestationCertificateAuthorityTest {
     public void testGetPublicKey() {
 
         // encoded byte array to be returned by public key
-        byte[] encoded = new byte[]{0, 1, 0, 1, 0};
+        byte[] encoded = new byte[] {0, 1, 0, 1, 0};
 
         // create mocks for testing
         X509Certificate acaCertificate = mock(X509Certificate.class);
@@ -260,7 +212,7 @@ public class AttestationCertificateAuthorityTest {
 
     /**
      * Tests {@link ProvisionUtils#decryptSymmetricBlob(
-     * byte[], byte[], byte[], String)}.
+     *byte[], byte[], byte[], String)}.
      *
      * @throws Exception during aca processing
      */
@@ -315,7 +267,7 @@ public class AttestationCertificateAuthorityTest {
 
     /**
      * Tests {@link ProvisionUtils#generateAsymmetricContents(
-     * byte[], byte[], PublicKey)}.
+     *byte[], byte[], PublicKey)}.
      *
      * @throws Exception during aca processing
      */
@@ -323,7 +275,7 @@ public class AttestationCertificateAuthorityTest {
     public void testGenerateAsymmetricContents() throws Exception {
 
         // "encoded" identity proof (returned by struct converter)
-        byte[] identityProofEncoded = new byte[]{0, 0, 1, 1};
+        byte[] identityProofEncoded = new byte[] {0, 0, 1, 1};
 
         // generate a random session key to be used for encryption and decryption
         byte[] sessionKey = new byte[ENCRYPTION_IV_LEN];
@@ -478,10 +430,10 @@ public class AttestationCertificateAuthorityTest {
         assertEquals("", certificate.getSubjectX500Principal().getName());
         assertEquals("exampleIdLabel",
                 ((X500Name) GeneralNames.fromExtensions(((TBSCertificate.getInstance(
-                certificate.getTBSCertificate()).getExtensions())), Extension.
-                subjectAlternativeName).getNames()[0].getName()).getRDNs(
+                        certificate.getTBSCertificate()).getExtensions())), Extension.
+                        subjectAlternativeName).getNames()[0].getName()).getRDNs(
                         IssuedCertificateAttributeHelper.TCPA_AT_TPM_ID_LABEL)[0].getFirst()
-                .getValue().toString());
+                        .getValue().toString());
 
         assertArrayEquals(modulus, resultMod);
 
@@ -540,8 +492,9 @@ public class AttestationCertificateAuthorityTest {
 
     /**
      * Tests parsing the EK from the TPM2 output file.
+     *
      * @throws URISyntaxException incorrect resource path
-     * @throws IOException unable to read from file
+     * @throws IOException        unable to read from file
      */
     @Test
     public void testParseEk() throws URISyntaxException, IOException {
@@ -567,8 +520,9 @@ public class AttestationCertificateAuthorityTest {
 
     /**
      * Tests parsing the AK public key from the TPM2 output file.
+     *
      * @throws URISyntaxException incorrect resource path
-     * @throws IOException unable to read from file
+     * @throws IOException        unable to read from file
      */
     @Test
     public void testParseAk() throws URISyntaxException, IOException {
@@ -594,8 +548,9 @@ public class AttestationCertificateAuthorityTest {
 
     /**
      * Tests parsing the AK name from the TPM2 output file.
-     * @throws URISyntaxException incorrect resource path
-     * @throws IOException unable to read from file
+     *
+     * @throws URISyntaxException       incorrect resource path
+     * @throws IOException              unable to read from file
      * @throws NoSuchAlgorithmException inavlid algorithm
      */
     @Test
@@ -624,8 +579,9 @@ public class AttestationCertificateAuthorityTest {
      * and ekPubPath are correct. Your output file will be
      * HIRS_AttestationCA/src/test/resources/tpm2/test/make.blob and the nonce used will be
      * output as HIRS_AttestationCA/src/test/resources/tpm2/test/secret.blob
+     *
      * @throws URISyntaxException invalid file path
-     * @throws IOException unable to read file
+     * @throws IOException        unable to read file
      */
     @Disabled
     @Test
@@ -647,7 +603,7 @@ public class AttestationCertificateAuthorityTest {
         ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
 
         Path resources = Objects.requireNonNull(Paths.get(Objects.requireNonNull(this.getClass().getResource(
-                "/").toURI()))
+                        "/").toURI()))
                 .getParent().getParent().getParent().getParent());
         Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
         Files.write(makeBlob, blob.toByteArray());
@@ -753,5 +709,49 @@ public class AttestationCertificateAuthorityTest {
 
         // return the cipher text
         return cipher.doFinal(blob);
+    }
+
+    /**
+     * This internal class handles setup for testing the function
+     * generateCredential() from class AbstractProcessor. Because the
+     * function is Protected and in a different package than the test,
+     * it cannot be accessed directly.
+     */
+    @Nested
+    public class AccessAbstractProcessor extends AbstractProcessor {
+
+        /**
+         * Constructor.
+         *
+         * @param privateKey the private key of the ACA
+         * @param validDays  int for the time in which a certificate is valid.
+         */
+        public AccessAbstractProcessor(final PrivateKey privateKey,
+                                       final int validDays) {
+            super(privateKey, validDays);
+        }
+
+        /**
+         * Public wrapper for the protected function generateCredential(), to access for testing.
+         *
+         * @param publicKey             cannot be null
+         * @param endorsementCredential the endorsement credential
+         * @param platformCredentials   the set of platform credentials
+         * @param deviceName            The host name used in the subject alternative name
+         * @param acaCertificate        the aca certificate
+         * @return the generated X509 certificate
+         */
+        public X509Certificate accessGenerateCredential(final PublicKey publicKey,
+                                                        final EndorsementCredential endorsementCredential,
+                                                        final List<PlatformCredential> platformCredentials,
+                                                        final String deviceName,
+                                                        final X509Certificate acaCertificate) {
+
+            return generateCredential(publicKey,
+                    endorsementCredential,
+                    platformCredentials,
+                    deviceName,
+                    acaCertificate);
+        }
     }
 }

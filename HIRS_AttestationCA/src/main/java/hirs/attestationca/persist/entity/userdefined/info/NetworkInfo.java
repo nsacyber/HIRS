@@ -10,47 +10,42 @@ import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * This class is used to represent the network info of a device.
  */
 @Log4j2
 @Embeddable
+@EqualsAndHashCode
 public class NetworkInfo implements Serializable {
 
     private static final int NUM_MAC_ADDRESS_BYTES = 6;
 
     @XmlElement
     @Getter
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH)
     private String hostname;
 
     @XmlElement
     @Getter
 //    @XmlJavaTypeAdapter(value = InetAddressXmlAdapter.class)
-    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH)
 //    @JsonSubTypes.Type(type = "hirs.data.persist.type.InetAddressType")
     private InetAddress ipAddress;
 
     @XmlElement
-    @Column(length = NUM_MAC_ADDRESS_BYTES, nullable = true)
-    @SuppressWarnings("checkstyle:magicnumber")
+    @Column(length = NUM_MAC_ADDRESS_BYTES)
     private byte[] macAddress;
 
     /**
      * Constructor used to create a NetworkInfo object.
      *
-     * @param hostname
-     *            String representing the hostname information for the device,
-     *            can be null if hostname unknown
-     * @param ipAddress
-     *            InetAddress object representing the IP address for the device,
-     *            can be null if IP address unknown
-     * @param macAddress
-     *            byte array representing the MAC address for the device, can be
-     *            null if MAC address is unknown
+     * @param hostname   String representing the hostname information for the device,
+     *                   can be null if hostname unknown
+     * @param ipAddress  InetAddress object representing the IP address for the device,
+     *                   can be null if IP address unknown
+     * @param macAddress byte array representing the MAC address for the device, can be
+     *                   null if MAC address is unknown
      */
     public NetworkInfo(final String hostname, final InetAddress ipAddress,
                        final byte[] macAddress) {
@@ -72,7 +67,7 @@ public class NetworkInfo implements Serializable {
      * Used to retrieve the MAC address of the device.
      *
      * @return a String representing the MAC address, may return null if no
-     *         value is set
+     * value is set
      */
     public final byte[] getMacAddress() {
         if (macAddress == null) {
@@ -80,16 +75,6 @@ public class NetworkInfo implements Serializable {
         } else {
             return macAddress.clone();
         }
-    }
-
-    private void setHostname(final String hostname) {
-        log.debug("setting hostname to: {}", hostname);
-        this.hostname = hostname;
-    }
-
-    private void setIpAddress(final InetAddress ipAddress) {
-        log.debug("setting IP address to: {}", ipAddress);
-        this.ipAddress = ipAddress;
     }
 
     private void setMacAddress(final byte[] macAddress) {
@@ -114,22 +99,13 @@ public class NetworkInfo implements Serializable {
         this.macAddress = macAddress;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NetworkInfo)) {
-            return false;
-        }
-        NetworkInfo that = (NetworkInfo) o;
-        return Objects.equals(hostname, that.hostname)
-                && Objects.equals(ipAddress, that.ipAddress)
-                && Arrays.equals(macAddress, that.macAddress);
+    private void setHostname(final String hostname) {
+        log.debug("setting hostname to: {}", hostname);
+        this.hostname = hostname;
     }
 
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(hostname, ipAddress);
-        result = 31 * result + Arrays.hashCode(macAddress);
-        return result;
+    private void setIpAddress(final InetAddress ipAddress) {
+        log.debug("setting IP address to: {}", ipAddress);
+        this.ipAddress = ipAddress;
     }
 }

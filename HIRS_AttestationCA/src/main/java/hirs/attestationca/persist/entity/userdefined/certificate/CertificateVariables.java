@@ -36,7 +36,7 @@ public class CertificateVariables {
      *
      */
     public static final int MAX_NUMERIC_PRECISION = 49;
-    
+
     /**
      * Can store up to 160 bit values.
      */

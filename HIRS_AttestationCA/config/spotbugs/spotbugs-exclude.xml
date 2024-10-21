@@ -2,18 +2,18 @@
 <!-- Docs at http://findbugs.sourceforge.net/manual/filter.html -->
 <FindBugsFilter>
     <Match>
-        <Package name="~hirs\.attestationca\.configuration.*" />
+        <Package name="~hirs\.attestationca\.configuration.*"/>
     </Match>
     <Match>
         <!-- https://github.com/spotbugs/spotbugs/pull/2748 -->
-        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
     </Match>
     <!-- roughly 55 instances of this appear -->
     <Match>
-        <Bug pattern="EI_EXPOSE_REP" />
+        <Bug pattern="EI_EXPOSE_REP"/>
     </Match>
     <Match>
-        <Bug pattern="EI_EXPOSE_REP2" />
+        <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
     <Match>
         <Class name="hirs.attestationca.persist.AttestationCertificateAuthorityTest"/>

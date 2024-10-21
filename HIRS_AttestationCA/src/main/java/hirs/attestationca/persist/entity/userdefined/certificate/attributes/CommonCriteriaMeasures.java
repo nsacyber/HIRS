@@ -25,7 +25,8 @@ import org.bouncycastle.asn1.ASN1TaggedObject;
  *      targetUri [4] IMPLICIT URIReference OPTIONAL }
  * </pre>
  */
-@Getter @Setter
+@Getter
+@Setter
 public class CommonCriteriaMeasures {
 
     private static final int STRENGTH_OF_FUNCTION = 0;
@@ -33,140 +34,6 @@ public class CommonCriteriaMeasures {
     private static final int PROFILE_URI = 2;
     private static final int TARGET_OID = 3;
     private static final int TARGET_URI = 4;
-
-    /**
-     * A type to handle the evaluation status used in the Common Criteria Measurement.
-     * Ordering of enum types is intentional and their ordinal values correspond to enum
-     * values in the TCG spec.
-     *
-     * <pre>
-     * EvaluationStatus ::= ENUMERATED {
-     *      designedToMeet (0),
-     *      evaluationInProgress (1),
-     *      evaluationCompleted (2) }
-     * </pre>
-     */
-    public enum EvaluationStatus {
-        /**
-         * Evaluation designed to meet.
-         */
-        DESIGNEDTOMEET("designed To Meet"),
-        /**
-         * Evaluation in progress.
-         */
-        EVALUATIONINPROGRESS("evaluation In Progress"),
-        /**
-         * Evaluation completed.
-         */
-        EVALUATIONCOMPLETED("evaluation Completed");
-
-        @Getter
-        private final String value;
-
-        /**
-         * Basic constructor.
-         * @param value string containing the value.
-         */
-        EvaluationStatus(final String value) {
-            this.value = value;
-        }
-    }
-
-    /**
-     * A type to handle the strength of function used in the Common Criteria Measurement.
-     * Ordering of enum types is intentional and their ordinal values correspond to enum
-     * values in the TCG spec.
-     *
-     * <pre>
-     * StrengthOfFunction ::= ENUMERATED {
-     *      basic (0),
-     *      medium (1),
-     *      high (2) }
-     * </pre>
-     */
-    public enum StrengthOfFunction {
-        /**
-         * Basic function.
-         */
-        BASIC("basic"),
-        /**
-         * Medium function.
-         */
-        MEDIUM("medium"),
-        /**
-         * Hight function.
-         */
-        HIGH("high");
-
-        @Getter
-        private final String value;
-
-        /**
-         * Basic constructor.
-         * @param value string containing the value.
-         */
-        StrengthOfFunction(final String value) {
-            this.value = value;
-        }
-    }
-
-    /**
-     * A type to handle the evaluation assurance aevel used in the Common Criteria Measurement.
-     * Ordering of enum types is intentional and their ordinal values correspond to enum
-     * values in the TCG spec.
-     *
-     * <pre>
-     * EvaluationAssuranceLevel ::= ENUMERATED {
-     *      levell (1),
-     *      level2 (2),
-     *      level3 (3),
-     *      level4 (4),
-     *      level5 (5),
-     *      level6 (6),
-     *      level7 (7) }
-     * </pre>
-     */
-    public enum EvaluationAssuranceLevel {
-        /**
-         * Evaluation Assurance Level 1.
-         */
-        LEVEL1("level 1"),
-        /**
-         * Evaluation Assurance Level 2.
-         */
-        LEVEL2("level 2"),
-        /**
-         * Evaluation Assurance Level 3.
-         */
-        LEVEL3("level 3"),
-        /**
-         * Evaluation Assurance Level 4.
-         */
-        LEVEL4("level 4"),
-        /**
-         * Evaluation Assurance Level 5.
-         */
-        LEVEL5("level 5"),
-        /**
-         * Evaluation Assurance Level 6.
-         */
-        LEVEL6("level 6"),
-        /**
-         * Evaluation Assurance Level 7.
-         */
-        LEVEL7("level 7");
-
-        @Getter
-        private final String value;
-        /**
-         * Basic constructor.
-         * @param value string containing the value.
-         */
-        EvaluationAssuranceLevel(final String value) {
-            this.value = value;
-        }
-    }
-
     private ASN1IA5String version;
     private EvaluationAssuranceLevel assuranceLevel;
     private EvaluationStatus evaluationStatus;
@@ -194,6 +61,7 @@ public class CommonCriteriaMeasures {
 
     /**
      * Constructor given the SEQUENCE that contains Common Criteria Measures.
+     *
      * @param sequence containing the the common criteria measures
      * @throws IllegalArgumentException if there was an error on the parsing
      */
@@ -258,7 +126,6 @@ public class CommonCriteriaMeasures {
         }
     }
 
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -278,7 +145,7 @@ public class CommonCriteriaMeasures {
         }
         sb.append(", profileUri=");
         if (profileUri != null) {
-            sb.append(profileUri.toString());
+            sb.append(profileUri);
         }
         sb.append(", targetOid=");
         if (targetOid != null) {
@@ -286,10 +153,148 @@ public class CommonCriteriaMeasures {
         }
         sb.append(", targetUri=");
         if (targetUri != null) {
-            sb.append(targetUri.toString());
+            sb.append(targetUri);
         }
         sb.append("}");
 
         return sb.toString();
+    }
+
+    /**
+     * A type to handle the evaluation status used in the Common Criteria Measurement.
+     * Ordering of enum types is intentional and their ordinal values correspond to enum
+     * values in the TCG spec.
+     *
+     * <pre>
+     * EvaluationStatus ::= ENUMERATED {
+     *      designedToMeet (0),
+     *      evaluationInProgress (1),
+     *      evaluationCompleted (2) }
+     * </pre>
+     */
+    public enum EvaluationStatus {
+        /**
+         * Evaluation designed to meet.
+         */
+        DESIGNEDTOMEET("designed To Meet"),
+        /**
+         * Evaluation in progress.
+         */
+        EVALUATIONINPROGRESS("evaluation In Progress"),
+        /**
+         * Evaluation completed.
+         */
+        EVALUATIONCOMPLETED("evaluation Completed");
+
+        @Getter
+        private final String value;
+
+        /**
+         * Basic constructor.
+         *
+         * @param value string containing the value.
+         */
+        EvaluationStatus(final String value) {
+            this.value = value;
+        }
+    }
+
+    /**
+     * A type to handle the strength of function used in the Common Criteria Measurement.
+     * Ordering of enum types is intentional and their ordinal values correspond to enum
+     * values in the TCG spec.
+     *
+     * <pre>
+     * StrengthOfFunction ::= ENUMERATED {
+     *      basic (0),
+     *      medium (1),
+     *      high (2) }
+     * </pre>
+     */
+    public enum StrengthOfFunction {
+        /**
+         * Basic function.
+         */
+        BASIC("basic"),
+        /**
+         * Medium function.
+         */
+        MEDIUM("medium"),
+        /**
+         * Hight function.
+         */
+        HIGH("high");
+
+        @Getter
+        private final String value;
+
+        /**
+         * Basic constructor.
+         *
+         * @param value string containing the value.
+         */
+        StrengthOfFunction(final String value) {
+            this.value = value;
+        }
+    }
+
+
+    /**
+     * A type to handle the evaluation assurance aevel used in the Common Criteria Measurement.
+     * Ordering of enum types is intentional and their ordinal values correspond to enum
+     * values in the TCG spec.
+     *
+     * <pre>
+     * EvaluationAssuranceLevel ::= ENUMERATED {
+     *      levell (1),
+     *      level2 (2),
+     *      level3 (3),
+     *      level4 (4),
+     *      level5 (5),
+     *      level6 (6),
+     *      level7 (7) }
+     * </pre>
+     */
+    public enum EvaluationAssuranceLevel {
+        /**
+         * Evaluation Assurance Level 1.
+         */
+        LEVEL1("level 1"),
+        /**
+         * Evaluation Assurance Level 2.
+         */
+        LEVEL2("level 2"),
+        /**
+         * Evaluation Assurance Level 3.
+         */
+        LEVEL3("level 3"),
+        /**
+         * Evaluation Assurance Level 4.
+         */
+        LEVEL4("level 4"),
+        /**
+         * Evaluation Assurance Level 5.
+         */
+        LEVEL5("level 5"),
+        /**
+         * Evaluation Assurance Level 6.
+         */
+        LEVEL6("level 6"),
+        /**
+         * Evaluation Assurance Level 7.
+         */
+        LEVEL7("level 7");
+
+        @Getter
+        private final String value;
+
+        /**
+         * Basic constructor.
+         *
+         * @param value string containing the value.
+         */
+        EvaluationAssuranceLevel(final String value) {
+            this.value = value;
+        }
     }
 }

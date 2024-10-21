@@ -10,26 +10,25 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 /**
- *
  * Basic class that handle a URIReference object.
  * <pre>
  * URIReference ::= SEQUENCE {
  *      uniformResourceIdentifier IA5String (SIZE (1..URIMAX)),
  *      hashAlgorithm AlgorithmIdentifier OPTIONAL,
  *      hashValue BIT STRING OPTIONAL
- }
+ * }
  * </pre>
  */
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 public class URIReference {
+    private static final int PLATFORM_PROPERTIES_URI_MAX = 3;
+    private static final int PLATFORM_PROPERTIES_URI_MIN = 1;
     private ASN1IA5String uniformResourceIdentifier;
     private AlgorithmIdentifier hashAlgorithm;
     @JsonIgnore
     private ASN1BitString hashValue;
-
-    private static final int PLATFORM_PROPERTIES_URI_MAX = 3;
-    private static final int PLATFORM_PROPERTIES_URI_MIN = 1;
 
     /**
      * Default constructor.

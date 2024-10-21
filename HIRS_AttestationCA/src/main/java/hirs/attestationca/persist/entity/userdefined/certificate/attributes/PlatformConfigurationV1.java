@@ -25,6 +25,7 @@ public class PlatformConfigurationV1 extends PlatformConfiguration {
 
     /**
      * Constructor given the SEQUENCE that contains Platform Configuration.
+     *
      * @param sequence containing the Platform Configuration.
      * @throws IllegalArgumentException if there was an error on the parsing
      */
@@ -96,7 +97,7 @@ public class PlatformConfigurationV1 extends PlatformConfiguration {
         }
         sb.append(", platformPropertiesUri=");
         if (getPlatformPropertiesUri() != null) {
-            sb.append(getPlatformPropertiesUri().toString());
+            sb.append(getPlatformPropertiesUri());
         }
         sb.append("}");
 

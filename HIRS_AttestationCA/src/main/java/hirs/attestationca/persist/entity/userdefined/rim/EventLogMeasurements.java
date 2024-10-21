@@ -1,7 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.rim;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
@@ -31,10 +30,12 @@ public class EventLogMeasurements extends SupportReferenceManifest {
 
     @Column
     @JsonIgnore
-    @Getter @Setter
+    @Getter
+    @Setter
     private int pcrHash = 0;
     @Enumerated(EnumType.STRING)
-    @Getter @Setter
+    @Getter
+    @Setter
     private AppraisalStatus.Status overallValidationResult = AppraisalStatus.Status.FAIL;
 
     /**
@@ -74,6 +75,7 @@ public class EventLogMeasurements extends SupportReferenceManifest {
     /**
      * Getter method for the expected PCR values contained within the support
      * RIM.
+     *
      * @return a string array of the pcr values.
      */
     public String[] getExpectedPCRList() {

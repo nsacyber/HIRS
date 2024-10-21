@@ -22,16 +22,22 @@ public enum HealthStatus {
      */
     UNKNOWN("unknown");
 
-    private String healthStatus;
+    private final String healthStatus;
 
     /**
      * Creates a new <code>HealthStatus</code> object given a String.
      *
-     * @param healthStatus
-     *            "trusted", "untrusted", or "unknown"
+     * @param healthStatus "trusted", "untrusted", or "unknown"
      */
     HealthStatus(final String healthStatus) {
         this.healthStatus = healthStatus;
+    }
+
+    public static boolean isValidStatus(final String healthStatus) {
+        return Arrays.stream(HealthStatus.values())
+                .map(HealthStatus::name)
+                .collect(Collectors.toSet())
+                .contains(healthStatus);
     }
 
     /**
@@ -46,12 +52,5 @@ public enum HealthStatus {
     @Override
     public String toString() {
         return getStatus();
-    }
-
-    public static boolean isValidStatus(final String healthStatus) {
-        return Arrays.stream(HealthStatus.values())
-                .map(HealthStatus::name)
-                .collect(Collectors.toSet())
-                .contains(healthStatus);
     }
 }

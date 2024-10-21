@@ -18,7 +18,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
-import hirs.attestationca.persist.validation.CertificateAttributeScvValidator;
 import hirs.attestationca.persist.validation.CredentialValidator;
 import hirs.attestationca.persist.validation.FirmwareScvValidator;
 import hirs.utils.BouncyCastleUtils;
@@ -258,7 +257,7 @@ public class ValidationService {
      * include the trust chain if it exists in this class' CertificateManager.
      * Returns the certificate authority credentials in a KeyStore.
      *
-     * @param certificate the credential whose CA chain should be retrieved
+     * @param certificate            the credential whose CA chain should be retrieved
      * @param caCredentialRepository db service to get CA Certs
      * @return A keystore containing all relevant CA credentials to the given
      * certificate's organization or null if the keystore can't be assembled
@@ -318,7 +317,8 @@ public class ValidationService {
                 certAuthsWithMatchingIssuer = caCredentialRepository.findBySubject(credential.getIssuer());
             } else {
                 //Get certificates by subject organization
-                certAuthsWithMatchingIssuer = caCredentialRepository.findBySubjectSorted(credential.getIssuerSorted());
+                certAuthsWithMatchingIssuer =
+                        caCredentialRepository.findBySubjectSorted(credential.getIssuerSorted());
             }
         } else {
             certAuthsWithMatchingIssuer.add(skiCA);

@@ -127,9 +127,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
                     SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.META).item(0);
             setTagId(softwareIdentity.getAttribute(SwidTagConstants.TAGID));
             this.swidName = softwareIdentity.getAttribute(SwidTagConstants.NAME);
-            this.swidCorpus = Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.CORPUS)) ? 1 : 0;
+            this.swidCorpus =
+                    Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.CORPUS)) ? 1 : 0;
             this.setSwidPatch(Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.PATCH)));
-            this.setSwidSupplemental(Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.SUPPLEMENTAL)));
+            this.setSwidSupplemental(
+                    Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.SUPPLEMENTAL)));
             this.setSwidVersion(softwareIdentity.getAttribute(SwidTagConstants.VERSION));
             this.setSwidTagVersion(softwareIdentity.getAttribute(SwidTagConstants.TAGVERSION));
 
@@ -154,8 +156,10 @@ public class BaseReferenceManifest extends ReferenceManifest {
             this.rimLinkHash = softwareMeta.getAttribute(SwidTagConstants._RIM_LINK_HASH_STR);
             this.bindingSpec = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_STR);
             this.bindingSpecVersion = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_VERSION_STR);
-            this.setPlatformManufacturerId(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_ID_STR));
-            this.setPlatformManufacturer(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_STR));
+            this.setPlatformManufacturerId(
+                    softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_ID_STR));
+            this.setPlatformManufacturer(
+                    softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_STR));
             this.setPlatformModel(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MODEL_STR));
             this.platformVersion = softwareMeta.getAttribute(SwidTagConstants._PLATFORM_VERSION_STR);
             this.payloadType = softwareMeta.getAttribute(SwidTagConstants._PAYLOAD_TYPE_STR);
@@ -202,7 +206,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * This method validates the .swidtag file at the given filepath against the
      * schema. A successful validation results in the output of the tag's name
      * and tagId attributes, otherwise a generic error message is printed.
-     *
      */
     private Element getDirectoryTag(final byte[] rimBytes) {
         if (rimBytes == null || rimBytes.length == 0) {
@@ -254,7 +257,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * This method iterates over the list of File elements under the directory.
      *
      * @param rimBytes the bytes to find the files
-     *
      */
     public List<SwidResource> getFileResources(final byte[] rimBytes) {
         Element directoryTag = getDirectoryTag(rimBytes);
@@ -353,9 +355,15 @@ public class BaseReferenceManifest extends ReferenceManifest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         BaseReferenceManifest that = (BaseReferenceManifest) o;
         return swidCorpus == that.swidCorpus && Objects.equals(swidName, that.swidName)
                 && Objects.equals(colloquialVersion, that.colloquialVersion)

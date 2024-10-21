@@ -1,8 +1,6 @@
 package hirs.attestationca.persist.util;
 
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVariables;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Base64;
 
@@ -17,6 +15,7 @@ public final class CredentialHelper {
 
     /**
      * Small method to check if the certificate is a PEM.
+     *
      * @param possiblePEM header information
      * @return true if it is.
      */
@@ -27,6 +26,7 @@ public final class CredentialHelper {
 
     /**
      * Small method to check if there are multi pem files
+     *
      * @param possiblePEM header information
      * @return true if it is.
      */
@@ -45,6 +45,7 @@ public final class CredentialHelper {
 
     /**
      * Method to remove header footer information from PEM
+     *
      * @param pemFile string representation of the file
      * @return a cleaned up raw byte object
      */
@@ -59,6 +60,7 @@ public final class CredentialHelper {
 
     /**
      * The method is used to remove unwanted spaces and other artifacts from the certificate.
+     *
      * @param certificateBytes raw byte form
      * @return a cleaned up byte form
      */
@@ -112,6 +114,7 @@ public final class CredentialHelper {
 
     /**
      * Return the string associated with the boolean slot.
+     *
      * @param bit associated with the location in the array.
      * @return string value of the bit set.
      */
@@ -157,6 +160,7 @@ public final class CredentialHelper {
      * This method is to take the DNs from certificates and sort them in an order
      * that will be used to lookup issuer certificates.  This will not be stored in
      * the certificate, just the DB for lookup.
+     *
      * @param distinguishedName the original DN string.
      * @return a modified string of sorted DNs
      */

@@ -33,7 +33,6 @@ import java.util.Objects;
 
 /**
  * Class with definitions and functions common to multiple Userdefined Entity object tests.
- *
  */
 public class AbstractUserdefinedEntityTest {
 
@@ -58,54 +57,45 @@ public class AbstractUserdefinedEntityTest {
      */
     public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
             "58ec313a1699f94c1c8c4e2c6412402b258f0177";
-
-    /**
-     * Location of a test identity certificate.
-     */
-    private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
-
     /**
      * Location of a test platform attribute cert.
      */
     public static final String TEST_PLATFORM_CERT_1 =
             "/validation/platform_credentials/Intel_pc1.cer";
-
     /**
      * Location of another, slightly different platform attribute cert.
      */
     public static final String TEST_PLATFORM_CERT_2 =
             "/validation/platform_credentials/Intel_pc2.cer";
-
     /**
      * Location of another, slightly different platform attribute cert.
      */
     public static final String TEST_PLATFORM_CERT_3 =
             "/validation/platform_credentials/Intel_pc3.cer";
-
     /**
      * Platform cert with comma separated baseboard and chassis serial number.
      */
     public static final String TEST_PLATFORM_CERT_4 =
             "/validation/platform_credentials/Intel_pc4.pem";
-
     /**
      * Another platform cert with comma separated baseboard and chassis serial number.
      */
     public static final String TEST_PLATFORM_CERT_5 =
             "/validation/platform_credentials/Intel_pc5.pem";
-
     /**
      * Location of another, slightly different platform attribute cert.
      */
     public static final String TEST_PLATFORM_CERT_6 =
             "/validation/platform_credentials/TPM_INTC_Platform_Cert_RSA.txt";
-
-    private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
-
     /**
      * Dummy message for supply chain validation test.
      */
     public static final String VALIDATION_MESSAGE = "Some message.";
+    /**
+     * Location of a test identity certificate.
+     */
+    private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
+    private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
 
     /**
      * Construct a test certificate from the given parameters.
@@ -294,8 +284,8 @@ public class AbstractUserdefinedEntityTest {
     /**
      * Construct a SupplyChainValidation for use in tests according to the provided parameters.
      *
-     * @param type the type of validation
-     * @param result the appraisal result
+     * @param type         the type of validation
+     * @param result       the appraisal result
      * @param certificates the certificates related to this validation
      * @return the resulting SupplyChainValidation object
      */

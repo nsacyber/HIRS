@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.provision.helper;
 
-import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1TaggedObject;
@@ -51,23 +51,25 @@ public class IssuedCertificateAttributeHelperTest {
 
     /**
      * Test that provide a null host name and is rejected.
+     *
      * @throws IOException an IO error occurs
      */
     @Test
     public void rejectNullHostName() throws IOException {
         assertThrows(IllegalArgumentException.class, () ->
-        IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(null, null, ""));
+                IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(null, null, ""));
     }
 
     /**
      * Test that subject alt name can be built without an EC or PC.
+     *
      * @throws IOException an IO error occurs
      */
     @Test
     public void buildAttributesNoEndorsementNoPlatform() throws IOException {
         Extension subjectAlternativeName =
-            IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
-                    null, new ArrayList<PlatformCredential>(), TEST_HOSTNAME);
+                IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
+                        null, new ArrayList<PlatformCredential>(), TEST_HOSTNAME);
 
         Map<String, String> subjectAlternativeNameAttrMap = getSubjectAlternativeNameAttributes(
                 subjectAlternativeName);
@@ -83,7 +85,8 @@ public class IssuedCertificateAttributeHelperTest {
 
     /**
      * Test that subject alt name can be built with an EC but no PC.
-     * @throws IOException an IO error occurs
+     *
+     * @throws IOException        an IO error occurs
      * @throws URISyntaxException unrecognized URI for EC Path
      */
     @Test
@@ -114,7 +117,8 @@ public class IssuedCertificateAttributeHelperTest {
 
     /**
      * Test that subject alt name can be built with an PC but no EC.
-     * @throws IOException an IO error occurs
+     *
+     * @throws IOException        an IO error occurs
      * @throws URISyntaxException unrecognized URI for PC Path
      */
     @Test
@@ -147,7 +151,8 @@ public class IssuedCertificateAttributeHelperTest {
 
     /**
      * Test that subject alt name can be built with a PC and an EC.
-     * @throws IOException an IO error occurs
+     *
+     * @throws IOException        an IO error occurs
      * @throws URISyntaxException unrecognized URI for EC or PC Path
      */
     @Test

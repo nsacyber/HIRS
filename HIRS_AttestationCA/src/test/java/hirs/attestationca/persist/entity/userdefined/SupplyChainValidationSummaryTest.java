@@ -26,15 +26,27 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
 
     /**
      * Test device.
-     *
      */
     private Device device;
 
     /**
      * List of test certificates.
-     *
      */
     private List<ArchivableEntity> certificates;
+
+    /**
+     * Utility method for getting a <code>Device</code> that can be used for
+     * testing.
+     *
+     * @param name name for the <code>Device</code>
+     * @return device
+     */
+    public static Device getTestDevice(final String name) {
+        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
+        return new Device(name, deviceInfo, HealthStatus.UNKNOWN,
+                AppraisalStatus.Status.UNKNOWN, null,
+                false, null, null);
+    }
 
     /**
      * Create a set of certificates and a device for use by these tests.
@@ -153,27 +165,11 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
     }
 
     /**
-     * Utility method for getting a <code>Device</code> that can be used for
-     * testing.
-     *
-     * @param name name for the <code>Device</code>
-     *
-     * @return device
-     */
-    public static Device getTestDevice(final String name) {
-        final DeviceInfoReport deviceInfo = getTestDeviceInfoReport();
-        return new Device(name, deviceInfo, HealthStatus.UNKNOWN,
-                AppraisalStatus.Status.UNKNOWN, null,
-                false, null, null);
-    }
-
-    /**
      * Utility method for getting a <code>SupplyChainValidationSummary</code> that can be used for
      * testing.
      *
      * @param numberOfValidations number of validations for the <code>SupplyChainValidationSummary</code>
-     * @param numFail number of failed validations
-     *
+     * @param numFail             number of failed validations
      * @return device
      */
     private SupplyChainValidationSummary getTestSummary(
@@ -199,10 +195,7 @@ public class SupplyChainValidationSummaryTest extends AbstractUserdefinedEntityT
 
         Collection<SupplyChainValidation> validations = new HashSet<>();
         for (int i = 0; i < numberOfValidations; i++) {
-            boolean successful = true;
-            if (i >= (numberOfValidations - numFail)) {
-                successful = false;
-            }
+            boolean successful = i < (numberOfValidations - numFail);
 
             AppraisalStatus.Status result = AppraisalStatus.Status.FAIL;
             if (successful) {

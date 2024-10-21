@@ -30,60 +30,6 @@ public class TBBSecurityAssertion {
     private static final int CCINFO = 0;
     private static final int FIPSLEVEL = 1;
     private static final int RTMTYPE = 2;
-
-    /**
-     * A type to handle the evaluation status used in the Common Criteria Measurement.
-     * Ordering of enum types is intentional and their ordinal values correspond to enum
-     * values in the TCG spec.
-     *
-     * <pre>
-     * MeasurementRootType ::= ENUMERATED {
-     *    static (0),
-     *    dynamic (1),
-     *    nonHost (2),
-     *    hybrid (3),
-     *    physical (4),
-     *    virtual (5) }
-     * </pre>
-     */
-    public enum MeasurementRootType {
-        /**
-         * Static measurement root type.
-         */
-        STATIC("static"),
-        /**
-         * Dynamic  measurement root type.
-         */
-        DYNAMIC("dynamic"),
-        /**
-         * Non-Host measurement root type.
-         */
-        NONHOST("nonHost"),
-        /**
-         * Hybrid measurement root type.
-         */
-        HYBRID("hybrid"),
-        /**
-         * Physical measurement root type.
-         */
-        PHYSICAL("physical"),
-        /**
-         * Virtual measurement root type.
-         */
-        VIRTUAL("virtual");
-
-        @Getter
-        private final String value;
-
-        /**
-         * Basic constructor.
-         * @param value string containing the value.
-         */
-        MeasurementRootType(final String value) {
-            this.value = value;
-        }
-    }
-
     private ASN1Integer version;
     private CommonCriteriaMeasures ccInfo;
     private FIPSLevel fipsLevel;
@@ -105,6 +51,7 @@ public class TBBSecurityAssertion {
 
     /**
      * Constructor given the SEQUENCE that contains a TBBSecurityAssertion Object.
+     *
      * @param sequence containing the the TBB Security Assertion
      * @throws IllegalArgumentException if there was an error on the parsing
      */
@@ -260,11 +207,11 @@ public class TBBSecurityAssertion {
         //Optional values not null
         sb.append(", ccInfo=");
         if (ccInfo != null) {
-            sb.append(ccInfo.toString());
+            sb.append(ccInfo);
         }
         sb.append(", fipsLevel=");
         if (fipsLevel != null) {
-            sb.append(fipsLevel.toString());
+            sb.append(fipsLevel);
         }
         sb.append(", rtmType=");
         if (rtmType != null) {
@@ -278,5 +225,59 @@ public class TBBSecurityAssertion {
         sb.append("}");
 
         return sb.toString();
+    }
+
+    /**
+     * A type to handle the evaluation status used in the Common Criteria Measurement.
+     * Ordering of enum types is intentional and their ordinal values correspond to enum
+     * values in the TCG spec.
+     *
+     * <pre>
+     * MeasurementRootType ::= ENUMERATED {
+     *    static (0),
+     *    dynamic (1),
+     *    nonHost (2),
+     *    hybrid (3),
+     *    physical (4),
+     *    virtual (5) }
+     * </pre>
+     */
+    public enum MeasurementRootType {
+        /**
+         * Static measurement root type.
+         */
+        STATIC("static"),
+        /**
+         * Dynamic  measurement root type.
+         */
+        DYNAMIC("dynamic"),
+        /**
+         * Non-Host measurement root type.
+         */
+        NONHOST("nonHost"),
+        /**
+         * Hybrid measurement root type.
+         */
+        HYBRID("hybrid"),
+        /**
+         * Physical measurement root type.
+         */
+        PHYSICAL("physical"),
+        /**
+         * Virtual measurement root type.
+         */
+        VIRTUAL("virtual");
+
+        @Getter
+        private final String value;
+
+        /**
+         * Basic constructor.
+         *
+         * @param value string containing the value.
+         */
+        MeasurementRootType(final String value) {
+            this.value = value;
+        }
     }
 }

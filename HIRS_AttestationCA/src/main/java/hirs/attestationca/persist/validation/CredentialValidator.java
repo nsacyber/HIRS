@@ -33,8 +33,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
     /**
      * Checks if the endorsement credential is valid.
      *
-     * @param ec the endorsement credential to verify.
-     * @param trustStore trust store holding trusted certificates.
+     * @param ec            the endorsement credential to verify.
+     * @param trustStore    trust store holding trusted certificates.
      * @param acceptExpired whether or not to accept expired and not yet valid certificates
      *                      as valid.
      * @return the result of the validation.
@@ -98,8 +98,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
     /**
      * Checks if the platform credential is valid.
      *
-     * @param pc The platform credential to verify.
-     * @param trustStore trust store holding trusted certificates.
+     * @param pc            The platform credential to verify.
+     * @param trustStore    trust store holding trusted certificates.
      * @param acceptExpired whether or not to accept expired certificates as valid.
      * @return The result of the validation.
      */
@@ -163,16 +163,17 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
 
     /**
      * Checks if the platform credential's attributes are valid.
-     * @param platformCredential The platform credential to verify.
-     * @param deviceInfoReport The device info report containing
-     *                         serial number of the platform to be validated.
-     * @param endorsementCredential The endorsement credential supplied from the same
-     *          identity request as the platform credential.
-     * @param componentResultRepository db access to component result of mismatching
-     * @param componentAttributeRepository  db access to component attribute match status
-     * @param componentInfos list of device components
-     * @param provisionSessionId UUID associated with this run of the provision
-     * @param ignoreRevisionAttribute policy flag to ignore the revision attribute
+     *
+     * @param platformCredential           The platform credential to verify.
+     * @param deviceInfoReport             The device info report containing
+     *                                     serial number of the platform to be validated.
+     * @param endorsementCredential        The endorsement credential supplied from the same
+     *                                     identity request as the platform credential.
+     * @param componentResultRepository    db access to component result of mismatching
+     * @param componentAttributeRepository db access to component attribute match status
+     * @param componentInfos               list of device components
+     * @param provisionSessionId           UUID associated with this run of the provision
+     * @param ignoreRevisionAttribute      policy flag to ignore the revision attribute
      * @return The result of the validation.
      */
     public static AppraisalStatus validatePlatformCredentialAttributes(
@@ -223,16 +224,17 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
 
     /**
      * Checks if the delta credential's attributes are valid.
-     * @param deviceInfoReport The device info report containing
-     *                         serial number of the platform to be validated.
-     * @param basePlatformCredential the base credential from the same identity request
-     *      *                              as the delta credential.
-     * @param deltaMapping delta certificates associated with the
-     *      *                          delta supply validation.
-     * @param componentInfos list of device components
-     * @param componentResultRepository repository for component results
+     *
+     * @param deviceInfoReport             The device info report containing
+     *                                     serial number of the platform to be validated.
+     * @param basePlatformCredential       the base credential from the same identity request
+     *                                     *                              as the delta credential.
+     * @param deltaMapping                 delta certificates associated with the
+     *                                     *                          delta supply validation.
+     * @param componentInfos               list of device components
+     * @param componentResultRepository    repository for component results
      * @param componentAttributeRepository repository for the attribute status
-     * @param provisionSessionId the session id to share
+     * @param provisionSessionId           the session id to share
      * @return the result of the validation.
      */
     public static AppraisalStatus validateDeltaPlatformCredentialAttributes(

@@ -1,14 +1,14 @@
 package hirs.attestationca.persist.entity.userdefined.report;
 
 import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
+import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
+import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
+import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
 import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
-import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
-import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
-import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
-
 import hirs.utils.VersionHelper;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -16,13 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Unit test class for DeviceInfoReports.
  */
 public class DeviceInfoReportTest extends AbstractUserdefinedEntityTest {
+    private static final String EXPECTED_CLIENT_VERSION = VersionHelper.getVersion();
     private final NetworkInfo networkInfo = createTestNetworkInfo();
     private final OSInfo osInfo = createTestOSInfo();
     private final FirmwareInfo firmwareInfo = createTestFirmwareInfo();
     private final HardwareInfo hardwareInfo = createTestHardwareInfo();
     private final TPMInfo tpmInfo = createTPMInfo();
-
-    private static final String EXPECTED_CLIENT_VERSION = VersionHelper.getVersion();
 
     /**
      * Tests instantiation of a DeviceInfoReport.

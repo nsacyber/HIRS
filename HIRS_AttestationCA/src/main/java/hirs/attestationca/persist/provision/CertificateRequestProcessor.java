@@ -30,22 +30,23 @@ import java.util.List;
 @Log4j2
 public class CertificateRequestProcessor extends AbstractProcessor {
 
-    private SupplyChainValidationService supplyChainValidationService;
-    private CertificateRepository certificateRepository;
-    private DeviceRepository deviceRepository;
-    private X509Certificate acaCertificate;
-    private TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
+    private final SupplyChainValidationService supplyChainValidationService;
+    private final CertificateRepository certificateRepository;
+    private final DeviceRepository deviceRepository;
+    private final X509Certificate acaCertificate;
+    private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
 
     /**
      * Constructor.
-     * @param supplyChainValidationService object that is used to run provisioning
-     * @param certificateRepository db connector for all certificates.
-     * @param deviceRepository database connector for Devices.
-     * @param privateKey private key used for communication authentication
-     * @param acaCertificate object used to create credential
-     * @param validDays int for the time in which a certificate is valid.
+     *
+     * @param supplyChainValidationService   object that is used to run provisioning
+     * @param certificateRepository          db connector for all certificates.
+     * @param deviceRepository               database connector for Devices.
+     * @param privateKey                     private key used for communication authentication
+     * @param acaCertificate                 object used to create credential
+     * @param validDays                      int for the time in which a certificate is valid.
      * @param tpm2ProvisionerStateRepository db connector for provisioner state.
-     * @param policyRepository db connector for policies.
+     * @param policyRepository               db connector for policies.
      */
     public CertificateRequestProcessor(final SupplyChainValidationService supplyChainValidationService,
                                        final CertificateRepository certificateRepository,
@@ -170,10 +171,12 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ByteString ldevidCertificateBytes = ByteString
                             .copyFrom(derEncodedLdevidCertificate);
 
-                    boolean generateAtt = saveAttestationCertificate(certificateRepository, derEncodedAttestationCertificate,
+                    boolean generateAtt = saveAttestationCertificate(certificateRepository,
+                            derEncodedAttestationCertificate,
                             endorsementCredential, platformCredentials, device, false);
-                    boolean generateLDevID = saveAttestationCertificate(certificateRepository, derEncodedLdevidCertificate,
-                            endorsementCredential, platformCredentials, device, true);
+                    boolean generateLDevID =
+                            saveAttestationCertificate(certificateRepository, derEncodedLdevidCertificate,
+                                    endorsementCredential, platformCredentials, device, true);
 
                     ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
                             newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
@@ -186,8 +189,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse response = builder.build();
 
                     return response.toByteArray();
-                }
-                else {
+                } else {
                     byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
                             attestationCertificate);
 
@@ -200,7 +202,8 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
                             newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
 
-                    boolean generateAtt = saveAttestationCertificate(certificateRepository, derEncodedAttestationCertificate,
+                    boolean generateAtt = saveAttestationCertificate(certificateRepository,
+                            derEncodedAttestationCertificate,
                             endorsementCredential, platformCredentials, device, false);
                     if (generateAtt) {
                         builder = builder.setCertificate(certificateBytes);
@@ -221,7 +224,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
             }
         } else {
             log.error("Could not process credential request. Invalid nonce provided: "
-                    + request.getNonce().toString());
+                    + request.getNonce());
             throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
     }

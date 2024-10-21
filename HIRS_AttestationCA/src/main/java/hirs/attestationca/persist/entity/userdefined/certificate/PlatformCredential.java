@@ -177,7 +177,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private EndorsementCredential endorsementCredential = null;
 
     private String platformChainType = Strings.EMPTY;
-    
+
     private boolean isDeltaChain = false;
 
     /**

@@ -72,19 +72,13 @@ public final class InetAddressType implements UserType {
      * Converts the IP address that is stored as a <code>String</code> and
      * converts it to an <code>InetAddress</code>.
      *
-     * @param rs
-     *            result set
-     * @param index
-     *            column names
-     * @param session
-     *            session
-     * @param owner
-     *            owner
+     * @param rs      result set
+     * @param index   column names
+     * @param session session
+     * @param owner   owner
      * @return InetAddress of String
-     * @throws HibernateException
-     *             if unable to convert the String to an InetAddress
-     * @throws SQLException
-     *             if unable to retrieve the String from the result set
+     * @throws HibernateException if unable to convert the String to an InetAddress
+     * @throws SQLException       if unable to retrieve the String from the result set
      */
     @Override
     public Object nullSafeGet(final ResultSet rs, final int index,
@@ -107,9 +101,9 @@ public final class InetAddressType implements UserType {
      * Converts the <code>InetAddress</code> <code>value</code> to a
      * <code>String</code> and stores it in the database.
      *
-     * @param st prepared statement
-     * @param value InetAddress
-     * @param index index
+     * @param st      prepared statement
+     * @param value   InetAddress
+     * @param index   index
      * @param session session
      * @throws SQLException if unable to set the value in the result set
      */
@@ -165,7 +159,7 @@ public final class InetAddressType implements UserType {
      * immutable.
      *
      * @param cached cached
-     * @param owner owner
+     * @param owner  owner
      * @return cached
      */
     @Override
@@ -178,8 +172,8 @@ public final class InetAddressType implements UserType {
      * immutable.
      *
      * @param original original
-     * @param target target
-     * @param owner owner
+     * @param target   target
+     * @param owner    owner
      * @return original
      */
     @Override

@@ -15,6 +15,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
 
     /**
+     * Construct a SupplyChainValidation for use in tests.  It will have a validation
+     * type of ENDORSEMENT_CREDENTIAL, will represent a successful validation, and will use
+     * multiple test certificates.
+     *
+     * @return the test SupplyChainValidation
+     * @throws IOException if there si
+     */
+    public static SupplyChainValidation getTestSupplyChainValidation() throws IOException {
+        return getTestSupplyChainValidation(
+                SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
+                AppraisalStatus.Status.PASS,
+                getAllTestCertificates()
+        );
+    }
+
+    /**
      * Test that this class' getter methods work properly.
      *
      * @throws IOException if there is a problem deserializing certificates
@@ -77,22 +93,6 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
                 AppraisalStatus.Status.PASS,
                 getAllTestCertificates(),
                 VALIDATION_MESSAGE
-        );
-    }
-
-    /**
-     * Construct a SupplyChainValidation for use in tests.  It will have a validation
-     * type of ENDORSEMENT_CREDENTIAL, will represent a successful validation, and will use
-     * multiple test certificates.
-     *
-     * @return the test SupplyChainValidation
-     * @throws IOException if there si
-     */
-    public static SupplyChainValidation getTestSupplyChainValidation() throws IOException {
-        return getTestSupplyChainValidation(
-                SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
-                AppraisalStatus.Status.PASS,
-                getAllTestCertificates()
         );
     }
 }

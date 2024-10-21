@@ -38,10 +38,11 @@ public class RIMInfo implements Serializable {
 
     /**
      * Constructor for the initial values of the class.
+     *
      * @param rimManufacturer string of the rimManufacturer
-     * @param model string of the model
-     * @param fileHash string of the file hash
-     * @param pcrHash string of the pcr hash
+     * @param model           string of the model
+     * @param fileHash        string of the file hash
+     * @param pcrHash         string of the pcr hash
      */
     public RIMInfo(final String rimManufacturer, final String model,
                    final String fileHash, final String pcrHash) {
