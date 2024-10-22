@@ -95,8 +95,8 @@ message CertificateRequest {
 }
 
 message CertificateResponse {
-  optional bytes certificate = 1;
+  optional string certificate = 1;
   optional ResponseStatus status = 2 [default = FAIL];
-  optional bytes ldevidCertificate = 3;
+  optional string ldevidCertificate = 3;
 }
 

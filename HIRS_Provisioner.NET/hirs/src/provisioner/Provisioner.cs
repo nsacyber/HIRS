@@ -297,7 +297,7 @@ namespace hirs {
                     tpm.GetQuote(CommandTpm.DefaultAkHandle, Tpm2Lib.TpmAlgId.Sha256, recoveredSecret, out CommandTpmQuoteResponse ctqr, selectPcrs);
                     Log.Information("----> Nonce successfully decrypted. Sending attestation certificate request");
                     CertificateRequest akCertReq = acaClient.CreateAkCertificateRequest(recoveredSecret, ctqr);
-                    byte[] certificate;
+                    string certificate;
                     Log.Debug("Communicate certificate request to the ACA.");
                     CertificateResponse cr = await acaClient.PostCertificateRequest(akCertReq);
                     Log.Debug("Response received from the ACA regarding the certificate request.");
@@ -311,34 +311,34 @@ namespace hirs {
                         }
                     }
                     if (cr.HasCertificate) {
-                        certificate = cr.Certificate.ToByteArray(); // contains certificate
+                        certificate = cr.Certificate.ToString(); // contains certificate
                         String certificateDirPath = settings.certificate_output_directory;
                         if (certificateDirPath != null) {
                             String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultAKCertFileName);
                             try {
-                                File.WriteAllBytes(certificateFilePath, certificate);
+                                File.WriteAllText(certificateFilePath, certificate);
                                 Log.Debug("Attestation key certificate written to local file system: {0}", certificateFilePath);
                             }
                             catch (Exception) {
                                 Log.Debug("Failed to write attestation key certificate to local file system.");
                             }
                         }
-                        Log.Debug("Printing attestation key certificate: " + BitConverter.ToString(certificate));
+                        Log.Debug("Printing attestation key certificate: " + certificate);
                     }
                     if (cr.HasLdevidCertificate) {
-                        certificate = cr.LdevidCertificate.ToByteArray(); // contains certificate
+                        certificate = cr.LdevidCertificate.ToString(); // contains certificate
                         String certificateDirPath = settings.certificate_output_directory;
                         if (certificateDirPath != null) {
                             String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultLDevIDCertFileName);
                             try {
-                                File.WriteAllBytes(certificateFilePath, certificate);
+                                File.WriteAllText(certificateFilePath, certificate);
                                 Log.Debug("LDevID certificate written to local file system: {0}", certificateFilePath);
                             }
                             catch (Exception) {
                                 Log.Debug("Failed to write LDevID certificate to local file system.");
                             }
                         }
-                        Log.Debug("Printing LDevID certificate: " + BitConverter.ToString(certificate));
+                        Log.Debug("Printing LDevID certificate: " + certificate);
                     }
                 } else {
                     result = ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;
