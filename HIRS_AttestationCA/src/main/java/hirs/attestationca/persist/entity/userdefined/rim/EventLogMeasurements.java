@@ -24,18 +24,17 @@ import java.util.Collection;
  * Similar to {@link SupportReferenceManifest}
  * however this is the live log from the client.
  */
+@Getter
+@Setter
 @Log4j2
 @Entity
 public class EventLogMeasurements extends SupportReferenceManifest {
 
     @Column
     @JsonIgnore
-    @Getter
-    @Setter
     private int pcrHash = 0;
+
     @Enumerated(EnumType.STRING)
-    @Getter
-    @Setter
     private AppraisalStatus.Status overallValidationResult = AppraisalStatus.Status.FAIL;
 
     /**
@@ -83,12 +82,8 @@ public class EventLogMeasurements extends SupportReferenceManifest {
             TCGEventLog logProcessor = new TCGEventLog(this.getRimBytes());
             this.pcrHash = Arrays.hashCode(logProcessor.getExpectedPCRValues());
             return logProcessor.getExpectedPCRValues();
-        } catch (CertificateException cEx) {
-            log.error(cEx);
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        } catch (IOException ioEx) {
-            log.error(ioEx);
+        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+            log.error(exception);
         }
 
         return new String[0];
@@ -104,12 +99,8 @@ public class EventLogMeasurements extends SupportReferenceManifest {
         try {
             logProcessor = new TCGEventLog(this.getRimBytes());
             return logProcessor.getEventList();
-        } catch (CertificateException cEx) {
-            log.error(cEx);
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        } catch (IOException ioEx) {
-            log.error(ioEx);
+        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+            log.error(exception);
         }
 
         return new ArrayList<>();

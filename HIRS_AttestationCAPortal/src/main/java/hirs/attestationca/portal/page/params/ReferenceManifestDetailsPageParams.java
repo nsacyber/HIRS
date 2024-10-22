@@ -15,7 +15,8 @@ import java.util.LinkedHashMap;
 @AllArgsConstructor
 public class ReferenceManifestDetailsPageParams implements PageParams {
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private String id;
 
     /**

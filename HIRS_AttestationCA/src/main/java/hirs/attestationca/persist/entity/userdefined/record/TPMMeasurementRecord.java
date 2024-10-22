@@ -55,6 +55,7 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
     @Column(name = "pcr", nullable = false)
     @XmlAttribute(name = "PcrNumber", required = true)
     private final int pcrId;
+    
     @Embedded
     @XmlElement
     private final Digest hash;

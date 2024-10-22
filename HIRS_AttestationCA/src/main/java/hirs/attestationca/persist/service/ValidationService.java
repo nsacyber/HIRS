@@ -42,68 +42,93 @@ import java.util.UUID;
 @Log4j2
 public class ValidationService {
 
+    /**
+     * Evaluates the provided endorsement credential status.
+     *
+     * @param endorsementCredential  endorsement credential
+     * @param caCredentialRepository CA Credential repository
+     * @param acceptExpiredCerts     whether to accept expired certificates
+     * @return a supply chain validation
+     */
     public static SupplyChainValidation evaluateEndorsementCredentialStatus(
-            final EndorsementCredential ec,
+            final EndorsementCredential endorsementCredential,
             final CACredentialRepository caCredentialRepository,
             final boolean acceptExpiredCerts) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL;
         log.info("Validating endorsement credential");
-        if (ec == null) {
+        if (endorsementCredential == null) {
             log.error("No endorsement credential to validate");
             return buildValidationRecord(validationType,
                     AppraisalStatus.Status.FAIL, "Endorsement credential is missing",
                     null, Level.ERROR);
         }
 
-        KeyStore ecStore = getCaChain(ec, caCredentialRepository);
+        KeyStore ecStore = getCaChain(endorsementCredential, caCredentialRepository);
         AppraisalStatus result = CredentialValidator.
-                validateEndorsementCredential(ec, ecStore, acceptExpiredCerts);
-        switch (result.getAppStatus()) {
-            case PASS:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
-                        result.getMessage(), ec, Level.INFO);
-            case FAIL:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
-                        result.getMessage(), ec, Level.WARN);
-            case ERROR:
-            default:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
-                        result.getMessage(), ec, Level.ERROR);
-        }
+                validateEndorsementCredential(endorsementCredential, ecStore, acceptExpiredCerts);
+        return switch (result.getAppStatus()) {
+            case PASS -> buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
+                    result.getMessage(), endorsementCredential, Level.INFO);
+            case FAIL -> buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
+                    result.getMessage(), endorsementCredential, Level.WARN);
+            default -> buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
+                    result.getMessage(), endorsementCredential, Level.ERROR);
+        };
     }
 
+    /**
+     * Evaluates the provided platform credential status.
+     *
+     * @param platformCredential          platform credential
+     * @param trustedCertificateAuthority trusted certificate authority
+     * @param acceptExpiredCerts          whether to accept expired certificates
+     * @return a supply chain validation
+     */
     public static SupplyChainValidation evaluatePlatformCredentialStatus(
-            final PlatformCredential pc,
+            final PlatformCredential platformCredential,
             final KeyStore trustedCertificateAuthority, final boolean acceptExpiredCerts) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
 
-        if (pc == null) {
+        if (platformCredential == null) {
             log.error("No platform credential to validate");
             return buildValidationRecord(validationType,
                     AppraisalStatus.Status.FAIL, "Empty Platform credential", null, Level.ERROR);
         }
+
         log.info("Validating Platform Credential");
-        AppraisalStatus result = CredentialValidator.validatePlatformCredential(pc,
+
+        AppraisalStatus result = CredentialValidator.validatePlatformCredential(platformCredential,
                 trustedCertificateAuthority, acceptExpiredCerts);
-        switch (result.getAppStatus()) {
-            case PASS:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
-                        result.getMessage(), pc, Level.INFO);
-            case FAIL:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
-                        result.getMessage(), pc, Level.WARN);
-            case ERROR:
-            default:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
-                        result.getMessage(), pc, Level.ERROR);
-        }
+
+        return switch (result.getAppStatus()) {
+            case PASS -> buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
+                    result.getMessage(), platformCredential, Level.INFO);
+            case FAIL -> buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
+                    result.getMessage(), platformCredential, Level.WARN);
+            default -> buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
+                    result.getMessage(), platformCredential, Level.ERROR);
+        };
     }
 
+    /**
+     * Evaluates PC Attributes status.
+     *
+     * @param platformCredential           platform credential
+     * @param deviceInfoReport             device information report
+     * @param endorsementCredential        endorsement credential
+     * @param certificateRepository        certificate repository
+     * @param componentResultRepository    component result repository
+     * @param componentAttributeRepository component attribute repository
+     * @param componentInfos               list of component information
+     * @param provisionSessionId           uuid representation of the provision session id
+     * @param ignoreRevisionAttribute      whether to ignore revision attribute
+     * @return a supply chain validation
+     */
     public static SupplyChainValidation evaluatePCAttributesStatus(
-            final PlatformCredential pc, final DeviceInfoReport deviceInfoReport,
-            final EndorsementCredential ec,
+            final PlatformCredential platformCredential, final DeviceInfoReport deviceInfoReport,
+            final EndorsementCredential endorsementCredential,
             final CertificateRepository certificateRepository,
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
@@ -112,36 +137,49 @@ public class ValidationService {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
-        if (pc == null) {
+        if (platformCredential == null) {
             log.error("No platform credential to validate");
             return buildValidationRecord(validationType,
                     AppraisalStatus.Status.FAIL, "Platform credential is missing",
                     null, Level.ERROR);
         }
         log.info("Validating platform credential attributes");
+
         AppraisalStatus result = CredentialValidator.
-                validatePlatformCredentialAttributes(pc, deviceInfoReport, ec,
+                validatePlatformCredentialAttributes(platformCredential, deviceInfoReport,
+                        endorsementCredential,
                         componentResultRepository, componentAttributeRepository,
                         componentInfos, provisionSessionId, ignoreRevisionAttribute);
-        switch (result.getAppStatus()) {
-            case PASS:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
-                        result.getMessage(), pc, Level.INFO);
-            case FAIL:
+
+        return switch (result.getAppStatus()) {
+            case PASS -> buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
+                    result.getMessage(), platformCredential, Level.INFO);
+            case FAIL -> {
                 if (!result.getAdditionalInfo().isEmpty()) {
-                    pc.setComponentFailures(result.getAdditionalInfo());
-                    pc.setComponentFailureMessage(result.getMessage());
-                    certificateRepository.save(pc);
+                    platformCredential.setComponentFailures(result.getAdditionalInfo());
+                    platformCredential.setComponentFailureMessage(result.getMessage());
+                    certificateRepository.save(platformCredential);
                 }
-                return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
-                        result.getMessage(), pc, Level.WARN);
-            case ERROR:
-            default:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
-                        result.getMessage(), pc, Level.ERROR);
-        }
+                yield buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
+                        result.getMessage(), platformCredential, Level.WARN);
+            }
+            default -> buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
+                    result.getMessage(), platformCredential, Level.ERROR);
+        };
     }
 
+    /**
+     * @param deviceInfoReport
+     * @param base
+     * @param deltaMapping
+     * @param certificateRepository
+     * @param componentResultRepository
+     * @param componentAttributeRepository
+     * @param componentInfos
+     * @param provisionSessionId
+     * @param ignoreRevisionAttribute
+     * @return
+     */
     public static SupplyChainValidation evaluateDeltaAttributesStatus(
             final DeviceInfoReport deviceInfoReport,
             final PlatformCredential base,
@@ -160,11 +198,11 @@ public class ValidationService {
                         base, deltaMapping, componentInfos,
                         componentResultRepository, componentAttributeRepository,
                         provisionSessionId, ignoreRevisionAttribute);
-        switch (result.getAppStatus()) {
-            case PASS:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
-                        result.getMessage(), base, Level.INFO);
-            case FAIL:
+
+        return switch (result.getAppStatus()) {
+            case PASS -> buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
+                    result.getMessage(), base, Level.INFO);
+            case FAIL -> {
                 if (!result.getAdditionalInfo().isEmpty()) {
                     base.setComponentFailures(result.getAdditionalInfo());
                     base.setComponentFailureMessage(result.getMessage());
@@ -172,15 +210,24 @@ public class ValidationService {
                 }
                 // we are adding things to componentFailures
 //                certificateRepository.save(delta);
-                return buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
+                yield buildValidationRecord(validationType, AppraisalStatus.Status.FAIL,
                         result.getMessage(), base, Level.WARN);
-            case ERROR:
-            default:
-                return buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
-                        result.getMessage(), base, Level.ERROR);
-        }
+                // we are adding things to componentFailures
+//                certificateRepository.save(delta);
+            }
+            default -> buildValidationRecord(validationType, AppraisalStatus.Status.ERROR,
+                    result.getMessage(), base, Level.ERROR);
+        };
     }
 
+    /**
+     * @param device
+     * @param policySettings
+     * @param rimRepo
+     * @param rdvRepo
+     * @param caRepo
+     * @return
+     */
     public static SupplyChainValidation evaluateFirmwareStatus(
             final Device device,
             final PolicySettings policySettings, final ReferenceManifestRepository rimRepo,
@@ -206,17 +253,12 @@ public class ValidationService {
             }
         }
 
-        switch (result.getAppStatus()) {
-            case PASS:
-                logLevel = Level.INFO;
-                break;
-            case FAIL:
-                logLevel = Level.WARN;
-                break;
-            case ERROR:
-            default:
-                logLevel = Level.ERROR;
-        }
+        logLevel = switch (result.getAppStatus()) {
+            case PASS -> Level.INFO;
+            case FAIL -> Level.WARN;
+            default -> Level.ERROR;
+        };
+
         return buildValidationRecord(validationType, result.getAppStatus(),
                 result.getMessage(), referenceManifest, logLevel);
     }

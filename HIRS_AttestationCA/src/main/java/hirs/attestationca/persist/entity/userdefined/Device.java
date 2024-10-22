@@ -14,19 +14,20 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
 @Table(name = "Device")
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class Device extends AbstractEntity {
 
     @Getter
@@ -34,7 +35,7 @@ public class Device extends AbstractEntity {
     private String name;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
-            optional = true, orphanRemoval = true)
+            orphanRemoval = true)
     private DeviceInfoReport deviceInfo;
 
     @Getter
@@ -113,7 +114,7 @@ public class Device extends AbstractEntity {
     /**
      * Setter for the report time stamp.
      *
-     * @param lastReportTimestamp
+     * @param lastReportTimestamp last reported time
      */
     public void setLastReportTimestamp(final Timestamp lastReportTimestamp) {
         this.lastReportTimestamp = (Timestamp) lastReportTimestamp.clone();
@@ -122,32 +123,7 @@ public class Device extends AbstractEntity {
     @Override
     public String toString() {
         return String.format("Device Name: %s%nStatus: %s%nSummary: %s%n",
-                name, (healthStatus == null ? "N/A" : healthStatus.getStatus()),
+                name, (healthStatus == null ? "N/A" : healthStatus.getHealthStatus()),
                 (supplyChainValidationStatus == null ? "N/A" : supplyChainValidationStatus.toString()));
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Device device)) {
-            return false;
-        }
-
-        return isStateOverridden == device.isStateOverridden
-                && Objects.equals(name, device.name)
-                && healthStatus == device.healthStatus
-                && supplyChainValidationStatus == device.supplyChainValidationStatus
-                && Objects.equals(lastReportTimestamp, device.lastReportTimestamp)
-                && Objects.equals(overrideReason, device.overrideReason)
-                && Objects.equals(summaryId, device.summaryId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), name, healthStatus,
-                supplyChainValidationStatus, lastReportTimestamp,
-                isStateOverridden, overrideReason, summaryId);
     }
 }

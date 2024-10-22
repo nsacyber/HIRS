@@ -20,9 +20,11 @@ import java.util.List;
 public final class DataTableResponse<T> {
 
     private List<T> data = new LinkedList<T>();
-    @Getter @Setter
+    @Getter
+    @Setter
     private int draw;
-    @Getter @Setter
+    @Getter
+    @Setter
     private long recordsTotal, recordsFiltered;
 
     /**

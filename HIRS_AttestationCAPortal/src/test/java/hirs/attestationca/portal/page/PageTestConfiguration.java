@@ -1,18 +1,10 @@
 package hirs.attestationca.portal.page;
 
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.*;
-import java.security.cert.X509Certificate;
-import java.util.Properties;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
@@ -21,12 +13,24 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.util.Properties;
+
 /**
  * A configuration class for testing Attestation CA Portal classes that require a database.
  * This class sets up a temporary in-memory database that is used for testing.
  * This class also creates beans that override beans in main class PersistenceJPAConfig.
  * A few 'dummy' beans had to be created to override PersistenceJPAConfig beans that were
- *    not needed and would interfere with the tests.
+ * not needed and would interfere with the tests.
  */
 @TestConfiguration
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
@@ -49,7 +53,7 @@ public class PageTestConfiguration {
      *
      * @return the {@link X509Certificate} of the ACA
      * @throws URISyntaxException if there's a syntax error on the path to the cert
-     * @throws IOException exception reading the file
+     * @throws IOException        exception reading the file
      */
     @Bean
     public X509Certificate acaCertificate() throws URISyntaxException, IOException {
@@ -78,7 +82,7 @@ public class PageTestConfiguration {
      * hibernate configuration file.
      *
      * @return entity manager factory, which provides instances of EntityManager for connecting
-     *         to same database.
+     * to same database.
      */
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
@@ -123,8 +127,7 @@ public class PageTestConfiguration {
             KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
             PrivateKey dummy_privKey = keyGenerator.generateKeyPair().getPrivate();
             return dummy_privKey;
-        }
-        catch (GeneralSecurityException e) {
+        } catch (GeneralSecurityException e) {
             throw new AssertionError(e);
         }
     }

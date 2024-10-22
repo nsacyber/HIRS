@@ -19,8 +19,8 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
-import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.SwidResource;
+import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import lombok.extern.log4j.Log4j2;
@@ -33,7 +33,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -53,28 +52,30 @@ import java.util.UUID;
 @Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-details")
-public class ReferenceManifestDetailsPageController extends PageController<ReferenceManifestDetailsPageParams> {
+public class ReferenceManifestDetailsPageController
+        extends PageController<ReferenceManifestDetailsPageParams> {
 
+    private static final ReferenceManifestValidator RIM_VALIDATOR
+            = new ReferenceManifestValidator();
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCertificateRepository;
-    private static final ReferenceManifestValidator RIM_VALIDATOR
-            = new ReferenceManifestValidator();
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestRepository the repository for RIM.
-     * @param referenceDigestValueRepository    the reference event manager.
-     * @param certificateRepository       the certificate manager.
-     * @param caCertificateRepository       the CA certificate manager.
+     * @param referenceManifestRepository    the repository for RIM.
+     * @param referenceDigestValueRepository the reference event manager.
+     * @param certificateRepository          the certificate manager.
+     * @param caCertificateRepository        the CA certificate manager.
      */
     @Autowired
-    public ReferenceManifestDetailsPageController(final ReferenceManifestRepository referenceManifestRepository,
-                                                  final ReferenceDigestValueRepository referenceDigestValueRepository,
-                                                  final CertificateRepository certificateRepository,
-                                                  final CACredentialRepository caCertificateRepository) {
+    public ReferenceManifestDetailsPageController(
+            final ReferenceManifestRepository referenceManifestRepository,
+            final ReferenceDigestValueRepository referenceDigestValueRepository,
+            final CertificateRepository certificateRepository,
+            final CACredentialRepository caCertificateRepository) {
         super(Page.RIM_DETAILS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
@@ -83,72 +84,14 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
     }
 
     /**
-     * Returns the filePath for the view and the data model for the page.
-     *
-     * @param params The object to map url parameters into.
-     * @param model  The data model for the request. Can contain data from
-     *               redirect.
-     * @return the path for the view and data model for the page.
-     */
-    @Override
-    public ModelAndView initPage(final ReferenceManifestDetailsPageParams params,
-                                 final Model model) {
-        // get the basic information to render the page
-        ModelAndView mav = getBaseModelAndView();
-        PageMessages messages = new PageMessages();
-
-        // Map with the rim information
-        HashMap<String, Object> data = new HashMap<>();
-
-        // Check if parameters were set
-        if (params.getId() == null) {
-            String typeError = "ID was not provided";
-            messages.addError(typeError);
-            log.debug(typeError);
-            mav.addObject(MESSAGES_ATTRIBUTE, messages);
-        } else {
-            try {
-                UUID uuid = UUID.fromString(params.getId());
-                data.putAll(getRimDetailInfo(uuid, referenceManifestRepository,
-                        referenceDigestValueRepository, certificateRepository,
-                        caCertificateRepository));
-            } catch (IllegalArgumentException iaEx) {
-                String uuidError = "Failed to parse ID from: " + params.getId();
-                messages.addError(uuidError);
-                log.error(uuidError, iaEx);
-            } catch (CertificateException cEx) {
-                log.error(cEx);
-            } catch (NoSuchAlgorithmException nsEx) {
-                log.error(nsEx);
-            } catch (IOException ioEx) {
-                log.error(ioEx);
-            } catch (Exception ex) {
-                log.error(ex);
-            }
-
-            if (data.isEmpty()) {
-                String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
-                messages.addError(notFoundMessage);
-                log.warn(notFoundMessage);
-                mav.addObject(MESSAGES_ATTRIBUTE, messages);
-            } else {
-                mav.addObject(INITIAL_DATA, data);
-            }
-        }
-
-        // return the model and view
-        return mav;
-    }
-
-    /**
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param uuid                     database reference for the requested RIM.
-     * @param referenceManifestRepository the reference manifest manager.
-     * @param referenceDigestValueRepository    the reference event manager.
-     * @param certificateRepository       the certificate manager.
-     * @param caCertificateRepository       the certificate manager.
+     * @param uuid                           database reference for the requested RIM.
+     * @param referenceManifestRepository    the reference manifest manager.
+     * @param referenceDigestValueRepository the reference event manager.
+     * @param certificateRepository          the certificate manager.
+     * @param caCertificateRepository        the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -166,7 +109,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         BaseReferenceManifest bRim = referenceManifestRepository.getBaseRimEntityById(uuid);
 
         if (bRim != null) {
-            data.putAll(getBaseRimInfo(bRim, referenceManifestRepository, certificateRepository, caCertificateRepository));
+            data.putAll(getBaseRimInfo(bRim, referenceManifestRepository, certificateRepository,
+                    caCertificateRepository));
         }
 
         SupportReferenceManifest sRim = referenceManifestRepository.getSupportRimEntityById(uuid);
@@ -189,10 +133,10 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param baseRim                  established ReferenceManifest Type.
+     * @param baseRim                     established ReferenceManifest Type.
      * @param referenceManifestRepository the reference manifest manager.
      * @param certificateRepository       the certificate manager.
-     * @param caCertificateRepository       the certificate manager.
+     * @param caCertificateRepository     the certificate manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -348,10 +292,12 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
 
     /**
      * This method converts a Set<CertificateAuthorityCredential> to a List<X509Certificate>.
+     *
      * @param set of CACs to convert
      * @return list of X509Certificates
      */
-    private static List<X509Certificate> convertCACsToX509Certificates(Set<CertificateAuthorityCredential> set)
+    private static List<X509Certificate> convertCACsToX509Certificates(
+            Set<CertificateAuthorityCredential> set)
             throws IOException {
         ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
         for (CertificateAuthorityCredential cac : set) {
@@ -364,7 +310,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param support                  established ReferenceManifest Type.
+     * @param support                     established ReferenceManifest Type.
      * @param referenceManifestRepository the reference manifest manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
@@ -398,7 +344,8 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         // testing this independent of the above if statement because the above
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
-        measurements = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(support.getHexDecHash(),
+        measurements = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(
+                support.getHexDecHash(),
                 ReferenceManifest.MEASUREMENT_RIM);
 
         if (support.isSwidPatch()) {
@@ -523,9 +470,9 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param measurements             established ReferenceManifest Type.
-     * @param referenceManifestRepository the reference manifest manager.
-     * @param referenceDigestValueRepository    the reference event manager.
+     * @param measurements                   established ReferenceManifest Type.
+     * @param referenceManifestRepository    the reference manifest manager.
+     * @param referenceDigestValueRepository the reference event manager.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
@@ -624,5 +571,63 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
         getEventSummary(data, logProcessor.getEventList());
 
         return data;
+    }
+
+    /**
+     * Returns the filePath for the view and the data model for the page.
+     *
+     * @param params The object to map url parameters into.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
+     * @return the path for the view and data model for the page.
+     */
+    @Override
+    public ModelAndView initPage(final ReferenceManifestDetailsPageParams params,
+                                 final Model model) {
+        // get the basic information to render the page
+        ModelAndView mav = getBaseModelAndView();
+        PageMessages messages = new PageMessages();
+
+        // Map with the rim information
+        HashMap<String, Object> data = new HashMap<>();
+
+        // Check if parameters were set
+        if (params.getId() == null) {
+            String typeError = "ID was not provided";
+            messages.addError(typeError);
+            log.debug(typeError);
+            mav.addObject(MESSAGES_ATTRIBUTE, messages);
+        } else {
+            try {
+                UUID uuid = UUID.fromString(params.getId());
+                data.putAll(getRimDetailInfo(uuid, referenceManifestRepository,
+                        referenceDigestValueRepository, certificateRepository,
+                        caCertificateRepository));
+            } catch (IllegalArgumentException iaEx) {
+                String uuidError = "Failed to parse ID from: " + params.getId();
+                messages.addError(uuidError);
+                log.error(uuidError, iaEx);
+            } catch (CertificateException cEx) {
+                log.error(cEx);
+            } catch (NoSuchAlgorithmException nsEx) {
+                log.error(nsEx);
+            } catch (IOException ioEx) {
+                log.error(ioEx);
+            } catch (Exception ex) {
+                log.error(ex);
+            }
+
+            if (data.isEmpty()) {
+                String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
+                messages.addError(notFoundMessage);
+                log.warn(notFoundMessage);
+                mav.addObject(MESSAGES_ATTRIBUTE, messages);
+            } else {
+                mav.addObject(INITIAL_DATA, data);
+            }
+        }
+
+        // return the model and view
+        return mav;
     }
 }

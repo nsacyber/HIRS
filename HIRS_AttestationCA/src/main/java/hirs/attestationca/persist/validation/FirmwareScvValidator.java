@@ -40,14 +40,13 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
     private static PcrValidator pcrValidator;
 
     /**
-     * @param device
-     * @param policySettings
-     * @param referenceManifestRepository
-     * @param referenceDigestValueRepository
-     * @param caCredentialRepository
-     * @return
+     * @param device                         device
+     * @param policySettings                 policy settings
+     * @param referenceManifestRepository    reference manifest repository
+     * @param referenceDigestValueRepository reference digest value repository
+     * @param caCredentialRepository         CA Credential repository
+     * @return an appraisal status
      */
-
     public static AppraisalStatus validateFirmware(
             final Device device, final PolicySettings policySettings,
             final ReferenceManifestRepository referenceManifestRepository,
@@ -66,12 +65,13 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         //baseReferenceManifests = referenceManifestRepository.findAllBaseRims();
 
         // This block was looking for a base RIM matching the device name
-        // The base rim might not have a device name associated with it- i.e. if it's uploaded to the ACA prior to provisioning
-        // In this case, try to look up the event log associated with the device, then get the base rim associated by event log hash
+        // The base rim might not have a device name associated with it- i.e. if it's uploaded to the ACA
+        // prior to provisioning In this case, try to look up the event log associated with the device,
+        // then get the base rim associated by event log hash
         List<ReferenceManifest> deviceRims = referenceManifestRepository.findByDeviceName(hostName);
         for (ReferenceManifest deviceRim : deviceRims) {
-            if (deviceRim instanceof BaseReferenceManifest && !deviceRim.isSwidSupplemental() &&
-                    !deviceRim.isSwidPatch()) {
+            if (deviceRim instanceof BaseReferenceManifest && !deviceRim.isSwidSupplemental()
+                    && !deviceRim.isSwidPatch()) {
                 baseReferenceManifest = (BaseReferenceManifest) deviceRim;
             }
 
@@ -210,12 +210,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 try {
                     logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
                     baseline = logProcessor.getExpectedPCRValues();
-                } catch (CertificateException cEx) {
-                    log.error(cEx);
-                } catch (NoSuchAlgorithmException noSaEx) {
-                    log.error(noSaEx);
-                } catch (IOException ioEx) {
-                    log.error(ioEx);
+                } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+                    log.error(exception);
                 }
 
                 // part 1 of firmware validation check: PCR baseline match
@@ -258,12 +254,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                                 tpmPcrEvents.addAll(pcrValidator.validateTpmEvents(
                                         tcgMeasurementLog, eventValueMap, policySettings));
                             }
-                        } catch (CertificateException cEx) {
-                            log.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            log.error(noSaEx);
-                        } catch (IOException ioEx) {
-                            log.error(ioEx);
+                        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+                            log.error(exception);
                         }
 
                         if (!tpmPcrEvents.isEmpty()) {

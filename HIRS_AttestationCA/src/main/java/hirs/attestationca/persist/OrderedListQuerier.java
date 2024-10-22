@@ -23,8 +23,8 @@ public interface OrderedListQuerier<T> {
      * @param maxResults        total number we want returned for display in table
      * @param search            string of criteria to be matched to visible columns
      * @param searchableColumns Map of String and boolean values with column
-     *                          headers and whether they should be searched. Boolean is true if field provides a
-     *                          typical String that can be searched by Hibernate without transformation.
+     *                          headers and whether they should be searched. Boolean is true if field provides
+     *                          a typical String that can be searched by Hibernate without transformation.
      * @return FilteredRecordsList object with query data
      * @throws DBManagerException if unable to create the list
      */
@@ -50,13 +50,12 @@ public interface OrderedListQuerier<T> {
      * @param maxResults        total number we want returned for display in table
      * @param search            string of criteria to be matched to visible columns
      * @param searchableColumns Map of String and boolean values with column
-     *                          headers and whether they should be searched. Boolean is true if field provides a
-     *                          typical String that can be searched by Hibernate without transformation.
+     *                          headers and whether they should be searched. Boolean is true if field provides
+     *                          a typical String that can be searched by Hibernate without transformation.
      * @param criteriaModifier  a way to modify the criteria used in the query
      * @return FilteredRecordsList object with query data
      * @throws DBManagerException if unable to create the list
      */
-    @SuppressWarnings("checkstyle:parameternumber")
     FilteredRecordsList<T> getOrderedList(
             Class<? extends T> clazz, String columnToOrder,
             boolean ascending, int firstResult,

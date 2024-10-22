@@ -6,6 +6,7 @@ import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -21,6 +22,7 @@ import java.util.UUID;
  * Digest Value, Event Type, index, RIM Tagid
  */
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @Entity
@@ -28,41 +30,42 @@ import java.util.UUID;
 @Table(name = "ReferenceDigestValue")
 @Access(AccessType.FIELD)
 public class ReferenceDigestValue extends AbstractEntity {
-    @Setter
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID baseRimId;
-    @Setter
+
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID supportRimId;
-    @Setter
+
     @Column(nullable = false)
     private String manufacturer;
-    @Setter
+
     @Column(nullable = false)
     private String model;
-    @Setter
+
     @Column(nullable = false)
     private int pcrIndex;
-    @Setter
+
     @Column(nullable = false)
     private String digestValue;
-    @Setter
+
     @Column(nullable = false)
     private String supportRimHash;
-    @Setter
+
     @Column(nullable = false)
     private String eventType;
-    @Column(columnDefinition = "blob", nullable = true)
+
+    @Setter(AccessLevel.NONE)
+    @Column(columnDefinition = "blob")
     private byte[] contentBlob;
-    @Setter
+
     @Column(nullable = false)
     private boolean matchFail;
-    @Setter
+
     @Column(nullable = false)
     private boolean patched;
-    @Setter
+
     @Column(nullable = false)
     private boolean updated;
 
@@ -108,6 +111,8 @@ public class ReferenceDigestValue extends AbstractEntity {
                                 final String eventType, final boolean matchFail,
                                 final boolean patched, final boolean updated,
                                 final byte[] contentBlob) {
+
+
         this.baseRimId = baseRimId;
         this.supportRimId = supportRimId;
         this.manufacturer = manufacturer;
@@ -120,15 +125,6 @@ public class ReferenceDigestValue extends AbstractEntity {
         this.patched = patched;
         this.updated = updated;
         this.contentBlob = Arrays.clone(contentBlob);
-    }
-
-    /**
-     * the object that contains the raw bytes for this RDV.
-     *
-     * @return the raw bytes
-     */
-    public byte[] getContentBlob() {
-        return Arrays.clone(contentBlob);
     }
 
     /**

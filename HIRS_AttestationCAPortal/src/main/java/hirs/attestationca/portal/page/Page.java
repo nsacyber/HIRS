@@ -86,13 +86,13 @@ public enum Page {
     /**
      * Constructor for Page.
      *
-     * @param title title of the page
-     * @param subtitle subtitle of the page
-     * @param icon icon for the page
-     * @param hasMenu the page has its own menu
-     * @param inMenu the page appears in a menu
+     * @param title         title of the page
+     * @param subtitle      subtitle of the page
+     * @param icon          icon for the page
+     * @param hasMenu       the page has its own menu
+     * @param inMenu        the page appears in a menu
      * @param menuLinkClass the category to which this page belongs
-     * @param prefixPath prefix path that appears in the URL for this page
+     * @param prefixPath    prefix path that appears in the URL for this page
      */
     Page(final String title,
          final String subtitle,
@@ -115,10 +115,10 @@ public enum Page {
     /**
      * Constructor for Page.
      *
-     * @param title title of the page
-     * @param icon icon for the page
+     * @param title         title of the page
+     * @param icon          icon for the page
      * @param menuLinkClass the category to which this page belongs
-     * @param prefixPath prefix path that appears in the URL for this page
+     * @param prefixPath    prefix path that appears in the URL for this page
      */
     Page(final String title,
          final String icon,
@@ -130,8 +130,8 @@ public enum Page {
     /**
      * Constructor for Page.
      *
-     * @param title title of the page
-     * @param icon icon for the page
+     * @param title         title of the page
+     * @param icon          icon for the page
      * @param menuLinkClass the category to which this page belongs
      */
     Page(final String title,
@@ -144,7 +144,7 @@ public enum Page {
      * Constructor for Page.
      *
      * @param title title of the page
-     * @param icon icon for the page
+     * @param icon  icon for the page
      */
     Page(final String title,
          final String icon) {

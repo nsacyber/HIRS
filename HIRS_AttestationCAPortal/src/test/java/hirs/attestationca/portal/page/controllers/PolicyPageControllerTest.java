@@ -11,9 +11,15 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static hirs.attestationca.portal.page.Page.POLICY;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests that test the URL End Points of PolicyPageController.
@@ -32,7 +38,6 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Constructor requiring the Page's display and routing specification.
-     *
      */
     public PolicyPageControllerTest() {
         super(POLICY);
@@ -229,6 +234,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Verifies the rest call for disabling the PC Validation policy setting.
+     *
      * @throws Exception if test fails
      */
     @Test
@@ -338,6 +344,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Verifies the rest call for disabling the PC attribute validation policy setting.
+     *
      * @throws Exception if test fails
      */
     @Test
@@ -381,7 +388,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Helper function to set policy member variable - PC Validation to True
-     *   Note: to set PC Validation to true, EC Validation must also be true
+     * Note: to set PC Validation to true, EC Validation must also be true
      *
      * @return void
      */
@@ -392,7 +399,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Helper function to set policy member variable - PC Attribute Validation to True
-     *   Note: to set PC Attribute Validation to true, PC Validation must also be true
+     * Note: to set PC Attribute Validation to true, PC Validation must also be true
      *
      * @return void
      */

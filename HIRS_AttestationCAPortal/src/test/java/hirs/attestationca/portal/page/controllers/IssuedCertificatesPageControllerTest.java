@@ -9,42 +9,29 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.HealthStatus;
 import hirs.attestationca.portal.page.PageControllerTest;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+
 import static hirs.attestationca.portal.page.Page.ISSUED_CERTIFICATES;
 import static org.hamcrest.Matchers.hasSize;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests that test the URL End Points of IssuedCertificatesPageController.
  */
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class IssuedCertificatesPageControllerTest extends PageControllerTest {
-
-    // Base path for the page
-    private String pagePath;
-
-    // Fake device to store in db for test
-    private Device device;
-
-    // Repository manager to handle data access between device entity and data storage in db
-    @Autowired
-    private DeviceRepository deviceRepository;
-
-    // Repository manager to handle data access between certificate entity and data storage in db
-    @Autowired
-    private CertificateRepository certificateRepository;
 
     // Location of test certs
     private static final String TEST_ENDORSEMENT_CREDENTIAL
@@ -55,7 +42,16 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
             = "/platform_credentials/Intel_pc2.pem";
     private static final String ISSUED_CLIENT_CERT
             = "/certificates/sample_identity_cert.cer";
-
+    // Base path for the page
+    private String pagePath;
+    // Fake device to store in db for test
+    private Device device;
+    // Repository manager to handle data access between device entity and data storage in db
+    @Autowired
+    private DeviceRepository deviceRepository;
+    // Repository manager to handle data access between certificate entity and data storage in db
+    @Autowired
+    private CertificateRepository certificateRepository;
     // Certs objects
     private List<PlatformCredential> platformCredentialList;
     private IssuedAttestationCertificate issued;
@@ -71,14 +67,15 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
 
     /**
      * Prepares a testing environment.
+     *
      * @throws IOException if there is a problem constructing the test certificate
      */
     @BeforeAll
     public void beforeMethod() throws IOException {
 
         // Create new device to be used in test and save it to db
-        device = new Device("Test Device",null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,
-                null,false,"temp", "temp");
+        device = new Device("Test Device", null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,
+                null, false, "temp", "temp");
         device = deviceRepository.save(device);
 
         // Upload and save EK Cert
@@ -148,6 +145,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
 
     /**
      * Tests downloading the certificate.
+     *
      * @throws Exception when getting raw report
      */
     @Test

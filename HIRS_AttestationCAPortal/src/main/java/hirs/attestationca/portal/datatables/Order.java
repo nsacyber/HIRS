@@ -20,8 +20,24 @@ public class Order {
 
 
     /**
+     * Column to which ordering should be applied. This is an index reference
+     * to the columns array of information that is also submitted to the server.
+     */
+    @NotNull
+    @Min(0)
+    private int column;
+    /**
+     * Ordering direction for this column. It will be asc or desc to indicate ascending ordering or
+     * descending ordering, respectively.
+     */
+    @NotNull
+    @Pattern(regexp = "(desc|asc)")
+    private String dir;
+
+    /**
      * Constructor.
-     * @param column the column index
+     *
+     * @param column      the column index
      * @param isAscending true if ascending order
      */
     public Order(final int column, final boolean isAscending) {
@@ -33,25 +49,7 @@ public class Order {
         }
     }
 
-
     /**
-     * Column to which ordering should be applied. This is an index reference
-     * to the columns array of information that is also submitted to the server.
-     */
-    @NotNull
-    @Min(0)
-    private int column;
-
-    /**
-     * Ordering direction for this column. It will be asc or desc to indicate ascending ordering or
-     * descending ordering, respectively.
-     */
-    @NotNull
-    @Pattern(regexp = "(desc|asc)")
-    private String dir;
-
-    /**
-     *
      * @return true if ascending order, false otherwise.
      */
     public boolean isAscending() {

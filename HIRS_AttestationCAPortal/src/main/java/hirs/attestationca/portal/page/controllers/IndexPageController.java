@@ -29,7 +29,7 @@ public class IndexPageController extends PageController<NoPageParams> {
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from redirect.
+     * @param model  The data model for the request. Can contain data from redirect.
      * @return the path for the view and data model for the page.
      */
     @Override

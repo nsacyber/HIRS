@@ -64,7 +64,7 @@ public final class CredentialHelper {
      * @param certificateBytes raw byte form
      * @return a cleaned up byte form
      */
-    @SuppressWarnings("magicnumber")
+
     public static byte[] trimCertificate(final byte[] certificateBytes) {
         int certificateStart = 0;
         int certificateLength = 0;

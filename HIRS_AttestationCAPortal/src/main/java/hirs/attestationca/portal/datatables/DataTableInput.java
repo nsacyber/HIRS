@@ -22,14 +22,66 @@ import java.util.Map;
 public class DataTableInput {
 
     private static final int DEFAULT_LENGTH = 10;
+    /**
+     * Draw counter. This is used by DataTables to ensure that the Ajax returns from server-side
+     * processing requests are drawn in sequence by DataTables (Ajax requests are asynchronous and
+     * thus can return out of sequence). This is used as part of the draw return parameter (see
+     * below).
+     */
+    @NotNull
+    @Min(0)
+    @Getter
+    @Setter
+    private int draw = 1;
+    /**
+     * Paging first record indicator. This is the start point in the current data set
+     * (0 index based - i.e. 0 is the first record).
+     */
+    @NotNull
+    @Min(0)
+    @Getter
+    @Setter
+    private int start = 0;
+    /**
+     * Number of records that the table can display in the current draw. It is expected that the
+     * number of records returned will be equal to this number,
+     * unless the server has fewer records to return. Note that this can be -1 to indicate that
+     * all records should be returned (although that
+     * negates any benefits of server-side processing!)
+     */
+    @NotNull
+    @Min(-1)
+    @Getter
+    @Setter
+    private int length = DEFAULT_LENGTH;
+    /**
+     * Global search parameter.
+     */
+    @Getter
+    @Setter
+    @NotNull
+    private Search search = new Search();
+    /**
+     * Order parameter.
+     */
+    @Getter
+    @NotEmpty
+    private List<Order> order = new ArrayList<>();
+    /**
+     * Per-column search parameter.
+     */
+    @Getter
+    @NotEmpty
+    private List<Column> columns = new ArrayList<>();
 
     /**
      * Constructor.
-     * @param draw the draw counter
-     * @param start the paging start indicator
-     * @param length the number of records in current draw
-     * @param search the search parameter
-     * @param order the orderings
+     *
+     * @param draw    the draw counter
+     * @param start   the paging start indicator
+     * @param length  the number of records in current draw
+     * @param search  the search parameter
+     * @param order   the orderings
      * @param columns the columns of the input
      */
     public DataTableInput(final Integer draw, final Integer start, final Integer length,
@@ -44,64 +96,8 @@ public class DataTableInput {
     }
 
     /**
-     * Draw counter. This is used by DataTables to ensure that the Ajax returns from server-side
-     * processing requests are drawn in sequence by DataTables (Ajax requests are asynchronous and
-     * thus can return out of sequence). This is used as part of the draw return parameter (see
-     * below).
-     */
-    @NotNull
-    @Min(0)
-    @Getter
-    @Setter
-    private int draw = 1;
-
-    /**
-     * Paging first record indicator. This is the start point in the current data set
-     * (0 index based - i.e. 0 is the first record).
-     */
-    @NotNull
-    @Min(0)
-    @Getter
-    @Setter
-    private int start = 0;
-
-    /**
-     * Number of records that the table can display in the current draw. It is expected that the
-     * number of records returned will be equal to this number,
-     * unless the server has fewer records to return. Note that this can be -1 to indicate that
-     * all records should be returned (although that
-     * negates any benefits of server-side processing!)
-     */
-    @NotNull
-    @Min(-1)
-    @Getter
-    @Setter
-    private int length = DEFAULT_LENGTH;
-
-    /**
-     * Global search parameter.
-     */
-    @Getter
-    @Setter
-    @NotNull
-    private Search search = new Search();
-
-    /**
-     * Order parameter.
-     */
-    @Getter
-    @NotEmpty
-    private List<Order> order = new ArrayList<>();
-
-    /**
-     * Per-column search parameter.
-     */
-    @Getter
-    @NotEmpty
-    private List<Column> columns = new ArrayList<>();
-
-    /**
      * Sets the orders.
+     *
      * @param order the orders
      */
     public void setOrder(final List<Order> order) {
@@ -111,6 +107,7 @@ public class DataTableInput {
 
     /**
      * Sets the table columns.
+     *
      * @param columns the columns
      */
     public void setColumns(final List<Column> columns) {
@@ -119,7 +116,6 @@ public class DataTableInput {
     }
 
     /**
-     *
      * @return a {@link Map} of {@link Column} indexed by name
      */
     public Map<String, Column> getColumnsAsMap() {
@@ -151,9 +147,9 @@ public class DataTableInput {
     /**
      * Add a new column.
      *
-     * @param columnName the name of the column
-     * @param searchable whether the column is searchable or not
-     * @param orderable whether the column is orderable or not
+     * @param columnName  the name of the column
+     * @param searchable  whether the column is searchable or not
+     * @param orderable   whether the column is orderable or not
      * @param searchValue if any, the search value to apply
      */
     public void addColumn(final String columnName, final boolean searchable,
@@ -166,7 +162,7 @@ public class DataTableInput {
      * Add an order on the given column.
      *
      * @param columnName the name of the column
-     * @param ascending whether the sorting is ascending or descending
+     * @param ascending  whether the sorting is ascending or descending
      */
     public void addOrder(final String columnName, final boolean ascending) {
         if (columnName == null) {
@@ -182,6 +178,7 @@ public class DataTableInput {
 
     /**
      * Gets the order column name, given the order ordinal value.
+     *
      * @return the order column name
      */
     public String getOrderColumnName() {
@@ -207,6 +204,7 @@ public class DataTableInput {
 
     /**
      * Generates a string for this object.
+     *
      * @return the string
      */
     @Override

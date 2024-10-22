@@ -11,7 +11,8 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 
 @Log4j2
 @WebListener
-public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServletInitializer implements ServletContextListener {
+public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServletInitializer
+        implements ServletContextListener {
 
     @Override
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
@@ -21,11 +22,12 @@ public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServlet
 
 //        applicationContext.register(PersistenceConfiguration.class);
         try {
-        applicationContext.refresh();
+            applicationContext.refresh();
 
         } catch (NoSuchBeanDefinitionException nsbdEx) {
             if (log.isDebugEnabled()) {
-                log.debug("Unable to locate MultipartResolver with name 'multipartResolver': no multipart request handling provided");
+                log.debug(
+                        "Unable to locate MultipartResolver with name 'multipartResolver': no multipart request handling provided");
             }
         } catch (Exception ex) {
             log.error(ex.getMessage());
@@ -33,14 +35,14 @@ public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServlet
     }
 
     @Override
-    protected Class <?>[] getRootConfigClasses() {
+    protected Class<?>[] getRootConfigClasses() {
         return new Class[] {
                 PersistenceJPAConfig.class, PageConfiguration.class, PersistenceConfiguration.class
         };
     }
 
     @Override
-    protected Class <?>[] getServletConfigClasses() {
+    protected Class<?>[] getServletConfigClasses() {
         return null;
     }
 

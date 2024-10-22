@@ -313,10 +313,15 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * pick out the changes that lead to the delta cert and make sure the changes
      * are valid.
      *
-     * @param deviceInfoReport The paccor profile of device being validated against.
-     * @param deltaMapping     map of delta certificates to their validated status
-     * @param origPcComponents The component identifier list associated with the
-     *                         base cert for this specific chain
+     * @param deviceInfoReport             The paccor profile of device being validated against.
+     * @param deltaMapping                 map of delta certificates to their validated status
+     * @param origPcComponents             The component identifier list associated with the
+     *                                     base cert for this specific chain
+     * @param componentInfos               list of component information
+     * @param componentResultRepository    component result repository
+     * @param componentAttributeRepository component attribute repository
+     * @param provisionSessionId           uuid representation of the provision session id
+     * @param ignoreRevisionAttribute      whether to ignore the revision attribute
      * @return Appraisal Status of delta being validated.
      */
 
@@ -1022,11 +1027,13 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
     }
 
     /**
-     * @param deltaCertificates
-     * @param componentResultRepository
-     * @param componentAttributeRepository
-     * @param provisionSessionId
-     * @return
+     * Compiles a list of delta component results.
+     *
+     * @param deltaCertificates            delta certificates
+     * @param componentResultRepository    component result repository
+     * @param componentAttributeRepository component attribute repository
+     * @param provisionSessionId           uuid representation of the provision session id
+     * @return a list of delta component results
      */
     private static List<ComponentResult> compileDeltaComponentResults(
             final List<PlatformCredential> deltaCertificates,
@@ -1044,7 +1051,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // pull all component results that are not delta
         List<ComponentResult> dbBaseComponents = componentResultRepository
                 .findByBoardSerialNumberAndDelta(deltaCertificates.get(0).getPlatformSerial(), false);
-        dbBaseComponents.stream().forEach((componentResult) -> {
+        dbBaseComponents.forEach((componentResult) -> {
             // ignore values that are not unique
             if (nonSerialValues.contains(componentResult.getSerialNumber())) {
                 componentNonUniqueSerialMap.put(componentResult.hashCommonElements(), componentResult);

@@ -64,22 +64,20 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
     private static final String BASE_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)swidtag)$)";
     private static final String SUPPORT_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
-
-    @Autowired(required = false)
-    private EntityManager entityManager;
-
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
+    @Autowired(required = false)
+    private EntityManager entityManager;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestRepository the reference manifest manager
+     * @param referenceManifestRepository    the reference manifest manager
      * @param referenceDigestValueRepository this is the reference event manager
      */
     @Autowired
     public ReferenceManifestPageController(final ReferenceManifestRepository referenceManifestRepository,
-            final ReferenceDigestValueRepository referenceDigestValueRepository) {
+                                           final ReferenceDigestValueRepository referenceDigestValueRepository) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
@@ -89,8 +87,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * Returns the filePath for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
      * @return the filePath for the view and data model for the page.
      */
     @Override
@@ -122,7 +120,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<ReferenceManifest> pagedResult = referenceManifestRepository.findByArchiveFlag(false, paging);
+        org.springframework.data.domain.Page<ReferenceManifest> pagedResult =
+                referenceManifestRepository.findByArchiveFlag(false, paging);
         int rimCount = 0;
 
         if (pagedResult.hasContent()) {
@@ -145,10 +144,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * Upload and processes a reference manifest(s).
      *
      * @param files the files to process
-     * @param attr the redirection attributes
+     * @param attr  the redirection attributes
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
-     * @throws Exception if malformed URI
+     * @throws Exception          if malformed URI
      */
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     protected RedirectView upload(
@@ -217,9 +216,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * Archives (soft delete) the Reference Integrity Manifest entry.
      *
-     * @param id the UUID of the rim to delete
+     * @param id   the UUID of the rim to delete
      * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     *             page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
@@ -262,9 +261,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * Handles request to download the rim by writing it to the response stream
      * for download.
      *
-     * @param id the UUID of the rim to download
+     * @param id       the UUID of the rim to download
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/download", method = RequestMethod.GET)
@@ -304,7 +303,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/bulk", method = RequestMethod.GET)
@@ -375,11 +374,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * Takes the rim files provided and returns a {@link ReferenceManifest}
      * object.
      *
-     * @param file the provide user file via browser.
-     * @param supportRIM matcher result
-     * @param messages the object that handles displaying information to the
-     * user.
-     * @param baseRims object to store multiple files
+     * @param file        the provide user file via browser.
+     * @param supportRIM  matcher result
+     * @param messages    the object that handles displaying information to the
+     *                    user.
+     * @param baseRims    object to store multiple files
      * @param supportRims object to store multiple files
      * @return a single or collection of reference manifest files.
      */
@@ -476,6 +475,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * If the support rim is a supplemental or base, this method looks for the
      * original oem base rim to associate with each event.
+     *
      * @param supportRim assumed db object
      * @return reference to the base rim
      */
@@ -517,7 +517,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                                     dbSupport.getId(), dbSupport.getPlatformManufacturer(),
                                     dbSupport.getPlatformModel(), tpe.getPcrIndex(),
                                     tpe.getEventDigestStr(), dbSupport.getHexDecHash(),
-                                    tpe.getEventTypeStr(),false, false,
+                                    tpe.getEventTypeStr(), false, false,
                                     true, tpe.getEventContent());
 
                             this.referenceDigestValueRepository.save(newRdv);

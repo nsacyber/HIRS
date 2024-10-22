@@ -51,27 +51,60 @@ public final class ProvisionUtils {
     /**
      * The default size for IV blocks.
      */
-    public final static int DEFAULT_IV_SIZE = 16;
+    public static final int DEFAULT_IV_SIZE = 16;
+
+    /**
+     * HMAC Size Length in bytes.
+     */
     public static final int HMAC_SIZE_LENGTH_BYTES = 2;
+
+    /**
+     * HMAC key Length in bytes.
+     */
     public static final int HMAC_KEY_LENGTH_BYTES = 32;
+
+    /**
+     * Seed Length in bytes.
+     */
     public static final int SEED_LENGTH = 32;
+
+    /**
+     * Max secret length.
+     */
     public static final int MAX_SECRET_LENGTH = 32;
+
+    /**
+     * AES Key Length un bytes.
+     */
     public static final int AES_KEY_LENGTH_BYTES = 16;
+
     /**
      * Defines the well known exponent.
      * https://en.wikipedia.org/wiki/65537_(number)#Applications
      */
-    private final static BigInteger EXPONENT = new BigInteger("010001", DEFAULT_IV_SIZE);
+    private static final BigInteger EXPONENT = new BigInteger("010001", DEFAULT_IV_SIZE);
+
     private static final int TPM2_CREDENTIAL_BLOB_SIZE = 392;
+
     private static final int RSA_MODULUS_LENGTH = 256;
+
     // Constants used to parse out the ak name from the ak public data. Used in generateAkName
     private static final String AK_NAME_PREFIX = "000b";
+
     private static final String AK_NAME_HASH_PREFIX =
             "0001000b00050072000000100014000b0800000000000100";
-    private static final SecureRandom random = new SecureRandom();
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /**
-     * Helper method to parse a byte array into an {@link hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2.IdentityClaim}.
+     * This private constructor was created to silence one of checkstyle errors
+     */
+    private ProvisionUtils() {
+    }
+
+    /**
+     * Helper method to parse a byte array into an
+     * {@link hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2.IdentityClaim}.
      *
      * @param identityClaim byte array that should be converted to a Protobuf IdentityClaim
      *                      object
@@ -146,6 +179,9 @@ public final class ProvisionUtils {
 
     /**
      * Assembles a public key using a defined big int modulus and the well known exponent.
+     *
+     * @param modulus modulus
+     * @return public key using the provided integer modulus
      */
     public static PublicKey assemblePublicKey(final BigInteger modulus) {
         // generate a key spec using mod and exp
@@ -177,17 +213,14 @@ public final class ProvisionUtils {
             // create a cipher from the specified transformation
             Cipher cipher = Cipher.getInstance(scheme.toString());
 
-            switch (scheme) {
-                case OAEP:
-                    OAEPParameterSpec spec =
-                            new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
-                                    new PSource.PSpecified("".getBytes(StandardCharsets.UTF_8)));
+            if (scheme == EncryptionScheme.OAEP) {
+                OAEPParameterSpec spec =
+                        new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
+                                new PSource.PSpecified("".getBytes(StandardCharsets.UTF_8)));
 
-                    cipher.init(Cipher.PRIVATE_KEY, privateKey, spec);
-                    break;
-                default:
-                    // initialize the cipher to decrypt using the ACA private key.
-                    cipher.init(Cipher.DECRYPT_MODE, privateKey);
+                cipher.init(Cipher.PRIVATE_KEY, privateKey, spec);
+            } else {// initialize the cipher to decrypt using the ACA private key.
+                cipher.init(Cipher.DECRYPT_MODE, privateKey);
             }
 
             cipher.update(asymmetricBlob);
@@ -237,6 +270,11 @@ public final class ProvisionUtils {
         return new byte[0];
     }
 
+    /**
+     * Generates a symmetric key.
+     *
+     * @return a symmetric key
+     */
     public static SymmetricKey generateSymmetricKey() {
         // create a session key for the CA contents
         byte[] responseSymmetricKey =
@@ -469,7 +507,15 @@ public final class ProvisionUtils {
         }
     }
 
-    @SuppressWarnings("magicnumber")
+    /**
+     * Assembles a credential blob.
+     *
+     * @param topSize         byte array representation of the top size
+     * @param integrityHmac   byte array representation of the integrity HMAC
+     * @param encryptedSecret byte array representation of the encrypted secret
+     * @param encryptedSeed   byte array representation of the encrypted seed
+     * @return byte array representation of a credential blob
+     */
     public static byte[] assembleCredential(final byte[] topSize, final byte[] integrityHmac,
                                             final byte[] encryptedSecret,
                                             final byte[] encryptedSeed) {
@@ -533,7 +579,7 @@ public final class ProvisionUtils {
      * @throws NoSuchAlgorithmException          Wrong crypto algorithm selected
      * @throws java.security.InvalidKeyException Invalid key used
      */
-    @SuppressWarnings("magicnumber")
+
     public static byte[] cryptKDFa(final byte[] seed, final String label, final byte[] context,
                                    final int sizeInBytes)
             throws NoSuchAlgorithmException, InvalidKeyException {
@@ -581,6 +627,7 @@ public final class ProvisionUtils {
      * quote and the signature hash.
      *
      * @param tpmQuote contains hash values for the quote and the signature
+     * @return parsed TPM Quote hash
      */
     public static String parseTPMQuoteHash(final String tpmQuote) {
         if (tpmQuote != null) {
@@ -600,6 +647,7 @@ public final class ProvisionUtils {
      * quote and the signature hash.
      *
      * @param tpmQuote contains hash values for the quote and the signature
+     * @return parsed TPM Quote signature
      */
     public static String parseTPMQuoteSignature(final String tpmQuote) {
         if (tpmQuote != null) {
@@ -625,19 +673,29 @@ public final class ProvisionUtils {
     }
 
     /**
-     * Generates a array of random bytes.
+     * Generates an array of random bytes.
      *
      * @param numberOfBytes to be generated
      * @return byte array filled with the specified number of bytes.
      */
     public static byte[] generateRandomBytes(final int numberOfBytes) {
         byte[] bytes = new byte[numberOfBytes];
-        random.nextBytes(bytes);
+        SECURE_RANDOM.nextBytes(bytes);
         return bytes;
     }
 
-    @SuppressWarnings("magicnumber")
+    /**
+     * Calculates the difference in days between the two provided dates.
+     *
+     * @param date1 first provided date
+     * @param date2 second provided date
+     * @return difference in days between two dates
+     */
     public static int daysBetween(final Date date1, final Date date2) {
-        return (int) ((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
+        final int hoursInADay = 24;
+        final int secondsInAnHour = 3600;
+        final int millisecondsInASecond = 1000;
+        return (int) ((date2.getTime() - date1.getTime()) /
+                (millisecondsInASecond * secondsInAnHour * hoursInADay));
     }
 }

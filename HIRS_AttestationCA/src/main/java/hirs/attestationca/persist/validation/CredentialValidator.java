@@ -228,13 +228,14 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      * @param deviceInfoReport             The device info report containing
      *                                     serial number of the platform to be validated.
      * @param basePlatformCredential       the base credential from the same identity request
-     *                                     *                              as the delta credential.
+     *                                     as the delta credential.
      * @param deltaMapping                 delta certificates associated with the
-     *                                     *                          delta supply validation.
+     *                                     delta supply validation.
      * @param componentInfos               list of device components
      * @param componentResultRepository    repository for component results
      * @param componentAttributeRepository repository for the attribute status
      * @param provisionSessionId           the session id to share
+     * @param ignoreRevisionAttribute      whether to ignore the revision attribute
      * @return the result of the validation.
      */
     public static AppraisalStatus validateDeltaPlatformCredentialAttributes(
@@ -244,7 +245,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final List<ComponentInfo> componentInfos,
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
-            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
+            final UUID provisionSessionId,
+            final boolean ignoreRevisionAttribute) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
 

@@ -6,6 +6,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.Arrays;
@@ -71,6 +72,7 @@ import java.util.UUID;
  */
 public abstract class CertificateSelector<T extends Certificate> {
 
+    @Getter
     private final Class<T> certificateClass;
 
     private final Map<String, Object> fieldValueSelections;
@@ -350,6 +352,7 @@ public abstract class CertificateSelector<T extends Certificate> {
      * Construct the criterion that can be used to query for certificates matching the configuration
      * of this {@link CertificateSelector}.
      *
+     * @param criteriaBuilder criteria builder
      * @return a Criterion that can be used to query for certificates matching the configuration of
      * this instance
      */
@@ -369,13 +372,6 @@ public abstract class CertificateSelector<T extends Certificate> {
         }
 
         return predicates;
-    }
-
-    /**
-     * @return the certificate class that this instance will query
-     */
-    public Class<T> getCertificateClass() {
-        return certificateClass;
     }
 
     /**

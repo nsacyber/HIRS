@@ -39,7 +39,7 @@ import java.util.Set;
 public class SupplyChainCredentialValidator {
 
     /**
-     * used to identify and clear a nuc
+     * used to identify and clear a nuc.
      */
     public static final int NUC_VARIABLE_BIT = 159;
     /**
@@ -63,7 +63,7 @@ public class SupplyChainCredentialValidator {
      */
     public static final String FIRMWARE_VALID = "Firmware validated";
 
-    /**
+    /*
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
      * class expects it to be available.
      */

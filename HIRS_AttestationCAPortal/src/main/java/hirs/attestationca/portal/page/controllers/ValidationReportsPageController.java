@@ -55,6 +55,13 @@ import java.util.regex.Pattern;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/validation-reports")
 public class ValidationReportsPageController extends PageController<NoPageParams> {
 
+    private static final String DEFAULT_COMPANY = "AllDevices";
+    private static final String UNDEFINED = "undefined";
+    private static final String TRUE = "true";
+    private static String systemColumnHeaders = "Verified Manufacturer,"
+            + "Model,SN,Verification Date,Device Status";
+    private static String componentColumnHeaders = "Component name,Component manufacturer,"
+            + "Component model,Component SN,Issuer,Component status";
     private final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository;
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
@@ -62,20 +69,13 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     @Autowired(required = false)
     private EntityManager entityManager;
 
-    private static String systemColumnHeaders = "Verified Manufacturer,"
-            + "Model,SN,Verification Date,Device Status";
-    private static String componentColumnHeaders = "Component name,Component manufacturer,"
-            + "Component model,Component SN,Issuer,Component status";
-    private static final String DEFAULT_COMPANY = "AllDevices";
-    private static final String UNDEFINED = "undefined";
-    private static final String TRUE = "true";
-
     /**
      * Constructor providing the Page's display and routing specification.
+     *
      * @param supplyChainValidatorSummaryRepository the manager
-     * @param certificateRepository the certificate manager
-     * @param deviceRepository the device manager
-     * @param platformCertificateRepository the platform certificate manager
+     * @param certificateRepository                 the certificate manager
+     * @param deviceRepository                      the device manager
+     * @param platformCertificateRepository         the platform certificate manager
      */
     @Autowired
     public ValidationReportsPageController(
@@ -94,7 +94,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from redirect.
+     * @param model  The data model for the request. Can contain data from redirect.
      * @return the path for the view and data model for the page.
      */
     @Override
@@ -105,6 +105,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
     /**
      * Gets the list of validation summaries per the data table input query.
+     *
      * @param input the data table query.
      * @return the data table response containing the supply chain summary records
      */
@@ -122,7 +123,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         FilteredRecordsList<SupplyChainValidationSummary> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult = supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(paging);
+        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult =
+                supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(paging);
 
         if (pagedResult.hasContent()) {
             records.addAll(pagedResult.getContent());
@@ -138,11 +140,12 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
     /**
      * This method handles downloading a validation report.
-     * @param request object
+     *
+     * @param request  object
      * @param response object
      * @throws IOException thrown by BufferedWriter object
      */
-    @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:methodlength" })
+    @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:methodlength"})
     @RequestMapping(value = "download", method = RequestMethod.POST)
     public void download(final HttpServletRequest request,
                          final HttpServletResponse response) throws IOException {
@@ -156,7 +159,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         LocalDate startDate = null;
         LocalDate endDate = null;
         ArrayList<LocalDate> createTimes = new ArrayList<LocalDate>();
-        String[] deviceNames = new String[]{};
+        String[] deviceNames = new String[] {};
         String columnHeaders = "";
         boolean systemOnly = false;
         boolean componentOnly = false;
@@ -325,13 +328,14 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     /**
      * This method builds a JSON object from the system and component data in a
      * validation report.
-     * @param pc the platform credential used to validate.
+     *
+     * @param pc               the platform credential used to validate.
      * @param parsedComponents component data parsed from the platform credential.
-     * @param company company name.
-     * @param contractNumber contract number.
+     * @param company          company name.
+     * @param contractNumber   contract number.
      * @return the JSON object in String format.
      */
-    @SuppressWarnings({"checkstyle:magicnumber" })
+    @SuppressWarnings({"checkstyle:magicnumber"})
     private JsonObject assembleJsonContent(final PlatformCredential pc,
                                            final ArrayList<ArrayList<String>> parsedComponents,
                                            final String company,
@@ -372,6 +376,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * - Model
      * - Serial number
      * - Pass/fail status (based on componentFailures string)
+     *
      * @param pc the platform credential.
      * @return the ArrayList of ArrayLists containing the parsed component data.
      */
@@ -384,7 +389,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 && pc.getComponentIdentifiers().size() > 0) {
             componentFailureString.append(pc.getComponentFailures());
             // get all the certificates associated with the platform serial
-            List<PlatformCredential> chainCertificates = certificateRepository.byBoardSerialNumber(pc.getPlatformSerial());
+            List<PlatformCredential> chainCertificates =
+                    certificateRepository.byBoardSerialNumber(pc.getPlatformSerial());
             // combine all components in each certificate
             for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
                 ArrayList<Object> issuerAndComponent = new ArrayList<Object>();

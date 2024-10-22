@@ -32,26 +32,22 @@ import java.util.Map;
 public class PolicyPageController extends PageController<NoPageParams> {
 
     /**
-     * Represents a web request indicating to enable a setting (based on radio
-     * buttons from a web form).
-     */
-    private static final String ENABLED_CHECKED_PARAMETER_VALUE = "checked";
-
-    private static final String ENABLED_EXPIRES_PARAMETER_VALUE = "expires";
-
-    private final PolicyRepository policyRepository;
-
-    /**
      * Model attribute name used by initPage for the initial data passed to the
      * page.
      */
     public static final String INITIAL_DATA = "initialData";
-
     /**
      * Flash attribute name used by initPage and post for the data forwarded
      * during the redirect from the POST operation back to the page.
      */
     public static final String RESULT_DATA = "resultData";
+    /**
+     * Represents a web request indicating to enable a setting (based on radio
+     * buttons from a web form).
+     */
+    private static final String ENABLED_CHECKED_PARAMETER_VALUE = "checked";
+    private static final String ENABLED_EXPIRES_PARAMETER_VALUE = "expires";
+    private final PolicyRepository policyRepository;
 
     /**
      * Constructor.
@@ -70,11 +66,30 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Takes in policy setting states and determines if policy configuration is
+     * valid or not. PC Attribute Validation must have PC Validation Enabled PC
+     * Validation must have EC Validation enabled
+     *
+     * @param isEcEnable    EC Validation Policy State
+     * @param isPcEnable    PC Validation Policy State
+     * @param isPcAttEnable PC Attribute Validation Policy State
+     * @return True if policy combination is valid
+     */
+    private static boolean isPolicyValid(final boolean isEcEnable, final boolean isPcEnable,
+                                         final boolean isPcAttEnable) {
+        if (isPcAttEnable && !isPcEnable) {
+            return false;
+        } else {
+            return !isPcEnable || isEcEnable;
+        }
+    }
+
+    /**
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
      * @return the path for the view and data model for the page.
      */
     @Override
@@ -98,8 +113,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -149,8 +164,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -199,14 +214,15 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
     @RequestMapping(value = "update-revision-ignore", method = RequestMethod.POST)
     public RedirectView updateIgnoreRevisionAttribute(@ModelAttribute final PolicyPageModel ppModel,
-                                        final RedirectAttributes attr) throws URISyntaxException {
+                                                      final RedirectAttributes attr)
+            throws URISyntaxException {
         // set the data received to be populated back into the form
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -250,7 +266,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr    RedirectAttributes used to forward data back to the original page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -294,7 +310,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr    RedirectAttributes used to forward data back to the original page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -339,7 +355,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr    RedirectAttributes used to forward data back to the original page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -409,7 +425,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr    RedirectAttributes used to forward data back to the original page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -479,7 +495,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr    RedirectAttributes used to forward data back to the original page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -550,7 +566,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original page.
+     * @param attr    RedirectAttributes used to forward data back to the original page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -619,8 +635,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -671,8 +687,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -728,8 +744,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -779,8 +795,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -830,8 +846,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -881,8 +897,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * redirects back to the original page.
      *
      * @param ppModel The data posted by the form mapped into an object.
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -947,25 +963,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Takes in policy setting states and determines if policy configuration is
-     * valid or not. PC Attribute Validation must have PC Validation Enabled PC
-     * Validation must have EC Validation enabled
-     *
-     * @param isEcEnable EC Validation Policy State
-     * @param isPcEnable PC Validation Policy State
-     * @param isPcAttEnable PC Attribute Validation Policy State
-     * @return True if policy combination is valid
-     */
-    private static boolean isPolicyValid(final boolean isEcEnable, final boolean isPcEnable,
-                                         final boolean isPcAttEnable) {
-        if (isPcAttEnable && !isPcEnable) {
-            return false;
-        } else {
-            return !isPcEnable || isEcEnable;
-        }
-    }
-
-    /**
      * Helper function to get a fresh load of the default policy from the DB.
      *
      * @return The default Supply Chain Policy
@@ -985,7 +982,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * model.
      *
      * @param ppModel the page model
-     * @param model the map of string messages to be displayed on the view
+     * @param model   the map of string messages to be displayed on the view
      * @return The default Supply Chain Policy
      */
     private PolicySettings getDefaultPolicyAndSetInModel(

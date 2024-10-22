@@ -45,11 +45,13 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      * @param certificateBytes      the issued certificate bytes
      * @param endorsementCredential the endorsement credential
      * @param platformCredentials   the platform credentials
+     * @param isLDevID              is LDevId
      * @throws IOException if there is a problem extracting information from the certificate
      */
     public IssuedAttestationCertificate(final byte[] certificateBytes,
                                         final EndorsementCredential endorsementCredential,
-                                        final List<PlatformCredential> platformCredentials, boolean isLDevID)
+                                        final List<PlatformCredential> platformCredentials,
+                                        final boolean isLDevID)
             throws IOException {
         super(certificateBytes);
         this.endorsementCredential = endorsementCredential;

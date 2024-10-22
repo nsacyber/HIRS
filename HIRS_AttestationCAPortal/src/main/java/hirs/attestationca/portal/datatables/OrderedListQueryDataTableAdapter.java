@@ -20,6 +20,7 @@ import java.util.UUID;
 /**
  * A class to adapt the Javascript DataTable java class abstractions to the DBManager's getting
  * of ordered lists.
+ *
  * @param <T> The type of object to query
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -28,11 +29,12 @@ public final class OrderedListQueryDataTableAdapter<T> {
 
     /**
      * Gets the ordered list of records using a default, no-op criteria modifier.
-     * @param clazz the type of objects to query for
-     * @param dbManager the db manager to execute the actual query
-     * @param dataTableInput the JS DataTable query abstraction
+     *
+     * @param clazz           the type of objects to query for
+     * @param dbManager       the db manager to execute the actual query
+     * @param dataTableInput  the JS DataTable query abstraction
      * @param orderColumnName the name of the column (java object field name) to query on
-     * @param <T> the parameter type
+     * @param <T>             the parameter type
      * @return the filtered record list
      */
     public static <T> FilteredRecordsList<T> getOrderedList(final Class<? extends T> clazz,
@@ -51,12 +53,13 @@ public final class OrderedListQueryDataTableAdapter<T> {
 
     /**
      * Gets the ordered list of records.
-     * @param clazz the type of objects to query for
-     * @param dbManager the db manager to execute the actual query
-     * @param dataTableInput the JS DataTable query abstraction
-     * @param orderColumnName the name of the column (java object field name) to query on
+     *
+     * @param clazz            the type of objects to query for
+     * @param dbManager        the db manager to execute the actual query
+     * @param dataTableInput   the JS DataTable query abstraction
+     * @param orderColumnName  the name of the column (java object field name) to query on
      * @param criteriaModifier the criteria modifier
-     * @param <T> the parameter type
+     * @param <T>              the parameter type
      * @return the filtered record list
      */
     public static <T> FilteredRecordsList<T> getOrderedList(final Class<? extends T> clazz,
@@ -92,11 +95,12 @@ public final class OrderedListQueryDataTableAdapter<T> {
 //                searchableColumnMap, criteriaModifier);
     }
 
-    public static FilteredRecordsList<ReferenceDigestValue> getOrderedList(final JpaRepository<ReferenceDigestValue, UUID> dbManager,
-                                                            final DataTableInput dataTableInput,
-                                                            final String orderColumnName,
-                                                            final CriteriaModifier criteriaModifier,
-                                                            final EntityManager entityManager) {
+    public static FilteredRecordsList<ReferenceDigestValue> getOrderedList(
+            final JpaRepository<ReferenceDigestValue, UUID> dbManager,
+            final DataTableInput dataTableInput,
+            final String orderColumnName,
+            final CriteriaModifier criteriaModifier,
+            final EntityManager entityManager) {
 
         Map<String, Boolean> searchableColumnMap = new HashMap<>();
         for (Column column : dataTableInput.getColumns()) {
@@ -119,7 +123,6 @@ public final class OrderedListQueryDataTableAdapter<T> {
 
         //Object that will store query values
         FilteredRecordsList<ReferenceDigestValue> filteredRecordsList = new FilteredRecordsList<>();
-
 
 
         filteredRecordsList.setRecordsTotal(dbManager.count());

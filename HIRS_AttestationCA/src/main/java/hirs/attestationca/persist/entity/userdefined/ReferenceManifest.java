@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +30,7 @@ import java.util.UUID;
  * loaded into the DB and displayed in the ACA.
  */
 @Getter
+@Setter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Log4j2
@@ -73,72 +75,58 @@ public class ReferenceManifest extends ArchivableEntity {
      */
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
 
+    @Setter(AccessLevel.NONE)
     @EqualsAndHashCode.Include
     @Column(columnDefinition = "mediumblob", nullable = false)
     private final byte[] rimBytes;
-    @Setter
+
     @EqualsAndHashCode.Include
     @Column(nullable = false)
     private String rimType = "Base";
 
-    @Setter
     @Column
     private String tagId = null;
 
-    @Setter
     @Column
     private boolean swidPatch = false;
 
-    @Setter
     @Column
     private boolean swidSupplemental = false;
 
-    @Setter
     @Column
     private String platformManufacturer = null;
 
-    @Setter
     @Column
     private String platformManufacturerId = null;
 
-    @Setter
     @Column
     private String swidTagVersion = null;
 
-    @Setter
     @Column
     private String swidVersion = null;
 
-    @Setter
     @Column
     private String platformModel = null;
 
-    @Setter
     @Column(nullable = false)
     private String fileName = null;
 
-    @Setter
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID associatedRim;
 
-    @Setter
     @Column
     private String deviceName;
 
-    @Setter
     @Column
     private String hexDecHash = "";
 
-    @Setter
     @Column
     private String eventLogHash = "";
 
-    @Setter
     @Column
     @JsonIgnore
     private String base64Hash = "";
-
 
     /**
      * Default constructor necessary for Hibernate.

@@ -2,38 +2,30 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
+import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.HealthStatus;
 import hirs.attestationca.portal.page.PageControllerTest;
-import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.io.IOException;
+
 import static hirs.attestationca.portal.page.Page.DEVICES;
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests that test the URL End Points of DevicePageController.
  */
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class DevicePageControllerTest extends PageControllerTest {
-
-    // Base path for the page
-    private String pagePath;
-
-    // Repository manager to handle data access between device entity and data storage in db
-    @Autowired
-    private DeviceRepository deviceRepository;
-
-    // Repository manager to handle data access between certificate entity and data storage in db
-    @Autowired
-    private CertificateRepository certificateRepository;
 
     // Location of test certs
     private static final String TEST_ENDORSEMENT_CREDENTIAL
@@ -42,6 +34,14 @@ public class DevicePageControllerTest extends PageControllerTest {
             = "/endorsement_credentials/ab21ccf2-tpmcert.pem";
     private static final String TEST_PLATFORM_CREDENTIAL
             = "/platform_credentials/Intel_pc.cer";
+    // Base path for the page
+    private String pagePath;
+    // Repository manager to handle data access between device entity and data storage in db
+    @Autowired
+    private DeviceRepository deviceRepository;
+    // Repository manager to handle data access between certificate entity and data storage in db
+    @Autowired
+    private CertificateRepository certificateRepository;
 
 
     /**
@@ -54,6 +54,7 @@ public class DevicePageControllerTest extends PageControllerTest {
 
     /**
      * Prepares a testing environment.
+     *
      * @throws IOException if there is a problem constructing the test certificate
      */
     @BeforeAll
@@ -63,8 +64,8 @@ public class DevicePageControllerTest extends PageControllerTest {
         Device device;
 
         // Create new device to be used in test and save it to db
-        device = new Device("Test Device",null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,
-                null,false,"tmp_overrideReason", "tmp_summId");
+        device = new Device("Test Device", null, HealthStatus.TRUSTED, AppraisalStatus.Status.PASS,
+                null, false, "tmp_overrideReason", "tmp_summId");
         device = deviceRepository.save(device);
 
         // Upload and save EK Cert

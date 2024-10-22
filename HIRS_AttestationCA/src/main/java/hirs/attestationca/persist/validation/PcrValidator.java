@@ -66,6 +66,13 @@ public class PcrValidator {
         System.arraycopy(pcrValues, 0, baselinePcrs, 0, TPMMeasurementRecord.MAX_PCR_ID + 1);
     }
 
+    /**
+     * Builds a string array of stored pcrs.
+     *
+     * @param pcrContent      string representation of the pcr content
+     * @param algorithmLength length of the algorithm
+     * @return string array representation of the stored pcrs.
+     */
     public static String[] buildStoredPcrs(final String pcrContent, final int algorithmLength) {
         // we have a full set of PCR values
         String[] pcrSet = pcrContent.split("\\n");
@@ -142,7 +149,7 @@ public class PcrValidator {
                 }
 
                 if (!baselinePcrs[i].equals(storedPcrs[i])) {
-                    log.error(String.format("%s =/= %s", baselinePcrs[i], storedPcrs[i]));
+                    log.error("{} =/= {}", baselinePcrs[i], storedPcrs[i]);
                     sb.append(String.format(failureMsg, i));
                 }
             }
@@ -166,24 +173,24 @@ public class PcrValidator {
         List<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
         for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
             if (policySettings.isIgnoreImaEnabled() && tpe.getPcrIndex() == IMA_PCR) {
-                log.info(String.format("IMA Ignored -> %s", tpe));
+                log.info("IMA Ignored -> {}", tpe);
             } else if (policySettings.isIgnoretBootEnabled() && (tpe.getPcrIndex() >= TBOOT_PCR_START
                     && tpe.getPcrIndex() <= TBOOT_PCR_END)) {
-                log.info(String.format("TBOOT Ignored -> %s", tpe));
+                log.info("TBOOT Ignored -> {}", tpe);
             } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getPcrIndex() >= PXE_PCR_START
                     && tpe.getPcrIndex() <= PXE_PCR_END)) {
-                log.info(String.format("OS Evt Ignored -> %s", tpe));
+                log.info("OS Evt Ignored -> {}", tpe);
             } else {
                 if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
-                    log.info(String.format("GPT Ignored -> %s", tpe));
+                    log.info("GPT Ignored -> {}", tpe);
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
                                 || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
-                    log.info(String.format("OS Evt Ignored -> %s", tpe));
+                    log.info("OS Evt Ignored -> {}", tpe);
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_CFG)
                                 && tpe.getEventContentStr().contains("SecureBoot"))) {
-                    log.info(String.format("OS Evt Config Ignored -> %s", tpe));
+                    log.info("OS Evt Config Ignored -> {}", tpe);
                 } else {
                     if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
                         tpmPcrEvents.add(tpe);
@@ -244,12 +251,13 @@ public class PcrValidator {
             // other information.
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
-            log.debug("Validating PCR information with the following:" +
-                    System.lineSeparator() + "calculatedString = " + calculatedString +
-                    System.lineSeparator() + "quoteString = " + quoteString);
+            log.debug(
+                    "Validating PCR information with the following:{}calculatedString = {}{}"
+                            + "quoteString = {}", System.lineSeparator(), calculatedString,
+                    System.lineSeparator(), quoteString);
             validated = quoteString.contains(calculatedString);
             if (!validated) {
-                log.warn(calculatedString + " not found in " + quoteString);
+                log.warn("{} not found in {}", calculatedString, quoteString);
             }
         } catch (NoSuchAlgorithmException naEx) {
             log.error(naEx);

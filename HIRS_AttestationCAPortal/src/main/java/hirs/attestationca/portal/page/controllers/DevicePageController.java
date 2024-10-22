@@ -6,15 +6,12 @@ import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
 import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
-import hirs.attestationca.persist.entity.userdefined.certificate.DeviceAssociatedCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
-import hirs.attestationca.portal.datatables.OrderedListQueryDataTableAdapter;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
@@ -105,6 +102,7 @@ public class DevicePageController extends PageController<NoPageParams> {
 
     /**
      * Returns the list of devices combined with the certificates.
+     *
      * @param deviceList list containing the devices
      * @return a record list after the device and certificate was mapped together.
      */
@@ -209,11 +207,12 @@ public class DevicePageController extends PageController<NoPageParams> {
 
     /**
      * Returns the list of devices IDs.
+     *
      * @param deviceList list containing the devices
      * @return a list of the devices IDs
      */
     private List<UUID> getDevicesId(final FilteredRecordsList<Device> deviceList) {
-        List<UUID> deviceIds =  new ArrayList<>();
+        List<UUID> deviceIds = new ArrayList<>();
 
         // loop all the devices
         for (int i = 0; i < deviceList.size(); i++) {
