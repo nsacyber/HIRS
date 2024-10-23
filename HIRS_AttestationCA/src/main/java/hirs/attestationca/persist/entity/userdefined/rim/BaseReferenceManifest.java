@@ -42,7 +42,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Entity
 public class BaseReferenceManifest extends ReferenceManifest {
     /**
@@ -377,6 +377,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
         return document;
     }
 
+    /**
+     * Creates a string representation of the Base Reference Manifest object.
+     *
+     * @return a string representation of the Base Reference Manifest object.
+     */
     @Override
     public String toString() {
         return String.format("ReferenceManifest{swidName=%s,"

@@ -99,70 +99,114 @@ public class SupplyChainCredentialValidatorTest {
      * SecureRandom instance.
      */
     static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private static final String JSON_FILE = "/config/component-class.json";
+
     private static final String SAMPLE_PACCOR_OUTPUT_TXT = "/hirs/validation/sample_paccor_output.txt";
+
     private static final String SAMPLE_PACCOR_OUTPUT_NOT_SPECIFIED_TXT
             = "/hirs/validation/sample_paccor_output_not_specified_values.txt";
+
     private static final String SAMPLE_TEST_PACCOR_CERT
             = "/validation/platform_credentials_2/paccor_platform_cert.crt";
+
     private static final String SAMPLE_PACCOR_OUTPUT_WITH_EXTRA_COMPONENT_TXT
             = "/hirs/validation/sample_paccor_output_with_extra_component.txt";
+
     private static final String TEST_SIGNING_KEY = "/validation/platform_credentials/ca.pub";
+
     private static final String TEST_PLATFORM_CRED =
             "/validation/platform_credentials/plat_cert1.pem";
+
     private static final String TEST_PLATFORM_CRED2 =
             "/validation/platform_credentials/pciids_plat_cert_2-0.pem";
+
     private static final String TEST_PLATFORM_CRED_BASE_CHASIS_COMBO =
             "/validation/platform_credentials/Intel_pc5.pem";
+
     private static final String TEST_BOARD_SERIAL_NUMBER = "GETY421001GV";
+
     private static final String TEST_CHASSIS_SERIAL_NUMBER = "G6YK42300C87";
+
     private static final String TEST_EK_CERT = "/certificates/nuc-2/tpmcert.pem";
+
     private static final String TEST_EK_CERT_2 = "/certificates/nuc-1/tpmcert.pem";
+
     private static final String TEST_COMPONENT_MANUFACTURER = "Intel";
+
     private static final String TEST_COMPONENT_MODEL = "platform2018";
+
     private static final String TEST_COMPONENT_REVISION = "1.0";
+
     private static final String BAD_SERIAL = "BAD_SERIAL";
+
     //-------Actual ST Micro Endorsement Credential Certificate Chain!--------------
     private static final String EK_CERT = "";
+
     private static final String INT_CA_CERT02 = "/certificates/fakestmtpmekint02.pem";
+
     //-------Generated Intel Credential Certificate Chain--------------
     private static final String INTEL_PLATFORM_CERT =
             "/validation/platform_credentials/plat_cert3.pem";
+
     private static final String INTEL_PLATFORM_CERT_2 =
             "/validation/platform_credentials/Intel_pc2.pem";
+
     private static final String INTEL_PLATFORM_CERT_3 =
             "/validation/platform_credentials/pciids_plat_cert_2-0.pem";
+
     private static final String INTEL_INT_CA =
             "/validation/platform_credentials/intel_chain/root/intermediate1.crt";
+
     private static final String FAKE_ROOT_CA =
             "/validation/platform_credentials/intel_chain/root/rootca.crt";
+
     private static final String PLATFORM_MANUFACTURER = "Intel";
+
     private static final String PLATFORM_MODEL = "S2600KP";
+
     private static final String PLATFORM_VERSION = "H76962-350";
+
     //-------Original Intel Credential Certificate Chain--------------
     private static final String INTEL_PLATFORM_CERT_ORIG =
             "/certificates/fakeIntel_S2600KP_F00F00F00F00.pem";
+
     private static final String INTEL_ORIG_INT_CA_ORIG =
             "/certificates/fakeIntelIntermediateCA.pem";
+
     private static final String FAKE_ROOT_CA_ORIG =
             "/certificates/fakeCA.pem";
+
     //-------Fake SGI Credential Certificate Chain--------------
     private static final String SGI_PLATFORM_CERT = "/certificates/fakeSGI_J2_F00F00F0.pem";
+
     private static final String SGI_INT_CA = "/certificates/fakeSGIIntermediateCA.pem";
+
     private static final String SGI_CRED_SERIAL_NUMBER = "F00F00F0";
+
     //-------Actual Intel NUC Platform --------------
+
     private static final String NUC_PLATFORM_CERT =
             "/certificates/Intel_nuc_pc.pem";
+
     private static final String NUC_PLATFORM_CERT_SERIAL_NUMBER = "GETY421001DY";
+
     private static final String NUC_PLATFORM_CERT2 =
             "/certificates/Intel_nuc_pc2.pem";
+
     private static final String NUC_PLATFORM_CERT_SERIAL_NUMBER2 = "GETY4210001M";
+
     private static final String INTEL_SIGNING_KEY = "/certificates/IntelSigningKey_20April2017.pem";
+
     private static final String NEW_NUC1 =
             "/validation/platform_credentials/Intel_pc3.cer";
+
     private static HardwareInfo hardwareInfo;
+
     private static KeyStore keyStore;
+
     private static KeyStore emptyKeyStore;
+
     private final SupplyChainCredentialValidator supplyChainCredentialValidator =
             new SupplyChainCredentialValidator();
     private final CredentialValidator credentialValidator =
@@ -171,11 +215,14 @@ public class SupplyChainCredentialValidatorTest {
     /**
      * Sets up a KeyStore for testing.
      *
-     * @throws KeyStoreException        if no Provider supports a KeyStoreSpi implementation for the specified type.
-     * @throws NoSuchAlgorithmException if the algorithm used to check the integrity of the keystore cannot be found
+     * @throws KeyStoreException        if no Provider supports a KeyStoreSpi implementation for the
+     *                                  specified type.
+     * @throws NoSuchAlgorithmException if the algorithm used to check the integrity of the keystore
+     *                                  cannot be found
      * @throws CertificateException     if any of the certificates in the keystore could not be loaded
-     * @throws IOException              if there is an I/O or format problem with the keystore data, if a password is
-     *                                  required but not given, or if the given password was incorrect
+     * @throws IOException              if there is an I/O or format problem with the keystore data,
+     *                                  if a password is required but not given,
+     *                                  or if the given password was incorrect
      */
     @BeforeAll
     public static void setUp() throws KeyStoreException, NoSuchAlgorithmException,
@@ -362,7 +409,8 @@ public class SupplyChainCredentialValidatorTest {
 
     private static InetAddress getTestIpAddress() {
         try {
-            return InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+            final byte[] byteAddress = new byte[] {127, 0, 0, 1};
+            return InetAddress.getByAddress(byteAddress);
         } catch (UnknownHostException e) {
             return null;
         }

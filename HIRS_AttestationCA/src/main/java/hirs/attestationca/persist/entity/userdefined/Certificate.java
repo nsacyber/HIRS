@@ -626,7 +626,7 @@ public abstract class Certificate extends ArchivableEntity {
      * on the portal.
      *
      * @return A list of URLs that inform the location of the certificate revocation lists
-     * @throws java.io.IOException
+     * @throws IOException if there is an issue while retrieving the CRL Distribution point
      */
     private String getCRLDistributionPoint() throws IOException {
         List<String> crlUrls = new ArrayList<>();
@@ -972,6 +972,11 @@ public abstract class Certificate extends ArchivableEntity {
         return null;
     }
 
+    /**
+     * Creates a string representation of the Certificate object.
+     *
+     * @return a string representation of the Certificate object.
+     */
     @Override
     public String toString() {
         return String.format("Certificate{%s, AuthID=%s, serialNumber=%s, "
@@ -982,6 +987,13 @@ public abstract class Certificate extends ArchivableEntity {
                 signatureAlgorithm, certificateHash);
     }
 
+    /**
+     * Compares this certificate to the provided object to verify that both this and the provided certificate
+     * objects are equal.
+     *
+     * @param o object to compare
+     * @return true if both the provided certificate and this certificate are equal, false otherwise
+     */
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -997,6 +1009,11 @@ public abstract class Certificate extends ArchivableEntity {
         return Arrays.equals(certificateBytes, that.certificateBytes);
     }
 
+    /**
+     * Creates an integer hash code for this Certificate object.
+     *
+     * @return integer hash code
+     */
     @Override
     public int hashCode() {
         return Arrays.hashCode(certificateBytes);

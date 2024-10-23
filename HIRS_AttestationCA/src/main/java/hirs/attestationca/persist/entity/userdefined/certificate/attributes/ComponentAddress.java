@@ -27,12 +27,17 @@ public class ComponentAddress {
     public static final int IDENTIFIER_NUMBER = 2;
 
     private static final String ETHERNET_MAC = "2.23.133.17.1";
+
     private static final String WLAN_MAC = "2.23.133.17.2";
+
     private static final String BLUETOOTH_MAC = "2.23.133.17.3";
 
     private ASN1ObjectIdentifier addressType;
+
     private ASN1UTF8String addressValue;
+
     private String addressTypeString;
+
     private String addressValueString;
 
     /**
@@ -74,6 +79,12 @@ public class ComponentAddress {
         };
     }
 
+
+    /**
+     * Creates a string representation of the Component Address object.
+     *
+     * @return a string representation of the Component Address object.
+     */
     @Override
     public String toString() {
         return "ComponentAddress{"

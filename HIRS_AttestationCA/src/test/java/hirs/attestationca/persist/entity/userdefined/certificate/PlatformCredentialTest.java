@@ -153,7 +153,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
 
         try {
             new PlatformCredential(certPath);
-            //fail if it manage to parse the certificate
+            //fail if it manages to parse the certificate
             fail("Invalid certificate was parsed.");
         } catch (IOException ex) {
             if (ex == null || ex.getMessage().isEmpty()) {
@@ -194,8 +194,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Assertions.assertEquals(sigStr.toUpperCase(), EXPECTED_CERT_SIGNATURE_FOR_CERT_2);
 
         String issuer = Certificate.getAttributeCertificateIssuerNames(
-                credential.getAttributeCertificate().getAcinfo().getIssuer()
-        )[0].toString();
+                credential.getAttributeCertificate().getAcinfo().getIssuer())[0].toString();
 
         Assertions.assertEquals(credential.getManufacturer(), "Intel");
         Assertions.assertEquals(credential.getModel(), "DE3815TYKH");

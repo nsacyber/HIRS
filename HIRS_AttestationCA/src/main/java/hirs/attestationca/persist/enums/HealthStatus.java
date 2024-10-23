@@ -2,6 +2,7 @@ package hirs.attestationca.persist.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @AllArgsConstructor
+@ToString
 public enum HealthStatus {
     /**
      * The trusted state, no issues with the device.
@@ -34,10 +36,5 @@ public enum HealthStatus {
                 .map(HealthStatus::name)
                 .collect(Collectors.toSet())
                 .contains(healthStatus);
-    }
-
-    @Override
-    public String toString() {
-        return getHealthStatus();
     }
 }

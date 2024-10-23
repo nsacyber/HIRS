@@ -72,7 +72,6 @@ public class SupplyChainValidationService {
      * @param referenceDigestValueRepository         the even manager
      */
     @Autowired
-    @SuppressWarnings("ParameterNumberCheck")
     public SupplyChainValidationService(
             final CACredentialRepository caCredentialRepository,
             final PolicyRepository policyRepository,

@@ -18,8 +18,8 @@ import java.util.List;
 /**
  * Represents an issued attestation certificate to a HIRS Client.
  */
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
 
@@ -29,7 +29,7 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
     public static final String AIC_TYPE_LABEL = "TCPA Trusted Platform Identity";
 
     @Column
-    public boolean isLDevID;
+    private boolean isLDevID;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ek_id")

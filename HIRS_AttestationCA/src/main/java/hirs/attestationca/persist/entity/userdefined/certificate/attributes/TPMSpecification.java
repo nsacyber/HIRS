@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -20,9 +21,10 @@ import java.math.BigInteger;
  * www.trustedcomputinggroup.org/wp-content/uploads/Credential_Profile_EK_V2.0_R14_published.pdf
  * for specifications for TPM 2.0.
  */
-@EqualsAndHashCode
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
+@EqualsAndHashCode
 @Embeddable
 public class TPMSpecification implements Serializable {
 
@@ -47,14 +49,5 @@ public class TPMSpecification implements Serializable {
         this.family = family;
         this.level = level;
         this.revision = revision;
-    }
-
-    @Override
-    public String toString() {
-        return "TPMSpecification{"
-                + "family='" + family + '\''
-                + ", level=" + level
-                + ", revision=" + revision
-                + '}';
     }
 }

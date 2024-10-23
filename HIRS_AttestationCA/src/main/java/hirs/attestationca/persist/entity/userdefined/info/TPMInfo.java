@@ -79,7 +79,6 @@ public class TPMInfo implements Serializable {
      * @param tpmQuoteHash        short representing the minor revision number for the TPM
      * @param tpmQuoteSignature   byte array with the value of the identity certificate
      */
-    @SuppressWarnings("parameternumber")
     public TPMInfo(final String tpmMake, final short tpmVersionMajor,
                    final short tpmVersionMinor, final short tpmVersionRevMajor,
                    final short tpmVersionRevMinor,
@@ -110,7 +109,6 @@ public class TPMInfo implements Serializable {
      * @param tpmQuoteHash       short representing the minor revision number for the TPM
      * @param tpmQuoteSignature  byte array with the value of the identity certificate
      */
-    @SuppressWarnings("parameternumber")
     public TPMInfo(final String tpmMake, final short tpmVersionMajor,
                    final short tpmVersionMinor, final short tpmVersionRevMajor,
                    final short tpmVersionRevMinor, final byte[] pcrValues,

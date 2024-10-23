@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -21,22 +22,27 @@ import java.math.BigInteger;
  * www.trustedcomputinggroup.org/wp-content/uploads/Credential_Profile_EK_V2.0_R14_published.pdf
  * for specifications for TPM 2.0 (pg. 19).
  */
-@AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
 @Embeddable
 public class TPMSecurityAssertions implements Serializable {
 
     @Column
     private BigInteger tpmSecAssertsVersion; //default v1
+
     @Column
     private boolean fieldUpgradeable; //default false
-    @Column(nullable = true)
+
+    @Column
     private EkGenerationType ekGenType; //optional
-    @Column(nullable = true)
-    private EkGenerationLocation ekGenerationLocation; //optional
-    @Column(nullable = true)
+
+    @Column
+    private EkGenerationLocation ekGenerationLocation; //optionalv
+
+    @Column
     private EkGenerationLocation ekCertificateGenerationLocation; //optional
 
     /**
@@ -50,17 +56,6 @@ public class TPMSecurityAssertions implements Serializable {
     public TPMSecurityAssertions(final BigInteger version, final boolean fieldUpgradeable) {
         this.tpmSecAssertsVersion = version;
         this.fieldUpgradeable = fieldUpgradeable;
-    }
-
-    @Override
-    public String toString() {
-        return "TPMSecurityAssertions{"
-                + "version=" + tpmSecAssertsVersion
-                + ", fieldUpgradeable=" + fieldUpgradeable
-                + ", ekGenType=" + ekGenType
-                + ", ekGenLoc=" + ekGenerationLocation
-                + ", ekCertGenLoc=" + ekCertificateGenerationLocation
-                + '}';
     }
 
     // Future work (may need to create other classes):

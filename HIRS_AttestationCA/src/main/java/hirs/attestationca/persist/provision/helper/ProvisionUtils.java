@@ -97,7 +97,7 @@ public final class ProvisionUtils {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /**
-     * This private constructor was created to silence one of checkstyle errors
+     * This private constructor was created to silence one of checkstyle errors.
      */
     private ProvisionUtils() {
     }

@@ -24,9 +24,13 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 @AllArgsConstructor
 public class URIReference {
     private static final int PLATFORM_PROPERTIES_URI_MAX = 3;
+
     private static final int PLATFORM_PROPERTIES_URI_MIN = 1;
+
     private ASN1IA5String uniformResourceIdentifier;
+
     private AlgorithmIdentifier hashAlgorithm;
+
     @JsonIgnore
     private ASN1BitString hashValue;
 
@@ -70,6 +74,11 @@ public class URIReference {
         }
     }
 
+    /**
+     * Creates a string representation of the URI Reference object.
+     *
+     * @return a string representation of URI Reference
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

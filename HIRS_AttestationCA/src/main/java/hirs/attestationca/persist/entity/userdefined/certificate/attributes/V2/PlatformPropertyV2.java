@@ -17,10 +17,10 @@ import org.bouncycastle.asn1.ASN1UTF8String;
  *
  * </pre>
  */
+@Setter
+@Getter
 public class PlatformPropertyV2 extends PlatformProperty {
 
-    @Getter
-    @Setter
     private AttributeStatus attributeStatus;
 
     /**
@@ -83,6 +83,12 @@ public class PlatformPropertyV2 extends PlatformProperty {
         return getAttributeStatus() != AttributeStatus.REMOVED;
     }
 
+
+    /**
+     * Creates a string representation of the PlatformPropertyV2 object.
+     *
+     * @return a string representation of the PlatformPropertyV2 object
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

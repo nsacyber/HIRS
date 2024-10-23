@@ -18,14 +18,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class TPMInfoTest extends AbstractUserdefinedEntityTest {
 
     private static final String TPM_MAKE = "test tpmMake";
-    private static final String LONG_TPM_MAKE = StringUtils.rightPad("test tpmMake", 65);
+    
+    private static final int RIGHT_PADDING_SIZE = 65;
+    private static final String LONG_TPM_MAKE = StringUtils.rightPad("test tpmMake", RIGHT_PADDING_SIZE);
 
     private static final short VERSION_MAJOR = 1;
+
     private static final short VERSION_MINOR = 2;
+
     private static final short VERSION_REV_MAJOR = 3;
+
     private static final short VERSION_REV_MINOR = 4;
-    private static final Logger LOGGER = LogManager
-            .getLogger(TPMInfoTest.class);
+
+    private static final Logger LOGGER = LogManager.getLogger(TPMInfoTest.class);
 
     /**
      * Tests instantiation and getters of a TPMInfo object.
@@ -59,9 +64,11 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
 
     /**
      * Tests that the TPM make information cannot be null.
+     *
+     * @throws IllegalArgumentException if one of the provided parameters is an illegal/invalid value
      */
     @Test
-    public final void tpmMakeNullTest() {
+    public final void tpmMakeNullTest() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(null, VERSION_MAJOR, VERSION_MINOR, VERSION_REV_MAJOR,
                         VERSION_REV_MINOR, getTestIdentityCertificate()));
@@ -69,9 +76,11 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
 
     /**
      * Tests that the TPM make information cannot be longer than 64 characters.
+     *
+     * @throws IllegalArgumentException if one of the provided parameters is an illegal/invalid value
      */
     @Test
-    public final void tpmMakeLongTest() {
+    public final void tpmMakeLongTest() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(LONG_TPM_MAKE, VERSION_MAJOR, VERSION_MINOR, VERSION_REV_MAJOR,
                         VERSION_REV_MINOR, getTestIdentityCertificate()));
@@ -80,9 +89,11 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests that the version major number info cannot be set to negative
      * values.
+     *
+     * @throws IllegalArgumentException if one of the provided parameters is an illegal/invalid value
      */
     @Test
-    public final void testTPMInfoInvalidVersionMajor() {
+    public final void testTPMInfoInvalidVersionMajor() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(TPM_MAKE, (short) -1, VERSION_MINOR, VERSION_REV_MAJOR,
                         VERSION_REV_MINOR, getTestIdentityCertificate()));
@@ -91,9 +102,11 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests that the version minor number info cannot be set to negative
      * values.
+     *
+     * @throws IllegalArgumentException if one of the provided parameters is an illegal/invalid value
      */
     @Test
-    public final void testTPMInfoInvalidVersionMinor() {
+    public final void testTPMInfoInvalidVersionMinor() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(TPM_MAKE, VERSION_MAJOR, (short) -1, VERSION_REV_MAJOR,
                         VERSION_REV_MINOR, getTestIdentityCertificate()));
@@ -102,9 +115,11 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests that the version revision major numbers cannot be set to negative
      * values.
+     *
+     * @throws IllegalArgumentException if one of the provided parameters is an illegal/invalid value
      */
     @Test
-    public final void testTPMInfoInvalidVersionRevMajor() {
+    public final void testTPMInfoInvalidVersionRevMajor() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(TPM_MAKE, VERSION_MAJOR, VERSION_MINOR, (short) -1,
                         VERSION_REV_MINOR, getTestIdentityCertificate()));
@@ -113,9 +128,11 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests that the version revision minor numbers cannot be set to negative
      * values.
+     *
+     * @throws IllegalArgumentException if one of the provided parameters is an illegal/invalid value
      */
     @Test
-    public final void testTPMInfoInvalidVersionRevMinor() {
+    public final void testTPMInfoInvalidVersionRevMinor() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new TPMInfo(TPM_MAKE, VERSION_MAJOR, VERSION_MINOR, VERSION_REV_MAJOR,
                         (short) -1, getTestIdentityCertificate()));

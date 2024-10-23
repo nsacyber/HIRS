@@ -87,6 +87,11 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
         }
     }
 
+    /**
+     * Creates a string representation of the Platform Configuration V2 object.
+     *
+     * @return a string representation of the Platform Configuration V2 object.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

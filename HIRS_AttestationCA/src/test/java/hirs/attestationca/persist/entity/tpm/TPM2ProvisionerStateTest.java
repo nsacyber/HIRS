@@ -172,14 +172,20 @@ public class TPM2ProvisionerStateTest {
 
         RANDOM_GENERATOR.nextBytes(nonce);
         RANDOM_GENERATOR.nextBytes(identityClaim);
-        
+
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(nonce));
         Long index = dis.readLong();
         dis.close();
+
         TPM2ProvisionerState value = new TPM2ProvisionerState(nonce, identityClaim);
+
         when(tpm2ProvisionerStateRepository.findByFirstPartOfNonce(index)).thenReturn(value);
+
+        final int nonce2Size = 7;
         TPM2ProvisionerState tpm2ProvisionerState =
-                TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository, new byte[7]);
+                TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository,
+                        new byte[nonce2Size]);
+
         assertNull(tpm2ProvisionerState);
     }
 }

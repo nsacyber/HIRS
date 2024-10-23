@@ -8,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -26,6 +27,7 @@ import java.util.Collection;
  */
 @Getter
 @Setter
+@EqualsAndHashCode
 @Log4j2
 @Entity
 public class EventLogMeasurements extends SupportReferenceManifest {
@@ -104,23 +106,5 @@ public class EventLogMeasurements extends SupportReferenceManifest {
         }
 
         return new ArrayList<>();
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        if (this == object) {
-            return true;
-        }
-        if (object == null || getClass() != object.getClass()) {
-            return false;
-        }
-        EventLogMeasurements that = (EventLogMeasurements) object;
-
-        return this.getHexDecHash().equals(that.getHexDecHash());
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 }

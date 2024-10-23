@@ -130,8 +130,9 @@ public class AttestationCertificateAuthorityTest {
     public void setupTests() throws Exception {
 
         //BeforeSuite
+        final int keySize = 2048;
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(2048);
+        keyPairGenerator.initialize(keySize);
         keyPair = keyPairGenerator.generateKeyPair();
 
         //BeforeTest
@@ -257,8 +258,11 @@ public class AttestationCertificateAuthorityTest {
         SymmetricKey symmetricKey = ProvisionUtils.generateSymmetricKey();
 
         // assert the symmetric algorithm, scheme, and key size are all set appropriately
-        assertTrue(symmetricKey.getAlgorithmId() == 6);
-        assertTrue(symmetricKey.getEncryptionScheme() == 255);
+        final int expectedAlgorithmId = 6;
+        final int expectedEncryptionScheme = 255;
+
+        assertTrue(symmetricKey.getAlgorithmId() == expectedAlgorithmId);
+        assertTrue(symmetricKey.getEncryptionScheme() == expectedEncryptionScheme);
         assertTrue(symmetricKey.getKeySize() == symmetricKey.getKey().length);
     }
 
@@ -337,8 +341,9 @@ public class AttestationCertificateAuthorityTest {
         assertNotNull(attestation);
 
         // validate the attestation algorithm
+        final int expectedAlgorithmId = 6;
         assertNotNull(attestation.getAlgorithm());
-        assertTrue(attestation.getAlgorithm().getAlgorithmId() == 6);
+        assertTrue(attestation.getAlgorithm().getAlgorithmId() == expectedAlgorithmId);
         assertTrue(attestation.getAlgorithm().getEncryptionScheme() == 0x1);
         assertTrue(attestation.getAlgorithm().getSignatureScheme() == 0);
         assertTrue(attestation.getAlgorithm().getParamsSize() == 0);
@@ -465,7 +470,8 @@ public class AttestationCertificateAuthorityTest {
 
         // assert that the exponent and the modulus are the same. the exponents should be the well
         // known prime, 101
-        assertTrue(publicKey.getPublicExponent().equals(new BigInteger("010001", 16)));
+        final int radix = 16;
+        assertTrue(publicKey.getPublicExponent().equals(new BigInteger("010001", radix)));
         assertTrue(publicKey.getModulus().equals(modulus));
     }
 
@@ -486,7 +492,8 @@ public class AttestationCertificateAuthorityTest {
 
         // assert that the exponent and the modulus are the same. the exponents should be the well
         // known prime, 101.
-        assertTrue(publicKey.getPublicExponent().equals(new BigInteger("010001", 16)));
+        final int radix = 16;
+        assertTrue(publicKey.getPublicExponent().equals(new BigInteger("010001", radix)));
         assertTrue(publicKey.getModulus().equals(modulus));
     }
 
@@ -504,7 +511,8 @@ public class AttestationCertificateAuthorityTest {
         byte[] ekFile = Files.readAllBytes(ekPath);
 
         RSAPublicKey ek = ProvisionUtils.parsePublicKey(ekFile);
-        assertTrue(ek.getPublicExponent().equals(new BigInteger("010001", 16)));
+        final int radix = 16;
+        assertTrue(ek.getPublicExponent().equals(new BigInteger("010001", radix)));
 
         byte[] mod = ek.getModulus().toByteArray();
         // big integer conversion is signed so it can add a 0 byte
@@ -532,7 +540,8 @@ public class AttestationCertificateAuthorityTest {
         byte[] akFile = Files.readAllBytes(akPath);
 
         RSAPublicKey ak = ProvisionUtils.parsePublicKey(akFile);
-        assertTrue(ak.getPublicExponent().equals(new BigInteger("010001", 16)));
+        final int radix = 16;
+        assertTrue(ak.getPublicExponent().equals(new BigInteger("010001", radix)));
 
         byte[] mod = ak.getModulus().toByteArray();
         // big integer conversion is signed so it can add a 0 byte
@@ -598,7 +607,7 @@ public class AttestationCertificateAuthorityTest {
         RSAPublicKey akPub = ProvisionUtils.parsePublicKey(akPubFile);
 
         // prepare the nonce and wrap it with keys
-        byte[] nonce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        final byte[] nonce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
                 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
         ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
 
@@ -636,12 +645,12 @@ public class AttestationCertificateAuthorityTest {
      * Test helper method that encrypts a blob using a shared key and IV using the specified
      * transformation.
      *
-     * @param blob           to be encrypted
+     * @param blob           blob to be encrypted
      * @param key            shared key
      * @param iv             to encrypt with
      * @param transformation of the encryption cipher
      * @return encrypted blob
-     * @throws Exception
+     * @throws Exception if there are any issues while encrypting the blob
      */
     private byte[] encryptBlob(final byte[] blob, final byte[] key, final byte[] iv,
                                final String transformation) throws Exception {
@@ -664,9 +673,9 @@ public class AttestationCertificateAuthorityTest {
     /**
      * Test helper method to decrypt blobs.
      *
-     * @param blob to be decrypted
+     * @param blob blob to be decrypted
      * @return decrypted blob
-     * @throws Exception
+     * @throws Exception if there are any issues while decrypting the blob
      */
     private byte[] decryptBlob(final byte[] blob) throws Exception {
         // initialize a cipher using the specified transformation
@@ -686,12 +695,12 @@ public class AttestationCertificateAuthorityTest {
      * Test helper method that decrypts a blob using a shared key and IV using the specified.
      * transformation.
      *
-     * @param blob           to be decrypted
+     * @param blob           blob to be decrypted
      * @param key            shared key
      * @param iv             to decrypt with
      * @param transformation of the decryption cipher
      * @return decrypted blob
-     * @throws Exception
+     * @throws Exception if there are any issues while decrypting the blob
      */
     private byte[] decryptBlob(final byte[] blob, final byte[] key, final byte[] iv,
                                final String transformation) throws Exception {

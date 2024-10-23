@@ -40,18 +40,15 @@ public class AbstractUserdefinedEntityTest {
      * Location of a test (fake) SGI intermediate CA certificate.
      */
     public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
-
     /**
      * Location of a test (fake) Intel intermediate CA certificate.
      */
     public static final String FAKE_INTEL_INT_CA_FILE =
             "/certificates/fakeIntelIntermediateCA.cer";
-
     /**
      * Location of a test (fake) root CA certificate.
      */
     public static final String FAKE_ROOT_CA_FILE = "/certificates/fakeRootCA.cer";
-
     /**
      * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
      */
@@ -98,6 +95,12 @@ public class AbstractUserdefinedEntityTest {
     private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
 
     /**
+     * This protected constructor was created to silence one of checkstyle errors.
+     */
+    protected AbstractUserdefinedEntityTest() {
+    }
+
+    /**
      * Construct a test certificate from the given parameters.
      *
      * @param <T>              the type of Certificate that will be created
@@ -121,13 +124,14 @@ public class AbstractUserdefinedEntityTest {
      * @param endorsementCredential the endorsement credentials (can be null)
      * @param platformCredentials   the platform credentials (can be null)
      * @return the newly-constructed Certificate
-     * @throws IOException if there is a problem constructing the test certificate
+     * @throws IOException              if there is a problem constructing the test certificate
+     * @throws IllegalArgumentException if there is a problem retrieving the certificate class simple name
      */
     public static <T extends ArchivableEntity> Certificate getTestCertificate(
             final Class<T> certificateClass, final String filename,
             final EndorsementCredential endorsementCredential,
             final List<PlatformCredential> platformCredentials)
-            throws IOException {
+            throws IOException, IllegalArgumentException {
 
         Path certPath;
         try {
@@ -139,23 +143,17 @@ public class AbstractUserdefinedEntityTest {
             throw new IOException("Could not resolve path URI", e);
         }
 
-        switch (certificateClass.getSimpleName()) {
-            case "CertificateAuthorityCredential":
-                return new CertificateAuthorityCredential(certPath);
-            case "ConformanceCredential":
-                return new ConformanceCredential(certPath);
-            case "EndorsementCredential":
-                return new EndorsementCredential(certPath);
-            case "PlatformCredential":
-                return new PlatformCredential(certPath);
-            case "IssuedAttestationCertificate":
-                return new IssuedAttestationCertificate(certPath,
-                        endorsementCredential, platformCredentials, false);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate class %s", certificateClass.getName())
-                );
-        }
+        return switch (certificateClass.getSimpleName()) {
+            case "CertificateAuthorityCredential" -> new CertificateAuthorityCredential(certPath);
+            case "ConformanceCredential" -> new ConformanceCredential(certPath);
+            case "EndorsementCredential" -> new EndorsementCredential(certPath);
+            case "PlatformCredential" -> new PlatformCredential(certPath);
+            case "IssuedAttestationCertificate" -> new IssuedAttestationCertificate(certPath,
+                    endorsementCredential, platformCredentials, false);
+            default -> throw new IllegalArgumentException(
+                    String.format("Unknown certificate class %s", certificateClass.getName())
+            );
+        };
     }
 
     /**
@@ -192,8 +190,9 @@ public class AbstractUserdefinedEntityTest {
     public static NetworkInfo createTestNetworkInfo() {
         try {
             final String hostname = "test.hostname";
+            final byte[] byteAddress = new byte[] {127, 0, 0, 1};
             final InetAddress ipAddress =
-                    InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+                    InetAddress.getByAddress(byteAddress);
             final byte[] macAddress = new byte[] {11, 22, 33, 44, 55, 66};
             return new NetworkInfo(hostname, ipAddress, macAddress);
 

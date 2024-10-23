@@ -201,6 +201,11 @@ public class ComponentIdentifier {
         return false;
     }
 
+    /**
+     * Creates a string representation of the Component Identifier object.
+     *
+     * @return a string representation of the Component Identifier object.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

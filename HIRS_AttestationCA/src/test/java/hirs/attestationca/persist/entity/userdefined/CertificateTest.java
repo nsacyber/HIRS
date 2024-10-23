@@ -14,7 +14,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -80,10 +79,12 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
 
     private static final String RDN_COMMA_SEPARATED =
             "CN=STM TPM EK Intermediate CA 02, O=STMicroelectronics NV, C=CH";
+
     private static final String RDN_MULTIVALUE =
             "CN=Nuvoton TPM Root CA 2010+O=Nuvoton Technology Corporation+C=TW";
 
     private static final String RDN_COMMA_SEPARATED_ORGANIZATION = "STMicroelectronics NV";
+
     private static final String RDN_MULTIVALUE_ORGANIZATION = "Nuvoton Technology Corporation";
 
     private static final String EK_CERT_WITH_PADDED_BYTES =
@@ -135,6 +136,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
                                 FAKE_ROOT_CA_FILE)).toURI())
                 )
         );
+
         assertEquals(
                 "CN=Fake Root CA",
                 certificate.getX509Certificate().getIssuerX500Principal().getName()
@@ -144,12 +146,11 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     /**
      * Ensure that a Certificate cannot be created from a null byte array.
      *
-     * @throws IOException          if the certificate could not be constructed properly
-     * @throws CertificateException if there is a problem de/serializing the certificate
+     * @throws IllegalArgumentException if there is a problem de/serializing the certificate
      */
     @Test
     public void testConstructCertFromNullByteArray()
-            throws IOException, CertificateException {
+            throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new CertificateAuthorityCredential((byte[]) null));
     }
@@ -157,12 +158,11 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     /**
      * Ensure that a Certificate cannot be created from an empty byte array.
      *
-     * @throws IOException          if the certificate could not be constructed properly
-     * @throws CertificateException if there is a problem de/serializing the certificate
+     * @throws IllegalArgumentException if there is a problem de/serializing the certificate
      */
     @Test
     public void testConstructCertFromEmptyByteArray()
-            throws IOException, CertificateException {
+            throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new CertificateAuthorityCredential(new byte[] {}));
     }
@@ -179,6 +179,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
                 Paths.get(Objects.requireNonNull(this.getClass().getResource(
                         FAKE_ROOT_CA_FILE)).toURI())
         );
+
         assertEquals(
                 "CN=Fake Root CA",
                 certificate.getX509Certificate().getIssuerX500Principal().getName()
@@ -188,11 +189,10 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests that a certificate cannot be constructed from a null path.
      *
-     * @throws IOException        if there is a problem reading the cert file at the given path
-     * @throws URISyntaxException if there is a problem constructing the URI
+     * @throws IllegalArgumentException if there is a problem constructing the URI
      */
     @Test
-    public void testConstructCertFromNullPath() throws URISyntaxException, IOException {
+    public void testConstructCertFromNullPath() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new CertificateAuthorityCredential((Path) null));
     }
@@ -208,6 +208,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
         assertEquals(
                 Certificate.CertificateType.X509_CERTIFICATE,
                 getTestCertificate(FAKE_ROOT_CA_FILE).getCertificateType());
+
         assertNotEquals(
                 Certificate.CertificateType.ATTRIBUTE_CERTIFICATE,
                 getTestCertificate(FAKE_ROOT_CA_FILE).getCertificateType());
@@ -222,7 +223,6 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
                 getTestCertificate(
                         PlatformCredential.class,
                         TEST_PLATFORM_CERT_3).getCertificateType());
-
     }
 
     /**
@@ -256,7 +256,6 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
                 "GETY42100160",
                 ((PlatformCredential) platformCredential).getPlatformSerial()
         );
-
     }
 
     /**
@@ -289,6 +288,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testX509CertificateParsingExtended() throws IOException {
         Certificate rootCert = getTestCertificate(INTEL_INT_CA_FILE);
+
         assertEquals(
                 "https://trustedservices.intel.com/"
                         + "content/TSC/certs/TSC_SS_RootCA_Certificate.cer\n",
@@ -336,12 +336,11 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
      * Tests that Certificate correctly parses out non-standard fields from an X509 attribute
      * certificate.
      *
-     * @throws IOException        if there is a problem reading the cert file at the given path
-     * @throws URISyntaxException if there is a problem constructing the file's URI
+     * @throws IOException if there is a problem reading the cert file at the given path
      */
     @Test
     public void testX509AttributeCertificateParsingExtended()
-            throws IOException, URISyntaxException {
+            throws IOException {
         Certificate platformCert = getTestCertificate(
                 PlatformCredential.class, TEST_PLATFORM_CERT_6);
 
@@ -362,7 +361,10 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     public void testCertificateTrim() throws IOException, URISyntaxException {
         byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
                 .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
-        byte[] expectedCertBytes = Arrays.copyOfRange(rawFileBytes, 0, 908);
+
+        final int finalPosition = 908;
+        byte[] expectedCertBytes = Arrays.copyOfRange(rawFileBytes, 0, finalPosition);
+
         Certificate ekCert = getTestCertificate(EndorsementCredential.class,
                 EK_CERT_WITH_PADDED_BYTES);
         assertEquals(new BigInteger("16842032579184247954"), ekCert.getSerialNumber());
@@ -384,6 +386,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
             URISyntaxException {
         byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
                 .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
+
         assertThrows(IllegalArgumentException.class, () ->
                         new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, 2)),
                 ".* No certificate length field could be found\\.");
@@ -401,8 +404,10 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
             URISyntaxException {
         byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
                 .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
+
+        final int finalPosition = 4;
         assertThrows(IllegalArgumentException.class, () ->
-                        new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, 4)),
+                        new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, finalPosition)),
                 ".* Certificate is nothing more than ASN.1 Sequence\\\\.");
     }
 
@@ -418,8 +423,10 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
             URISyntaxException {
         byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
                 .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
+
+        final int finalPosition = 42;
         assertThrows(IllegalArgumentException.class, () ->
-                        new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, 42)),
+                        new EndorsementCredential(Arrays.copyOfRange(rawFileBytes, 0, finalPosition)),
                 ".* Value of certificate length field extends beyond"
                         + " length of provided certificate\\.");
     }
@@ -427,13 +434,11 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests that the equals method on {@link Certificate} works as expected.
      *
-     * @throws IOException          if the certificate could not be constructed properly
-     * @throws CertificateException if there is a problem with the KeyStore or de/serializing the
-     *                              certificate
-     * @throws URISyntaxException   if there is a problem constructing the path to the certificate
+     * @throws IOException        if the certificate could not be constructed properly
+     * @throws URISyntaxException if there is a problem constructing the path to the certificate
      */
     @Test
-    public void testEquals() throws CertificateException, IOException, URISyntaxException {
+    public void testEquals() throws IOException, URISyntaxException {
         assertEquals(
                 getTestCertificate(FAKE_ROOT_CA_FILE),
                 getTestCertificate(FAKE_ROOT_CA_FILE)
@@ -471,15 +476,10 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests that the isIssuer method on {@link Certificate} works as expected.
      *
-     * @throws IOException             if the certificate could not be constructed properly
-     * @throws CertificateException    if there is a problem with the KeyStore or de/serializing the
-     *                                 certificate
-     * @throws NoSuchProviderException if the Bouncy Castle security provider is unavailable
-     * @throws URISyntaxException      if there is a problem constructing the path to the certificate
+     * @throws IOException if the certificate could not be constructed properly
      */
     @Test
-    public void testIsIssuer() throws CertificateException, IOException, NoSuchProviderException,
-            URISyntaxException {
+    public void testIsIssuer() throws IOException {
         Certificate issuerCert = getTestCertificate(FAKE_ROOT_CA_FILE);
         Certificate cert = getTestCertificate(INT_CA_CERT02);
 
@@ -490,13 +490,11 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests that the hashCode method on {@link Certificate} works as expected.
      *
-     * @throws IOException          if the certificate could not be constructed properly
-     * @throws CertificateException if there is a problem with the KeyStore or de/serializing the
-     *                              certificate
-     * @throws URISyntaxException   if there is a problem constructing the path to the certificate
+     * @throws IOException        if the certificate could not be constructed properly
+     * @throws URISyntaxException if there is a problem constructing the path to the certificate
      */
     @Test
-    public void testHashCode() throws CertificateException, IOException, URISyntaxException {
+    public void testHashCode() throws IOException, URISyntaxException {
         assertEquals(
                 getTestCertificate(FAKE_ROOT_CA_FILE).hashCode(),
                 getTestCertificate(FAKE_ROOT_CA_FILE).hashCode()

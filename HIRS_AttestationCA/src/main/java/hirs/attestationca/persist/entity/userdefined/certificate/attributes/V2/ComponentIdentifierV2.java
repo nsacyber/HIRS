@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Boolean;
@@ -16,7 +17,6 @@ import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -40,17 +40,24 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 public class ComponentIdentifierV2 extends ComponentIdentifier {
 
     private static final int MANDATORY_ELEMENTS = 3;
+
     // Additional optional identifiers for version 2
     private static final int COMPONENT_PLATFORM_CERT = 5;
+
     private static final int COMPONENT_PLATFORM_URI = 6;
+
     private static final int ATTRIBUTE_STATUS = 7;
 
     private ComponentClass componentClass;
+
     private CertificateIdentifier certificateIdentifier;
+
     private URIReference componentPlatformUri;
+
     private AttributeStatus attributeStatus;
 
     /**
@@ -201,30 +208,11 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         return true;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-        ComponentIdentifierV2 that = (ComponentIdentifierV2) o;
-        return Objects.equals(componentClass, that.componentClass)
-                && Objects.equals(certificateIdentifier, that.certificateIdentifier)
-                && Objects.equals(componentPlatformUri, that.componentPlatformUri)
-                && attributeStatus == that.attributeStatus;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), componentClass,
-                certificateIdentifier, componentPlatformUri, attributeStatus);
-    }
-
+    /**
+     * Creates a string representation of the Component Identifier V2 object.
+     *
+     * @return a string representation of the Component Identifier V2 object.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

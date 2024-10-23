@@ -20,7 +20,7 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
      * multiple test certificates.
      *
      * @return the test SupplyChainValidation
-     * @throws IOException if there si
+     * @throws IOException if there is a problem deserializing certificates
      */
     public static SupplyChainValidation getTestSupplyChainValidation() throws IOException {
         return getTestSupplyChainValidation(
@@ -52,10 +52,10 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
     /**
      * Test that a SupplyChainValidation can't be instantiated with a null validation type.
      *
-     * @throws IOException if there is a problem deserializing certificates
+     * @throws IllegalArgumentException if there is a problem deserializing certificates
      */
     @Test
-    public void testNullValidationType() throws IOException {
+    public void testNullValidationType() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new SupplyChainValidation(
                         null,
@@ -68,10 +68,10 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
     /**
      * Test that a SupplyChainValidation can't be instantiated with a null certificate list.
      *
-     * @throws IOException if there is a problem deserializing certificates
+     * @throws IllegalArgumentException if there is a problem deserializing certificates
      */
     @Test
-    public void testNullCertificates() throws IOException {
+    public void testNullCertificates() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new SupplyChainValidation(
                         SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,

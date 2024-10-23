@@ -40,16 +40,16 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+@Getter
 @Log4j2
 @NoArgsConstructor
 public class AbstractProcessor {
 
-    @Getter
     private int validDays;
-    @Getter
+
     private PrivateKey privateKey;
+
     @Setter
-    @Getter
     private PolicyRepository policyRepository;
 
     /**
@@ -247,7 +247,8 @@ public class AbstractProcessor {
                                               final byte[] derEncodedAttestationCertificate,
                                               final EndorsementCredential endorsementCredential,
                                               final List<PlatformCredential> platformCredentials,
-                                              final Device device, boolean isLDevID) {
+                                              final Device device,
+                                              final boolean isLDevID) {
         List<IssuedAttestationCertificate> issuedAc;
         boolean generateCertificate = true;
         PolicyRepository scp = getPolicyRepository();
@@ -269,9 +270,9 @@ public class AbstractProcessor {
                 generateCertificate = isLDevID ? policySettings.isIssueDevIdCertificate()
                         : policySettings.isIssueAttestationCertificate();
 
-                if (issuedAc != null && issuedAc.size() > 0 &&
-                        (isLDevID ? policySettings.isDevIdExpirationFlag()
-                                : policySettings.isGenerateOnExpiration())) {
+                if (issuedAc != null && issuedAc.size() > 0
+                        && (isLDevID ? policySettings.isDevIdExpirationFlag()
+                        : policySettings.isGenerateOnExpiration())) {
                     if (issuedAc.get(0).getEndValidity().after(currentDate)) {
                         // so the issued AC is not expired
                         // however are we within the threshold

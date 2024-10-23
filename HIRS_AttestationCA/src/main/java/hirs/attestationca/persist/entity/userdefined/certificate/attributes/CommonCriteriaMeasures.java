@@ -126,6 +126,11 @@ public class CommonCriteriaMeasures {
         }
     }
 
+    /**
+     * Creates a custom string representation of the Common Criteria Measures object.
+     *
+     * @return a string representation of Common Criteria Measures
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

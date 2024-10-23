@@ -169,16 +169,18 @@ public class ValidationService {
     }
 
     /**
-     * @param deviceInfoReport
-     * @param base
-     * @param deltaMapping
-     * @param certificateRepository
-     * @param componentResultRepository
-     * @param componentAttributeRepository
-     * @param componentInfos
-     * @param provisionSessionId
-     * @param ignoreRevisionAttribute
-     * @return
+     * Evaluates delta attributes status.
+     *
+     * @param deviceInfoReport             device information report
+     * @param base                         base platform credential
+     * @param deltaMapping                 delta mapping
+     * @param certificateRepository        certificate repository
+     * @param componentResultRepository    component result repository
+     * @param componentAttributeRepository component attribute repository
+     * @param componentInfos               list of component information
+     * @param provisionSessionId           uuid representation of the provision session ID
+     * @param ignoreRevisionAttribute      whether to ignore the revision attribute
+     * @return a supply chain validation
      */
     public static SupplyChainValidation evaluateDeltaAttributesStatus(
             final DeviceInfoReport deviceInfoReport,
@@ -221,12 +223,14 @@ public class ValidationService {
     }
 
     /**
-     * @param device
-     * @param policySettings
-     * @param rimRepo
-     * @param rdvRepo
-     * @param caRepo
-     * @return
+     * Evaluates the firmware status.
+     *
+     * @param device         device
+     * @param policySettings policy settings
+     * @param rimRepo        reference manifest repository
+     * @param rdvRepo        reference digest value repository
+     * @param caRepo         CA Credential repository
+     * @return a supply chain validation
      */
     public static SupplyChainValidation evaluateFirmwareStatus(
             final Device device,
@@ -338,6 +342,7 @@ public class ValidationService {
      * @param credential                the credential whose CA chain should be retrieved
      * @param previouslyQueriedSubjects a list of organizations to refrain
      *                                  from querying
+     * @param caCredentialRepository    CA Credential repository
      * @return a Set containing all relevant CA credentials to the given
      * certificate's organization
      */
@@ -379,6 +384,14 @@ public class ValidationService {
         return caCreds;
     }
 
+    /**
+     * Creates a key store using the provided set of certificate authority credentials.
+     *
+     * @param certs set of certificate authority credentials
+     * @return a keystore
+     * @throws KeyStoreException if there is an issue creating a key store
+     * @throws IOException       if there is an issue creating a key store
+     */
     public static KeyStore caCertSetToKeystore(final Set<CertificateAuthorityCredential> certs)
             throws KeyStoreException, IOException {
         KeyStore keyStore = KeyStore.getInstance("JKS");
