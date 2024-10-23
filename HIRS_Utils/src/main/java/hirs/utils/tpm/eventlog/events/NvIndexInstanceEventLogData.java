@@ -10,15 +10,15 @@ import java.nio.charset.StandardCharsets;
  * Class to process the NV_INDEX_INSTANCE_EVENT_LOG_DATA per PFP.
  * Per PFP, the first 16 bytes of the structure are a String based identifier (Signature),
  * which are a NULL-terminated ASCII string "NvIndexInstance".
- *
+ * <p>
  * HEADERS defined by PFP v1.06 Rev 52.
  * Certain fields are common to both ..HEADER and ..HEADER2, and are noted below the structures.
  * <p>
  * typedef struct tdNV_INDEX_INSTANCE_EVENT_LOG_DATA {
- *      BYTE                            Signature[16];
- *      UINT16                          Version;
- *      UINT8[6]                        Reserved;
- *      DEVICE_SECURITY_EVENT_DATA2     Data;
+ * BYTE                            Signature[16];
+ * UINT16                          Version;
+ * UINT8[6]                        Reserved;
+ * DEVICE_SECURITY_EVENT_DATA2     Data;
  * } NV_INDEX_INSTANCE_EVENT_LOG_DATA;
  * <p>
  */
@@ -57,13 +57,15 @@ public class NvIndexInstanceEventLogData {
      */
     public NvIndexInstanceEventLogData(final byte[] eventData) {
 
-        byte[] signatureBytes = new byte[16];
-        System.arraycopy(eventData, 0, signatureBytes, 0, 16);
+        final int signatureBytesSize = 16;
+        byte[] signatureBytes = new byte[signatureBytesSize];
+        System.arraycopy(eventData, 0, signatureBytes, 0, signatureBytesSize);
         signature = new String(signatureBytes, StandardCharsets.UTF_8);
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
 
+        final int eventDataSrcIndex1 = 16;
         byte[] versionBytes = new byte[2];
-        System.arraycopy(eventData, 16, versionBytes, 0, 2);
+        System.arraycopy(eventData, eventDataSrcIndex1, versionBytes, 0, 2);
         String nvIndexVersion = HexUtils.byteArrayToHexString(versionBytes);
         if (nvIndexVersion == "") {
             nvIndexVersion = "version not readable";
@@ -72,14 +74,16 @@ public class NvIndexInstanceEventLogData {
         nvIndexInstanceInfo += "   Nv Index Instance Version = " + nvIndexVersion + "\n";
 
         // 6 bytes of Reserved data
-
-        byte[] dsedSignatureBytes = new byte[16];
-        System.arraycopy(eventData, 24, dsedSignatureBytes, 0, 16);
+        final int eventDataSrcIndex2 = 24;
+        final int dsedSignatureBytesSize = 16;
+        byte[] dsedSignatureBytes = new byte[dsedSignatureBytesSize];
+        System.arraycopy(eventData, eventDataSrcIndex2, dsedSignatureBytes, 0, dsedSignatureBytesSize);
         String dsedSignature = new String(dsedSignatureBytes, StandardCharsets.UTF_8);
         dsedSignature = dsedSignature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
 
+        final int eventDataSrcIndex3 = 40;
         byte[] dsedVersionBytes = new byte[2];
-        System.arraycopy(eventData, 40, dsedVersionBytes, 0, 2);
+        System.arraycopy(eventData, eventDataSrcIndex3, dsedVersionBytes, 0, 2);
         String dsedVersion = HexUtils.byteArrayToHexString(dsedVersionBytes);
         if (dsedVersion == "") {
             dsedVersion = "version not readable";
@@ -87,9 +91,10 @@ public class NvIndexInstanceEventLogData {
 
         if (dsedSignature.contains("SPDM Device Sec2")) {
 
-            int dsedEventDataSize = eventData.length - 24;
+            final int eventDataSrcIndex4 = 24;
+            final int dsedEventDataSize = eventData.length - eventDataSrcIndex4;
             byte[] dsedEventData = new byte[dsedEventDataSize];
-            System.arraycopy(eventData, 24, dsedEventData, 0, dsedEventDataSize);
+            System.arraycopy(eventData, eventDataSrcIndex4, dsedEventData, 0, dsedEventDataSize);
 
             nvIndexInstanceInfo += "   Signature = SPDM Device Sec2\n";
 
@@ -102,7 +107,7 @@ public class NvIndexInstanceEventLogData {
                         + dsedVersion + "\n";
             }
         } else {
-            nvIndexInstanceInfo = "   Signature error: should be \'SPDM Device Sec2\' but is "
+            nvIndexInstanceInfo = "   Signature error: should be 'SPDM Device Sec2' but is "
                     + signature + "\n";
         }
     }

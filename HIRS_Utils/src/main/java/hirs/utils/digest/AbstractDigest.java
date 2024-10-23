@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
  * <p>
  * Two classes were made to facilitate persisting them with Hibernate in different ways.
  * To persist non-nullable entries in an embedded collection, use {@link hirs.utils.digest.Digest} (see
- * {@link TPMBaseline} for reference.)  To persist nullable entries, use {@link hirs.utils.digest.OptionalDigest}
- * (see {@link ImaBlacklistRecord} for reference.)
+ * {@link TPMBaseline} for reference.)  To persist nullable entries,
+ * use {@link hirs.utils.digest.OptionalDigest} (see {@link ImaBlacklistRecord} for reference.)
  */
 @Log4j2
 public abstract class AbstractDigest {
@@ -44,30 +44,6 @@ public abstract class AbstractDigest {
      * Length of SHA512 digest.
      */
     public static final int SHA512_DIGEST_LENGTH = 64;
-
-    /**
-     * Ensures the given algorithm type and digest byte array represent a valid digest.
-     * This includes ensuring they are both not null or empty and ensuring that the length of the
-     * digest matches the expected amount of data for the given algorithm.
-     *
-     * @param algorithm a digest algorithm
-     * @param digest the digest computed by this algorithm
-     * @throws IllegalArgumentException if the provided input does not represent a valid digest
-     */
-    void validateInput(final DigestAlgorithm algorithm, final byte[] digest)
-            throws IllegalArgumentException {
-        if (algorithm == null) {
-            throw new IllegalArgumentException("Algorithm must not be null");
-        }
-
-        if (ArrayUtils.isEmpty(digest)) {
-            throw new IllegalArgumentException("Digest must have at least one byte");
-        }
-
-        if (digest.length != algorithm.getLengthInBytes()) {
-            throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
-        }
-    }
 
     /**
      * This method will help class determine the algorithm associated with the
@@ -115,6 +91,61 @@ public abstract class AbstractDigest {
     }
 
     /**
+     * Parses a {@link DigestAlgorithm} from a String returned by {@link AbstractDigest#toString()}.
+     *
+     * @param digest the digest string as computed above
+     * @return the DigestAlgorithm component of the String
+     */
+    static DigestAlgorithm algorithmFromString(final String digest) {
+        return DigestAlgorithm.findByString(matchString(digest).group(1));
+    }
+
+    /**
+     * Parses a digest from a String returned by {@link AbstractDigest#toString()}.
+     *
+     * @param digest the digest string as computed above
+     * @return the byte array representing the actual digest
+     */
+    static byte[] digestFromString(final String digest) {
+        return DatatypeConverter.parseHexBinary(matchString(digest).group(2));
+    }
+
+    private static Matcher matchString(final String digest) {
+        Pattern digestPattern = Pattern.compile("(.*) - 0x(.*)");
+        Matcher matcher = digestPattern.matcher(digest);
+        if (!matcher.matches()) {
+            String message = String.format("String \"%s\" did not match pattern \"%s\"", digest,
+                    digestPattern);
+            throw new IllegalArgumentException(message);
+        }
+        return matcher;
+    }
+
+    /**
+     * Ensures the given algorithm type and digest byte array represent a valid digest.
+     * This includes ensuring they are both not null or empty and ensuring that the length of the
+     * digest matches the expected amount of data for the given algorithm.
+     *
+     * @param algorithm a digest algorithm
+     * @param digest    the digest computed by this algorithm
+     * @throws IllegalArgumentException if the provided input does not represent a valid digest
+     */
+    void validateInput(final DigestAlgorithm algorithm, final byte[] digest)
+            throws IllegalArgumentException {
+        if (algorithm == null) {
+            throw new IllegalArgumentException("Algorithm must not be null");
+        }
+
+        if (ArrayUtils.isEmpty(digest)) {
+            throw new IllegalArgumentException("Digest must have at least one byte");
+        }
+
+        if (digest.length != algorithm.getLengthInBytes()) {
+            throw new AbstractDigest.IllegalDigestLength(algorithm, digest);
+        }
+    }
+
+    /**
      * Retrieves the <code>DigestAlgorithm</code> that identifies which hash
      * function generated the digest.
      *
@@ -140,6 +171,7 @@ public abstract class AbstractDigest {
 
     /**
      * Compares this digest's hash with another digest's hash.
+     *
      * @param otherDigest a Digest to compare to.
      * @return the comparison result type.
      */
@@ -153,37 +185,6 @@ public abstract class AbstractDigest {
         }
 
         return DigestComparisonResultType.MISMATCH;
-    }
-
-    /**
-     * Parses a {@link DigestAlgorithm} from a String returned by {@link AbstractDigest#toString()}.
-     *
-     * @param digest the digest string as computed above
-     * @return the DigestAlgorithm component of the String
-     */
-    static DigestAlgorithm algorithmFromString(final String digest) {
-        return DigestAlgorithm.findByString(matchString(digest).group(1));
-    }
-
-    /**
-     * Parses a digest from a String returned by {@link AbstractDigest#toString()}.
-     *
-     * @param digest the digest string as computed above
-     * @return the byte array representing the actual digest
-     */
-    static byte[] digestFromString(final String digest) {
-        return DatatypeConverter.parseHexBinary(matchString(digest).group(2));
-    }
-
-    private static Matcher matchString(final String digest) {
-        Pattern digestPattern = Pattern.compile("(.*) - 0x(.*)");
-        Matcher matcher = digestPattern.matcher(digest);
-        if (!matcher.matches()) {
-            String message = String.format("String \"%s\" did not match pattern \"%s\"", digest,
-                    digestPattern.toString());
-            throw new IllegalArgumentException(message);
-        }
-        return matcher;
     }
 
     @Override
@@ -201,21 +202,15 @@ public abstract class AbstractDigest {
             return true;
         }
 
-        if (obj == null || !(obj instanceof AbstractDigest)) {
+        if (obj == null || !(obj instanceof AbstractDigest other)) {
             return false;
         }
-
-        AbstractDigest other = (AbstractDigest) obj;
 
         if (getAlgorithm() != other.getAlgorithm()) {
             return false;
         }
 
-        if (!Arrays.equals(getDigest(), other.getDigest())) {
-            return false;
-        }
-
-        return true;
+        return Arrays.equals(getDigest(), other.getDigest());
     }
 
     /**
