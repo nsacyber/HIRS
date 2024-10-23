@@ -34,7 +34,7 @@ namespace hirsTest {
             idClaimResp.CredentialBlob = Google.Protobuf.ByteString.CopyFrom(credentialBlob);
             CertificateResponse certResp = new();
             certResp.Status = ResponseStatus.Pass;
-            certResp.Certificate = Google.Protobuf.ByteString.CopyFrom(acaIssuedCert);
+            certResp.Certificate = Google.Protobuf.String.CopyFrom(acaIssuedCert);
             
             IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
             byte[] name = null, qualifiedName = null;
