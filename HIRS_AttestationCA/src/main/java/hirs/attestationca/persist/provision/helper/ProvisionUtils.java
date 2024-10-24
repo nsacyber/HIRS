@@ -18,6 +18,7 @@ import hirs.utils.enums.DeviceInfoEnums;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -28,6 +29,8 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -104,6 +107,29 @@ public final class ProvisionUtils {
             throw new UnexpectedServerException(
                     "Encountered error while converting X509 Certificate to ASN.1 DER Encoding: "
                             + ceEx.getMessage(), ceEx);
+        }
+    }
+
+    /**
+     * Helper method to extract a PEM encoded certificate from an X509 certificate.
+     *
+     * @param certificate the X509 certificate to be converted to PEM encoding
+     * @throws {@link UnexpectedServerException} if error occurs during encoding retrieval
+     * @return the string representing the PEM encoded certificate
+     */
+    public static String getPemEncodedCertificate(final X509Certificate certificate) {
+        try {
+            final StringWriter stringWriter = new StringWriter();
+            final JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter);
+            pemWriter.writeObject(certificate);
+            pemWriter.flush();
+            pemWriter.close();
+            return stringWriter.toString();
+        } catch (IOException ioEx) {
+            log.error("Error converting certificate to PEM Encoding.", ioEx);
+            throw new UnexpectedServerException(
+                    "Encountered error while converting X509 Certificate to PEM Encoding: "
+                            + ioEx.getMessage(), ioEx);
         }
     }
 

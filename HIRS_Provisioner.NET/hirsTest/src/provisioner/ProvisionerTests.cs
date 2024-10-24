@@ -14,7 +14,7 @@ namespace hirsTest {
             const string address = "https://127.0.0.1:8443/";
             byte[] ekCert = Encoding.UTF8.GetBytes("EK CERTIFICATE");
             byte[] secret = Encoding.UTF8.GetBytes("AuthCredential Secret");
-            byte[] acaIssuedCert = Encoding.UTF8.GetBytes("ACA ISSUED CERTIFICATE");
+            string acaIssuedCert = "ACA ISSUED CERTIFICATE";
             byte[] integrityHMAC = Convert.FromBase64String("VAtedc1RlNA1w0XfrtwmhE0ILBlILP6163Tur5HRIo0=");
             byte[] encIdentity = Convert.FromBase64String("6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQ==");
             byte[] encryptedSecret = Convert.FromBase64String("NekvnOX8RPRdyd0/cxBI4FTCuNkiu0KAnS28yT7yYJUL5Lwfcv5ctEK6zQA0fq0IsX5TlAYSidGKxrAilOSwALJmJ+m7sMiXwMKrZn1cd4gzXObZEQimQoWgSEQbPO7rfpUn1UfI8K5SzmUFUTxc5X3D8zFonaEBp6QCjtdLegKGgioCDcQFdz20Y0PFAa1Itug7YbZdCFpfit570eQQinmqdVryiNyn6CLQdMgIejuBxoEpoTSWszB5eFKEdn5g/+8wcvhp6RpNBQ0hikF+6688TOVK/j8n3JDwKVltJ/WNHjVO+lxa2aLIMJRgs5ZRuzuz6OSMf10KqJjSWZE04w==");
@@ -34,7 +34,7 @@ namespace hirsTest {
             idClaimResp.CredentialBlob = Google.Protobuf.ByteString.CopyFrom(credentialBlob);
             CertificateResponse certResp = new();
             certResp.Status = ResponseStatus.Pass;
-            certResp.Certificate = Google.Protobuf.ByteString.CopyFrom(acaIssuedCert);
+            certResp.Certificate = acaIssuedCert;
             
             IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
             byte[] name = null, qualifiedName = null;
