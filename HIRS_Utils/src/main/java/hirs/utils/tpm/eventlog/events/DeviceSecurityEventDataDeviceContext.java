@@ -10,8 +10,8 @@ import lombok.Getter;
  * or USB connection.
  * <p>
  * typedef union tdDEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT {
- *      DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT       PciContext;
- *      DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT       UsbContext;
+ * .     DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT       PciContext;
+ * .     DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT       UsbContext;
  * } DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT;
  * <p>
  */

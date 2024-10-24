@@ -15,10 +15,10 @@ import java.nio.charset.StandardCharsets;
  * Certain fields are common to both ..HEADER and ..HEADER2, and are noted below the structures.
  * <p>
  * typedef struct tdNV_INDEX_INSTANCE_EVENT_LOG_DATA {
- * BYTE                            Signature[16];
- * UINT16                          Version;
- * UINT8[6]                        Reserved;
- * DEVICE_SECURITY_EVENT_DATA2     Data;
+ * .    BYTE                            Signature[16];
+ * .    UINT16                          Version;
+ * .    UINT8[6]                        Reserved;
+ * .    DEVICE_SECURITY_EVENT_DATA2     Data;
  * } NV_INDEX_INSTANCE_EVENT_LOG_DATA;
  * <p>
  */

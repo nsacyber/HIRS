@@ -7,8 +7,8 @@ import lombok.Getter;
  * Parses event data per PFP v1.06 Rev52 Table 20.
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA {
- * DEVICE_SECURITY_EVENT_DATA_HEADER            EventDataHeader;
- * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
+ * .    DEVICE_SECURITY_EVENT_DATA_HEADER            EventDataHeader;
+ * .    DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
  * } DEVICE_SECURITY_EVENT_DATA;
  * <p>
  */

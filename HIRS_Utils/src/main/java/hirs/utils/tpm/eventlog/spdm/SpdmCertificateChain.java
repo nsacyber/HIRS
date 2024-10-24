@@ -15,22 +15,22 @@ import java.util.ArrayList;
  * <p>
  * Certificate chain format, defined by SPDM v1.03, Sect 10.6.1, Table 33:
  * Certificate chain format {
- * Length                          2 bytes;
- * Reserved                        2 bytes;
- * RootHash                        <H> bytes;
- * Certificates                    <Length> - (4 + <H>) bytes;
+ * .     Length                          2 bytes;
+ * .     Reserved                        2 bytes;
+ * .     RootHash                        <H> bytes;
+ * .     Certificates                    <Length> - (4 + <H>) bytes;
  * }
  * <p>
  * Length: total length of cert chain including all fields in this block
  * H: the output size of the hash algorithm selected by the most recent ALGORITHMS response
- * this field shall be in hash byte order
- * hash algorithm is included in the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN
- * structure as the member "SpdmBaseHashAlg"
+ * .  this field shall be in hash byte order
+ * .  hash algorithm is included in the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN
+ * .  structure as the member "SpdmBaseHashAlg"
  * RootHash: the digest of the Root Certificate.
- * size is determined by hash algorithm selected by the most recent SPDM ALGORITHMS response;
- * the hash algorithm is the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN SpdmBaseHashAlgo
+ * .  size is determined by hash algorithm selected by the most recent SPDM ALGORITHMS response;
+ * .  the hash algorithm is the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN SpdmBaseHashAlgo
  * Certificates: Complete cert chain consisting of 1 or more ASN.1 DER-encoded X.509 v3 certs
- * this field shall be in Encoded ASN.1 byte order
+ * .  this field shall be in Encoded ASN.1 byte order
  */
 public class SpdmCertificateChain {
 

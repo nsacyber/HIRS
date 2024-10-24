@@ -12,8 +12,8 @@ import java.math.BigInteger;
  * Class to for the TCG defined TPMT_HA structure used to support the Crypto Agile Log format.
  * <p>
  * typedef struct {
- * TPMI_ALG_HASH hashAlg;
- * TPMU_HA       digest;
+ * .     TPMI_ALG_HASH hashAlg;
+ * .     TPMU_HA       digest;
  * } TPMT_HA;
  */
 public class TcgTpmtHa {

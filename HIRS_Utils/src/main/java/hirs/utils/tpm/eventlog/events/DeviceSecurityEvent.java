@@ -8,34 +8,34 @@ import lombok.Setter;
  * Abstract base class to process the DEVICE_SECURITY_EVENT_DATA or ..DATA2 event.
  * Parses event data per PFP v1.06 Rev52 Tables 20 and 26.
  * The event data comes in 2 forms:
- *    1) DEVICE_SECURITY_EVENT_DATA or
- *    2) DEVICE_SECURITY_EVENT_DATA2
+ * .   1) DEVICE_SECURITY_EVENT_DATA or
+ * .   2) DEVICE_SECURITY_EVENT_DATA2
  * The first 2 fields of the respective headers are the same in both ..DATA and ..DATA2.
  * Field 1:
- *    The first 16 bytes of the event data header MUST be a String based identifier (Signature),
- *    per PFP. The only currently defined Signatures are "SPDM Device Sec" and "SPDM Device Sec2",
- *    which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2, respectively.
+ * .   The first 16 bytes of the event data header MUST be a String based identifier (Signature),
+ * .   per PFP. The only currently defined Signatures are "SPDM Device Sec" and "SPDM Device Sec2",
+ * .   which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2, respectively.
  * Field 2:
- *    The Version field also indicates whether the Device Security Event is ..DATA or ..DATA2.
+ * .   The Version field also indicates whether the Device Security Event is ..DATA or ..DATA2.
  *
  * DEVICE SECURITY EVENT structures defined by PFP v1.06 Rev 52:
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA {
- * DEVICE_SECURITY_EVENT_DATA_HEADER            EventDataHeader;
- * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
+ * .     DEVICE_SECURITY_EVENT_DATA_HEADER            EventDataHeader;
+ * .     DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
  * } DEVICE_SECURITY_EVENT_DATA;
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA2 {
- * DEVICE_SECURITY_EVENT_DATA_HEADER2           EventDataHeader;
- * DEVICE_SECURITY_EVENT_DATA_SUB_HEADER        EventDataSubHeader;
- * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
+ * .     DEVICE_SECURITY_EVENT_DATA_HEADER2           EventDataHeader;
+ * .     DEVICE_SECURITY_EVENT_DATA_SUB_HEADER        EventDataSubHeader;
+ * .     DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
  * } DEVICE_SECURITY_EVENT_DATA2;
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER or HEADER2 {
- *      UINT8                           Signature[16];
- *      UINT16                          Version;
- *      ...                             ...
- *      (The rest of the components are different for HEADER vs HEADER2)
+ * .     UINT8                           Signature[16];
+ * .     UINT16                          Version;
+ * .     ...                             ...
+ * .     (The rest of the components are different for HEADER vs HEADER2)
  * }
  * <p>
  */
@@ -64,7 +64,8 @@ public abstract class DeviceSecurityEvent {
     /**
      * Track status of pci.ids
      * This is only used for events that access the pci.ids file.
-     * (In this class, this is only needed if DeviceSecurityEvent includes a DeviceSecurityEventDataPciContext)
+     * (In this class, this is only needed if DeviceSecurityEvent includes
+     * a DeviceSecurityEventDataPciContext)
      * Default is normal status (normal status is from-filesystem).
      * Status will only change IF this is an event that uses this file,
      * and if that event causes a different status.

@@ -17,14 +17,14 @@ import java.io.IOException;
  * HEADERS defined by PFP v1.06 Rev 52:
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER {
- * UINT8                           Signature[16];
- * UINT16                          Version;
- * UINT16                          Length;
- * UINT32                          SpdmHashAlg;
- * UINT32                          DeviceType;
- * SPDM_MEASUREMENT_BLOCK          SpdmMeasurementBlock;
- * UINT64                          DevicePathLength;
- * UNIT8                           DevicePath[DevicePathLength]
+ * .    UINT8                           Signature[16];
+ * .    UINT16                          Version;
+ * .    UINT16                          Length;
+ * .    UINT32                          SpdmHashAlg;
+ * .    UINT32                          DeviceType;
+ * .    SPDM_MEASUREMENT_BLOCK          SpdmMeasurementBlock;
+ * .    UINT64                          DevicePathLength;
+ * .    UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER;
  * <p>
  * Assumption: there is only 1 SpdmMeasurementBlock per event. Need more test patterns to verify.

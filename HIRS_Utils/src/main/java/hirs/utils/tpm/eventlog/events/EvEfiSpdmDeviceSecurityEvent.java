@@ -9,17 +9,17 @@ import java.nio.charset.StandardCharsets;
 /**
  * Abstract class to process any SPDM event that is solely a DEVICE_SECURITY_EVENT_DATA or
  * DEVICE_SECURITY_EVENT_DATA2. The event field MUST be a
- *    1) DEVICE_SECURITY_EVENT_DATA or
- *    2) DEVICE_SECURITY_EVENT_DATA2
+ * .   1) DEVICE_SECURITY_EVENT_DATA or
+ * .   2) DEVICE_SECURITY_EVENT_DATA2
  * DEVICE_SECURITY_EVENT_DATA has 2 structures:
- *    1) DEVICE_SECURITY_EVENT_DATA_HEADER
- *    2) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures
- *       a) DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT
- *       b) DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT
+ * .   1) DEVICE_SECURITY_EVENT_DATA_HEADER
+ * .   2) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures
+ * .      a) DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT
+ * .      b) DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT
  * DEVICE_SECURITY_EVENT_DATA2 has 3 structures:
- *    1) DEVICE_SECURITY_EVENT_DATA_HEADER2
- *    2) DEVICE_SECURITY_EVENT_DATA_SUB_HEADER
- *    3) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures (see above)
+ * .   1) DEVICE_SECURITY_EVENT_DATA_HEADER2
+ * .   2) DEVICE_SECURITY_EVENT_DATA_SUB_HEADER
+ * .   3) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures (see above)
  * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
  * NUL-terminated, per PFP. The only currently defined Signature is "SPDM Device Sec",
  * which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.

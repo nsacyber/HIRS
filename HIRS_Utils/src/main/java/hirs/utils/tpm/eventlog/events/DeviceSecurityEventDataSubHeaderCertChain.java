@@ -9,11 +9,11 @@ import hirs.utils.tpm.eventlog.spdm.SpdmHa;
  *
  * <p>
  * typedef union tdDEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN {
- * UINT16                  SpdmVersion;
- * UINT8                   SpdmSlotId;
- * UINT8                   Reserved;
- * UINT32                  SpdmBaseHashAlgo;
- * SPDM_CERT_CHAIN         SpdmCertChain;
+ * .     UINT16                  SpdmVersion;
+ * .     UINT8                   SpdmSlotId;
+ * .     UINT8                   Reserved;
+ * .     UINT32                  SpdmBaseHashAlgo;
+ * .     SPDM_CERT_CHAIN         SpdmCertChain;
  * } DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN;
  * <p>
  * SpdmVersion: SpdmBaseHashAlgo
