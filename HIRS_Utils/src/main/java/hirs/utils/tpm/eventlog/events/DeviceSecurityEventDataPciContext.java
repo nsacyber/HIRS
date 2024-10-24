@@ -1,6 +1,8 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
+import hirs.utils.PciIds;
+import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
 import java.util.List;
@@ -70,6 +72,12 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
     private String subsystemId = "";
 
     /**
+     * Track status of pci.ids file.
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
+
+    /**
      * DeviceSecurityEventDataPciContext Constructor.
      *
      * @param dSEDpciContextBytes byte array holding the DeviceSecurityEventDataPciContext.
@@ -122,6 +130,13 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
         dSEDpciContextInfo += super.toString();
         dSEDpciContextInfo += "      Device Type = PCI\n";
         dSEDpciContextInfo += "      Vendor = " + translateVendor(vendorId) + "\n";
+
+        // the above call to translateVendor() is the first location in this class where
+        // a function in pciids class is called
+        // thus, if pciids db has not previously been set up, this call will trigger that setup
+        // the setup will look for the pciids file; need to check and store the status of that file
+        pciidsFileStatus = PciIds.getPciidsFileStatus();
+
         dSEDpciContextInfo += "      Device = " + translateDevice(vendorId, deviceId) + "\n";
         dSEDpciContextInfo += "      RevisionID = " + revisionId + "\n";
 
@@ -133,7 +148,7 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
             dSEDpciContextInfo += "        Subclass = " + classCodeList.get(1) + "\n";
             dSEDpciContextInfo += "        Programming Interface = " + classCodeList.get(2) + "\n";
         } else {
-            dSEDpciContextInfo += " ** Class code could not be determined **";
+            dSEDpciContextInfo += "        (Class code could not be determined)\n";
         }
         dSEDpciContextInfo += "      SubsystemVendor = " + translateVendor(subsystemVendorId) + "\n";
         dSEDpciContextInfo += "      Subsystem = " + translateDevice(subsystemVendorId, subsystemId) + "\n";
