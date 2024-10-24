@@ -15,11 +15,11 @@ import java.security.cert.CertificateException;
  * TCG Platform Firmware Profile specification.
  * typedef struct {
  * UINT32                   PCRIndex;        //PCR Index value that either
- * //matches the PCRIndex of a
- * //previous extend operation or
- * //indicates that this Event Log
- * //entry is not associated with
- * //an extend operation
+ * .                                        //matches the PCRIndex of a
+ * .                                        //previous extend operation or
+ * .                                        //indicates that this Event Log
+ * .                                        //entry is not associated with
+ * .                                        //an extend operation
  * UINT32                   EventType;       //See Log event types
  * BYTE                     digest[20];      //The SHA1 hash of the event data
  * UINT32                   EventSize;       //Size of the event data

@@ -11,16 +11,16 @@ import java.nio.charset.StandardCharsets;
  * Class to process the EV_NO_ACTION event.
  * The first 16 bytes of the event data MUST be a String based identifier (Signature).
  * Currently defined Signatures are
- * "Spec ID Event03"
- * - implies the data is a TCG_EfiSpecIDEvent
- * - TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
- * if the format of the Log (SHA1 vs Crypto Agile).
- * "StartupLocality"
- * - implies the data represents locality info (use lookup to interpret)
- * "NvIndexInstance"
- * - implies the data is a NV_INDEX_INSTANCE_EVENT_LOG_DATA
- * "NvIndexDynamic"
- * - implies the data is a NV_INDEX_DYNAMIC_EVENT_LOG_DATA
+ * .  "Spec ID Event03"
+ * .    - implies the data is a TCG_EfiSpecIDEvent
+ * .    - TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
+ * .      if the format of the Log (SHA1 vs Crypto Agile).
+ * .  "StartupLocality"
+ * .    - implies the data represents locality info (use lookup to interpret)
+ * .  "NvIndexInstance"
+ * .    - implies the data is a NV_INDEX_INSTANCE_EVENT_LOG_DATA
+ * .  "NvIndexDynamic"
+ * .    - implies the data is a NV_INDEX_DYNAMIC_EVENT_LOG_DATA
  * <p>
  * Notes:
  * 1. First 16 bytes of the structure is an ASCII with a fixed Length of 16

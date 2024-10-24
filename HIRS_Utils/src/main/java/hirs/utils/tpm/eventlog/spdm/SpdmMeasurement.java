@@ -8,21 +8,21 @@ import lombok.Getter;
  * <p>
  * Measurement, defined by SPDM v1.03, Sect 10.11.1, Table 54:
  * DMTF measurement spec format {
- * DMTFSpecMeasurementValueType    1 byte;
- * DMTFSpecMeasurementValueSize    2 bytes;
- * DMTFSpecMeasurementValue        <DMTFSpecMeasurementValueSize> bytes;
+ * .     DMTFSpecMeasurementValueType    1 byte;
+ * .     DMTFSpecMeasurementValueSize    2 bytes;
+ * .     DMTFSpecMeasurementValue        <DMTFSpecMeasurementValueSize> bytes;
  * }
  * <p>
  * DMTFSpecMeasurementValueType[7]
- * Indicates how bits [0:6] are represented
- * Bit = 0: Digest
- * Bit = 1: Raw bit stream
+ * .     Indicates how bits [0:6] are represented
+ * .     Bit = 0: Digest
+ * .     Bit = 1: Raw bit stream
  * DMTFSpecMeasurementValueType[6:0]            (see SPDM Spec, Table 55 "DMTFSpecMeasurementValueType[6:0]")
- * Immutable ROM                   0x0
- * Mutable firmware                0x1
- * Hardware configuration          0x2
- * Firmware configuration          0x3
- * etc.
+ * .     Immutable ROM                   0x0
+ * .     Mutable firmware                0x1
+ * .     Hardware configuration          0x2
+ * .     Firmware configuration          0x3
+ * .     etc.
  * <p>
  */
 public class SpdmMeasurement {

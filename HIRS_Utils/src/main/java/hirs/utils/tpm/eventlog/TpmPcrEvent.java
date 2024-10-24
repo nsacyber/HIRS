@@ -39,16 +39,16 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYS
  * TCG_PCR_EVENT is used when the Event log uses the SHA1 Format as described in the
  * TCG Platform Firmware Profile (PFP) specification.
  * typedef struct {
- * TCG_PCRINDEX  PCRIndex;  //PCR Index value that either
- * //matches the PCRIndex of a
- * //previous extend operation or
- * //indicates that this Event Log
- * //entry is not associated with
- * //an extend operation
- * TCG_EVENTTYPE EventType; //See Log event types defined in toStrng()
- * TCG_DIGEST    digest;    //The hash of the event data
- * UINT32        EventSize; //Size of the event data
- * UINT8         Event[EventSize];  //The event data
+ * .     TCG_PCRINDEX  PCRIndex;  //PCR Index value that either
+ * .                              //matches the PCRIndex of a
+ * .                              //previous extend operation or
+ * .                              //indicates that this Event Log
+ * .                              //entry is not associated with
+ * .                              //an extend operation
+ * .     TCG_EVENTTYPE EventType; //See Log event types defined in toStrng()
+ * .     TCG_DIGEST    digest;    //The hash of the event data
+ * .     UINT32        EventSize; //Size of the event data
+ * .     UINT8         Event[EventSize];  //The event data
  * } TCG_PCR_EVENT;
  */
 @Log4j2

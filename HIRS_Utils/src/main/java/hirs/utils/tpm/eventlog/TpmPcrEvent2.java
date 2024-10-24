@@ -16,30 +16,30 @@ import java.util.ArrayList;
  * TCG Platform Firmware Profile specification.
  * This class will only process SHA-256 digests.
  * typedef struct {
- * UINT32                 PCRIndex;  //PCR Index value that either
- * //matches the PCRIndex of a
- * //previous extend operation or
- * //indicates that this Event Log
- * //entry is not associated with
- * //an extend operation
- * UINT32                EventType; //See Log event types
- * TPML_DIGEST_VALUES    digest;    //The hash of the event data
- * UINT32                EventSize; //Size of the event data
- * BYTE                  Event[1];  //The event data
- * } TCG_PCR_EVENT2;                    //The event data structure to be added
+ * .    UINT32                 PCRIndex;  //PCR Index value that either
+ * .                                      //matches the PCRIndex of a
+ * .                                      //previous extend operation or
+ * .                                      //indicates that this Event Log
+ * .                                      //entry is not associated with
+ * .                                      //an extend operation
+ * .    UINT32                EventType; //See Log event types
+ * .    TPML_DIGEST_VALUES    digest;    //The hash of the event data
+ * .    UINT32                EventSize; //Size of the event data
+ * .    BYTE                  Event[1];  //The event data
+ * } TCG_PCR_EVENT2;                     //The event data structure to be added
  * typedef struct {
- * UINT32  count;
- * TPMT_HA digests[HASH_COUNT];
+ * .    UINT32  count;
+ * .    TPMT_HA digests[HASH_COUNT];
  * } TPML_DIGEST_VALUES;
  * typedef struct {
- * TPMI_ALG_HASH hashAlg;
- * TPMU_HA       digest;
+ * .    TPMI_ALG_HASH hashAlg;
+ * .    TPMU_HA       digest;
  * } TPMT_HA;
  * typedef union {
- * BYTE sha1[SHA1_DIGEST_SIZE];
- * BYTE sha256[SHA256_DIGEST_SIZE];
- * BYTE sha384[SHA384_DIGEST_SIZE];
- * BYTE sha512[SHA512_DIGEST_SIZE];
+ * .    BYTE sha1[SHA1_DIGEST_SIZE];
+ * .    BYTE sha256[SHA256_DIGEST_SIZE];
+ * .    BYTE sha384[SHA384_DIGEST_SIZE];
+ * .    BYTE sha512[SHA512_DIGEST_SIZE];
  * } TPMU_HA;
  * define SHA1_DIGEST_SIZE   20
  * define SHA256_DIGEST_SIZE 32
