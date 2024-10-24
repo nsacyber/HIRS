@@ -40,7 +40,13 @@ import java.util.Set;
 import java.util.UUID;
 
 @Log4j2
-public class ValidationService {
+public final class ValidationService {
+
+    /**
+     * This private constructor was created to silence checkstyle errors.
+     */
+    private ValidationService() {
+    }
 
     /**
      * Evaluates the provided endorsement credential status.

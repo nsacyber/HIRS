@@ -14,6 +14,12 @@ import java.util.ListIterator;
 public final class CredentialHelper {
 
     /**
+     * Private constructor was created to silence checkstyle.
+     */
+    private CredentialHelper() {
+    }
+
+    /**
      * Small method to check if the certificate is a PEM.
      *
      * @param possiblePEM header information
@@ -25,7 +31,7 @@ public final class CredentialHelper {
     }
 
     /**
-     * Small method to check if there are multi pem files
+     * Small method to check if there are multi pem files.
      *
      * @param possiblePEM header information
      * @return true if it is.
@@ -44,7 +50,7 @@ public final class CredentialHelper {
     }
 
     /**
-     * Method to remove header footer information from PEM
+     * Method to remove header footer information from PEM.
      *
      * @param pemFile string representation of the file
      * @return a cleaned up raw byte object

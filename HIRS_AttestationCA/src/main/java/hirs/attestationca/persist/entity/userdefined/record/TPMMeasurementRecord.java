@@ -51,11 +51,9 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
      */
     public static final int SHA_256_BYTE_LENGTH = 64;
 
-
     @Column(name = "pcr", nullable = false)
     @XmlAttribute(name = "PcrNumber", required = true)
     private final int pcrId;
-    
     @Embedded
     @XmlElement
     private final Digest hash;

@@ -18,16 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class TPMInfoTest extends AbstractUserdefinedEntityTest {
 
     private static final String TPM_MAKE = "test tpmMake";
-    
+
     private static final int RIGHT_PADDING_SIZE = 65;
     private static final String LONG_TPM_MAKE = StringUtils.rightPad("test tpmMake", RIGHT_PADDING_SIZE);
-
     private static final short VERSION_MAJOR = 1;
-
     private static final short VERSION_MINOR = 2;
-
     private static final short VERSION_REV_MAJOR = 3;
-
     private static final short VERSION_REV_MINOR = 4;
 
     private static final Logger LOGGER = LogManager.getLogger(TPMInfoTest.class);

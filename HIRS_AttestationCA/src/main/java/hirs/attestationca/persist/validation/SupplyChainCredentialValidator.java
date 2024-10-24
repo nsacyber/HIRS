@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.Set;
 
 @Log4j2
-@NoArgsConstructor
 public class SupplyChainCredentialValidator {
 
     /**
@@ -46,18 +44,15 @@ public class SupplyChainCredentialValidator {
      * AppraisalStatus message for a valid endorsement credential appraisal.
      */
     public static final String ENDORSEMENT_VALID = "Endorsement credential validated";
-
     /**
      * AppraisalStatus message for a valid platform credential appraisal.
      */
     public static final String PLATFORM_VALID = "Platform credential validated";
-
     /**
      * AppraisalStatus message for a valid platform credential attributes appraisal.
      */
     public static final String PLATFORM_ATTRIBUTES_VALID =
             "Platform credential attributes validated";
-
     /**
      * AppraisalStatus message for a valid firmware appraisal.
      */
@@ -69,6 +64,12 @@ public class SupplyChainCredentialValidator {
      */
     static {
         Security.addProvider(new BouncyCastleProvider());
+    }
+
+    /**
+     * Protected constructor was created to silence checkstyle.
+     */
+    protected SupplyChainCredentialValidator() {
     }
 
     /**

@@ -207,11 +207,6 @@ public class SupplyChainCredentialValidatorTest {
 
     private static KeyStore emptyKeyStore;
 
-    private final SupplyChainCredentialValidator supplyChainCredentialValidator =
-            new SupplyChainCredentialValidator();
-    private final CredentialValidator credentialValidator =
-            new CredentialValidator();
-
     /**
      * Sets up a KeyStore for testing.
      *

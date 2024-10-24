@@ -33,9 +33,7 @@ import java.math.BigInteger;
 public class TBBSecurityAssertion {
 
     private static final int CCINFO = 0;
-
     private static final int FIPSLEVEL = 1;
-    
     private static final int RTMTYPE = 2;
 
     private ASN1Integer version;

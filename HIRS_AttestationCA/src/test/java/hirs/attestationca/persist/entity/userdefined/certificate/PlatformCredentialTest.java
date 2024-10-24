@@ -179,12 +179,26 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Path certPath = Paths.get(resource.toURI());
 
         PlatformCredential credential = new PlatformCredential(certPath);
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
-        calendar.set(2017, 2, 23, 22, 34, 33);
+        final int year1 = 2017;
+        final int month1 = 2;
+        final int day1 = 23;
+        final int hour1 = 22;
+        final int minute1 = 34;
+        final int second1 = 33;
+        calendar.set(year1, month1, day1, hour1, minute1, second1);
         calendar.set(Calendar.MILLISECOND, 0);
         Assertions.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
-        calendar.set(2030, 11, 31, 23, 59, 59);
+
+        final int year2 = 2030;
+        final int month2 = 11;
+        final int day2 = 31;
+        final int hour2 = 23;
+        final int minute2 = 59;
+        final int second2 = 59;
+        calendar.set(year2, month2, day2, hour2, minute2, second2);
         Assertions.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assertions.assertNotNull(credential.getAttributeCertificate());
@@ -229,10 +243,23 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         PlatformCredential credential = new PlatformCredential(certPath);
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
-        calendar.set(2017, 2, 23, 22, 34, 33);
+        final int year1 = 2017;
+        final int month1 = 2;
+        final int day1 = 23;
+        final int hour1 = 22;
+        final int minute1 = 34;
+        final int second1 = 33;
+        calendar.set(year1, month1, day1, hour1, minute1, second1);
         calendar.set(Calendar.MILLISECOND, 0);
         Assertions.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
-        calendar.set(2030, 11, 31, 23, 59, 59);
+
+        final int year2 = 2030;
+        final int month2 = 11;
+        final int day2 = 31;
+        final int hour2 = 23;
+        final int minute2 = 59;
+        final int second2 = 59;
+        calendar.set(year2, month2, day2, hour2, minute2, second2);
         Assertions.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assertions.assertNotNull(credential.getAttributeCertificate());
@@ -278,10 +305,23 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
-        calendar.set(2017, 3, 21, 17, 5, 29);
+        final int year1 = 2017;
+        final int month1 = 3;
+        final int day1 = 21;
+        final int hour1 = 17;
+        final int minute1 = 5;
+        final int second1 = 29;
+        calendar.set(year1, month1, day1, hour1, minute1, second1);
         calendar.set(Calendar.MILLISECOND, 0);
         Assertions.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
-        calendar.set(2030, 11, 31, 23, 59, 59);
+
+        final int year2 = 2030;
+        final int month2 = 11;
+        final int day2 = 31;
+        final int hour2 = 23;
+        final int minute2 = 59;
+        final int second2 = 59;
+        calendar.set(year2, month2, day2, hour2, minute2, second2);
         Assertions.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assertions.assertNotNull(credential.getAttributeCertificate());
@@ -323,10 +363,23 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
-        calendar.set(2017, 3, 21, 17, 5, 30);
+        final int year1 = 2017;
+        final int month1 = 3;
+        final int day1 = 21;
+        final int hour1 = 17;
+        final int minute1 = 5;
+        final int second1 = 30;
+        calendar.set(year1, month1, day1, hour1, minute1, second1);
         calendar.set(Calendar.MILLISECOND, 0);
         Assertions.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
-        calendar.set(2030, 11, 31, 23, 59, 59);
+
+        final int year2 = 2030;
+        final int month2 = 11;
+        final int day2 = 31;
+        final int hour2 = 23;
+        final int minute2 = 59;
+        final int second2 = 59;
+        calendar.set(year2, month2, day2, hour2, minute2, second2);
         Assertions.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assertions.assertNotNull(credential.getAttributeCertificate());
@@ -394,7 +447,8 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
             Assertions.fail("Component Identifier is empty.");
         }
 
-        Assertions.assertEquals(allComponents.size(), 7);
+        final int expectedComponentsSize = 7;
+        Assertions.assertEquals(expectedComponentsSize, allComponents.size());
         ComponentIdentifier component;
 
         //Check component #2
@@ -414,7 +468,8 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Assertions.assertTrue(component.getFieldReplaceable().isTrue());
 
         //Check component #5
-        component = allComponents.get(4);
+        final int component5Position = 4;
+        component = allComponents.get(component5Position);
         Assertions.assertEquals("Ethernet Connection I219-LM", component.getComponentModel()
                 .getString());
         Assertions.assertEquals("8c:0f:6f:72:c6:c5", component.getComponentAddress().get(0)
@@ -513,7 +568,8 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
             Assertions.fail("Component Identifier is empty.");
         }
 
-        Assertions.assertEquals(allComponents.size(), 3);
+        final int expectedComponentsSize = 3;
+        Assertions.assertEquals(expectedComponentsSize, allComponents.size());
         ComponentIdentifier component;
 
         //Check component #2
@@ -581,7 +637,8 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
             Assertions.fail("Component Identifier is empty.");
         }
 
-        Assertions.assertEquals(allComponents.size(), 7);
+        final int expectedComponentsSize = 7;
+        Assertions.assertEquals(expectedComponentsSize, allComponents.size());
         ComponentIdentifier component;
 
         //Check component #1
@@ -592,7 +649,8 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
                 .getString());
 
         //Check component #7
-        component = allComponents.get(6);
+        final int component7Position = 6;
+        component = allComponents.get(component7Position);
         Assertions.assertTrue(component.getComponentAddress().size() > 0);
         Assertions.assertEquals("8c:0f:6f:72:c6:c5", component.getComponentAddress().get(0)
                 .getAddressValue()
@@ -647,14 +705,18 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         //Check component identifier
         List<ComponentIdentifier> allComponents = platformConfig.getComponentIdentifier();
         Assertions.assertFalse(allComponents.isEmpty());
-        ComponentIdentifier component = allComponents.get(5);
+
+        final int component6Position = 5;
+        ComponentIdentifier component = allComponents.get(component6Position);
         Assertions.assertTrue(component.isVersion2());
 
         List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
         if (platformProperties.isEmpty()) {
             Assertions.fail("Platform Properties is empty.");
         }
-        Assertions.assertEquals(platformProperties.size(), 3);
+
+        final int platformPropSize = 3;
+        Assertions.assertEquals(platformPropSize, platformProperties.size());
 
         PlatformProperty property;
 

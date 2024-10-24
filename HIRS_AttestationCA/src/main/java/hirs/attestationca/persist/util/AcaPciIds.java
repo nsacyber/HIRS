@@ -22,14 +22,22 @@ public final class AcaPciIds {
      * The Component Class TCG Registry OID.
      */
     public static final String COMPCLASS_TCG_OID = "2.23.133.18.3.1";
+
     /**
      * The Component Class Value mask for NICs.
      */
     public static final String COMPCLASS_TCG_CAT_NIC = "00090000";
+
     /**
      * The Component Class Value mask for GFX cards.
      */
     public static final String COMPCLASS_TCG_CAT_GFX = "00050000";
+
+    /**
+     * Private constructor created to silence checkstyle error.
+     */
+    private AcaPciIds() {
+    }
 
     /**
      * Iterate through all components and translate PCI hardware IDs as necessary.  It will only

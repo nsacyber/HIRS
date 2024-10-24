@@ -27,23 +27,28 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * String representing the database field for the manufacturer.
      */
     public static final String PLATFORM_MANUFACTURER = "platformManufacturer";
+
     /**
      * String representing the database field for the manufacturer id.
      */
     public static final String PLATFORM_MANUFACTURER_ID = "platformManufacturerId";
+
     /**
      * String representing the database field for the model.
      */
     public static final String PLATFORM_MODEL = "platformModel";
+
     /**
      * String representing the database field for the filename.
      */
     public static final String RIM_FILENAME_FIELD = "fileName";
+
     private static final String RIM_TYPE_FIELD = "rimType";
 
     private final Class<T> referenceTypeClass;
 
     private final Map<String, Object> fieldValueSelections;
+
     private boolean excludeArchivedRims;
 
     /**
@@ -142,8 +147,9 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
 
     /**
      * Construct the criterion that can be used to query for rims matching the
-     * configuration of this {@link ReferenceManifestSelector}.
+     * +     * configuration of this {@link ReferenceManifestSelector}.
      *
+     * @param criteriaBuilder criteria builder
      * @return a Criterion that can be used to query for rims matching the
      * configuration of this instance
      */

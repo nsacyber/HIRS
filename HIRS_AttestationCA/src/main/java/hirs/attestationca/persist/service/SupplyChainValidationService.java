@@ -66,6 +66,7 @@ public class SupplyChainValidationService {
      * @param policyRepository                       the policy manager
      * @param certificateRepository                  the cert manager
      * @param componentResultRepository              the comp result manager
+     * @param componentAttributeRepository           component attribute repository
      * @param referenceManifestRepository            the RIM manager
      * @param supplyChainValidationRepository        the scv manager
      * @param supplyChainValidationSummaryRepository the summary manager

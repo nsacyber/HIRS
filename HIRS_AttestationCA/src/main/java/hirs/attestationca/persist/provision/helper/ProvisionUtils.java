@@ -97,7 +97,7 @@ public final class ProvisionUtils {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /**
-     * This private constructor was created to silence one of checkstyle errors.
+     * This private constructor was created to silence checkstyle errors.
      */
     private ProvisionUtils() {
     }
@@ -109,7 +109,7 @@ public final class ProvisionUtils {
      * @param identityClaim byte array that should be converted to a Protobuf IdentityClaim
      *                      object
      * @return the Protobuf generated Identity Claim object
-     * @throws {@link IdentityProcessingException} if byte array could not be parsed
+     * @throws {@link InvalidProtocolBufferException} if byte array could not be parsed
      */
     public static ProvisionerTpm2.IdentityClaim parseIdentityClaim(final byte[] identityClaim) {
         try {
@@ -695,7 +695,7 @@ public final class ProvisionUtils {
         final int hoursInADay = 24;
         final int secondsInAnHour = 3600;
         final int millisecondsInASecond = 1000;
-        return (int) ((date2.getTime() - date1.getTime()) /
-                (millisecondsInASecond * secondsInAnHour * hoursInADay));
+        return (int) ((date2.getTime() - date1.getTime())
+                / (millisecondsInASecond * secondsInAnHour * hoursInADay));
     }
 }

@@ -27,7 +27,6 @@ public class PlatformProperty {
      * Number of identifiers for version 1.
      */
     protected static final int IDENTIFIER_NUMBER = 2;
-    
     private static final String NOT_SPECIFIED = "Not Specified";
 
     private ASN1UTF8String propertyName;

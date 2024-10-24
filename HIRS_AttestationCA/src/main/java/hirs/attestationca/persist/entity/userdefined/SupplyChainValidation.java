@@ -23,16 +23,20 @@ public class SupplyChainValidation extends ArchivableEntity {
     @Getter
     @Column
     private final ValidationType validationType;
+
     @Getter
     @Column
     private final AppraisalStatus.Status validationResult;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "CertificatesUsedToValidate",
             joinColumns = {@JoinColumn(name = "validation_id", nullable = false)})
     private final List<Certificate> certificatesUsed;
+
     @Getter
     @Column(length = RESULT_MESSAGE_LENGTH)
     private final String message;
+    
     @Getter
     @Column
     private String rimId;

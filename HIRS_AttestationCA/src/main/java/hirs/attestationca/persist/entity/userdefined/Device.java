@@ -120,6 +120,11 @@ public class Device extends AbstractEntity {
         this.lastReportTimestamp = (Timestamp) lastReportTimestamp.clone();
     }
 
+    /**
+     * Creates a string representation of the Device object.
+     *
+     * @return a string representation of the Device object.
+     */
     @Override
     public String toString() {
         return String.format("Device Name: %s%nStatus: %s%nSummary: %s%n",
