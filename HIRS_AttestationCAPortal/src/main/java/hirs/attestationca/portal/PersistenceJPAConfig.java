@@ -251,7 +251,8 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
 
 //    @Bean(name="default-settings")
 //    public PolicySettings supplyChainSettings() {
-//        PolicySettings scSettings = new PolicySettings("Default", "Settings are configured for no validation flags set.");
+//        PolicySettings scSettings = new PolicySettings("Default", "Settings are configured for no
+//        validation flags set.");
 //
 //        return scSettings;
 //    }

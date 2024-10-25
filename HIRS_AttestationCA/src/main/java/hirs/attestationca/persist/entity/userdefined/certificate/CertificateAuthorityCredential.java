@@ -3,19 +3,20 @@ package hirs.attestationca.persist.entity.userdefined.certificate;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import lombok.EqualsAndHashCode;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.apache.commons.codec.binary.Hex;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 /**
  * This class persists Certificate Authority credentials by extending the base Certificate
  * class with fields unique to CA credentials.
  */
+@Getter
 @Entity
-@EqualsAndHashCode
 public class CertificateAuthorityCredential extends Certificate {
 
     /**
@@ -30,6 +31,7 @@ public class CertificateAuthorityCredential extends Certificate {
 
     private static final int PREFIX_BYTE_SIZE = 4;
 
+    @Getter(AccessLevel.NONE)
     @Column
     private final byte[] subjectKeyIdentifier;
 
@@ -37,11 +39,9 @@ public class CertificateAuthorityCredential extends Certificate {
      * this field is part of the TCG CA specification, but has not yet been found in
      * manufacturer-provided CAs, and is therefore not currently parsed.
      */
-    @Getter
     @Column
     private final String credentialType = "TCPA Trusted Platform Module Endorsement";
 
-    @Getter
     @Column
     private String subjectKeyIdString;
 
@@ -112,10 +112,59 @@ public class CertificateAuthorityCredential extends Certificate {
         return null;
     }
 
+    /**
+     * Helper method that uses the provided certificate bytes and truncates a portion
+     * of the certificate bytes array.
+     *
+     * @param certificateBytes byte array representation of the certificate bytes
+     * @return a truncated certificate byte array
+     */
     private byte[] truncatePrefixBytes(final byte[] certificateBytes) {
         byte[] temp = new byte[CA_BYTE_SIZE];
         System.arraycopy(certificateBytes, PREFIX_BYTE_SIZE, temp, 0, CA_BYTE_SIZE);
 
         return temp;
+    }
+
+    /**
+     * Compares this Certificate Authority Credential object to another Certificate
+     * Authority Credential object.
+     *
+     * @param o object to compare
+     * @return true if both this and the provided Certificate Authority Credential objects are equal,
+     * false otherwise
+     */
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        CertificateAuthorityCredential that = (CertificateAuthorityCredential) o;
+
+//        if (!Objects.equals(credentialType, that.credentialType)) {
+//            return false;
+//        }
+
+        return Arrays.equals(subjectKeyIdentifier, that.subjectKeyIdentifier);
+    }
+
+    /**
+     * Creates an integer hash code.
+     *
+     * @return an integer hash code
+     */
+    @Override
+    public int hashCode() {
+        final int hashCodeConst = 31;
+        int result = super.hashCode();
+        result = hashCodeConst * result + credentialType.hashCode();
+        result = hashCodeConst * result + Arrays.hashCode(subjectKeyIdentifier);
+        return result;
     }
 }

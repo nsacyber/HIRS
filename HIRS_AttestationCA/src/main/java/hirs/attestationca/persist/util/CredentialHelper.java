@@ -14,7 +14,7 @@ import java.util.ListIterator;
 public final class CredentialHelper {
 
     /**
-     * Private constructor was created to silence checkstyle.
+     * Private constructor was created to silence checkstyle error.
      */
     private CredentialHelper() {
     }
@@ -88,10 +88,13 @@ public final class CredentialHelper {
             // Look for first ASN.1 Sequence marked by the two bytes (0x30) and (0x82)
             // The check advances our position in the ByteBuffer by one byte
             int currentPosition = certificateByteBuffer.position();
-            if (certificateByteBuffer.get() == (byte) 0x30
-                    && certificateByteBuffer.get(currentPosition + 1) == (byte) 0x82) {
+            final byte byte1 = (byte) 0x30;
+            final byte byte2 = (byte) 0x82;
+            if (certificateByteBuffer.get() == byte1
+                    && certificateByteBuffer.get(currentPosition + 1) == byte2) {
                 // Check if we have anything more in the buffer than an ASN.1 Sequence header
-                if (certificateByteBuffer.remaining() <= 3) {
+                final int minByteBufferRemaining = 3;
+                if (certificateByteBuffer.remaining() <= minByteBufferRemaining) {
                     throw new IllegalArgumentException(malformedCertStringBuilder
                             .append(" Certificate is nothing more than ASN.1 Sequence.")
                             .toString());
@@ -103,7 +106,8 @@ public final class CredentialHelper {
                 certificateLength = Short.toUnsignedInt(
                         certificateByteBuffer.getShort(currentPosition + 2));
                 // Add the 4 bytes that comprise the start of the ASN.1 Sequence and the length
-                certificateLength += 4;
+                final int startOfASN1Bytes = 4;
+                certificateLength += startOfASN1Bytes;
                 break;
             }
         }

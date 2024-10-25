@@ -31,6 +31,12 @@ public enum HealthStatus {
 
     private final String healthStatus;
 
+    /**
+     * Determines if the provided health status is a valid health status.
+     *
+     * @param healthStatus string representation of the healh status
+     * @return true if the health status is valid, otherwise false
+     */
     public static boolean isValidStatus(final String healthStatus) {
         return Arrays.stream(HealthStatus.values())
                 .map(HealthStatus::name)

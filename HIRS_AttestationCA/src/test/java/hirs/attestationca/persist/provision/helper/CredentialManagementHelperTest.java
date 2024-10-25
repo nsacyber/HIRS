@@ -3,6 +3,7 @@ package hirs.attestationca.persist.provision.helper;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -22,10 +23,17 @@ public class CredentialManagementHelperTest {
 
     private static final String EK_HEADER_TRUNCATED
             = "/certificates/nuc-1/ek_cert_7_byte_header_removed.cer";
+
     private static final String EK_UNTOUCHED
             = "/certificates/nuc-1/ek_cert_untouched.cer";
+
     @Mock
     private CertificateRepository certificateRepository;
+
+    /**
+     * Holds the AutoCloseable instance returned by openMocks.
+     */
+    private AutoCloseable mocks;
 
     /**
      * Setup mocks.
@@ -33,7 +41,19 @@ public class CredentialManagementHelperTest {
     @BeforeEach
     public void setUp() {
         //certificateRepository = mock(CertificateRepository.class);
-        MockitoAnnotations.initMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    /**
+     * Tears down the mock instances.
+     *
+     * @throws Exception if there are any issues closing down mock instances
+     */
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     /**
@@ -93,7 +113,7 @@ public class CredentialManagementHelperTest {
     }
 
     /**
-     * Tests processing a valid EK with the 7 byte header in tact.
+     * Tests processing a valid EK with the 7 byte header intact.
      *
      * @throws IOException if an IO error occurs
      */

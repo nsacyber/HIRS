@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -18,26 +19,24 @@ import java.util.List;
 /**
  * Stores results of a single element of the supply chain validation process.
  */
+@Getter
 @Entity
 public class SupplyChainValidation extends ArchivableEntity {
-    @Getter
     @Column
     private final ValidationType validationType;
 
-    @Getter
     @Column
     private final AppraisalStatus.Status validationResult;
 
+    @Getter(AccessLevel.NONE)
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "CertificatesUsedToValidate",
             joinColumns = {@JoinColumn(name = "validation_id", nullable = false)})
     private final List<Certificate> certificatesUsed;
 
-    @Getter
     @Column(length = RESULT_MESSAGE_LENGTH)
     private final String message;
-    
-    @Getter
+
     @Column
     private String rimId;
 

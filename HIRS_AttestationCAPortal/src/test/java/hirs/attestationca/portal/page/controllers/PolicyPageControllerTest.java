@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PolicyPageControllerTest extends PageControllerTest {
 
     // Base path for the page
-    private String pagePath;
+    private final String pagePath;
 
     // Repository manager to handle data access between policy entity and data storage in db
     @Autowired
@@ -45,7 +45,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Sets up policy
+     * Sets up policy.
      */
     @BeforeAll
     public void setUpPolicy() {
@@ -376,8 +376,6 @@ public class PolicyPageControllerTest extends PageControllerTest {
     /**
      * Helper function to set policy member variable back to all false.
      * After this function, can set specific values to true and then need to save policy.
-     *
-     * @return void
      */
     private void setPolicy_AllFalse() {
         policy.setEcValidationEnabled(false);
@@ -388,9 +386,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Helper function to set policy member variable - PC Validation to True
-     * Note: to set PC Validation to true, EC Validation must also be true
-     *
-     * @return void
+     * Note: to set PC Validation to true, EC Validation must also be true.
      */
     private void setPolicy_PcToTrue() {
         policy.setEcValidationEnabled(true);
@@ -399,9 +395,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Helper function to set policy member variable - PC Attribute Validation to True
-     * Note: to set PC Attribute Validation to true, PC Validation must also be true
-     *
-     * @return void
+     * Note: to set PC Attribute Validation to true, PC Validation must also be true.
      */
     private void setPolicy_PcAttributeToTrue() {
         setPolicy_PcToTrue();

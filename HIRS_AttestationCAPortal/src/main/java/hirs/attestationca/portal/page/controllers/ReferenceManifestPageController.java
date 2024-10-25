@@ -115,7 +115,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         String orderColumnName = input.getOrderColumnName();
         log.info("Ordering on column: " + orderColumnName);
-        log.info("Querying with the following dataTableInput: " + input.toString());
+        log.info("Querying with the following dataTableInput: " + input);
 
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
@@ -281,10 +281,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 // send a 404 error when invalid Reference Manifest
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
-                StringBuilder fileName = new StringBuilder("filename=\"");
-                fileName.append(referenceManifest.getFileName());
                 // Set filename for download.
-                response.setHeader("Content-Disposition", "attachment;" + fileName);
+                response.setHeader("Content-Disposition",
+                        "attachment;" + "filename=\"" + referenceManifest.getFileName()
+                        // Set filename for download.
+                );
                 response.setContentType("application/octet-stream");
 
                 // write cert to output stream
@@ -380,7 +381,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      *                    user.
      * @param baseRims    object to store multiple files
      * @param supportRims object to store multiple files
-     * @return a single or collection of reference manifest files.
      */
     private void parseRIM(
             final MultipartFile file, final boolean supportRIM,

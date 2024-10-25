@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TPMSecurityAssertions;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TPMSpecification;
 import jakarta.persistence.Column;
@@ -60,6 +61,9 @@ import java.util.Set;
  * trustedcomputinggroup.org/wp-content/uploads/Credential_Profiles_V1.2_Level2_Revision8.pdf
  */
 @Log4j2
+@SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+        justification = "property credentialType is guaranteed to always be non-null/initialized. Warning"
+                + "stems from auto-generated lombok equals and hashcode method doing redundant null checks.")
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -115,7 +119,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * manufacturer-provided ECs, and is therefore not currently parsed.
      */
     @Getter
-    @Column(nullable = true)
+    @Column
     private final String policyReference = null; // optional
 
     /**
@@ -123,7 +127,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * manufacturer-provided ECs, and is therefore not currently parsed.
      */
     @Getter
-    @Column(nullable = true)
+    @Column
     private final String revocationLocator = null; // optional
 
     @Getter
@@ -265,13 +269,13 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             value = entry.getValue();
             if (oid.equals(TPM_MODEL)) {
                 model = value.toString();
-                log.debug("Found TPM Model: " + model);
+                log.debug("Found TPM Model: {}", model);
             } else if (oid.equals(TPM_VERSION)) {
                 version = value.toString();
-                log.debug("Found TPM Version: " + version);
+                log.debug("Found TPM Version: {}", version);
             } else if (oid.equals(TPM_MANUFACTURER)) {
                 manufacturer = value.toString();
-                log.debug("Found TPM Manufacturer: " + manufacturer);
+                log.debug("Found TPM Manufacturer: {}", manufacturer);
             }
         }
     }
@@ -317,7 +321,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             ASN1Integer revision = (ASN1Integer) seq.getObjectAt(ASN1_REV_INDEX);
             tpmSpecification = new TPMSpecification(family.getString(), level.getValue(),
                     revision.getValue());
-            log.debug("Found TPM Spec:" + tpmSpecification);
+            log.debug("Found TPM Spec:{}", tpmSpecification);
         } else if (addToMapping && key.equals(TPM_SECURITY_ASSERTIONS)) {
             // Parse TPM Security Assertions
             int seqPosition = 0;
@@ -343,7 +347,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             tpmSecurityAssertions = new TPMSecurityAssertions(ver.getValue(),
                     fieldUpgradeable.isTrue());
 
-            log.debug("Found TPM Assertions: " + tpmSecurityAssertions);
+            log.debug("Found TPM Assertions: {}", tpmSecurityAssertions);
             // Iterate through remaining fields to set optional attributes
             int tag;
             ASN1TaggedObject obj;
@@ -401,7 +405,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * @param key          if addToMapping is true, the key in the OID key/value pair
      * @throws IOException parsing of subcomponents in the tree failed.
      */
-    @SuppressWarnings("checkstyle:methodlength")
     private void parseSingle(final ASN1Primitive component, final boolean addToMapping,
                              final String key) throws IOException {
         // null check the key if addToMapping is true
@@ -563,7 +566,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
 
         } else {
             // there are some deprecated types that we don't parse
-            log.error("Unparsed type: " + component.getClass());
+            log.error("Unparsed type: {}", component.getClass());
         }
     }
 }

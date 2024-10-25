@@ -39,7 +39,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     private static final String NONCACERT = "certificates/fakeIntelIntermediateCA.pem";
     private static final String BADCERT = "certificates/badCert.pem";
     // Base path for the page
-    private String pagePath;
+    private final String pagePath;
     // Repository manager to handle data access between certificate entity and data storage in db
     @Autowired
     private CertificateRepository certificateRepository;
@@ -129,10 +129,9 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
         Certificate cert = uploadTestCert();
 
-        StringBuilder fileName = new StringBuilder("attachment;filename=\"");
-        fileName.append("CertificateAuthorityCredential_");
-        fileName.append(cert.getSerialNumber());
-        fileName.append(".cer\"");
+        String fileName = "attachment;filename=\"" + "CertificateAuthorityCredential_" +
+                cert.getSerialNumber() +
+                ".cer\"";
 
         // verify cert file attachment and content
         getMockMvc()
@@ -143,7 +142,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/octet-stream"))
                 .andExpect(header().string("Content-Disposition",
-                        fileName.toString()))
+                        fileName))
                 .andExpect(content().bytes(cert.getRawBytes()));
 
     }
@@ -164,7 +163,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Uploads test cert to db
+     * Uploads test cert to db.
      *
      * @return the cert that was uploaded
      * @throws Exception if an exception occurs
@@ -201,7 +200,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Archives test cert that is in db by setting the archive flag
+     * Archives test cert that is in db by setting the archive flag.
      *
      * @throws Exception if an exception occurs
      */

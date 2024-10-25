@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.report;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hirs.attestationca.persist.entity.AbstractEntity;
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
@@ -28,6 +29,10 @@ import java.net.InetAddress;
  * information about the device. This <code>Report</code> includes the network,
  * OS, and TPM information.
  */
+@SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+        justification = "various class properties here are guaranteed to always be non-null/initialized."
+                + " Warning stems from auto-generated lombok equals and hashcode method doing redundant "
+                + "null checks.")
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Log4j2

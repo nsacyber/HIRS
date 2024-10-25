@@ -24,7 +24,8 @@ public class HIRSApplication {//extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
 //        SpringApplication springApplication = new SpringApplication(HIRSApplication.class);
-//        springApplication.setDefaultProperties(Collections.singletonMap("server.servlet.context-path", "/portal"));
+//        springApplication.setDefaultProperties(Collections.singletonMap("server.servlet.context-path",
+//        "/portal"));
 //        springApplication.run(args);
         SpringApplication.run(HIRSApplication.class, args);
     }

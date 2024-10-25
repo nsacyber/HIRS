@@ -54,6 +54,9 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:4.2.0'
     testImplementation 'org.springframework:spring-test:6.0.8'
 
+    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotBugAnnotationVersion}"
+    annotationProcessor "com.github.spotbugs:spotbugs-annotations:${spotBugAnnotationVersion}"
+
     // spring management
     compileOnly libs.lombok
     implementation libs.lombok

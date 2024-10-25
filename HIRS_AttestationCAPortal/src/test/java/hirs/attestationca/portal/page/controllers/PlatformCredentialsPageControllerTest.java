@@ -35,7 +35,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     private static final String NONPCCERT = "certificates/fakeIntelIntermediateCA.pem";
     private static final String BADPCCERT = "certificates/badCert.pem";
     // Base path for the page
-    private String pagePath;
+    private final String pagePath;
     // Repository manager to handle data access between certificate entity and data storage in db
     @Autowired
     private CertificateRepository certificateRepository;
@@ -94,7 +94,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Uploads test cert to db
+     * Uploads test cert to db.
      *
      * @return the cert that was uploaded
      * @throws Exception if an exception occurs
@@ -127,7 +127,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Archives test cert that is in db by setting the archive flag
+     * Archives test cert that is in db by setting the archive flag.
      *
      * @throws Exception if an exception occurs
      */

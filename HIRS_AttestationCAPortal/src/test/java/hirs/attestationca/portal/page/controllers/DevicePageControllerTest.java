@@ -35,7 +35,7 @@ public class DevicePageControllerTest extends PageControllerTest {
     private static final String TEST_PLATFORM_CREDENTIAL
             = "/platform_credentials/Intel_pc.cer";
     // Base path for the page
-    private String pagePath;
+    private final String pagePath;
     // Repository manager to handle data access between device entity and data storage in db
     @Autowired
     private DeviceRepository deviceRepository;

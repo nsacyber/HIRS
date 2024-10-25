@@ -97,7 +97,7 @@ public final class ProvisionUtils {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /**
-     * This private constructor was created to silence checkstyle errors.
+     * This private constructor was created to silence checkstyle error.
      */
     private ProvisionUtils() {
     }
@@ -219,7 +219,8 @@ public final class ProvisionUtils {
                                 new PSource.PSpecified("".getBytes(StandardCharsets.UTF_8)));
 
                 cipher.init(Cipher.PRIVATE_KEY, privateKey, spec);
-            } else {// initialize the cipher to decrypt using the ACA private key.
+            } else {
+                // initialize the cipher to decrypt using the ACA private key.
                 cipher.init(Cipher.DECRYPT_MODE, privateKey);
             }
 
@@ -532,15 +533,32 @@ public final class ProvisionUtils {
         credentialBlob[0] = topSize[1];
         credentialBlob[1] = topSize[0];
         credentialBlob[2] = 0x00;
-        credentialBlob[3] = 0x20;
-        System.arraycopy(integrityHmac, 0, credentialBlob, 4, 32);
-        for (int i = 0; i < 98; i++) {
-            credentialBlob[36 + i] = 0x00;
+
+        final int credBlobPosition4 = 3;
+        final byte credBlobFourthPositionValue = 0x20;
+        credentialBlob[credBlobPosition4] = credBlobFourthPositionValue;
+
+        final int credBlobPosition5 = 4;
+        final int credBlobSizeFromPosition5 = 32;
+        System.arraycopy(integrityHmac, 0, credentialBlob, credBlobPosition5, credBlobSizeFromPosition5);
+
+        final int credBlobPosition99 = 98;
+        final int credBlobPosition37 = 36;
+
+        for (int i = 0; i < credBlobPosition99; i++) {
+            credentialBlob[credBlobPosition37 + i] = 0x00;
         }
-        System.arraycopy(encryptedSecret, 0, credentialBlob, 36, encryptedSecret.length);
-        credentialBlob[134] = 0x00;
-        credentialBlob[135] = 0x01;
-        System.arraycopy(encryptedSeed, 0, credentialBlob, 136, 256);
+        System.arraycopy(encryptedSecret, 0, credentialBlob, credBlobPosition37, encryptedSecret.length);
+
+        final int credBlobPosition135 = 134;
+        credentialBlob[credBlobPosition135] = 0x00;
+
+        final int credBlobPosition136 = 135;
+        credentialBlob[credBlobPosition136] = 0x01;
+
+        final int credBlobPosition137 = 136;
+        final int credBlobSizeFromPosition137 = 256;
+        System.arraycopy(encryptedSeed, 0, credentialBlob, credBlobPosition137, credBlobSizeFromPosition137);
         // return the result
         return credentialBlob;
     }
@@ -583,7 +601,8 @@ public final class ProvisionUtils {
     public static byte[] cryptKDFa(final byte[] seed, final String label, final byte[] context,
                                    final int sizeInBytes)
             throws NoSuchAlgorithmException, InvalidKeyException {
-        ByteBuffer b = ByteBuffer.allocate(4);
+        final int capacity = 4;
+        ByteBuffer b = ByteBuffer.allocate(capacity);
         b.putInt(1);
         byte[] counter = b.array();
         // get the label
@@ -592,24 +611,27 @@ public final class ProvisionUtils {
             labelWithEnding = label + "\0";
         }
         byte[] labelBytes = labelWithEnding.getBytes(StandardCharsets.UTF_8);
-        b = ByteBuffer.allocate(4);
-        b.putInt(sizeInBytes * 8);
+        final int byteOffset = 8;
+        b = ByteBuffer.allocate(capacity);
+        b.putInt(sizeInBytes * byteOffset);
         byte[] desiredSizeInBits = b.array();
-        int sizeOfMessage = 8 + labelBytes.length;
+        int sizeOfMessage = byteOffset + labelBytes.length;
         if (context != null) {
             sizeOfMessage += context.length;
         }
         byte[] message = new byte[sizeOfMessage];
         int marker = 0;
-        System.arraycopy(counter, 0, message, marker, 4);
-        marker += 4;
+
+        final int markerLength = 4;
+        System.arraycopy(counter, 0, message, marker, markerLength);
+        marker += markerLength;
         System.arraycopy(labelBytes, 0, message, marker, labelBytes.length);
         marker += labelBytes.length;
         if (context != null) {
             System.arraycopy(context, 0, message, marker, context.length);
             marker += context.length;
         }
-        System.arraycopy(desiredSizeInBits, 0, message, marker, 4);
+        System.arraycopy(desiredSizeInBits, 0, message, marker, markerLength);
         Mac hmac;
         byte[] toReturn = new byte[sizeInBytes];
 

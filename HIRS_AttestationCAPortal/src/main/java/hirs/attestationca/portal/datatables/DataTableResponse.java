@@ -16,16 +16,20 @@ import java.util.List;
  *
  * @param <T> the type of object that is being wrapped.
  */
+@Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public final class DataTableResponse<T> {
 
-    private List<T> data = new LinkedList<T>();
-    @Getter
-    @Setter
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private final List<T> data = new LinkedList<T>();
+
     private int draw;
-    @Getter
-    @Setter
-    private long recordsTotal, recordsFiltered;
+
+    private long recordsTotal;
+
+    private long recordsFiltered;
 
     /**
      * Builds a data table response using a FilteredRecordList.
