@@ -14,6 +14,11 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServletInitializer
         implements ServletContextListener {
 
+    /**
+     * Initialize context.
+     *
+     * @param servletContextEvent servlet context event.
+     */
     @Override
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
@@ -35,6 +40,11 @@ public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServlet
         }
     }
 
+    /**
+     * Retrieves root configuration classes.
+     *
+     * @return array of root configuration classes.
+     */
     @Override
     protected Class<?>[] getRootConfigClasses() {
         return new Class[] {
@@ -42,11 +52,21 @@ public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServlet
         };
     }
 
+    /**
+     * Retrieves servlet configuration classes.
+     *
+     * @return null
+     */
     @Override
     protected Class<?>[] getServletConfigClasses() {
         return null;
     }
 
+    /**
+     * Retrieves servlet mappings.
+     *
+     * @return string array of servlet mappings.
+     */
     @Override
     protected String[] getServletMappings() {
         return new String[] {

@@ -11,16 +11,16 @@ import java.nio.charset.StandardCharsets;
  * Class to process the EV_NO_ACTION event.
  * The first 16 bytes of the event data MUST be a String based identifier (Signature).
  * Currently defined Signatures are
- * "Spec ID Event03"
- * - implies the data is a TCG_EfiSpecIDEvent
- * - TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
- * if the format of the Log (SHA1 vs Crypto Agile).
- * "StartupLocality"
- * - implies the data represents locality info (use lookup to interpret)
- * "NvIndexInstance"
- * - implies the data is a NV_INDEX_INSTANCE_EVENT_LOG_DATA
- * "NvIndexDynamic"
- * - implies the data is a NV_INDEX_DYNAMIC_EVENT_LOG_DATA
+ * .  "Spec ID Event03"
+ * .    - implies the data is a TCG_EfiSpecIDEvent
+ * .    - TCG_EfiSpecIDEvent is the first event in a TPM Event Log and is used to determine
+ * .      if the format of the Log (SHA1 vs Crypto Agile).
+ * .  "StartupLocality"
+ * .    - implies the data represents locality info (use lookup to interpret)
+ * .  "NvIndexInstance"
+ * .    - implies the data is a NV_INDEX_INSTANCE_EVENT_LOG_DATA
+ * .  "NvIndexDynamic"
+ * .    - implies the data is a NV_INDEX_DYNAMIC_EVENT_LOG_DATA
  * <p>
  * Notes:
  * 1. First 16 bytes of the structure is an ASCII with a fixed Length of 16
@@ -54,6 +54,16 @@ public class EvNoAction {
     private String noActionInfo = "";
 
     /**
+     * Track status of pci.ids
+     * This is only used for events that access the pci.ids file.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that uses this file,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+
+    /**
      * EvNoAction constructor.
      *
      * @param eventData byte array holding the event to process.
@@ -78,6 +88,7 @@ public class EvNoAction {
         } else if (signature.contains("NvIndexInstance")) {
             NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
             noActionInfo += nvIndexInstanceEvent.toString();
+            pciidsFileStatus = nvIndexInstanceEvent.getPciidsFileStatus();
         } else if (signature.contains("NvIndexDynamic")) {
             NvIndexDynamicEventLogData nvIndexDynamicEvent = new NvIndexDynamicEventLogData(eventData);
             noActionInfo += nvIndexDynamicEvent.toString();

@@ -85,7 +85,8 @@ public final class OrderedListQueryDataTableAdapter<T> {
 
         filteredRecordsList.setRecordsTotal(dbManager.count());
         filteredRecordsList.addAll((Collection<? extends T>) dbManager.findAll());
-        filteredRecordsList.setRecordsFiltered(10);
+        final int recordsFilteredConstant = 10;
+        filteredRecordsList.setRecordsFiltered(recordsFilteredConstant);
 
         return filteredRecordsList;
 
@@ -95,6 +96,16 @@ public final class OrderedListQueryDataTableAdapter<T> {
 //                searchableColumnMap, criteriaModifier);
     }
 
+    /**
+     * Retrieves an ordered list of reference digest values.
+     *
+     * @param dbManager        database manager.
+     * @param dataTableInput   data table input.
+     * @param orderColumnName  string representation of the order column name.
+     * @param criteriaModifier criteria modifier.
+     * @param entityManager    entity manager.
+     * @return a filtered, ordered records list of the reference digest values
+     */
     public static FilteredRecordsList<ReferenceDigestValue> getOrderedList(
             final JpaRepository<ReferenceDigestValue, UUID> dbManager,
             final DataTableInput dataTableInput,
@@ -127,7 +138,8 @@ public final class OrderedListQueryDataTableAdapter<T> {
 
         filteredRecordsList.setRecordsTotal(dbManager.count());
         filteredRecordsList.addAll(dbManager.findAll());
-        filteredRecordsList.setRecordsFiltered(10);
+        final int recordsFilteredConstant = 10;
+        filteredRecordsList.setRecordsFiltered(recordsFilteredConstant);
 
         return filteredRecordsList;
 

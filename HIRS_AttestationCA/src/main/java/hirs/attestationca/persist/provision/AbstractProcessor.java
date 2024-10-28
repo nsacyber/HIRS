@@ -118,7 +118,7 @@ public class AbstractProcessor {
                         + "Unable to issue certificates");
             }
 
-            ContentSigner signer = new JcaContentSignerBuilder("SHA1WithRSA")
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA")
                     .setProvider("BC").build(getPrivateKey());
             X509CertificateHolder holder = builder.build(signer);
             return new JcaX509CertificateConverter()

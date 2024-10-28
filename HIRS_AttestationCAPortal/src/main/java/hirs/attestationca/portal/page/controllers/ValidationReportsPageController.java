@@ -58,9 +58,9 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     private static final String DEFAULT_COMPANY = "AllDevices";
     private static final String UNDEFINED = "undefined";
     private static final String TRUE = "true";
-    private static String systemColumnHeaders = "Verified Manufacturer,"
+    private static final String SYSTEM_COLUMN_HEADERS = "Verified Manufacturer,"
             + "Model,SN,Verification Date,Device Status";
-    private static String componentColumnHeaders = "Component name,Component manufacturer,"
+    private static final String COMPONENT_COLUMN_HEADERS = "Component name,Component manufacturer,"
             + "Component model,Component SN,Issuer,Component status";
     private final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository;
     private final CertificateRepository certificateRepository;
@@ -225,7 +225,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         if (!columnHeaders.isEmpty()) {
                             columnHeaders = "," + columnHeaders;
                         }
-                        columnHeaders = systemColumnHeaders + columnHeaders;
+                        columnHeaders = SYSTEM_COLUMN_HEADERS + columnHeaders;
                     }
                     break;
                 case "component":
@@ -234,7 +234,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         if (!columnHeaders.isEmpty()) {
                             columnHeaders += ",";
                         }
-                        columnHeaders += componentColumnHeaders;
+                        columnHeaders += COMPONENT_COLUMN_HEADERS;
                     }
                     break;
                 case "manufacturer":
@@ -290,7 +290,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                             reportData.append(pc.getManufacturer() + ","
                                     + pc.getModel() + ","
                                     + pc.getPlatformSerial() + ","
-                                    + LocalDateTime.now().toString() + ","
+                                    + LocalDateTime.now() + ","
                                     + device.getSupplyChainValidationStatus() + ",");
                         }
                         if (!systemOnly) {
@@ -315,7 +315,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         }
         if (!jsonVersion) {
             if (columnHeaders.isEmpty()) {
-                columnHeaders = systemColumnHeaders + "," + componentColumnHeaders;
+                columnHeaders = SYSTEM_COLUMN_HEADERS + "," + COMPONENT_COLUMN_HEADERS;
             }
             bufferedWriter.append(columnHeaders + System.lineSeparator());
             bufferedWriter.append(reportData.toString());
@@ -354,14 +354,17 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 .getSupplyChainValidationStatus().toString());
 
         JsonArray components = new JsonArray();
+        final int componentDataPosition4 = 3;
+        final int componentDataPosition5 = 4;
+        final int componentDataPosition6 = 5;
         for (ArrayList<String> componentData : parsedComponents) {
             JsonObject component = new JsonObject();
             component.addProperty("Component name", componentData.get(0));
             component.addProperty("Component manufacturer", componentData.get(1));
             component.addProperty("Component model", componentData.get(2));
-            component.addProperty("Component SN", componentData.get(3));
-            component.addProperty("Issuer", componentData.get(4));
-            component.addProperty("Component status", componentData.get(5));
+            component.addProperty("Component SN", componentData.get(componentDataPosition4));
+            component.addProperty("Issuer", componentData.get(componentDataPosition5));
+            component.addProperty("Component status", componentData.get(componentDataPosition6));
             components.add(component);
         }
         systemData.add("Components", components);
@@ -410,7 +413,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     }
                 }
             }
-            log.info("Component failures: " + componentFailureString.toString());
+            log.info("Component failures: " + componentFailureString);
             for (ArrayList<Object> issuerAndComponent : chainComponents) {
                 ArrayList<String> componentData = new ArrayList<String>();
                 String issuer = (String) issuerAndComponent.get(0);

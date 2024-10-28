@@ -125,8 +125,8 @@ public class PageTestConfiguration {
     public PrivateKey privateKey() {
         try {
             KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
-            PrivateKey dummy_privKey = keyGenerator.generateKeyPair().getPrivate();
-            return dummy_privKey;
+            PrivateKey dummyPrivKey = keyGenerator.generateKeyPair().getPrivate();
+            return dummyPrivKey;
         } catch (GeneralSecurityException e) {
             throw new AssertionError(e);
         }
@@ -140,10 +140,10 @@ public class PageTestConfiguration {
     public KeyStore keyStore() {
         // attempt to create the key store. if that fails, print a message before failing.
         try {
-            KeyStore dummy_keyStore = KeyStore.getInstance("JKS");
-            dummy_keyStore.load(null);
+            KeyStore dummyKeyStore = KeyStore.getInstance("JKS");
+            dummyKeyStore.load(null);
 
-            return dummy_keyStore;
+            return dummyKeyStore;
         } catch (Exception ex) {
             System.out.println("\nEncountered error while creating a fake (blank) key store for testing");
             throw new BeanInitializationException(ex.getMessage(), ex);

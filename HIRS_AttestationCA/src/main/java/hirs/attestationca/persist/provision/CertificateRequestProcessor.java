@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.provision;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
@@ -161,15 +160,13 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                             attestationCertificate);
                     byte[] derEncodedLdevidCertificate = ProvisionUtils.getDerEncodedCertificate(
                             ldevidCertificate);
+                    String pemEncodedAttestationCertificate = ProvisionUtils.getPemEncodedCertificate(
+                            attestationCertificate);
+                    String pemEncodedLdevidCertificate = ProvisionUtils.getPemEncodedCertificate(
+                            ldevidCertificate);
 
                     // We validated the nonce and made use of the identity claim so state can be deleted
                     tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
-
-                    // Package the signed certificates into a response
-                    ByteString certificateBytes = ByteString
-                            .copyFrom(derEncodedAttestationCertificate);
-                    ByteString ldevidCertificateBytes = ByteString
-                            .copyFrom(derEncodedLdevidCertificate);
 
                     boolean generateAtt = saveAttestationCertificate(certificateRepository,
                             derEncodedAttestationCertificate,
@@ -181,10 +178,10 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
                             newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
                     if (generateAtt) {
-                        builder = builder.setCertificate(certificateBytes);
+                        builder = builder.setCertificate(pemEncodedAttestationCertificate);
                     }
                     if (generateLDevID) {
-                        builder = builder.setLdevidCertificate(ldevidCertificateBytes);
+                        builder = builder.setLdevidCertificate(pemEncodedLdevidCertificate);
                     }
                     ProvisionerTpm2.CertificateResponse response = builder.build();
 
@@ -192,13 +189,12 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                 } else {
                     byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
                             attestationCertificate);
-
+                    String pemEncodedAttestationCertificate = ProvisionUtils.getPemEncodedCertificate(
+                            attestationCertificate);
+ 
                     // We validated the nonce and made use of the identity claim so state can be deleted
                     tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
 
-                    // Package the signed certificates into a response
-                    ByteString certificateBytes = ByteString
-                            .copyFrom(derEncodedAttestationCertificate);
                     ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
                             newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
 
@@ -206,7 +202,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                             derEncodedAttestationCertificate,
                             endorsementCredential, platformCredentials, device, false);
                     if (generateAtt) {
-                        builder = builder.setCertificate(certificateBytes);
+                        builder = builder.setCertificate(pemEncodedAttestationCertificate);
                     }
                     ProvisionerTpm2.CertificateResponse response = builder.build();
 

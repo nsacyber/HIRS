@@ -3,11 +3,11 @@ package hirs.attestationca.portal.datatables;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Java representation of a jQuery DataTables Column.
@@ -15,7 +15,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@NoArgsConstructor
+@ToString
 public class Column {
 
     /**
@@ -64,14 +65,4 @@ public class Column {
         this.search.setValue(searchValue);
     }
 
-    @Override
-    public String toString() {
-        return "Column{"
-                + "data='" + data + '\''
-                + ", name='" + name + '\''
-                + ", searchable=" + searchable
-                + ", orderable=" + orderable
-                + ", search=" + search
-                + '}';
-    }
 }

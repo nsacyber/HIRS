@@ -7,7 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 //@EnableAutoConfiguration
 @Log4j2
-public class HIRSApplication {//extends SpringBootServletInitializer {
+public class HIRSApplication {
+    //extends SpringBootServletInitializer {
 //      private static final Logger LOGGER = LogManager.getLogger(HIRSApplication.class);
 //    @Override
 //    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
@@ -22,7 +23,10 @@ public class HIRSApplication {//extends SpringBootServletInitializer {
 //        appServlet.setLoadOnStartup(1);
 //    }
 
-    public static void main(String[] args) {
+    /**
+     * @param args
+     */
+    public static void main(final String[] args) {
 //        SpringApplication springApplication = new SpringApplication(HIRSApplication.class);
 //        springApplication.setDefaultProperties(Collections.singletonMap("server.servlet.context-path",
 //        "/portal"));

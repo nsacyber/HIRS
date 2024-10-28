@@ -80,6 +80,11 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     @Autowired
     private Environment environment;
 
+    /**
+     * Entity manager factory bean.
+     *
+     * @return a local container entity manager factory bean
+     */
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         final LocalContainerEntityManagerFactoryBean entityManagerBean =
@@ -94,6 +99,11 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         return entityManagerBean;
     }
 
+    /**
+     * Data source bean.
+     *
+     * @return a data source
+     */
     @Bean
     public DataSource dataSource() {
         final DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -213,6 +223,9 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         }
     }
 
+    /**
+     * @return
+     */
     @Bean
     public PlatformTransactionManager transactionManager() {
         final JpaTransactionManager transactionManager = new JpaTransactionManager();
@@ -220,6 +233,9 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         return transactionManager;
     }
 
+    /**
+     * @return
+     */
     @Bean
     public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
@@ -258,6 +274,11 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
 //    }
 
 
+    /**
+     * Configures the default servlet handling.
+     *
+     * @param configurer default servlet handler configurer.
+     */
     @Override
     public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
         configurer.enable();

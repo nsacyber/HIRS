@@ -39,16 +39,16 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYS
  * TCG_PCR_EVENT is used when the Event log uses the SHA1 Format as described in the
  * TCG Platform Firmware Profile (PFP) specification.
  * typedef struct {
- * TCG_PCRINDEX  PCRIndex;  //PCR Index value that either
- * //matches the PCRIndex of a
- * //previous extend operation or
- * //indicates that this Event Log
- * //entry is not associated with
- * //an extend operation
- * TCG_EVENTTYPE EventType; //See Log event types defined in toStrng()
- * TCG_DIGEST    digest;    //The hash of the event data
- * UINT32        EventSize; //Size of the event data
- * UINT8         Event[EventSize];  //The event data
+ * .     TCG_PCRINDEX  PCRIndex;  //PCR Index value that either
+ * .                              //matches the PCRIndex of a
+ * .                              //previous extend operation or
+ * .                              //indicates that this Event Log
+ * .                              //entry is not associated with
+ * .                              //an extend operation
+ * .     TCG_EVENTTYPE EventType; //See Log event types defined in toStrng()
+ * .     TCG_DIGEST    digest;    //The hash of the event data
+ * .     UINT32        EventSize; //Size of the event data
+ * .     UINT8         Event[EventSize];  //The event data
  * } TCG_PCR_EVENT;
  */
 @Log4j2
@@ -126,6 +126,16 @@ public class TpmPcrEvent {
      */
     @Getter
     private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
+
+    /**
+     * Track status of pci.ids
+     * This is only used for events that access the pci.ids file.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that uses this file,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String pciidsFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * Constructor.
@@ -438,6 +448,7 @@ public class TpmPcrEvent {
                     specVersion = noAction.getSpecVersion();
                     specErrataVersion = noAction.getSpecErrataVersion();
                 }
+                pciidsFileStatus = noAction.getPciidsFileStatus();
                 break;
             case EvConstants.EV_SEPARATOR:
                 if (EvPostCode.isAscii(content)) {
@@ -523,7 +534,9 @@ public class TpmPcrEvent {
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
-                description += "Event Content:\n" + new EvEfiSpdmDeviceSecurityEvent(content).toString();
+                EvEfiSpdmDeviceSecurityEvent efiSpdmDse = new EvEfiSpdmDeviceSecurityEvent(content);
+                description += "Event Content:\n" + efiSpdmDse.toString();
+                pciidsFileStatus = efiSpdmDse.getPciidsFileStatus();
                 break;
             default:
                 description += " Unknown Event found" + "\n";

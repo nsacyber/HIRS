@@ -129,6 +129,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
     /**
      * Archives test cert that is in db by setting the archive flag.
      *
+     * @param cert certificate.
      * @throws Exception if an exception occurs
      */
     private void archiveTestCert(final Certificate cert) throws Exception {

@@ -1,6 +1,8 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
+import hirs.utils.PciIds;
+import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
 import java.util.List;
@@ -13,28 +15,28 @@ import static hirs.utils.PciIds.translateVendor;
  * Class to process the DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT event per PFP.
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT {
- * UINT16       Version;
- * UINT16       Length;
- * UINT16       VendorId;
- * UINT16       DeviceId;
- * UINT16       RevisionId;
- * UINT16       ClassCode[3];
- * UINT16       SubsystemVendorId;
- * UINT16       SubsystemId;
+ * .    UINT16       Version;
+ * .    UINT16       Length;
+ * .    UINT16       VendorId;
+ * .    UINT16       DeviceId;
+ * .    UINT16       RevisionId;
+ * .    UINT16       ClassCode[3];
+ * .    UINT16       SubsystemVendorId;
+ * .    UINT16       SubsystemId;
  * <p>
  * The following fields are defined by the PCI Express Base Specification rev4.0 v1.0.
- * VendorId
- * DeviceId
- * RevisionId
- * ClassCode
- * SubsystemVendorId
- * SubsystemId
+ * .  VendorId
+ * .  DeviceId
+ * .  RevisionId
+ * .  ClassCode
+ * .  SubsystemVendorId
+ * .  SubsystemId
  * Vendor id and device id are registered to specific manufacturers.
- * https://admin.pci-ids.ucw.cz/read/PC/
- * Ex. vendor id 8086 and device id 0b60: https://admin.pci-ids.ucw.cz/read/PC/8086/0b60
+ * .  https://admin.pci-ids.ucw.cz/read/PC/
+ * .  Ex. vendor id 8086 and device id 0b60: https://admin.pci-ids.ucw.cz/read/PC/8086/0b60
  * Class code can be looked up on the web.
- * https://admin.pci-ids.ucw.cz/read/PD/
- * The revision ID is controlled by the vendor and cannot be looked up.
+ * .  https://admin.pci-ids.ucw.cz/read/PD/
+ * .  The revision ID is controlled by the vendor and cannot be looked up.
  */
 public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDeviceContext {
 
@@ -68,6 +70,12 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
      */
     @Getter
     private String subsystemId = "";
+
+    /**
+     * Track status of pci.ids file.
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
     /**
      * DeviceSecurityEventDataPciContext Constructor.
@@ -122,6 +130,13 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
         dSEDpciContextInfo += super.toString();
         dSEDpciContextInfo += "      Device Type = PCI\n";
         dSEDpciContextInfo += "      Vendor = " + translateVendor(vendorId) + "\n";
+
+        // the above call to translateVendor() is the first location in this class where
+        // a function in pciids class is called
+        // thus, if pciids db has not previously been set up, this call will trigger that setup
+        // the setup will look for the pciids file; need to check and store the status of that file
+        pciidsFileStatus = PciIds.getPciidsFileStatus();
+
         dSEDpciContextInfo += "      Device = " + translateDevice(vendorId, deviceId) + "\n";
         dSEDpciContextInfo += "      RevisionID = " + revisionId + "\n";
 
@@ -133,7 +148,7 @@ public class DeviceSecurityEventDataPciContext extends DeviceSecurityEventDataDe
             dSEDpciContextInfo += "        Subclass = " + classCodeList.get(1) + "\n";
             dSEDpciContextInfo += "        Programming Interface = " + classCodeList.get(2) + "\n";
         } else {
-            dSEDpciContextInfo += " ** Class code could not be determined **";
+            dSEDpciContextInfo += "        (Class code could not be determined)\n";
         }
         dSEDpciContextInfo += "      SubsystemVendor = " + translateVendor(subsystemVendorId) + "\n";
         dSEDpciContextInfo += "      Subsystem = " + translateDevice(subsystemVendorId, subsystemId) + "\n";

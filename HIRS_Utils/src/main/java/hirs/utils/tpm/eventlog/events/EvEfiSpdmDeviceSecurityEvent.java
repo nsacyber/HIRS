@@ -2,23 +2,24 @@ package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import lombok.Getter;
 
 import java.nio.charset.StandardCharsets;
 
 /**
  * Abstract class to process any SPDM event that is solely a DEVICE_SECURITY_EVENT_DATA or
  * DEVICE_SECURITY_EVENT_DATA2. The event field MUST be a
- *    1) DEVICE_SECURITY_EVENT_DATA or
- *    2) DEVICE_SECURITY_EVENT_DATA2
+ * .   1) DEVICE_SECURITY_EVENT_DATA or
+ * .   2) DEVICE_SECURITY_EVENT_DATA2
  * DEVICE_SECURITY_EVENT_DATA has 2 structures:
- *    1) DEVICE_SECURITY_EVENT_DATA_HEADER
- *    2) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures
- *       a) DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT
- *       b) DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT
+ * .   1) DEVICE_SECURITY_EVENT_DATA_HEADER
+ * .   2) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures
+ * .      a) DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT
+ * .      b) DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT
  * DEVICE_SECURITY_EVENT_DATA2 has 3 structures:
- *    1) DEVICE_SECURITY_EVENT_DATA_HEADER2
- *    2) DEVICE_SECURITY_EVENT_DATA_SUB_HEADER
- *    3) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures (see above)
+ * .   1) DEVICE_SECURITY_EVENT_DATA_HEADER2
+ * .   2) DEVICE_SECURITY_EVENT_DATA_SUB_HEADER
+ * .   3) DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT, which has 2 structures (see above)
  * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
  * NUL-terminated, per PFP. The only currently defined Signature is "SPDM Device Sec",
  * which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2.
@@ -44,6 +45,16 @@ public class EvEfiSpdmDeviceSecurityEvent {
      * Human-readable description of the data within this DEVICE_SECURITY_EVENT_DATA/..DATA2 event.
      */
     private String spdmInfo = "";
+
+    /**
+     * Track status of pci.ids
+     * This is only used for events that access the pci.ids file.
+     * Default is normal status (normal status is from-filesystem).
+     * Status will only change IF this is an event that uses this file,
+     * and if that event causes a different status.
+     */
+    @Getter
+    private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * EvEfiSpdmFirmwareBlob constructor.
@@ -72,6 +83,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
             if (dsedVersion.equals("0200")) {
                 dsed = new DeviceSecurityEventData2(eventData);
                 spdmInfo += dsed.toString();
+                pciidsFileStatus = dsed.getPciidsFileStatus();
             } else {
                 spdmInfo += "    Incompatible version for DeviceSecurityEventData2: " + dsedVersion + "\n";
             }
@@ -82,6 +94,7 @@ public class EvEfiSpdmDeviceSecurityEvent {
             if (dsedVersion.equals("0100")) {
                 dsed = new DeviceSecurityEventData(eventData);
                 spdmInfo += dsed.toString();
+                pciidsFileStatus = dsed.getPciidsFileStatus();
             } else {
                 spdmInfo += "    Incompatible version for DeviceSecurityEventData: " + dsedVersion + "\n";
             }

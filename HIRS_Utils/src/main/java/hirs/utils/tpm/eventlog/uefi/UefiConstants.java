@@ -273,9 +273,9 @@ public final class UefiConstants {
     public static final String FILESTATUS_FROM_FILESYSTEM = "fileFromFilesystem";
     /**
      * file status, where file was not found on local machine, so file from code was used.
-     * For instance, if vendor-table.json is not found in filesystem at location
-     * /etc/hirs/aca/default-properties/, it will be grabbed from code at
-     * HIRS_AttestationCA/src/main/resources/.
+     * .  For instance, if vendor-table.json is not found in filesystem at location
+     * .  /etc/hirs/aca/default-properties/, it will be grabbed from code at
+     * .  HIRS_AttestationCA/src/main/resources/.
      */
     public static final String FILESTATUS_FROM_CODE = "fileFromCode";
     /**

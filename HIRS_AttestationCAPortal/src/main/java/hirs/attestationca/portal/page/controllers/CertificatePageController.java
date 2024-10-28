@@ -110,6 +110,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @param endorsementCredentialRepository the endorsement credential manager
      * @param issuedCertificateRepository     the issued certificate manager
      * @param caCredentialRepository          the ca credential manager
+     * @param iDevIDCertificateRepository     the IDevID certificate repository
      * @param acaCertificate                  the ACA's X509 certificate
      */
     @Autowired
@@ -255,11 +256,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
     public DataTableResponse<? extends Certificate> getTableData(
             @PathVariable("certificateType") final String certificateType,
             final DataTableInput input) {
-        log.debug("Handling list request: " + input);
+        log.debug("Handling list request: {}", input);
 
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: " + orderColumnName);
+        log.debug("Ordering on column: {}", orderColumnName);
 
         // check that the alert is not archived and that it is in the specified report
         CriteriaModifier criteriaModifier = new CriteriaModifier() {
@@ -275,9 +276,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 // for getting the device (e.g. device name).
                 // use left join, since device may be null. Query will return all
                 // Certs of this type, whether it has a Device or not (device field may be null)
-                if (hasDeviceTableToJoin(certificateType)) {
-//                    criteria.createAlias("device", "device", JoinType.LEFT_OUTER_JOIN);
-                }
+                // if (hasDeviceTableToJoin(certificateType)) {
+                //   criteria.createAlias("device", "device", JoinType.LEFT_OUTER_JOIN);
+                //}
             }
         };
 
@@ -305,7 +306,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             if (!records.isEmpty()) {
                 // loop all the platform certificates
                 for (int i = 0; i < records.size(); i++) {
-                    PlatformCredential pc = (PlatformCredential) records.get(i);
+                    PlatformCredential pc = records.get(i);
                     // find the EC using the PC's "holder serial number"
                     associatedEC = this.endorsementCredentialRepository
                             .findBySerialNumber(pc.getHolderSerialNumber());
@@ -525,11 +526,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 // send a 404 error when invalid certificate
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
-                StringBuilder fileName = new StringBuilder("filename=\"");
-                fileName.append(getCertificateClass(certificateType).getSimpleName());
-                fileName.append("_");
-                fileName.append(certificate.getSerialNumber());
-                fileName.append(".cer\"");
+                String fileName = "filename=\"" + getCertificateClass(certificateType).getSimpleName()
+                        + "_"
+                        + certificate.getSerialNumber()
+                        + ".cer\"";
 
                 // Set filename for download.
                 response.setHeader("Content-Disposition", "attachment;" + fileName);
@@ -727,11 +727,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * table, false otherwise.
      */
     private boolean hasDeviceTableToJoin(final String certificateType) {
-        boolean hasDevice = true;
+        boolean hasDevice = !certificateType.equals(TRUSTCHAIN);
         // Trust_Chain Credential do not contain the device table to join.
-        if (certificateType.equals(TRUSTCHAIN)) {
-            hasDevice = false;
-        }
         return hasDevice;
     }
 
@@ -806,7 +803,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             final String certificateType,
             final MultipartFile file,
             final PageMessages messages) {
-        log.info("Received File of Size: " + file.getSize());
+        log.info("Received File of Size: {}", file.getSize());
 
         byte[] fileBytes;
         String fileName = file.getOriginalFilename();
@@ -936,7 +933,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                                 return;
                             }
                         }
-                    } /**else {
+                    } /*else {
                      // this is a delta, check if the holder exists.
                      PlatformCredential holderPC = PlatformCredential
                      .select(certificateManager)
@@ -953,7 +950,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                      LOGGER.error(failMessage);
                      return;
                      }
-                     }**/
+                     }*/
                 }
 
                 this.certificateRepository.save(certificate);

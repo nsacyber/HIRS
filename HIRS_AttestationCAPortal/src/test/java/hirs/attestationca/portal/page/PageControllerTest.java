@@ -182,7 +182,7 @@ public abstract class PageControllerTest {
     /**
      * Create page path (add pre-prefix and prefix path).
      *
-     * @return
+     * @return the page path
      */
     public String getPagePath() {
         String pagePath = PRE_PREFIX_PATH + page.getPrefixPath() + page.getViewName();

@@ -76,8 +76,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @param referenceDigestValueRepository this is the reference event manager
      */
     @Autowired
-    public ReferenceManifestPageController(final ReferenceManifestRepository referenceManifestRepository,
-                                           final ReferenceDigestValueRepository referenceDigestValueRepository) {
+    public ReferenceManifestPageController(final ReferenceManifestRepository
+                                                   referenceManifestRepository,
+                                           final ReferenceDigestValueRepository
+                                                   referenceDigestValueRepository) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
@@ -111,11 +113,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             method = RequestMethod.GET)
     public DataTableResponse<ReferenceManifest> getTableData(
             @Valid final DataTableInput input) {
-        log.debug("Handling request for summary list: " + input);
+        log.debug("Handling request for summary list: {}", input);
 
         String orderColumnName = input.getOrderColumnName();
-        log.info("Ordering on column: " + orderColumnName);
-        log.info("Querying with the following dataTableInput: " + input);
+        log.info("Ordering on column: {}", orderColumnName);
+        log.info("Querying with the following dataTableInput: {}", input);
 
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
@@ -136,7 +138,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         records.setRecordsFiltered(referenceManifestRepository.findByArchiveFlag(false).size());
 
-        log.debug("Returning list of size: " + records.size());
+        log.debug("Returning list of size: {}", records.size());
         return new DataTableResponse<>(records, input);
     }
 
@@ -161,7 +163,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         Matcher matcher;
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
-        log.info(String.format("Processing %s uploaded files", files.length));
+        log.info("Processing {} uploaded files", files.length);
 
         // loop through the files
         for (MultipartFile file : files) {
@@ -177,20 +179,22 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             if (isBaseRim || isSupportRim) {
                 parseRIM(file, isSupportRim, messages, baseRims, supportRims);
             } else {
-                String errorString = "The file extension of " + fileName + " was not recognized." +
-                        " Base RIMs support the extension \".swidtag\", and support RIMs support " +
-                        "\".rimpcr\", \".rimel\", \".bin\", and \".log\". " +
-                        "Please verify your upload and retry.";
-                log.error("File extension in " + fileName + " not recognized as base or support RIM.");
+                String errorString = "The file extension of " + fileName + " was not recognized."
+                        + " Base RIMs support the extension \".swidtag\", and support RIMs support "
+                        + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
+                        + "Please verify your upload and retry.";
+                log.error("File extension in {} not recognized as base or support RIM.", fileName);
                 messages.addError(errorString);
             }
         }
-        baseRims.stream().forEach((rim) -> {
-            log.info(String.format("Storing swidtag %s", rim.getFileName()));
+
+        baseRims.forEach((rim) -> {
+            log.info("Storing swidtag {}", rim.getFileName());
             this.referenceManifestRepository.save(rim);
         });
-        supportRims.stream().forEach((rim) -> {
-            log.info(String.format("Storing event log %s", rim.getFileName()));
+
+        supportRims.forEach((rim) -> {
+            log.info("Storing event log {}", rim.getFileName());
             this.referenceManifestRepository.save(rim);
         });
 
@@ -225,7 +229,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public RedirectView delete(@RequestParam final String id,
                                final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete " + id);
+        log.info("Handling request to delete {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -270,7 +274,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     public void download(@RequestParam final String id,
                          final HttpServletResponse response)
             throws IOException {
-        log.info("Handling RIM request to download " + id);
+        log.info("Handling RIM request to download {}", id);
 
         try {
             ReferenceManifest referenceManifest = getRimFromDb(id);
@@ -359,7 +363,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      *
      * @param id of the RIM
      * @return the associated RIM from the DB
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if issues arise from attempting to retrieve the rim from the database
      */
     private ReferenceManifest getRimFromDb(final String id) throws IllegalArgumentException {
         UUID uuid = UUID.fromString(id);
@@ -522,11 +526,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
                             this.referenceDigestValueRepository.save(newRdv);
                         }
-                    } catch (CertificateException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchAlgorithmException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
+                    } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
                     }
                 } else {

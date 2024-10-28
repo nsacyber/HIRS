@@ -299,7 +299,8 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         // Check component identifier
         assertNotNull(initialData.get("componentsIdentifier"));
         List<?> obj = (List<?>) initialData.get("componentsIdentifier");
-        assertEquals(7, obj.size());
+        final int expectedSize = 7;
+        assertEquals(expectedSize, obj.size());
 
         // Check platform properties
         assertNotNull(initialData.get("platformProperties"));
@@ -338,7 +339,8 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         // Check component identifier
         assertNotNull(initialData.get("componentsIdentifier"));
         List<?> obj = (List<?>) initialData.get("componentsIdentifier");
-        assertEquals(14, obj.size());
+        final int expectedSize = 14;
+        assertEquals(expectedSize, obj.size());
 
         // Check platform properties
         assertNotNull(initialData.get("platformProperties"));

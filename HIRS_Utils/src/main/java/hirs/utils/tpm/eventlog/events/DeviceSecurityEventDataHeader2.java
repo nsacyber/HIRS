@@ -11,17 +11,17 @@ import lombok.Getter;
  * HEADERS defined by PFP v1.06 Rev 52:
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER2 {
- * UINT8                           Signature[16];
- * UINT16                          Version;
- * UINT8                           AuthState;
- * UINT8                           Reserved
- * UINT32                          Length;
- * UINT32                          DeviceType;
- * UINT32                          SubHeaderType;
- * UINT32                          SubHeaderLength;
- * UINT64                          SubHeaderUID;
- * UINT64                          DevicePathLength;
- * UNIT8                           DevicePath[DevicePathLength]
+ * .    UINT8                           Signature[16];
+ * .    UINT16                          Version;
+ * .    UINT8                           AuthState;
+ * .    UINT8                           Reserved
+ * .    UINT32                          Length;
+ * .    UINT32                          DeviceType;
+ * .    UINT32                          SubHeaderType;
+ * .    UINT32                          SubHeaderLength;
+ * .    UINT64                          SubHeaderUID;
+ * .    UINT64                          DevicePathLength;
+ * .    UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER2;
  * <p>
  */

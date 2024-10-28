@@ -42,8 +42,9 @@ public final class CertificateStringMapBuilder {
     /**
      * Returns the general information.
      *
-     * @param certificate           certificate to get the general information.
-     * @param certificateRepository the certificate repository for retrieving certs.
+     * @param certificate             certificate to get the general information.
+     * @param caCertificateRepository CA Certificate repository
+     * @param certificateRepository   the certificate repository for retrieving certs.
      * @return a hash map with the general certificate information.
      */
     public static HashMap<String, String> getGeneralCertificateInfo(
@@ -145,8 +146,9 @@ public final class CertificateStringMapBuilder {
     /**
      * Recursive function that check if all the certificate chain is present.
      *
-     * @param certificate           certificate to get the issuer
-     * @param certificateRepository the certificate repository for retrieving certs.
+     * @param certificate            certificate to get the issuer
+     * @param certificateRepository  the certificate repository for retrieving certs.
+     * @param caCredentialRepository CA Certificate repository
      * @return a boolean indicating if it has the full chain or not.
      */
     public static Certificate containsAllChain(
@@ -163,8 +165,8 @@ public final class CertificateStringMapBuilder {
             skiCA = caCredentialRepository.findBySubjectKeyIdStringAndArchiveFlag(
                     certificate.getAuthorityKeyIdentifier(), false);
         } else {
-            log.error(String.format("Certificate (%s) for %s has no authority key identifier.",
-                    certificate.getClass().toString(), certificate.getSubject()));
+            log.error("Certificate ({}) for {} has no authority key identifier.", certificate.getClass(),
+                    certificate.getSubject());
         }
 
         if (skiCA == null) {
@@ -207,12 +209,15 @@ public final class CertificateStringMapBuilder {
      * Returns the Certificate Authority information.
      *
      * @param uuid                    ID for the certificate.
-     * @param caCertificateRepository the certificate manager for retrieving certs.
+     * @param certificateRepository   the certificate manager for retrieving certs.
+     * @param caCertificateRepository CA Certificate repository
      * @return a hash map with the endorsement certificate information.
      */
-    public static HashMap<String, String> getCertificateAuthorityInformation(final UUID uuid,
-                                                                             final CertificateRepository certificateRepository,
-                                                                             final CACredentialRepository caCertificateRepository) {
+    public static HashMap<String, String>
+    getCertificateAuthorityInformation(final UUID uuid,
+                                       final CertificateRepository certificateRepository,
+                                       final CACredentialRepository caCertificateRepository) {
+
         if (!caCertificateRepository.existsById(uuid)) {
             return new HashMap<>();
         }
@@ -265,13 +270,15 @@ public final class CertificateStringMapBuilder {
     /**
      * Returns the endorsement credential information.
      *
-     * @param uuid                  ID for the certificate.
-     * @param certificateRepository the certificate repository for retrieving certs.
+     * @param uuid                    ID for the certificate.
+     * @param certificateRepository   the certificate repository for retrieving certs.
+     * @param caCertificateRepository CA Certificate repository
      * @return a hash map with the endorsement certificate information.
      */
-    public static HashMap<String, String> getEndorsementInformation(final UUID uuid,
-                                                                    final CertificateRepository certificateRepository,
-                                                                    final CACredentialRepository caCertificateRepository) {
+    public static HashMap<String, String> getEndorsementInformation(
+            final UUID uuid,
+            final CertificateRepository certificateRepository,
+            final CACredentialRepository caCertificateRepository) {
         HashMap<String, String> data = new HashMap<>();
         EndorsementCredential certificate =
                 (EndorsementCredential) certificateRepository.getCertificate(uuid);
@@ -309,16 +316,21 @@ public final class CertificateStringMapBuilder {
     /**
      * Returns the Platform credential information.
      *
-     * @param uuid                  ID for the certificate.
-     * @param certificateRepository the certificate manager for retrieving certs.
+     * @param uuid                      ID for the certificate.
+     * @param certificateRepository     the certificate manager for retrieving certs.
+     * @param componentResultRepository component result repository.
+     * @param caCertificateRepository   CA credential repository.
      * @return a hash map with the endorsement certificate information.
      * @throws IOException              when parsing the certificate
      * @throws IllegalArgumentException invalid argument on parsing the certificate
      */
     public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
-                                                                 final CertificateRepository certificateRepository,
-                                                                 final ComponentResultRepository componentResultRepository,
-                                                                 final CACredentialRepository caCertificateRepository)
+                                                                 final CertificateRepository
+                                                                         certificateRepository,
+                                                                 final ComponentResultRepository
+                                                                         componentResultRepository,
+                                                                 final CACredentialRepository
+                                                                         caCertificateRepository)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         PlatformCredential certificate = (PlatformCredential) certificateRepository.getCertificate(uuid);
@@ -470,13 +482,16 @@ public final class CertificateStringMapBuilder {
     /**
      * Returns the Issued Attestation Certificate information.
      *
-     * @param uuid                  ID for the certificate.
-     * @param certificateRepository the certificate manager for retrieving certs.
+     * @param uuid                   ID for the certificate.
+     * @param certificateRepository  the certificate manager for retrieving certs.
+     * @param caCredentialRepository CA Credential repository.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getIssuedInformation(final UUID uuid,
-                                                               final CertificateRepository certificateRepository,
-                                                               final CACredentialRepository caCredentialRepository) {
+                                                               final CertificateRepository
+                                                                       certificateRepository,
+                                                               final CACredentialRepository
+                                                                       caCredentialRepository) {
         HashMap<String, String> data = new HashMap<>();
         IssuedAttestationCertificate certificate =
                 (IssuedAttestationCertificate) certificateRepository.getCertificate(uuid);
@@ -544,13 +559,16 @@ public final class CertificateStringMapBuilder {
     /**
      * Returns the IDevID Certificate information.
      *
-     * @param uuid                  ID for the certificate.
-     * @param certificateRepository the certificate manager for retrieving certs.
+     * @param uuid                   ID for the certificate.
+     * @param certificateRepository  the certificate manager for retrieving certs.
+     * @param caCredentialRepository CA Credential repository.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getIdevidInformation(final UUID uuid,
-                                                               final CertificateRepository certificateRepository,
-                                                               final CACredentialRepository caCredentialRepository) {
+                                                               final CertificateRepository
+                                                                       certificateRepository,
+                                                               final CACredentialRepository
+                                                                       caCredentialRepository) {
 
         HashMap<String, String> data = new HashMap<>();
         IDevIDCertificate certificate = (IDevIDCertificate) certificateRepository.getCertificate(uuid);
@@ -577,7 +595,8 @@ public final class CertificateStringMapBuilder {
                 if (certificate.hasTCGOIDs()) {
                     if (hwSerialStr.contains(":")) {
                         String[] hwSerialArray = hwSerialStr.split(":");
-                        if (hwSerialArray.length >= 3) {
+                        final int minArrayLength = 3;
+                        if (hwSerialArray.length >= minArrayLength) {
                             data.put("tcgTpmManufacturer", hwSerialArray[0]);
                             data.put("ekAuthorityKeyIdentifier", hwSerialArray[1]);
                             data.put("ekCertificateSerialNumber", hwSerialArray[2]);
@@ -593,7 +612,9 @@ public final class CertificateStringMapBuilder {
                     String hwSerialToAdd = hwSerialStr;
 
                     // Check if hwSerialNum is a printable ASCII string; default to hex otherwise
-                    if (hwSerialStr.chars().allMatch(c -> c > 0x20 && c <= 0x7F)) {
+                    final int minMatchedNum = 0x20;
+                    final int maxMatchedNum = 0x7F;
+                    if (hwSerialStr.chars().allMatch(c -> c > minMatchedNum && c <= maxMatchedNum)) {
                         data.put("hwSerialNum", hwSerialStr);
                     } else {
                         hwSerialToAdd = Hex.toHexString(certificate.getHwSerialNum());

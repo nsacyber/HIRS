@@ -8,19 +8,19 @@ import java.nio.charset.StandardCharsets;
  * Class to process the NV_INDEX_DYNAMIC_EVENT_LOG_DATA per PFP.
  * Per PFP, the first 16 bytes of the structure are a String based identifier (Signature),
  * which are a NULL-terminated ASCII string "NvIndexDynamic".
- * <p>
+ *
  * HEADERS defined by PFP v1.06 Rev 52.
  * Certain fields are common to both ..HEADER and ..HEADER2, and are noted below the structures.
  * <p>
  * typedef struct tdNV_INDEX_DYNAMIC_EVENT_LOG_DATA {
- * BYTE                            Signature[16];
- * UINT16                          Version;
- * UINT8[6]                        Reserved;
- * UINT64                          UID;
- * UINT16                          DescriptionSize;
- * UINT8                           Description[DescriptionSize];
- * UINT16                          DataSize;
- * DEVICE_SECURITY_EVENT_DATA2     Data[DataSize];
+ * .     BYTE                            Signature[16];
+ * .     UINT16                          Version;
+ * .     UINT8[6]                        Reserved;
+ * .     UINT64                          UID;
+ * .     UINT16                          DescriptionSize;
+ * .     UINT8                           Description[DescriptionSize];
+ * .     UINT16                          DataSize;
+ * .     UINT8                           Data[DataSize];
  * } NV_INDEX_DYNAMIC_EVENT_LOG_DATA;
  * <p>
  */
@@ -61,6 +61,7 @@ public class NvIndexDynamicEventLogData {
         nvIndexDynamicInfo += "   Nv Index Dynamic Version = " + nvIndexVersion + "\n";
 
         // 6 bytes of Reserved data
+
         final int uidBytesSize = 8;
         final int eventDataSrcIndex2 = 24;
         byte[] uidBytes = new byte[uidBytesSize];

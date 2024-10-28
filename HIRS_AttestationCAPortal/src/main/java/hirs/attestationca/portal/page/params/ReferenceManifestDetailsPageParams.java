@@ -5,18 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.LinkedHashMap;
 
 /**
  * URL parameters object for the Reference Manifest Details page and controller.
  */
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class ReferenceManifestDetailsPageParams implements PageParams {
 
-    @Getter
-    @Setter
     private String id;
 
     /**
@@ -29,12 +31,5 @@ public class ReferenceManifestDetailsPageParams implements PageParams {
         LinkedHashMap<String, Object> map = new LinkedHashMap<>();
         map.put("id", id);
         return map;
-    }
-
-    @Override
-    public String toString() {
-        return "ReferenceManifestDetailsPageParams{"
-                + "id:' " + id
-                + "}";
     }
 }

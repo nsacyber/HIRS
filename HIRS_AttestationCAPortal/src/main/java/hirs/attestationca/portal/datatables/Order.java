@@ -3,19 +3,20 @@ package hirs.attestationca.portal.datatables;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
- * Represents a column ordering with regards to a jQuery DataTable.
+ * Represents a column ordering in regard to a jQuery DataTable.
  */
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@NoArgsConstructor
+@ToString
 public class Order {
 
 
@@ -53,18 +54,7 @@ public class Order {
      * @return true if ascending order, false otherwise.
      */
     public boolean isAscending() {
-        if (dir.equalsIgnoreCase("asc")) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return "Order{"
-                + "column=" + column
-                + ", dir='" + dir + '\''
-                + '}';
+        return dir.equalsIgnoreCase("asc");
     }
 }
 

@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Log4j2
 public class LombokLoggingController {
 
+    /**
+     * REST endpoint that logs various issues regarding Lombok.
+     *
+     * @return a message that indicates there are logs regarding Lombok that should be looked at
+     */
     @RequestMapping("/HIRS_AttestationCAPortal/portal/lombok")
     public String index() {
         log.trace("A TRACE Message");

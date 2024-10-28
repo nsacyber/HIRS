@@ -98,10 +98,13 @@ public class ReferenceManifestDetailsPageController
      * @throws CertificateException     if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-                                                           final ReferenceManifestRepository referenceManifestRepository,
-                                                           final ReferenceDigestValueRepository referenceDigestValueRepository,
+                                                           final ReferenceManifestRepository
+                                                                   referenceManifestRepository,
+                                                           final ReferenceDigestValueRepository
+                                                                   referenceDigestValueRepository,
                                                            final CertificateRepository certificateRepository,
-                                                           final CACredentialRepository caCertificateRepository)
+                                                           final CACredentialRepository
+                                                                   caCertificateRepository)
             throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
@@ -297,7 +300,7 @@ public class ReferenceManifestDetailsPageController
      * @return list of X509Certificates
      */
     private static List<X509Certificate> convertCACsToX509Certificates(
-            Set<CertificateAuthorityCredential> set)
+            final Set<CertificateAuthorityCredential> set)
             throws IOException {
         ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
         for (CertificateAuthorityCredential cac : set) {

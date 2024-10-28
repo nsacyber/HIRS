@@ -33,7 +33,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
     @Autowired
     private PolicyRepository policyRepository;
 
-    // Policy refers to the settings such as whether to validate endorsement credentials, platform credentials, etc
+    // Policy refers to the settings such as whether to validate endorsement credentials, platform credentials
+    // , etc
     private PolicySettings policy;
 
     /**
@@ -102,7 +103,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
+        setPolicyAllToFalse();
         policyRepository.save(policy);
 
         // perform the mock request
@@ -133,7 +134,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
+        setPolicyAllToFalse();
         policy.setEcValidationEnabled(true);
         policyRepository.save(policy);
 
@@ -188,7 +189,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
+        setPolicyAllToFalse();
         policy.setEcValidationEnabled(true);
         policyRepository.save(policy);
 
@@ -243,8 +244,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
-        setPolicy_PcToTrue();
+        setPolicyAllToFalse();
+        setPolicyPcToTrue();
         policyRepository.save(policy);
 
         // perform the mock request
@@ -298,8 +299,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
-        setPolicy_PcToTrue();
+        setPolicyAllToFalse();
+        setPolicyPcToTrue();
         policyRepository.save(policy);
 
         // perform the mock request
@@ -352,8 +353,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         ResultActions actions;
 
-        setPolicy_AllFalse();
-        setPolicy_PcAttributeToTrue();
+        setPolicyAllToFalse();
+        setPolicyPcAttributeToTrue();
         policyRepository.save(policy);
 
         // perform the mock request
@@ -377,7 +378,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
      * Helper function to set policy member variable back to all false.
      * After this function, can set specific values to true and then need to save policy.
      */
-    private void setPolicy_AllFalse() {
+    private void setPolicyAllToFalse() {
         policy.setEcValidationEnabled(false);
         policy.setPcValidationEnabled(false);
         policy.setPcAttributeValidationEnabled(false);
@@ -388,7 +389,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
      * Helper function to set policy member variable - PC Validation to True
      * Note: to set PC Validation to true, EC Validation must also be true.
      */
-    private void setPolicy_PcToTrue() {
+    private void setPolicyPcToTrue() {
         policy.setEcValidationEnabled(true);
         policy.setPcValidationEnabled(true);
     }
@@ -397,8 +398,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
      * Helper function to set policy member variable - PC Attribute Validation to True
      * Note: to set PC Attribute Validation to true, PC Validation must also be true.
      */
-    private void setPolicy_PcAttributeToTrue() {
-        setPolicy_PcToTrue();
+    private void setPolicyPcAttributeToTrue() {
+        setPolicyPcToTrue();
         policy.setPcAttributeValidationEnabled(true);
     }
 }

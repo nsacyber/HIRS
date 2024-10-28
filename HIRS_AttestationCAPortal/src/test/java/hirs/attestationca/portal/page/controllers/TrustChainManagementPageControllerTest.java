@@ -129,9 +129,9 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
         Certificate cert = uploadTestCert();
 
-        String fileName = "attachment;filename=\"" + "CertificateAuthorityCredential_" +
-                cert.getSerialNumber() +
-                ".cer\"";
+        String fileName = "attachment;filename=\"" + "CertificateAuthorityCredential_"
+                + cert.getSerialNumber()
+                + ".cer\"";
 
         // verify cert file attachment and content
         getMockMvc()
@@ -202,6 +202,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     /**
      * Archives test cert that is in db by setting the archive flag.
      *
+     * @param cert certificate.
      * @throws Exception if an exception occurs
      */
     private void archiveTestCert(final Certificate cert) throws Exception {

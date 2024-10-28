@@ -15,21 +15,21 @@ import java.util.List;
  *
  * <p>
  * typedef union tdDEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK {
- * UINT16                  SpdmVersion;
- * UINT8                   SpdmMeasurementBlockCount;
- * UINT8                   Reserved;
- * UINT32                  SpdmMeasurementHashAlgo;
- * SPDM_MEASUREMENT_BLOCK  SpdmMeasurementBlock[SpdmMeasurementBlockCount];
+ * .     UINT16                  SpdmVersion;
+ * .     UINT8                   SpdmMeasurementBlockCount;
+ * .     UINT8                   Reserved;
+ * .     UINT32                  SpdmMeasurementHashAlgo;
+ * .     SPDM_MEASUREMENT_BLOCK  SpdmMeasurementBlock[SpdmMeasurementBlockCount];
  * } DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK;
  * <p>
  * <p>
  * SpdmMeasurementBlock is an array of SPDM_MEASUREMENT_BLOCKs
- * The size of each block is the same and can be found by either:
- * 1) 4 + SpdmMeasurementBlock MeasurementSize
- * OR
- * 2) 4 + hash length of the hash algorithm found in
- * DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK SpdmMeasurementHashAlgo
- * where 4 is the size of the SpdmMeasurementBlock header
+ * .  The size of each block is the same and can be found by either:
+ * .      1) 4 + SpdmMeasurementBlock MeasurementSize
+ * .      OR
+ * .      2) 4 + hash length of the hash algorithm found in
+ * .             DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK SpdmMeasurementHashAlgo
+ * .      where 4 is the size of the SpdmMeasurementBlock header
  */
 public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends DeviceSecurityEventDataSubHeader {
 

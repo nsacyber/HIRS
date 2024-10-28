@@ -1,11 +1,11 @@
 package hirs.attestationca.portal.datatables;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Represents a jQuery DataTables search parameter.
@@ -13,7 +13,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@NoArgsConstructor
+@ToString
 public class Search {
 
     /**
@@ -37,14 +38,6 @@ public class Search {
      */
     public Search(final String value) {
         this(value, false);
-    }
-
-    @Override
-    public String toString() {
-        return "Search{"
-                + "value='" + value + '\''
-                + ", regex=" + regex
-                + '}';
     }
 }
 
