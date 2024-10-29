@@ -466,8 +466,8 @@ public final class CertificateStringMapBuilder {
      */
     private static HashMap<String, String> convertStringToHash(final String str) {
         HashMap<String, String> map = new HashMap<>();
-        String name = str.substring(0, str.indexOf('{')).trim();
-        String data = str.trim().substring(str.trim().indexOf('{') + 1,
+        String name = str.substring(0, str.indexOf('(')).trim();
+        String data = str.trim().substring(str.trim().indexOf('(') + 1,
                 str.trim().length() - 1);
         // Separate key and value and parse the key
         for (String pair : data.split(",")) {
