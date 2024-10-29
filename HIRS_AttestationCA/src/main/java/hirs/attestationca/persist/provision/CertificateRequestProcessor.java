@@ -167,7 +167,6 @@ public class CertificateRequestProcessor extends AbstractProcessor {
 
                     // We validated the nonce and made use of the identity claim so state can be deleted
                     tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
-
                     boolean generateAtt = saveAttestationCertificate(certificateRepository,
                             derEncodedAttestationCertificate,
                             endorsementCredential, platformCredentials, device, false);
