@@ -15,8 +15,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Plat
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.PciIds;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -36,8 +34,12 @@ import java.util.UUID;
  * information on a web page, as X509 cert classes do not serialize to JSON
  */
 @Log4j2
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CertificateStringMapBuilder {
+    /**
+     * This private constructor was created to silence checkstyle error.
+     */
+    private CertificateStringMapBuilder() {
+    }
 
     /**
      * Returns the general information.

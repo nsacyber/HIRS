@@ -191,7 +191,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                             attestationCertificate);
                     String pemEncodedAttestationCertificate = ProvisionUtils.getPemEncodedCertificate(
                             attestationCertificate);
- 
+
                     // We validated the nonce and made use of the identity claim so state can be deleted
                     tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
 

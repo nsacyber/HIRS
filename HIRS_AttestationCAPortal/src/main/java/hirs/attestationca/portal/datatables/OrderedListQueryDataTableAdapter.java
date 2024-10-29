@@ -5,8 +5,6 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaQuery;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.util.CollectionUtils;
@@ -23,9 +21,14 @@ import java.util.UUID;
  *
  * @param <T> The type of object to query
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Log4j2
 public final class OrderedListQueryDataTableAdapter<T> {
+
+    /**
+     * Private constructor was created to silence checkstyle error.
+     */
+    private OrderedListQueryDataTableAdapter() {
+    }
 
     /**
      * Gets the ordered list of records using a default, no-op criteria modifier.

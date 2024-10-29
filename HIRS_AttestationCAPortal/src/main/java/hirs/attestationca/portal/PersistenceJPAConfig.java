@@ -224,7 +224,9 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     }
 
     /**
-     * @return
+     * Platform Transaction Manager bean.
+     *
+     * @return platform transaction manager bean
      */
     @Bean
     public PlatformTransactionManager transactionManager() {
@@ -234,7 +236,9 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     }
 
     /**
-     * @return
+     * Persistence Exception Translation Post Processor bean.
+     *
+     * @return persistence exception translation post processor bean
      */
     @Bean
     public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
