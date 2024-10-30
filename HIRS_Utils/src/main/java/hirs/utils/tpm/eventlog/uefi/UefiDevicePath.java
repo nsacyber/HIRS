@@ -73,6 +73,22 @@ public class UefiDevicePath {
     }
 
     /**
+     * Converts from a char array to byte array.
+     * Removes the upper byte (typically set to 0) of each char.
+     *
+     * @param data Character array.
+     * @return byte array.
+     */
+    public static byte[] convertChar16tobyteArray(final byte[] data) {
+        byte[] hexdata = new byte[data.length];
+        int j = 0;
+        for (int i = 0; i < data.length; i = i + UefiConstants.SIZE_2) {
+            hexdata[j++] = data[i];
+        }
+        return hexdata;
+    }
+
+    /**
      * Returns the UEFI device subtype.
      *
      * @return uefi subtype
@@ -118,8 +134,8 @@ public class UefiDevicePath {
      * Current types processed include Hardware Device Path, ACPI Device Path,
      * Messaging Device Path, and Media Device Path.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return human-readable string representing the UEFI device path
      * @throws java.io.UnsupportedEncodingException
      */
@@ -127,7 +143,7 @@ public class UefiDevicePath {
         String devInfo = "      ";
         int devPath = path[offset];
         byte unknownSubType = path[offset + UefiConstants.OFFSET_1];
-        switch (path[0 + offset]) {
+        switch (path[offset]) {
             case UefiConstants.DEV_HW:
                 type = "Hardware Device Path";
                 if (devPath == UefiConstants.DEVPATH_HARWARE) {
@@ -182,8 +198,8 @@ public class UefiDevicePath {
     /**
      * processes the ACPI UEFI device subtype.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return acpi device info
      */
     private String acpiSubType(final byte[] path, final int offset) {
@@ -205,8 +221,8 @@ public class UefiDevicePath {
     /**
      * Processes the ACPI short subtype.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return short acpi info.
      */
     private String acpiShortSubType(final byte[] path, final int offset) {
@@ -226,8 +242,8 @@ public class UefiDevicePath {
     /**
      * Processes the PCI subType.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return pci device info.
      */
     private String pciSubType(final byte[] path, final int offset) {
@@ -243,8 +259,8 @@ public class UefiDevicePath {
     /**
      * processes the SATA subtype.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return SATA drive info.
      */
     private String sataSubType(final byte[] path, final int offset) {
@@ -264,8 +280,8 @@ public class UefiDevicePath {
     /**
      * Processes the hard drive subtype.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return hard drive info.
      */
     private String hardDriveSubType(final byte[] path, final int offset) {
@@ -311,8 +327,8 @@ public class UefiDevicePath {
     /**
      * Process the File path subtype.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return file path info.
      */
     private String filePathSubType(final byte[] path, final int offset) {
@@ -336,8 +352,8 @@ public class UefiDevicePath {
      * Vendor-assigned GUID that defines the data that follows.
      * Vendor-defined variable size data.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return vendor device info.
      */
     private String vendorSubType(final byte[] path, final int offset) {
@@ -351,7 +367,7 @@ public class UefiDevicePath {
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, guidData,
                 0, UefiConstants.SIZE_16);
         UefiGuid guid = new UefiGuid(guidData);
-        subType += guid.toString() + " ";
+        subType += guid + " ";
         if (subTypeLength - UefiConstants.SIZE_16 > 0) {
             byte[] vendorData = new byte[subTypeLength - UefiConstants.SIZE_16];
             System.arraycopy(path, UefiConstants.OFFSET_20
@@ -368,8 +384,8 @@ public class UefiDevicePath {
      * Returns USB device info.
      * UEFI Specification, Version 2.8.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return USB device info.
      */
     private String usbSubType(final byte[] path, final int offset) {
@@ -395,8 +411,8 @@ public class UefiDevicePath {
      * See Links to UEFI Related Documents
      * (http://uefi.org/uefi under the headings NVM Express Specification.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return NVM device info.
      */
     private String nvmSubType(final byte[] path, final int offset) {
@@ -420,8 +436,8 @@ public class UefiDevicePath {
      * Only processes the Device type.
      * Status bootHandler pointer, and description String pointer are ignored.
      *
-     * @param path byte array holding the device path.
-     * @param offset
+     * @param path   byte array holding the device path.
+     * @param offset offset
      * @return String that represents the UEFI defined BIOS Device Type.
      */
     private String biosDevicePath(final byte[] path, final int offset) {
@@ -468,8 +484,8 @@ public class UefiDevicePath {
      * PIWG Firmware File Section 10.3.5.6:
      * Contents are defined in the UEFI PI Specification.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return String that represents the PIWG Firmware Volume Path
      */
     private String piwgFirmVolFile(final byte[] path, final int offset) {
@@ -489,8 +505,8 @@ public class UefiDevicePath {
      * PIWG Firmware Volume Section 10.3.5.7:
      * Contents are defined in the UEFI PI Specification.
      *
-     * @param path
-     * @param offset
+     * @param path   path
+     * @param offset offset
      * @return String that represents the PIWG Firmware Volume Path
      */
     private String piwgFirmVolPath(final byte[] path, final int offset) {
@@ -511,21 +527,5 @@ public class UefiDevicePath {
      */
     public String toString() {
         return devPathInfo;
-    }
-
-    /**
-     * Converts from a char array to byte array.
-     * Removes the upper byte (typically set to 0) of each char.
-     *
-     * @param data Character array.
-     * @return byte array.
-     */
-    public static byte[] convertChar16tobyteArray(final byte[] data) {
-        byte[] hexdata = new byte[data.length];
-        int j = 0;
-        for (int i = 0; i < data.length; i = i + UefiConstants.SIZE_2) {
-            hexdata[j++] = data[i];
-        }
-        return hexdata;
     }
 }

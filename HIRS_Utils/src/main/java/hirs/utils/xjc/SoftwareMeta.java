@@ -16,9 +16,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for SoftwareMeta complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="SoftwareMeta">
  *   &lt;complexContent>
@@ -43,14 +43,11 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SoftwareMeta", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 public class SoftwareMeta
-    extends Meta
-{
+        extends Meta {
 
     @XmlAttribute(name = "activationStatus")
     protected String activationStatus;
@@ -85,11 +82,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the activationStatus property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getActivationStatus() {
         return activationStatus;
@@ -97,11 +92,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the activationStatus property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setActivationStatus(String value) {
         this.activationStatus = value;
@@ -109,11 +102,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the channelType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getChannelType() {
         return channelType;
@@ -121,11 +112,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the channelType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setChannelType(String value) {
         this.channelType = value;
@@ -133,11 +122,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the colloquialVersion property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getColloquialVersion() {
         return colloquialVersion;
@@ -145,11 +132,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the colloquialVersion property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setColloquialVersion(String value) {
         this.colloquialVersion = value;
@@ -157,11 +142,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the description property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getDescription() {
         return description;
@@ -169,11 +152,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the description property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setDescription(String value) {
         this.description = value;
@@ -181,11 +162,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the edition property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getEdition() {
         return edition;
@@ -193,11 +172,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the edition property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setEdition(String value) {
         this.edition = value;
@@ -205,11 +182,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the entitlementDataRequired property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
+     *
+     * @return possible object is
+     * {@link Boolean }
      */
     public Boolean isEntitlementDataRequired() {
         return entitlementDataRequired;
@@ -217,11 +192,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the entitlementDataRequired property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Boolean }
      */
     public void setEntitlementDataRequired(Boolean value) {
         this.entitlementDataRequired = value;
@@ -229,11 +202,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the entitlementKey property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getEntitlementKey() {
         return entitlementKey;
@@ -241,11 +212,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the entitlementKey property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setEntitlementKey(String value) {
         this.entitlementKey = value;
@@ -253,11 +222,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the generator property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getGenerator() {
         return generator;
@@ -265,11 +232,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the generator property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setGenerator(String value) {
         this.generator = value;
@@ -277,11 +242,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the persistentId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getPersistentId() {
         return persistentId;
@@ -289,11 +252,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the persistentId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setPersistentId(String value) {
         this.persistentId = value;
@@ -301,11 +262,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the product property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getProduct() {
         return product;
@@ -313,11 +272,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the product property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setProduct(String value) {
         this.product = value;
@@ -325,11 +282,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the productFamily property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getProductFamily() {
         return productFamily;
@@ -337,11 +292,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the productFamily property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setProductFamily(String value) {
         this.productFamily = value;
@@ -349,11 +302,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the revision property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getRevision() {
         return revision;
@@ -361,11 +312,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the revision property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setRevision(String value) {
         this.revision = value;
@@ -373,11 +322,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the summary property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getSummary() {
         return summary;
@@ -385,11 +332,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the summary property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setSummary(String value) {
         this.summary = value;
@@ -397,11 +342,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the unspscCode property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getUnspscCode() {
         return unspscCode;
@@ -409,11 +352,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the unspscCode property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setUnspscCode(String value) {
         this.unspscCode = value;
@@ -421,11 +362,9 @@ public class SoftwareMeta
 
     /**
      * Gets the value of the unspscVersion property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getUnspscVersion() {
         return unspscVersion;
@@ -433,11 +372,9 @@ public class SoftwareMeta
 
     /**
      * Sets the value of the unspscVersion property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setUnspscVersion(String value) {
         this.unspscVersion = value;

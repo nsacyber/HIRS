@@ -8,18 +8,19 @@
 
 package hirs.utils.xjc;
 
-import java.math.BigInteger;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
+import java.math.BigInteger;
+
 
 /**
  * <p>Java class for X509IssuerSerialType complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="X509IssuerSerialType">
  *   &lt;complexContent>
@@ -32,13 +33,11 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "X509IssuerSerialType", propOrder = {
-    "x509IssuerName",
-    "x509SerialNumber"
+        "x509IssuerName",
+        "x509SerialNumber"
 })
 public class X509IssuerSerialType {
 
@@ -49,11 +48,9 @@ public class X509IssuerSerialType {
 
     /**
      * Gets the value of the x509IssuerName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getX509IssuerName() {
         return x509IssuerName;
@@ -61,11 +58,9 @@ public class X509IssuerSerialType {
 
     /**
      * Sets the value of the x509IssuerName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setX509IssuerName(String value) {
         this.x509IssuerName = value;
@@ -73,11 +68,9 @@ public class X509IssuerSerialType {
 
     /**
      * Gets the value of the x509SerialNumber property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @return possible object is
+     * {@link BigInteger }
      */
     public BigInteger getX509SerialNumber() {
         return x509SerialNumber;
@@ -85,11 +78,9 @@ public class X509IssuerSerialType {
 
     /**
      * Sets the value of the x509SerialNumber property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigInteger }
      */
     public void setX509SerialNumber(BigInteger value) {
         this.x509SerialNumber = value;

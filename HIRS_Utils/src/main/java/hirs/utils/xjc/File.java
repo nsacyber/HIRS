@@ -8,18 +8,21 @@
 
 package hirs.utils.xjc;
 
-import java.math.BigInteger;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigInteger;
 
 
 /**
  * <p>Java class for File complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="File">
  *   &lt;complexContent>
@@ -31,66 +34,17 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
+@Setter
+@Getter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "File", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 public class File
-    extends FilesystemItem
-{
+        extends FilesystemItem {
 
     @XmlAttribute(name = "size")
     protected BigInteger size;
+
     @XmlAttribute(name = "version")
     protected String version;
-
-    /**
-     * Gets the value of the size property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
-    public BigInteger getSize() {
-        return size;
-    }
-
-    /**
-     * Sets the value of the size property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
-     */
-    public void setSize(BigInteger value) {
-        this.size = value;
-    }
-
-    /**
-     * Gets the value of the version property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getVersion() {
-        return version;
-    }
-
-    /**
-     * Sets the value of the version property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setVersion(String value) {
-        this.version = value;
-    }
-
 }

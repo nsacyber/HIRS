@@ -28,39 +28,37 @@ import java.util.List;
 public final class PciIds {
 
     /**
-     * Track status of pciids file.
-     */
-    @Getter
-    private static String pciidsFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
-
-    /**
-     * Name of pciids file in code.
-     */
-    private static final String PCIIDS_FILENAME = "/pci.ids";
-
-    /**
      * This pci ids file can be in different places on different distributions.
-     *    Fedora/RHEL/Rocky/CentOS: /usr/share/hwdata/pci.ids
-     *    Debian/Ubuntu: /usr/share/misc/pci.ids
+     * Fedora/RHEL/Rocky/CentOS: /usr/share/hwdata/pci.ids
+     * Debian/Ubuntu: /usr/share/misc/pci.ids
      * If the file is not found on the system (such as with Windows systems),
      * the file will have to be accessed from code.
      */
     public static final List<String> PCI_IDS_PATH =
             Collections.unmodifiableList(new ArrayList<>() {
                 private static final long serialVersionUID = 1L;
+
                 {
                     add("/usr/share/hwdata/pci.ids");
                     add("/usr/share/misc/pci.ids");
                     add("/tmp/pci.ids");
                 }
             });
-
     /**
      * The PCI IDs Database object.
      * This only needs to be loaded one time.
      * The pci ids library protects the data inside the object by making it immutable.
      */
     public static final PciIdsDatabase DB = new PciIdsDatabase();
+    /**
+     * Name of pciids file in code.
+     */
+    private static final String PCIIDS_FILENAME = "/pci.ids";
+    /**
+     * Track status of pciids file.
+     */
+    @Getter
+    private static String pciidsFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
     //Configure the PCI IDs Database object.
     static {
@@ -124,7 +122,8 @@ public final class PciIds {
     /**
      * Default private constructor so checkstyles doesn't complain.
      */
-    private PciIds() { }
+    private PciIds() {
+    }
 
     /**
      * Look up the vendor name from the PCI IDs list, if the input string contains an ID.
@@ -172,7 +171,7 @@ public final class PciIds {
      * If any part of this fails, return the original model value.
      *
      * @param refManufacturer ASN1UTF8String, likely from a ComponentIdentifier
-     * @param refModel ASN1UTF8String, likely from a ComponentIdentifier
+     * @param refModel        ASN1UTF8String, likely from a ComponentIdentifier
      * @return ASN1UTF8String with the discovered device name, or the original model value.
      */
     public static ASN1UTF8String translateDevice(final ASN1UTF8String refManufacturer,
@@ -199,7 +198,7 @@ public final class PciIds {
      * If any part of this fails, return the original model value.
      *
      * @param refManufacturer String, likely from a ComponentResult
-     * @param refModel String, likely from a ComponentResult
+     * @param refModel        String, likely from a ComponentResult
      * @return String with the discovered device name, or the original model value.
      */
     public static String translateDevice(final String refManufacturer,
@@ -224,10 +223,10 @@ public final class PciIds {
      * If any part of this fails, return the original manufacturer value.
      *
      * @param refClassCode String, formatted as 2 characters (1 byte) for each of the 3 categories
-     * .   Example "010802":
-     * .      Class: "01"
-     * .      Subclass: "08"
-     * .      Programming Interface: "02"
+     *                     .   Example "010802":
+     *                     .      Class: "01"
+     *                     .      Subclass: "08"
+     *                     .      Programming Interface: "02"
      * @return List<String> 3-element list with the class code
      * .      1st element: human-readable description of Class
      * .      2nd element: human-readable description of Subclass

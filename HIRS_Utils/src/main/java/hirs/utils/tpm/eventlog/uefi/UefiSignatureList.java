@@ -13,17 +13,17 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIB
 
 /**
  * Class for processing either
- *   1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
- *      used for EFIVariables associated with Secure Boot,
- *      as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
- *   2) the contents of an SPDM devdb,
- *      used for SPDM Device Policy, whose data is an EFIVariable
- *      as defined by PFP v1.06 Rev52, Section 10.4
+ * 1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
+ * used for EFIVariables associated with Secure Boot,
+ * as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
+ * 2) the contents of an SPDM devdb,
+ * used for SPDM Device Policy, whose data is an EFIVariable
+ * as defined by PFP v1.06 Rev52, Section 10.4
  * <p>
  * An EFI Signature List is actually a list of Certificates used to verify a Signature.
  * This is mainly found in PCR[7] UEFI variables for either the
- *      Secure Boot PK, KEK, Db and DBx variables
- *      or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY).
+ * Secure Boot PK, KEK, Db and DBx variables
+ * or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY).
  * <p>
  * typedef struct _EFI_SIGNATURE_LIST {
  * EFI_GUID            SignatureType;
@@ -33,20 +33,20 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIB
  * // UINT8               SignatureHeader[SignatureHeaderSize];
  * // EFI_SIGNATURE_DATA  Signatures[...][SignatureSize];
  * } EFI_SIGNATURE_LIST;
- *
+ * <p>
  * SignatureListHeader (contents common to any Signature Type)
- *      - SignatureType
- *      - SignatureListSize
- *      - SignatureHeaderSize
- *      - SignatureSize
+ * - SignatureType
+ * - SignatureListSize
+ * - SignatureHeaderSize
+ * - SignatureSize
  * SignatureHeader (contents depend on the SignatureType)
- *      - The format of this header is specified by the SignatureType (SHA256, X509).
+ * - The format of this header is specified by the SignatureType (SHA256, X509).
  * Signatures[][] is an array of signatures.
- *      - Each signature is SignatureSize bytes in length.
- *      - The format of the signature is defined by SignatureType (SHA256, X509).
- *
- *                               / |-------------------------| ------- SignatureType
- *                              /  | Signature List Header   |         SignatureListSize
+ * - Each signature is SignatureSize bytes in length.
+ * - The format of the signature is defined by SignatureType (SHA256, X509).
+ * <p>
+ * / |-------------------------| ------- SignatureType
+ * /  | Signature List Header   |         SignatureListSize
  * |---------------------|     /   |-------------------------|\        SignatureHeaderSize
  * | Signature List #0   |    /    |    Signature Header     | \ _____ SignatureSize
  * |                     |   /     |-------------------------|
@@ -57,11 +57,10 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIB
  * |                     |         |      Signature #2       |      (1 cert or hash)
  * |                     |         |-------------------------|
  * |---------------------|         |           ...           |
- *                         \       |                         |
- *                           \     |-------------------------|
- *                             \   |      Signature #n       |
- *                               \ |-------------------------|
- *
+ * \       |                         |
+ * \     |-------------------------|
+ * \   |      Signature #n       |
+ * \ |-------------------------|
  */
 public class UefiSignatureList {
     /**
@@ -97,7 +96,7 @@ public class UefiSignatureList {
     /**
      * Array List of Signature found in the list.
      */
-    private ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
+    private final ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
     /**
      * Input Stream for processing.
      */

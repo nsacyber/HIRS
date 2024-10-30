@@ -8,18 +8,21 @@
 
 package hirs.utils.xjc;
 
-import java.math.BigInteger;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigInteger;
 
 
 /**
  * <p>Java class for Process complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="Process">
  *   &lt;complexContent>
@@ -31,66 +34,18 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
+@Setter
+@Getter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Process", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 public class Process
-    extends Meta
-{
-
+        extends Meta {
+    
     @XmlAttribute(name = "name", required = true)
     protected String name;
+
+
     @XmlAttribute(name = "pid")
     protected BigInteger pid;
-
-    /**
-     * Gets the value of the name property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets the value of the name property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setName(String value) {
-        this.name = value;
-    }
-
-    /**
-     * Gets the value of the pid property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
-    public BigInteger getPid() {
-        return pid;
-    }
-
-    /**
-     * Sets the value of the pid property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
-     */
-    public void setPid(BigInteger value) {
-        this.pid = value;
-    }
-
 }

@@ -1,12 +1,10 @@
 package hirs.data.persist;
 
 import hirs.attestationca.persist.entity.Policy;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * <code>PolicyTest</code> is a unit test class for the <code>Policy</code>

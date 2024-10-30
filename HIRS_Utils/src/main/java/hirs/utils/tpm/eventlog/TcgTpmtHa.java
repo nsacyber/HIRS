@@ -18,26 +18,6 @@ import java.math.BigInteger;
  */
 public class TcgTpmtHa {
     /**
-     * TCG Defined Algorithm Identifiers.
-     */
-    @Getter
-    private int hashAlgId = 0;
-    /**
-     * Length of the  hash.
-     */
-    @Getter
-    private int hashLength = 0;
-    /**
-     * Human readable name of the hash algorithm.
-     */
-    @Getter
-    private String hashName = "";
-    /**
-     * Hash data.
-     */
-    @Getter(value = AccessLevel.PROTECTED)
-    private byte[] digest = null;
-    /**
      * TCG ID for SHA1.
      */
     public static final int TPM_ALG_SHA1 = 0x04;
@@ -78,6 +58,26 @@ public class TcgTpmtHa {
      */
     public static final int TPM_ALG_NULL_LENGTH = 0;
     /**
+     * TCG Defined Algorithm Identifiers.
+     */
+    @Getter
+    private int hashAlgId = 0;
+    /**
+     * Length of the  hash.
+     */
+    @Getter
+    private int hashLength = 0;
+    /**
+     * Human readable name of the hash algorithm.
+     */
+    @Getter
+    private String hashName = "";
+    /**
+     * Hash data.
+     */
+    @Getter(value = AccessLevel.PROTECTED)
+    private byte[] digest = null;
+    /**
      * buffer to hold the structure.
      */
     private byte[] buffer = null;
@@ -100,25 +100,6 @@ public class TcgTpmtHa {
         buffer = new byte[algID.length + digest.length];
         System.arraycopy(algID, 0, buffer, 0, algID.length);
         System.arraycopy(digest, 0, buffer, algID.length, digest.length);
-    }
-
-    /**
-     * Returns the contents of the TPMT_HA structure buffer.
-     *
-     * @return contents of the TPMT_HA structure.
-     */
-    public byte[] getBuffer() {
-        return java.util.Arrays.copyOf(buffer, buffer.length);
-    }
-
-    /**
-     * Readable description of the Algorithm.
-     *
-     * @return Readable Algorithm name
-     */
-    @Override
-    public String toString() {
-        return String.format("%s hash = %s", hashName, HexUtils.byteArrayToHexString(digest));
     }
 
     /**
@@ -211,5 +192,24 @@ public class TcgTpmtHa {
                 length = TPM_ALG_NULL_LENGTH;
         }
         return length;
+    }
+
+    /**
+     * Returns the contents of the TPMT_HA structure buffer.
+     *
+     * @return contents of the TPMT_HA structure.
+     */
+    public byte[] getBuffer() {
+        return java.util.Arrays.copyOf(buffer, buffer.length);
+    }
+
+    /**
+     * Readable description of the Algorithm.
+     *
+     * @return Readable Algorithm name
+     */
+    @Override
+    public String toString() {
+        return String.format("%s hash = %s", hashName, HexUtils.byteArrayToHexString(digest));
     }
 }

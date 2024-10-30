@@ -50,25 +50,25 @@ import java.util.List;
  */
 public class EvEfiGptPartition {
     /**
-     * Header Size.
+     * Partition Length.
      */
-    private int headerSize = 0;
+    private static final int PARTITION_ENTRY_LENGTH = UefiConstants.SIZE_128;
     /**
      * Header bytes.
      */
-    private byte[] header = new byte[UefiConstants.SIZE_8];
+    private final byte[] header = new byte[UefiConstants.SIZE_8];
     /**
      * Number of partitions in this event.
      */
-    private int numberOfPartitions;
-    /**
-     * Partition Length.
-     */
-    private int partitonEntryLength = UefiConstants.SIZE_128;
+    private final int numberOfPartitions;
     /**
      * List of Partitions.
      */
-    private List<UefiPartition> partitionList;
+    private final List<UefiPartition> partitionList;
+    /**
+     * Header Size.
+     */
+    private int headerSize = 0;
 
     /**
      * GPT Partition Event Type constructor.
@@ -89,7 +89,7 @@ public class EvEfiGptPartition {
         byte[] partitions = new byte[UefiConstants.SIZE_8];
         System.arraycopy(eventDataBytes, headerSize, partitions, 0, UefiConstants.SIZE_8);
         numberOfPartitions = getIntFromBytes(partitions);
-        int partitionLength = numberOfPartitions * partitonEntryLength;
+        int partitionLength = numberOfPartitions * PARTITION_ENTRY_LENGTH;
         byte[] partitionEntries = new byte[partitionLength];
         System.arraycopy(eventDataBytes, headerSize + UefiConstants.SIZE_8, partitionEntries,
                 0, partitionLength);
@@ -100,7 +100,7 @@ public class EvEfiGptPartition {
     /**
      * Processes an individual GPT partition entry.
      *
-     * @param partitions           byte array holding partition data.
+     * @param partitions      byte array holding partition data.
      * @param numOfPartitions number of partitions included in the data.
      * @throws java.io.UnsupportedEncodingException if partition data fails to parse.
      */
@@ -108,16 +108,16 @@ public class EvEfiGptPartition {
             throws UnsupportedEncodingException {
         byte[] partitionData = new byte[UefiConstants.SIZE_128];
         for (int i = 0; i < numOfPartitions; i++) {
-            System.arraycopy(partitions, i * partitonEntryLength, partitionData, 0,
-                    partitonEntryLength);
+            System.arraycopy(partitions, i * PARTITION_ENTRY_LENGTH, partitionData, 0,
+                    PARTITION_ENTRY_LENGTH);
             partitionList.add(new UefiPartition(partitionData));
         }
     }
 
     /**
-     * Provides a human readable string describing the GPT Partition information.
+     * Provides a human-readable string describing the GPT Partition information.
      *
-     * @return a human readable string holding the partition information.
+     * @return a human-readable string holding the partition information.
      */
     public String toString() {
         String headerStr = HexUtils.byteArrayToHexString(header);

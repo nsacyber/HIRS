@@ -13,14 +13,17 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 
 
 /**
  * <p>Java class for Evidence complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="Evidence">
  *   &lt;complexContent>
@@ -32,67 +35,18 @@ import javax.xml.datatype.XMLGregorianCalendar;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
+@Setter
+@Getter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Evidence", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 public class Evidence
-    extends ResourceCollection
-{
+        extends ResourceCollection {
 
     @XmlAttribute(name = "date")
     @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar date;
+
     @XmlAttribute(name = "deviceId")
     protected String deviceId;
-
-    /**
-     * Gets the value of the date property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getDate() {
-        return date;
-    }
-
-    /**
-     * Sets the value of the date property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setDate(XMLGregorianCalendar value) {
-        this.date = value;
-    }
-
-    /**
-     * Gets the value of the deviceId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    /**
-     * Sets the value of the deviceId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDeviceId(String value) {
-        this.deviceId = value;
-    }
-
 }

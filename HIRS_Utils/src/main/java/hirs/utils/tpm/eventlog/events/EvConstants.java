@@ -175,6 +175,7 @@ public final class EvConstants {
      * EFI SPDM Device Authority Event ID.
      */
     public static final int EV_EFI_SPDM_DEVICE_AUTHORITY = 0x800000E4;
+
     /**
      * Default private constructor so checkstyles doesn't complain.
      */

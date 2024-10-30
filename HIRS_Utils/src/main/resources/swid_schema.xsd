@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema
-        xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd"
-        xmlns:swid="http://standards.iso.org/iso/19770/-2/2015/schema.xsd"
-        xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
         xmlns:xs="http://www.w3.org/2001/XMLSchema"
-        xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
         xmlns:xml="http://www.w3.org/XML/1998/namespace"
+        xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd"
 
         targetNamespace="http://standards.iso.org/iso/19770/-2/2015/schema.xsd"
         elementFormDefault="qualified">
     <xs:annotation>
         <xs:documentation>
-            This is the XML Schema for the Jakarta XML Binding binding customization descriptor. All binding customization descriptors must indicate the descriptor schema by using the Jakarta XML Binding namespace: https://jakarta.ee/xml/ns/jaxb and by indicating the version of the schema by using the version element as shown below:
-            <bindings xmlns="https://jakarta.ee/xml/ns/jaxb" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jaxb https://jakarta.ee/xml/ns/jaxb/bindingschema_3_0.xsd" version="3.0"> ... </bindings>
-            The instance documents may indicate the published version of the schema using the xsi:schemaLocation attribute for Jakarta XML Binding namespace with the following location: https://jakarta.ee/xml/ns/jaxb/bindingschema_3_0.xsd
+            This is the XML Schema for the Jakarta XML Binding binding customization descriptor. All binding
+            customization descriptors must indicate the descriptor schema by using the Jakarta XML Binding namespace:
+            https://jakarta.ee/xml/ns/jaxb and by indicating the version of the schema by using the version element as
+            shown below:
+            <bindings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://jakarta.ee/xml/ns/jaxb"
+                      xsi:schemaLocation="https://jakarta.ee/xml/ns/jaxb https://jakarta.ee/xml/ns/jaxb/bindingschema_3_0.xsd"
+                      version="3.0">...
+            </bindings>
+            The instance documents may indicate the published version of the schema using the xsi:schemaLocation
+            attribute for Jakarta XML Binding namespace with the following location:
+            https://jakarta.ee/xml/ns/jaxb/bindingschema_3_0.xsd
         </xs:documentation>
     </xs:annotation>
     <xs:import
@@ -62,7 +67,7 @@
         </xs:annotation>
 
         <xs:attribute
-                ref="xml:lang" >
+                ref="xml:lang">
             <xs:annotation>
                 <xs:documentation>
                     Allow xml:lang attribute on any element.
@@ -125,7 +130,7 @@
                         default="http://invalid.unavailable">
                     <xs:annotation>
                         <xs:documentation>
-                            The regid of the organization.  If the regid is unknown, the
+                            The regid of the organization. If the regid is unknown, the
                             value "invalid.unavailable" is provided by default (see
                             RFC 6761 for more details on the default value).
                         </xs:documentation>
@@ -139,7 +144,7 @@
                     <xs:annotation>
                         <xs:documentation>
                             The relationship between this organization and this tag e.g. tag,
-                            softwareCreator, licensor, tagCreator, etc.  The role of
+                            softwareCreator, licensor, tagCreator, etc. The role of
                             tagCreator is required for every SWID tag.
 
                             EntityRole may include any role value, but the pre-defined roles
@@ -219,7 +224,7 @@
                     <xs:annotation>
                         <xs:documentation>
                             Files that are considered important or required for the use of
-                            a software component.  Typical key files would be those which,
+                            a software component. Typical key files would be those which,
                             if not available on a system, would cause the software not to
                             execute.
 
@@ -236,7 +241,7 @@
                     <xs:annotation>
                         <xs:documentation>
                             The directory or location where a file was found or can expected
-                            to be located.  does not include the filename itself.  This can
+                            to be located. does not include the filename itself. This can
                             be relative path from the 'root' attribute.
                         </xs:documentation>
                     </xs:annotation>
@@ -504,7 +509,7 @@
                 <xs:attribute
                         name="href"
                         type="xs:anyURI"
-                        use="required" >
+                        use="required">
                     <xs:annotation>
                         <xs:documentation>
                             The link to the item being referenced.
@@ -524,7 +529,7 @@
                             swidtags.( ie, "swid:2df9de35-0aff-4a86-ace6-f7dddd1ade4c" )
 
                             - an URI with "swidpath:" as the scheme, which refers to another
-                            swid by an XPATH query.  This URI would need to be resolved in
+                            swid by an XPATH query. This URI would need to be resolved in
                             the context of the system by software that can lookup other
                             swidtags, and select the appropriate one based on an XPATH
                             query. Examples:
@@ -664,7 +669,7 @@
                             <xs:documentation>
                                 This element is used to provide results from a scan of a
                                 system where software that does not have a SWID tag is
-                                discovered.  This information is not provided by the
+                                discovered. This information is not provided by the
                                 software creator, but is instead created when a system
                                 is being scanned and the evidence for why software is
                                 believed to be installed on the device is provided in the
@@ -685,7 +690,7 @@
                                 downloads can be found, vulnerability database associations,
                                 use rights, etc).
 
-                                Note:  This is modelled directly to match the HTML [LINK]
+                                Note: This is modelled directly to match the HTML [LINK]
                                 element; it is critical for streamlining software discovery
                                 scenarios that these are kept consistent.
                             </xs:documentation>
@@ -712,7 +717,7 @@
                         <xs:annotation>
                             <xs:documentation>
                                 The items that may be installed on a device when the software is
-                                installed.  Note that Payload may be a superset of the items
+                                installed. Note that Payload may be a superset of the items
                                 installed and, depending on optimization systems for a device,
                                 may or may not include every item that could be created or
                                 executed on a device when software is installed.
@@ -731,7 +736,7 @@
                             namespace="##other"
                             processContents="lax"
                             minOccurs="0"
-                            maxOccurs="unbounded" >
+                            maxOccurs="unbounded">
                         <xs:annotation>
                             <xs:documentation>
                                 Allows any undeclared elements in the SoftwareIdentity element
@@ -785,7 +790,7 @@
                 <xs:attribute
                         name="media"
                         type="Media"
-                        use="optional" >
+                        use="optional">
                     <xs:annotation>
                         <xs:documentation>
                             media is a hint to the tag consumer to understand what this
@@ -801,7 +806,7 @@
                     <xs:annotation>
                         <xs:documentation>
                             This attribute provides the software component name as it would
-                            typically be referenced.  For example, what would be seen in the
+                            typically be referenced. For example, what would be seen in the
                             add/remove dialog on a Windows device, or what is specified as
                             the name of a packaged software product or a patch identifier
                             name on a Linux device.
@@ -830,7 +835,7 @@
                 <xs:attribute
                         name="tagId"
                         type="xs:string"
-                        use="required" >
+                        use="required">
                     <xs:annotation>
                         <xs:documentation>
                             tagId shall be a globally unique identifier and should be
@@ -839,7 +844,7 @@
 
                             The tagID provides a unique reference for the specific product,
                             version, edition, revision, etc (essentially, the same binary
-                            distribution).  If two tagIDs match and the tagCreator is the
+                            distribution). If two tagIDs match and the tagCreator is the
                             same, the underlying products they represent are expected to be
                             exactly the same.
 
@@ -856,7 +861,7 @@
                             unique ID may be constructed, this ID should include a unique
                             naming authority for the tagCreator and sufficient additional
                             details that the tagId is unique for the software product,
-                            version, edition, revision, etc.  This would likely look as
+                            version, edition, revision, etc. This would likely look as
                             follows (+ is used as a string concatenation symbol):
 
                             regid + productName + version + edition + revision + ...
@@ -873,12 +878,12 @@
                         <xs:documentation>
                             The tagVersion indicates if a specific release of a software
                             product has more than one tag that can represent that specific
-                            release.  This may be the case if a software tag producer creates
+                            release. This may be the case if a software tag producer creates
                             and releases an incorrect tag that they subsequently want to fix,
                             but with no underlying changes to the product the SWID tag
-                            represents.  This could happen if, for example, a patch is
+                            represents. This could happen if, for example, a patch is
                             distributed that has a Link reference that does not cover all the
-                            various software releases it can patch.  A newer SWID tag for that
+                            various software releases it can patch. A newer SWID tag for that
                             patch can be generated and the tagVersion value incremented to
                             indicate that the data is updated.
                         </xs:documentation>
@@ -889,7 +894,7 @@
                         name="version"
                         type="xs:string"
                         use="optional"
-                        default="0.0" >
+                        default="0.0">
                     <xs:annotation>
                         <xs:documentation>
                             Underlying development version for the software component.
@@ -903,7 +908,7 @@
                         default="multipartnumeric">
                     <xs:annotation>
                         <xs:documentation>
-                            Scheme used for the version number.  Some possible common values are:
+                            Scheme used for the version number. Some possible common values are:
 
                             value="alphanumeric"
                             Strictly a string, sorting alphanumericaly
@@ -913,7 +918,7 @@
 
                             value="multipartnumeric"
                             Numbers seperated by dots, where the numbers are interpreted as
-                            integers (ie, 1.2.3 ,  1.4.5.6 , 1.2.3.4.5.6.7 )
+                            integers (ie, 1.2.3 , 1.4.5.6 , 1.2.3.4.5.6.7 )
 
                             value="multipartnumeric+suffix"
                             Numbers seperated by dots, where the numbers are interpreted as
@@ -940,7 +945,7 @@
                         An open-ended collection of key/value data related to this SWID.
 
                         The attributes included in this Element are predefined attributes
-                        to ensure common usage across the industry.  The schema allows for
+                        to ensure common usage across the industry. The schema allows for
                         any additional attribute to be included in a SWID tag, though it is
                         recommended that industry norms for new attributes are defined and
                         followed to the degree possible.
@@ -954,7 +959,7 @@
                     <xs:annotation>
                         <xs:documentation>
                             Identification of the activation status of this software title
-                            (e.g. Trial, Serialized, Licensed, Unlicensed, etc).  Typically,
+                            (e.g. Trial, Serialized, Licensed, Unlicensed, etc). Typically,
                             this is used in supplemental tags.
                         </xs:documentation>
                     </xs:annotation>
@@ -968,7 +973,7 @@
                         <xs:documentation>
                             Provides information on which channel this particular
                             software was targeted for (e.g. Volume, Retail, OEM,
-                            Academic, etc).  Typically used in supplemental tags.
+                            Academic, etc). Typically used in supplemental tags.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
@@ -988,7 +993,7 @@
                             Note that this representation of version is typically used to
                             identify a group of specific software releases that are part of
                             the same release/support infrastructure
-                            (i.e. Fabrikam Office 2013).  This version is used for string
+                            (i.e. Fabrikam Office 2013). This version is used for string
                             comparisons only and is not compared to be an earlier or later
                             release (that is done via the SoftwareEntity version).
                         </xs:documentation>
@@ -1001,7 +1006,7 @@
                         use="optional">
                     <xs:annotation>
                         <xs:documentation>
-                            A longer, detailed description of the software.  This description
+                            A longer, detailed description of the software. This description
                             can be multiple sentences (differentiated from summary which is
                             a very short, one-sentence description).
                         </xs:documentation>
@@ -1052,7 +1057,7 @@
                         use="optional">
                     <xs:annotation>
                         <xs:documentation>
-                            The name of the software tool that created a SWID tag.  This
+                            The name of the software tool that created a SWID tag. This
                             element is typically used if tags are created on the fly, or
                             based on a catalogue based analysis for data found on a
                             computing device.
@@ -1067,7 +1072,7 @@
                     <xs:annotation>
                         <xs:documentation>
                             A GUID used to represent products installed where the products
-                            are related, but may be different versions.  See one
+                            are related, but may be different versions. See one
                             representation of this value through the use of what, in a
                             windows installation process is referred to as an upgradeCode
                             - http://msdn.microsoft.com/en-us/library/aa372375(v=vs.85).aspx
@@ -1094,7 +1099,7 @@
                         use="optional">
                     <xs:annotation>
                         <xs:documentation>
-                            The overall product family this software belongs to.  Product
+                            The overall product family this software belongs to. Product
                             family is not used to identify that a product is part of a
                             suite, but is instead used when a set of products that are all
                             related may be installed on multiple different devices.
@@ -1102,7 +1107,7 @@
                             For example, an Enterprise backup system may consist of a backup
                             server, multiple different backup systems that support mail
                             servers, databases and ERP systems as well as individual software
-                            items that backup client devices.  In this case all software
+                            items that backup client devices. In this case all software
                             titles that are part of the backup system would have the same
                             productFamily name so they can be grouped together in reporting
                             systems.
@@ -1117,7 +1122,7 @@
                     <xs:annotation>
                         <xs:documentation>
                             The informal or colloquial representation of the sub-version of
-                            the given product (ie, SP1, R2, RC1, Beta 2, etc).  Note that the
+                            the given product (ie, SP1, R2, RC1, Beta 2, etc). Note that the
                             SoftwareIdentity.version will provide very exact version details,
                             the revision is intended for use in environments where reporting
                             on the informal or colloquial representation of the software is
@@ -1152,7 +1157,7 @@
                     <xs:annotation>
                         <xs:documentation>
                             An 8 digit code that provides UNSPSC classification of the
-                            software product this SWID tag identifies.  For more
+                            software product this SWID tag identifies. For more
                             information see, http://www.unspsc.org/
                         </xs:documentation>
                     </xs:annotation>
@@ -1217,8 +1222,8 @@
                 architecture
 
                 PREFIX is defined as one of:
-                MIN    # property has a minimum value of VALUE
-                MAX    # property has a maximum value of VALUE
+                MIN # property has a minimum value of VALUE
+                MAX # property has a maximum value of VALUE
 
                 if a PREFIX is not provided, then the property should equal VALUE
 

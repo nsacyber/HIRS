@@ -103,7 +103,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * @param rimBytes byte array representation of the RIM
      * @throws IOException if unable to unmarshal the string
      */
-    @SuppressWarnings("checkstyle:AvoidInlineConditionals")
     public BaseReferenceManifest(final String fileName, final byte[] rimBytes)
             throws UnmarshalException {
         super(rimBytes);
@@ -127,9 +126,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
                     SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.META).item(0);
             setTagId(softwareIdentity.getAttribute(SwidTagConstants.TAGID));
             this.swidName = softwareIdentity.getAttribute(SwidTagConstants.NAME);
-            this.swidCorpus = Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.CORPUS)) ? 1 : 0;
+            this.swidCorpus =
+                    Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.CORPUS)) ? 1 : 0;
             this.setSwidPatch(Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.PATCH)));
-            this.setSwidSupplemental(Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.SUPPLEMENTAL)));
+            this.setSwidSupplemental(
+                    Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.SUPPLEMENTAL)));
             this.setSwidVersion(softwareIdentity.getAttribute(SwidTagConstants.VERSION));
             this.setSwidTagVersion(softwareIdentity.getAttribute(SwidTagConstants.TAGVERSION));
 
@@ -147,20 +148,22 @@ public class BaseReferenceManifest extends ReferenceManifest {
      */
     private void parseSoftwareMeta(final Element softwareMeta) {
         if (softwareMeta != null) {
-            this.colloquialVersion = softwareMeta.getAttribute(SwidTagConstants._COLLOQUIAL_VERSION_STR);
-            this.product = softwareMeta.getAttribute(SwidTagConstants._PRODUCT_STR);
-            this.revision = softwareMeta.getAttribute(SwidTagConstants._REVISION_STR);
-            this.edition = softwareMeta.getAttribute(SwidTagConstants._EDITION_STR);
-            this.rimLinkHash = softwareMeta.getAttribute(SwidTagConstants._RIM_LINK_HASH_STR);
-            this.bindingSpec = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_STR);
-            this.bindingSpecVersion = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_VERSION_STR);
-            this.setPlatformManufacturerId(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_ID_STR));
-            this.setPlatformManufacturer(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_STR));
-            this.setPlatformModel(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MODEL_STR));
-            this.platformVersion = softwareMeta.getAttribute(SwidTagConstants._PLATFORM_VERSION_STR);
-            this.payloadType = softwareMeta.getAttribute(SwidTagConstants._PAYLOAD_TYPE_STR);
-            this.pcURIGlobal = softwareMeta.getAttribute(SwidTagConstants._PC_URI_GLOBAL_STR);
-            this.pcURILocal = softwareMeta.getAttribute(SwidTagConstants._PC_URI_LOCAL_STR);
+            this.colloquialVersion = softwareMeta.getAttribute(SwidTagConstants.COLLOQUIAL_VERSION_STR);
+            this.product = softwareMeta.getAttribute(SwidTagConstants.PRODUCT_STR);
+            this.revision = softwareMeta.getAttribute(SwidTagConstants.REVISION_STR);
+            this.edition = softwareMeta.getAttribute(SwidTagConstants.EDITION_STR);
+            this.rimLinkHash = softwareMeta.getAttribute(SwidTagConstants.RIM_LINK_HASH_STR);
+            this.bindingSpec = softwareMeta.getAttribute(SwidTagConstants.BINDING_SPEC_STR);
+            this.bindingSpecVersion = softwareMeta.getAttribute(SwidTagConstants.BINDING_SPEC_VERSION_STR);
+            this.setPlatformManufacturerId(
+                    softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MANUFACTURER_ID_STR));
+            this.setPlatformManufacturer(
+                    softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MANUFACTURER_FULL_STR));
+            this.setPlatformModel(softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MODEL_STR));
+            this.platformVersion = softwareMeta.getAttribute(SwidTagConstants.PLATFORM_VERSION_STR);
+            this.payloadType = softwareMeta.getAttribute(SwidTagConstants.PAYLOAD_TYPE_STR);
+            this.pcURIGlobal = softwareMeta.getAttribute(SwidTagConstants.PC_URI_GLOBAL_STR);
+            this.pcURILocal = softwareMeta.getAttribute(SwidTagConstants.PC_URI_LOCAL_STR);
         } else {
             log.warn("SoftwareMeta Tag not found.");
         }
@@ -202,7 +205,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * This method validates the .swidtag file at the given filepath against the
      * schema. A successful validation results in the output of the tag's name
      * and tagId attributes, otherwise a generic error message is printed.
-     *
      */
     private Element getDirectoryTag(final byte[] rimBytes) {
         if (rimBytes == null || rimBytes.length == 0) {
@@ -254,7 +256,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * This method iterates over the list of File elements under the directory.
      *
      * @param rimBytes the bytes to find the files
-     *
      */
     public List<SwidResource> getFileResources(final byte[] rimBytes) {
         Element directoryTag = getDirectoryTag(rimBytes);
@@ -267,8 +268,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
             swidResource = new SwidResource();
             swidResource.setName(file.getAttribute(SwidTagConstants.NAME));
             swidResource.setSize(file.getAttribute(SwidTagConstants.SIZE));
-            swidResource.setHashValue(file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":"
-                    + SwidTagConstants._SHA256_HASH.getLocalPart()));
+            swidResource.setHashValue(file.getAttribute(SwidTagConstants.SHA_256_HASH.getPrefix() + ":"
+                    + SwidTagConstants.SHA_256_HASH.getLocalPart()));
             validHashes.add(swidResource);
         }
 
@@ -353,9 +354,15 @@ public class BaseReferenceManifest extends ReferenceManifest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         BaseReferenceManifest that = (BaseReferenceManifest) o;
         return swidCorpus == that.swidCorpus && Objects.equals(swidName, that.swidName)
                 && Objects.equals(colloquialVersion, that.colloquialVersion)

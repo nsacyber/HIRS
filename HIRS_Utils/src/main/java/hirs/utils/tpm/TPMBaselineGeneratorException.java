@@ -12,8 +12,7 @@ public class TPMBaselineGeneratorException extends Exception {
      * Creates a new <code>CreateTPMBaselineException</code> that has the
      * message <code>msg</code>.
      *
-     * @param msg
-     *            exception message
+     * @param msg exception message
      */
     TPMBaselineGeneratorException(final String msg) {
         super(msg);
@@ -23,8 +22,7 @@ public class TPMBaselineGeneratorException extends Exception {
      * Creates a new <code>CreateTPMBaselineException</code> that wraps the
      * given <code>Throwable</code>.
      *
-     * @param t
-     *            root cause
+     * @param t root cause
      */
     TPMBaselineGeneratorException(final Throwable t) {
         super(t);
@@ -34,10 +32,8 @@ public class TPMBaselineGeneratorException extends Exception {
      * Creates a new <code>CreateTPMBaselineException</code> that has the
      * message <code>msg</code> and wraps the root cause.
      *
-     * @param msg
-     *            exception message
-     * @param t
-     *            root cause
+     * @param msg exception message
+     * @param t   root cause
      */
     TPMBaselineGeneratorException(final String msg, final Throwable t) {
         super(msg, t);

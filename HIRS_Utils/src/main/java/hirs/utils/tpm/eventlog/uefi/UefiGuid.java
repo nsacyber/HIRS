@@ -45,11 +45,11 @@ public class UefiGuid {
     /**
      * guid byte array.
      */
-    private byte[] guid;
+    private final byte[] guid;
     /**
      * UUID object.
      */
-    private UUID uuid;
+    private final UUID uuid;
 
     /**
      * UefiGUID constructor.
@@ -63,7 +63,7 @@ public class UefiGuid {
     /**
      * UefiGUID constructor.
      *
-     * @param guidBytes byte array holding a valid guid.
+     * @param guidBytes        byte array holding a valid guid.
      * @param vendorPathString string path for vendor
      */
     public UefiGuid(final byte[] guidBytes, final Path vendorPathString) {
@@ -88,6 +88,7 @@ public class UefiGuid {
      * Converts a GUID with a byte array to a RFC-1422 UUID object.
      * Assumes a MS format and converts to Big Endian format used by most others , including Linux
      * Matched uuids found in /sys/firmware/efi/efivars on Centos 7.
+     *
      * @param guid byte array holding the guid data.
      * @return UUID processed from the passed in guid
      */
@@ -118,6 +119,22 @@ public class UefiGuid {
      */
     public static int getGuidLength() {
         return UefiConstants.SIZE_16;
+    }
+
+    /**
+     * Returns a string of the entity that the UUID represents.
+     * Does not contain a vendor lookup on the UUID.
+     *
+     * @param guid byte array holding the guid data.
+     * @return true if the UUID has a valid structure.
+     */
+    public static boolean isValidUUID(final byte[] guid) {
+        boolean valid = false;
+        UUID tmpUuid = processGuid(guid);
+        if (tmpUuid.toString().length() != 0) {
+            valid = true;
+        }
+        return valid;
     }
 
     /**
@@ -177,22 +194,6 @@ public class UefiGuid {
      */
     public String toStringNoLookup() {
         return uuid.toString();
-    }
-
-    /**
-     * Returns a string of the entity that the UUID represents.
-     * Does not contain a vendor lookup on the UUID.
-     *
-     * @param guid byte array holding the guid data.
-     * @return true if the UUID has a valid structure.
-     */
-    public static boolean isValidUUID(final byte[] guid) {
-        boolean valid = false;
-        UUID tmpUuid = processGuid(guid);
-        if (tmpUuid.toString().length() != 0) {
-            valid = true;
-        }
-        return valid;
     }
 
     /**

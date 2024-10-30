@@ -16,9 +16,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for Meta complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="Meta">
  *   &lt;complexContent>
@@ -28,20 +28,17 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Meta", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 @XmlSeeAlso({
-    SoftwareMeta.class,
-    Resource.class,
-    Process.class,
-    FilesystemItem.class
+        SoftwareMeta.class,
+        Resource.class,
+        Process.class,
+        FilesystemItem.class
 })
 public class Meta
-    extends BaseElement
-{
+        extends BaseElement {
 
 
 }

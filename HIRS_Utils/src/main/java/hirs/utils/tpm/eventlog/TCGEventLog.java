@@ -25,56 +25,104 @@ import java.util.LinkedHashMap;
  */
 public final class TCGEventLog {
 
-    /** Logger. */
-    private static final Logger LOGGER = LogManager.getLogger(TCGEventLog.class);
-    /** Name of the hash algorithm used to process the Event Log, default is SHA256.  */
-    @Getter
-    private String eventLogHashAlgorithm = "TPM_ALG_SHA256";
-    /** Parsed event log array. */
-    private static final int SIG_OFFSET = 32;
-    /**  TEV_NO_ACTION signature size. */
-    private static final int SIG_SIZE = 16;
-    /** Initial value for SHA 256 values.*/
+    /**
+     * Initial value for SHA 256 values.
+     */
     public static final String INIT_SHA256_LIST = "00000000000000000000000000"
             + "00000000000000000000000000000000000000";
-    /** Initial value for SHA 256 values.*/
+    /**
+     * Initial value for SHA 256 values.
+     */
     public static final String LOCALITY4_SHA256_LIST = "ffffffffffffffffffffffffff"
             + "ffffffffffffffffffffffffffffffffffffff";
-    /** Initial value for SHA 1 values. */
+    /**
+     * Initial value for SHA 1 values.
+     */
     public static final String INIT_SHA1_LIST = "0000000000000000000000000000000000000000";
-    /** Initial value for SHA 1 values. */
+    /**
+     * Initial value for SHA 1 values.
+     */
     public static final String LOCALITY4_SHA1_LIST = "ffffffffffffffffffffffffffffffffffffffff";
-    /** PFP defined EV_NO_ACTION identifier. */
+    /**
+     * PFP defined EV_NO_ACTION identifier.
+     */
     public static final int NO_ACTION_EVENT = 0x00000003;
-    /** String value of SHA1 hash.*/
+    /**
+     * String value of SHA1 hash.
+     */
     public static final String HASH_STRING = "SHA1";
-    /** String value of SHA256 hash.  */
+    /**
+     * String value of SHA256 hash.
+     */
     public static final String HASH256_STRING = "SHA-256";
-    /** Each PCR bank holds 24 registers. */
+    /**
+     * Each PCR bank holds 24 registers.
+     */
     public static final int PCR_COUNT = 24;
-    /** Locality 4 starts at PCR 17. */
+    /**
+     * Locality 4 starts at PCR 17.
+     */
     public static final int PCR_LOCALITY4_MIN = 17;
-    /** Locality 4 Ends at PCR 23. */
+    /**
+     * Locality 4 Ends at PCR 23.
+     */
     public static final int PCR_LOCALITY4_MAX = 23;
-    /** 2 dimensional array holding the PCR values. */
-    private byte[][] pcrList;
-    /** List of parsed events within the log. */
-    private LinkedHashMap<Integer, TpmPcrEvent> eventList = new LinkedHashMap<>();
-    /** Length of PCR. Indicates which hash algorithm is used. */
-    private int pcrLength;
-    /** Name of hash algorithm. */
-    private String hashType;
-    /** Initial PCR Value to use. */
-    private String initValue;
-    /** Initial PcR Value to use for locality 4. */
-    private String initLocalityFourValue;
-    /** Content Output Flag use. */
+    /**
+     * Logger.
+     */
+    private static final Logger LOGGER = LogManager.getLogger(TCGEventLog.class);
+    /**
+     * Parsed event log array.
+     */
+    private static final int SIG_OFFSET = 32;
+    /**
+     * TEV_NO_ACTION signature size.
+     */
+    private static final int SIG_SIZE = 16;
+    /**
+     * Name of the hash algorithm used to process the Event Log, default is SHA256.
+     */
+    @Getter
+    private String eventLogHashAlgorithm = "TPM_ALG_SHA256";
+    /**
+     * 2 dimensional array holding the PCR values.
+     */
+    private final byte[][] pcrList;
+    /**
+     * List of parsed events within the log.
+     */
+    private final LinkedHashMap<Integer, TpmPcrEvent> eventList = new LinkedHashMap<>();
+    /**
+     * Length of PCR. Indicates which hash algorithm is used.
+     */
+    private final int pcrLength;
+    /**
+     * Name of hash algorithm.
+     */
+    private final String hashType;
+    /**
+     * Initial PCR Value to use.
+     */
+    private final String initValue;
+    /**
+     * Initial PcR Value to use for locality 4.
+     */
+    private final String initLocalityFourValue;
+    /**
+     * Content Output Flag use.
+     */
     private boolean bContent = false;
-    /** Event Output Flag use. */
+    /**
+     * Event Output Flag use.
+     */
     private boolean bHexEvent = false;
-    /** Event Output Flag use. */
+    /**
+     * Event Output Flag use.
+     */
     private boolean bEvent = false;
-    /** Event Output Flag use. */
+    /**
+     * Event Output Flag use.
+     */
     @Getter
     private boolean bCryptoAgile = false;
     /**
@@ -111,29 +159,31 @@ public final class TCGEventLog {
 
     /**
      * Simple constructor for Event Log.
+     *
      * @param rawlog data for the event log file.
-     * @throws java.security.NoSuchAlgorithmException if an unknown algorithm is encountered.
+     * @throws java.security.NoSuchAlgorithmException  if an unknown algorithm is encountered.
      * @throws java.security.cert.CertificateException if a certificate in the log cannot be parsed.
-     * @throws java.io.IOException IO Stream if event cannot be parsed.
+     * @throws java.io.IOException                     IO Stream if event cannot be parsed.
      */
     public TCGEventLog(final byte[] rawlog)
-                       throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws CertificateException, NoSuchAlgorithmException, IOException {
         this(rawlog, false, false, false);
     }
 
     /**
      * Default constructor for just the rawlog that'll set up SHA1 Log.
-     * @param rawlog data for the event log file.
-     * @param bEventFlag if true provides human readable event descriptions.
-     * @param bContentFlag if true provides hex output for Content in the description.
+     *
+     * @param rawlog        data for the event log file.
+     * @param bEventFlag    if true provides human readable event descriptions.
+     * @param bContentFlag  if true provides hex output for Content in the description.
      * @param bHexEventFlag if true provides hex event structure in the description.
-     * @throws java.security.NoSuchAlgorithmException if an unknown algorithm is encountered.
+     * @throws java.security.NoSuchAlgorithmException  if an unknown algorithm is encountered.
      * @throws java.security.cert.CertificateException if a certificate in the log cannot be parsed.
-     * @throws java.io.IOException IO Stream if event cannot be parsed.
+     * @throws java.io.IOException                     IO Stream if event cannot be parsed.
      */
     public TCGEventLog(final byte[] rawlog, final boolean bEventFlag,
                        final boolean bContentFlag, final boolean bHexEventFlag)
-                       throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws CertificateException, NoSuchAlgorithmException, IOException {
 
         bCryptoAgile = isLogCrytoAgile(rawlog);
         if (bCryptoAgile) {
@@ -194,18 +244,18 @@ public final class TCGEventLog {
      * This method puts blank values in the pcrList.
      */
     private void initPcrList() {
-            try {
-                for (int i = 0; i < PCR_COUNT; i++) {
-                    System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
+        try {
+            for (int i = 0; i < PCR_COUNT; i++) {
+                System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
                         0, pcrList[i], 0, pcrLength);
-                }
-                for (int i = PCR_LOCALITY4_MIN; i < PCR_LOCALITY4_MAX; i++) {
-                        System.arraycopy(Hex.decodeHex(initLocalityFourValue.toCharArray()),
-                            0, pcrList[i], 0, pcrLength);
-                    }
-            } catch (DecoderException deEx) {
-                LOGGER.error(deEx);
             }
+            for (int i = PCR_LOCALITY4_MIN; i < PCR_LOCALITY4_MAX; i++) {
+                System.arraycopy(Hex.decodeHex(initLocalityFourValue.toCharArray()),
+                        0, pcrList[i], 0, pcrLength);
+            }
+        } catch (DecoderException deEx) {
+            LOGGER.error(deEx);
+        }
     }
 
 //    /**
@@ -298,6 +348,7 @@ public final class TCGEventLog {
 
     /**
      * Returns a list of event found in the Event Log.
+     *
      * @return an arraylist of event.
      */
     public Collection<TpmPcrEvent> getEventList() {
@@ -307,6 +358,7 @@ public final class TCGEventLog {
     /**
      * Returns a specific element of the Event Log that corresponds to the requested
      * event number.
+     *
      * @param eventNumber specific event to find in the list.
      * @return TPM Event in the position of the list
      */
@@ -326,6 +378,7 @@ public final class TCGEventLog {
 
     /**
      * Human readable string representing the contents of the Event Log.
+     *
      * @return Description of the log.
      */
     public String toString() {
@@ -334,14 +387,15 @@ public final class TCGEventLog {
             sb.append(event.toString(bEvent, bHexEvent, bContent));
         }
         sb.append("Event Log processing completed.\n");
-       return sb.toString();
+        return sb.toString();
     }
 
     /**
      * Human readable string representing the contents of the Event Log.
-     * @param event flag to set
+     *
+     * @param event    flag to set
      * @param hexEvent flag to set
-     * @param content flag to set
+     * @param content  flag to set
      * @return Description of the log.
      */
     public String toString(final boolean event,
@@ -357,10 +411,11 @@ public final class TCGEventLog {
     /**
      * Returns the TCG Algorithm Registry defined ID for the Digest Algorithm
      * used in the event log.
+     *
      * @return TCG Defined Algorithm name
      */
     public int getEventLogHashAlgorithmID() {
-       return TcgTpmtHa.tcgAlgStringToId(eventLogHashAlgorithm);
+        return TcgTpmtHa.tcgAlgStringToId(eventLogHashAlgorithm);
     }
 
     /**

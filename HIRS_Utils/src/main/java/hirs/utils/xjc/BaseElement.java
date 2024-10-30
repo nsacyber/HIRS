@@ -14,6 +14,8 @@ import jakarta.xml.bind.annotation.XmlAnyAttribute;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlType;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.xml.namespace.QName;
 import java.util.HashMap;
@@ -21,14 +23,13 @@ import java.util.Map;
 
 
 /**
- * 
- *         Attributes common to all Elements in this schema
- *       
- * 
+ * Attributes common to all Elements in this schema
+ *
+ *
  * <p>Java class for BaseElement complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="BaseElement">
  *   &lt;complexContent>
@@ -39,67 +40,38 @@ import java.util.Map;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
+@Getter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BaseElement", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 @XmlSeeAlso({
-    SoftwareIdentity.class,
-    Entity.class,
-    Link.class,
-    Meta.class,
-    ResourceCollection.class
+        SoftwareIdentity.class,
+        Entity.class,
+        Link.class,
+        Meta.class,
+        ResourceCollection.class
 })
 public class BaseElement {
 
-    @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
-    protected String lang;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
-
     /**
-     * 
-     *           Allow xml:lang attribute on any element.
-     *         
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getLang() {
-        return lang;
-    }
-
-    /**
-     * Sets the value of the lang property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setLang(String value) {
-        this.lang = value;
-    }
-
-    /**
+     * -- GETTER --
      * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
      * <p>
-     * the map is keyed by the name of the attribute and 
+     * the map is keyed by the name of the attribute and
      * the value is the string value of the attribute.
-     * 
+     * <p>
      * the map returned by this method is live, and you can add new attribute
      * by updating the map directly. Because of this design, there's no setter.
-     * 
-     * 
-     * @return
-     *     always non-null
      */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
-    }
+    @XmlAnyAttribute
+    private final Map<QName, String> otherAttributes = new HashMap<>();
+
+    /**
+     * -- GETTER --
+     * Allow xml:lang attribute on any element.
+     */
+    @Setter
+    @XmlAttribute(name = "lang", namespace = "http://www.w3.org/XML/1998/namespace")
+    protected String lang;
 
 }
