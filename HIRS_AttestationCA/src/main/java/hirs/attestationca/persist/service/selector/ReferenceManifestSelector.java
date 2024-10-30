@@ -147,7 +147,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
 
     /**
      * Construct the criterion that can be used to query for rims matching the
-     * +     * configuration of this {@link ReferenceManifestSelector}.
+     * configuration of this {@link ReferenceManifestSelector}.
      *
      * @param criteriaBuilder criteria builder
      * @return a Criterion that can be used to query for rims matching the

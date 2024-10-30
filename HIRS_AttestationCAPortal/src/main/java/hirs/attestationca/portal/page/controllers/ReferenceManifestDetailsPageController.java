@@ -141,16 +141,14 @@ public class ReferenceManifestDetailsPageController
      * @param certificateRepository       the certificate manager.
      * @param caCertificateRepository     the certificate manager.
      * @return mapping of the RIM information from the database.
-     * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
+     * @throws java.io.IOException error for reading file bytes.
      */
     private static HashMap<String, Object> getBaseRimInfo(
             final BaseReferenceManifest baseRim,
             final ReferenceManifestRepository referenceManifestRepository,
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCertificateRepository)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException {
         HashMap<String, Object> data = new HashMap<>();
 
         // Software Identity
@@ -260,8 +258,8 @@ public class ReferenceManifestDetailsPageController
                                 caCertificateRepository));
                 RIM_VALIDATOR.setTrustStore(truststore);
             } catch (IOException e) {
-                log.error("Error building CA chain for " + caCert.getSubjectKeyIdentifier() + ": "
-                        + e.getMessage());
+                log.error("Error building CA chain for {}: {}", caCert.getSubjectKeyIdentifier(),
+                        e.getMessage());
             }
             if (RIM_VALIDATOR.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
                     caCert.getSubjectKeyIdString(), caCert.getEncodedPublicKey())) {
@@ -272,7 +270,7 @@ public class ReferenceManifestDetailsPageController
                         break;
                     }
                 } catch (SupplyChainValidatorException scvEx) {
-                    log.error("Error verifying cert chain: " + scvEx.getMessage());
+                    log.error("Error verifying cert chain: {}", scvEx.getMessage());
                 }
             }
         }
@@ -288,7 +286,7 @@ public class ReferenceManifestDetailsPageController
                 }
             }
         } catch (NullPointerException npEx) {
-            log.warn("Unable to link signing certificate: " + npEx.getMessage());
+            log.warn("Unable to link signing certificate: {}", npEx.getMessage());
         }
         return data;
     }
@@ -610,12 +608,6 @@ public class ReferenceManifestDetailsPageController
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
                 log.error(uuidError, iaEx);
-            } catch (CertificateException cEx) {
-                log.error(cEx);
-            } catch (NoSuchAlgorithmException nsEx) {
-                log.error(nsEx);
-            } catch (IOException ioEx) {
-                log.error(ioEx);
             } catch (Exception ex) {
                 log.error(ex);
             }

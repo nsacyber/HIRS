@@ -3,10 +3,10 @@ package hirs.attestationca.portal.datatables;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -18,10 +18,22 @@ import java.util.Map;
 /**
  * Represents a data table input in a jQuery DataTable.
  */
-@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@Getter
+@NoArgsConstructor
+@ToString
 public class DataTableInput {
 
     private static final int DEFAULT_LENGTH = 10;
+    /**
+     * Order parameter.
+     */
+    @NotEmpty
+    private final List<Order> order = new ArrayList<>();
+    /**
+     * Per-column search parameter.
+     */
+    @NotEmpty
+    private final List<Column> columns = new ArrayList<>();
     /**
      * Draw counter. This is used by DataTables to ensure that the Ajax returns from server-side
      * processing requests are drawn in sequence by DataTables (Ajax requests are asynchronous and
@@ -30,7 +42,6 @@ public class DataTableInput {
      */
     @NotNull
     @Min(0)
-    @Getter
     @Setter
     private int draw = 1;
     /**
@@ -39,7 +50,6 @@ public class DataTableInput {
      */
     @NotNull
     @Min(0)
-    @Getter
     @Setter
     private int start = 0;
     /**
@@ -51,28 +61,14 @@ public class DataTableInput {
      */
     @NotNull
     @Min(-1)
-    @Getter
     @Setter
     private int length = DEFAULT_LENGTH;
     /**
      * Global search parameter.
      */
-    @Getter
     @Setter
     @NotNull
     private Search search = new Search();
-    /**
-     * Order parameter.
-     */
-    @Getter
-    @NotEmpty
-    private List<Order> order = new ArrayList<>();
-    /**
-     * Per-column search parameter.
-     */
-    @Getter
-    @NotEmpty
-    private List<Column> columns = new ArrayList<>();
 
     /**
      * Constructor.
@@ -200,23 +196,4 @@ public class DataTableInput {
         }
         return orderColumnName;
     }
-
-
-    /**
-     * Generates a string for this object.
-     *
-     * @return the string
-     */
-    @Override
-    public String toString() {
-        return "DataTableInput{"
-                + "draw=" + draw
-                + ", start=" + start
-                + ", length=" + length
-                + ", search=" + search
-                + ", order=" + order
-                + ", columns=" + columns
-                + '}';
-    }
 }
-

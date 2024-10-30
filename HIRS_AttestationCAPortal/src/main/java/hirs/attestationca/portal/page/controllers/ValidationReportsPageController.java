@@ -28,6 +28,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -115,10 +116,10 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     public DataTableResponse<SupplyChainValidationSummary> getTableData(
             final DataTableInput input) {
 
-        log.debug("Handling request for summary list: " + input);
+        log.debug("Handling request for summary list: {}", input);
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: " + orderColumnName);
+        log.debug("Ordering on column: {}", orderColumnName);
 
         FilteredRecordsList<SupplyChainValidationSummary> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
@@ -145,8 +146,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param response object
      * @throws IOException thrown by BufferedWriter object
      */
-    @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:methodlength"})
-    @RequestMapping(value = "download", method = RequestMethod.POST)
+    @PostMapping(value = "download")
     public void download(final HttpServletRequest request,
                          final HttpServletResponse response) throws IOException {
 
@@ -158,7 +158,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
         LocalDate startDate = null;
         LocalDate endDate = null;
-        ArrayList<LocalDate> createTimes = new ArrayList<LocalDate>();
+        ArrayList<LocalDate> createTimes = new ArrayList<>();
         String[] deviceNames = new String[] {};
         String columnHeaders = "";
         boolean systemOnly = false;
@@ -171,7 +171,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         while (parameters.hasMoreElements()) {
             String parameter = (String) parameters.nextElement();
             String parameterValue = request.getParameter(parameter);
-            log.info(parameter + ": " + parameterValue);
+            log.info("{}: {}", parameter, parameterValue);
             switch (parameter) {
                 case "company":
                     Matcher companyMatcher = pattern.matcher(parameterValue);
@@ -335,7 +335,6 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param contractNumber   contract number.
      * @return the JSON object in String format.
      */
-    @SuppressWarnings({"checkstyle:magicnumber"})
     private JsonObject assembleJsonContent(final PlatformCredential pc,
                                            final ArrayList<ArrayList<String>> parsedComponents,
                                            final String company,
@@ -384,19 +383,19 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @return the ArrayList of ArrayLists containing the parsed component data.
      */
     private ArrayList<ArrayList<String>> parseComponents(final PlatformCredential pc) {
-        ArrayList<ArrayList<String>> parsedComponents = new ArrayList<ArrayList<String>>();
+        ArrayList<ArrayList<String>> parsedComponents = new ArrayList<>();
         ArrayList<ArrayList<Object>> chainComponents = new ArrayList<>();
 
         StringBuilder componentFailureString = new StringBuilder();
         if (pc.getComponentIdentifiers() != null
-                && pc.getComponentIdentifiers().size() > 0) {
+                && !pc.getComponentIdentifiers().isEmpty()) {
             componentFailureString.append(pc.getComponentFailures());
             // get all the certificates associated with the platform serial
             List<PlatformCredential> chainCertificates =
                     certificateRepository.byBoardSerialNumber(pc.getPlatformSerial());
             // combine all components in each certificate
             for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
-                ArrayList<Object> issuerAndComponent = new ArrayList<Object>();
+                ArrayList<Object> issuerAndComponent = new ArrayList<>();
                 issuerAndComponent.add(pc.getHolderIssuer());
                 issuerAndComponent.add(ci);
                 chainComponents.add(issuerAndComponent);
@@ -406,16 +405,16 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 componentFailureString.append(cert.getComponentFailures());
                 if (!cert.isPlatformBase()) {
                     for (ComponentIdentifier ci : cert.getComponentIdentifiers()) {
-                        ArrayList<Object> issuerAndComponent = new ArrayList<Object>();
+                        ArrayList<Object> issuerAndComponent = new ArrayList<>();
                         issuerAndComponent.add(cert.getHolderIssuer());
                         issuerAndComponent.add(ci);
                         chainComponents.add(issuerAndComponent);
                     }
                 }
             }
-            log.info("Component failures: " + componentFailureString);
+            log.info("Component failures: {}", componentFailureString);
             for (ArrayList<Object> issuerAndComponent : chainComponents) {
-                ArrayList<String> componentData = new ArrayList<String>();
+                ArrayList<String> componentData = new ArrayList<>();
                 String issuer = (String) issuerAndComponent.get(0);
                 issuer = issuer.replaceAll(",", " ");
                 ComponentIdentifier ci = (ComponentIdentifier) issuerAndComponent.get(1);
