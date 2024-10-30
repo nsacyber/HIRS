@@ -349,7 +349,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
         BaseReferenceManifest baseRim = null;
-        SupportReferenceManifest support = null;
+        SupportReferenceManifest supportRim = null;
         EventLogMeasurements measurements;
         boolean isReplacement = false;
         String replacementRimId = "";
@@ -425,11 +425,11 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
                 try {
-                    support =
+                    supportRim =
                             (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
                                     Hex.encodeHexString(messageDigest.digest(logFile.toByteArray())),
                                     ReferenceManifest.SUPPORT_RIM);
-                    if (support == null) {
+                    if (supportRim == null) {
                         /*
                         Either the logFile does not have a corresponding support RIM in the backend
                         or it was deleted. The support RIM for a replacement base RIM is handled
@@ -439,28 +439,28 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                             Optional<ReferenceManifest> replacementRim =
                                     referenceManifestRepository.findById(UUID.fromString(replacementRimId));
                             if (replacementRim.isPresent()) {
-                                support = (SupportReferenceManifest) replacementRim.get();
-                                support.setDeviceName(dv.getNw().getHostname());
+                                supportRim = (SupportReferenceManifest) replacementRim.get();
+                                supportRim.setDeviceName(dv.getNw().getHostname());
                             } else {
                                 throw new Exception("Unable to locate support RIM " + replacementRimId);
                             }
                         } else {
-                            support = new SupportReferenceManifest(
+                            supportRim = new SupportReferenceManifest(
                                     String.format("%s.rimel",
                                             defaultClientName),
                                     logFile.toByteArray());
                             // this is a validity check
-                            new TCGEventLog(support.getRimBytes());
+                            new TCGEventLog(supportRim.getRimBytes());
                             // no issues, continue
-                            support.setPlatformManufacturer(dv.getHw().getManufacturer());
-                            support.setPlatformModel(dv.getHw().getProductName());
-                            support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
-                                    support.getHexDecHash().substring(
-                                            support.getHexDecHash().length() - NUM_OF_VARIABLES)));
+                            supportRim.setPlatformManufacturer(dv.getHw().getManufacturer());
+                            supportRim.setPlatformModel(dv.getHw().getProductName());
+                            supportRim.setFileName(String.format("%s_[%s].rimel", defaultClientName,
+                                    supportRim.getHexDecHash().substring(
+                                            supportRim.getHexDecHash().length() - NUM_OF_VARIABLES)));
                         }
-                        support.setDeviceName(dv.getNw().getHostname());
-                        this.referenceManifestRepository.save(support);
-                    } else if (support.isArchived()) {
+                        supportRim.setDeviceName(dv.getNw().getHostname());
+                        this.referenceManifestRepository.save(supportRim);
+                    } else if (supportRim.isArchived()) {
                         /*
                         This block accounts for RIMs that may have been soft-deleted (archived)
                         in an older version of the ACA.
@@ -468,21 +468,21 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         List<ReferenceManifest> rims = referenceManifestRepository.findByArchiveFlag(false);
                         for (ReferenceManifest rim : rims) {
                             if (rim.isSupport() &&
-                                    rim.getTagId().equals(support.getTagId()) &&
-                                    rim.getCreateTime().after(support.getCreateTime())) {
-                                support.setDeviceName(null);
-                                support = (SupportReferenceManifest) rim;
-                                support.setDeviceName(dv.getNw().getHostname());
+                                    rim.getTagId().equals(supportRim.getTagId()) &&
+                                    rim.getCreateTime().after(supportRim.getCreateTime())) {
+                                supportRim.setDeviceName(null);
+                                supportRim = (SupportReferenceManifest) rim;
+                                supportRim.setDeviceName(dv.getNw().getHostname());
                             }
                         }
-                        if (support.isArchived()) {
+                        if (supportRim.isArchived()) {
                             throw new Exception("Unable to locate an unarchived support RIM.");
                         } else {
-                            this.referenceManifestRepository.save(support);
+                            this.referenceManifestRepository.save(supportRim);
                         }
                     } else {
-                        support.setDeviceName(dv.getNw().getHostname());
-                        this.referenceManifestRepository.save(support);
+                        supportRim.setDeviceName(dv.getNw().getHostname());
+                        this.referenceManifestRepository.save(supportRim);
                     }
                 } catch (IOException ioEx) {
                     log.error(ioEx);
