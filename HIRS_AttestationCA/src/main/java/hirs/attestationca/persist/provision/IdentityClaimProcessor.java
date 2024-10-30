@@ -350,7 +350,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 dv.getHw().getProductName());
         BaseReferenceManifest baseRim = null;
         SupportReferenceManifest supportRim = null;
-        EventLogMeasurements measurements;
+        EventLogMeasurements integrityMeasurements;
         boolean isReplacement = false;
         String replacementRimId = "";
         String tagId = "";
@@ -542,30 +542,30 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             fileName = String.format("%s.measurement",
                     dv.getNw().getHostname());
             try {
-                EventLogMeasurements temp = new EventLogMeasurements(fileName,
+                EventLogMeasurements deviceLiveLog = new EventLogMeasurements(fileName,
                         dv.getLivelog().toByteArray());
                 // find previous version.
-                measurements = referenceManifestRepository
+                integrityMeasurements = referenceManifestRepository
                         .byMeasurementDeviceName(dv.getNw().getHostname());
 
-                if (measurements != null) {
+                if (integrityMeasurements != null) {
                     // Find previous log and delete it
-                    referenceManifestRepository.delete(measurements);
+                    referenceManifestRepository.delete(integrityMeasurements);
                 }
 
                 List<BaseReferenceManifest> baseRims = referenceManifestRepository
                         .getBaseByManufacturerModel(dv.getHw().getManufacturer(),
                                 dv.getHw().getProductName());
-                measurements = temp;
-                measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
-                measurements.setPlatformModel(dv.getHw().getProductName());
+                integrityMeasurements = deviceLiveLog;
+                integrityMeasurements.setPlatformManufacturer(dv.getHw().getManufacturer());
+                integrityMeasurements.setPlatformModel(dv.getHw().getProductName());
                 if (tagId != null && !tagId.trim().isEmpty()) {
-                    measurements.setTagId(tagId);
+                    integrityMeasurements.setTagId(tagId);
                 }
-                measurements.setDeviceName(dv.getNw().getHostname());
-                measurements.archive();
+                integrityMeasurements.setDeviceName(dv.getNw().getHostname());
+                integrityMeasurements.archive();
 
-                this.referenceManifestRepository.save(measurements);
+                this.referenceManifestRepository.save(integrityMeasurements);
 
                 for (BaseReferenceManifest bRim : baseRims) {
                     if (bRim != null) {
@@ -573,8 +573,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         // event log hash for use during provision
                         SupportReferenceManifest sBaseRim = referenceManifestRepository
                                 .getSupportRimEntityById(bRim.getAssociatedRim());
-                        bRim.setEventLogHash(temp.getHexDecHash());
-                        sBaseRim.setEventLogHash(temp.getHexDecHash());
+                        bRim.setEventLogHash(deviceLiveLog.getHexDecHash());
+                        sBaseRim.setEventLogHash(deviceLiveLog.getHexDecHash());
                         referenceManifestRepository.save(bRim);
                         referenceManifestRepository.save(sBaseRim);
                     }
