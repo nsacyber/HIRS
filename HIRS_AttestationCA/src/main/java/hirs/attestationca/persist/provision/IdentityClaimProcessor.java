@@ -611,11 +611,11 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         List<SupportReferenceManifest> patchRims = new ArrayList<>();
         List<SupportReferenceManifest> dbSupportRims = this.referenceManifestRepository
                 .getSupportByManufacturerModel(manufacturer, model);
-        List<ReferenceDigestValue> sourcedValues = referenceDigestValueRepository
+        List<ReferenceDigestValue> expectedValues = referenceDigestValueRepository
                 .findByManufacturerAndModel(manufacturer, model);
 
         Map<String, ReferenceDigestValue> digestValueMap = new HashMap<>();
-        sourcedValues.stream().forEach((rdv) -> {
+        expectedValues.stream().forEach((rdv) -> {
             digestValueMap.put(rdv.getDigestValue(), rdv);
         });
 
@@ -634,9 +634,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 && referenceDigestValueRepository.findBySupportRimHash(baseSupportRim.getHexDecHash())
                 .isEmpty()) {
             try {
-                TCGEventLog logProcessor = new TCGEventLog(baseSupportRim.getRimBytes());
+                TCGEventLog eventLog = new TCGEventLog(baseSupportRim.getRimBytes());
                 ReferenceDigestValue rdv;
-                for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                for (TpmPcrEvent tpe : eventLog.getEventList()) {
                     rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
                             baseSupportRim.getId(), manufacturer, model, tpe.getPcrIndex(),
                             tpe.getEventDigestStr(), baseSupportRim.getHexDecHash(),
@@ -648,8 +648,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 // since I have the base already I don't have to care about the backward
                 // linkage
                 for (SupportReferenceManifest supplemental : supplementalRims) {
-                    logProcessor = new TCGEventLog(supplemental.getRimBytes());
-                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                    eventLog = new TCGEventLog(supplemental.getRimBytes());
+                    for (TpmPcrEvent tpe : eventLog.getEventList()) {
                         // all RDVs will have the same base rim
                         rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
                                 supplemental.getId(), manufacturer, model, tpe.getPcrIndex(),
@@ -683,8 +683,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 ReferenceDigestValue dbRdv;
                 String patchedValue;
                 for (SupportReferenceManifest patch : patchRims) {
-                    logProcessor = new TCGEventLog(patch.getRimBytes());
-                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                    eventLog = new TCGEventLog(patch.getRimBytes());
+                    for (TpmPcrEvent tpe : eventLog.getEventList()) {
                         patchedValue = tpe.getEventDigestStr();
                         dbRdv = digestValueMap.get(patchedValue);
 
