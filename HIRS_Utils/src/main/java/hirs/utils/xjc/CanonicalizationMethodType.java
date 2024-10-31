@@ -50,8 +50,8 @@ public class CanonicalizationMethodType {
     @XmlAnyElement(lax = true)
     protected List<Object> content;
 
-    @Setter
     @Getter
+    @Setter
     @XmlAttribute(name = "Algorithm", required = true)
     @XmlSchemaType(name = "anyURI")
     protected String algorithm;

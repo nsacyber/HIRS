@@ -25,10 +25,12 @@ public class EvPostCode {
      * Event Description.
      */
     private String codeInfo = "";
+
     /**
      * String type flag.
      */
     private boolean bisString = false;
+
     /**
      * Firmware object.
      */

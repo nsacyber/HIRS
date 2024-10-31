@@ -53,8 +53,8 @@ public class Entity
     @XmlElement(name = "Meta")
     protected List<Meta> meta;
 
-    @Setter
     @Getter
+    @Setter
     @XmlAttribute(name = "name", required = true)
     protected String name;
 

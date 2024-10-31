@@ -43,8 +43,8 @@ import lombok.Setter;
  * &lt;/complexType>
  * </pre>
  */
-@Setter
 @Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "DSAKeyValueType", propOrder = {
         "p",
@@ -58,7 +58,7 @@ import lombok.Setter;
 public class DSAKeyValueType {
     @XmlElement(name = "P")
     protected byte[] p;
-    
+
     @XmlElement(name = "Q")
     protected byte[] q;
 

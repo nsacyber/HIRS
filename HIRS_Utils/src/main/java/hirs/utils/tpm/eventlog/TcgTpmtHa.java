@@ -21,62 +21,76 @@ public class TcgTpmtHa {
      * TCG ID for SHA1.
      */
     public static final int TPM_ALG_SHA1 = 0x04;
+
     /**
      * TCG ID for SHA1.
      */
     public static final int TPM_ALG_SHA256 = 0x0B;
+
     /**
      * TCG ID for SHA 384.
      */
     public static final int TPM_ALG_SHA384 = 0x0C;
+
     /**
      * TCG ID for SHA512.
      */
     public static final int TPM_ALG_SHA_512 = 0x0D;
+
     /**
      * TCG ID for Null algorithm.
      */
     public static final int TPM_ALG_NULL = 0x10;
+
     /**
      * TCG ID for SHA1.
      */
     public static final int TPM_ALG_SHA1_LENGTH = 20;
+
     /**
      * TCG ID for SHA1.
      */
     public static final int TPM_ALG_SHA256_LENGTH = 32;
+
     /**
      * TCG ID for SHA 384.
      */
     public static final int TPM_ALG_SHA384_LENGTH = 48;
+
     /**
      * TCG ID for SHA512.
      */
     public static final int TPM_ALG_SHA512_LENGTH = 64;
+
     /**
      * TCG ID for Null algorithm.
      */
     public static final int TPM_ALG_NULL_LENGTH = 0;
+
     /**
      * TCG Defined Algorithm Identifiers.
      */
     @Getter
     private int hashAlgId = 0;
+
     /**
      * Length of the  hash.
      */
     @Getter
     private int hashLength = 0;
+
     /**
-     * Human readable name of the hash algorithm.
+     * Human-readable name of the hash algorithm.
      */
     @Getter
     private String hashName = "";
+
     /**
      * Hash data.
      */
     @Getter(value = AccessLevel.PROTECTED)
     private byte[] digest = null;
+
     /**
      * buffer to hold the structure.
      */
@@ -111,27 +125,14 @@ public class TcgTpmtHa {
      * @return name of the algorithm
      */
     public static String tcgAlgIdToString(final int algId) {
-        String alg;
-        switch (algId) {
-            case TPM_ALG_SHA1:
-                alg = "TPM_ALG_SHA1";
-                break;
-            case TPM_ALG_SHA256:
-                alg = "TPM_ALG_SHA256";
-                break;
-            case TPM_ALG_SHA384:
-                alg = "TPM_ALG_SHA384";
-                break;
-            case TPM_ALG_SHA_512:
-                alg = "TPM_ALG_SHA512";
-                break;
-            case TPM_ALG_NULL:
-                alg = "TPM_ALG_NULL";
-                break;
-            default:
-                alg = "Unknown or invalid Hash";
-        }
-        return alg;
+        return switch (algId) {
+            case TPM_ALG_SHA1 -> "TPM_ALG_SHA1";
+            case TPM_ALG_SHA256 -> "TPM_ALG_SHA256";
+            case TPM_ALG_SHA384 -> "TPM_ALG_SHA384";
+            case TPM_ALG_SHA_512 -> "TPM_ALG_SHA512";
+            case TPM_ALG_NULL -> "TPM_ALG_NULL";
+            default -> "Unknown or invalid Hash";
+        };
     }
 
     /**
@@ -143,25 +144,13 @@ public class TcgTpmtHa {
      * @return id of hash algorithm
      */
     public static int tcgAlgStringToId(final String algorithm) {
-        int alg;
-        switch (algorithm) {
-            case "TPM_ALG_SHA1":
-                alg = TPM_ALG_SHA1;
-                break;
-            case "TPM_ALG_SHA256":
-                alg = TPM_ALG_SHA256;
-                break;
-            case "TPM_ALG_SHA384":
-                alg = TPM_ALG_SHA384;
-                break;
-            case "TPM_ALG_SHA512":
-                alg = TPM_ALG_SHA_512;
-                break;
-            case "TPM_ALG_NULL":
-            default:
-                alg = TPM_ALG_NULL;
-        }
-        return alg;
+        return switch (algorithm) {
+            case "TPM_ALG_SHA1" -> TPM_ALG_SHA1;
+            case "TPM_ALG_SHA256" -> TPM_ALG_SHA256;
+            case "TPM_ALG_SHA384" -> TPM_ALG_SHA384;
+            case "TPM_ALG_SHA512" -> TPM_ALG_SHA_512;
+            default -> TPM_ALG_NULL;
+        };
     }
 
     /**
@@ -173,25 +162,13 @@ public class TcgTpmtHa {
      * @return length of hash data in  bytes
      */
     public static int tcgAlgLength(final int algId) {
-        int length;
-        switch (algId) {
-            case TPM_ALG_SHA1:
-                length = TPM_ALG_SHA1_LENGTH;
-                break;
-            case TPM_ALG_SHA256:
-                length = TPM_ALG_SHA256_LENGTH;
-                break;
-            case TPM_ALG_SHA384:
-                length = TPM_ALG_SHA384_LENGTH;
-                break;
-            case TPM_ALG_SHA_512:
-                length = TPM_ALG_SHA512_LENGTH;
-                break;
-            case TPM_ALG_NULL:
-            default:
-                length = TPM_ALG_NULL_LENGTH;
-        }
-        return length;
+        return switch (algId) {
+            case TPM_ALG_SHA1 -> TPM_ALG_SHA1_LENGTH;
+            case TPM_ALG_SHA256 -> TPM_ALG_SHA256_LENGTH;
+            case TPM_ALG_SHA384 -> TPM_ALG_SHA384_LENGTH;
+            case TPM_ALG_SHA_512 -> TPM_ALG_SHA512_LENGTH;
+            default -> TPM_ALG_NULL_LENGTH;
+        };
     }
 
     /**

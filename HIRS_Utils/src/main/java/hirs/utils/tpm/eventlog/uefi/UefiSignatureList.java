@@ -64,6 +64,10 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIB
  */
 public class UefiSignatureList {
     /**
+     * Array List of Signature found in the list.
+     */
+    private final ArrayList<UefiSignatureData> sigList = new ArrayList<>();
+    /**
      * Size of the signature list.
      */
     private int listSize = 0;
@@ -94,17 +98,15 @@ public class UefiSignatureList {
      */
     private String dataInvalidStatus = "Signature List data validity is undetermined yet";
     /**
-     * Array List of Signature found in the list.
-     */
-    private final ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
-    /**
      * Input Stream for processing.
      */
     private ByteArrayInputStream efiSigDataIS = null;
+
     /**
      * Type of signature.
      */
     private UefiGuid signatureType = null;
+
     /**
      * Track status of vendor-table.json.
      */
@@ -212,16 +214,11 @@ public class UefiSignatureList {
      * @return true if the GUID is a valid GUID for Signature List Type, false if not.
      */
     public boolean isValidSigListGUID(final UefiGuid guid) {
-        switch (guid.getVendorTableReference()) {
-            case "EFI_CERT_SHA256_GUID":
-            case "EFI_CERT_X509_SHA256":
-            case "EFI_CERT_X509_SHA384":
-            case "EFI_CERT_X509_SHA512":
-            case "EFI_CERT_X509_GUID":
-                return true;
-            default:
-                return false;
-        }
+        return switch (guid.getVendorTableReference()) {
+            case "EFI_CERT_SHA256_GUID", "EFI_CERT_X509_SHA256", "EFI_CERT_X509_SHA384",
+                 "EFI_CERT_X509_SHA512", "EFI_CERT_X509_GUID" -> true;
+            default -> false;
+        };
     }
 
     /**

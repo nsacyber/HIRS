@@ -36,8 +36,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * &lt;/complexType>
  * </pre>
  */
-@Setter
 @Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Evidence", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 public class Evidence

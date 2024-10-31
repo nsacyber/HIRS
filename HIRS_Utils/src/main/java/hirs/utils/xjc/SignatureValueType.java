@@ -43,10 +43,8 @@ import lombok.Setter;
         "value"
 })
 public class SignatureValueType {
-
     @XmlValue
     protected byte[] value;
-
 
     @XmlAttribute(name = "Id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)

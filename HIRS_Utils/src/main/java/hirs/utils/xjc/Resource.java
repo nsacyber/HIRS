@@ -38,7 +38,6 @@ import lombok.Setter;
 @XmlType(name = "Resource", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 public class Resource
         extends Meta {
-
     @XmlAttribute(name = "type", required = true)
     protected String type;
 }

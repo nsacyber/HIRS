@@ -35,8 +35,8 @@ import java.math.BigInteger;
  * &lt;/complexType>
  * </pre>
  */
-@Setter
 @Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "File", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 public class File

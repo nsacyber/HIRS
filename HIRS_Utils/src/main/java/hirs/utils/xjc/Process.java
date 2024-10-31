@@ -35,16 +35,14 @@ import java.math.BigInteger;
  * &lt;/complexType>
  * </pre>
  */
-@Setter
 @Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Process", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 public class Process
         extends Meta {
-    
     @XmlAttribute(name = "name", required = true)
     protected String name;
-
 
     @XmlAttribute(name = "pid")
     protected BigInteger pid;

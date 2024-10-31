@@ -18,6 +18,7 @@ import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.w3c.dom.Element;
@@ -45,24 +46,24 @@ import java.util.List;
  * &lt;/complexType>
  * </pre>
  */
+@Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SignaturePropertyType", propOrder = {
         "content"
 })
 public class SignaturePropertyType {
 
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     @XmlMixed
     @XmlAnyElement(lax = true)
     protected List<Object> content;
 
-    @Getter
-    @Setter
     @XmlAttribute(name = "Target", required = true)
     @XmlSchemaType(name = "anyURI")
     protected String target;
 
-    @Getter
-    @Setter
     @XmlAttribute(name = "Id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlID
@@ -93,7 +94,7 @@ public class SignaturePropertyType {
      */
     public List<Object> getContent() {
         if (content == null) {
-            content = new ArrayList<Object>();
+            content = new ArrayList<>();
         }
         return this.content;
     }

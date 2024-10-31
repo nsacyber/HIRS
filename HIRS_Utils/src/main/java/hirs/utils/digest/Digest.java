@@ -58,10 +58,10 @@ public final class Digest extends AbstractDigest {
             columnDefinition = "varbinary(64)")
     private final byte[] digest;
 
+    @Getter
     @XmlElement
     @Column(nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    @Getter
     private final DigestAlgorithm algorithm;
 
     /**

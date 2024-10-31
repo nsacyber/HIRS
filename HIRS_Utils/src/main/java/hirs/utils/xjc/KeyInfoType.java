@@ -73,8 +73,8 @@ public class KeyInfoType {
     @XmlAnyElement(lax = true)
     protected List<Object> content;
 
-    @Setter
     @Getter
+    @Setter
     @XmlAttribute(name = "Id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlID
