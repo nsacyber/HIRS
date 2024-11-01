@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.provision;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
@@ -69,24 +68,23 @@ import java.util.regex.Pattern;
 
 @Log4j2
 public class IdentityClaimProcessor extends AbstractProcessor {
-    private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
-            + "14,15,16,17,18,19,20,21,22,23";
-
-    private static final int NUM_OF_VARIABLES = 5;
     /**
      * Number of bytes to include in the TPM2.0 nonce.
      */
     public static final int NONCE_LENGTH = 20;
+    private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
+            + "14,15,16,17,18,19,20,21,22,23";
+    private static final int NUM_OF_VARIABLES = 5;
     private static final int MAC_BYTES = 6;
 
-    private SupplyChainValidationService supplyChainValidationService;
-    private CertificateRepository certificateRepository;
-    private ComponentResultRepository componentResultRepository;
-    private ComponentInfoRepository componentInfoRepository;
-    private ReferenceManifestRepository referenceManifestRepository;
-    private ReferenceDigestValueRepository referenceDigestValueRepository;
-    private DeviceRepository deviceRepository;
-    private TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
+    private final SupplyChainValidationService supplyChainValidationService;
+    private final CertificateRepository certificateRepository;
+    private final ComponentResultRepository componentResultRepository;
+    private final ComponentInfoRepository componentInfoRepository;
+    private final ReferenceManifestRepository referenceManifestRepository;
+    private final ReferenceDigestValueRepository referenceDigestValueRepository;
+    private final DeviceRepository deviceRepository;
+    private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
 
     /**
      * Constructor.
@@ -116,8 +114,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * Basic implementation of the ACA processIdentityClaimTpm2 method. Parses the claim,
      * stores the device info, performs supply chain validation, generates a nonce,
      * and wraps that nonce with the make credential process before returning it to the client.
-     *            attCert.setPcrValues(pcrValues);
-
+     * attCert.setPcrValues(pcrValues);
+     *
      * @param identityClaim the request to process, cannot be null
      * @return an identity claim response for the specified request containing a wrapped blob
      */
@@ -147,7 +145,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             }
         }
 
-        ByteString blobStr = ByteString.copyFrom(new byte[]{});
+        ByteString blobStr = ByteString.copyFrom(new byte[] {});
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
@@ -195,7 +193,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     private AppraisalStatus.Status doSupplyChainValidation(
             final ProvisionerTpm2.IdentityClaim claim, final PublicKey ekPub) {
         // attempt to find an endorsement credential to validate
-        EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
+        EndorsementCredential endorsementCredential =
+                parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
 
         // attempt to find platform credentials to validate
         List<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
@@ -283,6 +282,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
     /**
      * Converts a protobuf DeviceInfo object to a HIRS Utils DeviceInfoReport object.
+     *
      * @param claim the protobuf serialized identity claim containing the device info
      * @return a HIRS Utils DeviceInfoReport representation of device info
      */
@@ -357,7 +357,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         String fileName = "";
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
-        MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
 
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
@@ -425,9 +425,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
                 try {
-                    support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
+                    support =
+                            (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
                                     Hex.encodeHexString(messageDigest.digest(logFile.toByteArray())),
-                            ReferenceManifest.SUPPORT_RIM);
+                                    ReferenceManifest.SUPPORT_RIM);
                     if (support == null) {
                         /*
                         Either the logFile does not have a corresponding support RIM in the backend
@@ -512,8 +513,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     }
 
                     // now update support rim
-                    SupportReferenceManifest dbSupport = (SupportReferenceManifest) referenceManifestRepository
-                            .findByHexDecHashAndRimType(swid.getHashValue(), ReferenceManifest.SUPPORT_RIM);
+                    SupportReferenceManifest dbSupport =
+                            (SupportReferenceManifest) referenceManifestRepository
+                                    .findByHexDecHashAndRimType(swid.getHashValue(),
+                                            ReferenceManifest.SUPPORT_RIM);
                     if (dbSupport != null) {
                         dbSupport.setFileName(swid.getName());
                         dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
@@ -584,7 +587,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     dv.getNw().getHostname()));
         }
 
-         // Get TPM info, currently unimplemented
+        // Get TPM info, currently unimplemented
         TPMInfo tpmInfo = new TPMInfo(DeviceInfoEnums.NOT_SPECIFIED,
                 (short) 0,
                 (short) 0,
@@ -628,7 +631,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         }
 
         if (baseSupportRim != null
-                && referenceDigestValueRepository.findBySupportRimHash(baseSupportRim.getHexDecHash()).isEmpty()) {
+                && referenceDigestValueRepository.findBySupportRimHash(baseSupportRim.getHexDecHash())
+                .isEmpty()) {
             try {
                 TCGEventLog logProcessor = new TCGEventLog(baseSupportRim.getRimBytes());
                 ReferenceDigestValue rdv;
@@ -688,7 +692,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                             log.error(String.format("Patching value does not exist (%s)",
                                     patchedValue));
                         } else {
-                             // WIP - Until we get patch examples
+                            // WIP - Until we get patch examples
                             dbRdv.setPatched(true);
                         }
                     }
@@ -721,7 +725,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     }
 
     private int handleDeviceComponents(final String hostName, final String paccorString) {
-        int deviceComponents = 0 ;
+        int deviceComponents = 0;
         Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
         try {
             List<ComponentInfo> componentInfos = SupplyChainCredentialValidator
