@@ -17,6 +17,7 @@ ECC_PATH=ecc_512_sha384_certs
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 ACA_PROP_FILE="/etc/hirs/aca/aca.properties"
+ACA_CERTS_DIR="/etc/hirs/certificates"
 DB_ADMIN_PWD=""
 # Db Configuration fileis, use RHELpaths as default
 DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
@@ -236,6 +237,8 @@ fi
 # HIRS ACA Mysqld processing ...
 check_systemd -p
 check_mariadb_install
+# Ensure the certificates directory is readable by mysql
+find $ACA_CERTS_DIR -type d -exec chown :mysql {} +
 start_mysqlsd
 check_mysql
 check_mysql_root_pwd
