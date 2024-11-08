@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
  * Class to process the NV_INDEX_DYNAMIC_EVENT_LOG_DATA per PFP.
  * Per PFP, the first 16 bytes of the structure are a String based identifier (Signature),
  * which are a NULL-terminated ASCII string "NvIndexDynamic".
- *
+ * <p>
  * HEADERS defined by PFP v1.06 Rev 52.
  * Certain fields are common to both ..HEADER and ..HEADER2, and are noted below the structures.
  * <p>

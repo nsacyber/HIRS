@@ -14,13 +14,15 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
  * <p>Java class for RetrievalMethodType complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="RetrievalMethodType">
  *   &lt;complexContent>
@@ -34,94 +36,23 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
+@Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RetrievalMethodType", propOrder = {
-    "transforms"
+        "transforms"
 })
 public class RetrievalMethodType {
 
     @XmlElement(name = "Transforms")
     protected TransformsType transforms;
+
     @XmlAttribute(name = "URI")
     @XmlSchemaType(name = "anyURI")
     protected String uri;
+
     @XmlAttribute(name = "Type")
     @XmlSchemaType(name = "anyURI")
     protected String type;
-
-    /**
-     * Gets the value of the transforms property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link TransformsType }
-     *     
-     */
-    public TransformsType getTransforms() {
-        return transforms;
-    }
-
-    /**
-     * Sets the value of the transforms property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link TransformsType }
-     *     
-     */
-    public void setTransforms(TransformsType value) {
-        this.transforms = value;
-    }
-
-    /**
-     * Gets the value of the uri property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getURI() {
-        return uri;
-    }
-
-    /**
-     * Sets the value of the uri property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setURI(String value) {
-        this.uri = value;
-    }
-
-    /**
-     * Gets the value of the type property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * Sets the value of the type property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setType(String value) {
-        this.type = value;
-    }
-
 }

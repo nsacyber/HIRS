@@ -32,19 +32,18 @@ import java.util.ArrayList;
  */
 public class EvEfiHandoffTable {
     /**
+     * List of Vendor GUIDs.
+     */
+    private final ArrayList<UefiGuid> vendorGuids = new ArrayList<>();
+    /**
+     * List of Vendors.
+     */
+    private final ArrayList<byte[]> vendorTables = new ArrayList<>();
+    /**
      * Number of Tables.
      */
     @Getter
     private int numberOfTables = 0;
-    /**
-     * List of Vendor GUIDs.
-     */
-    private ArrayList<UefiGuid> vendorGuids = new ArrayList<>();
-    /**
-     * List of Vendors.
-     */
-    private ArrayList<byte[]> vendorTables = new ArrayList<>();
-
     private Path vendorPathString;
 
     /**
@@ -71,7 +70,7 @@ public class EvEfiHandoffTable {
     /**
      * EvEFIHandoffTable constructor.
      *
-     * @param tpmEventData byte array holding the Handoff table data.
+     * @param tpmEventData     byte array holding the Handoff table data.
      * @param vendorPathString the string for the vendor file
      */
     public EvEfiHandoffTable(final byte[] tpmEventData, final Path vendorPathString) {
@@ -122,7 +121,7 @@ public class EvEfiHandoffTable {
     }
 
     /**
-     * Returns a human readable description of the hand off tables.
+     * Returns a human-readable description of the hand off tables.
      *
      * @return a human readable description.
      */

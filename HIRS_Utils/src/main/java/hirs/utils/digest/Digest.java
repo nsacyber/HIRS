@@ -34,14 +34,13 @@ public final class Digest extends AbstractDigest {
             DigestAlgorithm.SHA1,
             new byte[SHA1_DIGEST_LENGTH]
     );
-
-    private static final String SHA1_EMPTY_HEX =
-            "da39a3ee5e6b4b0d3255bfef95601890afd80709";
-
     /**
      * A SHA1 digest whose content is the hash of an empty buffer.
      */
     public static final Digest SHA1_OF_NO_DATA;
+
+    private static final String SHA1_EMPTY_HEX =
+            "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 
     static {
         try {
@@ -59,17 +58,17 @@ public final class Digest extends AbstractDigest {
             columnDefinition = "varbinary(64)")
     private final byte[] digest;
 
+    @Getter
     @XmlElement
     @Column(nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    @Getter
     private final DigestAlgorithm algorithm;
 
     /**
      * Creates a new <code>Digest</code>.
      *
      * @param algorithm algorithm used to generate the digest
-     * @param digest digest value
+     * @param digest    digest value
      * @throws IllegalArgumentException if digest length does not match that of the algorithm
      */
     public Digest(final DigestAlgorithm algorithm, final byte[] digest)
@@ -81,6 +80,7 @@ public final class Digest extends AbstractDigest {
 
     /**
      * Creates a new <code>Digest</code> when an algorithm isn't specified.
+     *
      * @param digest byte array value
      */
     public Digest(final byte[] digest) {
@@ -90,9 +90,20 @@ public final class Digest extends AbstractDigest {
     /**
      * Default constructor necessary for Hibernate.
      */
-    protected Digest() {
+    private Digest() {
         this.algorithm = null;
         this.digest = null;
+    }
+
+    /**
+     * Helper method to reverse the toString method. Returns a Digest given a String
+     * that was created using an AbstractDigest's toString method.
+     *
+     * @param digest String representation of an AbstractDigest
+     * @return Digest object recreated from the String passed in
+     */
+    public static Digest fromString(final String digest) {
+        return new Digest(algorithmFromString(digest), digestFromString(digest));
     }
 
     /**
@@ -112,16 +123,5 @@ public final class Digest extends AbstractDigest {
      */
     public OptionalDigest asOptionalDigest() {
         return new OptionalDigest(algorithm, digest);
-    }
-
-    /**
-     * Helper method to reverse the toString method. Returns a Digest given a String
-     * that was created using an AbstractDigest's toString method.
-     *
-     * @param digest String representation of an AbstractDigest
-     * @return Digest object recreated from the String passed in
-     */
-    public static Digest fromString(final String digest) {
-        return new Digest(algorithmFromString(digest), digestFromString(digest));
     }
 }
