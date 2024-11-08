@@ -61,15 +61,15 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
     /**
      * list of digests.
      */
-    private ArrayList<TcgTpmtHa> hashList = new ArrayList<>();
+    private final ArrayList<TcgTpmtHa> hashList = new ArrayList<>();
 
     /**
      * Constructor.
      *
      * @param is          ByteArrayInputStream holding the TCG Log event
      * @param eventNumber event position within the event log.
-     * @throws java.io.IOException              if an error occurs in parsing the event
-     * @throws java.security.NoSuchAlgorithmException if an undefined algorithm is encountered.
+     * @throws java.io.IOException                     if an error occurs in parsing the event
+     * @throws java.security.NoSuchAlgorithmException  if an undefined algorithm is encountered.
      * @throws java.security.cert.CertificateException If a certificate within an event can't be processed.
      */
     public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber)

@@ -1,6 +1,7 @@
 package hirs.utils.tpm.eventlog.uefi;
 
 import jakarta.xml.bind.DatatypeConverter;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;

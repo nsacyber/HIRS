@@ -166,22 +166,22 @@ public class BaseReferenceManifest extends ReferenceManifest {
      */
     private void parseSoftwareMeta(final Element softwareMeta) {
         if (softwareMeta != null) {
-            this.colloquialVersion = softwareMeta.getAttribute(SwidTagConstants._COLLOQUIAL_VERSION_STR);
-            this.product = softwareMeta.getAttribute(SwidTagConstants._PRODUCT_STR);
-            this.revision = softwareMeta.getAttribute(SwidTagConstants._REVISION_STR);
-            this.edition = softwareMeta.getAttribute(SwidTagConstants._EDITION_STR);
-            this.rimLinkHash = softwareMeta.getAttribute(SwidTagConstants._RIM_LINK_HASH_STR);
-            this.bindingSpec = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_STR);
-            this.bindingSpecVersion = softwareMeta.getAttribute(SwidTagConstants._BINDING_SPEC_VERSION_STR);
+            this.colloquialVersion = softwareMeta.getAttribute(SwidTagConstants.COLLOQUIAL_VERSION_STR);
+            this.product = softwareMeta.getAttribute(SwidTagConstants.PRODUCT_STR);
+            this.revision = softwareMeta.getAttribute(SwidTagConstants.REVISION_STR);
+            this.edition = softwareMeta.getAttribute(SwidTagConstants.EDITION_STR);
+            this.rimLinkHash = softwareMeta.getAttribute(SwidTagConstants.RIM_LINK_HASH_STR);
+            this.bindingSpec = softwareMeta.getAttribute(SwidTagConstants.BINDING_SPEC_STR);
+            this.bindingSpecVersion = softwareMeta.getAttribute(SwidTagConstants.BINDING_SPEC_VERSION_STR);
             this.setPlatformManufacturerId(
-                    softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_ID_STR));
+                    softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MANUFACTURER_ID_STR));
             this.setPlatformManufacturer(
-                    softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MANUFACTURER_STR));
-            this.setPlatformModel(softwareMeta.getAttribute(SwidTagConstants._PLATFORM_MODEL_STR));
-            this.platformVersion = softwareMeta.getAttribute(SwidTagConstants._PLATFORM_VERSION_STR);
-            this.payloadType = softwareMeta.getAttribute(SwidTagConstants._PAYLOAD_TYPE_STR);
-            this.pcURIGlobal = softwareMeta.getAttribute(SwidTagConstants._PC_URI_GLOBAL_STR);
-            this.pcURILocal = softwareMeta.getAttribute(SwidTagConstants._PC_URI_LOCAL_STR);
+                    softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MANUFACTURER_FULL_STR));
+            this.setPlatformModel(softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MODEL_STR));
+            this.platformVersion = softwareMeta.getAttribute(SwidTagConstants.PLATFORM_VERSION_STR);
+            this.payloadType = softwareMeta.getAttribute(SwidTagConstants.PAYLOAD_TYPE_STR);
+            this.pcURIGlobal = softwareMeta.getAttribute(SwidTagConstants.PC_URI_GLOBAL_STR);
+            this.pcURILocal = softwareMeta.getAttribute(SwidTagConstants.PC_URI_LOCAL_STR);
         } else {
             log.warn("SoftwareMeta Tag not found.");
         }
@@ -248,7 +248,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
         try {
             document = unmarshallSwidTag(byteArrayInputStream);
         } catch (UnmarshalException e) {
-            log.error("Error while parsing Directory tag: " + e.getMessage());
+            log.error("Error while parsing Directory tag: {}", e.getMessage());
         }
         if (document != null) {
             Element softwareIdentity =
@@ -293,8 +293,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
             swidResource = new SwidResource();
             swidResource.setName(file.getAttribute(SwidTagConstants.NAME));
             swidResource.setSize(file.getAttribute(SwidTagConstants.SIZE));
-            swidResource.setHashValue(file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":"
-                    + SwidTagConstants._SHA256_HASH.getLocalPart()));
+            swidResource.setHashValue(file.getAttribute(SwidTagConstants.SHA_256_HASH.getPrefix() + ":"
+                    + SwidTagConstants.SHA_256_HASH.getLocalPart()));
             validHashes.add(swidResource);
         }
 

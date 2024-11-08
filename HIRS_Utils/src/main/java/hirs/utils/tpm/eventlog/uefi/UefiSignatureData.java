@@ -11,14 +11,14 @@ import java.security.cert.CertificateException;
 
 /**
  * Class for processing either
- *   1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
- *      used for EFIVariables associated with Secure Boot,
- *      as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
- *   2) the contents of an SPDM devdb,
- *      used for SPDM Device Policy or Device Authority, whose data is an EFIVariable
- *         EFIVariable data for SPDM Device Policy: UefiSignatureList
- *         EFIVariable data for SPDM Device: UefiSignatureData only
- *      as defined by PFP v1.06 Rev52, Section 10.4
+ * 1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
+ * used for EFIVariables associated with Secure Boot,
+ * as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
+ * 2) the contents of an SPDM devdb,
+ * used for SPDM Device Policy or Device Authority, whose data is an EFIVariable
+ * EFIVariable data for SPDM Device Policy: UefiSignatureList
+ * EFIVariable data for SPDM Device: UefiSignatureData only
+ * as defined by PFP v1.06 Rev52, Section 10.4
  * <p>
  * typedef struct _EFI_SIGNATURE_DATA {
  * EFI_GUID    SignatureOwner;
@@ -33,7 +33,7 @@ public class UefiSignatureData {
     /**
      * UEFI Certificate GUID.
      */
-    private byte[] guid = new byte[UefiConstants.SIZE_16];
+    private final byte[] guid = new byte[UefiConstants.SIZE_16];
     /**
      * UEFI Signature data.
      */
@@ -61,7 +61,7 @@ public class UefiSignatureData {
     /**
      * UEFI Certificate SHA256 hash.
      */
-    private byte[] binaryHash = new byte[UefiConstants.SIZE_32];
+    private final byte[] binaryHash = new byte[UefiConstants.SIZE_32];
     /**
      * UEFI Signature data status.
      */

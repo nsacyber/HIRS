@@ -26,7 +26,7 @@ import org.apache.commons.codec.binary.Hex;
 @Log4j2
 @Getter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @Embeddable
 @XmlAccessorType(XmlAccessType.FIELD)
 public final class TPMMeasurementRecord extends ExaminableRecord {

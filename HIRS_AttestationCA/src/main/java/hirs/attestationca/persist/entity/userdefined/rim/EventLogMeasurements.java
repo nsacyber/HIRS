@@ -27,7 +27,7 @@ import java.util.Collection;
  */
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @Log4j2
 @Entity
 public class EventLogMeasurements extends SupportReferenceManifest {

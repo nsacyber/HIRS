@@ -8,8 +8,6 @@
 
 package hirs.utils.xjc;
 
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -19,12 +17,15 @@ import jakarta.xml.bind.annotation.XmlElementRefs;
 import jakarta.xml.bind.annotation.XmlType;
 import org.w3c.dom.Element;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * <p>Java class for X509DataType complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="X509DataType">
  *   &lt;complexContent>
@@ -43,41 +44,39 @@ import org.w3c.dom.Element;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "X509DataType", propOrder = {
-    "x509IssuerSerialOrX509SKIOrX509SubjectName"
+        "x509IssuerSerialOrX509SKIOrX509SubjectName"
 })
 public class X509DataType {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "X509SubjectName", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "X509CRL", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "X509IssuerSerial", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "X509SKI", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "X509Certificate", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false)
+            @XmlElementRef(name = "X509SubjectName", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
+            @XmlElementRef(name = "X509CRL", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
+            @XmlElementRef(name = "X509IssuerSerial", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
+            @XmlElementRef(name = "X509SKI", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false),
+            @XmlElementRef(name = "X509Certificate", namespace = "http://www.w3.org/2000/09/xmldsig#", type = JAXBElement.class, required = false)
     })
     @XmlAnyElement(lax = true)
     protected List<Object> x509IssuerSerialOrX509SKIOrX509SubjectName;
 
     /**
      * Gets the value of the x509IssuerSerialOrX509SKIOrX509SubjectName property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the x509IssuerSerialOrX509SKIOrX509SubjectName property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getX509IssuerSerialOrX509SKIOrX509SubjectName().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link JAXBElement }{@code <}{@link String }{@code >}
@@ -87,8 +86,6 @@ public class X509DataType {
      * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      * {@link Element }
      * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
-     * 
-     * 
      */
     public List<Object> getX509IssuerSerialOrX509SKIOrX509SubjectName() {
         if (x509IssuerSerialOrX509SKIOrX509SubjectName == null) {

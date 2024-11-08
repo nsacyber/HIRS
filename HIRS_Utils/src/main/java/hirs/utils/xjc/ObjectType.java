@@ -8,8 +8,6 @@
 
 package hirs.utils.xjc;
 
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAnyElement;
@@ -20,14 +18,20 @@ import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import org.w3c.dom.Element;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * <p>Java class for ObjectType complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="ObjectType">
  *   &lt;complexContent>
@@ -42,130 +46,60 @@ import org.w3c.dom.Element;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
+@Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ObjectType", propOrder = {
-    "content"
+        "content"
 })
 public class ObjectType {
 
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     @XmlMixed
     @XmlAnyElement(lax = true)
     protected List<Object> content;
+
     @XmlAttribute(name = "Id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlID
     @XmlSchemaType(name = "ID")
     protected String id;
+
     @XmlAttribute(name = "MimeType")
     protected String mimeType;
+
     @XmlAttribute(name = "Encoding")
     @XmlSchemaType(name = "anyURI")
     protected String encoding;
 
     /**
      * Gets the value of the content property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the content property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getContent().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link Object }
      * {@link Element }
      * {@link String }
-     * 
-     * 
      */
     public List<Object> getContent() {
         if (content == null) {
-            content = new ArrayList<Object>();
+            content = new ArrayList<>();
         }
         return this.content;
     }
-
-    /**
-     * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setId(String value) {
-        this.id = value;
-    }
-
-    /**
-     * Gets the value of the mimeType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    /**
-     * Sets the value of the mimeType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setMimeType(String value) {
-        this.mimeType = value;
-    }
-
-    /**
-     * Gets the value of the encoding property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEncoding() {
-        return encoding;
-    }
-
-    /**
-     * Sets the value of the encoding property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEncoding(String value) {
-        this.encoding = value;
-    }
-
 }

@@ -28,7 +28,7 @@ import java.util.Map;
 
 @Entity
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Log4j2
 public class IDevIDCertificate extends Certificate {
 

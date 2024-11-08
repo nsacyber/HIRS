@@ -17,10 +17,20 @@ public final class StringValidator {
     private final String fieldName;
     private final Logger logger;
 
+    private StringValidator(final String value, final String fieldName, final Logger logger) {
+        this.value = value;
+        this.fieldName = fieldName;
+        if (logger == null) {
+            this.logger = log;
+        } else {
+            this.logger = logger;
+        }
+    }
+
     /**
      * Begins a validation operation.
      *
-     * @param value the value to check
+     * @param value     the value to check
      * @param fieldName the name of the field (to be used in error reporting)
      * @return a Validation object, upon which validation methods can be called
      */
@@ -31,24 +41,14 @@ public final class StringValidator {
     /**
      * Begins a validation operation.
      *
-     * @param value the value to check
+     * @param value     the value to check
      * @param fieldName the name of the field (to be used in error reporting)
-     * @param logger a logger to use in lieu of Validation's logger
+     * @param logger    a logger to use in lieu of Validation's logger
      * @return a Validation object, upon which validation methods can be called
      */
     public static StringValidator check(final String value, final String fieldName,
                                         final Logger logger) {
         return new StringValidator(value, fieldName, logger);
-    }
-
-    private StringValidator(final String value, final String fieldName, final Logger logger) {
-        this.value = value;
-        this.fieldName = fieldName;
-        if (logger == null) {
-            this.logger = log;
-        } else {
-            this.logger = logger;
-        }
     }
 
     /**

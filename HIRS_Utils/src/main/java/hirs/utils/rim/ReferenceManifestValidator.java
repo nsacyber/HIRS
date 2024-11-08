@@ -277,8 +277,8 @@ public class ReferenceManifestValidator {
             filepath = file.getAttribute(SwidTagConstants.NAME);
         }
         if (getHashValue(filepath, "SHA256").equals(
-                file.getAttribute(SwidTagConstants._SHA256_HASH.getPrefix() + ":"
-                        + SwidTagConstants._SHA256_HASH.getLocalPart()))) {
+                file.getAttribute(SwidTagConstants.SHA_256_HASH.getPrefix() + ":"
+                        + SwidTagConstants.SHA_256_HASH.getLocalPart()))) {
             log.info("Support RIM hash verified for {}", filepath);
             return true;
         } else {
@@ -377,7 +377,7 @@ public class ReferenceManifestValidator {
      *
      * @param signature the signature that failed to validate
      * @param context   the context used for validation
-     * @throws XMLSignatureException
+     * @throws XMLSignatureException if there is an issue validating the provided signature
      */
     private void whySignatureInvalid(final XMLSignature signature, final DOMValidateContext context)
             throws XMLSignatureException {
@@ -415,7 +415,7 @@ public class ReferenceManifestValidator {
             throws Exception {
         if (cert == null || trustStore == null) {
             throw new Exception("Null certificate or truststore received");
-        } else if (trustStore.size() == 0) {
+        } else if (trustStore.isEmpty()) {
             throw new Exception("Truststore is empty");
         }
 
@@ -542,9 +542,8 @@ public class ReferenceManifestValidator {
      *
      * @param pemString the input string
      * @return an X509Certificate created from the string, or null
-     * @throws Exception if certificate cannot be successfully parsed
      */
-    private X509Certificate parseCertFromPEMString(final String pemString) throws Exception {
+    private X509Certificate parseCertFromPEMString(final String pemString) {
         String certificateHeader = "-----BEGIN CERTIFICATE-----";
         String certificateFooter = "-----END CERTIFICATE-----";
         try {
@@ -614,7 +613,7 @@ public class ReferenceManifestValidator {
      *
      * @param certificate the cert to pull the subjectKeyIdentifier from
      * @return the String representation of the subjectKeyIdentifier
-     * @throws IOException
+     * @throws IOException if there are issues retrieving the certificate subject key identifier
      */
     private String getCertificateSubjectKeyIdentifier(final X509Certificate certificate)
             throws IOException {
@@ -631,7 +630,7 @@ public class ReferenceManifestValidator {
     /**
      * This method parses the subject key identifier from the KeyName element of a signature.
      *
-     * @param doc
+     * @param doc document
      * @return SKID if found, or an empty string.
      */
     private String getKeyName(final Document doc) {

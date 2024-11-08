@@ -15,7 +15,7 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for Ownership.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
@@ -27,7 +27,6 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
- * 
  */
 @XmlType(name = "Ownership", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 @XmlEnum
@@ -35,31 +34,22 @@ public enum Ownership {
 
 
     /**
-     * 
-     *             Determines the relative strength of ownership of the target
-     *             piece of software.
-     *           
-     * 
+     * Determines the relative strength of ownership of the target
+     * piece of software.
      */
     @XmlEnumValue("abandon")
     ABANDON("abandon"),
 
     /**
-     * 
-     *             If this is uninstalled, then the [Link]'d software should be removed
-     *             too.
-     *           
-     * 
+     * If this is uninstalled, then the [Link]'d software should be removed
+     * too.
      */
     @XmlEnumValue("private")
     PRIVATE("private"),
 
     /**
-     * 
-     *             If this is uninstalled, then the [Link]'d software should be removed
-     *             if nobody else is sharing it
-     *           
-     * 
+     * If this is uninstalled, then the [Link]'d software should be removed
+     * if nobody else is sharing it
      */
     @XmlEnumValue("shared")
     SHARED("shared");
@@ -69,17 +59,17 @@ public enum Ownership {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static Ownership fromValue(String v) {
-        for (Ownership c: Ownership.values()) {
+        for (Ownership c : Ownership.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 
 }

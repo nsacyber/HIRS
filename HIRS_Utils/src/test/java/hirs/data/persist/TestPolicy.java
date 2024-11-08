@@ -21,7 +21,7 @@ public class TestPolicy extends Policy {
     /**
      * Creates a new <code>TestPolicy</code> with the set name and description.
      *
-     * @param name name
+     * @param name        name
      * @param description description
      */
     public TestPolicy(final String name, final String description) {

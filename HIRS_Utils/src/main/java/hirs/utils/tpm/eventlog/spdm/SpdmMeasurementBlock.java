@@ -11,17 +11,17 @@ import java.io.IOException;
  * <p>
  * Measurement block format, defined by SPDM v1.03, Sect 10.11.1, Table 53:
  * Measurement block format {
- *      Index                           1 byte;
- *      MeasurementSpec                 1 byte;
- *      MeasurementSize                 2 bytes;
- *      Measurement                     <MeasurementSize> bytes;
+ * Index                           1 byte;
+ * MeasurementSpec                 1 byte;
+ * MeasurementSize                 2 bytes;
+ * Measurement                     <MeasurementSize> bytes;
  * }
  * <p>
  * Index: index of the measurement block, as there can be more than one
  * MeasurementSpec: bit mask; the measurement specification that the requested Measurement follows
- *     See "MeasurementSpecificationSel" in Table 21. See Tables 29, 53, 54
- *     Bit 0: DMTFmeasSpec, per Table 54
- *     Bit 1-7: Reserved
+ * See "MeasurementSpecificationSel" in Table 21. See Tables 29, 53, 54
+ * Bit 0: DMTFmeasSpec, per Table 54
+ * Bit 1-7: Reserved
  * Measurement: the digest
  */
 public class SpdmMeasurementBlock {
@@ -39,7 +39,7 @@ public class SpdmMeasurementBlock {
     /**
      * SPDM Measurement.
      */
-    private SpdmMeasurement spdmMeasurement;
+    private final SpdmMeasurement spdmMeasurement;
 
     /**
      * SpdmMeasurementBlock Constructor.
@@ -76,7 +76,7 @@ public class SpdmMeasurementBlock {
         String spdmMeasBlockInfo = "";
 
         spdmMeasBlockInfo += "      Index = " + index + "\n";
-        spdmMeasBlockInfo += "      MeasurementSpec = " +  measurementSpec  + "\n";
+        spdmMeasBlockInfo += "      MeasurementSpec = " + measurementSpec + "\n";
         spdmMeasBlockInfo += spdmMeasurement.toString();
 
         return spdmMeasBlockInfo;

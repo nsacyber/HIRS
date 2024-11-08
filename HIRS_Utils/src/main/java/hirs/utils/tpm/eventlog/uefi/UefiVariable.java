@@ -35,7 +35,7 @@ public class UefiVariable {
     /**
      * List of Signature lists.
      */
-    private List<UefiSignatureList> certSuperList;
+    private final List<UefiSignatureList> certSuperList;
     /**
      * Name of the UEFI variable.
      */
@@ -87,11 +87,11 @@ public class UefiVariable {
      *
      * @param variableData byte array holding the UEFI Variable.
      * @throws java.security.cert.CertificateException If there a problem
-     *              parsing the X509 certificate.
+     *                                                 parsing the X509 certificate.
      * @throws java.security.NoSuchAlgorithmException  if there's a problem
-     *              hashing the certificate.
+     *                                                 hashing the certificate.
      * @throws java.io.IOException                     If there's a problem
-     *              parsing the signature data.
+     *                                                 parsing the signature data.
      */
     public UefiVariable(final byte[] variableData)
             throws CertificateException, NoSuchAlgorithmException, IOException {
@@ -136,10 +136,10 @@ public class UefiVariable {
             case "devdb":
                 processSigList(uefiVariableData);
                 break;      // Update when test patterns exist
-                            // PFP v1.06 Rev 52, Sec 3.3.4.8
-                            // EV_EFI_SPDM_DEVICE_POLICY: EFI_SIGNATURE_LIST
-                            // EV_EFI_SPDM_DEVICE_AUTHORITY: EFI_SIGNATURE_DATA
-                            // for now, differentiate them by using devdc for ..DEVICE_AUTHORITY
+            // PFP v1.06 Rev 52, Sec 3.3.4.8
+            // EV_EFI_SPDM_DEVICE_POLICY: EFI_SIGNATURE_LIST
+            // EV_EFI_SPDM_DEVICE_AUTHORITY: EFI_SIGNATURE_DATA
+            // for now, differentiate them by using devdc for ..DEVICE_AUTHORITY
             case "devdc":
                 processSigDataX509(uefiVariableData);
                 break;
@@ -161,11 +161,11 @@ public class UefiVariable {
      *
      * @param data the bye array holding one or more Signature Lists.
      * @throws java.security.cert.CertificateException If there's a problem
-     *          parsing the X509 certificate.
+     *                                                 parsing the X509 certificate.
      * @throws java.security.NoSuchAlgorithmException  if there's a problem
-     *          hashing the certificate.
+     *                                                 hashing the certificate.
      * @throws java.io.IOException                     If there's a problem
-     *          parsing the signature data.
+     *                                                 parsing the signature data.
      */
     private void processSigList(final byte[] data)
             throws CertificateException, NoSuchAlgorithmException, IOException {
@@ -186,7 +186,7 @@ public class UefiVariable {
             // (ie. if the new file status is not-accessible or from-code, then want to update)
             if ((vendorTableFileStatus != FILESTATUS_NOT_ACCESSIBLE)
                     && (list.getVendorTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
-                        vendorTableFileStatus = list.getVendorTableFileStatus();
+                vendorTableFileStatus = list.getVendorTableFileStatus();
             }
 
 //            efiVariableSigListContents += list.toString();
@@ -275,7 +275,7 @@ public class UefiVariable {
             case "dbx":
             case "devdb":           // SPDM_DEVICE_POLICY and SPDM_DEVICE_AUTHORITY
             case "devdc":           // for now use devdb and devdc respectively
-                                    // (update when more test patterns exist)
+                // (update when more test patterns exist)
                 break;
             case "Boot00":
                 efiVariable.append(bootv.toString());
@@ -289,7 +289,7 @@ public class UefiVariable {
             default:
                 if (!tmpName.isEmpty()) {
                     efiVariable.append(String.format("      Data not provided for "
-                                    + "UEFI variable named %s   ", tmpName));
+                            + "UEFI variable named %s   ", tmpName));
                 } else {
                     efiVariable.append("      Data not provided   ");
                 }

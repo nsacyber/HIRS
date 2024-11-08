@@ -282,6 +282,7 @@ public final class UefiConstants {
      * file status, where file is not accessible (either not found, or no access permission).
      */
     public static final String FILESTATUS_NOT_ACCESSIBLE = "fileNotAccessible";
+
     /**
      * Default private constructor so checkstyles doesn't complain.
      */

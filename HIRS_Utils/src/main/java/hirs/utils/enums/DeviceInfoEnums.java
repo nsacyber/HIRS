@@ -18,6 +18,7 @@ public final class DeviceInfoEnums {
      * Constant variable representing the various Long sized strings.
      */
     public static final int LONG_STRING_LENGTH = 255;
+
     /**
      * Default private constructor so checkstyles doesn't complain.
      */
