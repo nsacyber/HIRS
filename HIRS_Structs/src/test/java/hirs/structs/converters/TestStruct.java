@@ -8,8 +8,8 @@ import hirs.structs.elements.StructElements;
  * A Struct class designed to fully test the design of the converter being tested.
  */
 @StructElements(
-        elements = { "testShort", "testEmbeddedStruct", "testByte", "testVariableStructLength",
-                "testVariableStruct" })
+        elements = {"testShort", "testEmbeddedStruct", "testByte", "testVariableStructLength",
+                "testVariableStruct"})
 public class TestStruct implements Struct {
 
     private static final short TEST_SHORT = 0x5;
@@ -54,6 +54,7 @@ public class TestStruct implements Struct {
 
     /**
      * Getter.
+     *
      * @return value
      */
     public byte getTestByte() {
@@ -62,6 +63,7 @@ public class TestStruct implements Struct {
 
     /**
      * Getter.
+     *
      * @return value
      */
     public short getTestShort() {
@@ -70,6 +72,7 @@ public class TestStruct implements Struct {
 
     /**
      * Getter.
+     *
      * @return value
      */
     public TestEmbeddedStruct getTestEmbeddedStruct() {
@@ -78,6 +81,7 @@ public class TestStruct implements Struct {
 
     /**
      * Getter.
+     *
      * @return value
      */
     public TestVariableStruct getTestVariableStruct() {
@@ -86,6 +90,7 @@ public class TestStruct implements Struct {
 
     /**
      * Getter.
+     *
      * @return value
      */
     public int getTestVariableStructLength() {

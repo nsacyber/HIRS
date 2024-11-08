@@ -1,8 +1,9 @@
 package hirs.structs.converters;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.Test;
 
 /**
  * Tests suite for {@link SimpleStructConverter}.
@@ -10,11 +11,11 @@ import org.junit.jupiter.api.Test;
 public class SimpleStructConverterTest {
 
     private static final byte[] EXPECTED_BYTES =
-            new byte[]{0, 5, 0, 0, 0, 10, 0, 7, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 6, 0, 0, 0, 0};
+            new byte[] {0, 5, 0, 0, 0, 10, 0, 7, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 6, 0, 0, 0, 0};
 
     private final TestStruct testStruct = new TestStruct();
 
-    private StructConverter converter = new SimpleStructConverter();
+    private final StructConverter converter = new SimpleStructConverter();
 
     /**
      * Tests {@link SimpleStructConverter#convert(hirs.structs.elements.Struct)}.
@@ -47,8 +48,9 @@ public class SimpleStructConverterTest {
      */
     @Test
     public final void testNoElementsStructConvertToArray() {
-        assertThrows(StructConversionException.class, () ->
-                {converter.convert(new TestNoElementsAnnotationStruct());}, ".*@StructElements.*");
+        assertThrows(StructConversionException.class, () -> {
+            converter.convert(new TestNoElementsAnnotationStruct());
+        }, ".*@StructElements.*");
     }
 
     /**
@@ -57,8 +59,9 @@ public class SimpleStructConverterTest {
      */
     @Test
     public final void testNoElementsStructConvertToStruct() {
-        assertThrows(StructConversionException.class, () ->
-            {converter.convert(new byte[1], TestNoElementsAnnotationStruct.class);}, ".*@StructElements.*");
+        assertThrows(StructConversionException.class, () -> {
+            converter.convert(new byte[1], TestNoElementsAnnotationStruct.class);
+        }, ".*@StructElements.*");
     }
 
     /**
@@ -68,8 +71,9 @@ public class SimpleStructConverterTest {
      */
     @Test
     public final void testInvalidDataTypeStructConvertToArray() {
-        assertThrows(StructConversionException.class, () ->
-            {converter.convert(new TestInvalidDataTypeStruct());}, "Unsupported field type.*");
+        assertThrows(StructConversionException.class, () -> {
+            converter.convert(new TestInvalidDataTypeStruct());
+        }, "Unsupported field type.*");
     }
 
     /**
@@ -79,8 +83,9 @@ public class SimpleStructConverterTest {
      */
     @Test
     public final void testInvalidDataTypeStructConvertToStruct() {
-        assertThrows(StructConversionException.class, () ->
-            {converter.convert(new byte[1], TestInvalidDataTypeStruct.class);}, "Unsupported field type.*");
+        assertThrows(StructConversionException.class, () -> {
+            converter.convert(new byte[1], TestInvalidDataTypeStruct.class);
+        }, "Unsupported field type.*");
 
     }
 

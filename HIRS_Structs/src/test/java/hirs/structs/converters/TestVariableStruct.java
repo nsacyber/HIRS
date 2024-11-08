@@ -14,6 +14,7 @@ public class TestVariableStruct implements Struct {
 
     /**
      * Getter.
+     *
      * @return value
      */
     public byte[] getTestArray() {

@@ -10,7 +10,7 @@ import java.util.Arrays;
  * Parameters that are used to describe a particular {@link AsymmetricKeyParams} as specified by the
  * TCPA 4.20.
  */
-@StructElements(elements = { "keyLength", "totalPrimes", "exponentSize", "exponent" })
+@StructElements(elements = {"keyLength", "totalPrimes", "exponentSize", "exponent"})
 public class RsaSubParams implements Struct {
 
     private int keyLength;

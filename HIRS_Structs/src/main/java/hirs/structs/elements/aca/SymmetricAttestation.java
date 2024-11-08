@@ -12,7 +12,7 @@ import java.util.Arrays;
  * the envelope contains the Identity Credential that is signed by the ACA. This along with the key
  * parameters are typically sent to the TPM to activate an Identity.
  */
-@StructElements(elements = { "credentialSize", "algorithm", "credential" })
+@StructElements(elements = {"credentialSize", "algorithm", "credential"})
 public class SymmetricAttestation implements Struct {
 
     @StructElementLength(fieldName = "credential")

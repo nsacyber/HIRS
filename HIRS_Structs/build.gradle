@@ -39,10 +39,10 @@ configurations.checkstyle {
     }
 }
 checkstyleMain {
-    source ='src/main/java'
+    source = 'src/main/java'
 }
 checkstyleTest {
-    source ='src/test/java'
+    source = 'src/test/java'
 }
 tasks.withType(Checkstyle) {
     reports {
