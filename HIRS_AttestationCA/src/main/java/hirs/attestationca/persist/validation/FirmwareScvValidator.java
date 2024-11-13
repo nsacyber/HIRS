@@ -206,10 +206,10 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             }
 
             if (passed) {
-                TCGEventLog logProcessor;
+                TCGEventLog expectedEventLog;
                 try {
-                    logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
-                    baseline = logProcessor.getExpectedPCRValues();
+                    expectedEventLog = new TCGEventLog(supportReferenceManifest.getRimBytes());
+                    baseline = expectedEventLog.getExpectedPCRValues();
                 } catch (CertificateException cEx) {
                     log.error(cEx);
                 } catch (NoSuchAlgorithmException noSaEx) {
@@ -242,21 +242,21 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         // part 2 of firmware validation check: bios measurements
                         // vs baseline tcg event log
                         // find the measurement
-                        TCGEventLog eventLog;
+                        TCGEventLog actualEventLog;
                         LinkedList<TpmPcrEvent> failedPcrValues = new LinkedList<>();
-                        List<ReferenceDigestValue> eventValue;
-                        HashMap<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
+                        List<ReferenceDigestValue> rimIntegrityMeasurements;
+                        HashMap<String, ReferenceDigestValue> expectedEventLogRecords = new HashMap<>();
                         try {
                             if (measurement.getDeviceName().equals(hostName)) {
-                                eventLog = new TCGEventLog(measurement.getRimBytes());
-                                eventValue = referenceDigestValueRepository
+                                actualEventLog = new TCGEventLog(measurement.getRimBytes());
+                                rimIntegrityMeasurements = referenceDigestValueRepository
                                         .findValuesByBaseRimId(baseReferenceManifest.getId());
-                                for (ReferenceDigestValue rdv : eventValue) {
-                                    eventValueMap.put(rdv.getDigestValue(), rdv);
+                                for (ReferenceDigestValue rdv : rimIntegrityMeasurements) {
+                                    expectedEventLogRecords.put(rdv.getDigestValue(), rdv);
                                 }
 
                                 failedPcrValues.addAll(pcrValidator.validateTpmEvents(
-                                        eventLog, eventValueMap, policySettings));
+                                        actualEventLog, expectedEventLogRecords, policySettings));
                             }
                         } catch (CertificateException cEx) {
                             log.error(cEx);
