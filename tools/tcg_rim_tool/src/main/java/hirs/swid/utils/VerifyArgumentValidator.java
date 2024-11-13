@@ -18,15 +18,14 @@ public class VerifyArgumentValidator implements IParametersValidator {
 
     /**
      * This method validates the input parameter map.
-     * @param parameters
-     *            Name-value-pairs of all parameters (e.g. "-host":"localhost").
      *
+     * @param parameters Name-value-pairs of all parameters (e.g. "-host":"localhost").
      * @throws ParameterException
      */
     @Override
     public void validate(Map<String, Object> parameters) throws ParameterException {
-	    if (isValueNotNull(parameters,"--verify")) {
-            if (isValueNotNull(parameters,"--create")) {
+        if (isValueNotNull(parameters, "--verify")) {
+            if (isValueNotNull(parameters, "--create")) {
                 throw new ParameterException("Create and verify cannot be called together.");
             } else {
                 for (String arg : requiredArgs) {
@@ -43,16 +42,13 @@ public class VerifyArgumentValidator implements IParametersValidator {
 
     /**
      * This method checks the given key for a null value
+     *
      * @param parameters map
-     * @param key the key to check
+     * @param key        the key to check
      * @return true if not null, else false
      */
     private boolean isValueNotNull(Map<String, Object> parameters, String key) {
         Object object = parameters.get(key);
-        if (object == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return object != null;
     }
 }

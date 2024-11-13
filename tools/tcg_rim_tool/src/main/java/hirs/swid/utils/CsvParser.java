@@ -16,48 +16,17 @@ public class CsvParser {
 
     private static final char DEFAULT_SEPARATOR = ',';
     private static final char DEFAULT_QUOTE = '"';
-    
-    private List<String> content;
+
+    private final List<String> content;
 
     public CsvParser(final File file) {
         this(file.getAbsolutePath());
     }
-    
+
     public CsvParser(final String csvfile) {
         content = readerCsv(csvfile);
     }
 
-    /**
-     * This method takes an existing csv file and reads the file by line and
-     * adds the contents to a list of Strings.
-     * 
-     * @param file valid path to a csv file
-     * @return 
-     */
-    private List<String> readerCsv(final String file) {
-        String line = "";
-        String csvSplitBy = ",";
-        List<String> tempList = new LinkedList<>();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            while ((line = br.readLine()) != null) {
-                if (line.length() > 0 
-                        && line.contains(csvSplitBy)) {
-                 tempList.add(line);
-                }
-            }
-        } catch (IOException ioEx) {
-            System.out.println(String.format("Error reading in CSV file...(%s)", file));
-            System.exit(1);
-        }
-        
-        return tempList;
-    }
-
-    public final List<String> getContent() {
-        return Collections.unmodifiableList(content);
-    }
-    
     public static List<String> parseLine(String csvLine) {
         return parseLine(csvLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE);
     }
@@ -132,5 +101,36 @@ public class CsvParser {
         result.add(currVal.toString());
 
         return result;
+    }
+
+    /**
+     * This method takes an existing csv file and reads the file by line and
+     * adds the contents to a list of Strings.
+     *
+     * @param file valid path to a csv file
+     * @return
+     */
+    private List<String> readerCsv(final String file) {
+        String line = "";
+        String csvSplitBy = ",";
+        List<String> tempList = new LinkedList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            while ((line = br.readLine()) != null) {
+                if (line.length() > 0
+                        && line.contains(csvSplitBy)) {
+                    tempList.add(line);
+                }
+            }
+        } catch (IOException ioEx) {
+            System.out.printf("Error reading in CSV file...(%s)%n", file);
+            System.exit(1);
+        }
+
+        return tempList;
+    }
+
+    public final List<String> getContent() {
+        return Collections.unmodifiableList(content);
     }
 }

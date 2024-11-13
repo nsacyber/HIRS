@@ -8,7 +8,6 @@ import javax.xml.namespace.QName;
  * This class contains the String constants that are referenced by the gateway
  * class. It is expected that member properties of this class will expand as
  * more functionality is added to SwidTagGateway.
- *
  */
 public class SwidTagConstants {
 
@@ -49,7 +48,7 @@ public class SwidTagConstants {
     public static final String ROLE = "role";
     public static final String THUMBPRINT = "thumbprint";
     public static final String HREF = "href";
-    public static final String REL  = "rel";
+    public static final String REL = "rel";
     public static final String COLLOQUIAL_VERSION = "colloquialVersion";
     public static final String EDITION = "edition";
     public static final String PRODUCT = "product";
@@ -78,12 +77,12 @@ public class SwidTagConstants {
     public static final String SUPPORT_RIM_FORMAT_MISSING = "supportRIMFormat missing";
     public static final String SUPPORT_RIM_URI_GLOBAL = "supportRIMURIGlobal";
     public static final String DATETIME = "dateTime";
-    
+
     public static final String NIST_NS = "http://csrc.nist.gov/ns/swid/2015-extensions/1.0";
-    public static final String TCG_NS =  "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model";
+    public static final String TCG_NS = "https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model";
     public static final String RFC3852_NS = "https://www.ietf.org/rfc/rfc3852.txt";
     public static final String RFC3339_NS = "https://www.ietf.org/rfc/rfc3339.txt";
-    
+
     public static final String N8060_PFX = "n8060";
     public static final String RIM_PFX = "rim";
     public static final String RFC3852_PFX = "rcf3852";
@@ -125,7 +124,7 @@ public class SwidTagConstants {
             TCG_NS, PC_URI_LOCAL, RIM_PFX);
     public static final QName _PC_URI_GLOBAL = new QName(
             TCG_NS, PC_URI_GLOBAL, RIM_PFX);
-    public static final QName _RIM_LINK_HASH  = new QName(
+    public static final QName _RIM_LINK_HASH = new QName(
             TCG_NS, RIM_LINK_HASH, RIM_PFX);
     public static final QName _SUPPORT_RIM_TYPE = new QName(
             TCG_NS, SUPPORT_RIM_TYPE, RIM_PFX);
