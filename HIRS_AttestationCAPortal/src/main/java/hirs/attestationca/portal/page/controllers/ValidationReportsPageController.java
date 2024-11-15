@@ -28,6 +28,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -55,6 +56,13 @@ import java.util.regex.Pattern;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/validation-reports")
 public class ValidationReportsPageController extends PageController<NoPageParams> {
 
+    private static final String DEFAULT_COMPANY = "AllDevices";
+    private static final String UNDEFINED = "undefined";
+    private static final String TRUE = "true";
+    private static final String SYSTEM_COLUMN_HEADERS = "Verified Manufacturer,"
+            + "Model,SN,Verification Date,Device Status";
+    private static final String COMPONENT_COLUMN_HEADERS = "Component name,Component manufacturer,"
+            + "Component model,Component SN,Issuer,Component status";
     private final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository;
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
@@ -62,20 +70,13 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     @Autowired(required = false)
     private EntityManager entityManager;
 
-    private static String systemColumnHeaders = "Verified Manufacturer,"
-            + "Model,SN,Verification Date,Device Status";
-    private static String componentColumnHeaders = "Component name,Component manufacturer,"
-            + "Component model,Component SN,Issuer,Component status";
-    private static final String DEFAULT_COMPANY = "AllDevices";
-    private static final String UNDEFINED = "undefined";
-    private static final String TRUE = "true";
-
     /**
      * Constructor providing the Page's display and routing specification.
+     *
      * @param supplyChainValidatorSummaryRepository the manager
-     * @param certificateRepository the certificate manager
-     * @param deviceRepository the device manager
-     * @param platformCertificateRepository the platform certificate manager
+     * @param certificateRepository                 the certificate manager
+     * @param deviceRepository                      the device manager
+     * @param platformCertificateRepository         the platform certificate manager
      */
     @Autowired
     public ValidationReportsPageController(
@@ -94,7 +95,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from redirect.
+     * @param model  The data model for the request. Can contain data from redirect.
      * @return the path for the view and data model for the page.
      */
     @Override
@@ -105,6 +106,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
     /**
      * Gets the list of validation summaries per the data table input query.
+     *
      * @param input the data table query.
      * @return the data table response containing the supply chain summary records
      */
@@ -114,15 +116,16 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     public DataTableResponse<SupplyChainValidationSummary> getTableData(
             final DataTableInput input) {
 
-        log.debug("Handling request for summary list: " + input);
+        log.debug("Handling request for summary list: {}", input);
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: " + orderColumnName);
+        log.debug("Ordering on column: {}", orderColumnName);
 
         FilteredRecordsList<SupplyChainValidationSummary> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult = supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(paging);
+        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult =
+                supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(paging);
 
         if (pagedResult.hasContent()) {
             records.addAll(pagedResult.getContent());
@@ -138,12 +141,12 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
     /**
      * This method handles downloading a validation report.
-     * @param request object
+     *
+     * @param request  object
      * @param response object
      * @throws IOException thrown by BufferedWriter object
      */
-    @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:methodlength" })
-    @RequestMapping(value = "download", method = RequestMethod.POST)
+    @PostMapping(value = "download")
     public void download(final HttpServletRequest request,
                          final HttpServletResponse response) throws IOException {
 
@@ -155,8 +158,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
         LocalDate startDate = null;
         LocalDate endDate = null;
-        ArrayList<LocalDate> createTimes = new ArrayList<LocalDate>();
-        String[] deviceNames = new String[]{};
+        ArrayList<LocalDate> createTimes = new ArrayList<>();
+        String[] deviceNames = new String[] {};
         String columnHeaders = "";
         boolean systemOnly = false;
         boolean componentOnly = false;
@@ -168,7 +171,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         while (parameters.hasMoreElements()) {
             String parameter = (String) parameters.nextElement();
             String parameterValue = request.getParameter(parameter);
-            log.info(parameter + ": " + parameterValue);
+            log.info("{}: {}", parameter, parameterValue);
             switch (parameter) {
                 case "company":
                     Matcher companyMatcher = pattern.matcher(parameterValue);
@@ -222,7 +225,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         if (!columnHeaders.isEmpty()) {
                             columnHeaders = "," + columnHeaders;
                         }
-                        columnHeaders = systemColumnHeaders + columnHeaders;
+                        columnHeaders = SYSTEM_COLUMN_HEADERS + columnHeaders;
                     }
                     break;
                 case "component":
@@ -231,7 +234,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         if (!columnHeaders.isEmpty()) {
                             columnHeaders += ",";
                         }
-                        columnHeaders += componentColumnHeaders;
+                        columnHeaders += COMPONENT_COLUMN_HEADERS;
                     }
                     break;
                 case "manufacturer":
@@ -287,7 +290,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                             reportData.append(pc.getManufacturer() + ","
                                     + pc.getModel() + ","
                                     + pc.getPlatformSerial() + ","
-                                    + LocalDateTime.now().toString() + ","
+                                    + LocalDateTime.now() + ","
                                     + device.getSupplyChainValidationStatus() + ",");
                         }
                         if (!systemOnly) {
@@ -312,7 +315,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         }
         if (!jsonVersion) {
             if (columnHeaders.isEmpty()) {
-                columnHeaders = systemColumnHeaders + "," + componentColumnHeaders;
+                columnHeaders = SYSTEM_COLUMN_HEADERS + "," + COMPONENT_COLUMN_HEADERS;
             }
             bufferedWriter.append(columnHeaders + System.lineSeparator());
             bufferedWriter.append(reportData.toString());
@@ -325,13 +328,13 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     /**
      * This method builds a JSON object from the system and component data in a
      * validation report.
-     * @param pc the platform credential used to validate.
+     *
+     * @param pc               the platform credential used to validate.
      * @param parsedComponents component data parsed from the platform credential.
-     * @param company company name.
-     * @param contractNumber contract number.
+     * @param company          company name.
+     * @param contractNumber   contract number.
      * @return the JSON object in String format.
      */
-    @SuppressWarnings({"checkstyle:magicnumber" })
     private JsonObject assembleJsonContent(final PlatformCredential pc,
                                            final ArrayList<ArrayList<String>> parsedComponents,
                                            final String company,
@@ -350,14 +353,17 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 .getSupplyChainValidationStatus().toString());
 
         JsonArray components = new JsonArray();
+        final int componentDataPosition4 = 3;
+        final int componentDataPosition5 = 4;
+        final int componentDataPosition6 = 5;
         for (ArrayList<String> componentData : parsedComponents) {
             JsonObject component = new JsonObject();
             component.addProperty("Component name", componentData.get(0));
             component.addProperty("Component manufacturer", componentData.get(1));
             component.addProperty("Component model", componentData.get(2));
-            component.addProperty("Component SN", componentData.get(3));
-            component.addProperty("Issuer", componentData.get(4));
-            component.addProperty("Component status", componentData.get(5));
+            component.addProperty("Component SN", componentData.get(componentDataPosition4));
+            component.addProperty("Issuer", componentData.get(componentDataPosition5));
+            component.addProperty("Component status", componentData.get(componentDataPosition6));
             components.add(component);
         }
         systemData.add("Components", components);
@@ -372,22 +378,24 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * - Model
      * - Serial number
      * - Pass/fail status (based on componentFailures string)
+     *
      * @param pc the platform credential.
      * @return the ArrayList of ArrayLists containing the parsed component data.
      */
     private ArrayList<ArrayList<String>> parseComponents(final PlatformCredential pc) {
-        ArrayList<ArrayList<String>> parsedComponents = new ArrayList<ArrayList<String>>();
+        ArrayList<ArrayList<String>> parsedComponents = new ArrayList<>();
         ArrayList<ArrayList<Object>> chainComponents = new ArrayList<>();
 
         StringBuilder componentFailureString = new StringBuilder();
         if (pc.getComponentIdentifiers() != null
-                && pc.getComponentIdentifiers().size() > 0) {
+                && !pc.getComponentIdentifiers().isEmpty()) {
             componentFailureString.append(pc.getComponentFailures());
             // get all the certificates associated with the platform serial
-            List<PlatformCredential> chainCertificates = certificateRepository.byBoardSerialNumber(pc.getPlatformSerial());
+            List<PlatformCredential> chainCertificates =
+                    certificateRepository.byBoardSerialNumber(pc.getPlatformSerial());
             // combine all components in each certificate
             for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
-                ArrayList<Object> issuerAndComponent = new ArrayList<Object>();
+                ArrayList<Object> issuerAndComponent = new ArrayList<>();
                 issuerAndComponent.add(pc.getHolderIssuer());
                 issuerAndComponent.add(ci);
                 chainComponents.add(issuerAndComponent);
@@ -397,16 +405,16 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                 componentFailureString.append(cert.getComponentFailures());
                 if (!cert.isPlatformBase()) {
                     for (ComponentIdentifier ci : cert.getComponentIdentifiers()) {
-                        ArrayList<Object> issuerAndComponent = new ArrayList<Object>();
+                        ArrayList<Object> issuerAndComponent = new ArrayList<>();
                         issuerAndComponent.add(cert.getHolderIssuer());
                         issuerAndComponent.add(ci);
                         chainComponents.add(issuerAndComponent);
                     }
                 }
             }
-            log.info("Component failures: " + componentFailureString.toString());
+            log.info("Component failures: {}", componentFailureString);
             for (ArrayList<Object> issuerAndComponent : chainComponents) {
-                ArrayList<String> componentData = new ArrayList<String>();
+                ArrayList<String> componentData = new ArrayList<>();
                 String issuer = (String) issuerAndComponent.get(0);
                 issuer = issuer.replaceAll(",", " ");
                 ComponentIdentifier ci = (ComponentIdentifier) issuerAndComponent.get(1);

@@ -27,12 +27,17 @@ public class ComponentAddress {
     public static final int IDENTIFIER_NUMBER = 2;
 
     private static final String ETHERNET_MAC = "2.23.133.17.1";
+
     private static final String WLAN_MAC = "2.23.133.17.2";
+
     private static final String BLUETOOTH_MAC = "2.23.133.17.3";
 
     private ASN1ObjectIdentifier addressType;
+
     private ASN1UTF8String addressValue;
+
     private String addressTypeString;
+
     private String addressValueString;
 
     /**
@@ -62,27 +67,24 @@ public class ComponentAddress {
 
     /**
      * Get the string value for the address type.
+     *
      * @return the string value for the address type
      */
     public String getAddressTypeValue() {
-        String typeValue;
-        switch (this.addressType.getId()) {
-            case ETHERNET_MAC:
-                typeValue = "ethernet mac";
-                break;
-            case WLAN_MAC:
-                typeValue = "wlan mac";
-                break;
-            case BLUETOOTH_MAC:
-                typeValue = "bluetooth mac";
-                break;
-            default:
-                typeValue = "unknown mac";
-                break;
-        }
-        return typeValue;
+        return switch (this.addressType.getId()) {
+            case ETHERNET_MAC -> "ethernet mac";
+            case WLAN_MAC -> "wlan mac";
+            case BLUETOOTH_MAC -> "bluetooth mac";
+            default -> "unknown mac";
+        };
     }
 
+
+    /**
+     * Creates a string representation of the Component Address object.
+     *
+     * @return a string representation of the Component Address object.
+     */
     @Override
     public String toString() {
         return "ComponentAddress{"

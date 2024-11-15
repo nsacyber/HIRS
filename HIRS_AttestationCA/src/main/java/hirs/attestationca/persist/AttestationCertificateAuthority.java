@@ -45,44 +45,42 @@ public abstract class AttestationCertificateAuthority {
      * A handle to the service used to validate the supply chain.
      */
     private final SupplyChainValidationService supplyChainValidationService;
-
+    private final ComponentResultRepository componentResultRepository;
+    private final CertificateRepository certificateRepository;
+    private final IssuedCertificateRepository issuedCertificateRepository;
+    private final ReferenceManifestRepository referenceManifestRepository;
+    private final DeviceRepository deviceRepository;
+    //    private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
+    private final ReferenceDigestValueRepository referenceDigestValueRepository;
+    private final PolicyRepository policyRepository;
+    private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
+    private final ComponentInfoRepository componentInfoRepository;
+    private final CertificateRequestProcessor certificateRequestHandler;
+    private final IdentityClaimProcessor identityClaimHandler;
     /**
      * Container wired application configuration property identifying the number of days that
      * certificates issued by this ACA are valid for.
      */
     private Integer validDays = 1;
 
-    private final ComponentResultRepository componentResultRepository;
-    private ComponentInfoRepository componentInfoRepository;
-    private final CertificateRepository certificateRepository;
-    private final IssuedCertificateRepository issuedCertificateRepository;
-    private final ReferenceManifestRepository referenceManifestRepository;
-    private final DeviceRepository deviceRepository;
-//    private final DBManager<TPM2ProvisionerState> tpm2ProvisionerStateDBManager;
-    private final ReferenceDigestValueRepository referenceDigestValueRepository;
-    private final PolicyRepository policyRepository;
-    private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
-
-    private CertificateRequestProcessor certificateRequestHandler;
-    private IdentityClaimProcessor identityClaimHandler;
-
     /**
      * Constructor.
-     * @param supplyChainValidationService the supply chain service
-     * @param privateKey the ACA private key
-     * @param acaCertificate the ACA certificate
-     * @param structConverter the struct converter
-     * @param componentResultRepository the component result manager
-     * @param componentInfoRepository the component info manager
-     * @param certificateRepository the certificate manager
-     * @param referenceManifestRepository the Reference Manifest manager
-     * @param validDays the number of days issued certs are valid
-     * @param deviceRepository the device manager
+     *
+     * @param supplyChainValidationService   the supply chain service
+     * @param privateKey                     the ACA private key
+     * @param acaCertificate                 the ACA certificate
+     * @param structConverter                the struct converter
+     * @param componentResultRepository      the component result manager
+     * @param componentInfoRepository        the component info manager
+     * @param certificateRepository          the certificate manager
+     * @param issuedCertificateRepository    the issued certificate repository
+     * @param referenceManifestRepository    the Reference Manifest manager
+     * @param validDays                      the number of days issued certs are valid
+     * @param deviceRepository               the device manager
      * @param referenceDigestValueRepository the reference event manager
-     * @param policyRepository policy setting repository
+     * @param policyRepository               policy setting repository
      * @param tpm2ProvisionerStateRepository tpm2 provisioner state repository
      */
-    @SuppressWarnings("checkstyle:parameternumber")
     public AttestationCertificateAuthority(
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey, final X509Certificate acaCertificate,
@@ -121,14 +119,31 @@ public abstract class AttestationCertificateAuthority {
                 deviceRepository, tpm2ProvisionerStateRepository, policyRepository);
     }
 
+    /**
+     * Processes the provided identity claim.
+     *
+     * @param identityClaim a byte array representation of the identity claim
+     * @return processed identity claim response
+     */
     byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
         return this.identityClaimHandler.processIdentityClaimTpm2(identityClaim);
     }
 
+    /**
+     * Processes the provided certificate request.
+     *
+     * @param certificateRequest a byte array representation of the certificate request
+     * @return processed certificate request response
+     */
     byte[] processCertificateRequest(final byte[] certificateRequest) {
         return this.certificateRequestHandler.processCertificateRequest(certificateRequest);
     }
 
+    /**
+     * Retrieves the encoded public key.
+     *
+     * @return encoded public key
+     */
     public byte[] getPublicKey() {
         return acaCertificate.getPublicKey().getEncoded();
     }

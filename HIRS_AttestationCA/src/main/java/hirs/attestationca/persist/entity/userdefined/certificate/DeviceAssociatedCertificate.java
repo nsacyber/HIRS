@@ -18,25 +18,24 @@ import java.util.UUID;
  *
  * @see Certificate
  */
-@NoArgsConstructor(access= AccessLevel.PACKAGE)
+@Setter
+@Getter
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
 @MappedSuperclass
 public abstract class DeviceAssociatedCertificate extends Certificate {
-
-    // a device can have multiple certs of this type.
-    @Getter
-    @Setter
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column
-    private UUID deviceId;
-    @Getter
-    @Setter
-    @Column
-    private String deviceName;
 
     /**
      * Holds the name of the entity 'DEVICE_ID' field.
      */
     protected static final String DEVICE_ID_FIELD = "device_id";
+
+    // a device can have multiple certs of this type.
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column
+    private UUID deviceId;
+
+    @Column
+    private String deviceName;
 
     /**
      * Construct a new Certificate by parsing the file at the given path.  The given certificate

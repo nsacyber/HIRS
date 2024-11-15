@@ -29,6 +29,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
 
     /**
      * Constructor given the SEQUENCE that contains Platform Configuration.
+     *
      * @param sequence containing the the Platform Configuration.
      * @throws IllegalArgumentException if there was an error on the parsing
      */
@@ -86,6 +87,11 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
         }
     }
 
+    /**
+     * Creates a string representation of the Platform Configuration V2 object.
+     *
+     * @return a string representation of the Platform Configuration V2 object.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -99,7 +105,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
         }
         sb.append(", componentIdentifierUri=");
         if (getComponentIdentifierUri() != null) {
-            sb.append(getComponentIdentifierUri().toString());
+            sb.append(getComponentIdentifierUri());
         }
         sb.append(", platformProperties=");
         if (getPlatformProperties().size() > 0) {
@@ -110,7 +116,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
         }
         sb.append(", platformPropertiesUri=");
         if (getPlatformPropertiesUri() != null) {
-            sb.append(getPlatformPropertiesUri().toString());
+            sb.append(getPlatformPropertiesUri());
         }
         sb.append("}");
 

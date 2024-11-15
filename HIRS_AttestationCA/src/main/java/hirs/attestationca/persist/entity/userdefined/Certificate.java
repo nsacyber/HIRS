@@ -18,13 +18,11 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.DLTaggedObject;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AccessDescription;
@@ -80,24 +78,6 @@ import java.util.Objects;
 public abstract class Certificate extends ArchivableEntity {
 
     /**
-     * Holds the different certificate types.
-     */
-    public enum CertificateType {
-        /**
-         * Basic X509 Certificate.
-         */
-        X509_CERTIFICATE,
-        /**
-         * Basic Attribute Certificate.
-         */
-        ATTRIBUTE_CERTIFICATE,
-        /**
-         * Invalid Certificate.
-         */
-        INVALID_CERTIFICATE
-    }
-
-    /**
      * Decimal digit representation of base 16.
      */
     public static final int HEX_BASE = 16;
@@ -106,6 +86,7 @@ public abstract class Certificate extends ArchivableEntity {
      * Min length representing the attribute certificate.
      */
     public static final int MIN_ATTR_CERT_LENGTH = 8;
+
     /**
      * Holds the name of the entity 'ID' field.
      */
@@ -120,51 +101,77 @@ public abstract class Certificate extends ArchivableEntity {
      * Holds the name of the 'serialNumber' field.
      */
     public static final String SERIAL_NUMBER_FIELD = "serialNumber";
-    @Getter
-    @Column(nullable = false, precision = CertificateVariables.MAX_NUMERIC_PRECISION, scale = 0)
-    private final BigInteger serialNumber;
 
     /**
      * Holds the name of the 'issuer' field.
      */
     public static final String ISSUER_FIELD = "issuer";
-    @Getter
-    @Column(nullable = false)
-    private final String issuer;
+
     /**
      * Holds the name of the 'issuerSorted' field.
      */
     public static final String ISSUER_SORTED_FIELD = "issuerSorted";
-    @Getter
-    @Column
-    private final String issuerSorted;
 
     /**
      * Holds the name of the 'subject' field.
      */
     public static final String SUBJECT_FIELD = "subject";
-    @Getter
-    @Column(nullable = true)
-    private final String subject;
+
     /**
      * Holds the name of the 'subjectSorted' field.
      */
     public static final String SUBJECT_SORTED_FIELD = "subjectSorted";
-    @Getter
-    @Column
-    private final String subjectSorted;
 
     /**
      * Holds the name of the 'encodedPublicKey' field.
      */
     public static final String ENCODED_PUBLIC_KEY_FIELD = "encodedPublicKey";
-    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES, nullable = true)
-    private final byte[] encodedPublicKey;
 
     /**
      * Holds the name of the 'encodedPublicKey' field.
      */
     public static final String PUBLIC_KEY_MODULUS_FIELD = "publicKeyModulusHexValue";
+
+    /**
+     * Holds the name of the 'certificateHash' field.
+     */
+    public static final String CERTIFICATE_HASH_FIELD = "certificateHash";
+
+    /**
+     * Holds the name of the 'holderSerialNumber' field.
+     */
+    public static final String HOLDER_SERIAL_NUMBER_FIELD = "holderSerialNumber";
+
+    /**
+     * Holds the name of the 'authorityKeyIdentifier' field.
+     */
+    public static final String AUTHORITY_KEY_ID_FIELD = "authorityKeyIdentifier";
+
+    @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
+    private static final String POLICY_CONSTRAINTS = "2.5.29.36";
+
+    @Getter
+    @Column(nullable = false, precision = CertificateVariables.MAX_NUMERIC_PRECISION, scale = 0)
+    private final BigInteger serialNumber;
+
+    @Getter
+    @Column(nullable = false)
+    private final String issuer;
+
+    @Getter
+    @Column
+    private final String issuerSorted;
+
+    @Getter
+    @Column
+    private final String subject;
+
+    @Getter
+    @Column
+    private final String subjectSorted;
+
+    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES)
+    private final byte[] encodedPublicKey;
 
     // We're currently seeing 2048-bit keys, which is 512 hex digits.
     // Using a max length of 1024 for future-proofing.
@@ -181,16 +188,9 @@ public abstract class Certificate extends ArchivableEntity {
     @Column(nullable = false)
     private final Date endValidity;
 
-    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES*CertificateVariables.KEY_USAGE_BIT4, nullable = false)
-    @JsonIgnore
-    private byte[] certificateBytes;
-
-    /**
-     * Holds the name of the 'certificateHash' field.
-     */
-    public static final String CERTIFICATE_HASH_FIELD = "certificateHash";
     @Column(nullable = false)
-    @JsonIgnore @Getter
+    @JsonIgnore
+    @Getter
     private final int certificateHash;
 
     /**
@@ -202,42 +202,48 @@ public abstract class Certificate extends ArchivableEntity {
     @JsonIgnore
     private final int certAndTypeHash;
 
-    /**
-     * Holds the name of the 'holderSerialNumber' field.
-     */
-    public static final String HOLDER_SERIAL_NUMBER_FIELD = "holderSerialNumber";
+    @Getter
+    @Column(nullable = false, precision = CertificateVariables.MAX_NUMERIC_PRECISION)
+    private final BigInteger holderSerialNumber;
 
     @Getter
-    @Column(nullable = false, precision = CertificateVariables.MAX_NUMERIC_PRECISION, scale = 0)
-    private final BigInteger holderSerialNumber;
-    @Getter
-    private String holderIssuer;
-    @Getter
-    @Column(nullable = true, precision = CertificateVariables.MAX_NUMERIC_PRECISION, scale = 0)
+    @Column(precision = CertificateVariables.MAX_NUMERIC_PRECISION)
     private final BigInteger authoritySerialNumber;
 
-    @SuppressWarnings("PMD.AvoidUsingHardCodedIP") // this is not an IP address; PMD thinks it is
-    private static final String POLICY_CONSTRAINTS = "2.5.29.36";
+    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES * CertificateVariables.KEY_USAGE_BIT4,
+            nullable = false)
+    @JsonIgnore
+    private byte[] certificateBytes;
 
+    @Getter
+    private String holderIssuer;
     // we don't need to persist this, but we don't want to unpack this cert multiple times
     @Transient
     private X509Certificate parsedX509Cert = null;
 
     @Getter
-    private String signatureAlgorithm, publicKeyAlgorithm;
+    private String signatureAlgorithm;
+
     @Getter
-    private String keyUsage, extendedKeyUsage;
+    private String publicKeyAlgorithm;
+
+    @Getter
+    private String keyUsage;
+
+    @Getter
+    private String extendedKeyUsage;
+
     private byte[] policyConstraints;
-    /**
-     * Holds the name of the 'authorityKeyIdentifier' field.
-     */
-    public static final String AUTHORITY_KEY_ID_FIELD = "authorityKeyIdentifier";
+
     @Getter
     private String authorityKeyIdentifier;
+
     @Getter
     private String authorityInfoAccess;
+
     @Getter
     private String crlPoints;
+
     @Getter
     private int publicKeySize;
 
@@ -291,7 +297,7 @@ public abstract class Certificate extends ArchivableEntity {
      * @param certificateBytes the contents of a certificate file
      * @throws IOException if there is a problem extracting information from the certificate
      */
-    @SuppressWarnings("methodlength")
+
     public Certificate(final byte[] certificateBytes) throws IOException {
         Preconditions.checkArgument(
                 certificateBytes != null,
@@ -342,7 +348,7 @@ public abstract class Certificate extends ArchivableEntity {
                 this.policyConstraints = x509Certificate
                         .getExtensionValue(POLICY_CONSTRAINTS);
                 authKeyIdentifier = AuthorityKeyIdentifier
-                        .getInstance((DLSequence) getExtensionValue(
+                        .getInstance(getExtensionValue(
                                 Extension.authorityKeyIdentifier.getId()));
 
                 this.authorityInfoAccess = getAuthorityInfoAccess(x509Certificate
@@ -461,384 +467,8 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
-     * Getter for the CRL Distribution that is reference by the Revocation Locator
-     * on the portal.
-     *
-     * @return A list of URLs that inform the location of the certificate revocation lists
-     * @throws java.io.IOException
-     */
-    private String getCRLDistributionPoint() throws IOException {
-        List<String> crlUrls = new ArrayList<>();
-        ASN1Primitive primitive = getExtensionValue(Extension.cRLDistributionPoints.getId());
-        StringBuilder sb = new StringBuilder();
-
-        if (primitive != null) {
-            CRLDistPoint crlDistPoint = CRLDistPoint.getInstance(primitive);
-            DistributionPoint[] distributionPoints = crlDistPoint.getDistributionPoints();
-
-            for (DistributionPoint distributionPoint : distributionPoints) {
-                DistributionPointName dpn = distributionPoint.getDistributionPoint();
-                // Look for URIs in fullName
-                if (dpn != null && dpn.getType() == DistributionPointName.FULL_NAME) {
-                    GeneralName[] genNames = GeneralNames.getInstance(dpn.getName())
-                            .getNames();
-                    for (GeneralName genName : genNames) {
-                        if (genName.getTagNo() == GeneralName.uniformResourceIdentifier) {
-                            String url = DERIA5String.getInstance(genName.getName())
-                                    .getString();
-                            crlUrls.add(url);
-                        }
-                    }
-                }
-            }
-        }
-
-        for (String s : crlUrls) {
-            sb.append(String.format("%s%n", s));
-        }
-
-        return sb.toString();
-    }
-
-    /**
-     * Getter for the x509 Platform Certificate version.
-     * @return a big integer representing the certificate version. If there
-     * is an error, return the max value to visible show error.
-     */
-    public int getX509CredentialVersion() {
-        try {
-            return getX509Certificate().getVersion() - 1;
-        } catch (IOException ex) {
-            log.warn("X509 Credential Version not found.");
-            log.error(ex);
-            return Integer.MAX_VALUE;
-        }
-    }
-
-    /**
-     * Checks if another certificate is the issuer for this certificate.
-     *
-     * @param issuer the other certificate to check (must be an X509Certificate,
-     * not an X509AttributeCertificateHolder)
-     * @return whether or not the other certificate is the issuer for this certificate
-     * @throws IOException if there is an issue deserializing either certificate
-     */
-    public String isIssuer(final Certificate issuer) throws IOException {
-        String isIssuer = "Certificate signature failed to verify";
-        // only run if of the correct type, otherwise false
-        if (issuer.getCertificateType() == CertificateType.X509_CERTIFICATE) {
-            X509Certificate issuerX509 = issuer.getX509Certificate();
-            // Validate if it's the issuer
-            switch (getCertificateType()) {
-                case X509_CERTIFICATE:
-                    X509Certificate certX509 = getX509Certificate();
-                    try {
-                        certX509.verify(issuerX509.getPublicKey());
-                        isIssuer = "";
-                    } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException
-                            | NoSuchProviderException | SignatureException e) {
-                        log.error(e);
-                    }
-                    break;
-                case ATTRIBUTE_CERTIFICATE:
-                    AttributeCertificate attCert = getAttributeCertificate();
-                    try {
-                        Signature sig = Signature.getInstance(this.getSignatureAlgorithm());
-                        sig.initVerify(issuerX509.getPublicKey());
-                        sig.update(attCert.getAcinfo().getEncoded());
-                        if (sig.verify(attCert.getSignatureValue().getBytes())) {
-                            isIssuer = "";
-                        }
-                    } catch (NoSuchAlgorithmException
-                            | InvalidKeyException
-                            | SignatureException sigEx) {
-                        log.error(sigEx);
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return isIssuer;
-    }
-
-    /**
-     * Return whether or not this certificate is valid on a particular date.
-     *
-     * @param date the date of interest.
-     * @return true if the attribute certificate is valid, false otherwise.
-     */
-    public boolean isValidOn(final Date date) {
-        return !date.before(getBeginValidity()) && !date.after(getEndValidity());
-    }
-
-    /**
-     * Retrieve the original X509 certificate.
-     *
-     * @return the original X509 certificate
-     * @throws IOException if there is a problem deserializing the certificate as an X509 cert
-     */
-    @JsonIgnore
-    public X509Certificate getX509Certificate() throws IOException {
-        if (parsedX509Cert != null) {
-            return parsedX509Cert;
-        }
-
-        try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(certificateBytes)) {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            parsedX509Cert = (X509Certificate) cf.generateCertificate(certInputStream);
-            return parsedX509Cert;
-        } catch (CertificateException cEx) {
-            throw new IOException("Cannot construct X509Certificate from the input stream", cEx);
-        }
-    }
-
-    /**
-     * @return the type of certificate.
-     * @throws java.io.IOException if there is a problem extracting information from the certificate
-     */
-    protected CertificateType getCertificateType() throws IOException {
-        //Parse the certificate into a sequence
-        ASN1Sequence testCred1 = (ASN1Sequence) ASN1Primitive.fromByteArray(this.certificateBytes);
-        ASN1Sequence testSeq = (ASN1Sequence) ((ASN1Object) testCred1.toArray()[0]);
-
-        if (testSeq.toArray()[0] instanceof ASN1Integer) {
-            if (testSeq.toArray().length >= MIN_ATTR_CERT_LENGTH) {
-                // Attribute Certificate
-                return CertificateType.ATTRIBUTE_CERTIFICATE;
-            } else {
-                // V1 X509Certificate
-                return CertificateType.X509_CERTIFICATE;
-            }
-        } else if (testSeq.toArray()[0] instanceof DERTaggedObject || testSeq.toArray()[0] instanceof DLTaggedObject) {
-            // V2 or V3 X509Certificate
-            return CertificateType.X509_CERTIFICATE;
-        }
-
-        return CertificateType.INVALID_CERTIFICATE;
-    }
-
-
-    private String parseKeyUsage(final boolean[] bools) {
-        StringBuilder sb = new StringBuilder();
-
-        if (bools != null) {
-            for (int i = 0; i < bools.length; i++) {
-                if (bools[i]) {
-                    sb.append(CredentialHelper.getKeyUsageString(i));
-                }
-            }
-        }
-
-        return sb.toString();
-    }
-
-    /**
-     * Getter for the authorityKeyIdentifier.
-     * @return the ID's byte representation
-     */
-    private String authKeyIdentifierToString(final AuthorityKeyIdentifier aki) {
-        String retValue = "";
-        if (aki != null) {
-            byte[] keyArray = aki.getKeyIdentifier();
-            if (keyArray != null) {
-                retValue = HexUtils.byteArrayToHexString(keyArray);
-            }
-        }
-
-        return retValue;
-    }
-
-    /**
-     * Gets the contents of requested OID.
-     *
-     * @param oid Object Identifier
-     * @return ASN1Primitive Content related to the requested OID
-     * @throws java.io.IOException
-     */
-    private ASN1Primitive getExtensionValue(final String oid) throws IOException {
-        byte[] extensionValue = getX509Certificate().getExtensionValue(oid);
-        ASN1Primitive asn1Primitive = null;
-        ASN1InputStream asn1InputStream = null;
-
-        if (extensionValue != null) {
-            try {
-                asn1InputStream = new ASN1InputStream(extensionValue);
-                DEROctetString oct = (DEROctetString) asn1InputStream.readObject();
-                asn1InputStream.close();
-                asn1InputStream = new ASN1InputStream(oct.getOctets());
-                asn1Primitive = asn1InputStream.readObject();
-            } catch (IOException ioEx) {
-                log.error(ioEx);
-            } finally {
-                if (asn1InputStream != null) {
-                    asn1InputStream.close();
-                }
-            }
-        }
-
-        return asn1Primitive;
-    }
-
-    /**
-     * Getter for the AuthorityInfoAccess extension value on list format.
-     *
-     * @return List Authority info access list
-     */
-    private String getAuthorityInfoAccess(final byte[] authInfoAccess) {
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            if (authInfoAccess != null && authInfoAccess.length > 0) {
-                sb.append(getAuthorityInfoAccess(AuthorityInformationAccess
-                        .getInstance(JcaX509ExtensionUtils.parseExtensionValue(authInfoAccess))));
-            }
-        } catch (IOException ioEx) {
-            log.error(ioEx);
-        }
-
-        return sb.toString();
-    }
-
-    /**
-     * Getter for the AuthorityInfoAccess extension value on list format.
-     *
-     * @return List Authority info access list
-     */
-    private String getAuthorityInfoAccess(final AuthorityInformationAccess authInfoAccess) {
-        StringBuilder sb = new StringBuilder();
-
-        if (authInfoAccess != null) {
-            for (AccessDescription desc : authInfoAccess.getAccessDescriptions()) {
-                if (desc.getAccessLocation().getTagNo() == GeneralName
-                        .uniformResourceIdentifier) {
-                    sb.append(String.format("%s%n", ((DERIA5String) desc
-                            .getAccessLocation()
-                            .getName())
-                            .getString()));
-                }
-            }
-        }
-
-        return sb.toString();
-    }
-
-
-    /**
-     * Retrieve the original X509 attribute certificate.
-     *
-     * @return the original X509 attribute certificate
-     * @throws IOException if there is a problem deserializing the certificate as an X509
-     *                     attribute cert
-     */
-    @JsonIgnore
-    public X509AttributeCertificateHolder getX509AttributeCertificateHolder() throws IOException {
-        return new X509AttributeCertificateHolder(certificateBytes);
-    }
-
-    /**
-     * Retrieve the original Attribute Certificate.
-     *
-     * @return the original Attribute Certificate
-     * @throws IOException if there is a problem deserializing the certificate as an X509
-     *                     attribute cert
-     */
-    @JsonIgnore
-    public AttributeCertificate getAttributeCertificate() throws IOException {
-        return AttributeCertificate
-                .getInstance(ASN1Primitive.fromByteArray(certificateBytes));
-    }
-
-    /**
-     * @return this certificate's signature
-     */
-    public byte[] getSignature() {
-        return signature.clone();
-    }
-
-    /**
-     * @return this certificate's validity start date
-     */
-    public Date getBeginValidity() {
-        return new Date(beginValidity.getTime());
-    }
-
-    /**
-     * @return this certificate's validity end date
-     */
-    public Date getEndValidity() {
-        return new Date(endValidity.getTime());
-    }
-
-    /**
-     * Getter for the policy statement.
-     * @return cloned bit representation of constraints
-     */
-    public byte[] getPolicyConstraints() {
-        if (policyConstraints != null) {
-            return policyConstraints.clone();
-        }
-        return null;
-    }
-
-    /**
-     * @return this certificate's encoded public key
-     */
-    public byte[] getEncodedPublicKey() {
-        if (encodedPublicKey == null) {
-            return null;
-        } else {
-            return encodedPublicKey.clone();
-        }
-    }
-
-    /**
      * Gets the raw bytes for the certificate.
      *
-     * @return copy of the certificate bytes
-     */
-    @JsonIgnore
-    public byte[] getRawBytes() {
-        if (this.certificateBytes != null) {
-            return this.certificateBytes.clone();
-        }
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Certificate{%s, AuthID=%s, serialNumber=%s, "
-                        + "issuer=%s, AuthSerialNumber=%s, publicKeySize=%d, "
-                        + "signatureAlg=%s, Hash=%d}", super.toString(),
-                authorityKeyIdentifier, serialNumber.toString(),
-                issuer, authoritySerialNumber.toString(), publicKeySize,
-                signatureAlgorithm, certificateHash);
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        Certificate that = (Certificate) o;
-
-        return Arrays.equals(certificateBytes, that.certificateBytes);
-    }
-
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(certificateBytes);
-    }
-
-    /**
-     *
-     * Gets the raw bytes for the certificate.
      * @param certificatePath path to the certificate file
      * @return bytes from the certificate file
      * @throws IOException if there is a problem reading the file
@@ -853,8 +483,8 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
-     * Retrieve a formatted subject DN string from a certificate. This allows for extended support of DNs found in
-     * various RFCs.
+     * Retrieve a formatted subject DN string from a certificate. This allows for extended support of DNs
+     * found in various RFCs.
      *
      * @param certificate the certificate holding subject DNs
      * @return IOException if there is an issue decoding the subject DNs
@@ -873,8 +503,8 @@ public abstract class Certificate extends ArchivableEntity {
     }
 
     /**
-     * Retrieve a formatted issuer DN string from a certificate. This allows for extended support of DNs found in
-     * various RFCs.
+     * Retrieve a formatted issuer DN string from a certificate. This allows for extended support of DNs found
+     * in various RFCs.
      *
      * @param certificate the certificate holding issuer DNs
      * @return IOException if there is an issue decoding the issuer DNs
@@ -926,8 +556,7 @@ public abstract class Certificate extends ArchivableEntity {
      */
     public static BigInteger getPublicKeyModulus(final PublicKey publicKey) throws IOException {
         ASN1Primitive publicKeyASN1 = ASN1Primitive.fromByteArray(publicKey.getEncoded());
-        if (publicKeyASN1 instanceof ASN1Sequence) {
-            ASN1Sequence publicKeyASN1Sequence = (ASN1Sequence) publicKeyASN1;
+        if (publicKeyASN1 instanceof ASN1Sequence publicKeyASN1Sequence) {
             ASN1BitString encodedModulusAndExponent = (ASN1BitString)
                     publicKeyASN1Sequence.getObjectAt(1);
             byte[] modulusAndExponentBytes = encodedModulusAndExponent.getOctets();
@@ -939,8 +568,7 @@ public abstract class Certificate extends ArchivableEntity {
 
     private static BigInteger getPublicKeyModulus(final ASN1Primitive publicKey)
             throws IOException {
-        if (publicKey instanceof ASN1Sequence) {
-            ASN1Sequence pubKeySeq = (ASN1Sequence) publicKey;
+        if (publicKey instanceof ASN1Sequence pubKeySeq) {
             ASN1Encodable modulus = pubKeySeq.getObjectAt(0);
             if (modulus instanceof ASN1Integer) {
                 return ((ASN1Integer) modulus).getValue();
@@ -976,7 +604,7 @@ public abstract class Certificate extends ArchivableEntity {
             }
         }
 
-        return (X500Name[]) l.toArray(new X500Name[l.size()]);
+        return l.toArray(new X500Name[l.size()]);
     }
 
     /**
@@ -991,5 +619,421 @@ public abstract class Certificate extends ArchivableEntity {
         } catch (ParseException e) {
             throw new IllegalStateException("unable to recover date: " + e.getMessage());
         }
+    }
+
+    /**
+     * Getter for the CRL Distribution that is reference by the Revocation Locator
+     * on the portal.
+     *
+     * @return A list of URLs that inform the location of the certificate revocation lists
+     * @throws IOException if there is an issue while retrieving the CRL Distribution point
+     */
+    private String getCRLDistributionPoint() throws IOException {
+        List<String> crlUrls = new ArrayList<>();
+        ASN1Primitive primitive = getExtensionValue(Extension.cRLDistributionPoints.getId());
+        StringBuilder sb = new StringBuilder();
+
+        if (primitive != null) {
+            CRLDistPoint crlDistPoint = CRLDistPoint.getInstance(primitive);
+            DistributionPoint[] distributionPoints = crlDistPoint.getDistributionPoints();
+
+            for (DistributionPoint distributionPoint : distributionPoints) {
+                DistributionPointName dpn = distributionPoint.getDistributionPoint();
+                // Look for URIs in fullName
+                if (dpn != null && dpn.getType() == DistributionPointName.FULL_NAME) {
+                    GeneralName[] genNames = GeneralNames.getInstance(dpn.getName())
+                            .getNames();
+                    for (GeneralName genName : genNames) {
+                        if (genName.getTagNo() == GeneralName.uniformResourceIdentifier) {
+                            String url = DERIA5String.getInstance(genName.getName())
+                                    .getString();
+                            crlUrls.add(url);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (String s : crlUrls) {
+            sb.append(String.format("%s%n", s));
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Getter for the x509 Platform Certificate version.
+     *
+     * @return a big integer representing the certificate version. If there
+     * is an error, return the max value to visible show error.
+     */
+    public int getX509CredentialVersion() {
+        try {
+            return getX509Certificate().getVersion() - 1;
+        } catch (IOException ex) {
+            log.warn("X509 Credential Version not found.");
+            log.error(ex);
+            return Integer.MAX_VALUE;
+        }
+    }
+
+    /**
+     * Checks if another certificate is the issuer for this certificate.
+     *
+     * @param issuer the other certificate to check (must be an X509Certificate,
+     *               not an X509AttributeCertificateHolder)
+     * @return whether or not the other certificate is the issuer for this certificate
+     * @throws IOException if there is an issue deserializing either certificate
+     */
+    public String isIssuer(final Certificate issuer) throws IOException {
+        String isIssuer = "Certificate signature failed to verify";
+        // only run if of the correct type, otherwise false
+        if (issuer.getCertificateType() == CertificateType.X509_CERTIFICATE) {
+            X509Certificate issuerX509 = issuer.getX509Certificate();
+            // Validate if it's the issuer
+            switch (getCertificateType()) {
+                case X509_CERTIFICATE:
+                    X509Certificate certX509 = getX509Certificate();
+                    try {
+                        certX509.verify(issuerX509.getPublicKey());
+                        isIssuer = "";
+                    } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException
+                             | NoSuchProviderException | SignatureException e) {
+                        log.error(e);
+                    }
+                    break;
+                case ATTRIBUTE_CERTIFICATE:
+                    AttributeCertificate attCert = getAttributeCertificate();
+                    try {
+                        Signature sig = Signature.getInstance(this.getSignatureAlgorithm());
+                        sig.initVerify(issuerX509.getPublicKey());
+                        sig.update(attCert.getAcinfo().getEncoded());
+                        if (sig.verify(attCert.getSignatureValue().getBytes())) {
+                            isIssuer = "";
+                        }
+                    } catch (NoSuchAlgorithmException
+                             | InvalidKeyException
+                             | SignatureException sigEx) {
+                        log.error(sigEx);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return isIssuer;
+    }
+
+    /**
+     * Return whether this certificate is valid on a particular date.
+     *
+     * @param date the date of interest.
+     * @return true if the attribute certificate is valid, false otherwise.
+     */
+    public boolean isValidOn(final Date date) {
+        return !date.before(getBeginValidity()) && !date.after(getEndValidity());
+    }
+
+    /**
+     * Retrieve the original X509 certificate.
+     *
+     * @return the original X509 certificate
+     * @throws IOException if there is a problem deserializing the certificate as an X509 cert
+     */
+    @JsonIgnore
+    public X509Certificate getX509Certificate() throws IOException {
+        if (parsedX509Cert != null) {
+            return parsedX509Cert;
+        }
+
+        try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(certificateBytes)) {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            parsedX509Cert = (X509Certificate) cf.generateCertificate(certInputStream);
+            return parsedX509Cert;
+        } catch (CertificateException cEx) {
+            throw new IOException("Cannot construct X509Certificate from the input stream", cEx);
+        }
+    }
+
+    /**
+     * @return the type of certificate.
+     * @throws java.io.IOException if there is a problem extracting information from the certificate
+     */
+    protected CertificateType getCertificateType() throws IOException {
+        //Parse the certificate into a sequence
+        ASN1Sequence testCred1 = (ASN1Sequence) ASN1Primitive.fromByteArray(this.certificateBytes);
+        ASN1Sequence testSeq = (ASN1Sequence) testCred1.toArray()[0];
+
+        if (testSeq.toArray()[0] instanceof ASN1Integer) {
+            if (testSeq.toArray().length >= MIN_ATTR_CERT_LENGTH) {
+                // Attribute Certificate
+                return CertificateType.ATTRIBUTE_CERTIFICATE;
+            } else {
+                // V1 X509Certificate
+                return CertificateType.X509_CERTIFICATE;
+            }
+        } else if (testSeq.toArray()[0] instanceof DERTaggedObject
+                || testSeq.toArray()[0] instanceof DLTaggedObject) {
+            // V2 or V3 X509Certificate
+            return CertificateType.X509_CERTIFICATE;
+        }
+
+        return CertificateType.INVALID_CERTIFICATE;
+    }
+
+    private String parseKeyUsage(final boolean[] bools) {
+        StringBuilder sb = new StringBuilder();
+
+        if (bools != null) {
+            for (int i = 0; i < bools.length; i++) {
+                if (bools[i]) {
+                    sb.append(CredentialHelper.getKeyUsageString(i));
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Getter for the authorityKeyIdentifier.
+     *
+     * @param aki authority key identifier
+     * @return the ID's byte representation
+     */
+    private String authKeyIdentifierToString(final AuthorityKeyIdentifier aki) {
+        String retValue = "";
+        if (aki != null) {
+            byte[] keyArray = aki.getKeyIdentifier();
+            if (keyArray != null) {
+                retValue = HexUtils.byteArrayToHexString(keyArray);
+            }
+        }
+
+        return retValue;
+    }
+
+    /**
+     * Gets the contents of requested OID.
+     *
+     * @param oid Object Identifier
+     * @return ASN1Primitive Content related to the requested OID
+     * @throws IOException io exception
+     */
+    private ASN1Primitive getExtensionValue(final String oid) throws IOException {
+        byte[] extensionValue = getX509Certificate().getExtensionValue(oid);
+        ASN1Primitive asn1Primitive = null;
+        ASN1InputStream asn1InputStream = null;
+
+        if (extensionValue != null) {
+            try {
+                asn1InputStream = new ASN1InputStream(extensionValue);
+                DEROctetString oct = (DEROctetString) asn1InputStream.readObject();
+                asn1InputStream.close();
+                asn1InputStream = new ASN1InputStream(oct.getOctets());
+                asn1Primitive = asn1InputStream.readObject();
+            } catch (IOException ioEx) {
+                log.error(ioEx);
+            } finally {
+                if (asn1InputStream != null) {
+                    asn1InputStream.close();
+                }
+            }
+        }
+
+        return asn1Primitive;
+    }
+
+    /**
+     * Getter for the AuthorityInfoAccess extension value on list format.
+     *
+     * @param authInfoAccess byte representation of the authority info access
+     * @return List Authority info access list
+     */
+    private String getAuthorityInfoAccess(final byte[] authInfoAccess) {
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            if (authInfoAccess != null && authInfoAccess.length > 0) {
+                sb.append(getAuthorityInfoAccess(AuthorityInformationAccess
+                        .getInstance(JcaX509ExtensionUtils.parseExtensionValue(authInfoAccess))));
+            }
+        } catch (IOException ioEx) {
+            log.error(ioEx);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Getter for the AuthorityInfoAccess extension value on list format.
+     *
+     * @param authInfoAccess authority information access
+     * @return List Authority info access list
+     */
+    private String getAuthorityInfoAccess(final AuthorityInformationAccess authInfoAccess) {
+        StringBuilder sb = new StringBuilder();
+
+        if (authInfoAccess != null) {
+            for (AccessDescription desc : authInfoAccess.getAccessDescriptions()) {
+                if (desc.getAccessLocation().getTagNo() == GeneralName
+                        .uniformResourceIdentifier) {
+                    sb.append(String.format("%s%n", ((DERIA5String) desc
+                            .getAccessLocation()
+                            .getName())
+                            .getString()));
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Retrieve the original X509 attribute certificate.
+     *
+     * @return the original X509 attribute certificate
+     * @throws IOException if there is a problem deserializing the certificate as an X509
+     *                     attribute cert
+     */
+    @JsonIgnore
+    public X509AttributeCertificateHolder getX509AttributeCertificateHolder() throws IOException {
+        return new X509AttributeCertificateHolder(certificateBytes);
+    }
+
+    /**
+     * Retrieve the original Attribute Certificate.
+     *
+     * @return the original Attribute Certificate
+     * @throws IOException if there is a problem deserializing the certificate as an X509
+     *                     attribute cert
+     */
+    @JsonIgnore
+    public AttributeCertificate getAttributeCertificate() throws IOException {
+        return AttributeCertificate
+                .getInstance(ASN1Primitive.fromByteArray(certificateBytes));
+    }
+
+    /**
+     * @return this certificate's signature
+     */
+    public byte[] getSignature() {
+        return signature.clone();
+    }
+
+    /**
+     * @return this certificate's validity start date
+     */
+    public Date getBeginValidity() {
+        return new Date(beginValidity.getTime());
+    }
+
+    /**
+     * @return this certificate's validity end date
+     */
+    public Date getEndValidity() {
+        return new Date(endValidity.getTime());
+    }
+
+    /**
+     * Getter for the policy statement.
+     *
+     * @return cloned bit representation of constraints
+     */
+    public byte[] getPolicyConstraints() {
+        if (policyConstraints != null) {
+            return policyConstraints.clone();
+        }
+        return null;
+    }
+
+    /**
+     * @return this certificate's encoded public key
+     */
+    public byte[] getEncodedPublicKey() {
+        if (encodedPublicKey == null) {
+            return null;
+        } else {
+            return encodedPublicKey.clone();
+        }
+    }
+
+    /**
+     * Gets the raw bytes for the certificate.
+     *
+     * @return copy of the certificate bytes
+     */
+    @JsonIgnore
+    public byte[] getRawBytes() {
+        if (this.certificateBytes != null) {
+            return this.certificateBytes.clone();
+        }
+        return null;
+    }
+
+    /**
+     * Creates a string representation of the Certificate object.
+     *
+     * @return a string representation of the Certificate object.
+     */
+    @Override
+    public String toString() {
+        return String.format("Certificate{%s, AuthID=%s, serialNumber=%s, "
+                        + "issuer=%s, AuthSerialNumber=%s, publicKeySize=%d, "
+                        + "signatureAlg=%s, Hash=%d}", super.toString(),
+                authorityKeyIdentifier, serialNumber.toString(),
+                issuer, authoritySerialNumber.toString(), publicKeySize,
+                signatureAlgorithm, certificateHash);
+    }
+
+    /**
+     * Compares this certificate to the provided object to verify that both this and the provided certificate
+     * objects are equal.
+     *
+     * @param o object to compare
+     * @return true if both the provided certificate and this certificate are equal, false otherwise
+     */
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Certificate that = (Certificate) o;
+
+        return Arrays.equals(certificateBytes, that.certificateBytes);
+    }
+
+    /**
+     * Creates an integer hash code for this Certificate object.
+     *
+     * @return integer hash code
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(certificateBytes);
+    }
+
+    /**
+     * Holds the different certificate types.
+     */
+    public enum CertificateType {
+        /**
+         * Basic X509 Certificate.
+         */
+        X509_CERTIFICATE,
+        /**
+         * Basic Attribute Certificate.
+         */
+        ATTRIBUTE_CERTIFICATE,
+        /**
+         * Invalid Certificate.
+         */
+        INVALID_CERTIFICATE
     }
 }

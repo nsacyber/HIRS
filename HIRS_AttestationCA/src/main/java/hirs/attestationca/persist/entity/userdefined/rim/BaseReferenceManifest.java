@@ -10,6 +10,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.Unmarshaller;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -42,6 +42,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode(callSuper = true)
 @Entity
 public class BaseReferenceManifest extends ReferenceManifest {
     /**
@@ -53,43 +54,60 @@ public class BaseReferenceManifest extends ReferenceManifest {
 
     @Column
     private String swidName = null;
+
     @Column
     private int swidCorpus = 0;
+
     @Column
     private String colloquialVersion = null;
+
     @Column
     private String product = null;
+
     @Column
     private String revision = null;
+
     @Column
     private String edition = null;
+
     @Column
     private String rimLinkHash = null;
+
     @Column
     private String bindingSpec = null;
+
     @Column
     private String bindingSpecVersion = null;
+
     @Column
     private String platformVersion = null;
+
     @Column
     private String payloadType = null;
+
     @Column
     private String pcURIGlobal = null;
+
     @Column
     private String pcURILocal = null;
 
     private String entityName = null;
+
     private String entityRegId = null;
+
     private String entityRole = null;
+
     private String entityThumbprint = null;
+
     private String linkHref = null;
+
     private String linkRel = null;
 
     /**
      * Support constructor for the RIM object.
      *
      * @param rimBytes - the file content of the uploaded file.
-     * @throws IOException - thrown if the file is invalid.
+     * @throws UnmarshalException - thrown if the file is invalid.
      */
     public BaseReferenceManifest(final byte[] rimBytes) throws UnmarshalException {
         this("", rimBytes);
@@ -101,7 +119,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
      *
      * @param fileName - string representation of the uploaded file.
      * @param rimBytes byte array representation of the RIM
-     * @throws IOException if unable to unmarshal the string
+     * @throws UnmarshalException if unable to unmarshal the string
      */
     public BaseReferenceManifest(final String fileName, final byte[] rimBytes)
             throws UnmarshalException {
@@ -205,6 +223,9 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * This method validates the .swidtag file at the given filepath against the
      * schema. A successful validation results in the output of the tag's name
      * and tagId attributes, otherwise a generic error message is printed.
+     *
+     * @param rimBytes byte array representation of the RIM
+     * @return an element
      */
     private Element getDirectoryTag(final byte[] rimBytes) {
         if (rimBytes == null || rimBytes.length == 0) {
@@ -220,13 +241,14 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * and tagId attributes, otherwise a generic error message is printed.
      *
      * @param byteArrayInputStream the location of the file to be validated
+     * @return an element
      */
     private Element getDirectoryTag(final ByteArrayInputStream byteArrayInputStream) {
         Document document = null;
         try {
             document = unmarshallSwidTag(byteArrayInputStream);
         } catch (UnmarshalException e) {
-            log.error("Error while parsing Directory tag: " + e.getMessage());
+            log.error("Error while parsing Directory tag: {}", e.getMessage());
         }
         if (document != null) {
             Element softwareIdentity =
@@ -246,7 +268,9 @@ public class BaseReferenceManifest extends ReferenceManifest {
     }
 
     /**
-     * This method iterates over the list of File elements under the directory.     *
+     * This method iterates over the list of File elements under the directory.
+     *
+     * @return a list of swid resources
      */
     public List<SwidResource> getFileResources() {
         return getFileResources(getRimBytes());
@@ -256,6 +280,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * This method iterates over the list of File elements under the directory.
      *
      * @param rimBytes the bytes to find the files
+     * @return a list of swid resources
      */
     public List<SwidResource> getFileResources(final byte[] rimBytes) {
         Element directoryTag = getDirectoryTag(rimBytes);
@@ -352,49 +377,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
         return document;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-        BaseReferenceManifest that = (BaseReferenceManifest) o;
-        return swidCorpus == that.swidCorpus && Objects.equals(swidName, that.swidName)
-                && Objects.equals(colloquialVersion, that.colloquialVersion)
-                && Objects.equals(product, that.product)
-                && Objects.equals(revision, that.revision)
-                && Objects.equals(edition, that.edition)
-                && Objects.equals(rimLinkHash, that.rimLinkHash)
-                && Objects.equals(bindingSpec, that.bindingSpec)
-                && Objects.equals(bindingSpecVersion, that.bindingSpecVersion)
-                && Objects.equals(platformVersion, that.platformVersion)
-                && Objects.equals(payloadType, that.payloadType)
-                && Objects.equals(pcURIGlobal, that.pcURIGlobal)
-                && Objects.equals(pcURILocal, that.pcURILocal)
-                && Objects.equals(entityName, that.entityName)
-                && Objects.equals(entityRegId, that.entityRegId)
-                && Objects.equals(entityRole, that.entityRole)
-                && Objects.equals(entityThumbprint, that.entityThumbprint)
-                && Objects.equals(linkHref, that.linkHref)
-                && Objects.equals(linkRel, that.linkRel);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), swidName,
-                swidCorpus, colloquialVersion, product,
-                revision, edition, rimLinkHash, bindingSpec,
-                bindingSpecVersion, platformVersion,
-                payloadType, pcURIGlobal, pcURILocal,
-                entityName, entityRegId, entityRole,
-                entityThumbprint, linkHref, linkRel);
-    }
-
+    /**
+     * Creates a string representation of the Base Reference Manifest object.
+     *
+     * @return a string representation of the Base Reference Manifest object.
+     */
     @Override
     public String toString() {
         return String.format("ReferenceManifest{swidName=%s,"

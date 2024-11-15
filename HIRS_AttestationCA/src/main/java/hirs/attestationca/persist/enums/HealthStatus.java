@@ -1,11 +1,18 @@
 package hirs.attestationca.persist.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
  * <code>HealthStatus</code> is used to represent the health of a device.
  */
+@Getter
+@AllArgsConstructor
+@ToString
 public enum HealthStatus {
     /**
      * The trusted state, no issues with the device.
@@ -22,32 +29,14 @@ public enum HealthStatus {
      */
     UNKNOWN("unknown");
 
-    private String healthStatus;
+    private final String healthStatus;
 
     /**
-     * Creates a new <code>HealthStatus</code> object given a String.
+     * Determines if the provided health status is a valid health status.
      *
-     * @param healthStatus
-     *            "trusted", "untrusted", or "unknown"
+     * @param healthStatus string representation of the healh status
+     * @return true if the health status is valid, otherwise false
      */
-    HealthStatus(final String healthStatus) {
-        this.healthStatus = healthStatus;
-    }
-
-    /**
-     * Returns the health status.
-     *
-     * @return the status
-     */
-    public String getStatus() {
-        return this.healthStatus;
-    }
-
-    @Override
-    public String toString() {
-        return getStatus();
-    }
-
     public static boolean isValidStatus(final String healthStatus) {
         return Arrays.stream(HealthStatus.values())
                 .map(HealthStatus::name)

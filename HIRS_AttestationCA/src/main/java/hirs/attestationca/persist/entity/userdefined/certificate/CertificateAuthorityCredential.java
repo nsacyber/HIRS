@@ -3,6 +3,7 @@ package hirs.attestationca.persist.entity.userdefined.certificate;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.apache.commons.codec.binary.Hex;
 
@@ -14,35 +15,35 @@ import java.util.Arrays;
  * This class persists Certificate Authority credentials by extending the base Certificate
  * class with fields unique to CA credentials.
  */
+@Getter
 @Entity
 public class CertificateAuthorityCredential extends Certificate {
-
-
-    @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
-    private static final String SUBJECT_KEY_IDENTIFIER_EXTENSION = "2.5.29.14";
 
     /**
      * Holds the name of the 'subjectKeyIdentifier' field.
      */
     public static final String SUBJECT_KEY_IDENTIFIER_FIELD = "subjectKeyIdentifier";
 
+    @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
+    private static final String SUBJECT_KEY_IDENTIFIER_EXTENSION = "2.5.29.14";
+
     private static final int CA_BYTE_SIZE = 20;
+
     private static final int PREFIX_BYTE_SIZE = 4;
 
+    @Getter(AccessLevel.NONE)
     @Column
     private final byte[] subjectKeyIdentifier;
-
-    @Getter
-    @Column
-    private String subjectKeyIdString;
 
     /**
      * this field is part of the TCG CA specification, but has not yet been found in
      * manufacturer-provided CAs, and is therefore not currently parsed.
      */
-    @Getter
     @Column
     private final String credentialType = "TCPA Trusted Platform Module Endorsement";
+
+    @Column
+    private String subjectKeyIdString;
 
     /**
      * Construct a new CertificateAuthorityCredential given its binary contents.  The given
@@ -111,6 +112,13 @@ public class CertificateAuthorityCredential extends Certificate {
         return null;
     }
 
+    /**
+     * Helper method that uses the provided certificate bytes and truncates a portion
+     * of the certificate bytes array.
+     *
+     * @param certificateBytes byte array representation of the certificate bytes
+     * @return a truncated certificate byte array
+     */
     private byte[] truncatePrefixBytes(final byte[] certificateBytes) {
         byte[] temp = new byte[CA_BYTE_SIZE];
         System.arraycopy(certificateBytes, PREFIX_BYTE_SIZE, temp, 0, CA_BYTE_SIZE);
@@ -118,8 +126,14 @@ public class CertificateAuthorityCredential extends Certificate {
         return temp;
     }
 
-    @Override
-    @SuppressWarnings("checkstyle:avoidinlineconditionals")
+    /**
+     * Compares this Certificate Authority Credential object to another Certificate
+     * Authority Credential object.
+     *
+     * @param o object to compare
+     * @return true if both this and the provided Certificate Authority Credential objects are equal,
+     * false otherwise
+     */
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -140,12 +154,17 @@ public class CertificateAuthorityCredential extends Certificate {
         return Arrays.equals(subjectKeyIdentifier, that.subjectKeyIdentifier);
     }
 
+    /**
+     * Creates an integer hash code.
+     *
+     * @return an integer hash code
+     */
     @Override
-    @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:avoidinlineconditionals"})
     public int hashCode() {
+        final int hashCodeConst = 31;
         int result = super.hashCode();
-        result = 31 * result + (credentialType != null ? credentialType.hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(subjectKeyIdentifier);
+        result = hashCodeConst * result + credentialType.hashCode();
+        result = hashCodeConst * result + Arrays.hashCode(subjectKeyIdentifier);
         return result;
     }
 }

@@ -1,10 +1,7 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TPMSecurityAssertions;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TPMSpecification;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -12,8 +9,11 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TPMSecurityAssertions;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TPMSpecification;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the EndorsementCredential class.
@@ -32,6 +32,7 @@ public class EndorsementCredentialTest {
 
     /**
      * Tests the successful parsing of an EC using a test cert from STM.
+     *
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
@@ -65,6 +66,7 @@ public class EndorsementCredentialTest {
 
     /**
      * Tests the successful parsing of an EC using a test cert from NUC 1.
+     *
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
@@ -99,6 +101,7 @@ public class EndorsementCredentialTest {
     /**
      * Tests the successful parsing of an EC using a test cert from NUC 1,
      * using the static builder method.
+     *
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
@@ -134,6 +137,7 @@ public class EndorsementCredentialTest {
 
     /**
      * Tests the successful parsing of an EC using a test cert from NUC 2.
+     *
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
@@ -167,6 +171,7 @@ public class EndorsementCredentialTest {
 
     /**
      * Tests that different EC certificates aren't the same, even if their attributes are the same.
+     *
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test

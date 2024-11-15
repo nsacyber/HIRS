@@ -15,6 +15,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
 
     /**
+     * Construct a SupplyChainValidation for use in tests.  It will have a validation
+     * type of ENDORSEMENT_CREDENTIAL, will represent a successful validation, and will use
+     * multiple test certificates.
+     *
+     * @return the test SupplyChainValidation
+     * @throws IOException if there is a problem deserializing certificates
+     */
+    public static SupplyChainValidation getTestSupplyChainValidation() throws IOException {
+        return getTestSupplyChainValidation(
+                SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
+                AppraisalStatus.Status.PASS,
+                getAllTestCertificates()
+        );
+    }
+
+    /**
      * Test that this class' getter methods work properly.
      *
      * @throws IOException if there is a problem deserializing certificates
@@ -36,10 +52,10 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
     /**
      * Test that a SupplyChainValidation can't be instantiated with a null validation type.
      *
-     * @throws IOException if there is a problem deserializing certificates
+     * @throws IllegalArgumentException if there is a problem deserializing certificates
      */
     @Test
-    public void testNullValidationType() throws IOException {
+    public void testNullValidationType() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new SupplyChainValidation(
                         null,
@@ -52,10 +68,10 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
     /**
      * Test that a SupplyChainValidation can't be instantiated with a null certificate list.
      *
-     * @throws IOException if there is a problem deserializing certificates
+     * @throws IllegalArgumentException if there is a problem deserializing certificates
      */
     @Test
-    public void testNullCertificates() throws IOException {
+    public void testNullCertificates() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new SupplyChainValidation(
                         SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
@@ -77,22 +93,6 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
                 AppraisalStatus.Status.PASS,
                 getAllTestCertificates(),
                 VALIDATION_MESSAGE
-        );
-    }
-
-    /**
-     * Construct a SupplyChainValidation for use in tests.  It will have a validation
-     * type of ENDORSEMENT_CREDENTIAL, will represent a successful validation, and will use
-     * multiple test certificates.
-     *
-     * @return the test SupplyChainValidation
-     * @throws IOException if there si
-     */
-    public static SupplyChainValidation getTestSupplyChainValidation() throws IOException {
-        return getTestSupplyChainValidation(
-                SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
-                AppraisalStatus.Status.PASS,
-                getAllTestCertificates()
         );
     }
 }

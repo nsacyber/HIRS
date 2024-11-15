@@ -3,6 +3,7 @@ package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1IA5String;
@@ -17,64 +18,18 @@ import org.bouncycastle.asn1.ASN1Sequence;
  *      plus BOOLEAN DEFAULT FALSE }
  * </pre>
  */
+@Getter
+@Setter
 @AllArgsConstructor
+@ToString
 public class FIPSLevel {
 
     private static final int MAX_SEQUENCE_SIZE = 3;
-    /**
-     * A type to handle the security Level used in the FIPS Level.
-     * Ordering of enum types is intentional and their ordinal values correspond to enum
-     * values in the TCG spec.
-     *
-     * <pre>
-     * SecurityLevel ::= ENUMERATED {
-     *      level1 (1),
-     *      level2 (2),
-     *      level3 (3),
-     *      level4 (4) }
-     * </pre>
-     */
-    public enum SecurityLevel {
-        /**
-         * Security Level 1.
-         */
-        LEVEL1("level 1"),
-        /**
-         * Security Level 2.
-         */
-        LEVEL2("level 2"),
-        /**
-         * Security Level 3.
-         */
-        LEVEL3("level 3"),
-        /**
-         * Security Level 4.
-         */
-        LEVEL4("level 4");
 
-        private final String value;
-        /**
-         * Basic constructor.
-         * @param value string containing the value.
-         */
-        SecurityLevel(final String value) {
-            this.value = value;
-        }
-
-        /**
-         * Get the string value from the StrengthOfFunction.
-         * @return the string containing the value.
-         */
-        public String getValue() {
-            return this.value;
-        }
-    }
-
-    @Getter @Setter
     private ASN1IA5String version;
-    @Getter @Setter
+
     private SecurityLevel level;
-    @Getter @Setter
+
     private ASN1Boolean plus;
 
     /**
@@ -111,12 +66,39 @@ public class FIPSLevel {
         }
     }
 
-    @Override
-    public String toString() {
-        return "FIPSLevel{"
-                + "version=" + version.getString()
-                + ", level=" + level.getValue()
-                + ", plus=" + plus.toString()
-                + '}';
+    /**
+     * A type to handle the security Level used in the FIPS Level.
+     * Ordering of enum types is intentional and their ordinal values correspond to enum
+     * values in the TCG spec.
+     *
+     * <pre>
+     * SecurityLevel ::= ENUMERATED {
+     *      level1 (1),
+     *      level2 (2),
+     *      level3 (3),
+     *      level4 (4) }
+     * </pre>
+     */
+    @Getter
+    @AllArgsConstructor
+    public enum SecurityLevel {
+        /**
+         * Security Level 1.
+         */
+        LEVEL1("level 1"),
+        /**
+         * Security Level 2.
+         */
+        LEVEL2("level 2"),
+        /**
+         * Security Level 3.
+         */
+        LEVEL3("level 3"),
+        /**
+         * Security Level 4.
+         */
+        LEVEL4("level 4");
+
+        private final String value;
     }
 }

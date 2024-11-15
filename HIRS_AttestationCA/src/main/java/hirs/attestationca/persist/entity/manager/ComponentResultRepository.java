@@ -12,6 +12,7 @@ public interface ComponentResultRepository extends JpaRepository<ComponentResult
 
     /**
      * Query based on the device serial number.
+     *
      * @param boardSerialNumber variable holding the device serial number
      * @return a list of component result.
      */
@@ -19,16 +20,18 @@ public interface ComponentResultRepository extends JpaRepository<ComponentResult
 
     /**
      * Query based on the device serial number.
+     *
      * @param boardSerialNumber variable holding the device serial number
-     * @param delta flag indicating if the component is associated with a delta certificate
+     * @param delta             flag indicating if the component is associated with a delta certificate
      * @return a list of component result.
      */
     List<ComponentResult> findByBoardSerialNumberAndDelta(String boardSerialNumber, boolean delta);
 
     /**
      * Query based on certificate serial number and device serial number.
+     *
      * @param certificateSerialNumber certificate specific serial number
-     * @param boardSerialNumber variable holding the device serial number
+     * @param boardSerialNumber       variable holding the device serial number
      * @return a list of component result.
      */
     List<ComponentResult> findByCertificateSerialNumberAndBoardSerialNumber(

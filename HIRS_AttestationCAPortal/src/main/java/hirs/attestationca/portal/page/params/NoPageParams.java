@@ -1,6 +1,7 @@
 package hirs.attestationca.portal.page.params;
 
 import hirs.attestationca.portal.page.PageParams;
+
 import java.util.LinkedHashMap;
 
 /**

@@ -6,11 +6,27 @@ import lombok.Setter;
 /**
  * An <code>CertificateValidationResult</code> represents the result of a certificate validation
  * operation.
- *
  */
 @Getter
 @Setter
 public class CertificateValidationResult {
+    private CertificateValidationStatus validationStatus;
+    private String validationResultMessage;
+
+    /**
+     * Sets the certificate validation status and result message.
+     *
+     * @param status        enum representing the certificate validation status
+     * @param resultMessage String representing certificate validation message
+     */
+    public final void setCertValidationStatusAndResultMessage(
+            final CertificateValidationStatus status,
+            final String resultMessage) {
+        this.validationStatus = status;
+        this.validationResultMessage = resultMessage;
+    }
+
+
     /**
      * Enum used to represent certificate validation status.
      */
@@ -30,22 +46,5 @@ public class CertificateValidationResult {
          * Represents a validation error.
          */
         ERROR
-    }
-
-    private CertificateValidationStatus validationStatus;
-    private String validationResultMessage;
-
-
-    /**
-     * Sets the certificate validation status and result message.
-     *
-     * @param status        enum representing the certificate validation status
-     * @param resultMessage String representing certificate validation message
-     */
-    public final void setCertValidationStatusAndResultMessage(
-            final CertificateValidationStatus status,
-            final String resultMessage) {
-        this.validationStatus = status;
-        this.validationResultMessage = resultMessage;
     }
 }

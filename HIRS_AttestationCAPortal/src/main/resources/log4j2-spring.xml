@@ -5,28 +5,28 @@
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%C.%M] %-5p : %m%n"/>
         </Console>
         <RollingFile name="FILE" fileName="/var/log/hirs/HIRS_AttestationCA_Portal.log"
-                     filePattern="/var/log/hirs/HIRS_AttestationCA_Portal-%d{yyyy-MM-dd}-%i.log" >
+                     filePattern="/var/log/hirs/HIRS_AttestationCA_Portal-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss} [%C.%M] %-5p : %m%n</pattern>
             </PatternLayout>
             <Policies>
-                <OnStartupTriggeringPolicy />
+                <OnStartupTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy
-                        size="10 MB" />
-                <TimeBasedTriggeringPolicy />
+                        size="10 MB"/>
+                <TimeBasedTriggeringPolicy/>
             </Policies>
             <DefaultRolloverStrategy max="10"/>
         </RollingFile>
     </Appenders>
-   <Loggers>
-        <Root level = "ERROR">
-            <AppenderRef ref="STDOUT" level="ERROR" />
+    <Loggers>
+        <Root level="ERROR">
+            <AppenderRef ref="STDOUT" level="ERROR"/>
             <AppenderRef ref="FILE"/>
         </Root>
         <SpringProfile name="!development, !production">
-            <Logger name="hirs.attestationca" level="info" />
+            <Logger name="hirs.attestationca" level="info"/>
         </SpringProfile>
-        <Logger name="org.hibernate" level="ERROR" />
+        <Logger name="org.hibernate" level="ERROR"/>
     </Loggers>
     <!-- prevents an out-of-memory exception caused by  the debug logging of very large inserts -->
     <category name="org.hibernate.event.def.AbstractFlushingEventListener">

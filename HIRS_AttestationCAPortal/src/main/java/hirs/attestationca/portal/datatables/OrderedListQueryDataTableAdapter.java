@@ -5,8 +5,6 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaQuery;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.util.CollectionUtils;
@@ -20,19 +18,26 @@ import java.util.UUID;
 /**
  * A class to adapt the Javascript DataTable java class abstractions to the DBManager's getting
  * of ordered lists.
+ *
  * @param <T> The type of object to query
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Log4j2
 public final class OrderedListQueryDataTableAdapter<T> {
 
     /**
+     * Private constructor was created to silence checkstyle error.
+     */
+    private OrderedListQueryDataTableAdapter() {
+    }
+
+    /**
      * Gets the ordered list of records using a default, no-op criteria modifier.
-     * @param clazz the type of objects to query for
-     * @param dbManager the db manager to execute the actual query
-     * @param dataTableInput the JS DataTable query abstraction
+     *
+     * @param clazz           the type of objects to query for
+     * @param dbManager       the db manager to execute the actual query
+     * @param dataTableInput  the JS DataTable query abstraction
      * @param orderColumnName the name of the column (java object field name) to query on
-     * @param <T> the parameter type
+     * @param <T>             the parameter type
      * @return the filtered record list
      */
     public static <T> FilteredRecordsList<T> getOrderedList(final Class<? extends T> clazz,
@@ -51,12 +56,13 @@ public final class OrderedListQueryDataTableAdapter<T> {
 
     /**
      * Gets the ordered list of records.
-     * @param clazz the type of objects to query for
-     * @param dbManager the db manager to execute the actual query
-     * @param dataTableInput the JS DataTable query abstraction
-     * @param orderColumnName the name of the column (java object field name) to query on
+     *
+     * @param clazz            the type of objects to query for
+     * @param dbManager        the db manager to execute the actual query
+     * @param dataTableInput   the JS DataTable query abstraction
+     * @param orderColumnName  the name of the column (java object field name) to query on
      * @param criteriaModifier the criteria modifier
-     * @param <T> the parameter type
+     * @param <T>              the parameter type
      * @return the filtered record list
      */
     public static <T> FilteredRecordsList<T> getOrderedList(final Class<? extends T> clazz,
@@ -82,7 +88,8 @@ public final class OrderedListQueryDataTableAdapter<T> {
 
         filteredRecordsList.setRecordsTotal(dbManager.count());
         filteredRecordsList.addAll((Collection<? extends T>) dbManager.findAll());
-        filteredRecordsList.setRecordsFiltered(10);
+        final int recordsFilteredConstant = 10;
+        filteredRecordsList.setRecordsFiltered(recordsFilteredConstant);
 
         return filteredRecordsList;
 
@@ -92,11 +99,22 @@ public final class OrderedListQueryDataTableAdapter<T> {
 //                searchableColumnMap, criteriaModifier);
     }
 
-    public static FilteredRecordsList<ReferenceDigestValue> getOrderedList(final JpaRepository<ReferenceDigestValue, UUID> dbManager,
-                                                            final DataTableInput dataTableInput,
-                                                            final String orderColumnName,
-                                                            final CriteriaModifier criteriaModifier,
-                                                            final EntityManager entityManager) {
+    /**
+     * Retrieves an ordered list of reference digest values.
+     *
+     * @param dbManager        database manager.
+     * @param dataTableInput   data table input.
+     * @param orderColumnName  string representation of the order column name.
+     * @param criteriaModifier criteria modifier.
+     * @param entityManager    entity manager.
+     * @return a filtered, ordered records list of the reference digest values
+     */
+    public static FilteredRecordsList<ReferenceDigestValue> getOrderedList(
+            final JpaRepository<ReferenceDigestValue, UUID> dbManager,
+            final DataTableInput dataTableInput,
+            final String orderColumnName,
+            final CriteriaModifier criteriaModifier,
+            final EntityManager entityManager) {
 
         Map<String, Boolean> searchableColumnMap = new HashMap<>();
         for (Column column : dataTableInput.getColumns()) {
@@ -121,10 +139,10 @@ public final class OrderedListQueryDataTableAdapter<T> {
         FilteredRecordsList<ReferenceDigestValue> filteredRecordsList = new FilteredRecordsList<>();
 
 
-
         filteredRecordsList.setRecordsTotal(dbManager.count());
         filteredRecordsList.addAll(dbManager.findAll());
-        filteredRecordsList.setRecordsFiltered(10);
+        final int recordsFilteredConstant = 10;
+        filteredRecordsList.setRecordsFiltered(recordsFilteredConstant);
 
         return filteredRecordsList;
 

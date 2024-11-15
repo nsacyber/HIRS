@@ -40,12 +40,12 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
     private static PcrValidator pcrValidator;
 
     /**
-     * @param device
-     * @param policySettings
-     * @param referenceManifestRepository
-     * @param referenceDigestValueRepository
-     * @param caCredentialRepository
-     * @return
+     * @param device                         device
+     * @param policySettings                 policy settings
+     * @param referenceManifestRepository    reference manifest repository
+     * @param referenceDigestValueRepository reference digest value repository
+     * @param caCredentialRepository         CA Credential repository
+     * @return an appraisal status
      */
     @SuppressWarnings("methodlength")
     public static AppraisalStatus validateFirmware(
@@ -66,12 +66,13 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         //baseReferenceManifests = referenceManifestRepository.findAllBaseRims();
 
         // This block was looking for a base RIM matching the device name
-        // The base rim might not have a device name associated with it- i.e. if it's uploaded to the ACA prior to provisioning
-        // In this case, try to look up the event log associated with the device, then get the base rim associated by event log hash
+        // The base rim might not have a device name associated with it- i.e. if it's uploaded to the ACA
+        // prior to provisioning In this case, try to look up the event log associated with the device,
+        // then get the base rim associated by event log hash
         List<ReferenceManifest> deviceRims = referenceManifestRepository.findByDeviceName(hostName);
         for (ReferenceManifest deviceRim : deviceRims) {
-            if (deviceRim instanceof BaseReferenceManifest && !deviceRim.isSwidSupplemental() &&
-                    !deviceRim.isSwidPatch()) {
+            if (deviceRim instanceof BaseReferenceManifest && !deviceRim.isSwidSupplemental()
+                    && !deviceRim.isSwidPatch()) {
                 baseReferenceManifest = (BaseReferenceManifest) deviceRim;
             }
 
@@ -129,8 +130,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 try {
                     keyStore = ValidationService.caCertSetToKeystore(set);
                 } catch (Exception e) {
-                    log.error("Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
-                            + e.getMessage());
+                    log.error("Error building CA chain for {}: {}", signingCert.getSubjectKeyIdentifier(),
+                            e.getMessage());
                 }
 
                 ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
@@ -138,9 +139,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                     try {
                         certs.add(cac.getX509Certificate());
                     } catch (IOException e) {
-                        log.error(
-                                "Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
-                                        + e.getMessage());
+                        log.error("Error building CA chain for {}: {}", signingCert.getSubjectKeyIdentifier(),
+                                e.getMessage());
                     }
                 }
                 referenceManifestValidator.setTrustStore(certs);
@@ -156,16 +156,16 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                                         "Firmware validation failed: invalid certificate path.");
                             }
                         } catch (IOException ioEx) {
-                            log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
+                            log.error("Error getting X509 cert from manager: {}", ioEx.getMessage());
                         } catch (SupplyChainValidatorException scvEx) {
-                            log.error("Error validating cert against keystore: " + scvEx.getMessage());
+                            log.error("Error validating cert against keystore: {}", scvEx.getMessage());
                             fwStatus = new AppraisalStatus(FAIL,
                                     "Firmware validation failed: invalid certificate path.");
                         }
                         break;
                     }
                 } catch (IOException ioEx) {
-                    log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
+                    log.error("Error getting X509 cert from manager: {}", ioEx.getMessage());
                 }
             }
 
@@ -210,12 +210,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 try {
                     expectedEventLog = new TCGEventLog(supportReferenceManifest.getRimBytes());
                     baseline = expectedEventLog.getExpectedPCRValues();
-                } catch (CertificateException cEx) {
+                } catch (CertificateException | IOException | NoSuchAlgorithmException cEx) {
                     log.error(cEx);
-                } catch (NoSuchAlgorithmException noSaEx) {
-                    log.error(noSaEx);
-                } catch (IOException ioEx) {
-                    log.error(ioEx);
                 }
 
                 // part 1 of firmware validation check: PCR baseline match
@@ -230,9 +226,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         fwStatus = new AppraisalStatus(FAIL,
                                 "Firmware validation failed: Client did not "
                                         + "provide pcr values.");
-                        log.warn(String.format(
-                                "Firmware validation failed: Client (%s) did not "
-                                        + "provide pcr values.", device.getName()));
+                        log.warn("Firmware validation failed: Client ({}) did not "
+                                + "provide pcr values.", device.getName());
                     } else {
                         // we have a full set of PCR values
                         //int algorithmLength = baseline[0].length();
@@ -258,12 +253,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                                 failedPcrValues.addAll(pcrValidator.validateTpmEvents(
                                         actualEventLog, expectedEventLogRecords, policySettings));
                             }
-                        } catch (CertificateException cEx) {
-                            log.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            log.error(noSaEx);
-                        } catch (IOException ioEx) {
-                            log.error(ioEx);
+                        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+                            log.error(exception);
                         }
 
                         if (!failedPcrValues.isEmpty()) {
@@ -277,7 +268,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                             }
                             if (fwStatus.getAppStatus().equals(FAIL)) {
                                 fwStatus = new AppraisalStatus(FAIL, String.format("%s%n%s",
-                                        fwStatus.getMessage(), sb.toString()));
+                                        fwStatus.getMessage(), sb));
                             } else {
                                 fwStatus = new AppraisalStatus(FAIL,
                                         sb.toString(), ReferenceManifest.MEASUREMENT_RIM);

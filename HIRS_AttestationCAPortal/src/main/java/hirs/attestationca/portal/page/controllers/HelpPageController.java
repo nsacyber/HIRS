@@ -23,10 +23,9 @@ import static hirs.attestationca.portal.page.Page.HELP;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/help")
 public class HelpPageController extends PageController<NoPageParams> {
 
+    private static final String PATH = "/docs";
     @Autowired
     private ApplicationContext applicationContext;
-
-    private static final String PATH = "/docs";
 
     /**
      * Constructor providing the Page's display and routing specification.
@@ -39,7 +38,7 @@ public class HelpPageController extends PageController<NoPageParams> {
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from redirect.
+     * @param model  The data model for the request. Can contain data from redirect.
      * @return the path for the view and data model for the page.
      */
     @Override

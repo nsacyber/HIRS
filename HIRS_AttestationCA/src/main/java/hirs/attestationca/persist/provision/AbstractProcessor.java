@@ -40,22 +40,23 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+@Getter
 @Log4j2
 @NoArgsConstructor
 public class AbstractProcessor {
 
-    @Getter
     private int validDays;
-    @Getter
+
     private PrivateKey privateKey;
+
     @Setter
-    @Getter
     private PolicyRepository policyRepository;
 
     /**
      * Default constructor that sets main class fields.
+     *
      * @param privateKey private key used for communication authentication
-     * @param validDays property value to set for issued certificates
+     * @param validDays  property value to set for issued certificates
      */
     public AbstractProcessor(final PrivateKey privateKey,
                              final int validDays) {
@@ -66,17 +67,18 @@ public class AbstractProcessor {
     /**
      * Generates a credential using the specified public key.
      *
-     * @param publicKey cannot be null
+     * @param publicKey             cannot be null
      * @param endorsementCredential the endorsement credential
-     * @param platformCredentials the set of platform credentials
-     * @param deviceName The host name used in the subject alternative name
-     * @param acaCertificate object used to create credential
+     * @param platformCredentials   the set of platform credentials
+     * @param deviceName            The host name used in the subject alternative name
+     * @param acaCertificate        object used to create credential
      * @return identity credential
      */
     protected X509Certificate generateCredential(final PublicKey publicKey,
-                                       final EndorsementCredential endorsementCredential,
-                                       final List<PlatformCredential> platformCredentials,
-                                       final String deviceName, final X509Certificate acaCertificate) {
+                                                 final EndorsementCredential endorsementCredential,
+                                                 final List<PlatformCredential> platformCredentials,
+                                                 final String deviceName,
+                                                 final X509Certificate acaCertificate) {
         try {
             // have the certificate expire in the configured number of days
             Calendar expiry = Calendar.getInstance();
@@ -132,8 +134,8 @@ public class AbstractProcessor {
      * IdentityClaim. Will also check if the Endorsement Credential was already uploaded.
      * Persists the Endorsement Credential if it does not already exist.
      *
-     * @param identityClaim a Protobuf generated Identity Claim object
-     * @param ekPub the endorsement public key from the Identity Claim object
+     * @param identityClaim         a Protobuf generated Identity Claim object
+     * @param ekPub                 the endorsement public key from the Identity Claim object
      * @param certificateRepository db connector from certificates
      * @return the Endorsement Credential, if one exists, null otherwise
      */
@@ -162,7 +164,7 @@ public class AbstractProcessor {
      * IdentityClaim and Endorsement Credential. Persists the Platform Credentials if they
      * do not already exist.
      *
-     * @param identityClaim a Protobuf generated Identity Claim object
+     * @param identityClaim         a Protobuf generated Identity Claim object
      * @param endorsementCredential an endorsement credential to check if platform credentials
      *                              exist
      * @param certificateRepository db connector from certificates
@@ -193,7 +195,8 @@ public class AbstractProcessor {
 
     /**
      * Gets the Endorsement Credential from the DB given the EK public key.
-     * @param ekPublicKey the EK public key
+     *
+     * @param ekPublicKey           the EK public key
      * @param certificateRepository db store manager for certificates
      * @return the Endorsement credential, if found, otherwise null
      */
@@ -229,22 +232,23 @@ public class AbstractProcessor {
      * Helper method to create an {@link IssuedAttestationCertificate} object, set its
      * corresponding device and persist it.
      *
-     * @param certificateRepository db store manager for certificates
+     * @param certificateRepository            db store manager for certificates
      * @param derEncodedAttestationCertificate the byte array representing the Attestation
      *                                         certificate
-     * @param endorsementCredential the endorsement credential used to generate the AC
-     * @param platformCredentials the platform credentials used to generate the AC
-     * @param device the device to which the attestation certificate is tied
-     * @param isLDevID whether the certificate is a ldevid
+     * @param endorsementCredential            the endorsement credential used to generate the AC
+     * @param platformCredentials              the platform credentials used to generate the AC
+     * @param device                           the device to which the attestation certificate is tied
+     * @param isLDevID                         whether the certificate is a ldevid
      * @return whether the certificate was saved successfully
      * @throws {@link CertificateProcessingException} if error occurs in persisting the Attestation
-     *                                             Certificate
+     *                Certificate
      */
     public boolean saveAttestationCertificate(final CertificateRepository certificateRepository,
-                                           final byte[] derEncodedAttestationCertificate,
-                                            final EndorsementCredential endorsementCredential,
-                                            final List<PlatformCredential> platformCredentials,
-                                            final Device device, boolean isLDevID) {
+                                              final byte[] derEncodedAttestationCertificate,
+                                              final EndorsementCredential endorsementCredential,
+                                              final List<PlatformCredential> platformCredentials,
+                                              final Device device,
+                                              final boolean isLDevID) {
         List<IssuedAttestationCertificate> issuedAc;
         boolean generateCertificate = true;
         PolicyRepository scp = getPolicyRepository();
@@ -260,23 +264,22 @@ public class AbstractProcessor {
                 policySettings = scp.findByName("Default");
 
                 Sort sortCriteria = Sort.by(Sort.Direction.DESC, "endValidity");
-                issuedAc = certificateRepository.findByDeviceIdAndIsLDevID(device.getId(), isLDevID, sortCriteria);
+                issuedAc = certificateRepository.findByDeviceIdAndIsLDevID(device.getId(), isLDevID,
+                        sortCriteria);
 
                 generateCertificate = isLDevID ? policySettings.isIssueDevIdCertificate()
                         : policySettings.isIssueAttestationCertificate();
 
-                if (issuedAc != null && issuedAc.size() > 0 && (isLDevID ? policySettings.isDevIdExpirationFlag()
+                if (issuedAc != null && issuedAc.size() > 0
+                        && (isLDevID ? policySettings.isDevIdExpirationFlag()
                         : policySettings.isGenerateOnExpiration())) {
                     if (issuedAc.get(0).getEndValidity().after(currentDate)) {
                         // so the issued AC is not expired
                         // however are we within the threshold
                         days = ProvisionUtils.daysBetween(currentDate, issuedAc.get(0).getEndValidity());
-                        if (days < Integer.parseInt(isLDevID ? policySettings.getDevIdReissueThreshold()
-                                : policySettings.getReissueThreshold())) {
-                            generateCertificate = true;
-                        } else {
-                            generateCertificate = false;
-                        }
+                        generateCertificate =
+                                days < Integer.parseInt(isLDevID ? policySettings.getDevIdReissueThreshold()
+                                        : policySettings.getReissueThreshold());
                     }
                 }
             }
@@ -297,7 +300,7 @@ public class AbstractProcessor {
     }
 
     private List<PlatformCredential> getPlatformCredentials(final CertificateRepository certificateRepository,
-                                                           final EndorsementCredential ec) {
+                                                            final EndorsementCredential ec) {
         List<PlatformCredential> credentials = null;
 
         if (ec == null) {

@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.report;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hirs.attestationca.persist.entity.AbstractEntity;
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
@@ -13,6 +14,8 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 import jakarta.xml.bind.annotation.XmlElement;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,16 +23,19 @@ import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.util.Objects;
 
 /**
  * A <code>DeviceInfoReport</code> is a <code>Report</code> used to transfer the
  * information about the device. This <code>Report</code> includes the network,
  * OS, and TPM information.
  */
-@Log4j2
+@SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+        justification = "various class properties here are guaranteed to always be non-null/initialized."
+                + " Warning stems from auto-generated lombok equals and hashcode method doing redundant "
+                + "null checks.")
 @NoArgsConstructor
-@Getter
+@EqualsAndHashCode(callSuper = false)
+@Log4j2
 @Entity
 public class DeviceInfoReport extends AbstractEntity implements Serializable {
 
@@ -49,14 +55,18 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
     @Embedded
     private HardwareInfo hardwareInfo;
 
+    @Setter(AccessLevel.PRIVATE)
+    @Getter
     @XmlElement
     @Embedded
     private TPMInfo tpmInfo;
 
+    @Getter
     @XmlElement
     @Column(nullable = false)
     private String clientApplicationVersion;
 
+    @Getter
     @Setter
     @XmlElement
     @Transient
@@ -67,17 +77,12 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
      * information cannot be changed after the <code>DeviceInfoReport</code> is
      * created.
      *
-     * @param networkInfo
-     *            NetworkInfo object, cannot be null
-     * @param osInfo
-     *            OSInfo object, cannot be null
-     * @param firmwareInfo
-     *            FirmwareInfo object, cannot be null
-     * @param hardwareInfo
-     *            HardwareInfo object, cannot be null
-     * @param tpmInfo
-     *            TPMInfo object, may be null if a TPM is not available on the
-     *            device
+     * @param networkInfo  NetworkInfo object, cannot be null
+     * @param osInfo       OSInfo object, cannot be null
+     * @param firmwareInfo FirmwareInfo object, cannot be null
+     * @param hardwareInfo HardwareInfo object, cannot be null
+     * @param tpmInfo      TPMInfo object, may be null if a TPM is not available on the
+     *                     device
      */
     public DeviceInfoReport(final NetworkInfo networkInfo, final OSInfo osInfo,
                             final FirmwareInfo firmwareInfo, final HardwareInfo hardwareInfo,
@@ -90,20 +95,14 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
      * information cannot be changed after the <code>DeviceInfoReport</code> is
      * created.
      *
-     * @param networkInfo
-     *            NetworkInfo object, cannot be null
-     * @param osInfo
-     *            OSInfo object, cannot be null
-     * @param firmwareInfo
-     *            FirmwareInfo object, cannot be null
-     * @param hardwareInfo
-     *            HardwareInfo object, cannot be null
-     * @param tpmInfo
-     *            TPMInfo object, may be null if a TPM is not available on the
-     *            device
-     * @param clientApplicationVersion
-     *            string representing the version of the client that submitted this report,
-     *            cannot be null
+     * @param networkInfo              NetworkInfo object, cannot be null
+     * @param osInfo                   OSInfo object, cannot be null
+     * @param firmwareInfo             FirmwareInfo object, cannot be null
+     * @param hardwareInfo             HardwareInfo object, cannot be null
+     * @param tpmInfo                  TPMInfo object, may be null if a TPM is not available on the
+     *                                 device
+     * @param clientApplicationVersion string representing the version of the client that submitted this
+     *                                 report, cannot be null
      */
     public DeviceInfoReport(final NetworkInfo networkInfo, final OSInfo osInfo,
                             final FirmwareInfo firmwareInfo, final HardwareInfo hardwareInfo,
@@ -112,7 +111,7 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         setOSInfo(osInfo);
         setFirmwareInfo(firmwareInfo);
         setHardwareInfo(hardwareInfo);
-        setTPMInfo(tpmInfo);
+        setTpmInfo(tpmInfo);
         this.clientApplicationVersion = clientApplicationVersion;
     }
 
@@ -135,6 +134,14 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
                 networkInfo.getIpAddress(), networkInfo.getMacAddress());
     }
 
+    private void setNetworkInfo(final NetworkInfo networkInfo) {
+        if (networkInfo == null) {
+            log.error("NetworkInfo cannot be null");
+            throw new NullPointerException("network info");
+        }
+        this.networkInfo = networkInfo;
+    }
+
     /**
      * Retrieves the OSInfo for this <code>DeviceInfoReport</code>.
      *
@@ -154,6 +161,14 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         return osInfo;
     }
 
+    private void setOSInfo(final OSInfo osInfo) {
+        if (osInfo == null) {
+            log.error("OSInfo cannot be null");
+            throw new NullPointerException("os info");
+        }
+        this.osInfo = osInfo;
+    }
+
     /**
      * Retrieves the FirmwareInfo for this <code>DeviceInfoReport</code>.
      *
@@ -170,6 +185,14 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
                     DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED);
         }
         return firmwareInfo;
+    }
+
+    private void setFirmwareInfo(final FirmwareInfo firmwareInfo) {
+        if (firmwareInfo == null) {
+            log.error("FirmwareInfo cannot be null");
+            throw new NullPointerException("firmware info");
+        }
+        this.firmwareInfo = firmwareInfo;
     }
 
     /**
@@ -196,30 +219,6 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         return hardwareInfo;
     }
 
-    private void setNetworkInfo(final NetworkInfo networkInfo) {
-        if (networkInfo == null) {
-            log.error("NetworkInfo cannot be null");
-            throw new NullPointerException("network info");
-        }
-        this.networkInfo = networkInfo;
-    }
-
-    private void setOSInfo(final OSInfo osInfo) {
-        if (osInfo == null) {
-            log.error("OSInfo cannot be null");
-            throw new NullPointerException("os info");
-        }
-        this.osInfo = osInfo;
-    }
-
-    private void setFirmwareInfo(final FirmwareInfo firmwareInfo) {
-        if (firmwareInfo == null) {
-            log.error("FirmwareInfo cannot be null");
-            throw new NullPointerException("firmware info");
-        }
-        this.firmwareInfo = firmwareInfo;
-    }
-
     private void setHardwareInfo(final HardwareInfo hardwareInfo) {
         if (hardwareInfo == null) {
             log.error("HardwareInfo cannot be null");
@@ -227,31 +226,6 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         }
         this.hardwareInfo = hardwareInfo;
     }
-
-    private void setTPMInfo(final TPMInfo tpmInfo) {
-        this.tpmInfo = tpmInfo;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DeviceInfoReport)) {
-            return false;
-        }
-        DeviceInfoReport that = (DeviceInfoReport) o;
-        return Objects.equals(networkInfo, that.networkInfo)
-                && Objects.equals(osInfo, that.osInfo)
-                && Objects.equals(firmwareInfo, that.firmwareInfo)
-                && Objects.equals(hardwareInfo, that.hardwareInfo)
-                && Objects.equals(tpmInfo, that.tpmInfo)
-                && Objects.equals(clientApplicationVersion, that.clientApplicationVersion)
-                && Objects.equals(paccorOutputString, that.paccorOutputString);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), networkInfo, osInfo,
-                firmwareInfo, hardwareInfo, tpmInfo,
-                clientApplicationVersion, paccorOutputString);
-    }
 }
+
+

@@ -1,12 +1,13 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
 import hirs.utils.enums.PortalScheme;
+import org.junit.jupiter.api.Test;
+
 import java.net.InetAddress;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.Test;
 
 /**
  * Provides tests for PortalInfo.
@@ -56,6 +57,7 @@ public class PortalInfoTest {
 
     /**
      * Test that the ip address can be set and retrieved via an InetAddress.
+     *
      * @throws Exception If there is a problem with InetAddress.
      */
     @Test
@@ -70,6 +72,7 @@ public class PortalInfoTest {
 
     /**
      * Test that the ip address can be set and retrieved via a String.
+     *
      * @throws Exception If there is a problem with InetAddress.
      */
     @Test

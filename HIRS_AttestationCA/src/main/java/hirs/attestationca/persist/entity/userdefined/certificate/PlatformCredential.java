@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * This class persists Platform credentials by extending the base Certificate
@@ -61,24 +60,29 @@ import java.util.UUID;
 @Entity
 public class PlatformCredential extends DeviceAssociatedCertificate {
 
+    /**
+     * TCPA Trusted Platform Endorsement.
+     */
+    public static final String CERTIFICATE_TYPE_1_2 = "TCPA Trusted Platform Endorsement";
+    /**
+     * TCG Trusted Platform Endorsement.
+     */
+    public static final String CERTIFICATE_TYPE_2_0 = "TCG Trusted Platform Endorsement";
     private static final int TCG_SPECIFICATION_LENGTH = 3;
     // These are Object Identifiers (OIDs) for sections in the credentials
     private static final String POLICY_QUALIFIER_CPSURI = "1.3.6.1.5.5.7.2.1";
     private static final String POLICY_QUALIFIER_USER_NOTICE = "1.3.6.1.5.5.7.2.2";
-
     // OID for TCG Attributes
     private static final String PLATFORM_MANUFACTURER = "2.23.133.2.4";
     private static final String PLATFORM_MODEL = "2.23.133.2.5";
     private static final String PLATFORM_VERSION = "2.23.133.2.6";
     private static final String PLATFORM_SERIAL = "2.23.133.2.23";
     private static final String PLATFORM_BASEBOARD_CHASSIS_COMBINED = "2.23.133.5.1.6";
-
     // OID for TCG Platform Class Common Attributes
     private static final String PLATFORM_MANUFACTURER_2_0 = "2.23.133.5.1.1";
     private static final String PLATFORM_MODEL_2_0 = "2.23.133.5.1.4";
     private static final String PLATFORM_VERSION_2_0 = "2.23.133.5.1.5";
     private static final String PLATFORM_SERIAL_2_0 = "2.23.133.5.1.6";
-
     // OID for Certificate Attributes
     private static final String TCG_PLATFORM_SPECIFICATION = "2.23.133.2.17";
     private static final String TPM_SECURITY_ASSERTION = "2.23.133.2.18";
@@ -115,16 +119,11 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     // number of extra bytes potentially present in a cert header.
     private static final int PC_CERT_HEADER_BYTE_COUNT = 8;
-
-    /**
-     * TCPA Trusted Platform Endorsement.
-     */
-    public static final String CERTIFICATE_TYPE_1_2 = "TCPA Trusted Platform Endorsement";
-
-    /**
-     * TCG Trusted Platform Endorsement.
-     */
-    public static final String CERTIFICATE_TYPE_2_0 = "TCG Trusted Platform Endorsement";
+    private static final String MANUFACTURER_FIELD = "manufacturer";
+    private static final String MODEL_FIELD = "model";
+    private static final String VERSION_FIELD = "version";
+    private static final String PLATFORM_SERIAL_FIELD = "platformSerial";
+    private static final String CHASSIS_SERIAL_NUMBER_FIELD = "chassisSerialNumber";
 
     @Column
     private String credentialType = null;
@@ -132,23 +131,18 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     @Column
     private boolean platformBase = false;
 
-    private static final String MANUFACTURER_FIELD = "manufacturer";
     @Column
     private String manufacturer = null;
 
-    private static final String MODEL_FIELD = "model";
     @Column
     private String model = null;
 
-    private static final String VERSION_FIELD = "version";
     @Column
     private String version = null;
 
-    private static final String PLATFORM_SERIAL_FIELD = "platformSerial";
     @Column
     private String platformSerial = null;
 
-    private static final String CHASSIS_SERIAL_NUMBER_FIELD = "chassisSerialNumber";
     @Column
     private String chassisSerialNumber;
 
@@ -175,6 +169,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     @Column(length = MAX_MESSAGE_LENGTH)
     private String componentFailures = Strings.EMPTY;
+
     @Column(length = MAX_MESSAGE_LENGTH)
     private String componentFailureMessage = Strings.EMPTY;
 
@@ -182,6 +177,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private EndorsementCredential endorsementCredential = null;
 
     private String platformChainType = Strings.EMPTY;
+
     private boolean isDeltaChain = false;
 
     /**
@@ -190,7 +186,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      * or X509 attribute certificate.
      *
      * @param certificateBytes the contents of a certificate file
-     * @param parseFields boolean True to parse fields
+     * @param parseFields      boolean True to parse fields
      * @throws IOException if there is a problem extracting information from the certificate\
      */
     public PlatformCredential(final byte[] certificateBytes,
@@ -224,39 +220,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
-     * Validate the signature on the attribute certificate in this holder.
-     *
-     * @param verifierProvider a ContentVerifierProvider that can generate a
-     * verifier for the signature.
-     * @return true if the signature is valid, false otherwise.
-     * @throws IOException if the signature cannot be processed or is inappropriate.
-     */
-    public boolean isSignatureValid(final ContentVerifierProvider verifierProvider)
-            throws IOException {
-        AttributeCertificate attCert = getAttributeCertificate();
-        AttributeCertificateInfo acinfo = getAttributeCertificate().getAcinfo();
-
-        // Check if the algorithm identifier is the same
-        if (!isAlgIdEqual(acinfo.getSignature(), attCert.getSignatureAlgorithm())) {
-            throw new IOException("signature invalid - algorithm identifier mismatch");
-        }
-
-        ContentVerifier verifier;
-
-        try {
-            // Set ContentVerifier with the signature that will verify
-            verifier = verifierProvider.get((acinfo.getSignature()));
-
-        } catch (Exception e) {
-            throw new IOException("unable to process signature: " + e.getMessage(), e);
-        }
-
-        return verifier.verify(attCert.getSignatureValue().getOctets());
-    }
-    /**
      * Parses the bytes as an PC. If parsing fails initially, the optionally present header
      * is removed and tried again. The cert header, if present, contains some certificate length
      * information which isn't needed for parsing.
+     *
      * @param certificateBytes the bytes of the PC
      * @return the PC if a valid credential, null otherwise
      */
@@ -283,6 +250,103 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             }
         }
         return credential;
+    }
+
+    /**
+     * Verify if the AlgorithmIdentifiers are equal.
+     *
+     * @param id1 AlgorithIdentifier one
+     * @param id2 AlgorithIdentifier two
+     * @return True if are the same, False if not
+     */
+    public static boolean isAlgIdEqual(final AlgorithmIdentifier id1,
+                                       final AlgorithmIdentifier id2) {
+        if (!id1.getAlgorithm().equals(id2.getAlgorithm())) {
+            return false;
+        }
+        if (id1.getParameters() == null) {
+            return id2.getParameters() == null || id2.getParameters().equals(DERNull.INSTANCE);
+        }
+        if (id2.getParameters() == null) {
+            return id1.getParameters() == null || id1.getParameters().equals(DERNull.INSTANCE);
+        }
+        return id1.getParameters().equals(id2.getParameters());
+    }
+
+    /**
+     * Get the PolicyQualifier from the Certificate Policies Extension.
+     *
+     * @param certificate Attribute Certificate information
+     * @return Policy Qualifier from the Certificate Policies Extension
+     */
+    public static Map<String, String> getPolicyQualifier(
+            final AttributeCertificateInfo certificate) {
+        Preconditions.checkArgument(certificate.getExtensions() != null,
+                "Platform certificate should have extensions.");
+
+        CertificatePolicies certPolicies
+                = CertificatePolicies.fromExtensions(certificate.getExtensions());
+        Map<String, String> policyQualifiers = new HashMap<>();
+        String userNoticeQualifier = "";
+        String cpsURI = "";
+
+        if (certPolicies != null) {
+            // Must contain at least one Policy
+            for (PolicyInformation policy : certPolicies.getPolicyInformation()) {
+                for (ASN1Encodable pQualifierInfo : policy.getPolicyQualifiers().toArray()) {
+                    PolicyQualifierInfo info = PolicyQualifierInfo.getInstance(pQualifierInfo);
+                    // Subtract the data based on the OID
+                    switch (info.getPolicyQualifierId().getId()) {
+                        case POLICY_QUALIFIER_CPSURI:
+                            cpsURI = DERIA5String.getInstance(info.getQualifier()).getString();
+                            break;
+                        case POLICY_QUALIFIER_USER_NOTICE:
+                            UserNotice userNotice = UserNotice.getInstance(info.getQualifier());
+                            userNoticeQualifier = userNotice.getExplicitText().getString();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+        // Add to map
+        policyQualifiers.put("userNotice", userNoticeQualifier);
+        policyQualifiers.put("cpsURI", cpsURI);
+
+        return policyQualifiers;
+    }
+
+    /**
+     * Validate the signature on the attribute certificate in this holder.
+     *
+     * @param verifierProvider a ContentVerifierProvider that can generate a
+     *                         verifier for the signature.
+     * @return true if the signature is valid, false otherwise.
+     * @throws IOException if the signature cannot be processed or is inappropriate.
+     */
+    public boolean isSignatureValid(final ContentVerifierProvider verifierProvider)
+            throws IOException {
+        AttributeCertificate attCert = getAttributeCertificate();
+        AttributeCertificateInfo acinfo = getAttributeCertificate().getAcinfo();
+
+        // Check if the algorithm identifier is the same
+        if (!isAlgIdEqual(acinfo.getSignature(), attCert.getSignatureAlgorithm())) {
+            throw new IOException("signature invalid - algorithm identifier mismatch");
+        }
+
+        ContentVerifier verifier;
+
+        try {
+            // Set ContentVerifier with the signature that will verify
+            verifier = verifierProvider.get((acinfo.getSignature()));
+
+        } catch (Exception e) {
+            throw new IOException("unable to process signature: " + e.getMessage(), e);
+        }
+
+        return verifier.verify(attCert.getSignatureValue().getOctets());
     }
 
     private void parseFields() throws IOException {
@@ -340,6 +404,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Parse a 1.2 Platform Certificate (Attribute Certificate).
+     *
      * @param certificate Attribute Certificate
      */
     private void parseAttributeCert(final AttributeCertificateInfo certificate) {
@@ -347,14 +412,14 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 = certificate.getExtensions().getExtension(Extension.subjectAlternativeName);
         // It contains a Subject Alternative Name Extension
         if (subjectAlternativeNameExtension != null) {
-            GeneralNames gnames =  GeneralNames.getInstance(
+            GeneralNames gnames = GeneralNames.getInstance(
                     subjectAlternativeNameExtension.getParsedValue());
             for (GeneralName gname : gnames.getNames()) {
                 // Check if it's a directoryName [4] Name type
                 if (gname.getTagNo() == GeneralName.directoryName) {
                     X500Name name = X500Name.getInstance(gname.getName());
-                    for (RDN rdn: name.getRDNs()) {
-                        for (AttributeTypeAndValue attTV: rdn.getTypesAndValues()) {
+                    for (RDN rdn : name.getRDNs()) {
+                        for (AttributeTypeAndValue attTV : rdn.getTypesAndValues()) {
                             switch (attTV.getType().toString()) {
                                 case PLATFORM_MANUFACTURER:
                                     this.manufacturer = attTV.getValue().toString();
@@ -392,6 +457,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Parse a 2.0 Platform Certificate (Attribute Certificate).
+     *
      * @param certificate Attribute Certificate
      */
     private void parseAttributeCert2(final AttributeCertificateInfo certificate)
@@ -407,8 +473,8 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 // Check if it's a directoryName [4] Name type
                 if (gname.getTagNo() == GeneralName.directoryName) {
                     X500Name name = X500Name.getInstance(gname.getName());
-                    for (RDN rdn: name.getRDNs()) {
-                        for (AttributeTypeAndValue attTV: rdn.getTypesAndValues()) {
+                    for (RDN rdn : name.getRDNs()) {
+                        for (AttributeTypeAndValue attTV : rdn.getTypesAndValues()) {
                             switch (attTV.getType().toString()) {
                                 case PLATFORM_MANUFACTURER_2_0:
                                     this.manufacturer = attTV.getValue().toString();
@@ -440,6 +506,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Get the x509 Platform Certificate version.
+     *
      * @return a big integer representing the certificate version.
      */
     @Override
@@ -458,6 +525,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Get the cPSuri from the Certificate Policies.
+     *
      * @return cPSuri from the CertificatePolicies.
      * @throws IOException when reading the certificate.
      */
@@ -473,9 +541,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Get the Platform Configuration Attribute from the Platform Certificate.
+     *
      * @return a map with all the attributes
      * @throws IllegalArgumentException when there is a parsing error
-     * @throws IOException when reading the certificate.
+     * @throws IOException              when reading the certificate.
      */
     public Map<String, Object> getAllAttributes()
             throws IllegalArgumentException, IOException {
@@ -523,10 +592,11 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Get the specified attribute from the Platform Certificate.
+     *
      * @param attributeName to retrieve from the map.
      * @return an Object with the attribute.
      * @throws IllegalArgumentException when there is a parsing error
-     * @throws IOException when reading the certificate.
+     * @throws IOException              when reading the certificate.
      */
     public Object getAttribute(final String attributeName)
             throws IllegalArgumentException, IOException {
@@ -535,9 +605,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Get the Platform Configuration Attribute from the Platform Certificate.
+     *
      * @return a map with the Platform Configuration information.
      * @throws IllegalArgumentException when there is a parsing error
-     * @throws IOException when reading the certificate.
+     * @throws IOException              when reading the certificate.
      */
     public PlatformConfiguration getPlatformConfiguration()
             throws IllegalArgumentException, IOException {
@@ -552,9 +623,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Get the Platform Configuration URI Attribute from the Platform Certificate.
+     *
      * @return an URIReference object to the Platform Configuration URI.
      * @throws IllegalArgumentException when there is a parsing error
-     * @throws IOException when reading the certificate.
+     * @throws IOException              when reading the certificate.
      */
     public URIReference getPlatformConfigurationURI()
             throws IllegalArgumentException, IOException {
@@ -567,9 +639,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Get the TBB Security Assertion from the Platform Certificate.
+     *
      * @return a TBBSecurityAssertion object.
      * @throws IllegalArgumentException when there is a parsing error
-     * @throws IOException when reading the certificate.
+     * @throws IOException              when reading the certificate.
      */
     public TBBSecurityAssertion getTBBSecurityAssertion()
             throws IllegalArgumentException, IOException {
@@ -612,6 +685,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
 
     /**
      * Get the list of component identifiers if there are any.
+     *
      * @return the list of component identifiers if there are any
      */
     public List<ComponentIdentifier> getComponentIdentifiers() {
@@ -625,77 +699,5 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                     + "component identifiers");
         }
         return Collections.emptyList();
-    }
-
-    /**
-     * Verify if the AlgorithmIdentifiers are equal.
-     *
-     * @param id1 AlgorithIdentifier one
-     * @param id2 AlgorithIdentifier two
-     * @return True if are the same, False if not
-     */
-    public static boolean isAlgIdEqual(final AlgorithmIdentifier id1,
-                                       final AlgorithmIdentifier id2) {
-        if (!id1.getAlgorithm().equals(id2.getAlgorithm())) {
-            return false;
-        }
-        if (id1.getParameters() == null) {
-            if (id2.getParameters() != null && !id2.getParameters().equals(DERNull.INSTANCE)) {
-                return false;
-            }
-            return true;
-        }
-        if (id2.getParameters() == null) {
-            if (id1.getParameters() != null && !id1.getParameters().equals(DERNull.INSTANCE)) {
-                return false;
-            }
-            return true;
-        }
-        return id1.getParameters().equals(id2.getParameters());
-    }
-
-    /**
-     * Get the PolicyQualifier from the Certificate Policies Extension.
-     *
-     * @param certificate Attribute Certificate information
-     * @return Policy Qualifier from the Certificate Policies Extension
-     */
-    public static Map<String, String> getPolicyQualifier(
-            final AttributeCertificateInfo certificate) {
-        Preconditions.checkArgument(certificate.getExtensions() != null,
-                "Platform certificate should have extensions.");
-
-        CertificatePolicies certPolicies
-                = CertificatePolicies.fromExtensions(certificate.getExtensions());
-        Map<String, String> policyQualifiers = new HashMap<>();
-        String userNoticeQualifier = "";
-        String cpsURI = "";
-
-        if (certPolicies != null) {
-            // Must contain at least one Policy
-            for (PolicyInformation policy : certPolicies.getPolicyInformation()) {
-                for (ASN1Encodable pQualifierInfo: policy.getPolicyQualifiers().toArray()) {
-                    PolicyQualifierInfo info = PolicyQualifierInfo.getInstance(pQualifierInfo);
-                    // Subtract the data based on the OID
-                    switch (info.getPolicyQualifierId().getId()) {
-                        case POLICY_QUALIFIER_CPSURI:
-                            cpsURI = DERIA5String.getInstance(info.getQualifier()).getString();
-                            break;
-                        case POLICY_QUALIFIER_USER_NOTICE:
-                            UserNotice userNotice = UserNotice.getInstance(info.getQualifier());
-                            userNoticeQualifier = userNotice.getExplicitText().getString();
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-        }
-
-        // Add to map
-        policyQualifiers.put("userNotice", userNoticeQualifier);
-        policyQualifiers.put("cpsURI", cpsURI);
-
-        return policyQualifiers;
     }
 }

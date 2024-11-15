@@ -26,7 +26,7 @@ import java.util.Objects;
  * Hibernate. This class provides the mapping from <code>X509Certificate</code>
  * to Hibernate commands to JDBC.
  */
-@NoArgsConstructor(access= AccessLevel.PUBLIC)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public final class X509CertificateType implements UserType {
 
     @Override
@@ -73,19 +73,13 @@ public final class X509CertificateType implements UserType {
      * Converts the X509Certificate that is stored as a <code>String</code> and
      * converts it to an <code>X509Certificate</code>.
      *
-     * @param rs
-     *            result set
-     * @param names
-     *            column names
-     * @param session
-     *            session
-     * @param owner
-     *            owner
+     * @param rs      result set
+     * @param names   column names
+     * @param session session
+     * @param owner   owner
      * @return X509Certificate of String
-     * @throws HibernateException
-     *             if unable to convert the String to an X509Certificate
-     * @throws SQLException
-     *             if unable to retrieve the String from the result set
+     * @throws HibernateException if unable to convert the String to an X509Certificate
+     * @throws SQLException       if unable to retrieve the String from the result set
      */
     @Override
     public Object nullSafeGet(final ResultSet rs, final int names,
@@ -111,9 +105,9 @@ public final class X509CertificateType implements UserType {
      * Converts the <code>X509Certificate</code> <code>value</code> to a
      * <code>String</code> and stores it in the database.
      *
-     * @param st prepared statement
-     * @param value X509Certificate
-     * @param index index
+     * @param st      prepared statement
+     * @param value   X509Certificate
+     * @param index   index
      * @param session session
      * @throws SQLException if unable to set the value in the result set
      */
@@ -131,7 +125,7 @@ public final class X509CertificateType implements UserType {
             } catch (Exception e) {
                 final String msg =
                         String.format("unable to convert certificate: %s",
-                                value.toString());
+                                value);
                 throw new HibernateException(msg, e);
             }
         }
@@ -178,7 +172,7 @@ public final class X509CertificateType implements UserType {
      * immutable.
      *
      * @param cached cached
-     * @param owner owner
+     * @param owner  owner
      * @return cached
      */
     @Override
@@ -191,8 +185,8 @@ public final class X509CertificateType implements UserType {
      * immutable.
      *
      * @param original original
-     * @param target target
-     * @param owner owner
+     * @param target   target
+     * @param owner    owner
      * @return original
      */
     @Override

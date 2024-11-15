@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -35,40 +34,42 @@ import java.util.List;
 import java.util.Set;
 
 @Log4j2
-@NoArgsConstructor
-public class SupplyChainCredentialValidator  {
+public class SupplyChainCredentialValidator {
 
     /**
-     * used to identify and clear a nuc
+     * used to identify and clear a nuc.
      */
     public static final int NUC_VARIABLE_BIT = 159;
     /**
      * AppraisalStatus message for a valid endorsement credential appraisal.
      */
     public static final String ENDORSEMENT_VALID = "Endorsement credential validated";
-
     /**
      * AppraisalStatus message for a valid platform credential appraisal.
      */
     public static final String PLATFORM_VALID = "Platform credential validated";
-
     /**
      * AppraisalStatus message for a valid platform credential attributes appraisal.
      */
     public static final String PLATFORM_ATTRIBUTES_VALID =
             "Platform credential attributes validated";
-
     /**
      * AppraisalStatus message for a valid firmware appraisal.
      */
     public static final String FIRMWARE_VALID = "Firmware validated";
 
-    /**
+    /*
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this
      * class expects it to be available.
      */
     static {
         Security.addProvider(new BouncyCastleProvider());
+    }
+
+    /**
+     * Protected constructor was created to silence checkstyle.
+     */
+    protected SupplyChainCredentialValidator() {
     }
 
     /**
@@ -78,13 +79,10 @@ public class SupplyChainCredentialValidator  {
      * continue to try to find the signing cert of the intermediate cert. It will continue searching
      * until it follows the chain up to a root (self-signed) cert.
      *
-     * @param cert
-     *            certificate to validate
-     * @param trustStore
-     *            trust store holding trusted root certificates and intermediate certificates
+     * @param cert       certificate to validate
+     * @param trustStore trust store holding trusted root certificates and intermediate certificates
      * @return the certificate chain if validation is successful
-     * @throws SupplyChainValidatorException
-     *             if the verification is not successful
+     * @throws SupplyChainValidatorException if the verification is not successful
      */
     public static String verifyCertificate(final X509AttributeCertificateHolder cert,
                                            final KeyStore trustStore) throws SupplyChainValidatorException {
@@ -122,13 +120,10 @@ public class SupplyChainCredentialValidator  {
      * continue to try to find the signing cert of the intermediate cert. It will continue searching
      * until it follows the chain up to a root (self-signed) cert.
      *
-     * @param cert
-     *            certificate to validate
-     * @param trustStore
-     *            trust store holding trusted root certificates and intermediate certificates
+     * @param cert       certificate to validate
+     * @param trustStore trust store holding trusted root certificates and intermediate certificates
      * @return the certificate chain if validation is successful
-     * @throws SupplyChainValidatorException
-     *             if the verification is not successful
+     * @throws SupplyChainValidatorException if the verification is not successful
      */
     public static boolean verifyCertificate(final X509Certificate cert,
                                             final KeyStore trustStore) throws SupplyChainValidatorException {
@@ -164,12 +159,10 @@ public class SupplyChainCredentialValidator  {
      * to find the signing cert of the intermediate cert. It will continue searching until it
      * follows the chain up to a root (self-signed) cert.
      *
-     * @param cert
-     *            certificate to validate
-     * @param additionalCerts
-     *            Set of certs to validate against
+     * @param cert            certificate to validate
+     * @param additionalCerts Set of certs to validate against
      * @return String status of the cert chain validation -
-     *  blank if successful, error message otherwise
+     * blank if successful, error message otherwise
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static String validateCertChain(final X509AttributeCertificateHolder cert,
@@ -227,12 +220,10 @@ public class SupplyChainCredentialValidator  {
      * to find the signing cert of the intermediate cert. It will continue searching until it
      * follows the chain up to a root (self-signed) cert.
      *
-     * @param cert
-     *            certificate to validate
-     * @param additionalCerts
-     *            Set of certs to validate against
+     * @param cert            certificate to validate
+     * @param additionalCerts Set of certs to validate against
      * @return String status of the cert chain validation -
-     *  blank if successful, error message otherwise
+     * blank if successful, error message otherwise
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
     public static String validateCertChain(final X509Certificate cert,
@@ -277,7 +268,8 @@ public class SupplyChainCredentialValidator  {
 
     /**
      * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
-     * @param hostName the host machine associated with the component
+     *
+     * @param hostName     the host machine associated with the component
      * @param paccorOutput the output from PACCOR's allcomoponents.sh
      * @return a list of ComponentInfo objects built from paccorOutput
      * @throws java.io.IOException if something goes wrong parsing the JSON
@@ -333,10 +325,8 @@ public class SupplyChainCredentialValidator  {
      * Checks if the issuer info of an attribute cert matches the supposed signing cert's
      * distinguished name.
      *
-     * @param cert
-     *            the attribute certificate with the signature to validate
-     * @param signingCert
-     *            the certificate with the public key to validate
+     * @param cert        the attribute certificate with the signature to validate
+     * @param signingCert the certificate with the public key to validate
      * @return boolean indicating if the names
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
@@ -359,10 +349,8 @@ public class SupplyChainCredentialValidator  {
      * Checks if the issuer info of a public-key cert matches the supposed signing cert's
      * distinguished name.
      *
-     * @param cert
-     *            the public-key certificate with the signature to validate
-     * @param signingCert
-     *            the certificate with the public key to validate
+     * @param cert        the public-key certificate with the signature to validate
+     * @param signingCert the certificate with the public key to validate
      * @return boolean indicating if the names
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
@@ -387,10 +375,8 @@ public class SupplyChainCredentialValidator  {
      * Checks if the signature of an attribute cert is validated against the signing cert's public
      * key.
      *
-     * @param cert
-     *            the public-key certificate with the signature to validate
-     * @param signingCert
-     *            the certificate with the public key to validate
+     * @param cert        the public-key certificate with the signature to validate
+     * @param signingCert the certificate with the public key to validate
      * @return boolean indicating if the validation passed
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
@@ -423,10 +409,8 @@ public class SupplyChainCredentialValidator  {
      * Checks if the signature of a public-key cert is validated against the signing cert's public
      * key.
      *
-     * @param cert
-     *            the attribute certificate with the signature to validate
-     * @param signingCert
-     *            the certificate with the public key to validate
+     * @param cert        the attribute certificate with the signature to validate
+     * @param signingCert the certificate with the public key to validate
      * @return boolean indicating if the validation passed
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
@@ -442,10 +426,8 @@ public class SupplyChainCredentialValidator  {
     /**
      * Checks if an X509 Attribute Certificate is valid directly against a public key.
      *
-     * @param cert
-     *            the attribute certificate with the signature to validate
-     * @param signingKey
-     *            the key to use to check the attribute cert
+     * @param cert       the attribute certificate with the signature to validate
+     * @param signingKey the key to use to check the attribute cert
      * @return boolean indicating if the validation passed
      * @throws SupplyChainValidatorException tried to validate using null certificates
      */
@@ -472,8 +454,7 @@ public class SupplyChainCredentialValidator  {
      * Checks whether given X.509 public-key certificate is self-signed. If the cert can be
      * verified using its own public key, that means it was self-signed.
      *
-     * @param cert
-     *            X.509 Certificate
+     * @param cert X.509 Certificate
      * @return boolean indicating if the cert was self-signed
      */
     private static boolean isSelfSigned(final X509Certificate cert)

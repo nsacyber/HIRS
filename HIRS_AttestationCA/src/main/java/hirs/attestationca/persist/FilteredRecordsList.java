@@ -14,8 +14,10 @@ import java.util.ArrayList;
  * @param <T> Class accepts generic for the list of data records.
  */
 @Data
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 public class FilteredRecordsList<T> extends ArrayList<T> {
 
-    private long recordsTotal, recordsFiltered;
+    private long recordsTotal;
+
+    private long recordsFiltered;
 }

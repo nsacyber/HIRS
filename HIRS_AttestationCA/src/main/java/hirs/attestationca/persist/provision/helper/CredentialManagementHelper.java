@@ -22,9 +22,10 @@ public final class CredentialManagementHelper {
     /**
      * Parses and stores the EK in the cert manager. If the cert is already present and archived,
      * it is unarchived.
+     *
      * @param certificateRepository the certificate manager used for storage
-     * @param endorsementBytes the raw EK bytes used for parsing
-     * @param deviceName the host name
+     * @param endorsementBytes      the raw EK bytes used for parsing
+     * @param deviceName            the host name
      * @return the parsed, valid EK
      * @throws IllegalArgumentException if the provided bytes are not a valid EK.
      */
@@ -63,7 +64,7 @@ public final class CredentialManagementHelper {
         if (existingCredential == null) {
             log.info("No Endorsement Credential found with hash: " + certificateHash);
             endorsementCredential.setDeviceName(deviceName);
-            return (EndorsementCredential) certificateRepository.save(endorsementCredential);
+            return certificateRepository.save(endorsementCredential);
         } else if (existingCredential.isArchived()) {
             // if the EK is stored in the DB and it's archived, unarchive.
             log.info("Unarchiving credential");
@@ -77,9 +78,10 @@ public final class CredentialManagementHelper {
     /**
      * Parses and stores the PC in the cert manager. If the cert is already present and archived,
      * it is unarchived.
+     *
      * @param certificateRepository the certificate manager used for storage
-     * @param platformBytes the raw PC bytes used for parsing
-     * @param deviceName the host name of the associated machine
+     * @param platformBytes         the raw PC bytes used for parsing
+     * @param deviceName            the host name of the associated machine
      * @return the parsed, valid PC, or null if the provided bytes are not a valid EK.
      */
     public static PlatformCredential storePlatformCredential(
@@ -129,7 +131,7 @@ public final class CredentialManagementHelper {
                     }
                 }
                 platformCredential.setDeviceName(deviceName);
-                return (PlatformCredential) certificateRepository.save(platformCredential);
+                return certificateRepository.save(platformCredential);
             } else if (existingCredential.isArchived()) {
                 // if the PC is stored in the DB and it's archived, unarchive.
                 log.info("Unarchiving credential");

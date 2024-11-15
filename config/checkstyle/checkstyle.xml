@@ -68,7 +68,9 @@
 
     <!-- Checks for Size Violations.                    -->
     <!-- See https://checkstyle.org/checks/sizes/index.html -->
-    <module name="FileLength"/>
+    <module name="FileLength">
+        <property name="max" value="3000"/>
+    </module>
     <module name="LineLength">
         <property name="fileExtensions" value="java"/>
         <property name="max" value="110"/>
@@ -130,8 +132,9 @@
 
         <!-- Checks for Size Violations.                    -->
         <!-- See https://checkstyle.org/checks/sizes/index.html -->
-        <module name="MethodLength"/>
-        <module name="ParameterNumber"/>
+        <module name="MethodLength">
+            <property name="max" value="350"/>
+        </module>
 
         <!-- Checks for whitespace                               -->
         <!-- See https://checkstyle.org/checks/whitespace/index.html -->

@@ -15,8 +15,13 @@ import java.util.Map;
 @Configuration
 public class AnnotationDrivenEndpointsListener {
 
+    /**
+     * Annotation Driven Endpoints event listener.
+     *
+     * @param event context refreshed event.
+     */
     @EventListener
-    public void handleContextRefresh(ContextRefreshedEvent event) {
+    public void handleContextRefresh(final ContextRefreshedEvent event) {
         ApplicationContext applicationContext = event.getApplicationContext();
         RequestMappingHandlerMapping requestMappingHandlerMapping = applicationContext
                 .getBean("requestMappingHandlerMapping", RequestMappingHandlerMapping.class);

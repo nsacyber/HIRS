@@ -2,6 +2,8 @@ package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1IA5String;
@@ -24,71 +26,26 @@ import java.math.BigInteger;
  *      iso9000Uri IA5STRING (SIZE (1..URIMAX)) OPTIONAL }
  * </pre>
  */
+@Setter
+@Getter
 @AllArgsConstructor
+@ToString
 public class TBBSecurityAssertion {
 
     private static final int CCINFO = 0;
     private static final int FIPSLEVEL = 1;
     private static final int RTMTYPE = 2;
 
-    /**
-     * A type to handle the evaluation status used in the Common Criteria Measurement.
-     * Ordering of enum types is intentional and their ordinal values correspond to enum
-     * values in the TCG spec.
-     *
-     * <pre>
-     * MeasurementRootType ::= ENUMERATED {
-     *    static (0),
-     *    dynamic (1),
-     *    nonHost (2),
-     *    hybrid (3),
-     *    physical (4),
-     *    virtual (5) }
-     * </pre>
-     */
-    public enum MeasurementRootType {
-        /**
-         * Static measurement root type.
-         */
-        STATIC("static"),
-        /**
-         * Dynamic  measurement root type.
-         */
-        DYNAMIC("dynamic"),
-        /**
-         * Non-Host measurement root type.
-         */
-        NONHOST("nonHost"),
-        /**
-         * Hybrid measurement root type.
-         */
-        HYBRID("hybrid"),
-        /**
-         * Physical measurement root type.
-         */
-        PHYSICAL("physical"),
-        /**
-         * Virtual measurement root type.
-         */
-        VIRTUAL("virtual");
-
-        @Getter
-        private final String value;
-
-        /**
-         * Basic constructor.
-         * @param value string containing the value.
-         */
-        MeasurementRootType(final String value) {
-            this.value = value;
-        }
-    }
-
     private ASN1Integer version;
+
     private CommonCriteriaMeasures ccInfo;
+
     private FIPSLevel fipsLevel;
+
     private MeasurementRootType rtmType;
+
     private ASN1Boolean iso9000Certified;
+
     private ASN1IA5String iso9000Uri;
 
     /**
@@ -105,6 +62,7 @@ public class TBBSecurityAssertion {
 
     /**
      * Constructor given the SEQUENCE that contains a TBBSecurityAssertion Object.
+     *
      * @param sequence containing the the TBB Security Assertion
      * @throws IllegalArgumentException if there was an error on the parsing
      */
@@ -169,114 +127,56 @@ public class TBBSecurityAssertion {
     }
 
     /**
-     * @return the version
+     * A type to handle the evaluation status used in the Common Criteria Measurement.
+     * Ordering of enum types is intentional and their ordinal values correspond to enum
+     * values in the TCG spec.
+     *
+     * <pre>
+     * MeasurementRootType ::= ENUMERATED {
+     *    static (0),
+     *    dynamic (1),
+     *    nonHost (2),
+     *    hybrid (3),
+     *    physical (4),
+     *    virtual (5) }
+     * </pre>
      */
-    public ASN1Integer getVersion() {
-        return version;
-    }
+    public enum MeasurementRootType {
+        /**
+         * Static measurement root type.
+         */
+        STATIC("static"),
+        /**
+         * Dynamic  measurement root type.
+         */
+        DYNAMIC("dynamic"),
+        /**
+         * Non-Host measurement root type.
+         */
+        NONHOST("nonHost"),
+        /**
+         * Hybrid measurement root type.
+         */
+        HYBRID("hybrid"),
+        /**
+         * Physical measurement root type.
+         */
+        PHYSICAL("physical"),
+        /**
+         * Virtual measurement root type.
+         */
+        VIRTUAL("virtual");
 
-    /**
-     * @param version the version to set
-     */
-    public void setVersion(final ASN1Integer version) {
-        this.version = version;
-    }
+        @Getter
+        private final String value;
 
-    /**
-     * @return the ccInfo
-     */
-    public CommonCriteriaMeasures getCcInfo() {
-        return ccInfo;
-    }
-
-    /**
-     * @param ccInfo the ccInfo to set
-     */
-    public void setCcInfo(final CommonCriteriaMeasures ccInfo) {
-        this.ccInfo = ccInfo;
-    }
-
-    /**
-     * @return the fipsLevel
-     */
-    public FIPSLevel getFipsLevel() {
-        return fipsLevel;
-    }
-
-    /**
-     * @param fipsLevel the fipsLevel to set
-     */
-    public void setFipsLevel(final FIPSLevel fipsLevel) {
-        this.fipsLevel = fipsLevel;
-    }
-
-    /**
-     * @return the rtmType
-     */
-    public MeasurementRootType getRtmType() {
-        return rtmType;
-    }
-
-    /**
-     * @param rtmType the rtmType to set
-     */
-    public void setRtmType(final MeasurementRootType rtmType) {
-        this.rtmType = rtmType;
-    }
-
-    /**
-     * @return the iso9000Certified
-     */
-    public ASN1Boolean getIso9000Certified() {
-        return iso9000Certified;
-    }
-
-    /**
-     * @param iso9000Certified the iso9000Certified to set
-     */
-    public void setIso9000Certified(final ASN1Boolean iso9000Certified) {
-        this.iso9000Certified = iso9000Certified;
-    }
-
-    /**
-     * @return the iso9000Uri
-     */
-    public ASN1IA5String getIso9000Uri() {
-        return iso9000Uri;
-    }
-
-    /**
-     * @param iso9000Uri the iso9000Uri to set
-     */
-    public void setIso9000Uri(final ASN1IA5String iso9000Uri) {
-        this.iso9000Uri = iso9000Uri;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("TBBSecurityAssertion{");
-        sb.append("version=").append(version.toString());
-        //Optional values not null
-        sb.append(", ccInfo=");
-        if (ccInfo != null) {
-            sb.append(ccInfo.toString());
+        /**
+         * Basic constructor.
+         *
+         * @param value string containing the value.
+         */
+        MeasurementRootType(final String value) {
+            this.value = value;
         }
-        sb.append(", fipsLevel=");
-        if (fipsLevel != null) {
-            sb.append(fipsLevel.toString());
-        }
-        sb.append(", rtmType=");
-        if (rtmType != null) {
-            sb.append(rtmType.getValue());
-        }
-        sb.append(", iso9000Certified=").append(iso9000Certified.toString());
-        sb.append(", iso9000Uri=");
-        if (iso9000Uri != null) {
-            sb.append(iso9000Uri.getString());
-        }
-        sb.append("}");
-
-        return sb.toString();
     }
 }

@@ -1,8 +1,6 @@
 package hirs.attestationca.persist.util;
 
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVariables;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Base64;
 
@@ -16,7 +14,14 @@ import java.util.ListIterator;
 public final class CredentialHelper {
 
     /**
+     * Private constructor was created to silence checkstyle error.
+     */
+    private CredentialHelper() {
+    }
+
+    /**
      * Small method to check if the certificate is a PEM.
+     *
      * @param possiblePEM header information
      * @return true if it is.
      */
@@ -26,7 +31,8 @@ public final class CredentialHelper {
     }
 
     /**
-     * Small method to check if there are multi pem files
+     * Small method to check if there are multi pem files.
+     *
      * @param possiblePEM header information
      * @return true if it is.
      */
@@ -44,7 +50,8 @@ public final class CredentialHelper {
     }
 
     /**
-     * Method to remove header footer information from PEM
+     * Method to remove header footer information from PEM.
+     *
      * @param pemFile string representation of the file
      * @return a cleaned up raw byte object
      */
@@ -59,10 +66,11 @@ public final class CredentialHelper {
 
     /**
      * The method is used to remove unwanted spaces and other artifacts from the certificate.
+     *
      * @param certificateBytes raw byte form
      * @return a cleaned up byte form
      */
-    @SuppressWarnings("magicnumber")
+
     public static byte[] trimCertificate(final byte[] certificateBytes) {
         int certificateStart = 0;
         int certificateLength = 0;
@@ -80,10 +88,13 @@ public final class CredentialHelper {
             // Look for first ASN.1 Sequence marked by the two bytes (0x30) and (0x82)
             // The check advances our position in the ByteBuffer by one byte
             int currentPosition = certificateByteBuffer.position();
-            if (certificateByteBuffer.get() == (byte) 0x30
-                    && certificateByteBuffer.get(currentPosition + 1) == (byte) 0x82) {
+            final byte byte1 = (byte) 0x30;
+            final byte byte2 = (byte) 0x82;
+            if (certificateByteBuffer.get() == byte1
+                    && certificateByteBuffer.get(currentPosition + 1) == byte2) {
                 // Check if we have anything more in the buffer than an ASN.1 Sequence header
-                if (certificateByteBuffer.remaining() <= 3) {
+                final int minByteBufferRemaining = 3;
+                if (certificateByteBuffer.remaining() <= minByteBufferRemaining) {
                     throw new IllegalArgumentException(malformedCertStringBuilder
                             .append(" Certificate is nothing more than ASN.1 Sequence.")
                             .toString());
@@ -95,7 +106,8 @@ public final class CredentialHelper {
                 certificateLength = Short.toUnsignedInt(
                         certificateByteBuffer.getShort(currentPosition + 2));
                 // Add the 4 bytes that comprise the start of the ASN.1 Sequence and the length
-                certificateLength += 4;
+                final int startOfASN1Bytes = 4;
+                certificateLength += startOfASN1Bytes;
                 break;
             }
         }
@@ -112,6 +124,7 @@ public final class CredentialHelper {
 
     /**
      * Return the string associated with the boolean slot.
+     *
      * @param bit associated with the location in the array.
      * @return string value of the bit set.
      */
@@ -157,6 +170,7 @@ public final class CredentialHelper {
      * This method is to take the DNs from certificates and sort them in an order
      * that will be used to lookup issuer certificates.  This will not be stored in
      * the certificate, just the DB for lookup.
+     *
      * @param distinguishedName the original DN string.
      * @return a modified string of sorted DNs
      */

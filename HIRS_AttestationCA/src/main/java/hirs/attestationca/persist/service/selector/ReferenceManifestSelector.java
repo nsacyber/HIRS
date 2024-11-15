@@ -12,9 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -29,23 +27,28 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * String representing the database field for the manufacturer.
      */
     public static final String PLATFORM_MANUFACTURER = "platformManufacturer";
+
     /**
      * String representing the database field for the manufacturer id.
      */
     public static final String PLATFORM_MANUFACTURER_ID = "platformManufacturerId";
+
     /**
      * String representing the database field for the model.
      */
     public static final String PLATFORM_MODEL = "platformModel";
+
     /**
      * String representing the database field for the filename.
      */
     public static final String RIM_FILENAME_FIELD = "fileName";
+
     private static final String RIM_TYPE_FIELD = "rimType";
 
     private final Class<T> referenceTypeClass;
 
     private final Map<String, Object> fieldValueSelections;
+
     private boolean excludeArchivedRims;
 
     /**
@@ -60,7 +63,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     /**
      * Standard Constructor for the Selector.
      *
-     * @param referenceTypeClass the type of Reference Manifest to process.
+     * @param referenceTypeClass  the type of Reference Manifest to process.
      * @param excludeArchivedRims true if excluding archived RIMs
      */
     public ReferenceManifestSelector(final Class<T> referenceTypeClass,
@@ -88,6 +91,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
 
     /**
      * Specify the file name of the object to grab.
+     *
      * @param fileName the name of the file associated with the rim
      * @return instance of the manifest in relation to the filename.
      */
@@ -98,6 +102,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
 
     /**
      * Specify the RIM Type to match.
+     *
      * @param rimType the type of rim
      * @return this instance
      */
@@ -109,7 +114,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
     /**
      * Set a field name and value to match.
      *
-     * @param name the field name to query
+     * @param name  the field name to query
      * @param value the value to query
      */
     protected void setFieldValue(final String name, final Object value) {
@@ -127,8 +132,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
             );
         }
 
-        if (value instanceof byte[]) {
-            byte[] valueBytes = (byte[]) value;
+        if (value instanceof byte[] valueBytes) {
 
             Preconditions.checkArgument(
                     ArrayUtils.isNotEmpty(valueBytes),
@@ -145,6 +149,7 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
      * Construct the criterion that can be used to query for rims matching the
      * configuration of this {@link ReferenceManifestSelector}.
      *
+     * @param criteriaBuilder criteria builder
      * @return a Criterion that can be used to query for rims matching the
      * configuration of this instance
      */
@@ -155,7 +160,8 @@ public abstract class ReferenceManifestSelector<T extends ReferenceManifest> {
 
         int i = 0;
         for (Map.Entry<String, Object> fieldValueEntry : fieldValueSelections.entrySet()) {
-            predicates[i++] = criteriaBuilder.equal(root.get(fieldValueEntry.getKey()), fieldValueEntry.getValue());
+            predicates[i++] =
+                    criteriaBuilder.equal(root.get(fieldValueEntry.getKey()), fieldValueEntry.getValue());
         }
 
         if (this.excludeArchivedRims) {

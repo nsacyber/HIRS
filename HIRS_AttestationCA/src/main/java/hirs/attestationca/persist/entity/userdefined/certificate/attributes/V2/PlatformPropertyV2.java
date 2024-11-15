@@ -8,7 +8,6 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1UTF8String;
 
 /**
- *
  * Basic class that handles a single property for the platform configuration.
  * <pre>
  * Properties ::= SEQUENCE {
@@ -18,10 +17,10 @@ import org.bouncycastle.asn1.ASN1UTF8String;
  *
  * </pre>
  */
+@Setter
+@Getter
 public class PlatformPropertyV2 extends PlatformProperty {
 
-    @Getter
-    @Setter
     private AttributeStatus attributeStatus;
 
     /**
@@ -35,8 +34,8 @@ public class PlatformPropertyV2 extends PlatformProperty {
     /**
      * Constructor given the name and value for the platform property.
      *
-     * @param propertyName string containing the property name
-     * @param propertyValue string containing the property value
+     * @param propertyName    string containing the property name
+     * @param propertyValue   string containing the property value
      * @param attributeStatus enumerated object with the status of the property
      */
     public PlatformPropertyV2(final ASN1UTF8String propertyName, final ASN1UTF8String propertyValue,
@@ -84,6 +83,12 @@ public class PlatformPropertyV2 extends PlatformProperty {
         return getAttributeStatus() != AttributeStatus.REMOVED;
     }
 
+
+    /**
+     * Creates a string representation of the PlatformPropertyV2 object.
+     *
+     * @return a string representation of the PlatformPropertyV2 object
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -91,7 +96,7 @@ public class PlatformPropertyV2 extends PlatformProperty {
         sb.append("PropertyName=").append(getPropertyName().getString());
         sb.append(", propertyValue=").append(getPropertyValue().getString());
         if (attributeStatus != null) {
-            sb.append(", attributeStatus=").append(attributeStatus.toString());
+            sb.append(", attributeStatus=").append(attributeStatus);
         }
         sb.append("}");
 

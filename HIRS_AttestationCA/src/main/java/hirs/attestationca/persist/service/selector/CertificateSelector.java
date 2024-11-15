@@ -6,6 +6,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.Arrays;
@@ -24,7 +25,7 @@ import java.util.UUID;
  * This class is used to select one or many certificates in conjunction
  * with a {@link }.  To make use of this object,
  * use (some CertificateImpl).select(CertificateManager).
- *
+ * <p>
  * This class loosely follows the builder pattern.  It is instantiated with
  * the type of certificate that should be retrieved.  It is possible to
  * further specify which certificate(s) should be retrieved by using an
@@ -32,10 +33,10 @@ import java.util.UUID;
  * restrict the result set.  At any time, the results may be retrieved
  * by using one of the get* methods according to the form the
  * results should be in.
- *
+ * <p>
  * If no matching certificates were found for the query, the returned
  * value may empty or null, depending on the return type.
- *
+ * <p>
  * For example, to retrieve all platform certificates:
  *
  * <pre>
@@ -45,7 +46,7 @@ import java.util.UUID;
  *      .getCertificates();
  * }
  * </pre>
- *
+ * <p>
  * To retrieve all CA certificates in a KeyStore:
  *
  * <pre>
@@ -55,7 +56,7 @@ import java.util.UUID;
  *      .getKeyStore();
  * }
  * </pre>
- *
+ * <p>
  * To retrieve all CA certificates matching a certain issuer in X509 format:
  *
  * <pre>
@@ -71,6 +72,7 @@ import java.util.UUID;
  */
 public abstract class CertificateSelector<T extends Certificate> {
 
+    @Getter
     private final Class<T> certificateClass;
 
     private final Map<String, Object> fieldValueSelections;
@@ -91,7 +93,7 @@ public abstract class CertificateSelector<T extends Certificate> {
      * Construct a new CertificateSelector that will use the given {@link  } to
      * retrieve certificates of the given type.
      *
-     * @param certificateClass the class of certificate to be retrieved
+     * @param certificateClass            the class of certificate to be retrieved
      * @param excludeArchivedCertificates true if excluding archived certificates
      */
     public CertificateSelector(
@@ -105,6 +107,7 @@ public abstract class CertificateSelector<T extends Certificate> {
         this.fieldValueSelections = new HashMap<>();
         this.excludeArchivedCertificates = excludeArchivedCertificates;
     }
+
     /**
      * Specify the entity id that certificates must have to be considered
      * as matching.
@@ -249,6 +252,7 @@ public abstract class CertificateSelector<T extends Certificate> {
 
     /**
      * Specify the authority key identifier to find certificate(s).
+     *
      * @param authorityKeyIdentifier the string of the AKI associated with the certificate.
      * @return this instance
      */
@@ -289,7 +293,7 @@ public abstract class CertificateSelector<T extends Certificate> {
     /**
      * Set a field name and value to match.
      *
-     * @param name the field name to query
+     * @param name  the field name to query
      * @param value the value to query
      */
     protected void setFieldValue(final String name, final Object value) {
@@ -307,8 +311,7 @@ public abstract class CertificateSelector<T extends Certificate> {
             );
         }
 
-        if (value instanceof byte[]) {
-            byte[] valueBytes = (byte[]) value;
+        if (value instanceof byte[] valueBytes) {
 
             Preconditions.checkArgument(
                     ArrayUtils.isNotEmpty(valueBytes),
@@ -329,7 +332,7 @@ public abstract class CertificateSelector<T extends Certificate> {
      *
      * @return a KeyStore populated with the matching certificates, if any
      * @throws KeyStoreException if there is a problem instantiating a JKS-formatted KeyStore
-     * @throws IOException if there is a problem populating the keystore
+     * @throws IOException       if there is a problem populating the keystore
      */
     public KeyStore getKeyStore() throws KeyStoreException, IOException {
         KeyStore keyStore = KeyStore.getInstance("JKS");
@@ -349,8 +352,9 @@ public abstract class CertificateSelector<T extends Certificate> {
      * Construct the criterion that can be used to query for certificates matching the configuration
      * of this {@link CertificateSelector}.
      *
+     * @param criteriaBuilder criteria builder
      * @return a Criterion that can be used to query for certificates matching the configuration of
-     *         this instance
+     * this instance
      */
     Predicate[] getCriterion(final CriteriaBuilder criteriaBuilder) {
         Predicate[] predicates = new Predicate[fieldValueSelections.size()];
@@ -359,7 +363,8 @@ public abstract class CertificateSelector<T extends Certificate> {
 
         int i = 0;
         for (Map.Entry<String, Object> fieldValueEntry : fieldValueSelections.entrySet()) {
-            predicates[i++] = criteriaBuilder.equal(root.get(fieldValueEntry.getKey()), fieldValueEntry.getValue());
+            predicates[i++] =
+                    criteriaBuilder.equal(root.get(fieldValueEntry.getKey()), fieldValueEntry.getValue());
         }
 
         if (this.excludeArchivedCertificates) {
@@ -370,14 +375,8 @@ public abstract class CertificateSelector<T extends Certificate> {
     }
 
     /**
-     * @return the certificate class that this instance will query
-     */
-    public Class<T> getCertificateClass() {
-        return certificateClass;
-    }
-
-    /**
      * Configures the selector to query for archived and unarchived certificates.
+     *
      * @return the selector
      */
     public CertificateSelector<T> includeArchived() {

@@ -1,11 +1,11 @@
 package hirs.attestationca.portal.datatables;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Represents a jQuery DataTables search parameter.
@@ -13,23 +13,15 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@NoArgsConstructor
+@ToString
 public class Search {
-
-    /**
-     * Constructor for a non-regex search.
-     * @param value the search value
-     */
-    public Search(final String value) {
-        this(value, false);
-    }
 
     /**
      * Global search value. To be applied to all columns which have searchable as true.
      */
     @NotNull
     private String value = "";
-
     /**
      * true if the global filter should be treated as a regular expression for advanced searching,
      * false otherwise. Note that normally server-side processing scripts will not perform regular
@@ -39,12 +31,13 @@ public class Search {
     @NotNull
     private boolean regex;
 
-    @Override
-    public String toString() {
-        return "Search{"
-                + "value='" + value + '\''
-                + ", regex=" + regex
-                + '}';
+    /**
+     * Constructor for a non-regex search.
+     *
+     * @param value the search value
+     */
+    public Search(final String value) {
+        this(value, false);
     }
 }
 

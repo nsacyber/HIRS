@@ -68,27 +68,17 @@ public class TPMInfo implements Serializable {
     /**
      * Constructor used to create a TPMInfo object.
      *
-     * @param tpmMake
-     *            String representing the make information for the TPM,
-     *            NullPointerException thrown if null
-     * @param tpmVersionMajor
-     *            short representing the major version number for the TPM
-     * @param tpmVersionMinor
-     *            short representing the minor version number for the TPM
-     * @param tpmVersionRevMajor
-     *            short representing the major revision number for the TPM
-     * @param tpmVersionRevMinor
-     *            short representing the minor revision number for the TPM
-     * @param identityCertificate
-     *            byte array with the value of the identity certificate
-     * @param pcrValues
-     *            short representing the major revision number for the TPM
-     * @param tpmQuoteHash
-     *            short representing the minor revision number for the TPM
-     * @param tpmQuoteSignature
-     *            byte array with the value of the identity certificate
+     * @param tpmMake             String representing the make information for the TPM,
+     *                            NullPointerException thrown if null
+     * @param tpmVersionMajor     short representing the major version number for the TPM
+     * @param tpmVersionMinor     short representing the minor version number for the TPM
+     * @param tpmVersionRevMajor  short representing the major revision number for the TPM
+     * @param tpmVersionRevMinor  short representing the minor revision number for the TPM
+     * @param identityCertificate byte array with the value of the identity certificate
+     * @param pcrValues           short representing the major revision number for the TPM
+     * @param tpmQuoteHash        short representing the minor revision number for the TPM
+     * @param tpmQuoteSignature   byte array with the value of the identity certificate
      */
-    @SuppressWarnings("parameternumber")
     public TPMInfo(final String tpmMake, final short tpmVersionMajor,
                    final short tpmVersionMinor, final short tpmVersionRevMajor,
                    final short tpmVersionRevMinor,
@@ -109,25 +99,16 @@ public class TPMInfo implements Serializable {
      * Constructor used to create a TPMInfo object without an identity
      * certificate.
      *
-     * @param tpmMake
-     *            String representing the make information for the TPM,
-     *            NullPointerException thrown if null
-     * @param tpmVersionMajor
-     *            short representing the major version number for the TPM
-     * @param tpmVersionMinor
-     *            short representing the minor version number for the TPM
-     * @param tpmVersionRevMajor
-     *            short representing the major revision number for the TPM
-     * @param tpmVersionRevMinor
-     *            short representing the minor revision number for the TPM
-     * @param pcrValues
-     *            short representing the major revision number for the TPM
-     * @param tpmQuoteHash
-     *            short representing the minor revision number for the TPM
-     * @param tpmQuoteSignature
-     *            byte array with the value of the identity certificate
+     * @param tpmMake            String representing the make information for the TPM,
+     *                           NullPointerException thrown if null
+     * @param tpmVersionMajor    short representing the major version number for the TPM
+     * @param tpmVersionMinor    short representing the minor version number for the TPM
+     * @param tpmVersionRevMajor short representing the major revision number for the TPM
+     * @param tpmVersionRevMinor short representing the minor revision number for the TPM
+     * @param pcrValues          short representing the major revision number for the TPM
+     * @param tpmQuoteHash       short representing the minor revision number for the TPM
+     * @param tpmQuoteSignature  byte array with the value of the identity certificate
      */
-    @SuppressWarnings("parameternumber")
     public TPMInfo(final String tpmMake, final short tpmVersionMajor,
                    final short tpmVersionMinor, final short tpmVersionRevMajor,
                    final short tpmVersionRevMinor, final byte[] pcrValues,
@@ -146,17 +127,12 @@ public class TPMInfo implements Serializable {
      * Constructor used to create a TPMInfo object without an identity
      * certificate.
      *
-     * @param tpmMake
-     *            String representing the make information for the TPM,
-     *            NullPointerException thrown if null
-     * @param tpmVersionMajor
-     *            short representing the major version number for the TPM
-     * @param tpmVersionMinor
-     *            short representing the minor version number for the TPM
-     * @param tpmVersionRevMajor
-     *            short representing the major revision number for the TPM
-     * @param tpmVersionRevMinor
-     *            short representing the minor revision number for the TPM
+     * @param tpmMake            String representing the make information for the TPM,
+     *                           NullPointerException thrown if null
+     * @param tpmVersionMajor    short representing the major version number for the TPM
+     * @param tpmVersionMinor    short representing the minor version number for the TPM
+     * @param tpmVersionRevMajor short representing the major revision number for the TPM
+     * @param tpmVersionRevMinor short representing the minor revision number for the TPM
      */
     public TPMInfo(final String tpmMake, final short tpmVersionMajor,
                    final short tpmVersionMinor, final short tpmVersionRevMajor,
@@ -170,19 +146,13 @@ public class TPMInfo implements Serializable {
      * Constructor used to create a TPMInfo object without an identity
      * certificate.
      *
-     * @param tpmMake
-     *            String representing the make information for the TPM,
-     *            NullPointerException thrown if null
-     * @param tpmVersionMajor
-     *            short representing the major version number for the TPM
-     * @param tpmVersionMinor
-     *            short representing the minor version number for the TPM
-     * @param tpmVersionRevMajor
-     *            short representing the major revision number for the TPM
-     * @param tpmVersionRevMinor
-     *            short representing the minor revision number for the TPM
-     * @param identityCertificate
-     *            byte array with the value of the identity certificate
+     * @param tpmMake             String representing the make information for the TPM,
+     *                            NullPointerException thrown if null
+     * @param tpmVersionMajor     short representing the major version number for the TPM
+     * @param tpmVersionMinor     short representing the minor version number for the TPM
+     * @param tpmVersionRevMajor  short representing the major revision number for the TPM
+     * @param tpmVersionRevMinor  short representing the minor revision number for the TPM
+     * @param identityCertificate byte array with the value of the identity certificate
      */
     public TPMInfo(final String tpmMake, final short tpmVersionMajor,
                    final short tpmVersionMinor, final short tpmVersionRevMajor,
@@ -217,28 +187,65 @@ public class TPMInfo implements Serializable {
         return identityCertificate;
     }
 
+    private void setIdentityCertificate(
+            final X509Certificate identityCertificate) {
+        if (identityCertificate == null) {
+            log.error("identity certificate cannot be null");
+            throw new NullPointerException("identityCertificate");
+        }
+        log.debug("setting identity certificate");
+        this.identityCertificate = identityCertificate;
+    }
+
     /**
      * Getter for the tpmQuote passed up by the client.
+     *
      * @return a byte blob of quote
      */
     public final byte[] getTpmQuoteHash() {
         return tpmQuoteHash.clone();
     }
 
+    private void setTpmQuoteHash(final byte[] tpmQuoteHash) {
+        if (tpmQuoteHash == null) {
+            this.tpmQuoteHash = new byte[0];
+        } else {
+            this.tpmQuoteHash = tpmQuoteHash.clone();
+        }
+    }
+
     /**
      * Getter for the quote signature.
+     *
      * @return a byte blob.
      */
     public final byte[] getTpmQuoteSignature() {
         return tpmQuoteSignature.clone();
     }
 
+    private void setTpmQuoteSignature(final byte[] tpmQuoteSignature) {
+        if (tpmQuoteSignature == null) {
+            this.tpmQuoteSignature = new byte[0];
+        } else {
+            this.tpmQuoteSignature = tpmQuoteSignature.clone();
+        }
+    }
+
     /**
      * Getter for the pcr values.
+     *
      * @return a byte blob for the pcrValues.
      */
     public final byte[] getPcrValues() {
         return pcrValues.clone();
+    }
+
+    private void setPcrValues(final byte[] pcrValues) {
+        if (pcrValues == null) {
+            this.pcrValues = new byte[0];
+        } else {
+            this.pcrValues = pcrValues.clone();
+        }
     }
 
     private void setTPMMake(final String tpmMake) {
@@ -291,39 +298,5 @@ public class TPMInfo implements Serializable {
         log.debug("setting TPM minor revision version number: {}",
                 tpmVersionRevMinor);
         this.tpmVersionRevMinor = tpmVersionRevMinor;
-    }
-
-    private void setIdentityCertificate(
-            final X509Certificate identityCertificate) {
-        if (identityCertificate == null) {
-            log.error("identity certificate cannot be null");
-            throw new NullPointerException("identityCertificate");
-        }
-        log.debug("setting identity certificate");
-        this.identityCertificate = identityCertificate;
-    }
-
-    private void setPcrValues(final byte[] pcrValues) {
-        if (pcrValues == null) {
-            this.pcrValues = new byte[0];
-        } else {
-            this.pcrValues = pcrValues.clone();
-        }
-    }
-
-    private void setTpmQuoteHash(final byte[] tpmQuoteHash) {
-        if (tpmQuoteHash == null) {
-            this.tpmQuoteHash = new byte[0];
-        } else {
-            this.tpmQuoteHash = tpmQuoteHash.clone();
-        }
-    }
-
-    private void setTpmQuoteSignature(final byte[] tpmQuoteSignature) {
-        if (tpmQuoteSignature == null) {
-            this.tpmQuoteSignature = new byte[0];
-        } else {
-            this.tpmQuoteSignature = tpmQuoteSignature.clone();
-        }
     }
 }

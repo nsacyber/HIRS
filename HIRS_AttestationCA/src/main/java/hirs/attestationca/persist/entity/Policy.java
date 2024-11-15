@@ -16,7 +16,7 @@ import jakarta.persistence.MappedSuperclass;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Access(AccessType.FIELD)
 @MappedSuperclass
-public abstract class  Policy extends UserDefinedEntity {
+public abstract class Policy extends UserDefinedEntity {
 
     /**
      * Default empty constructor is required for Hibernate. It is protected to
@@ -29,8 +29,7 @@ public abstract class  Policy extends UserDefinedEntity {
     /**
      * Creates a new <code>Policy</code> with the specified name.
      *
-     * @param name
-     *            name
+     * @param name name
      */
     public Policy(final String name) {
         super(name);
@@ -40,10 +39,8 @@ public abstract class  Policy extends UserDefinedEntity {
      * Creates a new <code>Policy</code> with the specified name and
      * description.
      *
-     * @param name
-     *          name (required)
-     * @param description
-     *          description (may be null)
+     * @param name        name (required)
+     * @param description description (may be null)
      */
     public Policy(final String name, final String description) {
         super(name, description);

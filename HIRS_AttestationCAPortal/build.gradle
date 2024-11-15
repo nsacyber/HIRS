@@ -21,9 +21,9 @@ java {
 }
 
 bootRun {
-  if (project.hasProperty('debug')) {
-    jvmArgs project.debug
-  }
+    if (project.hasProperty('debug')) {
+        jvmArgs project.debug
+    }
 }
 
 configurations {
@@ -80,10 +80,10 @@ configurations.checkstyle {
     }
 }
 checkstyleMain {
-    source ='src/main/java'
+    source = 'src/main/java'
 }
 checkstyleTest {
-    source ='src/test/java'
+    source = 'src/test/java'
 }
 tasks.withType(Checkstyle) {
     reports {
@@ -110,36 +110,36 @@ ospackage {
     arch = NOARCH
     version = "$packVersion"
     release = '2'
-    
- 
+
+
     user 'root'
     fileMode = 0755
 
     addParentDirs = true
-    createDirectoryEntry true 
+    createDirectoryEntry true
 
-    into ('/etc/hirs') {
-          from '../VERSION'
-     }
+    into('/etc/hirs') {
+        from '../VERSION'
+    }
     // copy json tables
-    into ('/etc/hirs/aca/default-properties') {
-         from '../HIRS_AttestationCA/src/main/resources/component-class.json'
-         from '../HIRS_Utils/src/main/resources/vendor-table.json'
+    into('/etc/hirs/aca/default-properties') {
+        from '../HIRS_AttestationCA/src/main/resources/component-class.json'
+        from '../HIRS_Utils/src/main/resources/vendor-table.json'
     }
     // copy springboot property file
-    into ('/etc/hirs/aca/') {
-         from '../HIRS_AttestationCAPortal/src/main/resources/application.properties'
-         from 'build/VERSION'
+    into('/etc/hirs/aca/') {
+        from '../HIRS_AttestationCAPortal/src/main/resources/application.properties'
+        from 'build/VERSION'
     }
     // copy setup scripts to /opt/hirs/aca
-    into ('/opt/hirs/aca/scripts/') {
-         from '../package/linux/'
+    into('/opt/hirs/aca/scripts/') {
+        from '../package/linux/'
     }
     // copy the war file into /opt/hirs/aca
-    into ('/opt/hirs/aca/') {
-         from '../HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war'
-         user 'root'
-         fileMode = 0755 
+    into('/opt/hirs/aca/') {
+        from '../HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war'
+        user 'root'
+        fileMode = 0755
     }
 
     // Install - check for existing setup
@@ -152,12 +152,12 @@ ospackage {
     postUninstall 'if [ -d /opt/hirs ]; then rm -rf /opt/hirs; fi;'
 
     buildRpm {
-        dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
-        dependsOn  ':HIRS_AttestationCAPortal:bootWar'
+        dependsOn ':HIRS_AttestationCAPortal:buildVersion'
+        dependsOn ':HIRS_AttestationCAPortal:bootWar'
         arch = X86_64
         // Required apps will be aut installed by dnf if not present
         requires('java-17-openjdk', '17.0', GREATER | EQUAL)
-        requires('mariadb-server' , '10.3' , GREATER | EQUAL)
+        requires('mariadb-server', '10.3', GREATER | EQUAL)
         requires('procps-ng', '3.3.15', GREATER | EQUAL)
         requires('alternatives', '1.19', GREATER | EQUAL)
         requires('hwdata', '0.314', GREATER | EQUAL)
@@ -175,12 +175,12 @@ ospackage {
     }
 
     buildDeb {
-        dependsOn  ':HIRS_AttestationCAPortal:buildVersion'
-        dependsOn  ':HIRS_AttestationCAPortal:bootWar'
+        dependsOn ':HIRS_AttestationCAPortal:buildVersion'
+        dependsOn ':HIRS_AttestationCAPortal:bootWar'
         packageName = 'hirs-attestationca'
         arch = 'amd64'
         requires('openjdk-17-jdk', '17.0', GREATER | EQUAL)
-        requires('mariadb-server' , '10.3' , GREATER | EQUAL)
+        requires('mariadb-server', '10.3', GREATER | EQUAL)
         requires('curl')
         requires('hwdata', '0.314', GREATER | EQUAL)
         // Install after required packages

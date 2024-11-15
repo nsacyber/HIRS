@@ -26,7 +26,7 @@ import org.apache.commons.codec.binary.Hex;
 @Log4j2
 @Getter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @Embeddable
 @XmlAccessorType(XmlAccessType.FIELD)
 public final class TPMMeasurementRecord extends ExaminableRecord {
@@ -51,7 +51,6 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
      */
     public static final int SHA_256_BYTE_LENGTH = 64;
 
-
     @Column(name = "pcr", nullable = false)
     @XmlAttribute(name = "PcrNumber", required = true)
     private final int pcrId;
@@ -63,9 +62,8 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
      * Constructor initializes values associated with TPMMeasurementRecord.
      *
      * @param pcrId is the TPM PCR index. pcrId must be between 0 and 23.
-     * @param hash
-     *            represents the measurement digest found at the particular PCR
-     *            index.
+     * @param hash  represents the measurement digest found at the particular PCR
+     *              index.
      * @throws IllegalArgumentException if pcrId is not valid
      */
     public TPMMeasurementRecord(final int pcrId, final Digest hash)
@@ -85,8 +83,8 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
      * Constructor initializes values associated with TPMMeasurementRecord.
      *
      * @param pcrId is the TPM PCR index. pcrId must be between 0 and 23.
-     * @param hash represents the measurement digest found at the particular PCR
-     *            index.
+     * @param hash  represents the measurement digest found at the particular PCR
+     *              index.
      * @throws DecoderException if there is a decode issue with string hex.
      */
     public TPMMeasurementRecord(final int pcrId, final String hash)
@@ -98,18 +96,26 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
      * Constructor initializes values associated with TPMMeasurementRecord.
      *
      * @param pcrId is the TPM PCR index. pcrId must be between 0 and 23.
-     * @param hash represents the measurement digest found at the particular PCR
-     *            index.
+     * @param hash  represents the measurement digest found at the particular PCR
+     *              index.
      */
     public TPMMeasurementRecord(final int pcrId, final byte[] hash) {
         this(pcrId, new Digest(hash));
     }
 
     /**
+     * Default constructor necessary for Hibernate.
+     */
+    private TPMMeasurementRecord() {
+        super();
+        this.pcrId = -1;
+        this.hash = null;
+    }
+
+    /**
      * Helper method to determine if a PCR ID number is valid.
      *
-     * @param pcrId
-     *            int to check
+     * @param pcrId int to check
      */
     public static void checkForValidPcrId(final int pcrId) {
         if (pcrId < MIN_PCR_ID || pcrId > MAX_PCR_ID) {
@@ -117,14 +123,5 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
             log.error(msg);
             throw new IllegalArgumentException(msg);
         }
-    }
-
-    /**
-     * Default constructor necessary for Hibernate.
-     */
-    protected TPMMeasurementRecord() {
-        super();
-        this.pcrId = -1;
-        this.hash = null;
     }
 }

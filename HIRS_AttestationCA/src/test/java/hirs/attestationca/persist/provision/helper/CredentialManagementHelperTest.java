@@ -3,6 +3,7 @@ package hirs.attestationca.persist.provision.helper;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -20,13 +21,19 @@ import static org.mockito.Mockito.verify;
  */
 public class CredentialManagementHelperTest {
 
+    private static final String EK_HEADER_TRUNCATED
+            = "/certificates/nuc-1/ek_cert_7_byte_header_removed.cer";
+
+    private static final String EK_UNTOUCHED
+            = "/certificates/nuc-1/ek_cert_untouched.cer";
+
     @Mock
     private CertificateRepository certificateRepository;
 
-    private static final String EK_HEADER_TRUNCATED
-            = "/certificates/nuc-1/ek_cert_7_byte_header_removed.cer";
-    private static final String EK_UNTOUCHED
-            = "/certificates/nuc-1/ek_cert_untouched.cer";
+    /**
+     * Holds the AutoCloseable instance returned by openMocks.
+     */
+    private AutoCloseable mocks;
 
     /**
      * Setup mocks.
@@ -34,11 +41,24 @@ public class CredentialManagementHelperTest {
     @BeforeEach
     public void setUp() {
         //certificateRepository = mock(CertificateRepository.class);
-        MockitoAnnotations.initMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    /**
+     * Tears down the mock instances.
+     *
+     * @throws Exception if there are any issues closing down mock instances
+     */
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     /**
      * Tests exception generated if providing a null cert repository.
+     *
      * @throws IOException if an IO error occurs
      */
     @Test
@@ -47,7 +67,7 @@ public class CredentialManagementHelperTest {
         String path = CredentialManagementHelperTest.class.getResource(EK_UNTOUCHED).getPath();
         byte[] ekBytes = IOUtils.toByteArray(new FileInputStream(path));
         assertThrows(IllegalArgumentException.class, () ->
-            CredentialManagementHelper.storeEndorsementCredential(null, ekBytes, "testName"));
+                CredentialManagementHelper.storeEndorsementCredential(null, ekBytes, "testName"));
     }
 
     /**
@@ -56,7 +76,8 @@ public class CredentialManagementHelperTest {
     @Test
     public void processNullEndorsementCredential() {
         assertThrows(IllegalArgumentException.class, () ->
-            CredentialManagementHelper.storeEndorsementCredential(certificateRepository, null, "testName"));
+                CredentialManagementHelper.storeEndorsementCredential(certificateRepository, null,
+                        "testName"));
     }
 
     /**
@@ -65,8 +86,8 @@ public class CredentialManagementHelperTest {
     @Test
     public void processEmptyEndorsementCredential() {
         assertThrows(IllegalArgumentException.class, () ->
-            CredentialManagementHelper.storeEndorsementCredential(
-                    certificateRepository, new byte[0], "testName"));
+                CredentialManagementHelper.storeEndorsementCredential(
+                        certificateRepository, new byte[0], "testName"));
     }
 
     /**
@@ -87,11 +108,13 @@ public class CredentialManagementHelperTest {
     public void processInvalidEndorsementCredentialCase2() {
         byte[] ekBytes = new byte[] {1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0};
         assertThrows(IllegalArgumentException.class, () ->
-        CredentialManagementHelper.storeEndorsementCredential(certificateRepository, ekBytes, "testName"));
+                CredentialManagementHelper.storeEndorsementCredential(certificateRepository, ekBytes,
+                        "testName"));
     }
 
     /**
-     * Tests processing a valid EK with the 7 byte header in tact.
+     * Tests processing a valid EK with the 7 byte header intact.
+     *
      * @throws IOException if an IO error occurs
      */
     @Test
@@ -105,6 +128,7 @@ public class CredentialManagementHelperTest {
 
     /**
      * Tests processing a valid EK with the 7 byte header already stripped.
+     *
      * @throws IOException if an IO error occurs
      */
     @Test

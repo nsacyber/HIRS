@@ -88,6 +88,16 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
     /**
      * Constructor.
+     *
+     * @param supplyChainValidationService   supply chain validation service
+     * @param certificateRepository          certificate repository
+     * @param componentResultRepository      component result repository
+     * @param componentInfoRepository        component info repository
+     * @param referenceManifestRepository    reference manifest repository
+     * @param referenceDigestValueRepository reference digest value repository
+     * @param deviceRepository               device repository
+     * @param tpm2ProvisionerStateRepository tpm2 provisioner state repository
+     * @param policyRepository               policy repository
      */
     public IdentityClaimProcessor(
             final SupplyChainValidationService supplyChainValidationService,
@@ -155,8 +165,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             String pcrQuoteMask = PCR_QUOTE_MASK;
 
             String strNonce = HexUtils.byteArrayToHexString(nonce);
-            log.info("Sending nonce: " + strNonce);
-            log.info("Persisting claim of length: " + identityClaim.length);
+            log.info("Sending nonce: {}", strNonce);
+            log.info("Persisting claim of length: {}", identityClaim.length);
 
             tpm2ProvisionerStateRepository.save(new TPM2ProvisionerState(nonce, identityClaim));
 
@@ -171,8 +181,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .build();
             return response.toByteArray();
         } else {
-            log.error("Supply chain validation did not succeed. Result is: "
-                    + validationResult);
+            log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
             // empty response
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
@@ -286,7 +295,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * @param claim the protobuf serialized identity claim containing the device info
      * @return a HIRS Utils DeviceInfoReport representation of device info
      */
-    @SuppressWarnings("methodlength")
     private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim)
             throws NoSuchAlgorithmException {
         ProvisionerTpm2.DeviceInfo dv = claim.getDv();
@@ -394,8 +402,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                          */
                         List<ReferenceManifest> rims = referenceManifestRepository.findByArchiveFlag(false);
                         for (ReferenceManifest rim : rims) {
-                            if (rim.isBase() && rim.getTagId().equals(baseRim.getTagId()) &&
-                                    rim.getCreateTime().after(baseRim.getCreateTime())) {
+                            if (rim.isBase() && rim.getTagId().equals(baseRim.getTagId())
+                                    && rim.getCreateTime().after(baseRim.getCreateTime())) {
                                 baseRim.setDeviceName(null);
                                 baseRim = (BaseReferenceManifest) rim;
                                 baseRim.setDeviceName(dv.getNw().getHostname());
@@ -414,12 +422,11 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 } catch (UnmarshalException e) {
                     log.error(e);
                 } catch (Exception ex) {
-                    log.error(String.format("Failed to load base rim: %s", ex.getMessage()));
+                    log.error("Failed to load base rim: {}", ex.getMessage());
                 }
             }
         } else {
-            log.warn(String.format("%s did not send swid tag file...",
-                    dv.getNw().getHostname()));
+            log.warn("{} did not send swid tag file...", dv.getNw().getHostname());
         }
 
         if (dv.getLogfileCount() > 0) {
@@ -467,9 +474,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                          */
                         List<ReferenceManifest> rims = referenceManifestRepository.findByArchiveFlag(false);
                         for (ReferenceManifest rim : rims) {
-                            if (rim.isSupport() &&
-                                    rim.getTagId().equals(supportRim.getTagId()) &&
-                                    rim.getCreateTime().after(supportRim.getCreateTime())) {
+                            if (rim.isSupport()
+                                    && rim.getTagId().equals(supportRim.getTagId())
+                                    && rim.getCreateTime().after(supportRim.getCreateTime())) {
                                 supportRim.setDeviceName(null);
                                 supportRim = (SupportReferenceManifest) rim;
                                 supportRim.setDeviceName(dv.getNw().getHostname());
@@ -487,12 +494,11 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 } catch (IOException ioEx) {
                     log.error(ioEx);
                 } catch (Exception ex) {
-                    log.error(String.format("Failed to load support rim: %s", ex.getMessage()));
+                    log.error("Failed to load support rim: {}", ex.getMessage());
                 }
             }
         } else {
-            log.warn(String.format("%s did not send support RIM file...",
-                    dv.getNw().getHostname()));
+            log.warn("{} did not send support RIM file...", dv.getNw().getHostname());
         }
 
         //update Support RIMs and Base RIMs.
@@ -583,8 +589,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 log.error(ioEx);
             }
         } else {
-            log.warn(String.format("%s did not send bios measurement log...",
-                    dv.getNw().getHostname()));
+            log.warn("{} did not send bios measurement log...", dv.getNw().getHostname());
         }
 
         // Get TPM info, currently unimplemented
@@ -689,8 +694,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         dbRdv = digestValueMap.get(patchedValue);
 
                         if (dbRdv == null) {
-                            log.error(String.format("Patching value does not exist (%s)",
-                                    patchedValue));
+                            log.error("Patching value does not exist ({})", patchedValue);
                         } else {
                             // WIP - Until we get patch examples
                             dbRdv.setPatched(true);

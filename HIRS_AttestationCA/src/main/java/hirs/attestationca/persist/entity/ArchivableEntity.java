@@ -55,9 +55,8 @@ public abstract class ArchivableEntity extends AbstractEntity {
      * Signals that this entity has been archived, by setting the archivedTime to the current date
      * and time.
      *
-     * @return
-     *      true if time was null and date was set.
-     *      false is archived time is already set, signifying the entity has been archived.
+     * @return true if time was null and date was set.
+     * false is archived time is already set, signifying the entity has been archived.
      */
     public final boolean archive() {
         if (this.archivedTime == null) {
@@ -73,8 +72,7 @@ public abstract class ArchivableEntity extends AbstractEntity {
      * purposes so the reason for action taken can be referenced.
      *
      * @param description - description of the action taken for resolution
-     * @return
-     *      boolean result is dependent on the return value of the archive() method
+     * @return boolean result is dependent on the return value of the archive() method
      */
     public final boolean archive(final String description) {
         if (archive()) {
@@ -90,7 +88,7 @@ public abstract class ArchivableEntity extends AbstractEntity {
      * entity has not been resolved, then null is returned.
      *
      * @return archivedTime
-     *      If entity was archived, timestamp of the occurrence, null otherwise.
+     * If entity was archived, timestamp of the occurrence, null otherwise.
      */
     public final Date getArchivedTime() {
         if (archivedTime == null) {
@@ -104,9 +102,8 @@ public abstract class ArchivableEntity extends AbstractEntity {
      * Sets the archivedTime to null.  The archivedTime being null signifies that the entity has
      * not been archived.  If the time is already null then this call was unnecessary.
      *
-     * @return
-     *      true if the time is changed to null.
-     *      false if time was already set to null.
+     * @return true if the time is changed to null.
+     * false if time was already set to null.
      */
     public final boolean restore() {
         if (this.archivedTime != null) {

@@ -6,11 +6,15 @@
 
 <suppressions>
     <!-- Ignore Auto generated files -->
-    <suppress files="[/\\]hirs[/\\]utils[/\\]xjc[/\\]" checks=".*" />
-    <suppress files="ProvisionerTpm2.java" checks=".*" />
+    <suppress files="[/\\]hirs[/\\]utils[/\\]xjc[/\\]" checks=".*"/>
+    <suppress files="ProvisionerTpm2.java" checks=".*"/>
 
     <!-- HIRS_Utils -->
     <!-- This ignores checking all public variable for a javadoc -->
-    <suppress files="SwidTagConstants.java" checks="LineLength" />
-    <suppress files="SwidTagConstants.java" checks="JavadocVariable" />
+    <suppress files="SwidTagConstants.java" checks="LineLength"/>
+    <suppress files="SwidTagConstants.java" checks="JavadocVariable"/>
+
+    <!-- This ignores checking for public constructors in utility classes in certain files -->
+    <suppress files="HIRSApplication.java" checks="HideUtilityClassConstructor"/>
+    <suppress files="PersistenceConfiguration.java" checks="HideUtilityClassConstructor"/>
 </suppressions>
