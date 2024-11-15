@@ -7,8 +7,8 @@ import hirs.structs.elements.StructElements;
 /**
  * Represents a symmetric key as specified in section 4.20 of the TCPA.
  */
-@StructElements(elements = { "algorithmId", "encryptionScheme", "signatureScheme", "paramsSize",
-        "params" })
+@StructElements(elements = {"algorithmId", "encryptionScheme", "signatureScheme", "paramsSize",
+        "params"})
 public class SymmetricKeyParams implements Struct {
 
     /**

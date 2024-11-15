@@ -3,7 +3,6 @@ package hirs.utils.digest;
 /**
  * Enumeration identifying the different outcomes of a comparison between
  * two {@link Digest} objects.
- *
  */
 public enum DigestComparisonResultType {
     /**

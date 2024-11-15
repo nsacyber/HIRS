@@ -10,7 +10,7 @@ import java.util.Arrays;
  * As specified in TCPA Main Specification section 4.27.2. This structure represents a public key of
  * an asymmetric key pair.
  */
-@StructElements(elements = { "keyLength", "key" })
+@StructElements(elements = {"keyLength", "key"})
 public class StorePubKey implements Struct {
 
     @StructElementLength(fieldName = "key")

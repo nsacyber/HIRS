@@ -11,9 +11,9 @@ import java.util.Arrays;
  * identity process. This structure contains information that is required by the Attestation
  * Certificate Authority to attest an identity request.
  */
-@StructElements(elements = { "version", "labelSize", "identityBindingSize", "endorsementSize",
+@StructElements(elements = {"version", "labelSize", "identityBindingSize", "endorsementSize",
         "platformSize", "conformanceSize", "identityKey", "label", "identityBinding",
-        "endorsementCredential", "platformCredential", "conformanceCredential" })
+        "endorsementCredential", "platformCredential", "conformanceCredential"})
 public class IdentityProof implements Struct {
 
     private Version version;

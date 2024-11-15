@@ -23,12 +23,12 @@ import java.util.Arrays;
 @Access(AccessType.FIELD)
 public final class OptionalDigest extends AbstractDigest {
     @XmlElement
-    @Column(nullable = true, name = "digest", length = SHA512_DIGEST_LENGTH,
+    @Column(name = "digest", length = SHA512_DIGEST_LENGTH,
             columnDefinition = "varbinary(64)")
     private final byte[] digest;
 
     @XmlElement
-    @Column(nullable = true)
+    @Column
     @Enumerated(EnumType.ORDINAL)
     @Getter
     private final DigestAlgorithm algorithm;
@@ -37,7 +37,7 @@ public final class OptionalDigest extends AbstractDigest {
      * Creates a new <code>OptionalDigest</code>.
      *
      * @param digestAlgorithm algorithm used to generate the digest
-     * @param optionalDigest digest value
+     * @param optionalDigest  digest value
      * @throws IllegalArgumentException if digest length does not match that of the algorithm
      */
     public OptionalDigest(final DigestAlgorithm digestAlgorithm, final byte[] optionalDigest)
@@ -50,9 +50,20 @@ public final class OptionalDigest extends AbstractDigest {
     /**
      * Default constructor necessary for Hibernate.
      */
-    protected OptionalDigest() {
+    private OptionalDigest() {
         this.algorithm = null;
         this.digest = null;
+    }
+
+    /**
+     * Helper method to reverse the toString method. Returns an OptionalDigest given a String
+     * that was created using an AbstractDigest's toString method.
+     *
+     * @param digest String representation of an AbstractDigest
+     * @return OptionalDigest object recreated from the String passed in
+     */
+    public static OptionalDigest fromString(final String digest) {
+        return new OptionalDigest(algorithmFromString(digest), digestFromString(digest));
     }
 
     /**
@@ -72,16 +83,5 @@ public final class OptionalDigest extends AbstractDigest {
      */
     public Digest asDigest() {
         return new Digest(algorithm, digest);
-    }
-
-    /**
-     * Helper method to reverse the toString method. Returns an OptionalDigest given a String
-     * that was created using an AbstractDigest's toString method.
-     *
-     * @param digest String representation of an AbstractDigest
-     * @return OptionalDigest object recreated from the String passed in
-     */
-    public static OptionalDigest fromString(final String digest) {
-        return new OptionalDigest(algorithmFromString(digest), digestFromString(digest));
     }
 }

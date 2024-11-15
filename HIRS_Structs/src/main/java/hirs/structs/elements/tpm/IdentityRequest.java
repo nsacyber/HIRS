@@ -10,8 +10,8 @@ import java.util.Arrays;
  * As specified in TCPA 4.30.2 specification. This structure is sent to the Attestation Certificate
  * Authority to create an Identity Credential.
  */
-@StructElements(elements = { "asymmetricBlobSize", "symmetricBlobSize", "asymmetricAlgorithm",
-        "symmetricAlgorithm", "asymmetricBlob", "symmetricBlob" })
+@StructElements(elements = {"asymmetricBlobSize", "symmetricBlobSize", "asymmetricAlgorithm",
+        "symmetricAlgorithm", "asymmetricBlob", "symmetricBlob"})
 public class IdentityRequest implements Struct {
 
     @StructElementLength(fieldName = "asymmetricBlob")

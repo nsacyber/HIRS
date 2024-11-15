@@ -8,9 +8,6 @@
 
 package hirs.utils.xjc;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -24,12 +21,16 @@ import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.w3c.dom.Element;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * <p>Java class for SoftwareIdentity complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="SoftwareIdentity">
  *   &lt;complexContent>
@@ -56,23 +57,20 @@ import org.w3c.dom.Element;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SoftwareIdentity", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", propOrder = {
-    "entityOrEvidenceOrLink"
+        "entityOrEvidenceOrLink"
 })
 public class SoftwareIdentity
-    extends BaseElement
-{
+        extends BaseElement {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "Meta", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "Link", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "Entity", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "Payload", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "Evidence", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false)
+            @XmlElementRef(name = "Meta", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false),
+            @XmlElementRef(name = "Link", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false),
+            @XmlElementRef(name = "Entity", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false),
+            @XmlElementRef(name = "Payload", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false),
+            @XmlElementRef(name = "Evidence", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", type = JAXBElement.class, required = false)
     })
     @XmlAnyElement(lax = true)
     protected List<Object> entityOrEvidenceOrLink;
@@ -99,20 +97,20 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the entityOrEvidenceOrLink property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the entityOrEvidenceOrLink property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getEntityOrEvidenceOrLink().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link JAXBElement }{@code <}{@link SoftwareMeta }{@code >}
@@ -122,8 +120,6 @@ public class SoftwareIdentity
      * {@link JAXBElement }{@code <}{@link ResourceCollection }{@code >}
      * {@link Element }
      * {@link JAXBElement }{@code <}{@link Evidence }{@code >}
-     * 
-     * 
      */
     public List<Object> getEntityOrEvidenceOrLink() {
         if (entityOrEvidenceOrLink == null) {
@@ -134,11 +130,9 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the corpus property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
+     *
+     * @return possible object is
+     * {@link Boolean }
      */
     public boolean isCorpus() {
         if (corpus == null) {
@@ -150,11 +144,9 @@ public class SoftwareIdentity
 
     /**
      * Sets the value of the corpus property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Boolean }
      */
     public void setCorpus(Boolean value) {
         this.corpus = value;
@@ -162,11 +154,9 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the patch property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
+     *
+     * @return possible object is
+     * {@link Boolean }
      */
     public boolean isPatch() {
         if (patch == null) {
@@ -178,11 +168,9 @@ public class SoftwareIdentity
 
     /**
      * Sets the value of the patch property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Boolean }
      */
     public void setPatch(Boolean value) {
         this.patch = value;
@@ -190,11 +178,9 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the media property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getMedia() {
         return media;
@@ -202,11 +188,9 @@ public class SoftwareIdentity
 
     /**
      * Sets the value of the media property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setMedia(String value) {
         this.media = value;
@@ -214,11 +198,9 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the name property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getName() {
         return name;
@@ -226,11 +208,9 @@ public class SoftwareIdentity
 
     /**
      * Sets the value of the name property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setName(String value) {
         this.name = value;
@@ -238,11 +218,9 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the supplemental property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
+     *
+     * @return possible object is
+     * {@link Boolean }
      */
     public boolean isSupplemental() {
         if (supplemental == null) {
@@ -254,11 +232,9 @@ public class SoftwareIdentity
 
     /**
      * Sets the value of the supplemental property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Boolean }
      */
     public void setSupplemental(Boolean value) {
         this.supplemental = value;
@@ -266,11 +242,9 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the tagId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTagId() {
         return tagId;
@@ -278,11 +252,9 @@ public class SoftwareIdentity
 
     /**
      * Sets the value of the tagId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTagId(String value) {
         this.tagId = value;
@@ -290,11 +262,9 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the tagVersion property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @return possible object is
+     * {@link BigInteger }
      */
     public BigInteger getTagVersion() {
         if (tagVersion == null) {
@@ -306,11 +276,9 @@ public class SoftwareIdentity
 
     /**
      * Sets the value of the tagVersion property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigInteger }
      */
     public void setTagVersion(BigInteger value) {
         this.tagVersion = value;
@@ -318,11 +286,9 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the version property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getVersion() {
         if (version == null) {
@@ -334,11 +300,9 @@ public class SoftwareIdentity
 
     /**
      * Sets the value of the version property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setVersion(String value) {
         this.version = value;
@@ -346,11 +310,9 @@ public class SoftwareIdentity
 
     /**
      * Gets the value of the versionScheme property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getVersionScheme() {
         if (versionScheme == null) {
@@ -362,11 +324,9 @@ public class SoftwareIdentity
 
     /**
      * Sets the value of the versionScheme property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setVersionScheme(String value) {
         this.versionScheme = value;

@@ -15,7 +15,7 @@ import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for Use.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
@@ -27,7 +27,6 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
- * 
  */
 @XmlType(name = "Use", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 @XmlEnum
@@ -35,28 +34,19 @@ public enum Use {
 
 
     /**
-     * 
-     *             The [Link]'d software is absolutely required for installation
-     *           
-     * 
+     * The [Link]'d software is absolutely required for installation
      */
     @XmlEnumValue("required")
     REQUIRED("required"),
 
     /**
-     * 
-     *             Not absolutely required, but install unless directed not to
-     *           
-     * 
+     * Not absolutely required, but install unless directed not to
      */
     @XmlEnumValue("recommended")
     RECOMMENDED("recommended"),
 
     /**
-     * 
-     *             Not absolutely required, install only when asked
-     *           
-     * 
+     * Not absolutely required, install only when asked
      */
     @XmlEnumValue("optional")
     OPTIONAL("optional");
@@ -66,17 +56,17 @@ public enum Use {
         value = v;
     }
 
-    public String value() {
-        return value;
-    }
-
     public static Use fromValue(String v) {
-        for (Use c: Use.values()) {
+        for (Use c : Use.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
         }
         throw new IllegalArgumentException(v);
+    }
+
+    public String value() {
+        return value;
     }
 
 }

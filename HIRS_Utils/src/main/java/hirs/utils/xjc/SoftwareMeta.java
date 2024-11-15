@@ -12,13 +12,15 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
  * <p>Java class for SoftwareMeta complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="SoftwareMeta">
  *   &lt;complexContent>
@@ -43,404 +45,55 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
+@Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SoftwareMeta", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 public class SoftwareMeta
-    extends Meta
-{
-
+        extends Meta {
     @XmlAttribute(name = "activationStatus")
     protected String activationStatus;
+
     @XmlAttribute(name = "channelType")
     protected String channelType;
+
     @XmlAttribute(name = "colloquialVersion")
     protected String colloquialVersion;
+
     @XmlAttribute(name = "description")
     protected String description;
+
     @XmlAttribute(name = "edition")
     protected String edition;
+
     @XmlAttribute(name = "entitlementDataRequired")
     protected Boolean entitlementDataRequired;
+
     @XmlAttribute(name = "entitlementKey")
     protected String entitlementKey;
+
     @XmlAttribute(name = "generator")
     protected String generator;
+
     @XmlAttribute(name = "persistentId")
     protected String persistentId;
+
     @XmlAttribute(name = "product")
     protected String product;
+
     @XmlAttribute(name = "productFamily")
     protected String productFamily;
+
     @XmlAttribute(name = "revision")
     protected String revision;
+
     @XmlAttribute(name = "summary")
     protected String summary;
+
     @XmlAttribute(name = "unspscCode")
     protected String unspscCode;
+
     @XmlAttribute(name = "unspscVersion")
     protected String unspscVersion;
-
-    /**
-     * Gets the value of the activationStatus property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getActivationStatus() {
-        return activationStatus;
-    }
-
-    /**
-     * Sets the value of the activationStatus property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setActivationStatus(String value) {
-        this.activationStatus = value;
-    }
-
-    /**
-     * Gets the value of the channelType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getChannelType() {
-        return channelType;
-    }
-
-    /**
-     * Sets the value of the channelType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setChannelType(String value) {
-        this.channelType = value;
-    }
-
-    /**
-     * Gets the value of the colloquialVersion property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getColloquialVersion() {
-        return colloquialVersion;
-    }
-
-    /**
-     * Sets the value of the colloquialVersion property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setColloquialVersion(String value) {
-        this.colloquialVersion = value;
-    }
-
-    /**
-     * Gets the value of the description property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Sets the value of the description property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDescription(String value) {
-        this.description = value;
-    }
-
-    /**
-     * Gets the value of the edition property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEdition() {
-        return edition;
-    }
-
-    /**
-     * Sets the value of the edition property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEdition(String value) {
-        this.edition = value;
-    }
-
-    /**
-     * Gets the value of the entitlementDataRequired property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
-     */
-    public Boolean isEntitlementDataRequired() {
-        return entitlementDataRequired;
-    }
-
-    /**
-     * Sets the value of the entitlementDataRequired property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
-     */
-    public void setEntitlementDataRequired(Boolean value) {
-        this.entitlementDataRequired = value;
-    }
-
-    /**
-     * Gets the value of the entitlementKey property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEntitlementKey() {
-        return entitlementKey;
-    }
-
-    /**
-     * Sets the value of the entitlementKey property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEntitlementKey(String value) {
-        this.entitlementKey = value;
-    }
-
-    /**
-     * Gets the value of the generator property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getGenerator() {
-        return generator;
-    }
-
-    /**
-     * Sets the value of the generator property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setGenerator(String value) {
-        this.generator = value;
-    }
-
-    /**
-     * Gets the value of the persistentId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getPersistentId() {
-        return persistentId;
-    }
-
-    /**
-     * Sets the value of the persistentId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setPersistentId(String value) {
-        this.persistentId = value;
-    }
-
-    /**
-     * Gets the value of the product property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getProduct() {
-        return product;
-    }
-
-    /**
-     * Sets the value of the product property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setProduct(String value) {
-        this.product = value;
-    }
-
-    /**
-     * Gets the value of the productFamily property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getProductFamily() {
-        return productFamily;
-    }
-
-    /**
-     * Sets the value of the productFamily property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setProductFamily(String value) {
-        this.productFamily = value;
-    }
-
-    /**
-     * Gets the value of the revision property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getRevision() {
-        return revision;
-    }
-
-    /**
-     * Sets the value of the revision property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setRevision(String value) {
-        this.revision = value;
-    }
-
-    /**
-     * Gets the value of the summary property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSummary() {
-        return summary;
-    }
-
-    /**
-     * Sets the value of the summary property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSummary(String value) {
-        this.summary = value;
-    }
-
-    /**
-     * Gets the value of the unspscCode property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getUnspscCode() {
-        return unspscCode;
-    }
-
-    /**
-     * Sets the value of the unspscCode property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setUnspscCode(String value) {
-        this.unspscCode = value;
-    }
-
-    /**
-     * Gets the value of the unspscVersion property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getUnspscVersion() {
-        return unspscVersion;
-    }
-
-    /**
-     * Sets the value of the unspscVersion property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setUnspscVersion(String value) {
-        this.unspscVersion = value;
-    }
-
 }

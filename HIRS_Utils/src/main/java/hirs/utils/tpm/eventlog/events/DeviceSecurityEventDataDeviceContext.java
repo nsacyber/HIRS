@@ -15,18 +15,8 @@ import lombok.Getter;
  * } DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT;
  * <p>
  */
+@Getter
 public abstract class DeviceSecurityEventDataDeviceContext {
-
-    /**
-     * PCI Version.
-     */
-    @Getter
-    private int version = 0;
-    /**
-     * PCI Length.
-     */
-    @Getter
-    private int length = 0;
 
     /**
      * Device Security Event Data Device Type = no device type.
@@ -40,6 +30,14 @@ public abstract class DeviceSecurityEventDataDeviceContext {
      * Device Security Event Data Device Type = DEVICE_TYPE_USB.
      */
     public static final int DEVICE_TYPE_USB = 2;
+    /**
+     * PCI Version.
+     */
+    private int version = 0;
+    /**
+     * PCI Length.
+     */
+    private int length = 0;
 
     /**
      * DeviceSecurityEventDataDeviceContext Constructor.

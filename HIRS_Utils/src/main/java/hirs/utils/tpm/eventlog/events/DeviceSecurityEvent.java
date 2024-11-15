@@ -17,7 +17,7 @@ import lombok.Setter;
  * .   which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2, respectively.
  * Field 2:
  * .   The Version field also indicates whether the Device Security Event is ..DATA or ..DATA2.
- *
+ * <p>
  * DEVICE SECURITY EVENT structures defined by PFP v1.06 Rev 52:
  * <p>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA {
@@ -39,18 +39,17 @@ import lombok.Setter;
  * }
  * <p>
  */
+@Getter
 public abstract class DeviceSecurityEvent {
 
     /**
      * DeviceSecurityEventDataContext Object.
      */
-    @Getter
     private DeviceSecurityEventDataPciContext dsedPciContext = null;
 
     /**
      * Device type.
      */
-    @Getter
     @Setter
     private int deviceType = -1;
 
@@ -58,7 +57,6 @@ public abstract class DeviceSecurityEvent {
      * Human-readable description of the data within the
      * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT. DEVICE can be either PCI or USB.
      */
-    @Getter
     private String deviceContextInfo = "";
 
     /**
@@ -70,12 +68,10 @@ public abstract class DeviceSecurityEvent {
      * Status will only change IF this is an event that uses this file,
      * and if that event causes a different status.
      */
-    @Getter
     private String pciidsFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * DeviceSecurityEventData Default Constructor.
-     *
      */
     public DeviceSecurityEvent() {
 
@@ -85,7 +81,6 @@ public abstract class DeviceSecurityEvent {
      * Parse the Device Context structure, can be PCI or USB based on device type field.
      *
      * @param dsedDeviceContextBytes byte array holding the DeviceSecurityEventData.
-     *
      */
     public void instantiateDeviceContext(final byte[] dsedDeviceContextBytes) {
 

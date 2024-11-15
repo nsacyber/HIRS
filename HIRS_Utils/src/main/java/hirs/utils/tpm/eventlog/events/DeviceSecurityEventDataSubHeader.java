@@ -24,7 +24,6 @@ public abstract class DeviceSecurityEventDataSubHeader {
 
     /**
      * DeviceSecurityEventDataSubHeader Default Constructor.
-     *
      */
     public DeviceSecurityEventDataSubHeader() {
     }
@@ -37,13 +36,10 @@ public abstract class DeviceSecurityEventDataSubHeader {
      * @return name of the device type
      */
     public static String subheaderTypeToString(final int subheaderTypeInt) {
-        switch (subheaderTypeInt) {
-            case SUBHEADERTYPE_MEAS_BLOCK:
-                return "SPDM Measurement Block";
-            case SUBHEADERTYPE_CERT_CHAIN:
-                return "SPDM Cert Chain";
-            default:
-                return "Unknown or invalid Subheader Type of value " + subheaderTypeInt;
-        }
+        return switch (subheaderTypeInt) {
+            case SUBHEADERTYPE_MEAS_BLOCK -> "SPDM Measurement Block";
+            case SUBHEADERTYPE_CERT_CHAIN -> "SPDM Cert Chain";
+            default -> "Unknown or invalid Subheader Type of value " + subheaderTypeInt;
+        };
     }
 }

@@ -12,13 +12,15 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
  * <p>Java class for RSAKeyValueType complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="RSAKeyValueType">
  *   &lt;complexContent>
@@ -31,63 +33,19 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
+@Getter
+@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RSAKeyValueType", propOrder = {
-    "modulus",
-    "exponent"
+        "modulus",
+        "exponent"
 })
 public class RSAKeyValueType {
 
     @XmlElement(name = "Modulus", required = true)
     protected byte[] modulus;
+
     @XmlElement(name = "Exponent", required = true)
     protected byte[] exponent;
-
-    /**
-     * Gets the value of the modulus property.
-     * 
-     * @return
-     *     possible object is
-     *     byte[]
-     */
-    public byte[] getModulus() {
-        return modulus;
-    }
-
-    /**
-     * Sets the value of the modulus property.
-     * 
-     * @param value
-     *     allowed object is
-     *     byte[]
-     */
-    public void setModulus(byte[] value) {
-        this.modulus = value;
-    }
-
-    /**
-     * Gets the value of the exponent property.
-     * 
-     * @return
-     *     possible object is
-     *     byte[]
-     */
-    public byte[] getExponent() {
-        return exponent;
-    }
-
-    /**
-     * Sets the value of the exponent property.
-     * 
-     * @param value
-     *     allowed object is
-     *     byte[]
-     */
-    public void setExponent(byte[] value) {
-        this.exponent = value;
-    }
-
 }
