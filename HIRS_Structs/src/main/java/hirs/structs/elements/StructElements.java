@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 public @interface StructElements {
 
     /**
-     * elements in order to be processed by a converter.
+     * @return elements in order to be processed by a converter.
      */
     String[] elements();
 }

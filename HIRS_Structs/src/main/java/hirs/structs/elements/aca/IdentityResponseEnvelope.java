@@ -9,8 +9,8 @@ import java.util.Arrays;
 /**
  * Data structure used by the ACA to respond back to a client's {@link IdentityRequestEnvelope}.
  */
-@StructElements(elements = { "asymmetricContentsSize", "asymmetricContents",
-        "symmetricAttestation" })
+@StructElements(elements = {"asymmetricContentsSize", "asymmetricContents",
+        "symmetricAttestation"})
 public class IdentityResponseEnvelope implements Struct {
 
     @StructElementLength(fieldName = "asymmetricContents")

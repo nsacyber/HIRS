@@ -35,11 +35,6 @@ public enum EncryptionScheme {
         this.encryptionScheme = encryptionScheme;
     }
 
-    @Override
-    public String toString() {
-        return this.encryptionScheme;
-    }
-
     /**
      * Maps an {@link EncryptionScheme} based upon an integer. If the scheme is unmapped, the
      * default, {@link #PKCS1} is returned.
@@ -48,11 +43,14 @@ public enum EncryptionScheme {
      * @return the encryption scheme, or if unknown, the default.
      */
     public static EncryptionScheme fromInt(final int scheme) {
-        switch (scheme) {
-            case OAEP_VALUE:
-                return OAEP;
-            default:
-                return PKCS1;
+        if (scheme == OAEP_VALUE) {
+            return OAEP;
         }
+        return PKCS1;
+    }
+
+    @Override
+    public String toString() {
+        return this.encryptionScheme;
     }
 }

@@ -20,8 +20,8 @@ public interface StructConverter {
      *
      * @param data to be parsed
      * @param type type of data being parsed
-     * @param <T> the {@link Struct} type
+     * @param <T>  the {@link Struct} type
      * @return de-serialized struct
      */
-    <T extends Struct> T convert(final byte[] data, final Class<T> type);
+    <T extends Struct> T convert(byte[] data, Class<T> type);
 }

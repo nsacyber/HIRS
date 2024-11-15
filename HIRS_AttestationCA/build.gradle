@@ -92,7 +92,7 @@ protobuf {
 sourceSets {
     main {
         proto {
-            srcDir '../HIRS_ProvisionerTPM2/src'
+            srcDir '../HIRS_Provisioner.NET/hirs/Resources'
         }
     }
 }
