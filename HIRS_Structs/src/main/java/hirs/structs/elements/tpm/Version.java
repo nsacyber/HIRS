@@ -7,7 +7,7 @@ import hirs.structs.elements.StructElements;
  * As specified in the TCPA Main Specification section 4.5. This structure represents the version of
  * the TPM.
  */
-@StructElements(elements = { "major", "minor", "revisionMajor", "revisionMinor" })
+@StructElements(elements = {"major", "minor", "revisionMajor", "revisionMinor"})
 public class Version implements Struct {
 
     private byte major;

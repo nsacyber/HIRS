@@ -25,7 +25,7 @@ public class SimpleStructConverter implements StructConverter {
 
         // using output stream resources, serialize the specified struct
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream)) {
+             DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream)) {
 
             // obtain the struct elements definition
             StructElements structElements = struct.getClass().getAnnotation(StructElements.class);

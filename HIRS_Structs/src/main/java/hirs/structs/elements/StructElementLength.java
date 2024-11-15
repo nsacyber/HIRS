@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 public @interface StructElementLength {
 
     /**
-     * the field that this length represents.
+     * @return the field that this length represents.
      */
     String fieldName();
 }

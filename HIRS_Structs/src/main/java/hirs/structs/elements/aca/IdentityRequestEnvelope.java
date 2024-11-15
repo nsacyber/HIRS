@@ -10,10 +10,10 @@ import java.util.Arrays;
  * A container for an encoded {@link hirs.structs.elements.tpm.IdentityRequest},
  * its associated endorsement credential, and its device information.
  */
-@StructElements(elements = { "requestLength", "request",
-    "endorsementCredentialModulusLength", "endorsementCredentialModulus",
-    "endorsementCredentialLength", "endorsementCredential",
-    "deviceInfoReportLength", "deviceInfoReport" })
+@StructElements(elements = {"requestLength", "request",
+        "endorsementCredentialModulusLength", "endorsementCredentialModulus",
+        "endorsementCredentialLength", "endorsementCredential",
+        "deviceInfoReportLength", "deviceInfoReport"})
 public class IdentityRequestEnvelope implements Struct {
 
     @StructElementLength(fieldName = "request")
@@ -72,7 +72,6 @@ public class IdentityRequestEnvelope implements Struct {
     }
 
     /**
-     *
      * @return the endorsementCredential
      */
     public byte[] getEndorsementCredential() {
@@ -80,7 +79,6 @@ public class IdentityRequestEnvelope implements Struct {
     }
 
     /**
-     *
      * @return the length of the device info report
      */
     public int getDeviceInfoReportLength() {
@@ -88,7 +86,6 @@ public class IdentityRequestEnvelope implements Struct {
     }
 
     /**
-     *
      * @return the device info report
      */
     public byte[] getDeviceInfoReport() {

@@ -1,8 +1,9 @@
 package hirs.structs.converters;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
 
 /**
  * Tests suite for {@link SimpleStructConverter}.
@@ -13,24 +14,25 @@ public class SimpleStructBuilderTest {
 
     /**
      * Tests {@link SimpleStructBuilder#build()}.
-     * @throws NoSuchFieldException sometimes
-     * @throws IllegalAccessException sometimes
+     *
+     * @throws NoSuchFieldException     sometimes
+     * @throws IllegalAccessException   sometimes
      * @throws IllegalArgumentException sometimes
      */
     @Test
     public final void testBuild() throws NoSuchFieldException, IllegalArgumentException,
             IllegalAccessException {
         TestStruct struct = new SimpleStructBuilder<>(TestStruct.class)
-            .set("testShort", NUMBER)
-            .set("testByte", NUMBER)
-            .set("testEmbeddedStruct", new SimpleStructBuilder<>(TestEmbeddedStruct.class)
-                .set("embeddedShort", NUMBER)
-                .set("embedded", ARRAY)
-                .build())
-            .set("testVariableStruct", new SimpleStructBuilder<>(TestVariableStruct.class)
-                .set("testArray", ARRAY)
-                .build())
-            .build();
+                .set("testShort", NUMBER)
+                .set("testByte", NUMBER)
+                .set("testEmbeddedStruct", new SimpleStructBuilder<>(TestEmbeddedStruct.class)
+                        .set("embeddedShort", NUMBER)
+                        .set("embedded", ARRAY)
+                        .build())
+                .set("testVariableStruct", new SimpleStructBuilder<>(TestVariableStruct.class)
+                        .set("testArray", ARRAY)
+                        .build())
+                .build();
 
         assertEquals(NUMBER, struct.getTestShort());
         assertEquals(NUMBER, struct.getTestByte());

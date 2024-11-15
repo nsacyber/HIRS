@@ -8,7 +8,7 @@ import hirs.structs.elements.StructElements;
  * portion of an asymmetric key pair. It contains all the information necessary for it's unambiguous
  * usage.
  */
-@StructElements(elements = { "asymmetricKeyParams", "storePubKey" })
+@StructElements(elements = {"asymmetricKeyParams", "storePubKey"})
 public class PublicKey implements Struct {
 
     private AsymmetricKeyParams asymmetricKeyParams;

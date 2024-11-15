@@ -10,7 +10,7 @@ import java.util.Arrays;
  * Part of the TPM Identity Request. This Structure is encrypted inside the request and is typically
  * unencrypted by an Attestation Certificate Authority.
  */
-@StructElements(elements = { "algorithmId", "encryptionScheme", "keySize", "key" })
+@StructElements(elements = {"algorithmId", "encryptionScheme", "keySize", "key"})
 public class SymmetricKey implements Struct {
 
     /**
