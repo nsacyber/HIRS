@@ -20,6 +20,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.TBSCertificate;
 import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
 
@@ -69,26 +70,28 @@ public final class IssuedCertificateAttributeHelper {
     /**
      * This method builds the AKI extension that will be stored in the generated
      * Attestation Issued Certificate.
-     * @param endorsementCredential EK object to pull AKI from.
+     * @param acaCertificate ACA certificate to pull SKI from, that will be used to build matching AKI.
      * @return the AKI extension.
-     * @throws IOException on bad get instance for AKI.
+     * @throws IOException on bad get instance for SKI.
      */
     public static Extension buildAuthorityKeyIdentifier(
-            final EndorsementCredential endorsementCredential) throws IOException {
-        if (endorsementCredential == null || endorsementCredential.getX509Certificate() == null) {
+            final X509Certificate acaCertificate) throws IOException {
+        if (acaCertificate == null) {
             return null;
         }
-        byte[] extValue = endorsementCredential.getX509Certificate()
-                .getExtensionValue(Extension.authorityKeyIdentifier.getId());
+        byte[] extValue = acaCertificate
+                .getExtensionValue(Extension.subjectKeyIdentifier.getId());
 
         if (extValue == null) {
             return null;
         }
 
         byte[] authExtension = ASN1OctetString.getInstance(extValue).getOctets();
-        AuthorityKeyIdentifier aki = AuthorityKeyIdentifier.getInstance(authExtension);
+        SubjectKeyIdentifier ski = SubjectKeyIdentifier.getInstance(authExtension);
 
-        return new Extension(Extension.authorityKeyIdentifier, true, aki.getEncoded());
+        AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(ski.getKeyIdentifier());
+
+        return new Extension(Extension.authorityKeyIdentifier, false, aki.getEncoded());
     }
 
     /**

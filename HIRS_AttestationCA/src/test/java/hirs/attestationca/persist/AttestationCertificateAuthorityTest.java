@@ -497,7 +497,7 @@ public class AttestationCertificateAuthorityTest {
 
         // validate mock interactions
         verify(acaCertificate).getSubjectX500Principal();
-        verifyNoMoreInteractions(identityProof, asymmetricPublicKey, storePubKey, acaCertificate);
+        verifyNoMoreInteractions(identityProof, asymmetricPublicKey, storePubKey);
     }
 
     /**

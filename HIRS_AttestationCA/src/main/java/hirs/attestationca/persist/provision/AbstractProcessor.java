@@ -19,8 +19,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -83,7 +86,7 @@ public class AbstractProcessor {
             expiry.add(Calendar.DAY_OF_YEAR, getValidDays());
 
             X500Name issuer =
-                    new X500Name(acaCertificate.getSubjectX500Principal().getName());
+                    new X509CertificateHolder(acaCertificate.getEncoded()).getSubject();
             Date notBefore = new Date();
             Date notAfter = expiry.getTime();
             BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
@@ -101,7 +104,7 @@ public class AbstractProcessor {
                             endorsementCredential, platformCredentials, deviceName);
 
             Extension authKeyIdentifier = IssuedCertificateAttributeHelper
-                    .buildAuthorityKeyIdentifier(endorsementCredential);
+                    .buildAuthorityKeyIdentifier(acaCertificate);
 
             builder.addExtension(subjectAlternativeName);
             if (authKeyIdentifier != null) {
@@ -115,6 +118,20 @@ public class AbstractProcessor {
                 throw new IllegalStateException("Extended Key Usage attribute unavailable. "
                         + "Unable to issue certificates");
             }
+
+            // Add signing extension
+            builder.addExtension(
+                    X509Extension.keyUsage,
+                    true,
+                    new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment)
+            );
+
+            // Basic constraints
+            builder.addExtension(
+                    X509Extension.basicConstraints,
+                    true,
+                    new BasicConstraints(false)
+            );
 
             ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA")
                     .setProvider("BC").build(getPrivateKey());
