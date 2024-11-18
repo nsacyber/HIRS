@@ -79,62 +79,62 @@ import java.util.Map;
 
 /**
  * This class provides interaction with the SWID Tag schema as defined in
- * http://standards.iso.org/iso/19770/-2/2015/schema.xsd
+ * http://standards.iso.org/iso/19770/-2/2015/schema.xsd.
  */
 public class SwidTagGateway {
 
     private final ObjectFactory objectFactory = new ObjectFactory();
     private Marshaller marshaller;
     /**
-     * String holding attributes file path
+     * String holding attributes file path.
      */
     @Setter
     private String attributesFile;
 
     /**
-     * boolean governing signing credentials
+     * boolean governing signing credentials.
      */
     @Setter
     private boolean defaultCredentials;
 
     /**
-     * JKS keystore file
+     * JKS keystore file.
      */
     @Setter
     private String jksTruststoreFile;
 
     /**
-     * private key file in PEM format
+     * private key file in PEM format.
      */
     @Setter
     private String pemPrivateKeyFile;
 
     /**
-     * certificate file in PEM format
+     * certificate file in PEM format.
      */
     @Setter
     private String pemCertificateFile;
 
     /**
-     * embed certificate file in signature block
+     * embed certificate file in signature block.
      */
     @Setter
     private boolean embeddedCert;
 
     /**
-     * event log support RIM
+     * event log support RIM.
      */
     @Setter
     private String rimEventLog;
 
     /**
-     * timestamp format in XML signature
+     * timestamp format in XML signature.
      */
     @Setter
     private String timestampFormat;
 
     /**
-     * timestamp input - RFC3852 + file or RFC3339 + value
+     * timestamp input - RFC3852 + file or RFC3339 + value.
      */
     @Setter
     private String timestampArgument;
@@ -142,11 +142,11 @@ public class SwidTagGateway {
     private String errorRequiredFields;
 
     private DocumentBuilderFactory dbf;
-    
+
     private DocumentBuilder builder;
 
     /**
-     * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
+     * Default constructor initializes jaxbcontext, marshaller, and unmarshaller.
      */
     public SwidTagGateway() {
         try {
@@ -255,7 +255,8 @@ public class SwidTagGateway {
     /**
      * This method writes a Document object out to the file specified by generatedFile.
      *
-     * @param swidTag
+     * @param swidTag the swidtag document to write out
+     * @param output  the path to write out to
      */
     public void writeSwidTagFile(final Document swidTag, final String output) {
         try {
@@ -342,7 +343,7 @@ public class SwidTagGateway {
             if (isTagCreator) {
                 String regid = jsonObject.getString(SwidTagConstants.REGID, "");
                 if (regid.isEmpty()) {
-                    //throw exception that regid is required
+                    errorRequiredFields += SwidTagConstants.ENTITY + "." + SwidTagConstants.REGID + ", ";
                 } else {
                     entity.setRegid(regid);
                 }
@@ -488,7 +489,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return File object created from the properties
      */
-    private hirs.utils.xjc.File createFile(JsonObject jsonObject) throws Exception {
+    private hirs.utils.xjc.File createFile(final JsonObject jsonObject) throws Exception {
         hirs.utils.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         Map<QName, String> attributes = file.getOtherAttributes();
@@ -515,8 +516,10 @@ public class SwidTagGateway {
         return file;
     }
 
-    private void addNonNullAttribute(Map<QName, String> attributes, QName key, String value,
-                                     boolean required) {
+    private void addNonNullAttribute(final Map<QName, String> attributes,
+                                     final QName key,
+                                     final String value,
+                                     final boolean required) {
         if (required && value.isEmpty()) {
             errorRequiredFields += key.getLocalPart() + ", ";
         } else {
@@ -532,7 +535,8 @@ public class SwidTagGateway {
      * @param value
      */
     private void addNonNullAttribute(final Map<QName, String> attributes,
-                                     final QName key, String value) {
+                                     final QName key,
+                                     final String value) {
         if (!value.isEmpty()) {
             attributes.put(key, value);
         }
@@ -545,7 +549,7 @@ public class SwidTagGateway {
      * @param element to convert
      * @return a Document object
      */
-    private Document convertToDocument(JAXBElement element) {
+    private Document convertToDocument(final JAXBElement element) {
         Document doc = null;
         try {
             doc = builder.newDocument();
@@ -563,8 +567,8 @@ public class SwidTagGateway {
      * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
      * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
      *
-     * @param doc The document to sign
-     * @return Document the signed document
+     * @param doc the Document object to be signed
+     * @return the Document with a signature attached
      */
     private Document signXMLDocument(final Document doc) {
         XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
@@ -603,7 +607,13 @@ public class SwidTagGateway {
                 System.exit(1);
             }
             refList.add(timestampRef);
-            xmlObjectList = Collections.singletonList(createXmlTimestamp(doc, sigFactory));
+            XMLObject timestampObj = createXmlTimestamp(doc, sigFactory);
+            if (timestampObj != null) {
+                xmlObjectList = Collections.singletonList(timestampObj);
+            } else {
+                System.out.println("Invalid timestamp format given: " + timestampFormat);
+                System.exit(1);
+            }
             signatureId = "RimSignature";
         }
         SignedInfo signedInfo = null;
@@ -720,8 +730,7 @@ public class SwidTagGateway {
                 }
                 break;
             default:
-                System.out.println("A timestamp format must be specified.");
-                System.exit(1);
+                return null;
         }
         DOMStructure timestampObject = new DOMStructure(timeStampElement);
         SignatureProperty signatureProperty = sigFactory.newSignatureProperty(
