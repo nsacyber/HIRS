@@ -61,8 +61,8 @@ public abstract class PageController<P extends PageParams> {
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
      * @return the path for the view and data model for the page.
      */
     @RequestMapping
@@ -110,8 +110,8 @@ public abstract class PageController<P extends PageParams> {
      * Redirects back to this controller's page with the specified data.
      *
      * @param params The url parameters to pass to the page.
-     * @param model The model data to pass to the page.
-     * @param attr The request's RedirectAttributes to hold the model data.
+     * @param model  The model data to pass to the page.
+     * @param attr   The request's RedirectAttributes to hold the model data.
      * @return RedirectView back to the page with the specified parameters.
      * @throws URISyntaxException if malformed URI
      */
@@ -127,9 +127,9 @@ public abstract class PageController<P extends PageParams> {
      * Redirects controller's page with the specified data.
      *
      * @param newPage new page to get the model and view
-     * @param params The url parameters to pass to the page.
-     * @param model The model data to pass to the page.
-     * @param attr The request's RedirectAttributes to hold the model data.
+     * @param params  The url parameters to pass to the page.
+     * @param model   The model data to pass to the page.
+     * @param attr    The request's RedirectAttributes to hold the model data.
      * @return RedirectView back to the page with the specified parameters.
      * @throws URISyntaxException if malformed URI
      */

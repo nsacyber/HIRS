@@ -1,11 +1,12 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests for the ComponentClassTest class.
@@ -16,6 +17,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -32,6 +34,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -47,6 +50,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -59,8 +63,10 @@ public class ComponentClassTest {
         assertEquals(resultComponent, "Unknown");
         assertEquals(resultCategory, "None");
     }
+
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -76,6 +82,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -91,6 +98,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -106,6 +114,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -121,6 +130,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -136,6 +146,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -151,6 +162,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -166,6 +178,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -181,6 +194,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -196,6 +210,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -211,6 +226,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -226,6 +242,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -241,6 +258,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -256,6 +274,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test
@@ -271,6 +290,7 @@ public class ComponentClassTest {
 
     /**
      * Test of getComponent method, of class ComponentClass.
+     *
      * @throws URISyntaxException if there is a problem constructing the URI
      */
     @Test

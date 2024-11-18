@@ -33,8 +33,8 @@ public class FirmwareInfo implements Serializable {
     /**
      * Constructor used to create a populated firmware info object.
      *
-     * @param biosVendor String bios vendor name, i.e. Dell Inc.
-     * @param biosVersion String bios version info, i.e. A11
+     * @param biosVendor      String bios vendor name, i.e. Dell Inc.
+     * @param biosVersion     String bios version info, i.e. A11
      * @param biosReleaseDate String bios release date info, i.e. 03/12/2013
      */
     public FirmwareInfo(final String biosVendor, final String biosVersion,

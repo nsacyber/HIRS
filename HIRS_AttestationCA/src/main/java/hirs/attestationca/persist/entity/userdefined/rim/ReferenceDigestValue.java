@@ -6,9 +6,9 @@ import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,48 +22,50 @@ import java.util.UUID;
  * Digest Value, Event Type, index, RIM Tagid
  */
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @Entity
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 @Table(name = "ReferenceDigestValue")
 @Access(AccessType.FIELD)
 public class ReferenceDigestValue extends AbstractEntity {
-    @Setter
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID baseRimId;
-    @Setter
+
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID supportRimId;
-    @Setter
+
     @Column(nullable = false)
     private String manufacturer;
-    @Setter
+
     @Column(nullable = false)
     private String model;
-    @Setter
+
     @Column(nullable = false)
     private int pcrIndex;
-    @Setter
+
     @Column(nullable = false)
     private String digestValue;
-    @Setter
+
     @Column(nullable = false)
     private String supportRimHash;
-    @Setter
+
     @Column(nullable = false)
     private String eventType;
-    @Column(columnDefinition = "blob", nullable = true)
+
+    @Setter(AccessLevel.NONE)
+    @Column(columnDefinition = "blob")
     private byte[] contentBlob;
-    @Setter
+
     @Column(nullable = false)
     private boolean matchFail;
-    @Setter
+
     @Column(nullable = false)
     private boolean patched;
-    @Setter
+
     @Column(nullable = false)
     private boolean updated;
 
@@ -88,18 +90,19 @@ public class ReferenceDigestValue extends AbstractEntity {
 
     /**
      * Default Constructor with parameters for all associated data.
-     * @param baseRimId the UUID of the associated record
-     * @param supportRimId the UUID of the associated record
-     * @param manufacturer associated creator for this information
-     * @param model the specific device type
-     * @param pcrIndex the event number
-     * @param digestValue the key digest value
+     *
+     * @param baseRimId      the UUID of the associated record
+     * @param supportRimId   the UUID of the associated record
+     * @param manufacturer   associated creator for this information
+     * @param model          the specific device type
+     * @param pcrIndex       the event number
+     * @param digestValue    the key digest value
      * @param supportRimHash the support file's hash value
-     * @param eventType the event type to store
-     * @param matchFail the status of the baseline check
-     * @param patched the status of the value being updated to patch
-     * @param updated the status of the value being updated with info
-     * @param contentBlob the data value of the content
+     * @param eventType      the event type to store
+     * @param matchFail      the status of the baseline check
+     * @param patched        the status of the value being updated to patch
+     * @param updated        the status of the value being updated with info
+     * @param contentBlob    the data value of the content
      */
     public ReferenceDigestValue(final UUID baseRimId, final UUID supportRimId,
                                 final String manufacturer, final String model,
@@ -108,6 +111,8 @@ public class ReferenceDigestValue extends AbstractEntity {
                                 final String eventType, final boolean matchFail,
                                 final boolean patched, final boolean updated,
                                 final byte[] contentBlob) {
+
+
         this.baseRimId = baseRimId;
         this.supportRimId = supportRimId;
         this.manufacturer = manufacturer;
@@ -123,16 +128,9 @@ public class ReferenceDigestValue extends AbstractEntity {
     }
 
     /**
-     * the object that contains the raw bytes for this RDV.
-     * @return the raw bytes
-     */
-    public byte[] getContentBlob() {
-        return Arrays.clone(contentBlob);
-    }
-
-    /**
      * Helper method to update the attributes of this object.
-     * @param support the associated RIM.
+     *
+     * @param support   the associated RIM.
      * @param baseRimId the main id to update
      */
     public void updateInfo(final SupportReferenceManifest support, final UUID baseRimId) {
@@ -151,6 +149,7 @@ public class ReferenceDigestValue extends AbstractEntity {
 
     /**
      * Returns a string of the classes fields.
+     *
      * @return a string
      */
     public String toString() {

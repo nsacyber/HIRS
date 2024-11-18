@@ -7,10 +7,10 @@
 dir=$(pwd)
 # Relative paths are different when building locally versus on CI
 if [[ "$dir" == *"package"* ]]; then
-  SRC_DIR=$dir/../../../../../../HIRS_ProvisionerTPM2/src
+  SRC_DIR=$dir/../../../../../../HIRS_Provisioner.NET/hirs/Resources
   DEST_DIR=$dir/../src/main/java
 else
-  SRC_DIR=../../HIRS_ProvisionerTPM2/src
+  SRC_DIR=../../HIRS_Provisioner.NET/hirs/Resources
   DEST_DIR=../src/main/java
 fi
 protoc -I=$SRC_DIR --java_out=$DEST_DIR $SRC_DIR/ProvisionerTpm2.proto

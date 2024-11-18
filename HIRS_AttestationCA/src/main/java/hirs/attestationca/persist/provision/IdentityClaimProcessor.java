@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.provision;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
@@ -69,27 +68,36 @@ import java.util.regex.Pattern;
 
 @Log4j2
 public class IdentityClaimProcessor extends AbstractProcessor {
-    private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
-            + "14,15,16,17,18,19,20,21,22,23";
-
-    private static final int NUM_OF_VARIABLES = 5;
     /**
      * Number of bytes to include in the TPM2.0 nonce.
      */
     public static final int NONCE_LENGTH = 20;
+    private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
+            + "14,15,16,17,18,19,20,21,22,23";
+    private static final int NUM_OF_VARIABLES = 5;
     private static final int MAC_BYTES = 6;
 
-    private SupplyChainValidationService supplyChainValidationService;
-    private CertificateRepository certificateRepository;
-    private ComponentResultRepository componentResultRepository;
-    private ComponentInfoRepository componentInfoRepository;
-    private ReferenceManifestRepository referenceManifestRepository;
-    private ReferenceDigestValueRepository referenceDigestValueRepository;
-    private DeviceRepository deviceRepository;
-    private TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
+    private final SupplyChainValidationService supplyChainValidationService;
+    private final CertificateRepository certificateRepository;
+    private final ComponentResultRepository componentResultRepository;
+    private final ComponentInfoRepository componentInfoRepository;
+    private final ReferenceManifestRepository referenceManifestRepository;
+    private final ReferenceDigestValueRepository referenceDigestValueRepository;
+    private final DeviceRepository deviceRepository;
+    private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
 
     /**
      * Constructor.
+     *
+     * @param supplyChainValidationService   supply chain validation service
+     * @param certificateRepository          certificate repository
+     * @param componentResultRepository      component result repository
+     * @param componentInfoRepository        component info repository
+     * @param referenceManifestRepository    reference manifest repository
+     * @param referenceDigestValueRepository reference digest value repository
+     * @param deviceRepository               device repository
+     * @param tpm2ProvisionerStateRepository tpm2 provisioner state repository
+     * @param policyRepository               policy repository
      */
     public IdentityClaimProcessor(
             final SupplyChainValidationService supplyChainValidationService,
@@ -116,8 +124,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * Basic implementation of the ACA processIdentityClaimTpm2 method. Parses the claim,
      * stores the device info, performs supply chain validation, generates a nonce,
      * and wraps that nonce with the make credential process before returning it to the client.
-     *            attCert.setPcrValues(pcrValues);
-
+     * attCert.setPcrValues(pcrValues);
+     *
      * @param identityClaim the request to process, cannot be null
      * @return an identity claim response for the specified request containing a wrapped blob
      */
@@ -147,7 +155,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             }
         }
 
-        ByteString blobStr = ByteString.copyFrom(new byte[]{});
+        ByteString blobStr = ByteString.copyFrom(new byte[] {});
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
@@ -157,8 +165,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             String pcrQuoteMask = PCR_QUOTE_MASK;
 
             String strNonce = HexUtils.byteArrayToHexString(nonce);
-            log.info("Sending nonce: " + strNonce);
-            log.info("Persisting claim of length: " + identityClaim.length);
+            log.info("Sending nonce: {}", strNonce);
+            log.info("Persisting claim of length: {}", identityClaim.length);
 
             tpm2ProvisionerStateRepository.save(new TPM2ProvisionerState(nonce, identityClaim));
 
@@ -173,8 +181,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .build();
             return response.toByteArray();
         } else {
-            log.error("Supply chain validation did not succeed. Result is: "
-                    + validationResult);
+            log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
             // empty response
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
@@ -195,7 +202,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     private AppraisalStatus.Status doSupplyChainValidation(
             final ProvisionerTpm2.IdentityClaim claim, final PublicKey ekPub) {
         // attempt to find an endorsement credential to validate
-        EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
+        EndorsementCredential endorsementCredential =
+                parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
 
         // attempt to find platform credentials to validate
         List<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
@@ -283,10 +291,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
     /**
      * Converts a protobuf DeviceInfo object to a HIRS Utils DeviceInfoReport object.
+     *
      * @param claim the protobuf serialized identity claim containing the device info
      * @return a HIRS Utils DeviceInfoReport representation of device info
      */
-    @SuppressWarnings("methodlength")
     private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim claim)
             throws NoSuchAlgorithmException {
         ProvisionerTpm2.DeviceInfo dv = claim.getDv();
@@ -348,87 +356,87 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         String defaultClientName = String.format("%s_%s",
                 dv.getHw().getManufacturer(),
                 dv.getHw().getProductName());
-        BaseReferenceManifest dbBaseRim = null;
-        SupportReferenceManifest support = null;
-        EventLogMeasurements measurements;
+        BaseReferenceManifest baseRim = null;
+        SupportReferenceManifest supportRim = null;
+        EventLogMeasurements integrityMeasurements;
         boolean isReplacement = false;
         String replacementRimId = "";
         String tagId = "";
         String fileName = "";
         Pattern pattern = Pattern.compile("([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)");
         Matcher matcher;
-        MessageDigest messageDigest =  MessageDigest.getInstance("SHA-256");
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
 
         if (dv.getSwidfileCount() > 0) {
             for (ByteString swidFile : dv.getSwidfileList()) {
                 try {
-                    dbBaseRim = (BaseReferenceManifest) referenceManifestRepository
+                    baseRim = (BaseReferenceManifest) referenceManifestRepository
                             .findByBase64Hash(Base64.getEncoder()
                                     .encodeToString(messageDigest
                                             .digest(swidFile.toByteArray())));
-                    if (dbBaseRim == null) {
+                    if (baseRim == null) {
                         /*
                         Either the swidFile does not have a corresponding base RIM in the backend
                         or it was deleted. Check if there is a replacement by comparing tagId against
                         all other base RIMs, and then set the corresponding support rim's deviceName.
                          */
-                        dbBaseRim = new BaseReferenceManifest(
+                        baseRim = new BaseReferenceManifest(
                                 String.format("%s.swidtag",
                                         defaultClientName),
                                 swidFile.toByteArray());
                         List<BaseReferenceManifest> baseRims = referenceManifestRepository.findAllBaseRims();
                         for (BaseReferenceManifest bRim : baseRims) {
-                            if (bRim.getTagId().equals(dbBaseRim.getTagId())) {
-                                dbBaseRim = bRim;
-                                replacementRimId = dbBaseRim.getAssociatedRim().toString();
+                            if (bRim.getTagId().equals(baseRim.getTagId())) {
+                                baseRim = bRim;
+                                replacementRimId = baseRim.getAssociatedRim().toString();
                                 isReplacement = true;
                                 break;
                             }
                         }
-                        dbBaseRim.setDeviceName(dv.getNw().getHostname());
-                        this.referenceManifestRepository.save(dbBaseRim);
-                    } else if (dbBaseRim.isArchived()) {
+                        baseRim.setDeviceName(dv.getNw().getHostname());
+                        this.referenceManifestRepository.save(baseRim);
+                    } else if (baseRim.isArchived()) {
                         /*
                         This block accounts for RIMs that may have been soft-deleted (archived)
                         in an older version of the ACA.
                          */
                         List<ReferenceManifest> rims = referenceManifestRepository.findByArchiveFlag(false);
                         for (ReferenceManifest rim : rims) {
-                            if (rim.isBase() && rim.getTagId().equals(dbBaseRim.getTagId()) &&
-                                    rim.getCreateTime().after(dbBaseRim.getCreateTime())) {
-                                dbBaseRim.setDeviceName(null);
-                                dbBaseRim = (BaseReferenceManifest) rim;
-                                dbBaseRim.setDeviceName(dv.getNw().getHostname());
+                            if (rim.isBase() && rim.getTagId().equals(baseRim.getTagId())
+                                    && rim.getCreateTime().after(baseRim.getCreateTime())) {
+                                baseRim.setDeviceName(null);
+                                baseRim = (BaseReferenceManifest) rim;
+                                baseRim.setDeviceName(dv.getNw().getHostname());
                             }
                         }
-                        if (dbBaseRim.isArchived()) {
+                        if (baseRim.isArchived()) {
                             throw new Exception("Unable to locate an unarchived base RIM.");
                         } else {
-                            this.referenceManifestRepository.save(dbBaseRim);
+                            this.referenceManifestRepository.save(baseRim);
                         }
                     } else {
-                        dbBaseRim.setDeviceName(dv.getNw().getHostname());
-                        this.referenceManifestRepository.save(dbBaseRim);
+                        baseRim.setDeviceName(dv.getNw().getHostname());
+                        this.referenceManifestRepository.save(baseRim);
                     }
-                    tagId = dbBaseRim.getTagId();
+                    tagId = baseRim.getTagId();
                 } catch (UnmarshalException e) {
                     log.error(e);
                 } catch (Exception ex) {
-                    log.error(String.format("Failed to load base rim: %s", ex.getMessage()));
+                    log.error("Failed to load base rim: {}", ex.getMessage());
                 }
             }
         } else {
-            log.warn(String.format("%s did not send swid tag file...",
-                    dv.getNw().getHostname()));
+            log.warn("{} did not send swid tag file...", dv.getNw().getHostname());
         }
 
         if (dv.getLogfileCount() > 0) {
             for (ByteString logFile : dv.getLogfileList()) {
                 try {
-                    support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
+                    supportRim =
+                            (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
                                     Hex.encodeHexString(messageDigest.digest(logFile.toByteArray())),
-                            ReferenceManifest.SUPPORT_RIM);
-                    if (support == null) {
+                                    ReferenceManifest.SUPPORT_RIM);
+                    if (supportRim == null) {
                         /*
                         Either the logFile does not have a corresponding support RIM in the backend
                         or it was deleted. The support RIM for a replacement base RIM is handled
@@ -438,97 +446,98 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                             Optional<ReferenceManifest> replacementRim =
                                     referenceManifestRepository.findById(UUID.fromString(replacementRimId));
                             if (replacementRim.isPresent()) {
-                                support = (SupportReferenceManifest) replacementRim.get();
-                                support.setDeviceName(dv.getNw().getHostname());
+                                supportRim = (SupportReferenceManifest) replacementRim.get();
+                                supportRim.setDeviceName(dv.getNw().getHostname());
                             } else {
                                 throw new Exception("Unable to locate support RIM " + replacementRimId);
                             }
                         } else {
-                            support = new SupportReferenceManifest(
+                            supportRim = new SupportReferenceManifest(
                                     String.format("%s.rimel",
                                             defaultClientName),
                                     logFile.toByteArray());
                             // this is a validity check
-                            new TCGEventLog(support.getRimBytes());
+                            new TCGEventLog(supportRim.getRimBytes());
                             // no issues, continue
-                            support.setPlatformManufacturer(dv.getHw().getManufacturer());
-                            support.setPlatformModel(dv.getHw().getProductName());
-                            support.setFileName(String.format("%s_[%s].rimel", defaultClientName,
-                                    support.getHexDecHash().substring(
-                                            support.getHexDecHash().length() - NUM_OF_VARIABLES)));
+                            supportRim.setPlatformManufacturer(dv.getHw().getManufacturer());
+                            supportRim.setPlatformModel(dv.getHw().getProductName());
+                            supportRim.setFileName(String.format("%s_[%s].rimel", defaultClientName,
+                                    supportRim.getHexDecHash().substring(
+                                            supportRim.getHexDecHash().length() - NUM_OF_VARIABLES)));
                         }
-                        support.setDeviceName(dv.getNw().getHostname());
-                        this.referenceManifestRepository.save(support);
-                    } else if (support.isArchived()) {
+                        supportRim.setDeviceName(dv.getNw().getHostname());
+                        this.referenceManifestRepository.save(supportRim);
+                    } else if (supportRim.isArchived()) {
                         /*
                         This block accounts for RIMs that may have been soft-deleted (archived)
                         in an older version of the ACA.
                          */
                         List<ReferenceManifest> rims = referenceManifestRepository.findByArchiveFlag(false);
                         for (ReferenceManifest rim : rims) {
-                            if (rim.isSupport() &&
-                                    rim.getTagId().equals(support.getTagId()) &&
-                                    rim.getCreateTime().after(support.getCreateTime())) {
-                                support.setDeviceName(null);
-                                support = (SupportReferenceManifest) rim;
-                                support.setDeviceName(dv.getNw().getHostname());
+                            if (rim.isSupport()
+                                    && rim.getTagId().equals(supportRim.getTagId())
+                                    && rim.getCreateTime().after(supportRim.getCreateTime())) {
+                                supportRim.setDeviceName(null);
+                                supportRim = (SupportReferenceManifest) rim;
+                                supportRim.setDeviceName(dv.getNw().getHostname());
                             }
                         }
-                        if (support.isArchived()) {
+                        if (supportRim.isArchived()) {
                             throw new Exception("Unable to locate an unarchived support RIM.");
                         } else {
-                            this.referenceManifestRepository.save(support);
+                            this.referenceManifestRepository.save(supportRim);
                         }
                     } else {
-                        support.setDeviceName(dv.getNw().getHostname());
-                        this.referenceManifestRepository.save(support);
+                        supportRim.setDeviceName(dv.getNw().getHostname());
+                        this.referenceManifestRepository.save(supportRim);
                     }
                 } catch (IOException ioEx) {
                     log.error(ioEx);
                 } catch (Exception ex) {
-                    log.error(String.format("Failed to load support rim: %s", ex.getMessage()));
+                    log.error("Failed to load support rim: {}", ex.getMessage());
                 }
             }
         } else {
-            log.warn(String.format("%s did not send support RIM file...",
-                    dv.getNw().getHostname()));
+            log.warn("{} did not send support RIM file...", dv.getNw().getHostname());
         }
 
         //update Support RIMs and Base RIMs.
         for (ByteString swidFile : dv.getSwidfileList()) {
-            dbBaseRim = (BaseReferenceManifest) referenceManifestRepository
+            baseRim = (BaseReferenceManifest) referenceManifestRepository
                     .findByBase64Hash(Base64.getEncoder().encodeToString(messageDigest.digest(
                             swidFile.toByteArray())));
-            if (dbBaseRim != null) {
+            if (baseRim != null) {
                 // get file name to use
-                for (SwidResource swid : dbBaseRim.getFileResources()) {
+                for (SwidResource swid : baseRim.getFileResources()) {
                     matcher = pattern.matcher(swid.getName());
                     if (matcher.matches()) {
                         //found the file name
                         int dotIndex = swid.getName().lastIndexOf(".");
                         fileName = swid.getName().substring(0, dotIndex);
-                        dbBaseRim.setFileName(String.format("%s.swidtag",
+                        baseRim.setFileName(String.format("%s.swidtag",
                                 fileName));
                     }
 
                     // now update support rim
-                    SupportReferenceManifest dbSupport = (SupportReferenceManifest) referenceManifestRepository
-                            .findByHexDecHashAndRimType(swid.getHashValue(), ReferenceManifest.SUPPORT_RIM);
+                    SupportReferenceManifest dbSupport =
+                            (SupportReferenceManifest) referenceManifestRepository
+                                    .findByHexDecHashAndRimType(swid.getHashValue(),
+                                            ReferenceManifest.SUPPORT_RIM);
                     if (dbSupport != null) {
                         dbSupport.setFileName(swid.getName());
-                        dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                        dbSupport.setTagId(dbBaseRim.getTagId());
-                        dbSupport.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                        dbSupport.setSwidVersion(dbBaseRim.getSwidVersion());
-                        dbSupport.setSwidPatch(dbBaseRim.isSwidPatch());
-                        dbSupport.setSwidSupplemental(dbBaseRim.isSwidSupplemental());
-                        dbBaseRim.setAssociatedRim(dbSupport.getId());
+                        dbSupport.setSwidTagVersion(baseRim.getSwidTagVersion());
+                        dbSupport.setTagId(baseRim.getTagId());
+                        dbSupport.setSwidTagVersion(baseRim.getSwidTagVersion());
+                        dbSupport.setSwidVersion(baseRim.getSwidVersion());
+                        dbSupport.setSwidPatch(baseRim.isSwidPatch());
+                        dbSupport.setSwidSupplemental(baseRim.isSwidSupplemental());
+                        baseRim.setAssociatedRim(dbSupport.getId());
                         dbSupport.setUpdated(true);
-                        dbSupport.setAssociatedRim(dbBaseRim.getId());
+                        dbSupport.setAssociatedRim(baseRim.getId());
                         this.referenceManifestRepository.save(dbSupport);
                     }
                 }
-                this.referenceManifestRepository.save(dbBaseRim);
+                this.referenceManifestRepository.save(baseRim);
             }
         }
 
@@ -539,40 +548,40 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             fileName = String.format("%s.measurement",
                     dv.getNw().getHostname());
             try {
-                EventLogMeasurements temp = new EventLogMeasurements(fileName,
+                EventLogMeasurements deviceLiveLog = new EventLogMeasurements(fileName,
                         dv.getLivelog().toByteArray());
                 // find previous version.
-                measurements = referenceManifestRepository
+                integrityMeasurements = referenceManifestRepository
                         .byMeasurementDeviceName(dv.getNw().getHostname());
 
-                if (measurements != null) {
+                if (integrityMeasurements != null) {
                     // Find previous log and delete it
-                    referenceManifestRepository.delete(measurements);
+                    referenceManifestRepository.delete(integrityMeasurements);
                 }
 
                 List<BaseReferenceManifest> baseRims = referenceManifestRepository
                         .getBaseByManufacturerModel(dv.getHw().getManufacturer(),
                                 dv.getHw().getProductName());
-                measurements = temp;
-                measurements.setPlatformManufacturer(dv.getHw().getManufacturer());
-                measurements.setPlatformModel(dv.getHw().getProductName());
+                integrityMeasurements = deviceLiveLog;
+                integrityMeasurements.setPlatformManufacturer(dv.getHw().getManufacturer());
+                integrityMeasurements.setPlatformModel(dv.getHw().getProductName());
                 if (tagId != null && !tagId.trim().isEmpty()) {
-                    measurements.setTagId(tagId);
+                    integrityMeasurements.setTagId(tagId);
                 }
-                measurements.setDeviceName(dv.getNw().getHostname());
-                measurements.archive();
+                integrityMeasurements.setDeviceName(dv.getNw().getHostname());
+                integrityMeasurements.archive();
 
-                this.referenceManifestRepository.save(measurements);
+                this.referenceManifestRepository.save(integrityMeasurements);
 
-                for (BaseReferenceManifest baseRim : baseRims) {
-                    if (baseRim != null) {
+                for (BaseReferenceManifest bRim : baseRims) {
+                    if (bRim != null) {
                         // pull the base versions of the swidtag and rimel and set the
                         // event log hash for use during provision
                         SupportReferenceManifest sBaseRim = referenceManifestRepository
-                                .getSupportRimEntityById(baseRim.getAssociatedRim());
-                        baseRim.setEventLogHash(temp.getHexDecHash());
-                        sBaseRim.setEventLogHash(temp.getHexDecHash());
-                        referenceManifestRepository.save(baseRim);
+                                .getSupportRimEntityById(bRim.getAssociatedRim());
+                        bRim.setEventLogHash(deviceLiveLog.getHexDecHash());
+                        sBaseRim.setEventLogHash(deviceLiveLog.getHexDecHash());
+                        referenceManifestRepository.save(bRim);
                         referenceManifestRepository.save(sBaseRim);
                     }
                 }
@@ -580,11 +589,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 log.error(ioEx);
             }
         } else {
-            log.warn(String.format("%s did not send bios measurement log...",
-                    dv.getNw().getHostname()));
+            log.warn("{} did not send bios measurement log...", dv.getNw().getHostname());
         }
 
-         // Get TPM info, currently unimplemented
+        // Get TPM info, currently unimplemented
         TPMInfo tpmInfo = new TPMInfo(DeviceInfoEnums.NOT_SPECIFIED,
                 (short) 0,
                 (short) 0,
@@ -608,11 +616,11 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         List<SupportReferenceManifest> patchRims = new ArrayList<>();
         List<SupportReferenceManifest> dbSupportRims = this.referenceManifestRepository
                 .getSupportByManufacturerModel(manufacturer, model);
-        List<ReferenceDigestValue> sourcedValues = referenceDigestValueRepository
+        List<ReferenceDigestValue> expectedValues = referenceDigestValueRepository
                 .findByManufacturerAndModel(manufacturer, model);
 
         Map<String, ReferenceDigestValue> digestValueMap = new HashMap<>();
-        sourcedValues.stream().forEach((rdv) -> {
+        expectedValues.stream().forEach((rdv) -> {
             digestValueMap.put(rdv.getDigestValue(), rdv);
         });
 
@@ -628,11 +636,12 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         }
 
         if (baseSupportRim != null
-                && referenceDigestValueRepository.findBySupportRimHash(baseSupportRim.getHexDecHash()).isEmpty()) {
+                && referenceDigestValueRepository.findBySupportRimHash(baseSupportRim.getHexDecHash())
+                .isEmpty()) {
             try {
-                TCGEventLog logProcessor = new TCGEventLog(baseSupportRim.getRimBytes());
+                TCGEventLog eventLog = new TCGEventLog(baseSupportRim.getRimBytes());
                 ReferenceDigestValue rdv;
-                for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                for (TpmPcrEvent tpe : eventLog.getEventList()) {
                     rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
                             baseSupportRim.getId(), manufacturer, model, tpe.getPcrIndex(),
                             tpe.getEventDigestStr(), baseSupportRim.getHexDecHash(),
@@ -644,8 +653,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 // since I have the base already I don't have to care about the backward
                 // linkage
                 for (SupportReferenceManifest supplemental : supplementalRims) {
-                    logProcessor = new TCGEventLog(supplemental.getRimBytes());
-                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                    eventLog = new TCGEventLog(supplemental.getRimBytes());
+                    for (TpmPcrEvent tpe : eventLog.getEventList()) {
                         // all RDVs will have the same base rim
                         rdv = new ReferenceDigestValue(baseSupportRim.getAssociatedRim(),
                                 supplemental.getId(), manufacturer, model, tpe.getPcrIndex(),
@@ -679,16 +688,15 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 ReferenceDigestValue dbRdv;
                 String patchedValue;
                 for (SupportReferenceManifest patch : patchRims) {
-                    logProcessor = new TCGEventLog(patch.getRimBytes());
-                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                    eventLog = new TCGEventLog(patch.getRimBytes());
+                    for (TpmPcrEvent tpe : eventLog.getEventList()) {
                         patchedValue = tpe.getEventDigestStr();
                         dbRdv = digestValueMap.get(patchedValue);
 
                         if (dbRdv == null) {
-                            log.error(String.format("Patching value does not exist (%s)",
-                                    patchedValue));
+                            log.error("Patching value does not exist ({})", patchedValue);
                         } else {
-                             // WIP - Until we get patch examples
+                            // WIP - Until we get patch examples
                             dbRdv.setPatched(true);
                         }
                     }
@@ -721,7 +729,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     }
 
     private int handleDeviceComponents(final String hostName, final String paccorString) {
-        int deviceComponents = 0 ;
+        int deviceComponents = 0;
         Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
         try {
             List<ComponentInfo> componentInfos = SupplyChainCredentialValidator

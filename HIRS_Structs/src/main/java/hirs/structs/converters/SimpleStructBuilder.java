@@ -2,10 +2,11 @@ package hirs.structs.converters;
 
 import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * StructBuilder implementation.
@@ -13,11 +14,12 @@ import org.apache.commons.lang3.reflect.FieldUtils;
  * @param <T> the type of Struct to build
  */
 public class SimpleStructBuilder<T extends Struct> implements StructBuilder {
-    private T struct;
     private final Class<T> clazz;
+    private T struct;
 
     /**
      * Instantiates the builder.
+     *
      * @param clazz The type of struct to build
      */
     public SimpleStructBuilder(final Class<T> clazz) {
@@ -29,7 +31,7 @@ public class SimpleStructBuilder<T extends Struct> implements StructBuilder {
         try {
             struct = ConstructorUtils.invokeConstructor(clazz);
         } catch (InstantiationException | IllegalAccessException
-               | NoSuchMethodException | InvocationTargetException e) {
+                 | NoSuchMethodException | InvocationTargetException e) {
             throw new StructBuilderException(
                     String.format("Unexpected error constructing new instance: %s",
                             clazz.getSimpleName(), e.getMessage()), e);
@@ -59,17 +61,13 @@ public class SimpleStructBuilder<T extends Struct> implements StructBuilder {
     public SimpleStructBuilder<T> set(final String field, final Number value) {
         try {
             String type = clazz.getDeclaredField(field).getType().getSimpleName();
-            switch (clazz.getDeclaredField(field).getType().getSimpleName()) {
-                case "short":
-                    return setField(field, value.shortValue());
-                case "int":
-                    return setField(field, value.intValue());
-                case "byte":
-                    return setField(field, value.byteValue());
-                default:
-                    throw new StructBuilderException(
-                            String.format("Unhandled numeric field type: %s", type));
-            }
+            return switch (clazz.getDeclaredField(field).getType().getSimpleName()) {
+                case "short" -> setField(field, value.shortValue());
+                case "int" -> setField(field, value.intValue());
+                case "byte" -> setField(field, value.byteValue());
+                default -> throw new StructBuilderException(
+                        String.format("Unhandled numeric field type: %s", type));
+            };
         } catch (NoSuchFieldException | SecurityException e) {
             throw new StructBuilderException(
                     String.format("Unexpected error setting field: %s",
@@ -122,7 +120,7 @@ public class SimpleStructBuilder<T extends Struct> implements StructBuilder {
             FieldUtils.writeField(field, struct, value);
             field.setAccessible(false);
         } catch (NoSuchFieldException | SecurityException
-               | IllegalArgumentException | IllegalAccessException e) {
+                 | IllegalArgumentException | IllegalAccessException e) {
             throw new StructBuilderException(
                     String.format("Unexpected error setting field: %s",
                             fieldName, e.getMessage()), e);

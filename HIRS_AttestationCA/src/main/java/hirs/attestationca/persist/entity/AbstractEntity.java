@@ -32,7 +32,7 @@ public abstract class AbstractEntity implements Serializable {
     @Getter
     private UUID id;
 
-    @Column (name = "create_time")
+    @Column(name = "create_time")
     private Date createTime;
 
     /**
@@ -47,9 +47,10 @@ public abstract class AbstractEntity implements Serializable {
     /**
      * Setter for the UUID that can not be null
      * and can not be overridden.
+     *
      * @param id - primary able key
      */
-    public void setId(UUID id) {
+    public void setId(final UUID id) {
         if (id != null) {
             this.id = id;
         }
@@ -74,6 +75,11 @@ public abstract class AbstractEntity implements Serializable {
         createTime.setTime(new Date().getTime());
     }
 
+    /**
+     * Generates an integer hash code for this entity.
+     *
+     * @return hash code
+     */
     @Override
     public int hashCode() {
         if (id != null) {
@@ -82,6 +88,13 @@ public abstract class AbstractEntity implements Serializable {
         return super.hashCode();
     }
 
+    /**
+     * Compares this entity to the provided object to verify
+     * that both objects are equal.
+     *
+     * @param object object to compare
+     * @return true if they are equal, false otherwise
+     */
     @Override
     public boolean equals(final Object object) {
         if (this == object) {

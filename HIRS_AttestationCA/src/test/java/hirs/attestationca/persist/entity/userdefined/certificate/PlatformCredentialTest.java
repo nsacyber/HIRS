@@ -12,7 +12,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.encoders.Base64;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,6 +21,8 @@ import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests that a PlatformCredential parses its fields correctly.
@@ -152,7 +153,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
 
         try {
             new PlatformCredential(certPath);
-            //fail if it manage to parse the certificate
+            //fail if it manages to parse the certificate
             fail("Invalid certificate was parsed.");
         } catch (IOException ex) {
             if (ex == null || ex.getMessage().isEmpty()) {
@@ -169,7 +170,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
      * extension but is missing the subject alternative name extension.  This certificate
      * also has a policy extension, but it is not currently parsed.
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -178,12 +179,26 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Path certPath = Paths.get(resource.toURI());
 
         PlatformCredential credential = new PlatformCredential(certPath);
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
-        calendar.set(2017, 2, 23, 22, 34, 33);
+        final int year1 = 2017;
+        final int month1 = 2;
+        final int day1 = 23;
+        final int hour1 = 22;
+        final int minute1 = 34;
+        final int second1 = 33;
+        calendar.set(year1, month1, day1, hour1, minute1, second1);
         calendar.set(Calendar.MILLISECOND, 0);
         Assertions.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
-        calendar.set(2030, 11, 31, 23, 59, 59);
+
+        final int year2 = 2030;
+        final int month2 = 11;
+        final int day2 = 31;
+        final int hour2 = 23;
+        final int minute2 = 59;
+        final int second2 = 59;
+        calendar.set(year2, month2, day2, hour2, minute2, second2);
         Assertions.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assertions.assertNotNull(credential.getAttributeCertificate());
@@ -193,8 +208,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Assertions.assertEquals(sigStr.toUpperCase(), EXPECTED_CERT_SIGNATURE_FOR_CERT_2);
 
         String issuer = Certificate.getAttributeCertificateIssuerNames(
-                credential.getAttributeCertificate().getAcinfo().getIssuer()
-        )[0].toString();
+                credential.getAttributeCertificate().getAcinfo().getIssuer())[0].toString();
 
         Assertions.assertEquals(credential.getManufacturer(), "Intel");
         Assertions.assertEquals(credential.getModel(), "DE3815TYKH");
@@ -206,7 +220,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Assertions.assertEquals(credential.getCredentialType(), "TCPA Trusted Platform Endorsement");
 
         // the platform certificate in this test does not contain the following information
-        Assertions.assertEquals(credential.getPlatformSerial(), null);
+        Assertions.assertNull(credential.getPlatformSerial());
         Assertions.assertEquals(credential.getMajorVersion(), 1);
         Assertions.assertEquals(credential.getMinorVersion(), 2);
         Assertions.assertEquals(credential.getRevisionLevel(), 1);
@@ -218,7 +232,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
      * extension but is missing the subject alternative name extension.  This certificate
      * also has a policy extension, but it is not currently parsed.
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -229,10 +243,23 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         PlatformCredential credential = new PlatformCredential(certPath);
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
-        calendar.set(2017, 2, 23, 22, 34, 33);
+        final int year1 = 2017;
+        final int month1 = 2;
+        final int day1 = 23;
+        final int hour1 = 22;
+        final int minute1 = 34;
+        final int second1 = 33;
+        calendar.set(year1, month1, day1, hour1, minute1, second1);
         calendar.set(Calendar.MILLISECOND, 0);
         Assertions.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
-        calendar.set(2030, 11, 31, 23, 59, 59);
+
+        final int year2 = 2030;
+        final int month2 = 11;
+        final int day2 = 31;
+        final int hour2 = 23;
+        final int minute2 = 59;
+        final int second2 = 59;
+        calendar.set(year2, month2, day2, hour2, minute2, second2);
         Assertions.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assertions.assertNotNull(credential.getAttributeCertificate());
@@ -255,7 +282,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Assertions.assertEquals(credential.getCredentialType(), "TCPA Trusted Platform Endorsement");
 
         // the platform certificate in this test does not contain the following information
-        Assertions.assertEquals(credential.getPlatformSerial(), null);
+        Assertions.assertNull(credential.getPlatformSerial());
         Assertions.assertEquals(credential.getMajorVersion(), 1);
         Assertions.assertEquals(credential.getMinorVersion(), 2);
         Assertions.assertEquals(credential.getRevisionLevel(), 1);
@@ -266,7 +293,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
      * Tests the parsing of a platform credential that has a combined baseboard and chassis
      * serial number in one attribute can be parsed.
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -278,10 +305,23 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
-        calendar.set(2017, 3, 21, 17, 5, 29);
+        final int year1 = 2017;
+        final int month1 = 3;
+        final int day1 = 21;
+        final int hour1 = 17;
+        final int minute1 = 5;
+        final int second1 = 29;
+        calendar.set(year1, month1, day1, hour1, minute1, second1);
         calendar.set(Calendar.MILLISECOND, 0);
         Assertions.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
-        calendar.set(2030, 11, 31, 23, 59, 59);
+
+        final int year2 = 2030;
+        final int month2 = 11;
+        final int day2 = 31;
+        final int hour2 = 23;
+        final int minute2 = 59;
+        final int second2 = 59;
+        calendar.set(year2, month2, day2, hour2, minute2, second2);
         Assertions.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assertions.assertNotNull(credential.getAttributeCertificate());
@@ -311,7 +351,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
      * Tests the parsing another platform credential that has a combined baseboard and chassis
      * serial number in one attribute can be parsed.
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -323,10 +363,23 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
-        calendar.set(2017, 3, 21, 17, 5, 30);
+        final int year1 = 2017;
+        final int month1 = 3;
+        final int day1 = 21;
+        final int hour1 = 17;
+        final int minute1 = 5;
+        final int second1 = 30;
+        calendar.set(year1, month1, day1, hour1, minute1, second1);
         calendar.set(Calendar.MILLISECOND, 0);
         Assertions.assertEquals(credential.getBeginValidity().getTime(), calendar.getTime().getTime());
-        calendar.set(2030, 11, 31, 23, 59, 59);
+
+        final int year2 = 2030;
+        final int month2 = 11;
+        final int day2 = 31;
+        final int hour2 = 23;
+        final int minute2 = 59;
+        final int second2 = 59;
+        calendar.set(year2, month2, day2, hour2, minute2, second2);
         Assertions.assertEquals(credential.getEndValidity().getTime(), calendar.getTime().getTime());
 
         Assertions.assertNotNull(credential.getAttributeCertificate());
@@ -355,7 +408,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests isIssuer of a platform credential.
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -376,7 +429,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests platform Configuration Values.
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -394,41 +447,36 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
             Assertions.fail("Component Identifier is empty.");
         }
 
-        Assertions.assertEquals(allComponents.size(), 7);
+        final int expectedComponentsSize = 7;
+        Assertions.assertEquals(expectedComponentsSize, allComponents.size());
         ComponentIdentifier component;
 
         //Check component #2
-        component = (ComponentIdentifier) allComponents.get(1);
-        Assertions.assertTrue(component.getComponentManufacturer()
-                .getString()
-                .equals("Intel Corporation"));
-        Assertions.assertTrue(component.getComponentModel()
-                .getString()
-                .equals("NUC7i5DNB"));
-        Assertions.assertTrue(component.getComponentSerial()
-                .getString()
-                .equals("BTDN732000QM"));
+        component = allComponents.get(1);
+        Assertions.assertEquals("Intel Corporation", component.getComponentManufacturer()
+                .getString());
+        Assertions.assertEquals("NUC7i5DNB", component.getComponentModel()
+                .getString());
+        Assertions.assertEquals("BTDN732000QM", component.getComponentSerial()
+                .getString());
 
         //Check component #3
-        component = (ComponentIdentifier) allComponents.get(2);
-        Assertions.assertTrue(component.getComponentManufacturer()
-                .getString()
-                .equals("Intel(R) Corporation"));
-        Assertions.assertTrue(component.getComponentModel().getString().equals("Core i5"));
+        component = allComponents.get(2);
+        Assertions.assertEquals("Intel(R) Corporation", component.getComponentManufacturer()
+                .getString());
+        Assertions.assertEquals("Core i5", component.getComponentModel().getString());
         Assertions.assertTrue(component.getFieldReplaceable().isTrue());
 
         //Check component #5
-        component = (ComponentIdentifier) allComponents.get(4);
-        Assertions.assertTrue(component.getComponentModel()
-                .getString()
-                .equals("Ethernet Connection I219-LM"));
-        Assertions.assertTrue(component.getComponentAddress().get(0)
+        final int component5Position = 4;
+        component = allComponents.get(component5Position);
+        Assertions.assertEquals("Ethernet Connection I219-LM", component.getComponentModel()
+                .getString());
+        Assertions.assertEquals("8c:0f:6f:72:c6:c5", component.getComponentAddress().get(0)
                 .getAddressValue()
-                .getString()
-                .equals("8c:0f:6f:72:c6:c5"));
-        Assertions.assertTrue(component.getComponentAddress().get(0)
-                .getAddressTypeValue()
-                .equals("ethernet mac"));
+                .getString());
+        Assertions.assertEquals("ethernet mac", component.getComponentAddress().get(0)
+                .getAddressTypeValue());
 
         //Check Platform Properties
         List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
@@ -441,22 +489,22 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         PlatformProperty property;
 
         //Check property #1
-        property = (PlatformProperty) platformProperties.get(0);
-        Assertions.assertTrue(property.getPropertyName().getString().equals("vPro"));
-        Assertions.assertTrue(property.getPropertyValue().getString().equals("true"));
+        property = platformProperties.get(0);
+        Assertions.assertEquals("vPro", property.getPropertyName().getString());
+        Assertions.assertEquals("true", property.getPropertyValue().getString());
 
         //Check property #2
-        property = (PlatformProperty) platformProperties.get(1);
-        Assertions.assertTrue(property.getPropertyName().getString().equals("AMT"));
-        Assertions.assertTrue(property.getPropertyValue().getString().equals("true"));
+        property = platformProperties.get(1);
+        Assertions.assertEquals("AMT", property.getPropertyName().getString());
+        Assertions.assertEquals("true", property.getPropertyValue().getString());
 
         //Check Platform Properties URI
         URIReference platformPropertyUri = platformConfig.getPlatformPropertiesUri();
 
         Assertions.assertNotNull(platformPropertyUri);
-        Assertions.assertTrue(platformPropertyUri.getUniformResourceIdentifier()
-                .getString()
-                .equals("https://www.intel.com/platformproperties.xml"));
+        Assertions.assertEquals("https://www.intel.com/platformproperties.xml",
+                platformPropertyUri.getUniformResourceIdentifier()
+                        .getString());
         Assertions.assertNull(platformPropertyUri.getHashAlgorithm());
         Assertions.assertNull(platformPropertyUri.getHashValue());
     }
@@ -464,7 +512,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests Platform Configuration Values. View platform Properties
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -489,20 +537,20 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         PlatformProperty property;
 
         //Check property #1
-        property = (PlatformProperty) platformProperties.get(0);
-        Assertions.assertTrue(property.getPropertyName().getString().equals("vPro"));
-        Assertions.assertTrue(property.getPropertyValue().getString().equals("true"));
+        property = platformProperties.get(0);
+        Assertions.assertEquals("vPro", property.getPropertyName().getString());
+        Assertions.assertEquals("true", property.getPropertyValue().getString());
 
         //Check property #2
-        property = (PlatformProperty) platformProperties.get(1);
-        Assertions.assertTrue(property.getPropertyName().getString().equals("AMT"));
-        Assertions.assertTrue(property.getPropertyValue().getString().equals("true"));
+        property = platformProperties.get(1);
+        Assertions.assertEquals("AMT", property.getPropertyName().getString());
+        Assertions.assertEquals("true", property.getPropertyValue().getString());
     }
 
     /**
      * Tests Platform Configuration Values. View platform Properties
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -520,29 +568,25 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
             Assertions.fail("Component Identifier is empty.");
         }
 
-        Assertions.assertEquals(allComponents.size(), 3);
+        final int expectedComponentsSize = 3;
+        Assertions.assertEquals(expectedComponentsSize, allComponents.size());
         ComponentIdentifier component;
 
         //Check component #2
-        component = (ComponentIdentifier) allComponents.get(1);
-        Assertions.assertTrue(component.getComponentManufacturer()
-                .getString()
-                .equals("Intel(R) Corporation"));
-        Assertions.assertTrue(component.getComponentModel()
-                .getString()
-                .equals("Intel(R) Core(TM) i5-7300U CPU @ 2.60GHz"));
+        component = allComponents.get(1);
+        Assertions.assertEquals("Intel(R) Corporation", component.getComponentManufacturer()
+                .getString());
+        Assertions.assertEquals("Intel(R) Core(TM) i5-7300U CPU @ 2.60GHz", component.getComponentModel()
+                .getString());
 
         //Check component #3
-        component = (ComponentIdentifier) allComponents.get(2);
-        Assertions.assertTrue(component.getComponentModel()
-                .getString()
-                .equals("BIOS"));
-        Assertions.assertTrue(component.getComponentSerial()
-                .getString()
-                .equals(ComponentIdentifier.NOT_SPECIFIED_COMPONENT));
-        Assertions.assertTrue(component.getComponentRevision()
-                .getString()
-                .equals("DNKBLi5v.86A.0019.2017.0804.1146"));
+        component = allComponents.get(2);
+        Assertions.assertEquals("BIOS", component.getComponentModel()
+                .getString());
+        Assertions.assertEquals(ComponentIdentifier.NOT_SPECIFIED_COMPONENT, component.getComponentSerial()
+                .getString());
+        Assertions.assertEquals("DNKBLi5v.86A.0019.2017.0804.1146", component.getComponentRevision()
+                .getString());
 
         //Check Platform Properties
         List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
@@ -556,26 +600,26 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         URIReference platformPropertyUri = platformConfig.getPlatformPropertiesUri();
 
         Assertions.assertNotNull(platformPropertyUri);
-        Assertions.assertTrue(platformPropertyUri.getUniformResourceIdentifier()
-                .getString()
-                .equals("https://www.intel.com/platformproperties.xml"));
+        Assertions.assertEquals("https://www.intel.com/platformproperties.xml",
+                platformPropertyUri.getUniformResourceIdentifier()
+                        .getString());
         Assertions.assertNull(platformPropertyUri.getHashAlgorithm());
         Assertions.assertNull(platformPropertyUri.getHashValue());
 
         //Test TBBSecurityAssertion
         TBBSecurityAssertion tbbSec = platformCert.getTBBSecurityAssertion();
         Assertions.assertNotNull(tbbSec);
-        Assertions.assertTrue(tbbSec.getCcInfo().getVersion().getString().equals("3.1"));
-        Assertions.assertTrue(tbbSec.getCcInfo().getProfileOid().getId().equals("1.2.3.4.5.6"));
-        Assertions.assertTrue(tbbSec.getFipsLevel().getVersion().getString().equals("140-2"));
-        Assertions.assertTrue(tbbSec.getIso9000Uri().getString()
-                .equals("https://www.intel.com/isocertification.pdf"));
+        Assertions.assertEquals("3.1", tbbSec.getCcInfo().getVersion().getString());
+        Assertions.assertEquals("1.2.3.4.5.6", tbbSec.getCcInfo().getProfileOid().getId());
+        Assertions.assertEquals("140-2", tbbSec.getFipsLevel().getVersion().getString());
+        Assertions.assertEquals("https://www.intel.com/isocertification.pdf",
+                tbbSec.getIso9000Uri().getString());
     }
 
     /**
      * Tests Platform Configuration Values. View platform Properties
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -593,28 +637,26 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
             Assertions.fail("Component Identifier is empty.");
         }
 
-        Assertions.assertEquals(allComponents.size(), 7);
+        final int expectedComponentsSize = 7;
+        Assertions.assertEquals(expectedComponentsSize, allComponents.size());
         ComponentIdentifier component;
 
         //Check component #1
-        component = (ComponentIdentifier) allComponents.get(0);
-        Assertions.assertTrue(component.getComponentModel()
-                .getString()
-                .equals("NUC7i5DNB"));
-        Assertions.assertTrue(component.getComponentRevision()
-                .getString()
-                .equals("J57626-401"));
+        component = allComponents.get(0);
+        Assertions.assertEquals("NUC7i5DNB", component.getComponentModel()
+                .getString());
+        Assertions.assertEquals("J57626-401", component.getComponentRevision()
+                .getString());
 
         //Check component #7
-        component = (ComponentIdentifier) allComponents.get(6);
+        final int component7Position = 6;
+        component = allComponents.get(component7Position);
         Assertions.assertTrue(component.getComponentAddress().size() > 0);
-        Assertions.assertTrue(component.getComponentAddress().get(0)
+        Assertions.assertEquals("8c:0f:6f:72:c6:c5", component.getComponentAddress().get(0)
                 .getAddressValue()
-                .getString()
-                .equals("8c:0f:6f:72:c6:c5"));
-        Assertions.assertTrue(component.getComponentAddress().get(0)
-                .getAddressTypeValue()
-                .equals("ethernet mac"));
+                .getString());
+        Assertions.assertEquals("ethernet mac", component.getComponentAddress().get(0)
+                .getAddressTypeValue());
 
         //Check Platform Properties
         List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
@@ -628,27 +670,27 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         URIReference platformPropertyUri = platformConfig.getPlatformPropertiesUri();
 
         Assertions.assertNotNull(platformPropertyUri);
-        Assertions.assertTrue(platformPropertyUri.getUniformResourceIdentifier()
-                .getString()
-                .equals("https://www.intel.com/platformproperties.xml"));
+        Assertions.assertEquals("https://www.intel.com/platformproperties.xml",
+                platformPropertyUri.getUniformResourceIdentifier()
+                        .getString());
         Assertions.assertNull(platformPropertyUri.getHashAlgorithm());
         Assertions.assertNull(platformPropertyUri.getHashValue());
 
         //Test TBBSecurityAssertion
         TBBSecurityAssertion tbbSec = platformCert.getTBBSecurityAssertion();
         Assertions.assertNotNull(tbbSec);
-        Assertions.assertTrue(tbbSec.getCcInfo().getVersion().getString().equals("3.1"));
-        Assertions.assertTrue(tbbSec.getCcInfo().getProfileOid().getId().equals("1.2.3.4.5.6"));
-        Assertions.assertTrue(tbbSec.getFipsLevel().getVersion().getString().equals("140-2"));
-        Assertions.assertTrue(tbbSec.getIso9000Uri().getString()
-                .equals("https://www.intel.com/isocertification.pdf"));
+        Assertions.assertEquals("3.1", tbbSec.getCcInfo().getVersion().getString());
+        Assertions.assertEquals("1.2.3.4.5.6", tbbSec.getCcInfo().getProfileOid().getId());
+        Assertions.assertEquals("140-2", tbbSec.getFipsLevel().getVersion().getString());
+        Assertions.assertEquals("https://www.intel.com/isocertification.pdf",
+                tbbSec.getIso9000Uri().getString());
 
     }
 
     /**
      * Tests Platform Configuration Values. View platform Properties
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -663,37 +705,41 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         //Check component identifier
         List<ComponentIdentifier> allComponents = platformConfig.getComponentIdentifier();
         Assertions.assertFalse(allComponents.isEmpty());
-        ComponentIdentifier component = allComponents.get(5);
+
+        final int component6Position = 5;
+        ComponentIdentifier component = allComponents.get(component6Position);
         Assertions.assertTrue(component.isVersion2());
 
         List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
         if (platformProperties.isEmpty()) {
             Assertions.fail("Platform Properties is empty.");
         }
-        Assertions.assertEquals(platformProperties.size(), 3);
+
+        final int platformPropSize = 3;
+        Assertions.assertEquals(platformPropSize, platformProperties.size());
 
         PlatformProperty property;
 
         //Check property #1
-        property = (PlatformProperty) platformProperties.get(0);
-        Assertions.assertTrue(property.getPropertyName().getString().equals("AMT"));
-        Assertions.assertTrue(property.getPropertyValue().getString().equals("true"));
+        property = platformProperties.get(0);
+        Assertions.assertEquals("AMT", property.getPropertyName().getString());
+        Assertions.assertEquals("true", property.getPropertyValue().getString());
 
         //Check property #2
-        property = (PlatformProperty) platformProperties.get(1);
-        Assertions.assertTrue(property.getPropertyName().getString().equals("vPro Enabled"));
-        Assertions.assertTrue(property.getPropertyValue().getString().equals("true"));
+        property = platformProperties.get(1);
+        Assertions.assertEquals("vPro Enabled", property.getPropertyName().getString());
+        Assertions.assertEquals("true", property.getPropertyValue().getString());
 
         //Check property #3
-        property = (PlatformProperty) platformProperties.get(2);
-        Assertions.assertTrue(property.getPropertyName().getString().equals("DropShip Enabled"));
-        Assertions.assertTrue(property.getPropertyValue().getString().equals("false"));
+        property = platformProperties.get(2);
+        Assertions.assertEquals("DropShip Enabled", property.getPropertyName().getString());
+        Assertions.assertEquals("false", property.getPropertyValue().getString());
     }
 
     /**
      * Tests Platform Configuration Values. View platform Properties
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -705,7 +751,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         PlatformCredential platformCert = new PlatformCredential(certPath);
         PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
 
-        Assertions.assertTrue(platformConfig instanceof PlatformConfigurationV2);
+        Assertions.assertInstanceOf(PlatformConfigurationV2.class, platformConfig);
         Assertions.assertEquals(platformConfig.getPlatformPropertiesUri()
                         .getUniformResourceIdentifier().toString(),
                 "https://www.intel.com/platformproperties.xml");
@@ -721,7 +767,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
      * Tests Platform Configuration Values. View platform Properties
      *
      * @throws URISyntaxException if there is a problem constructing the cert's URI
-     * @throws IOException if there is a problem reading the cert file
+     * @throws IOException        if there is a problem reading the cert file
      */
     @Test
     public final void testSmallNewPlatformCredential() throws URISyntaxException, IOException {
@@ -734,7 +780,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests Platform Configuration Values. View platform Properties
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -748,7 +794,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests Platform Configuration Values. View platform Properties
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test
@@ -762,7 +808,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
     /**
      * Tests Platform Configuration Values. View platform Properties
      *
-     * @throws IOException if an IO error occurs during processing
+     * @throws IOException        if an IO error occurs during processing
      * @throws URISyntaxException if there is a problem constructing the cert's URI
      */
     @Test

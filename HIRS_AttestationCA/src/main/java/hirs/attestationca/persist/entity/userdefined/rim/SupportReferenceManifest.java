@@ -6,6 +6,7 @@ import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -16,7 +17,6 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
 
 /**
  * Sub class that will just focus on PCR Values and Events.
@@ -24,12 +24,14 @@ import java.util.Objects;
 @Log4j2
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 @Entity
 public class SupportReferenceManifest extends ReferenceManifest {
 
     @Column
     @JsonIgnore
     private int pcrHash = 0;
+
     @Column
     private boolean updated = false;
 
@@ -71,6 +73,7 @@ public class SupportReferenceManifest extends ReferenceManifest {
     /**
      * Getter method for the expected PCR values contained within the support
      * RIM.
+     *
      * @return a string array of the pcr values.
      */
     public String[] getExpectedPCRList() {
@@ -78,12 +81,8 @@ public class SupportReferenceManifest extends ReferenceManifest {
             TCGEventLog logProcessor = new TCGEventLog(this.getRimBytes());
             this.pcrHash = Arrays.hashCode(logProcessor.getExpectedPCRValues());
             return logProcessor.getExpectedPCRValues();
-        } catch (CertificateException cEx) {
-            log.error(cEx);
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        } catch (IOException ioEx) {
-            log.error(ioEx);
+        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+            log.error(exception);
         }
 
         return new String[0];
@@ -99,12 +98,8 @@ public class SupportReferenceManifest extends ReferenceManifest {
         try {
             logProcessor = new TCGEventLog(this.getRimBytes());
             return logProcessor.getEventList();
-        } catch (CertificateException cEx) {
-            log.error(cEx);
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        } catch (IOException ioEx) {
-            log.error(ioEx);
+        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+            log.error(exception);
         }
 
         return new ArrayList<>();
@@ -113,23 +108,10 @@ public class SupportReferenceManifest extends ReferenceManifest {
     /**
      * This is a method to indicate whether or not this support
      * rim is a base log file.
+     *
      * @return flag for base.
      */
     public boolean isBaseSupport() {
         return !this.isSwidSupplemental() && !this.isSwidPatch();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        SupportReferenceManifest that = (SupportReferenceManifest) o;
-        return pcrHash == that.pcrHash && updated == that.updated;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), pcrHash, updated);
     }
 }

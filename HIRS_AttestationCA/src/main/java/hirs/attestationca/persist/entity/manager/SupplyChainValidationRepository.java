@@ -9,6 +9,19 @@ import java.util.UUID;
 
 @Repository
 public interface SupplyChainValidationRepository extends JpaRepository<SupplyChainValidation, UUID> {
+    /**
+     * Query that retrieves a list of supply chain validation using the provided validate type.
+     *
+     * @param validateType string representation of the validate type
+     * @return a list of supply chain validation
+     */
     List<SupplyChainValidation> findByValidationType(String validateType);
+
+    /**
+     * Query that retrieves a list of supply chain validation using the provided validation result.
+     *
+     * @param validationResult string representation of the validation result
+     * @return a list of supply chain validation
+     */
     List<SupplyChainValidation> findByValidationResult(String validationResult);
 }

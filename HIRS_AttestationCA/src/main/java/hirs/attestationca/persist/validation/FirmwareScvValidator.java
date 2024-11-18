@@ -12,8 +12,8 @@ import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.service.ValidationService;
-import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.SwidResource;
+import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import lombok.extern.log4j.Log4j2;
@@ -24,7 +24,12 @@ import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
@@ -35,13 +40,12 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
     private static PcrValidator pcrValidator;
 
     /**
-     *
-     * @param device
-     * @param policySettings
-     * @param referenceManifestRepository
-     * @param referenceDigestValueRepository
-     * @param caCredentialRepository
-     * @return
+     * @param device                         device
+     * @param policySettings                 policy settings
+     * @param referenceManifestRepository    reference manifest repository
+     * @param referenceDigestValueRepository reference digest value repository
+     * @param caCredentialRepository         CA Credential repository
+     * @return an appraisal status
      */
     @SuppressWarnings("methodlength")
     public static AppraisalStatus validateFirmware(
@@ -62,11 +66,13 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         //baseReferenceManifests = referenceManifestRepository.findAllBaseRims();
 
         // This block was looking for a base RIM matching the device name
-        // The base rim might not have a device name associated with it- i.e. if it's uploaded to the ACA prior to provisioning
-        // In this case, try to look up the event log associated with the device, then get the base rim associated by event log hash
+        // The base rim might not have a device name associated with it- i.e. if it's uploaded to the ACA
+        // prior to provisioning In this case, try to look up the event log associated with the device,
+        // then get the base rim associated by event log hash
         List<ReferenceManifest> deviceRims = referenceManifestRepository.findByDeviceName(hostName);
         for (ReferenceManifest deviceRim : deviceRims) {
-            if (deviceRim instanceof BaseReferenceManifest && !deviceRim.isSwidSupplemental() && !deviceRim.isSwidPatch()) {
+            if (deviceRim instanceof BaseReferenceManifest && !deviceRim.isSwidSupplemental()
+                    && !deviceRim.isSwidPatch()) {
                 baseReferenceManifest = (BaseReferenceManifest) deviceRim;
             }
 
@@ -77,7 +83,9 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
         // Attempt to get an event log from the database matching the expected hash
         if (baseReferenceManifest == null && measurement != null) {
-            baseReferenceManifest = (BaseReferenceManifest)referenceManifestRepository.findByEventLogHashAndRimType(measurement.getHexDecHash(), ReferenceManifest.BASE_RIM);
+            baseReferenceManifest =
+                    (BaseReferenceManifest) referenceManifestRepository.findByEventLogHashAndRimType(
+                            measurement.getHexDecHash(), ReferenceManifest.BASE_RIM);
         }
 
         String failedString = "";
@@ -101,7 +109,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
         if (passed) {
             List<SwidResource> resources =
-                    ((BaseReferenceManifest) baseReferenceManifest).getFileResources();
+                    baseReferenceManifest.getFileResources();
             fwStatus = new AppraisalStatus(PASS,
                     SupplyChainCredentialValidator.FIRMWARE_VALID);
 
@@ -122,8 +130,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 try {
                     keyStore = ValidationService.caCertSetToKeystore(set);
                 } catch (Exception e) {
-                    log.error("Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
-                            + e.getMessage());
+                    log.error("Error building CA chain for {}: {}", signingCert.getSubjectKeyIdentifier(),
+                            e.getMessage());
                 }
 
                 ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
@@ -131,32 +139,33 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                     try {
                         certs.add(cac.getX509Certificate());
                     } catch (IOException e) {
-                        log.error("Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
-                                + e.getMessage());
+                        log.error("Error building CA chain for {}: {}", signingCert.getSubjectKeyIdentifier(),
+                                e.getMessage());
                     }
                 }
                 referenceManifestValidator.setTrustStore(certs);
                 try {
-                    if (referenceManifestValidator.validateXmlSignature(signingCert.getX509Certificate().getPublicKey(),
-                        signingCert.getSubjectKeyIdString(), signingCert.getEncodedPublicKey())) {
+                    if (referenceManifestValidator.validateXmlSignature(
+                            signingCert.getX509Certificate().getPublicKey(),
+                            signingCert.getSubjectKeyIdString(), signingCert.getEncodedPublicKey())) {
                         try {
                             if (!SupplyChainCredentialValidator.verifyCertificate(
-                                signingCert.getX509Certificate(), keyStore)) {
+                                    signingCert.getX509Certificate(), keyStore)) {
                                 passed = false;
                                 fwStatus = new AppraisalStatus(FAIL,
-                                    "Firmware validation failed: invalid certificate path.");
+                                        "Firmware validation failed: invalid certificate path.");
                             }
                         } catch (IOException ioEx) {
-                            log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
+                            log.error("Error getting X509 cert from manager: {}", ioEx.getMessage());
                         } catch (SupplyChainValidatorException scvEx) {
-                            log.error("Error validating cert against keystore: " + scvEx.getMessage());
+                            log.error("Error validating cert against keystore: {}", scvEx.getMessage());
                             fwStatus = new AppraisalStatus(FAIL,
                                     "Firmware validation failed: invalid certificate path.");
                         }
                         break;
                     }
                 } catch (IOException ioEx) {
-                    log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
+                    log.error("Error getting X509 cert from manager: {}", ioEx.getMessage());
                 }
             }
 
@@ -197,16 +206,12 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             }
 
             if (passed) {
-                TCGEventLog logProcessor;
+                TCGEventLog expectedEventLog;
                 try {
-                    logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
-                    baseline = logProcessor.getExpectedPCRValues();
-                } catch (CertificateException cEx) {
+                    expectedEventLog = new TCGEventLog(supportReferenceManifest.getRimBytes());
+                    baseline = expectedEventLog.getExpectedPCRValues();
+                } catch (CertificateException | IOException | NoSuchAlgorithmException cEx) {
                     log.error(cEx);
-                } catch (NoSuchAlgorithmException noSaEx) {
-                    log.error(noSaEx);
-                } catch (IOException ioEx) {
-                    log.error(ioEx);
                 }
 
                 // part 1 of firmware validation check: PCR baseline match
@@ -221,9 +226,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         fwStatus = new AppraisalStatus(FAIL,
                                 "Firmware validation failed: Client did not "
                                         + "provide pcr values.");
-                        log.warn(String.format(
-                                "Firmware validation failed: Client (%s) did not "
-                                        + "provide pcr values.", device.getName()));
+                        log.warn("Firmware validation failed: Client ({}) did not "
+                                + "provide pcr values.", device.getName());
                     } else {
                         // we have a full set of PCR values
                         //int algorithmLength = baseline[0].length();
@@ -233,42 +237,38 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         // part 2 of firmware validation check: bios measurements
                         // vs baseline tcg event log
                         // find the measurement
-                        TCGEventLog tcgMeasurementLog;
-                        LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
-                        List<ReferenceDigestValue> eventValue;
-                        HashMap<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
+                        TCGEventLog actualEventLog;
+                        LinkedList<TpmPcrEvent> failedPcrValues = new LinkedList<>();
+                        List<ReferenceDigestValue> rimIntegrityMeasurements;
+                        HashMap<String, ReferenceDigestValue> expectedEventLogRecords = new HashMap<>();
                         try {
                             if (measurement.getDeviceName().equals(hostName)) {
-                                tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
-                                eventValue = referenceDigestValueRepository
+                                actualEventLog = new TCGEventLog(measurement.getRimBytes());
+                                rimIntegrityMeasurements = referenceDigestValueRepository
                                         .findValuesByBaseRimId(baseReferenceManifest.getId());
-                                for (ReferenceDigestValue rdv : eventValue) {
-                                    eventValueMap.put(rdv.getDigestValue(), rdv);
+                                for (ReferenceDigestValue rdv : rimIntegrityMeasurements) {
+                                    expectedEventLogRecords.put(rdv.getDigestValue(), rdv);
                                 }
 
-                                tpmPcrEvents.addAll(pcrValidator.validateTpmEvents(
-                                        tcgMeasurementLog, eventValueMap, policySettings));
+                                failedPcrValues.addAll(pcrValidator.validateTpmEvents(
+                                        actualEventLog, expectedEventLogRecords, policySettings));
                             }
-                        } catch (CertificateException cEx) {
-                            log.error(cEx);
-                        } catch (NoSuchAlgorithmException noSaEx) {
-                            log.error(noSaEx);
-                        } catch (IOException ioEx) {
-                            log.error(ioEx);
+                        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+                            log.error(exception);
                         }
 
-                        if (!tpmPcrEvents.isEmpty()) {
+                        if (!failedPcrValues.isEmpty()) {
                             StringBuilder sb = new StringBuilder();
                             sb.append(String.format("%d digest(s) were not found:%n",
-                                    tpmPcrEvents.size()));
-                            for (TpmPcrEvent tpe : tpmPcrEvents) {
+                                    failedPcrValues.size()));
+                            for (TpmPcrEvent tpe : failedPcrValues) {
                                 sb.append(String.format("PCR Index %d - %s%n",
                                         tpe.getPcrIndex(),
                                         tpe.getEventTypeStr()));
                             }
                             if (fwStatus.getAppStatus().equals(FAIL)) {
                                 fwStatus = new AppraisalStatus(FAIL, String.format("%s%n%s",
-                                        fwStatus.getMessage(), sb.toString()));
+                                        fwStatus.getMessage(), sb));
                             } else {
                                 fwStatus = new AppraisalStatus(FAIL,
                                         sb.toString(), ReferenceManifest.MEASUREMENT_RIM);

@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * This is the test class for the <code>Device</code> class.
- *
  */
 public final class DeviceTest extends AbstractUserdefinedEntityTest {
 
@@ -113,7 +112,7 @@ public final class DeviceTest extends AbstractUserdefinedEntityTest {
      */
     @Test
     public void testSetHealthStatus() {
-        final Device device  = new Device("test-device", null, HealthStatus.UNKNOWN,
+        final Device device = new Device("test-device", null, HealthStatus.UNKNOWN,
                 AppraisalStatus.Status.UNKNOWN, null, false,
                 null, null);
         device.setHealthStatus(HealthStatus.TRUSTED);

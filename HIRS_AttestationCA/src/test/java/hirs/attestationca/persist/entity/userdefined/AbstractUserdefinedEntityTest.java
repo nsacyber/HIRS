@@ -33,7 +33,6 @@ import java.util.Objects;
 
 /**
  * Class with definitions and functions common to multiple Userdefined Entity object tests.
- *
  */
 public class AbstractUserdefinedEntityTest {
 
@@ -41,71 +40,65 @@ public class AbstractUserdefinedEntityTest {
      * Location of a test (fake) SGI intermediate CA certificate.
      */
     public static final String FAKE_SGI_INT_CA_FILE = "/certificates/fakeSGIIntermediateCA.cer";
-
     /**
      * Location of a test (fake) Intel intermediate CA certificate.
      */
     public static final String FAKE_INTEL_INT_CA_FILE =
             "/certificates/fakeIntelIntermediateCA.cer";
-
     /**
      * Location of a test (fake) root CA certificate.
      */
     public static final String FAKE_ROOT_CA_FILE = "/certificates/fakeRootCA.cer";
-
     /**
      * Hex-encoded subject key identifier for the FAKE_ROOT_CA_FILE.
      */
     public static final String FAKE_ROOT_CA_SUBJECT_KEY_IDENTIFIER_HEX =
             "58ec313a1699f94c1c8c4e2c6412402b258f0177";
-
-    /**
-     * Location of a test identity certificate.
-     */
-    private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
-
     /**
      * Location of a test platform attribute cert.
      */
     public static final String TEST_PLATFORM_CERT_1 =
             "/validation/platform_credentials/Intel_pc1.cer";
-
     /**
      * Location of another, slightly different platform attribute cert.
      */
     public static final String TEST_PLATFORM_CERT_2 =
             "/validation/platform_credentials/Intel_pc2.cer";
-
     /**
      * Location of another, slightly different platform attribute cert.
      */
     public static final String TEST_PLATFORM_CERT_3 =
             "/validation/platform_credentials/Intel_pc3.cer";
-
     /**
      * Platform cert with comma separated baseboard and chassis serial number.
      */
     public static final String TEST_PLATFORM_CERT_4 =
             "/validation/platform_credentials/Intel_pc4.pem";
-
     /**
      * Another platform cert with comma separated baseboard and chassis serial number.
      */
     public static final String TEST_PLATFORM_CERT_5 =
             "/validation/platform_credentials/Intel_pc5.pem";
-
     /**
      * Location of another, slightly different platform attribute cert.
      */
     public static final String TEST_PLATFORM_CERT_6 =
             "/validation/platform_credentials/TPM_INTC_Platform_Cert_RSA.txt";
-
-    private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
-
     /**
      * Dummy message for supply chain validation test.
      */
     public static final String VALIDATION_MESSAGE = "Some message.";
+    /**
+     * Location of a test identity certificate.
+     */
+    private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
+    private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
+
+    /**
+     * This protected constructor was created to silence one of checkstyle errors.
+     */
+    protected AbstractUserdefinedEntityTest() {
+    }
 
     /**
      * Construct a test certificate from the given parameters.
@@ -131,13 +124,14 @@ public class AbstractUserdefinedEntityTest {
      * @param endorsementCredential the endorsement credentials (can be null)
      * @param platformCredentials   the platform credentials (can be null)
      * @return the newly-constructed Certificate
-     * @throws IOException if there is a problem constructing the test certificate
+     * @throws IOException              if there is a problem constructing the test certificate
+     * @throws IllegalArgumentException if there is a problem retrieving the certificate class simple name
      */
     public static <T extends ArchivableEntity> Certificate getTestCertificate(
             final Class<T> certificateClass, final String filename,
             final EndorsementCredential endorsementCredential,
             final List<PlatformCredential> platformCredentials)
-            throws IOException {
+            throws IOException, IllegalArgumentException {
 
         Path certPath;
         try {
@@ -149,23 +143,17 @@ public class AbstractUserdefinedEntityTest {
             throw new IOException("Could not resolve path URI", e);
         }
 
-        switch (certificateClass.getSimpleName()) {
-            case "CertificateAuthorityCredential":
-                return new CertificateAuthorityCredential(certPath);
-            case "ConformanceCredential":
-                return new ConformanceCredential(certPath);
-            case "EndorsementCredential":
-                return new EndorsementCredential(certPath);
-            case "PlatformCredential":
-                return new PlatformCredential(certPath);
-            case "IssuedAttestationCertificate":
-                return new IssuedAttestationCertificate(certPath,
-                        endorsementCredential, platformCredentials, false);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate class %s", certificateClass.getName())
-                );
-        }
+        return switch (certificateClass.getSimpleName()) {
+            case "CertificateAuthorityCredential" -> new CertificateAuthorityCredential(certPath);
+            case "ConformanceCredential" -> new ConformanceCredential(certPath);
+            case "EndorsementCredential" -> new EndorsementCredential(certPath);
+            case "PlatformCredential" -> new PlatformCredential(certPath);
+            case "IssuedAttestationCertificate" -> new IssuedAttestationCertificate(certPath,
+                    endorsementCredential, platformCredentials, false);
+            default -> throw new IllegalArgumentException(
+                    String.format("Unknown certificate class %s", certificateClass.getName())
+            );
+        };
     }
 
     /**
@@ -202,8 +190,9 @@ public class AbstractUserdefinedEntityTest {
     public static NetworkInfo createTestNetworkInfo() {
         try {
             final String hostname = "test.hostname";
+            final byte[] byteAddress = new byte[] {127, 0, 0, 1};
             final InetAddress ipAddress =
-                    InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+                    InetAddress.getByAddress(byteAddress);
             final byte[] macAddress = new byte[] {11, 22, 33, 44, 55, 66};
             return new NetworkInfo(hostname, ipAddress, macAddress);
 
@@ -294,8 +283,8 @@ public class AbstractUserdefinedEntityTest {
     /**
      * Construct a SupplyChainValidation for use in tests according to the provided parameters.
      *
-     * @param type the type of validation
-     * @param result the appraisal result
+     * @param type         the type of validation
+     * @param result       the appraisal result
      * @param certificates the certificates related to this validation
      * @return the resulting SupplyChainValidation object
      */

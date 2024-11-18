@@ -1,7 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.rim;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
@@ -9,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -25,16 +25,18 @@ import java.util.Collection;
  * Similar to {@link SupportReferenceManifest}
  * however this is the live log from the client.
  */
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = false)
 @Log4j2
 @Entity
 public class EventLogMeasurements extends SupportReferenceManifest {
 
     @Column
     @JsonIgnore
-    @Getter @Setter
     private int pcrHash = 0;
+
     @Enumerated(EnumType.STRING)
-    @Getter @Setter
     private AppraisalStatus.Status overallValidationResult = AppraisalStatus.Status.FAIL;
 
     /**
@@ -74,6 +76,7 @@ public class EventLogMeasurements extends SupportReferenceManifest {
     /**
      * Getter method for the expected PCR values contained within the support
      * RIM.
+     *
      * @return a string array of the pcr values.
      */
     public String[] getExpectedPCRList() {
@@ -81,12 +84,8 @@ public class EventLogMeasurements extends SupportReferenceManifest {
             TCGEventLog logProcessor = new TCGEventLog(this.getRimBytes());
             this.pcrHash = Arrays.hashCode(logProcessor.getExpectedPCRValues());
             return logProcessor.getExpectedPCRValues();
-        } catch (CertificateException cEx) {
-            log.error(cEx);
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        } catch (IOException ioEx) {
-            log.error(ioEx);
+        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+            log.error(exception);
         }
 
         return new String[0];
@@ -102,32 +101,10 @@ public class EventLogMeasurements extends SupportReferenceManifest {
         try {
             logProcessor = new TCGEventLog(this.getRimBytes());
             return logProcessor.getEventList();
-        } catch (CertificateException cEx) {
-            log.error(cEx);
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        } catch (IOException ioEx) {
-            log.error(ioEx);
+        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+            log.error(exception);
         }
 
         return new ArrayList<>();
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        if (this == object) {
-            return true;
-        }
-        if (object == null || getClass() != object.getClass()) {
-            return false;
-        }
-        EventLogMeasurements that = (EventLogMeasurements) object;
-
-        return this.getHexDecHash().equals(that.getHexDecHash());
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 }

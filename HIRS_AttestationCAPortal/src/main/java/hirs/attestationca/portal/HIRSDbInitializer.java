@@ -11,8 +11,14 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 
 @Log4j2
 @WebListener
-public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServletInitializer implements ServletContextListener {
+public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServletInitializer
+        implements ServletContextListener {
 
+    /**
+     * Initialize context.
+     *
+     * @param servletContextEvent servlet context event.
+     */
     @Override
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
@@ -21,29 +27,46 @@ public class HIRSDbInitializer extends AbstractAnnotationConfigDispatcherServlet
 
 //        applicationContext.register(PersistenceConfiguration.class);
         try {
-        applicationContext.refresh();
+            applicationContext.refresh();
 
         } catch (NoSuchBeanDefinitionException nsbdEx) {
             if (log.isDebugEnabled()) {
-                log.debug("Unable to locate MultipartResolver with name 'multipartResolver': no multipart request handling provided");
+                log.debug(
+                        "Unable to locate MultipartResolver with name 'multipartResolver': no multipart"
+                                + " request handling provided");
             }
         } catch (Exception ex) {
             log.error(ex.getMessage());
         }
     }
 
+    /**
+     * Retrieves root configuration classes.
+     *
+     * @return array of root configuration classes.
+     */
     @Override
-    protected Class <?>[] getRootConfigClasses() {
+    protected Class<?>[] getRootConfigClasses() {
         return new Class[] {
                 PersistenceJPAConfig.class, PageConfiguration.class, PersistenceConfiguration.class
         };
     }
 
+    /**
+     * Retrieves servlet configuration classes.
+     *
+     * @return null
+     */
     @Override
-    protected Class <?>[] getServletConfigClasses() {
+    protected Class<?>[] getServletConfigClasses() {
         return null;
     }
 
+    /**
+     * Retrieves servlet mappings.
+     *
+     * @return string array of servlet mappings.
+     */
     @Override
     protected String[] getServletMappings() {
         return new String[] {

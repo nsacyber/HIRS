@@ -25,13 +25,13 @@ import java.util.List;
  * was removed. This change was not TCG-compliant, as the auto-generated code
  * would produce something like:
  * <p>&nbsp;
- *   <pre>
+ * <pre>
  *     &lt;PcrValue PcrNumber="0"&gt;06fl7EXo34MWxuLq9kcXI9la9NA=&lt;/ns3:PcrValue&gt;
  * </pre>
  * <p>
- *   but using TPMMeasurementRecords result in something like:
+ * but using TPMMeasurementRecords result in something like:
  * <p>&nbsp;
- *   <pre>
+ * <pre>
  *     &lt;PcrValue PcrNumber="2"&gt;
  *       &lt;hash&gt;
  *         &lt;digest&gt;AAECAwQFBgcICQoLDA0ODxAREhM=&lt;/digest&gt;
@@ -39,14 +39,13 @@ import java.util.List;
  *     &lt;/hash&gt;
  *   &lt;/PcrValue&gt;
  * </pre>
- *
  */
 @Log4j2
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PcrComposite",
         namespace = "http://www.trustedcomputinggroup.org/XML/SCHEMA/"
                 + "Integrity_Report_v1_0#", propOrder = {"pcrSelection",
-        "valueSize", "pcrValueList" })
+        "valueSize", "pcrValueList"})
 @Embeddable
 public class PcrComposite {
 
@@ -69,11 +68,9 @@ public class PcrComposite {
     /**
      * Constructor used to create a PcrComposite object.
      *
-     * @param pcrSelection
-     *            {@link PcrSelection } object, identifies which TPM PCRs are
-     *            quoted
-     * @param pcrValueList
-     *            List of TPMMeasurementRecords representing the PCR values
+     * @param pcrSelection {@link PcrSelection } object, identifies which TPM PCRs are
+     *                     quoted
+     * @param pcrValueList List of TPMMeasurementRecords representing the PCR values
      */
     public PcrComposite(final PcrSelection pcrSelection,
                         final List<TPMMeasurementRecord> pcrValueList) {
@@ -90,13 +87,11 @@ public class PcrComposite {
     }
 
 
-
     /**
      * Gets the value of the valueSize property, the length in bytes of the
      * array of PcrValue complex types.
      *
      * @return int value representing the valueSize
-     *
      */
     @XmlElement(name = "ValueSize", required = true)
     public final int getValueSize() {

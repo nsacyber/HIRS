@@ -81,10 +81,15 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request")
 public class CertificatePageController extends PageController<NoPageParams> {
-    @Autowired(required = false)
-    private EntityManager entityManager;
-
-    private CertificateAuthorityCredential certificateAuthorityCredential;
+    /**
+     * Model attribute name used by initPage for the aca cert info.
+     */
+    static final String ACA_CERT_DATA = "acaCertData";
+    private static final String TRUSTCHAIN = "trust-chain";
+    private static final String PLATFORMCREDENTIAL = "platform-credentials";
+    private static final String IDEVIDCERTIFICATE = "idevid-certificates";
+    private static final String ENDORSEMENTCREDENTIAL = "endorsement-key-credentials";
+    private static final String ISSUEDCERTIFICATES = "issued-certificates";
     private final CertificateRepository certificateRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
     private final ComponentResultRepository componentResultRepository;
@@ -92,17 +97,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
     private final IssuedCertificateRepository issuedCertificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final IDevIDCertificateRepository iDevIDCertificateRepository;
-
-    private static final String TRUSTCHAIN = "trust-chain";
-    private static final String PLATFORMCREDENTIAL = "platform-credentials";
-    private static final String IDEVIDCERTIFICATE = "idevid-certificates";
-    private static final String ENDORSEMENTCREDENTIAL = "endorsement-key-credentials";
-    private static final String ISSUEDCERTIFICATES = "issued-certificates";
-
-    /**
-     * Model attribute name used by initPage for the aca cert info.
-     */
-    static final String ACA_CERT_DATA = "acaCertData";
+    @Autowired(required = false)
+    private EntityManager entityManager;
+    private CertificateAuthorityCredential certificateAuthorityCredential;
 
     /**
      * Constructor providing the Page's display and routing specification.
@@ -113,7 +110,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @param endorsementCredentialRepository the endorsement credential manager
      * @param issuedCertificateRepository     the issued certificate manager
      * @param caCredentialRepository          the ca credential manager
-     * @param acaCertificate                  the ACA's X509 certificate     */
+     * @param iDevIDCertificateRepository     the IDevID certificate repository
+     * @param acaCertificate                  the ACA's X509 certificate
+     */
     @Autowired
     public CertificatePageController(final CertificateRepository certificateRepository,
                                      final PlatformCertificateRepository platformCertificateRepository,
@@ -143,11 +142,52 @@ public class CertificatePageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Get the page based on the certificate type.
+     *
+     * @param certificateType String containing the certificate type
+     * @return the page for the certificate type.
+     */
+    private static Page getCertificatePage(final String certificateType) {
+        // get page information (default to TRUST_CHAIN)
+        return switch (certificateType) {
+            case PLATFORMCREDENTIAL -> Page.PLATFORM_CREDENTIALS;
+            case ENDORSEMENTCREDENTIAL -> Page.ENDORSEMENT_KEY_CREDENTIALS;
+            case ISSUEDCERTIFICATES -> Page.ISSUED_CERTIFICATES;
+            case IDEVIDCERTIFICATE -> Page.IDEVID_CERTIFICATES;
+            default -> Page.TRUST_CHAIN;
+        };
+    }
+
+    /**
+     * Gets the concrete certificate class type to query for.
+     *
+     * @param certificateType String containing the certificate type
+     * @return the certificate class type
+     */
+    private static Class<? extends Certificate> getCertificateClass(final String certificateType) {
+        switch (certificateType) {
+            case PLATFORMCREDENTIAL:
+                return PlatformCredential.class;
+            case ENDORSEMENTCREDENTIAL:
+                return EndorsementCredential.class;
+            case ISSUEDCERTIFICATES:
+                return IssuedAttestationCertificate.class;
+            case IDEVIDCERTIFICATE:
+                return IDevIDCertificate.class;
+            case TRUSTCHAIN:
+                return CertificateAuthorityCredential.class;
+            default:
+                throw new IllegalArgumentException(
+                        String.format("Unknown certificate type: %s", certificateType));
+        }
+    }
+
+    /**
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
      * @return the path for the view and data model for the page.
      */
     @Override
@@ -160,9 +200,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Returns the path for the view and the data model for the page.
      *
      * @param certificateType String containing the certificate type
-     * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param params          The object to map url parameters into.
+     * @param model           The data model for the request. Can contain data from
+     *                        redirect.
      * @return the path for the view and data model for the page.
      */
     @RequestMapping("/{certificateType}")
@@ -189,7 +229,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 mav = getBaseModelAndView(Page.TRUST_CHAIN);
                 // Map with the ACA certificate information
                 data.putAll(CertificateStringMapBuilder.getCertificateAuthorityInformation(
-                        certificateAuthorityCredential, this.certificateRepository, this.caCredentialRepository));
+                        certificateAuthorityCredential, this.certificateRepository,
+                        this.caCredentialRepository));
                 mav.addObject(ACA_CERT_DATA, data);
                 break;
             default:
@@ -200,13 +241,12 @@ public class CertificatePageController extends PageController<NoPageParams> {
         return mav;
     }
 
-
     /**
      * Queries for the list of Certificates and returns a data table response
      * with the records.
      *
      * @param certificateType String containing the certificate type
-     * @param input the DataTables search/query parameters
+     * @param input           the DataTables search/query parameters
      * @return the data table
      */
     @ResponseBody
@@ -216,11 +256,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
     public DataTableResponse<? extends Certificate> getTableData(
             @PathVariable("certificateType") final String certificateType,
             final DataTableInput input) {
-        log.debug("Handling list request: " + input);
+        log.debug("Handling list request: {}", input);
 
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: " + orderColumnName);
+        log.debug("Ordering on column: {}", orderColumnName);
 
         // check that the alert is not archived and that it is in the specified report
         CriteriaModifier criteriaModifier = new CriteriaModifier() {
@@ -229,15 +269,16 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 Session session = entityManager.unwrap(Session.class);
                 CriteriaBuilder cb = session.getCriteriaBuilder();
                 Root<Certificate> rimRoot = criteriaQuery.from(Reference.class);
-                criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
+                criteriaQuery.select(rimRoot).distinct(true)
+                        .where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
 
                 // add a device alias if this query includes the device table
                 // for getting the device (e.g. device name).
                 // use left join, since device may be null. Query will return all
                 // Certs of this type, whether it has a Device or not (device field may be null)
-                if (hasDeviceTableToJoin(certificateType)) {
-//                    criteria.createAlias("device", "device", JoinType.LEFT_OUTER_JOIN);
-                }
+                // if (hasDeviceTableToJoin(certificateType)) {
+                //   criteria.createAlias("device", "device", JoinType.LEFT_OUTER_JOIN);
+                //}
             }
         };
 
@@ -249,7 +290,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
         // serial number. (pc.HolderSerialNumber = ec.SerialNumber)
         if (certificateType.equals(PLATFORMCREDENTIAL)) {
             FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<PlatformCredential> pagedResult = this.platformCertificateRepository.findByArchiveFlag(false, paging);
+            org.springframework.data.domain.Page<PlatformCredential> pagedResult =
+                    this.platformCertificateRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -264,7 +306,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             if (!records.isEmpty()) {
                 // loop all the platform certificates
                 for (int i = 0; i < records.size(); i++) {
-                    PlatformCredential pc = (PlatformCredential) records.get(i);
+                    PlatformCredential pc = records.get(i);
                     // find the EC using the PC's "holder serial number"
                     associatedEC = this.endorsementCredentialRepository
                             .findBySerialNumber(pc.getHolderSerialNumber());
@@ -282,7 +324,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
             FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<EndorsementCredential> pagedResult = this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
+            org.springframework.data.domain.Page<EndorsementCredential> pagedResult =
+                    this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -297,7 +340,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(TRUSTCHAIN)) {
             FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult = this.caCredentialRepository.findByArchiveFlag(false, paging);
+            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult =
+                    this.caCredentialRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -312,7 +356,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ISSUEDCERTIFICATES)) {
             FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult = this.issuedCertificateRepository.findByArchiveFlag(false, paging);
+            org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult =
+                    this.issuedCertificateRepository.findByArchiveFlag(false, paging);
 
             if (pagedResult.hasContent()) {
                 records.addAll(pagedResult.getContent());
@@ -325,8 +370,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
             log.debug("Returning list of size: " + records.size());
             return new DataTableResponse<>(records, input);
-        }
-        else if (certificateType.equals(IDEVIDCERTIFICATE)) {
+        } else if (certificateType.equals(IDEVIDCERTIFICATE)) {
             FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<IDevIDCertificate>();
             org.springframework.data.domain.Page<IDevIDCertificate> pagedResult =
                     this.iDevIDCertificateRepository.findByArchiveFlag(false, paging);
@@ -351,8 +395,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Upload and processes a credential.
      *
      * @param certificateType String containing the certificate type
-     * @param files the files to process
-     * @param attr the redirection attributes
+     * @param files           the files to process
+     * @param attr            the redirection attributes
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
      */
@@ -388,9 +432,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Archives (soft delete) the credential.
      *
      * @param certificateType String containing the certificate type
-     * @param id the UUID of the cert to delete
-     * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     * @param id              the UUID of the cert to delete
+     * @param attr            RedirectAttributes used to forward data back to the original
+     *                        page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
@@ -459,9 +503,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download.
      *
      * @param certificateType String containing the certificate type
-     * @param id the UUID of the cert to download
-     * @param response the response object (needed to update the header with the
-     * file name)
+     * @param id              the UUID of the cert to download
+     * @param response        the response object (needed to update the header with the
+     *                        file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/{certificateType}/download", method = RequestMethod.GET)
@@ -482,11 +526,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 // send a 404 error when invalid certificate
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
-                StringBuilder fileName = new StringBuilder("filename=\"");
-                fileName.append(getCertificateClass(certificateType).getSimpleName());
-                fileName.append("_");
-                fileName.append(certificate.getSerialNumber());
-                fileName.append(".cer\"");
+                String fileName = "filename=\"" + getCertificateClass(certificateType).getSimpleName()
+                        + "_"
+                        + certificate.getSerialNumber()
+                        + ".cer\"";
 
                 // Set filename for download.
                 response.setHeader("Content-Disposition", "attachment;" + fileName);
@@ -508,8 +551,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * stream for download.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
-     *
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @ResponseBody
@@ -530,7 +572,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/trust-chain/bulk", method = RequestMethod.GET)
@@ -546,7 +588,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByType("CertificateAuthorityCredential"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("CertificateAuthorityCredential"),
+                    singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -561,7 +604,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/platform-credentials/bulk", method = RequestMethod.GET)
@@ -593,7 +636,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/issued-certificates/bulk", method = RequestMethod.GET)
@@ -610,7 +653,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByType("IssuedAttestationCertificate"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("IssuedAttestationCertificate"),
+                    singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -625,7 +669,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/endorsement-key-credentials/bulk", method = RequestMethod.GET)
@@ -641,7 +685,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByType("EndorsementCredential"), singleFileName);
+            bulkDownload(zipOut, this.certificateRepository.findByType("EndorsementCredential"),
+                    singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -682,53 +727,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * table, false otherwise.
      */
     private boolean hasDeviceTableToJoin(final String certificateType) {
-        boolean hasDevice = true;
+        boolean hasDevice = !certificateType.equals(TRUSTCHAIN);
         // Trust_Chain Credential do not contain the device table to join.
-        if (certificateType.equals(TRUSTCHAIN)) {
-            hasDevice = false;
-        }
         return hasDevice;
-    }
-
-    /**
-     * Get the page based on the certificate type.
-     *
-     * @param certificateType String containing the certificate type
-     * @return the page for the certificate type.
-     */
-    private static Page getCertificatePage(final String certificateType) {
-        // get page information (default to TRUST_CHAIN)
-        return switch (certificateType) {
-            case PLATFORMCREDENTIAL -> Page.PLATFORM_CREDENTIALS;
-            case ENDORSEMENTCREDENTIAL -> Page.ENDORSEMENT_KEY_CREDENTIALS;
-            case ISSUEDCERTIFICATES -> Page.ISSUED_CERTIFICATES;
-            case IDEVIDCERTIFICATE ->  Page.IDEVID_CERTIFICATES;
-            default -> Page.TRUST_CHAIN;
-        };
-    }
-
-    /**
-     * Gets the concrete certificate class type to query for.
-     *
-     * @param certificateType String containing the certificate type
-     * @return the certificate class type
-     */
-    private static Class<? extends Certificate> getCertificateClass(final String certificateType) {
-        switch (certificateType) {
-            case PLATFORMCREDENTIAL:
-                return PlatformCredential.class;
-            case ENDORSEMENTCREDENTIAL:
-                return EndorsementCredential.class;
-            case ISSUEDCERTIFICATES:
-                return IssuedAttestationCertificate.class;
-            case IDEVIDCERTIFICATE:
-                return IDevIDCertificate.class;
-            case TRUSTCHAIN:
-                return CertificateAuthorityCredential.class;
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate type: %s", certificateType));
-        }
     }
 
     /**
@@ -769,7 +770,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * Gets the certificate by the platform serial number.
      *
      * @param certificateType String containing the certificate type
-     * @param serialNumber the platform serial number
+     * @param serialNumber    the platform serial number
      * @return the certificate or null if none is found
      */
     private List<PlatformCredential> getCertificateByBoardSN(
@@ -794,15 +795,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * with error messages if parsing fails.
      *
      * @param certificateType String containing the certificate type
-     * @param file the file being uploaded from the portal
-     * @param messages contains any messages that will be display on the page
+     * @param file            the file being uploaded from the portal
+     * @param messages        contains any messages that will be display on the page
      * @return the parsed certificate or null if parsing failed.
      */
     private Certificate parseCertificate(
             final String certificateType,
             final MultipartFile file,
             final PageMessages messages) {
-        log.info("Received File of Size: " + file.getSize());
+        log.info("Received File of Size: {}", file.getSize());
 
         byte[] fileBytes;
         String fileName = file.getOriginalFilename();
@@ -835,13 +836,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
                                 storeCertificate(
                                         certificateType,
                                         file.getOriginalFilename(),
-                                        messages, new CertificateAuthorityCredential(((java.security.cert.Certificate) i.next()).getEncoded()));
+                                        messages, new CertificateAuthorityCredential(
+                                                ((java.security.cert.Certificate) i.next()).getEncoded()));
                             }
 
                             // stop the main thread from saving/storing
                             return null;
                         } catch (CertificateException e) {
-                            throw new IOException("Cannot construct X509Certificate from the input stream", e);
+                            throw new IOException("Cannot construct X509Certificate from the input stream",
+                                    e);
                         }
                     }
                     return new CertificateAuthorityCredential(fileBytes);
@@ -930,7 +933,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                                 return;
                             }
                         }
-                    } /**else {
+                    } /*else {
                      // this is a delta, check if the holder exists.
                      PlatformCredential holderPC = PlatformCredential
                      .select(certificateManager)
@@ -947,7 +950,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                      LOGGER.error(failMessage);
                      return;
                      }
-                     }**/
+                     }*/
                 }
 
                 this.certificateRepository.save(certificate);

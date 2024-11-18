@@ -64,22 +64,22 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
     private static final String BASE_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)swidtag)$)";
     private static final String SUPPORT_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
-
-    @Autowired(required = false)
-    private EntityManager entityManager;
-
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
+    @Autowired(required = false)
+    private EntityManager entityManager;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestRepository the reference manifest manager
+     * @param referenceManifestRepository    the reference manifest manager
      * @param referenceDigestValueRepository this is the reference event manager
      */
     @Autowired
-    public ReferenceManifestPageController(final ReferenceManifestRepository referenceManifestRepository,
-            final ReferenceDigestValueRepository referenceDigestValueRepository) {
+    public ReferenceManifestPageController(final ReferenceManifestRepository
+                                                   referenceManifestRepository,
+                                           final ReferenceDigestValueRepository
+                                                   referenceDigestValueRepository) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
@@ -89,8 +89,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * Returns the filePath for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from
-     * redirect.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
      * @return the filePath for the view and data model for the page.
      */
     @Override
@@ -113,16 +113,17 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             method = RequestMethod.GET)
     public DataTableResponse<ReferenceManifest> getTableData(
             @Valid final DataTableInput input) {
-        log.debug("Handling request for summary list: " + input);
+        log.debug("Handling request for summary list: {}", input);
 
         String orderColumnName = input.getOrderColumnName();
-        log.info("Ordering on column: " + orderColumnName);
-        log.info("Querying with the following dataTableInput: " + input.toString());
+        log.info("Ordering on column: {}", orderColumnName);
+        log.info("Querying with the following dataTableInput: {}", input);
 
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<ReferenceManifest> pagedResult = referenceManifestRepository.findByArchiveFlag(false, paging);
+        org.springframework.data.domain.Page<ReferenceManifest> pagedResult =
+                referenceManifestRepository.findByArchiveFlag(false, paging);
         int rimCount = 0;
 
         if (pagedResult.hasContent()) {
@@ -137,7 +138,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         records.setRecordsFiltered(referenceManifestRepository.findByArchiveFlag(false).size());
 
-        log.debug("Returning list of size: " + records.size());
+        log.debug("Returning list of size: {}", records.size());
         return new DataTableResponse<>(records, input);
     }
 
@@ -145,10 +146,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * Upload and processes a reference manifest(s).
      *
      * @param files the files to process
-     * @param attr the redirection attributes
+     * @param attr  the redirection attributes
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
-     * @throws Exception if malformed URI
+     * @throws Exception          if malformed URI
      */
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     protected RedirectView upload(
@@ -162,7 +163,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         Matcher matcher;
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
-        log.info(String.format("Processing %s uploaded files", files.length));
+        log.info("Processing {} uploaded files", files.length);
 
         // loop through the files
         for (MultipartFile file : files) {
@@ -178,20 +179,22 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             if (isBaseRim || isSupportRim) {
                 parseRIM(file, isSupportRim, messages, baseRims, supportRims);
             } else {
-                String errorString = "The file extension of " + fileName + " was not recognized." +
-                        " Base RIMs support the extension \".swidtag\", and support RIMs support " +
-                        "\".rimpcr\", \".rimel\", \".bin\", and \".log\". " +
-                        "Please verify your upload and retry.";
-                log.error("File extension in " + fileName + " not recognized as base or support RIM.");
+                String errorString = "The file extension of " + fileName + " was not recognized."
+                        + " Base RIMs support the extension \".swidtag\", and support RIMs support "
+                        + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
+                        + "Please verify your upload and retry.";
+                log.error("File extension in {} not recognized as base or support RIM.", fileName);
                 messages.addError(errorString);
             }
         }
-        baseRims.stream().forEach((rim) -> {
-            log.info(String.format("Storing swidtag %s", rim.getFileName()));
+
+        baseRims.forEach((rim) -> {
+            log.info("Storing swidtag {}", rim.getFileName());
             this.referenceManifestRepository.save(rim);
         });
-        supportRims.stream().forEach((rim) -> {
-            log.info(String.format("Storing event log %s", rim.getFileName()));
+
+        supportRims.forEach((rim) -> {
+            log.info("Storing event log {}", rim.getFileName());
             this.referenceManifestRepository.save(rim);
         });
 
@@ -217,16 +220,16 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * Archives (soft delete) the Reference Integrity Manifest entry.
      *
-     * @param id the UUID of the rim to delete
+     * @param id   the UUID of the rim to delete
      * @param attr RedirectAttributes used to forward data back to the original
-     * page.
+     *             page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public RedirectView delete(@RequestParam final String id,
                                final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete " + id);
+        log.info("Handling request to delete {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -262,16 +265,16 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * Handles request to download the rim by writing it to the response stream
      * for download.
      *
-     * @param id the UUID of the rim to download
+     * @param id       the UUID of the rim to download
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/download", method = RequestMethod.GET)
     public void download(@RequestParam final String id,
                          final HttpServletResponse response)
             throws IOException {
-        log.info("Handling RIM request to download " + id);
+        log.info("Handling RIM request to download {}", id);
 
         try {
             ReferenceManifest referenceManifest = getRimFromDb(id);
@@ -282,10 +285,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 // send a 404 error when invalid Reference Manifest
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
-                StringBuilder fileName = new StringBuilder("filename=\"");
-                fileName.append(referenceManifest.getFileName());
                 // Set filename for download.
-                response.setHeader("Content-Disposition", "attachment;" + fileName);
+                response.setHeader("Content-Disposition",
+                        "attachment;" + "filename=\"" + referenceManifest.getFileName()
+                        // Set filename for download.
+                );
                 response.setContentType("application/octet-stream");
 
                 // write cert to output stream
@@ -304,7 +308,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
-     * file name)
+     *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
     @RequestMapping(value = "/bulk", method = RequestMethod.GET)
@@ -359,7 +363,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      *
      * @param id of the RIM
      * @return the associated RIM from the DB
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if issues arise from attempting to retrieve the rim from the database
      */
     private ReferenceManifest getRimFromDb(final String id) throws IllegalArgumentException {
         UUID uuid = UUID.fromString(id);
@@ -375,13 +379,12 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * Takes the rim files provided and returns a {@link ReferenceManifest}
      * object.
      *
-     * @param file the provide user file via browser.
-     * @param supportRIM matcher result
-     * @param messages the object that handles displaying information to the
-     * user.
-     * @param baseRims object to store multiple files
+     * @param file        the provide user file via browser.
+     * @param supportRIM  matcher result
+     * @param messages    the object that handles displaying information to the
+     *                    user.
+     * @param baseRims    object to store multiple files
      * @param supportRims object to store multiple files
-     * @return a single or collection of reference manifest files.
      */
     private void parseRIM(
             final MultipartFile file, final boolean supportRIM,
@@ -476,6 +479,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * If the support rim is a supplemental or base, this method looks for the
      * original oem base rim to associate with each event.
+     *
      * @param supportRim assumed db object
      * @return reference to the base rim
      */
@@ -517,16 +521,12 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                                     dbSupport.getId(), dbSupport.getPlatformManufacturer(),
                                     dbSupport.getPlatformModel(), tpe.getPcrIndex(),
                                     tpe.getEventDigestStr(), dbSupport.getHexDecHash(),
-                                    tpe.getEventTypeStr(),false, false,
+                                    tpe.getEventTypeStr(), false, false,
                                     true, tpe.getEventContent());
 
                             this.referenceDigestValueRepository.save(newRdv);
                         }
-                    } catch (CertificateException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchAlgorithmException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
+                    } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
                     }
                 } else {

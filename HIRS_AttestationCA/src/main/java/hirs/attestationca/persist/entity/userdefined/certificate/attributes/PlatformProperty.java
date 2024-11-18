@@ -3,12 +3,12 @@ package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
 
 /**
- *
  * Basic class that handles a single property for the platform configuration.
  * <pre>
  * Properties ::= SEQUENCE {
@@ -20,16 +20,17 @@ import org.bouncycastle.asn1.DERUTF8String;
 @Getter
 @Setter
 @AllArgsConstructor
+@ToString
 public class PlatformProperty {
-
-    private static final String NOT_SPECIFIED = "Not Specified";
 
     /**
      * Number of identifiers for version 1.
      */
     protected static final int IDENTIFIER_NUMBER = 2;
+    private static final String NOT_SPECIFIED = "Not Specified";
 
     private ASN1UTF8String propertyName;
+
     private ASN1UTF8String propertyValue;
 
     /**
@@ -56,13 +57,5 @@ public class PlatformProperty {
 
         this.propertyName = ASN1UTF8String.getInstance(sequence.getObjectAt(0));
         this.propertyValue = ASN1UTF8String.getInstance(sequence.getObjectAt(1));
-    }
-
-    @Override
-    public String toString() {
-        return "PlatformProperty{"
-                + "propertyName=" + propertyName.getString()
-                + ", propertyValue=" + propertyValue.getString()
-                + "}";
     }
 }

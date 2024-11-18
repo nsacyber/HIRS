@@ -63,13 +63,45 @@ public class PcrValidator {
      */
     public PcrValidator(final String[] pcrValues) {
         baselinePcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
-        for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
-            baselinePcrs[i] = pcrValues[i];
+        System.arraycopy(pcrValues, 0, baselinePcrs, 0, TPMMeasurementRecord.MAX_PCR_ID + 1);
+    }
+
+    /**
+     * Builds a string array of stored pcrs.
+     *
+     * @param pcrContent      string representation of the pcr content
+     * @param algorithmLength length of the algorithm
+     * @return string array representation of the stored pcrs.
+     */
+    public static String[] buildStoredPcrs(final String pcrContent, final int algorithmLength) {
+        // we have a full set of PCR values
+        String[] pcrSet = pcrContent.split("\\n");
+        String[] storedPcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
+
+        // we need to scroll through the entire list until we find
+        // a matching hash length
+        int offset = 1;
+
+        for (int i = 0; i < pcrSet.length; i++) {
+            if (pcrSet[i].contains("sha")) {
+                // entered a new set, check size
+                if (pcrSet[i + offset].split(":")[1].trim().length()
+                        == algorithmLength) {
+                    // found the matching set
+                    for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
+                        storedPcrs[j] = pcrSet[++i].split(":")[1].trim();
+                    }
+                    break;
+                }
+            }
         }
+
+        return storedPcrs;
     }
 
     /**
      * Getter for the array of baseline PCRs.
+     *
      * @return instance of the PCRs.
      */
     public String[] getBaselinePcrs() {
@@ -78,6 +110,7 @@ public class PcrValidator {
 
     /**
      * Setter for the array of baseline PCRs.
+     *
      * @param baselinePcrs instance of the PCRs.
      */
     public void setBaselinePcrs(final String[] baselinePcrs) {
@@ -88,7 +121,7 @@ public class PcrValidator {
      * Compares the baseline pcr list and the quote pcr list.  If the
      * ignore flags are set, 10 and 17-19 will be skipped for comparison.
      *
-     * @param storedPcrs non-baseline pcr list
+     * @param storedPcrs     non-baseline pcr list
      * @param policySettings db entity that holds all of policy
      * @return a StringBuilder that is empty if everything passes.
      */
@@ -116,7 +149,7 @@ public class PcrValidator {
                 }
 
                 if (!baselinePcrs[i].equals(storedPcrs[i])) {
-                    log.error(String.format("%s =/= %s", baselinePcrs[i], storedPcrs[i]));
+                    log.error("{} =/= {}", baselinePcrs[i], storedPcrs[i]);
                     sb.append(String.format(failureMsg, i));
                 }
             }
@@ -128,9 +161,10 @@ public class PcrValidator {
     /**
      * Checks that the expected FM events occurring. There are policy options that
      * will ignore certin PCRs, Event Types and Event Variables present.
+     *
      * @param tcgMeasurementLog Measurement log from the client
-     * @param eventValueMap The events stored as baseline to compare
-     * @param policySettings db entity that holds all of policy
+     * @param eventValueMap     The events stored as baseline to compare
+     * @param policySettings    db entity that holds all of policy
      * @return the events that didn't pass
      */
     public List<TpmPcrEvent> validateTpmEvents(final TCGEventLog tcgMeasurementLog,
@@ -139,24 +173,24 @@ public class PcrValidator {
         List<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
         for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
             if (policySettings.isIgnoreImaEnabled() && tpe.getPcrIndex() == IMA_PCR) {
-                log.info(String.format("IMA Ignored -> %s", tpe));
+                log.info("IMA Ignored -> {}", tpe);
             } else if (policySettings.isIgnoretBootEnabled() && (tpe.getPcrIndex() >= TBOOT_PCR_START
                     && tpe.getPcrIndex() <= TBOOT_PCR_END)) {
-                log.info(String.format("TBOOT Ignored -> %s", tpe));
+                log.info("TBOOT Ignored -> {}", tpe);
             } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getPcrIndex() >= PXE_PCR_START
                     && tpe.getPcrIndex() <= PXE_PCR_END)) {
-                log.info(String.format("OS Evt Ignored -> %s", tpe));
+                log.info("OS Evt Ignored -> {}", tpe);
             } else {
                 if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
-                    log.info(String.format("GPT Ignored -> %s", tpe));
+                    log.info("GPT Ignored -> {}", tpe);
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
-                        || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
-                    log.info(String.format("OS Evt Ignored -> %s", tpe));
+                                || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
+                    log.info("OS Evt Ignored -> {}", tpe);
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_CFG)
-                        && tpe.getEventContentStr().contains("SecureBoot"))) {
-                    log.info(String.format("OS Evt Config Ignored -> %s", tpe));
+                                && tpe.getEventContentStr().contains("SecureBoot"))) {
+                    log.info("OS Evt Config Ignored -> {}", tpe);
                 } else {
                     if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
                         tpmPcrEvents.add(tpe);
@@ -171,8 +205,8 @@ public class PcrValidator {
     /**
      * Compares hashs to validate the quote from the client.
      *
-     * @param tpmQuote the provided quote
-     * @param storedPcrs values from the RIM file
+     * @param tpmQuote       the provided quote
+     * @param storedPcrs     values from the RIM file
      * @param policySettings db entity that holds all of policy
      * @return true if validated, false if not
      */
@@ -211,49 +245,24 @@ public class PcrValidator {
 
         try {
 
-              // The calculated string is being used in the contains method
-              // because the TPM Quote's hash isn't just for PCR values,
-              // it contains the calculated digest of the PCRs, along with
-              // other information.
+            // The calculated string is being used in the contains method
+            // because the TPM Quote's hash isn't just for PCR values,
+            // it contains the calculated digest of the PCRs, along with
+            // other information.
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
-            log.debug("Validating PCR information with the following:" +
-                    System.lineSeparator() + "calculatedString = " + calculatedString +
-                    System.lineSeparator() + "quoteString = " + quoteString);
+            log.debug(
+                    "Validating PCR information with the following:{}calculatedString = {}{}"
+                            + "quoteString = {}", System.lineSeparator(), calculatedString,
+                    System.lineSeparator(), quoteString);
             validated = quoteString.contains(calculatedString);
             if (!validated) {
-                log.warn(calculatedString + " not found in " + quoteString);
+                log.warn("{} not found in {}", calculatedString, quoteString);
             }
         } catch (NoSuchAlgorithmException naEx) {
             log.error(naEx);
         }
 
         return validated;
-    }
-
-    public static String[] buildStoredPcrs(final String pcrContent, final int algorithmLength) {
-        // we have a full set of PCR values
-        String[] pcrSet = pcrContent.split("\\n");
-        String[] storedPcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
-
-        // we need to scroll through the entire list until we find
-        // a matching hash length
-        int offset = 1;
-
-        for (int i = 0; i < pcrSet.length; i++) {
-            if (pcrSet[i].contains("sha")) {
-                // entered a new set, check size
-                if (pcrSet[i + offset].split(":")[1].trim().length()
-                        == algorithmLength) {
-                    // found the matching set
-                    for (int j = 0; j <= TPMMeasurementRecord.MAX_PCR_ID; j++) {
-                        storedPcrs[j] = pcrSet[++i].split(":")[1].trim();
-                    }
-                    break;
-                }
-            }
-        }
-
-        return storedPcrs;
     }
 }

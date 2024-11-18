@@ -6,7 +6,6 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
-import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j2;
 
 import java.nio.ByteBuffer;
@@ -27,12 +26,11 @@ import java.util.Arrays;
 @Embeddable
 public class PcrSelection {
 
-    private static final int MAX_SIZE_PCR_ARRAY = 3;
     /**
      * All PCRs are on.
      */
     public static final int ALL_PCRS_ON = 0xffffff;
-
+    private static final int MAX_SIZE_PCR_ARRAY = 3;
     @XmlAttribute(name = "PcrSelect", required = true)
     private final byte[] pcrSelect;
 
@@ -50,9 +48,7 @@ public class PcrSelection {
      * Each byte represents 8 PCRs. Byte 0 indicates PCRs 0-7, byte 1 8-15 and
      * so on. For each byte, the individual bits represent a corresponding PCR.
      *
-     * @param pcrSelect
-     *            byte array indicating which PCRS are selected
-     *
+     * @param pcrSelect byte array indicating which PCRS are selected
      */
     public PcrSelection(final byte[] pcrSelect) {
         if (pcrSelect == null) {
@@ -74,8 +70,7 @@ public class PcrSelection {
      * selection value. For example, to select the first 3 PCRs, one would use
      * the long value 7 (b0000 0000 0000 0111).
      *
-     * @param pcrSelectLong
-     *            long value representing the bits to be selected
+     * @param pcrSelectLong long value representing the bits to be selected
      */
     public PcrSelection(final long pcrSelectLong) {
         if (pcrSelectLong > ALL_PCRS_ON) {

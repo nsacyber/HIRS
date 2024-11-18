@@ -56,10 +56,12 @@ import java.util.Properties;
                 ignoreResourceNotFound = true),
         @PropertySource(value = "file:/etc/hirs/aca/application.properties",
                 ignoreResourceNotFound = true),
-	@PropertySource(value = "file:C:/ProgramData/hirs/aca/application.win.properties",
+        @PropertySource(value = "file:C:/ProgramData/hirs/aca/application.win.properties",
                 ignoreResourceNotFound = true)
 })
-@ComponentScan({"hirs.attestationca.portal", "hirs.attestationca.portal.page.controllers", "hirs.attestationca.persist", "hirs.attestationca.persist.entity", "hirs.attestationca.persist.service"})
+@ComponentScan({"hirs.attestationca.portal", "hirs.attestationca.portal.page.controllers",
+        "hirs.attestationca.persist", "hirs.attestationca.persist.entity",
+        "hirs.attestationca.persist.service"})
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 public class PersistenceJPAConfig implements WebMvcConfigurer {
 
@@ -78,9 +80,15 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     @Autowired
     private Environment environment;
 
+    /**
+     * Entity manager factory bean.
+     *
+     * @return a local container entity manager factory bean
+     */
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-        final LocalContainerEntityManagerFactoryBean entityManagerBean = new LocalContainerEntityManagerFactoryBean();
+        final LocalContainerEntityManagerFactoryBean entityManagerBean =
+                new LocalContainerEntityManagerFactoryBean();
         entityManagerBean.setDataSource(dataSource());
         entityManagerBean.setPackagesToScan("hirs.attestationca.persist.entity");
 
@@ -91,6 +99,11 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         return entityManagerBean;
     }
 
+    /**
+     * Data source bean.
+     *
+     * @return a data source
+     */
     @Bean
     public DataSource dataSource() {
         final DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -210,6 +223,11 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         }
     }
 
+    /**
+     * Platform Transaction Manager bean.
+     *
+     * @return platform transaction manager bean
+     */
     @Bean
     public PlatformTransactionManager transactionManager() {
         final JpaTransactionManager transactionManager = new JpaTransactionManager();
@@ -217,6 +235,11 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         return transactionManager;
     }
 
+    /**
+     * Persistence Exception Translation Post Processor bean.
+     *
+     * @return persistence exception translation post processor bean
+     */
     @Bean
     public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
@@ -248,12 +271,18 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
 
 //    @Bean(name="default-settings")
 //    public PolicySettings supplyChainSettings() {
-//        PolicySettings scSettings = new PolicySettings("Default", "Settings are configured for no validation flags set.");
+//        PolicySettings scSettings = new PolicySettings("Default", "Settings are configured for no
+//        validation flags set.");
 //
 //        return scSettings;
 //    }
 
 
+    /**
+     * Configures the default servlet handling.
+     *
+     * @param configurer default servlet handler configurer.
+     */
     @Override
     public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
         configurer.enable();

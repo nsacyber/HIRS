@@ -6,7 +6,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.UUID;
 
@@ -14,29 +13,34 @@ import java.util.UUID;
  * This is tied to the ComponentResult class.  If a component has a mismatched
  * value from what the device has listed, this class represents which attribute
  * of that component mismatched.
- *
+ * <p>
  * If this is a delta issue, the component ID would be set to null if the
  * remove or modified don't exist.
  */
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ComponentAttributeResult  extends ArchivableEntity {
+public class ComponentAttributeResult extends ArchivableEntity {
 
     private UUID componentId;
+
     @Setter
     private UUID provisionSessionId;
+
     // this is used to identify Revision for the ignore policy
     @Setter
     private String attribute;
+
     private String expectedValue;
+
     private String actualValue;
 
     /**
      * Default constructor that populates the expected and actual values.
-     * @param componentId id associated with component result
+     *
+     * @param componentId   id associated with component result
      * @param expectedValue platform certificate value
-     * @param actualValue paccor value from the device
+     * @param actualValue   paccor value from the device
      */
     public ComponentAttributeResult(final UUID componentId,
                                     final String expectedValue,
@@ -48,10 +52,11 @@ public class ComponentAttributeResult  extends ArchivableEntity {
 
     /**
      * Default constructor that populates the expected and actual values.
-     * @param componentId id associated with component result
+     *
+     * @param componentId        id associated with component result
      * @param provisionSessionId an id for the associated provision
-     * @param expectedValue platform certificate value
-     * @param actualValue paccor value from the device
+     * @param expectedValue      platform certificate value
+     * @param actualValue        paccor value from the device
      */
     public ComponentAttributeResult(final UUID componentId,
                                     final UUID provisionSessionId,
@@ -65,6 +70,8 @@ public class ComponentAttributeResult  extends ArchivableEntity {
     /**
      * This method is used to check the mismatched status flag for
      * displaying red if there is a failure.
+     *
+     * @return true if there is status match, false otherwise
      */
     public boolean checkMatchedStatus() {
         return this.actualValue.equals(this.expectedValue);
@@ -72,6 +79,7 @@ public class ComponentAttributeResult  extends ArchivableEntity {
 
     /**
      * For the state of the object, this shouldn't be negative.
+     *
      * @return the string value of the attribute name
      */
     public String getAttribute() {

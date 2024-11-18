@@ -8,5 +8,11 @@ import java.util.UUID;
 
 @Repository
 public interface DeviceRepository extends JpaRepository<Device, UUID> {
+    /**
+     * Query that retrieves a device using the provided device name.
+     *
+     * @param deviceName device name
+     * @return a device
+     */
     Device findByName(String deviceName);
 }

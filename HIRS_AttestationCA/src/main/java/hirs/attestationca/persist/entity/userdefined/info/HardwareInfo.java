@@ -48,11 +48,11 @@ public class HardwareInfo implements Serializable {
     /**
      * Constructor used to create a populated firmware info object.
      *
-     * @param manufacturer String manufacturer name
-     * @param productName String product name info
-     * @param version String bios release date info
-     * @param systemSerialNumber String device serial number
-     * @param chassisSerialNumber String device chassis serial number
+     * @param manufacturer          String manufacturer name
+     * @param productName           String product name info
+     * @param version               String bios release date info
+     * @param systemSerialNumber    String device serial number
+     * @param chassisSerialNumber   String device chassis serial number
      * @param baseboardSerialNumber String device baseboard serial number
      */
     public HardwareInfo(
@@ -80,19 +80,19 @@ public class HardwareInfo implements Serializable {
 
         if (!StringUtils.isBlank(systemSerialNumber)) {
             this.systemSerialNumber = StringValidator.check(systemSerialNumber,
-                    "systemSerialNumber")
+                            "systemSerialNumber")
                     .maxLength(DeviceInfoEnums.LONG_STRING_LENGTH).getValue();
         }
 
         if (!StringUtils.isBlank(chassisSerialNumber)) {
             this.chassisSerialNumber = StringValidator.check(chassisSerialNumber,
-                    "chassisSerialNumber")
+                            "chassisSerialNumber")
                     .maxLength(DeviceInfoEnums.LONG_STRING_LENGTH).getValue();
         }
 
         if (!StringUtils.isBlank(baseboardSerialNumber)) {
             this.baseboardSerialNumber = StringValidator.check(
-                    baseboardSerialNumber, "baseboardSerialNumber")
+                            baseboardSerialNumber, "baseboardSerialNumber")
                     .maxLength(DeviceInfoEnums.LONG_STRING_LENGTH).getValue();
         }
     }

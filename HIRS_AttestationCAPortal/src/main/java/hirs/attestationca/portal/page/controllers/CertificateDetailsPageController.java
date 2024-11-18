@@ -39,9 +39,10 @@ public class CertificateDetailsPageController extends PageController<Certificate
 
     /**
      * Constructor providing the Page's display and routing specification.
-     * @param certificateRepository the certificate repository
-     * @param componentResultRepository the component result repository
-     * @param caCredentialRepository the ca credential manager
+     *
+     * @param certificateRepository       the certificate repository
+     * @param componentResultRepository   the component result repository
+     * @param caCredentialRepository      the ca credential manager
      * @param iDevIDCertificateRepository the idevid certificate repository
      */
     @Autowired
@@ -60,7 +61,7 @@ public class CertificateDetailsPageController extends PageController<Certificate
      * Returns the path for the view and the data model for the page.
      *
      * @param params The object to map url parameters into.
-     * @param model The data model for the request. Can contain data from redirect.
+     * @param model  The data model for the request. Can contain data from redirect.
      * @return the path for the view and data model for the page.
      */
     @Override

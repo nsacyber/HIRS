@@ -15,10 +15,12 @@ import java.util.List;
 @AllArgsConstructor
 public abstract class PlatformConfiguration {
     private ArrayList<ComponentIdentifier> componentIdentifier = new ArrayList<>();
-    @Getter @Setter
+    @Getter
+    @Setter
     private URIReference componentIdentifierUri;
     private ArrayList<PlatformProperty> platformProperties = new ArrayList<>();
-    @Getter @Setter
+    @Getter
+    @Setter
     private URIReference platformPropertiesUri;
 
     /**
@@ -34,10 +36,10 @@ public abstract class PlatformConfiguration {
     /**
      * Constructor given the Platform Configuration values.
      *
-     * @param componentIdentifier list containing all the components inside the
-     *          Platform Configuration.
-     * @param platformProperties list containing all the properties inside the
-     *          Platform Configuration.
+     * @param componentIdentifier   list containing all the components inside the
+     *                              Platform Configuration.
+     * @param platformProperties    list containing all the properties inside the
+     *                              Platform Configuration.
      * @param platformPropertiesUri object containing the URI Reference
      */
     public PlatformConfiguration(final List<ComponentIdentifier> componentIdentifier,
@@ -56,7 +58,15 @@ public abstract class PlatformConfiguration {
     }
 
     /**
+     * @param componentIdentifier the componentIdentifier to set
+     */
+    public void setComponentIdentifier(final List<ComponentIdentifier> componentIdentifier) {
+        this.componentIdentifier = new ArrayList<>(componentIdentifier);
+    }
+
+    /**
      * Add function for the component identifier array.
+     *
      * @param componentIdentifier object to add
      * @return status of the add, if successful or not
      */
@@ -69,13 +79,6 @@ public abstract class PlatformConfiguration {
     }
 
     /**
-     * @param componentIdentifier the componentIdentifier to set
-     */
-    public void setComponentIdentifier(final List<ComponentIdentifier> componentIdentifier) {
-        this.componentIdentifier = new ArrayList<>(componentIdentifier);
-    }
-
-    /**
      * @return the platformProperties
      */
     public List<PlatformProperty> getPlatformProperties() {
@@ -83,7 +86,15 @@ public abstract class PlatformConfiguration {
     }
 
     /**
+     * @param platformProperties the platformProperties to set
+     */
+    public void setPlatformProperties(final List<PlatformProperty> platformProperties) {
+        this.platformProperties = new ArrayList<>(platformProperties);
+    }
+
+    /**
      * Add function for the platform property array.
+     *
      * @param platformProperty property object to add
      * @return status of the add, if successful or not
      */
@@ -93,12 +104,5 @@ public abstract class PlatformConfiguration {
         }
 
         return false;
-    }
-
-    /**
-     * @param platformProperties the platformProperties to set
-     */
-    public void setPlatformProperties(final List<PlatformProperty> platformProperties) {
-        this.platformProperties = new ArrayList<>(platformProperties);
     }
 }

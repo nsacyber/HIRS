@@ -21,7 +21,7 @@ public class ReferenceManifestPageParams implements PageParams {
     private String type;
 
     /**
-     *Constructor to set all Reference Integrity Manifest URL parameters.
+     * Constructor to set all Reference Integrity Manifest URL parameters.
      *
      * @param id the String parameter to set
      */

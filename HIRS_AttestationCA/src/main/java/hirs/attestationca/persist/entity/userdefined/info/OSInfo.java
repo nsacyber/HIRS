@@ -47,16 +47,11 @@ public class OSInfo implements Serializable {
      * Fedora), and distribution release (7.0.1406). Distribution only makes
      * sense for Linux, so distribution and distributionRelease may be null.
      *
-     * @param osName
-     *            String OS name (Linux | Mac OS X | Windows 7)
-     * @param osVersion
-     *            String OS version (i.e. 3.10.0-123.el7.x86_64)
-     * @param osArch
-     *            String OS architecture (x86_64)
-     * @param distribution
-     *            String distribution (CentOS | Fedora)
-     * @param distributionRelease
-     *            String distribution release (7.0.1406)
+     * @param osName              String OS name (Linux | Mac OS X | Windows 7)
+     * @param osVersion           String OS version (i.e. 3.10.0-123.el7.x86_64)
+     * @param osArch              String OS architecture (x86_64)
+     * @param distribution        String distribution (CentOS | Fedora)
+     * @param distributionRelease String distribution release (7.0.1406)
      */
     public OSInfo(final String osName, final String osVersion,
                   final String osArch, final String distribution,

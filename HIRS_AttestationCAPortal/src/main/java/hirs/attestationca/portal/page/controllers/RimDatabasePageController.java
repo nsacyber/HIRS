@@ -42,17 +42,16 @@ import java.lang.ref.Reference;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-database")
 public class RimDatabasePageController extends PageController<NoPageParams> {
 
-    @Autowired(required = false)
-    private EntityManager entityManager;
-
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final ReferenceManifestRepository referenceManifestRepository;
+    @Autowired(required = false)
+    private EntityManager entityManager;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceDigestValueRepository the referenceDigestValueRepository object
-     * @param referenceManifestRepository the reference manifest manager object
+     * @param referenceManifestRepository    the reference manifest manager object
      */
     @Autowired
     public RimDatabasePageController(final ReferenceDigestValueRepository referenceDigestValueRepository,
@@ -102,7 +101,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                 Session session = entityManager.unwrap(Session.class);
                 CriteriaBuilder cb = session.getCriteriaBuilder();
                 Root<ReferenceDigestValue> rimRoot = criteriaQuery.from(Reference.class);
-                criteriaQuery.select(rimRoot).distinct(true).where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
+                criteriaQuery.select(rimRoot).distinct(true)
+                        .where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
             }
         };
 
@@ -112,7 +112,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult = referenceDigestValueRepository.findAll(paging);
+        org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult =
+                referenceDigestValueRepository.findAll(paging);
 
         if (pagedResult.hasContent()) {
             referenceDigestValues.addAll(pagedResult.getContent());
@@ -127,7 +128,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         for (ReferenceDigestValue rdv : referenceDigestValues) {
             // We are updating the base rim ID field if necessary and
             if (rdv.getBaseRimId() == null && referenceManifestRepository.existsById(rdv.getSupportRimId())) {
-                support = (SupportReferenceManifest) referenceManifestRepository.getReferenceById(rdv.getSupportRimId());
+                support = (SupportReferenceManifest) referenceManifestRepository.getReferenceById(
+                        rdv.getSupportRimId());
                 rdv.setBaseRimId(support.getAssociatedRim());
                 try {
                     referenceDigestValueRepository.save(rdv);

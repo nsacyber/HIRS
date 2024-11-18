@@ -12,6 +12,7 @@ import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
@@ -22,7 +23,6 @@ import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.TBSCertificate;
-import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
 
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
@@ -36,17 +36,16 @@ import java.util.Collection;
 @Log4j2
 public final class IssuedCertificateAttributeHelper {
 
+    /**
+     * The extended key usage extension.
+     */
+    public static final Extension EXTENDED_KEY_USAGE_EXTENSION;
     private static final String TPM_ID_LABEL_OID = "2.23.133.2.15";
-
     /**
      * Object Identifier TCPA at TPM ID Label.
      */
     public static final ASN1ObjectIdentifier TCPA_AT_TPM_ID_LABEL =
             new ASN1ObjectIdentifier(TPM_ID_LABEL_OID);
-    /**
-     * The extended key usage extension.
-     */
-    public static final Extension EXTENDED_KEY_USAGE_EXTENSION;
     private static final ASN1ObjectIdentifier TCG_KP_AIK_CERTIFICATE_ATTRIBUTE =
             new ASN1ObjectIdentifier("2.23.133.8.3");
 
@@ -70,6 +69,7 @@ public final class IssuedCertificateAttributeHelper {
     /**
      * This method builds the AKI extension that will be stored in the generated
      * Attestation Issued Certificate.
+     *
      * @param acaCertificate ACA certificate to pull SKI from, that will be used to build matching AKI.
      * @return the AKI extension.
      * @throws IOException on bad get instance for SKI.
@@ -96,11 +96,12 @@ public final class IssuedCertificateAttributeHelper {
 
     /**
      * Builds the subject alternative name based on the supplied certificates.
+     *
      * @param endorsementCredential the endorsement credential
-     * @param platformCredentials the platform credentials
-     * @param hostName the host name
+     * @param platformCredentials   the platform credentials
+     * @param hostName              the host name
      * @return the subject alternative name extension
-     * @throws IOException an IO exception occurs building the extension
+     * @throws IOException              an IO exception occurs building the extension
      * @throws IllegalArgumentException if the host name is null
      */
     public static Extension buildSubjectAlternativeNameFromCerts(
@@ -181,14 +182,11 @@ public final class IssuedCertificateAttributeHelper {
                 populateRdnAttributesInNameBuilder(nameBuilder, rdns);
             } else {
                 log.error("No RDNs in endorsement credential attributes");
-                return;
             }
         } catch (CertificateEncodingException e) {
             log.error("Certificate encoding exception", e);
-            return;
         } catch (IOException e) {
             log.error("Error creating x509 cert from endorsement credential", e);
-            return;
         }
 
     }

@@ -35,12 +35,12 @@ public class TPM2ProvisionerState {
     private byte[] identityClaim;
 
     @Column(nullable = false)
-    private Date timestamp = new Date();
+    private final Date timestamp = new Date();
 
     /**
      * Constructor.
      *
-     * @param nonce the nonce
+     * @param nonce         the nonce
      * @param identityClaim the identity claim
      */
     public TPM2ProvisionerState(final byte[] nonce, final byte[] identityClaim) {
@@ -70,32 +70,14 @@ public class TPM2ProvisionerState {
     }
 
     /**
-     * Get the nonce.
-     *
-     * @return the nonce
-     */
-    public byte[] getNonce() {
-        return Arrays.clone(nonce);
-    }
-
-    /**
-     * Get the identity claim.
-     *
-     * @return the identity claim
-     */
-    public byte[] getIdentityClaim() {
-        return Arrays.clone(identityClaim);
-    }
-
-    /**
      * Convenience method for finding the {@link TPM2ProvisionerState} associated with the nonce.
      *
      * @param tpm2ProvisionerStateRepository the {@link TPM2ProvisionerStateRepository}
      *                                       to use when looking for the
-     * {@link TPM2ProvisionerState}
-     * @param nonce the nonce to use as the key for the {@link TPM2ProvisionerState}
+     *                                       {@link TPM2ProvisionerState}
+     * @param nonce                          the nonce to use as the key for the {@link TPM2ProvisionerState}
      * @return the {@link TPM2ProvisionerState} associated with the nonce;
-     *         null if a match is not found
+     * null if a match is not found
      */
     public static TPM2ProvisionerState getTPM2ProvisionerState(
             final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
@@ -113,5 +95,23 @@ public class TPM2ProvisionerState {
             return null;
         }
         return null;
+    }
+
+    /**
+     * Get the nonce.
+     *
+     * @return the nonce
+     */
+    public byte[] getNonce() {
+        return Arrays.clone(nonce);
+    }
+
+    /**
+     * Get the identity claim.
+     *
+     * @return the identity claim
+     */
+    public byte[] getIdentityClaim() {
+        return Arrays.clone(identityClaim);
     }
 }

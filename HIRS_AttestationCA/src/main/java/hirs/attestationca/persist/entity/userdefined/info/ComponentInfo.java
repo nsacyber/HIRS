@@ -9,6 +9,7 @@ import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.xml.bind.annotation.XmlElement;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -24,6 +25,7 @@ import java.util.Objects;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode(callSuper = false)
 @DiscriminatorColumn(name = "componentTypeEnum", discriminatorType = DiscriminatorType.STRING)
 public class ComponentInfo extends ArchivableEntity {
 
@@ -34,6 +36,7 @@ public class ComponentInfo extends ArchivableEntity {
 
     @Column(nullable = false)
     private String deviceName;
+
     @XmlElement
     @Column(nullable = false)
     private String componentManufacturer;
@@ -56,10 +59,11 @@ public class ComponentInfo extends ArchivableEntity {
 
     /**
      * Base constructor for children.
+     *
      * @param componentManufacturer Component Manufacturer (must not be null)
-     * @param componentModel Component Model (must not be null)
-     * @param componentSerial Component Serial Number (can be null)
-     * @param componentRevision Component Revision or Version (can be null)
+     * @param componentModel        Component Model (must not be null)
+     * @param componentSerial       Component Serial Number (can be null)
+     * @param componentRevision     Component Revision or Version (can be null)
      */
     public ComponentInfo(final String componentManufacturer,
                          final String componentModel,
@@ -68,13 +72,15 @@ public class ComponentInfo extends ArchivableEntity {
         this(DeviceInfoEnums.NOT_SPECIFIED, componentManufacturer, componentModel,
                 componentSerial, componentRevision);
     }
+
     /**
      * Constructor.
-     * @param deviceName the host machine associated with this component. (must not be null)
+     *
+     * @param deviceName            the host machine associated with this component. (must not be null)
      * @param componentManufacturer Component Manufacturer (must not be null)
-     * @param componentModel Component Model (must not be null)
-     * @param componentSerial Component Serial Number (can be null)
-     * @param componentRevision Component Revision or Version (can be null)
+     * @param componentModel        Component Model (must not be null)
+     * @param componentSerial       Component Serial Number (can be null)
+     * @param componentRevision     Component Revision or Version (can be null)
      */
     public ComponentInfo(final String deviceName,
                          final String componentManufacturer,
@@ -108,12 +114,13 @@ public class ComponentInfo extends ArchivableEntity {
 
     /**
      * Constructor.
-     * @param deviceName the host machine associated with this component.
+     *
+     * @param deviceName            the host machine associated with this component.
      * @param componentManufacturer Component Manufacturer (must not be null)
-     * @param componentModel Component Model (must not be null)
-     * @param componentSerial Component Serial Number (can be null)
-     * @param componentRevision Component Revision or Version (can be null)
-     * @param componentClass Component Class (can be null)
+     * @param componentModel        Component Model (must not be null)
+     * @param componentSerial       Component Serial Number (can be null)
+     * @param componentRevision     Component Revision or Version (can be null)
+     * @param componentClass        Component Class (can be null)
      */
     public ComponentInfo(final String deviceName,
                          final String componentManufacturer,
@@ -134,9 +141,9 @@ public class ComponentInfo extends ArchivableEntity {
      * manufacturer and model are considered valid.
      *
      * @param componentManufacturer a String containing a component's manufacturer
-     * @param componentModel a String representing a component's model
-     * @param componentSerial a String representing a component's serial number
-     * @param componentRevision a String representing a component's revision
+     * @param componentModel        a String representing a component's model
+     * @param componentSerial       a String representing a component's serial number
+     * @param componentRevision     a String representing a component's revision
      * @return true if the component is valid, false if not
      */
     public static boolean isComplete(final String componentManufacturer,
@@ -148,42 +155,12 @@ public class ComponentInfo extends ArchivableEntity {
     }
 
     /**
-     * Equals for the component info that just uses this classes attributes.
-     * @param object the object to compare
-     * @return the boolean result
-     */
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (object == null || getClass() != object.getClass()) return false;
-
-        ComponentInfo that = (ComponentInfo) object;
-        return Objects.equals(deviceName, that.deviceName)
-                && Objects.equals(componentManufacturer,
-                that.componentManufacturer)
-                && Objects.equals(componentModel, that.componentModel)
-                && Objects.equals(componentSerial, that.componentSerial)
-                && Objects.equals(componentRevision, that.componentRevision)
-                && Objects.equals(componentClass, that.componentClass);
-    }
-
-    /**
      * Returns a hash code that is associated with common fields for components.
+     *
      * @return int value of the elements
      */
     public int hashCommonElements() {
         return Objects.hash(componentManufacturer, componentModel,
                 componentSerial, componentRevision, componentClass);
-    }
-
-    /**
-     * Hash method for the attributes of this class.
-     * @return int value that represents this class
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(deviceName, componentManufacturer,
-                componentModel, componentSerial, componentRevision,
-                componentClass);
     }
 }

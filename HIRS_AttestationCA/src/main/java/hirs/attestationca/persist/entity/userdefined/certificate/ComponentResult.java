@@ -26,50 +26,80 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ComponentResult extends ArchivableEntity {
 
-    // String value for the Manufacturer title
+    /**
+     * String value for the Manufacturer title.
+     */
     public static final String ATTRIBUTE_MANUFACTURER = "Manufacturer";
-    // String value for the Model title
+
+    /**
+     * String value for the Model title.
+     */
     public static final String ATTRIBUTE_MODEL = "Model";
-    // String value for the Serial title
+
+    /**
+     * String value for the Serial title.
+     */
     public static final String ATTRIBUTE_SERIAL = "Serial";
-    // String value for the revision title
+
+    /**
+     * String value for the revision title.
+     */
     public static final String ATTRIBUTE_REVISION = "Revision";
-    // embedded component info
+
+    /**
+     * Embedded component info.
+     */
     @Setter
     private String manufacturer;
+
     @Setter
     private String model;
+
     @Setter
     private String serialNumber;
+
     @Setter
     private String revisionNumber;
+
     private boolean fieldReplaceable = false;
+
     // this is a string because component class doesn't inherit serializable.
     @Setter
     private String componentClassValue;
+
     private String componentClassStr;
+
     private String componentClassType;
+
     private AttributeStatus attributeStatus;
+
     private String componentAddress;
+
     private boolean version2 = false;
+
     @Setter
     private boolean delta = false;
+
     @Setter
     private boolean failedValidation;
+
     private String certificateType;
 
     private String issuerDN;
-    private String certificateSerialNumber;
-    private String boardSerialNumber;
-    private String uniformResourceIdentifier;
 
+    private String certificateSerialNumber;
+
+    private String boardSerialNumber;
+
+    private String uniformResourceIdentifier;
 
     /**
      * Default constructor.
-     * @param boardSerialNumber associated platform certificate serial number.
+     *
+     * @param boardSerialNumber       associated platform certificate serial number.
      * @param certificateSerialNumber unique number associated with header info.
-     * @param certificateType parameter holds version 1.2 or 2.0.
-     * @param componentIdentifier object with information from the platform certificate components.
+     * @param certificateType         parameter holds version 1.2 or 2.0.
+     * @param componentIdentifier     object with information from the platform certificate components.
      */
     public ComponentResult(final String boardSerialNumber, final String certificateSerialNumber,
                            final String certificateType,
@@ -94,10 +124,9 @@ public class ComponentResult extends ArchivableEntity {
 
         // V2 fields
         if (componentIdentifier.isVersion2()
-                && componentIdentifier instanceof ComponentIdentifierV2) {
+                && componentIdentifier instanceof ComponentIdentifierV2 ciV2) {
             // this is a downside of findbugs, the code is set up to indicate if a CI is V2 or not
             // but find bugs is throwing a flag because instanceof isn't being used.
-            ComponentIdentifierV2 ciV2 = (ComponentIdentifierV2) componentIdentifier;
             this.componentClassValue = ciV2.getComponentClass().getComponentIdentifier();
             this.componentClassStr = ciV2.getComponentClass().toString();
             this.componentClassType = ciV2.getComponentClass().getRegistryType();
@@ -117,6 +146,7 @@ public class ComponentResult extends ArchivableEntity {
      * This method is only used by the certificate-details.jsp page. This
      * method splits the compiled string of addresses into the component address
      * object for display on the jsp page.
+     *
      * @return a collection of component addresses.
      */
     public List<ComponentAddress> getComponentAddresses() {
@@ -135,6 +165,7 @@ public class ComponentResult extends ArchivableEntity {
 
     /**
      * Returns a hash code that is associated with common fields for components.
+     *
      * @return int value of the elements
      */
     public int hashCommonElements() {
@@ -144,6 +175,7 @@ public class ComponentResult extends ArchivableEntity {
 
     /**
      * The string method for log entries.
+     *
      * @return a string for the component result
      */
     public String toString() {

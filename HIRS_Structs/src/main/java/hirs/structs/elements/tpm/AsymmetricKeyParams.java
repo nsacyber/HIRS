@@ -8,8 +8,8 @@ import hirs.structs.elements.StructElements;
  * As defined in TCPA 4.20, the key parameters data structure describes the parameters used to
  * generate a key pair and to store the parts of a key.
  */
-@StructElements(elements = { "algorithmId", "encryptionScheme", "signatureScheme", "paramsSize",
-        "params" })
+@StructElements(elements = {"algorithmId", "encryptionScheme", "signatureScheme", "paramsSize",
+        "params"})
 public class AsymmetricKeyParams implements Struct {
 
     private int algorithmId;

@@ -54,6 +54,9 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:4.2.0'
     testImplementation 'org.springframework:spring-test:6.0.8'
 
+    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotBugAnnotationVersion}"
+    annotationProcessor "com.github.spotbugs:spotbugs-annotations:${spotBugAnnotationVersion}"
+
     // spring management
     compileOnly libs.lombok
     implementation libs.lombok
@@ -70,10 +73,10 @@ configurations.checkstyle {
     }
 }
 checkstyleMain {
-    source ='src/main/java'
+    source = 'src/main/java'
 }
 checkstyleTest {
-    source ='src/test/java'
+    source = 'src/test/java'
 }
 tasks.withType(Checkstyle) {
     reports {
@@ -82,16 +85,16 @@ tasks.withType(Checkstyle) {
     }
 }
 protobuf {
-  protoc {
-    artifact = 'com.google.protobuf:protoc:3.24.3'
-  }
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.24.3'
+    }
 }
 sourceSets {
-  main {
-    proto {
-      srcDir '../HIRS_ProvisionerTPM2/src'
+    main {
+        proto {
+            srcDir '../HIRS_Provisioner.NET/hirs/Resources'
+        }
     }
-  }
 }
 
 test {

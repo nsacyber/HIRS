@@ -21,7 +21,9 @@ import java.util.List;
 
 import static hirs.attestationca.portal.page.Page.TRUST_CHAIN;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -33,20 +35,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
-    // Base path for the page
-    private String pagePath;
-
-    // Repository manager to handle data access between certificate entity and data storage in db
-    @Autowired
-    private CertificateRepository certificateRepository;
-
-    @Autowired
-    private X509Certificate acaCert;
-
     // Location of test certs
     private static final String NONCACERT = "certificates/fakeIntelIntermediateCA.pem";
     private static final String BADCERT = "certificates/badCert.pem";
-
+    // Base path for the page
+    private final String pagePath;
+    // Repository manager to handle data access between certificate entity and data storage in db
+    @Autowired
+    private CertificateRepository certificateRepository;
+    @Autowired
+    private X509Certificate acaCert;
     // A file that contains a cert that is not an UTC Cert. Should be parsable as a general
     // cert, but should (eventually) not be stored as an UTC because it isn't one.
     private MockMultipartFile nonCaCertFile;
@@ -66,6 +64,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
     /**
      * Prepares tests.
+     *
      * @throws IOException if test resources are not found
      */
     @BeforeAll
@@ -121,6 +120,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
     /**
      * Tests downloading the certificate.
+     *
      * @throws Exception when getting raw report
      */
     @Test
@@ -129,10 +129,9 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
         Certificate cert = uploadTestCert();
 
-        StringBuilder fileName = new StringBuilder("attachment;filename=\"");
-        fileName.append("CertificateAuthorityCredential_");
-        fileName.append(cert.getSerialNumber());
-        fileName.append(".cer\"");
+        String fileName = "attachment;filename=\"" + "CertificateAuthorityCredential_"
+                + cert.getSerialNumber()
+                + ".cer\"";
 
         // verify cert file attachment and content
         getMockMvc()
@@ -143,7 +142,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/octet-stream"))
                 .andExpect(header().string("Content-Disposition",
-                        fileName.toString()))
+                        fileName))
                 .andExpect(content().bytes(cert.getRawBytes()));
 
     }
@@ -153,6 +152,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
      * Currently this test may pass certs that meet some, but not all requirements
      * However the underlying code is looking for the basic elements of a CA certificate
      * generic credential successfully.
+     *
      * @throws Exception if an exception occurs
      */
     @Test
@@ -163,7 +163,8 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Uploads test cert to db
+     * Uploads test cert to db.
+     *
      * @return the cert that was uploaded
      * @throws Exception if an exception occurs
      */
@@ -181,8 +182,9 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         // verify redirection messages
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
-        assertEquals("New certificate successfully uploaded (" + pathTokens[1] + "): ", pageMessages.getSuccess()
-                .get(0));
+        assertEquals("New certificate successfully uploaded (" + pathTokens[1] + "): ",
+                pageMessages.getSuccess()
+                        .get(0));
         assertEquals(0, pageMessages.getError().size());
 
         // verify the cert was actually stored
@@ -198,7 +200,9 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Archives test cert that is in db by setting the archive flag
+     * Archives test cert that is in db by setting the archive flag.
+     *
+     * @param cert certificate.
      * @throws Exception if an exception occurs
      */
     private void archiveTestCert(final Certificate cert) throws Exception {
@@ -218,6 +222,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     /**
      * Tests that uploading a certificate when an identical certificate is archived will cause
      * the existing certificate to be unarchived and updated.
+     *
      * @throws Exception if an exception occurs
      */
 //    @Test
@@ -258,6 +263,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     /**
      * Tests that uploading something that is not a cert at all results in an error returned
      * to the web client.
+     *
      * @throws Exception an exception occurs
      */
     @Test

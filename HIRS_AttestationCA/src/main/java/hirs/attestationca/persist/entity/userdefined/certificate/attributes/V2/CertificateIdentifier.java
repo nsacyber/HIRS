@@ -51,6 +51,7 @@ public class CertificateIdentifier {
 
     /**
      * Primary constructor for the parsing of the sequence.
+     *
      * @param sequence containing the name and value of the Certificate Identifier
      */
     public CertificateIdentifier(final ASN1Sequence sequence) {
@@ -103,6 +104,7 @@ public class CertificateIdentifier {
 
     /**
      * String for the internal data stored.
+     *
      * @return String representation of the data.
      */
     @Override
@@ -114,11 +116,11 @@ public class CertificateIdentifier {
         sb.append(", hashSigValue").append(hashSigValue);
         sb.append(", issuerDN=");
         if (issuerDN != null) {
-            sb.append(issuerDN.toString());
+            sb.append(issuerDN);
         }
         sb.append(", certificateSerialNumber=");
         if (certificateSerialNumber != null) {
-            sb.append(certificateSerialNumber.toString());
+            sb.append(certificateSerialNumber);
         }
 
         sb.append("}");

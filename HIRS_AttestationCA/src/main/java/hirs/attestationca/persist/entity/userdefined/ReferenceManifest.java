@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,14 +29,16 @@ import java.util.UUID;
  * This class represents the Reference Integrity Manifest object that will be
  * loaded into the DB and displayed in the ACA.
  */
-@Getter @ToString
+@Getter
+@Setter
+@ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Log4j2
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table(name = "ReferenceManifest")
 @Access(AccessType.FIELD)
-public class ReferenceManifest  extends ArchivableEntity {
+public class ReferenceManifest extends ArchivableEntity {
 
     /**
      * Holds the name of the 'hexDecHash' field.
@@ -72,54 +75,55 @@ public class ReferenceManifest  extends ArchivableEntity {
      */
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
 
+    @Setter(AccessLevel.NONE)
     @EqualsAndHashCode.Include
     @Column(columnDefinition = "mediumblob", nullable = false)
-    private byte[] rimBytes;
-    @Setter
+    private final byte[] rimBytes;
+
     @EqualsAndHashCode.Include
     @Column(nullable = false)
     private String rimType = "Base";
-    @Setter
+
     @Column
     private String tagId = null;
-    @Setter
+
     @Column
     private boolean swidPatch = false;
-    @Setter
+
     @Column
     private boolean swidSupplemental = false;
-    @Setter
+
     @Column
     private String platformManufacturer = null;
-    @Setter
+
     @Column
     private String platformManufacturerId = null;
-    @Setter
+
     @Column
     private String swidTagVersion = null;
-    @Setter
+
     @Column
     private String swidVersion = null;
-    @Setter
+
     @Column
     private String platformModel = null;
-    @Setter
+
     @Column(nullable = false)
     private String fileName = null;
-    @Setter
+
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column
     private UUID associatedRim;
-    @Setter
+
     @Column
     private String deviceName;
-    @Setter
+
     @Column
     private String hexDecHash = "";
-    @Setter
+
     @Column
     private String eventLogHash = "";
-    @Setter
+
     @Column
     @JsonIgnore
     private String base64Hash = "";
@@ -141,6 +145,7 @@ public class ReferenceManifest  extends ArchivableEntity {
 
     /**
      * Default constructor for ingesting the bytes of the file content.
+     *
      * @param rimBytes - file contents.
      */
     public ReferenceManifest(final byte[] rimBytes) {
@@ -183,10 +188,20 @@ public class ReferenceManifest  extends ArchivableEntity {
         return null;
     }
 
+    /**
+     * Determines if this reference manifest's rim type is a base rim.
+     *
+     * @return true if the rim type is a base rim, false otherwise
+     */
     public boolean isBase() {
         return rimType.equals(BASE_RIM);
     }
 
+    /**
+     * Determines if this reference manifest's rim type is a support rim.
+     *
+     * @return true if the rim type is a support rim, false otherwise
+     */
     public boolean isSupport() {
         return rimType.equals(SUPPORT_RIM);
     }

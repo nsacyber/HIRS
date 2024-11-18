@@ -9,7 +9,7 @@ import java.util.Arrays;
 /**
  * A struct to be embedded within TestStruct.
  */
-@StructElements(elements = { "embeddedSize", "embeddedShort", "embedded" })
+@StructElements(elements = {"embeddedSize", "embeddedShort", "embedded"})
 public class TestEmbeddedStruct implements Struct {
 
     private static final int EMBEDDED_SIZE = 10;
@@ -18,7 +18,7 @@ public class TestEmbeddedStruct implements Struct {
 
     private static final int HASH_CODE = 31;
 
-    private static final byte[] DEFAULT_ARRAY = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+    private static final byte[] DEFAULT_ARRAY = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
 
 
     @StructElementLength(fieldName = "embedded")
@@ -28,6 +28,12 @@ public class TestEmbeddedStruct implements Struct {
 
     private byte[] embedded = DEFAULT_ARRAY;
 
+    /**
+     * Returns true if the provided object is equivalent to this class.
+     *
+     * @param o object to compare
+     * @return true if the provided object is equal to this class
+     */
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -53,6 +59,7 @@ public class TestEmbeddedStruct implements Struct {
 
     /**
      * Getter.
+     *
      * @return value
      */
     public byte[] getEmbedded() {
@@ -61,6 +68,7 @@ public class TestEmbeddedStruct implements Struct {
 
     /**
      * Getter.
+     *
      * @return value
      */
     public short getEmbeddedShort() {
@@ -69,6 +77,7 @@ public class TestEmbeddedStruct implements Struct {
 
     /**
      * Getter.
+     *
      * @return value
      */
     public int getEmbeddedSize() {

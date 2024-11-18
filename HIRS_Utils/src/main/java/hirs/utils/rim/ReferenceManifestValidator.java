@@ -177,7 +177,7 @@ public class ReferenceManifestValidator {
      * @param encodedPublicKey   the encoded public key
      * @return true if the signature element is validated, false otherwise
      */
-    @SuppressWarnings("magicnumber")
+
     public boolean validateXmlSignature(final PublicKey publicKey,
                                         final String subjectKeyIdString,
                                         final byte[] encodedPublicKey) {

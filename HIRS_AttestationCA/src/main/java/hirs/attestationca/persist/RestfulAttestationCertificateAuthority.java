@@ -33,13 +33,13 @@ import java.security.cert.X509Certificate;
         // detects if file exists, if not, ignore errors
         @PropertySource(value = "file:/etc/hirs/aca/application.properties",
                 ignoreResourceNotFound = true),
-                
         @PropertySource(value = "file:C:/ProgramData/hirs/aca/application.win.properties",
                 ignoreResourceNotFound = true)
 })
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
-public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority implements RestfulInterface {
+public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority
+        implements RestfulInterface {
 
     /**
      * Constructor.
@@ -47,8 +47,11 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
      * @param supplyChainValidationService   scp service
      * @param privateKey                     the ACA private key
      * @param acaCertificate                 the ACA certificate
+     * @param structConverter                the struct converter
      * @param componentResultRepository      the component result repository
+     * @param componentInfoRepository        the component info repository
      * @param certificateRepository          the certificate manager
+     * @param issuedCertificateRepository    the issued certificate repository
      * @param referenceManifestRepository    the referenceManifestManager
      * @param validDays                      the number of days issued certs are valid
      * @param deviceRepository               the device manager
@@ -56,11 +59,11 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
      * @param policyRepository               the provisioning policy entity
      * @param tpm2ProvisionerStateRepository the provisioner state
      */
-    @SuppressWarnings({"checkstyle:parameternumber"})
     @Autowired
     public RestfulAttestationCertificateAuthority(
             final SupplyChainValidationService supplyChainValidationService,
-            final PrivateKey privateKey, final X509Certificate acaCertificate,
+            final PrivateKey privateKey,
+            final X509Certificate acaCertificate,
             final StructConverter structConverter,
             final ComponentResultRepository componentResultRepository,
             final ComponentInfoRepository componentInfoRepository,
@@ -82,7 +85,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
 
     /**
      * Listener for identity requests from TPM 2.0 provisioning.
-     *
+     * <p>
      * Processes a given IdentityClaim and generates a response
      * containing an encrypted nonce to be returned by the client in
      * a future handshake request.
@@ -105,7 +108,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
      * the client's desired attestation key, if the correct nonce is supplied.
      *
      * @param certificateRequest request containing nonce from earlier identity
-     *      *                           claim handshake
+     *                           *                           claim handshake
      * @return The response to the client provisioner.
      */
     @Override
@@ -121,8 +124,8 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
      * (non-javadoc)
      * <p>
      * Wrap the {@link AttestationCertificateAuthority#getPublicKey()} with a Spring
-     * {@link org.springframework.web.bind.annotation.RequestMapping} such that Spring can serialize the certificate to be returned to an
-     * HTTP Request.
+     * {@link org.springframework.web.bind.annotation.RequestMapping} such that Spring can serialize
+     * the certificate to be returned to an HTTP Request.
      */
     @Override
     @ResponseBody

@@ -11,9 +11,15 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static hirs.attestationca.portal.page.Page.POLICY;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests that test the URL End Points of PolicyPageController.
@@ -21,18 +27,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PolicyPageControllerTest extends PageControllerTest {
 
     // Base path for the page
-    private String pagePath;
+    private final String pagePath;
 
     // Repository manager to handle data access between policy entity and data storage in db
     @Autowired
     private PolicyRepository policyRepository;
 
-    // Policy refers to the settings such as whether to validate endorsement credentials, platform credentials, etc
+    // Policy refers to the settings such as whether to validate endorsement credentials, platform credentials
+    // , etc
     private PolicySettings policy;
 
     /**
      * Constructor requiring the Page's display and routing specification.
-     *
      */
     public PolicyPageControllerTest() {
         super(POLICY);
@@ -40,7 +46,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Sets up policy
+     * Sets up policy.
      */
     @BeforeAll
     public void setUpPolicy() {
@@ -97,7 +103,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
+        setPolicyAllToFalse();
         policyRepository.save(policy);
 
         // perform the mock request
@@ -128,7 +134,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
+        setPolicyAllToFalse();
         policy.setEcValidationEnabled(true);
         policyRepository.save(policy);
 
@@ -183,7 +189,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
+        setPolicyAllToFalse();
         policy.setEcValidationEnabled(true);
         policyRepository.save(policy);
 
@@ -229,6 +235,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Verifies the rest call for disabling the PC Validation policy setting.
+     *
      * @throws Exception if test fails
      */
     @Test
@@ -237,8 +244,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
-        setPolicy_PcToTrue();
+        setPolicyAllToFalse();
+        setPolicyPcToTrue();
         policyRepository.save(policy);
 
         // perform the mock request
@@ -292,8 +299,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
 
         //init the database
-        setPolicy_AllFalse();
-        setPolicy_PcToTrue();
+        setPolicyAllToFalse();
+        setPolicyPcToTrue();
         policyRepository.save(policy);
 
         // perform the mock request
@@ -338,6 +345,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Verifies the rest call for disabling the PC attribute validation policy setting.
+     *
      * @throws Exception if test fails
      */
     @Test
@@ -345,8 +353,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         ResultActions actions;
 
-        setPolicy_AllFalse();
-        setPolicy_PcAttributeToTrue();
+        setPolicyAllToFalse();
+        setPolicyPcAttributeToTrue();
         policyRepository.save(policy);
 
         // perform the mock request
@@ -369,10 +377,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
     /**
      * Helper function to set policy member variable back to all false.
      * After this function, can set specific values to true and then need to save policy.
-     *
-     * @return void
      */
-    private void setPolicy_AllFalse() {
+    private void setPolicyAllToFalse() {
         policy.setEcValidationEnabled(false);
         policy.setPcValidationEnabled(false);
         policy.setPcAttributeValidationEnabled(false);
@@ -381,23 +387,19 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     /**
      * Helper function to set policy member variable - PC Validation to True
-     *   Note: to set PC Validation to true, EC Validation must also be true
-     *
-     * @return void
+     * Note: to set PC Validation to true, EC Validation must also be true.
      */
-    private void setPolicy_PcToTrue() {
+    private void setPolicyPcToTrue() {
         policy.setEcValidationEnabled(true);
         policy.setPcValidationEnabled(true);
     }
 
     /**
      * Helper function to set policy member variable - PC Attribute Validation to True
-     *   Note: to set PC Attribute Validation to true, PC Validation must also be true
-     *
-     * @return void
+     * Note: to set PC Attribute Validation to true, PC Validation must also be true.
      */
-    private void setPolicy_PcAttributeToTrue() {
-        setPolicy_PcToTrue();
+    private void setPolicyPcAttributeToTrue() {
+        setPolicyPcToTrue();
         policy.setPcAttributeValidationEnabled(true);
     }
 }
