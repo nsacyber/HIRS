@@ -19,7 +19,12 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.TBSCertificate;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
@@ -33,7 +38,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 import javax.crypto.spec.SecretKeySpec;
-import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
@@ -53,6 +57,7 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -61,6 +66,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -377,6 +383,37 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
+     * Creates a self-signed X.509 public-key certificate.
+     *
+     * @param pair KeyPair to create the cert for
+     * @return self-signed X509Certificate
+     */
+    private static X509Certificate createSelfSignedCertificate(final KeyPair pair) {
+        Security.addProvider(new BouncyCastleProvider());
+        final int timeRange = 10000;
+        X509Certificate cert = null;
+        try {
+
+            X500Name issuerName = new X500Name("CN=TEST2, OU=TEST2, O=TEST2, C=TEST2");
+            X500Name subjectName = new X500Name("CN=TEST, OU=TEST, O=TEST, C=TEST");
+            BigInteger serialNumber = BigInteger.ONE;
+            Date notBefore = new Date(System.currentTimeMillis() - timeRange);
+            Date notAfter = new Date(System.currentTimeMillis() + timeRange);
+            X509v3CertificateBuilder builder =
+                    new JcaX509v3CertificateBuilder(issuerName, serialNumber, notBefore, notAfter,
+                            subjectName, pair.getPublic());
+            ContentSigner signer =
+                    new JcaContentSignerBuilder("SHA256WithRSA").setProvider("BC").build(
+                            pair.getPrivate());
+            return new JcaX509CertificateConverter().setProvider("BC").getCertificate(
+                    builder.build(signer));
+        } catch (Exception e) {
+            fail("Exception occurred while creating a cert", e);
+        }
+        return cert;
+    }
+
+    /**
      * Tests {@link AttestationCertificateAuthority#
      * AttestationCertificateAuthority(SupplyChainValidationService, PrivateKey,
      * X509Certificate, StructConverter, CertificateManager, DeviceRegister, int,
@@ -390,14 +427,13 @@ public class AttestationCertificateAuthorityTest {
         final String identityProofLabelString = "label";
         byte[] identityProofLabel = identityProofLabelString.getBytes(StandardCharsets.UTF_8);
         byte[] modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus().toByteArray();
-        X500Principal principal = new X500Principal("CN=TEST, OU=TEST, O=TEST, C=TEST");
         int validDays = 1;
 
         // create mocks for testing
         IdentityProof identityProof = mock(IdentityProof.class);
         AsymmetricPublicKey asymmetricPublicKey = mock(AsymmetricPublicKey.class);
         StorePubKey storePubKey = mock(StorePubKey.class);
-        X509Certificate acaCertificate = mock(X509Certificate.class);
+        X509Certificate acaCertificate = createSelfSignedCertificate(keyPair);
 
         // assign ACA fields
         ReflectionTestUtils.setField(aca, "validDays", validDays);
@@ -405,10 +441,6 @@ public class AttestationCertificateAuthorityTest {
 
         // prepare identity proof interactions
         when(identityProof.getLabel()).thenReturn(identityProofLabel);
-
-        // prepare other mocks
-        when(acaCertificate.getSubjectX500Principal()).thenReturn(principal);
-        when(acaCertificate.getIssuerX500Principal()).thenReturn(principal);
 
         // perform the test
         X509Certificate certificate = abstractProcessor.accessGenerateCredential(keyPair.getPublic(),
@@ -453,8 +485,7 @@ public class AttestationCertificateAuthorityTest {
         assertEquals(tomorrow.get(Calendar.DATE), afterDate.get(Calendar.DATE));
 
         // validate mock interactions
-        verify(acaCertificate).getSubjectX500Principal();
-        verifyNoMoreInteractions(identityProof, asymmetricPublicKey, storePubKey, acaCertificate);
+        verifyNoMoreInteractions(identityProof, asymmetricPublicKey, storePubKey);
     }
 
     /**

@@ -74,7 +74,7 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     @Value("${server.ssl.key-store-password:''}")
     private String keyStorePassword;
 
-    @Value("${server.ssl.key-alias}")
+    @Value("${aca.certificates.signing-key-alias}")
     private String keyAlias;
 
     @Autowired

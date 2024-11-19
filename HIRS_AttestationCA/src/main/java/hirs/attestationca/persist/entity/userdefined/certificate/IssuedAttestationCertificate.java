@@ -29,7 +29,7 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
     public static final String AIC_TYPE_LABEL = "TCPA Trusted Platform Identity";
 
     @Column
-    private boolean isLDevID;
+    private boolean ldevID;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ek_id")
@@ -45,18 +45,18 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      * @param certificateBytes      the issued certificate bytes
      * @param endorsementCredential the endorsement credential
      * @param platformCredentials   the platform credentials
-     * @param isLDevID              is LDevId
+     * @param ldevID              is LDevID
      * @throws IOException if there is a problem extracting information from the certificate
      */
     public IssuedAttestationCertificate(final byte[] certificateBytes,
                                         final EndorsementCredential endorsementCredential,
                                         final List<PlatformCredential> platformCredentials,
-                                        final boolean isLDevID)
+                                        final boolean ldevID)
             throws IOException {
         super(certificateBytes);
         this.endorsementCredential = endorsementCredential;
         this.platformCredentials = new ArrayList<>(platformCredentials);
-        this.isLDevID = isLDevID;
+        this.ldevID = ldevID;
     }
 
     /**
@@ -65,14 +65,14 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      * @param certificatePath       path to certificate
      * @param endorsementCredential the endorsement credential
      * @param platformCredentials   the platform credentials
-     * @param isLDevID              is it an LDev ID
+     * @param ldevID              is it an LDevID
      * @throws IOException if there is a problem extracting information from the certificate
      */
     public IssuedAttestationCertificate(final Path certificatePath,
                                         final EndorsementCredential endorsementCredential,
                                         final List<PlatformCredential> platformCredentials,
-                                        final boolean isLDevID)
+                                        final boolean ldevID)
             throws IOException {
-        this(readBytes(certificatePath), endorsementCredential, platformCredentials, isLDevID);
+        this(readBytes(certificatePath), endorsementCredential, platformCredentials, ldevID);
     }
 }
