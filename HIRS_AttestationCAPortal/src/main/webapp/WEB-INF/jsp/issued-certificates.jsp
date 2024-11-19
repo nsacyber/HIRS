@@ -53,7 +53,7 @@
                             }
                         },
                         {
-                            data: 'isLDevID',
+                            data: 'ldevID',
                             searchable:false,
                             render: function (data, type, full, meta) {
                                 if (data === true) {

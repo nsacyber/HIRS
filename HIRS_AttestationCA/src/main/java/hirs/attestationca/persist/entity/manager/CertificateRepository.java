@@ -125,14 +125,14 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
 
     /**
      * Query that retrieves a list of issued attestation certificates using the provided device id,
-     * isLDevID value and sort value.
+     * ldevID value and sort value.
      *
      * @param deviceId device id
-     * @param isLDevID is it a LDevId
+     * @param ldevID is it a LDevId
      * @param sort     sort
      * @return a list of issued attestation certificates
      */
-    List<IssuedAttestationCertificate> findByDeviceIdAndIsLDevID(UUID deviceId, boolean isLDevID, Sort sort);
+    List<IssuedAttestationCertificate> findByDeviceIdAndLdevID(UUID deviceId, boolean ldevID, Sort sort);
 
     /**
      * Query that retrieves a certificates using the provided certificate hash.
@@ -142,3 +142,4 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
      */
     Certificate findByCertificateHash(int certificateHash);
 }
+

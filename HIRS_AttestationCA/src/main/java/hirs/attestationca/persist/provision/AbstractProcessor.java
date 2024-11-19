@@ -23,7 +23,6 @@ import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -123,14 +122,14 @@ public class AbstractProcessor {
 
             // Add signing extension
             builder.addExtension(
-                    X509Extension.keyUsage,
+                    Extension.keyUsage,
                     true,
                     new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment)
             );
 
             // Basic constraints
             builder.addExtension(
-                    X509Extension.basicConstraints,
+                    Extension.basicConstraints,
                     true,
                     new BasicConstraints(false)
             );
@@ -255,7 +254,7 @@ public class AbstractProcessor {
      * @param endorsementCredential            the endorsement credential used to generate the AC
      * @param platformCredentials              the platform credentials used to generate the AC
      * @param device                           the device to which the attestation certificate is tied
-     * @param isLDevID                         whether the certificate is a ldevid
+     * @param ldevID                         whether the certificate is a ldevid
      * @return whether the certificate was saved successfully
      * @throws {@link CertificateProcessingException} if error occurs in persisting the Attestation
      *                Certificate
@@ -265,7 +264,7 @@ public class AbstractProcessor {
                                               final EndorsementCredential endorsementCredential,
                                               final List<PlatformCredential> platformCredentials,
                                               final Device device,
-                                              final boolean isLDevID) {
+                                              final boolean ldevID) {
         List<IssuedAttestationCertificate> issuedAc;
         boolean generateCertificate = true;
         PolicyRepository scp = getPolicyRepository();
@@ -275,27 +274,27 @@ public class AbstractProcessor {
         try {
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
-                    derEncodedAttestationCertificate, endorsementCredential, platformCredentials, isLDevID);
+                    derEncodedAttestationCertificate, endorsementCredential, platformCredentials, ldevID);
 
             if (scp != null) {
                 policySettings = scp.findByName("Default");
 
                 Sort sortCriteria = Sort.by(Sort.Direction.DESC, "endValidity");
-                issuedAc = certificateRepository.findByDeviceIdAndIsLDevID(device.getId(), isLDevID,
+                issuedAc = certificateRepository.findByDeviceIdAndLdevID(device.getId(), ldevID,
                         sortCriteria);
 
-                generateCertificate = isLDevID ? policySettings.isIssueDevIdCertificate()
+                generateCertificate = ldevID ? policySettings.isIssueDevIdCertificate()
                         : policySettings.isIssueAttestationCertificate();
 
                 if (issuedAc != null && issuedAc.size() > 0
-                        && (isLDevID ? policySettings.isDevIdExpirationFlag()
+                        && (ldevID ? policySettings.isDevIdExpirationFlag()
                         : policySettings.isGenerateOnExpiration())) {
                     if (issuedAc.get(0).getEndValidity().after(currentDate)) {
                         // so the issued AC is not expired
                         // however are we within the threshold
                         days = ProvisionUtils.daysBetween(currentDate, issuedAc.get(0).getEndValidity());
                         generateCertificate =
-                                days < Integer.parseInt(isLDevID ? policySettings.getDevIdReissueThreshold()
+                                days < Integer.parseInt(ldevID ? policySettings.getDevIdReissueThreshold()
                                         : policySettings.getReissueThreshold());
                     }
                 }
