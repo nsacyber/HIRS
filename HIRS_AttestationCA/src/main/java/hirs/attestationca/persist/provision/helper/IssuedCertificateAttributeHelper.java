@@ -55,9 +55,11 @@ public final class IssuedCertificateAttributeHelper {
         try {
             extension = new Extension(Extension.extendedKeyUsage, true,
                     new ExtendedKeyUsage(new KeyPurposeId[] {
-                            KeyPurposeId.getInstance(TCG_KP_AIK_CERTIFICATE_ATTRIBUTE)}).getEncoded());
+                            KeyPurposeId.getInstance(TCG_KP_AIK_CERTIFICATE_ATTRIBUTE),
+                            KeyPurposeId.getInstance(KeyPurposeId.id_kp_clientAuth)
+                            }).getEncoded());
         } catch (IOException e) {
-//            log.error("Error generating extended key usage extension");
+            log.error("Error generating extended key usage extension");
         }
         EXTENDED_KEY_USAGE_EXTENSION = extension;
     }
