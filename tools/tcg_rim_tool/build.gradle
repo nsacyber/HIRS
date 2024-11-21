@@ -1,8 +1,8 @@
 plugins {
-       id "java"
-       id 'com.netflix.nebula.ospackage' version '11.4.0'
-       id 'com.intershop.gradle.jaxb' version '5.1.0'
-       id 'checkstyle'
+    id "java"
+    id 'com.netflix.nebula.ospackage' version '11.4.0'
+    id 'com.intershop.gradle.jaxb' version '5.1.0'
+    id 'checkstyle'
 }
 
 // Get version from main project gradle
@@ -16,33 +16,33 @@ java {
 }
 
 repositories {
-	mavenCentral()
-	flatDir { dirs "lib" }
+    mavenCentral()
+    flatDir { dirs "lib" }
 }
 
 dependencies {
-	implementation project(':HIRS_Utils')
+    implementation project(':HIRS_Utils')
 
-	implementation libs.bouncycastle
-	implementation libs.glassfish.json
-	implementation libs.glassfish.jaxb.runtime
-	implementation libs.jcommander
-	implementation libs.jakarta.api
-	implementation libs.jakarta.xml
-	implementation libs.commons.codec
-	implementation libs.hibernate.core
-	implementation libs.jackson.databind
-	implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
-	implementation libs.guava
+    implementation libs.bouncycastle
+    implementation libs.glassfish.javax.json
+    implementation libs.glassfish.jaxb.runtime
+    implementation libs.jcommander
+    implementation libs.jakarta.persistence.api
+    implementation libs.jakarta.xml
+    implementation libs.commons.codec
+    implementation libs.hibernate.core
+    implementation libs.jackson.databind
+    implementation libs.log4j.core
+    implementation libs.guava
 
-	compileOnly libs.lombok
+    compileOnly libs.lombok
     implementation libs.lombok
     annotationProcessor libs.lombok
 
     testImplementation libs.testng
 }
 test {
-	testLogging.showStandardStreams true
+    testLogging.showStandardStreams true
 }
 
 checkstyle {
@@ -56,7 +56,7 @@ configurations.checkstyle {
     }
 }
 checkstyleMain {
-    source ='src/main/java'
+    source = 'src/main/java'
 }
 tasks.withType(Checkstyle) {
     reports {
@@ -68,16 +68,16 @@ tasks.withType(Checkstyle) {
 jar {
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	manifest {
-		attributes "Main-Class": "hirs.swid.Main"
-			  
-	}
+    manifest {
+        attributes "Main-Class": "hirs.swid.Main"
 
-	from {
-		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-	}
-     //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
-     archiveVersion = jarVersion
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
+    archiveVersion = jarVersion
 }
 
 ospackage {
@@ -90,32 +90,32 @@ ospackage {
     user 'root'
     fileMode = 0755
 
-    into ('/opt/rimtool/lib') {
+    into('/opt/rimtool/lib') {
         from jar.outputs.files
         from configurations.runtimeClasspath
         from 'libs'
     }
 
-    into ('/opt/rimtool/scripts') {
-      from ('scripts') {
-        exclude {
-            FileTreeElement details ->
-                details.file.name.endsWith('.bat')
+    into('/opt/rimtool/scripts') {
+        from('scripts') {
+            exclude {
+                FileTreeElement details ->
+                    details.file.name.endsWith('.bat')
+            }
         }
-      }
     }
-    into ('/opt/rimtool/docs') {
-      from('./') {
-         include {
-             FileTreeElement details ->
-                 details.file.name.endsWith('.md')
-          }        
-       }
-       }
-    into ('/opt/rimtool/data') {
-      from('src/test/resources/') {
-       }
-     }
+    into('/opt/rimtool/docs') {
+        from('./') {
+            include {
+                FileTreeElement details ->
+                    details.file.name.endsWith('.md')
+            }
+        }
+    }
+    into('/opt/rimtool/data') {
+        from('src/test/resources/') {
+        }
+    }
     link("/usr/local/bin/rim", "/opt/rimtool/scripts/rimtool.sh", 0x755)
 
     // Post Install
@@ -125,37 +125,37 @@ ospackage {
 }
 
 buildRpm {
-   arch = X86_64
+    arch = X86_64
 }
 
 buildDeb {
     arch = 'amd64'
 }
 
-task buildZip(type: Zip){
+task buildZip(type: Zip) {
     dependsOn jar
     dependsOn jar
-    from(tasks.jar.archiveFile){
-        rename( filename ->
+    from(tasks.jar.archiveFile) {
+        rename(filename ->
                 "${project.name}.jar")
         into '/'
     }
-    from('./build/resources/test/rim_fields.json'){
+    from('./build/resources/test/rim_fields.json') {
         into '/'
     }
-    from('../../.ci/tcg-rim-tool/configs/Base_Rim_Config.json'){
+    from('../../.ci/tcg-rim-tool/configs/Base_Rim_Config.json') {
         into '/'
     }
-    from('../../.ci/tcg-rim-tool/eventlogs/TpmLog.bin'){
+    from('../../.ci/tcg-rim-tool/eventlogs/TpmLog.bin') {
         into '/'
     }
-    from('../../.ci/tcg-rim-tool/keys/PC_OEM1_rim_signer_rsa_3k_sha384.key'){
+    from('../../.ci/tcg-rim-tool/keys/PC_OEM1_rim_signer_rsa_3k_sha384.key') {
         into '/'
     }
-    from('../../.ci/tcg-rim-tool/certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem'){
+    from('../../.ci/tcg-rim-tool/certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem') {
         into '/'
     }
-    from('../../.ci/tcg-rim-tool/certs/PC_OEM1_Cert_Chain.pem'){
+    from('../../.ci/tcg-rim-tool/certs/PC_OEM1_Cert_Chain.pem') {
         into '/'
     }
 

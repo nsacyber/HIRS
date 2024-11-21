@@ -1,0 +1,87 @@
+[versions]
+bouncyCastleVersion = "1.77"
+commonsCodecVersion = "1.15"
+commonsFileuploadVersion = "1.5"
+commonsIoVersion = "2.11.0"
+commonsLang3Version = "3.13.0"
+gsonVersion = "2.10.1"
+glassfishJsonVersion = "1.1.4"
+glassfishJaxbRuntimeVersion = "2.3.1"
+guavaVersion = "31.1-jre"
+hibernateCoreVersion = "6.1.7.Final"
+jacksonVersion = "2.14.2"
+jakartaApiVersion = "3.1.0"
+jakartaServletVersion = "3.0.0"
+jakartaXmlVersion = "4.0.0"
+jcommanderVersion = "1.83"
+log4jVersion = "2.19.0"
+lombokVersion = "1.18.26"
+mariadbVersion = "3.1.4"
+minimalJsonVersion = "0.9.5"
+ospackageVersion = "11.2.0"
+pciVersion = "0.3"
+protobufJavaVersion = "3.24.1"
+springBootVersion = "3.0.1"
+springDataJpaDatatablesVersion = "6.0.1"
+springRetryVersion = "2.0.0"
+testngVersion = "7.4.0"
+tomcatVersion = "10.1.5"
+
+#test dependencies versions
+apacheCommonsVersion = "2.4"
+hamcrestVersion = "2.2"
+hsqldbVersion = "2.7.2"
+junitJupiterVersion = "5.9.3"
+junitPlatformVersion = "1.9.3"
+mockitoVersion = "4.2.0"
+slf4jVersion = "1.7.30"
+springTestVersion = "6.0.8"
+spotBugAnnotationVersion = "4.8.6"
+
+[libraries]
+bouncycastle = { module = "org.bouncycastle:bcmail-jdk18on", version.ref = "bouncyCastleVersion" }
+commons-codec = { module = "commons-codec:commons-codec", version.ref = "commonsCodecVersion" }
+commons-fileupload = { module = "commons-fileupload:commons-fileupload", version.ref = "commonsFileuploadVersion" }
+commons-io = { module = "commons-io:commons-io", version.ref = "commonsIoVersion" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3Version" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
+glassfish-javax-json = { module = "org.glassfish:javax.json", version.ref = "glassfishJsonVersion" }
+glassfish-jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "glassfishJaxbRuntimeVersion" }
+guava = { module = "com.google.guava:guava", version.ref = "guavaVersion" }
+hibernate-core = { module = "org.hibernate:hibernate-core", version.ref = "hibernateCoreVersion" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jacksonVersion" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonVersion" }
+jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakartaApiVersion" }
+jakarta-servlet = { module = "org.glassfish.web:jakarta.servlet.jsp.jstl", version.ref = "jakartaServletVersion" }
+jakarta-xml = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaXmlVersion" }
+jcommander = { module = "org.jcommander:jcommander", version.ref = "jcommanderVersion" }
+log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4jVersion" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4jVersion" }
+log4j-spring-boot = { module = "org.apache.logging.log4j:log4j-spring-boot", version.ref = "log4jVersion" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
+mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadbVersion" }
+minimal-json = { module = "com.eclipsesource.minimal-json:minimal-json", version.ref = "minimalJsonVersion" }
+ospackage = { module = "com.netflix.nebula:gradle-ospackage-plugin", version.ref = "ospackageVersion" }
+pci = { module = "com.github.marandus:pci-ids", version.ref = "pciVersion" }
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufJavaVersion" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4jVersion" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "springBootVersion" }
+spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2", version.ref = "springBootVersion" }
+spring-boot-starter-tomcat = { module = "org.springframework.boot:spring-boot-starter-tomcat", version.ref = "springBootVersion" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "springBootVersion" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBootVersion" }
+spring-data-jpa-datatables = { module = "com.github.darrachequesne:spring-data-jpa-datatables", version.ref = "springDataJpaDatatablesVersion" }
+spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
+tomcat-embed-jasper = { module = "org.apache.tomcat.embed:tomcat-embed-jasper", version.ref = "tomcatVersion" }
+testng = { module = "org.testng:testng", version.ref = "testngVersion" }
+
+# test dependencies
+apache-commons-io = { module = "org.apache.directory.studio:org.apache.commons.io", version.ref = "apacheCommonsVersion" }
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrestVersion" }
+hsqldb = { module = "org.hsqldb:hsqldb", version.ref = "hsqldbVersion" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiterVersion" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatformVersion" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoVersion" }
+spring-test = { module = "org.springframework:spring-test", version.ref = "springTestVersion" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBootVersion" }
+spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version.ref = "spotBugAnnotationVersion" }

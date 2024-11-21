@@ -27,15 +27,16 @@ dependencies {
     implementation project(':HIRS_Utils')
     implementation project(':HIRS_Structs')
 
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.0.1'
-    implementation 'com.github.darrachequesne:spring-data-jpa-datatables:6.0.1'
-    implementation 'org.springframework.retry:spring-retry:2.0.0'
-    implementation libs.springdatajpa
+
+    implementation libs.spring.data.jpa.datatables
+    implementation libs.spring.boot.starter.data.jpa
+    implementation libs.spring.retry
+    implementation libs.spring.boot.starter.web
 
     implementation libs.bouncycastle
     implementation libs.commons.codec
     implementation libs.commons.lang3
-    implementation libs.jakarta.api
+    implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
     implementation libs.hibernate.core
     implementation libs.pci
@@ -44,18 +45,18 @@ dependencies {
     implementation libs.jackson.databind
     implementation libs.minimal.json
     implementation libs.protobuf.java
-    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
-    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation libs.log4j.api
+    implementation libs.log4j.core
 
-    testImplementation 'org.apache.directory.studio:org.apache.commons.io:2.4'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-    testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
-    testImplementation 'org.mockito:mockito-core:4.2.0'
-    testImplementation 'org.springframework:spring-test:6.0.8'
+    testImplementation libs.apache.commons.io
+    testImplementation libs.hamcrest
+    testImplementation libs.junit.jupiter
+    testImplementation libs.junit.platform.launcher
+    testImplementation libs.mockito.core
+    testImplementation libs.spring.test
 
-    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotBugAnnotationVersion}"
-    annotationProcessor "com.github.spotbugs:spotbugs-annotations:${spotBugAnnotationVersion}"
+    compileOnly libs.spotbugs.annotations
+    annotationProcessor libs.spotbugs.annotations
 
     // spring management
     compileOnly libs.lombok

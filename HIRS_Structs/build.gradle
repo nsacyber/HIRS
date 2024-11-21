@@ -16,12 +16,12 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.commons:commons-lang3:3.13.0'
+    implementation libs.commons.lang3
 
 //    testCompile libs.mockito
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-    testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation libs.junit.jupiter
+    testImplementation libs.junit.platform.launcher
+    testImplementation libs.hamcrest
 }
 
 test {

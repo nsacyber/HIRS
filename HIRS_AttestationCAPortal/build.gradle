@@ -47,26 +47,28 @@ dependencies {
     implementation libs.bouncycastle
     implementation libs.guava
     implementation libs.jakarta.servlet
-    implementation libs.jakarta.api
+    implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
-    implementation 'org.apache.logging.log4j:log4j-spring-boot'
-    implementation 'org.projectlombok:lombok'
-    implementation 'commons-fileupload:commons-fileupload:1.5'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.5'
+    //implementation libs.
 
-    compileOnly 'org.projectlombok:lombok'
-    implementation 'org.mariadb.jdbc:mariadb-java-client:3.1.4'
-    annotationProcessor 'org.projectlombok:lombok'
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.validation
+    implementation libs.spring.boot.starter.data.jpa
+    implementation libs.spring.boot.starter.log4j2
+    implementation libs.log4j.spring.boot
+    implementation libs.lombok
+    implementation libs.commons.fileupload
+    implementation libs.tomcat.embed.jasper
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-    testImplementation 'org.hsqldb:hsqldb'
+    compileOnly libs.lombok
+    implementation libs.mariadb.java.client
+    annotationProcessor libs.lombok
+    providedRuntime libs.spring.boot.starter.tomcat
+
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.junit.jupiter
+    testImplementation libs.hsqldb
 }
 
 checkstyle {
