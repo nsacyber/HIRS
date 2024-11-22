@@ -42,33 +42,33 @@ dependencies {
     implementation project(':HIRS_Utils')
     implementation project(':HIRS_AttestationCA')
 
-    implementation libs.pci
-    implementation libs.gson
     implementation libs.bouncycastle
+    implementation libs.commons.fileupload
+    implementation libs.gson
     implementation libs.guava
-    implementation libs.jakarta.servlet
     implementation libs.jakarta.persistence.api
+    implementation libs.jakarta.servlet
     implementation libs.jakarta.xml
-
-    //implementation libs.
-
+    implementation libs.log4j.spring.boot
+    implementation libs.mariadb.java.client
+    implementation libs.pci
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.boot.starter.log4j2
-    implementation libs.log4j.spring.boot
-    implementation libs.lombok
-    implementation libs.commons.fileupload
     implementation libs.tomcat.embed.jasper
 
     compileOnly libs.lombok
-    implementation libs.mariadb.java.client
     annotationProcessor libs.lombok
+
     providedRuntime libs.spring.boot.starter.tomcat
 
-    testImplementation libs.spring.boot.starter.test
     testImplementation libs.junit.jupiter
     testImplementation libs.hsqldb
+    testImplementation libs.spring.boot.starter.test
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }
 
 checkstyle {

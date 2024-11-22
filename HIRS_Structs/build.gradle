@@ -18,10 +18,16 @@ repositories {
 dependencies {
     implementation libs.commons.lang3
 
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
 //    testCompile libs.mockito
     testImplementation libs.junit.jupiter
     testImplementation libs.junit.platform.launcher
     testImplementation libs.hamcrest
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }
 
 test {

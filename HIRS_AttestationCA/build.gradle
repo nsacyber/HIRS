@@ -28,40 +28,41 @@ dependencies {
     implementation project(':HIRS_Structs')
 
 
+    implementation libs.bouncycastle
+    implementation libs.commons.codec
+    implementation libs.commons.io
+    implementation libs.commons.lang3
+    implementation libs.hibernate.core
+    implementation libs.guava
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
+    implementation libs.jakarta.persistence.api
+    implementation libs.jakarta.xml
+    implementation libs.log4j.api
+    implementation libs.log4j.core
+    implementation libs.minimal.json
+    implementation libs.pci
+    implementation libs.protobuf.java
     implementation libs.spring.data.jpa.datatables
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.retry
     implementation libs.spring.boot.starter.web
 
-    implementation libs.bouncycastle
-    implementation libs.commons.codec
-    implementation libs.commons.lang3
-    implementation libs.jakarta.persistence.api
-    implementation libs.jakarta.xml
-    implementation libs.hibernate.core
-    implementation libs.pci
-    implementation libs.guava
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
-    implementation libs.minimal.json
-    implementation libs.protobuf.java
-    implementation libs.log4j.api
-    implementation libs.log4j.core
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    testImplementation libs.apache.commons.io
+    compileOnly libs.spotbugs.annotations
+    annotationProcessor libs.spotbugs.annotations
+
+    testImplementation libs.commons.io
     testImplementation libs.hamcrest
     testImplementation libs.junit.jupiter
     testImplementation libs.junit.platform.launcher
     testImplementation libs.mockito.core
     testImplementation libs.spring.test
 
-    compileOnly libs.spotbugs.annotations
-    annotationProcessor libs.spotbugs.annotations
-
-    // spring management
-    compileOnly libs.lombok
-    implementation libs.lombok
-    annotationProcessor libs.lombok
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }
 checkstyle {
     toolVersion = '10.12.7'

@@ -24,22 +24,25 @@ dependencies {
     implementation project(':HIRS_Utils')
 
     implementation libs.bouncycastle
-    implementation libs.glassfish.javax.json
+    implementation libs.commons.codec
+    implementation libs.glassfish.jakarta.json
     implementation libs.glassfish.jaxb.runtime
+    implementation libs.guava
+    implementation libs.hibernate.core
     implementation libs.jcommander
+    implementation libs.jackson.databind
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
-    implementation libs.commons.codec
-    implementation libs.hibernate.core
-    implementation libs.jackson.databind
     implementation libs.log4j.core
-    implementation libs.guava
 
     compileOnly libs.lombok
-    implementation libs.lombok
     annotationProcessor libs.lombok
 
     testImplementation libs.testng
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+
 }
 test {
     testLogging.showStandardStreams true

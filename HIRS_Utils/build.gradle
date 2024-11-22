@@ -28,31 +28,32 @@ configurations {
 
 dependencies {
     implementation libs.bouncycastle
-    implementation libs.lombok
+    implementation libs.commons.codec
+    implementation libs.commons.lang3
+    implementation libs.commons.io
+    implementation libs.glassfish.jaxb.runtime
+    implementation libs.guava
     implementation libs.jackson.core
     implementation libs.jackson.databind
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
-    implementation libs.guava
-    implementation libs.commons.codec
-    implementation libs.commons.lang3
-    implementation libs.commons.io
-    implementation libs.minimal.json
-    implementation libs.pci
-
     implementation libs.log4j.core
     implementation libs.log4j.api
-    implementation libs.glassfish.jaxb.runtime
+    implementation libs.minimal.json
+    implementation libs.pci
     implementation libs.slf4j.simple
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
     testImplementation libs.junit.jupiter
     testImplementation libs.junit.platform.launcher
     testImplementation libs.hamcrest
     testImplementation libs.mockito.core
     testImplementation project(path: ':HIRS_AttestationCA')
-
-    compileOnly libs.lombok
-    annotationProcessor libs.lombok
+    
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }
 
 checkstyle {
