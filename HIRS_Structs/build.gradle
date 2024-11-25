@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'checkstyle'
 }
 
 java {
@@ -32,29 +31,6 @@ dependencies {
 
 test {
     useJUnitPlatform()
-}
-
-checkstyle {
-    toolVersion = '10.12.7'
-    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
-}
-// https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
-configurations.checkstyle {
-    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
-        select("com.google.guava:guava:0")
-    }
-}
-checkstyleMain {
-    source = 'src/main/java'
-}
-checkstyleTest {
-    source = 'src/test/java'
-}
-tasks.withType(Checkstyle) {
-    reports {
-        xml.required = false
-        html.required = true
-    }
 }
 
 //publishing {

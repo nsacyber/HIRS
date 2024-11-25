@@ -2,7 +2,6 @@ plugins {
     id "java"
     id 'com.netflix.nebula.ospackage' version '11.4.0'
     id 'com.intershop.gradle.jaxb' version '5.1.0'
-    id 'checkstyle'
 }
 
 // Get version from main project gradle
@@ -46,26 +45,6 @@ dependencies {
 }
 test {
     testLogging.showStandardStreams true
-}
-
-checkstyle {
-    toolVersion = '10.12.7'
-    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
-}
-// https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
-configurations.checkstyle {
-    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
-        select("com.google.guava:guava:0")
-    }
-}
-checkstyleMain {
-    source = 'src/main/java'
-}
-tasks.withType(Checkstyle) {
-    reports {
-        xml.required = false
-        html.required = true
-    }
 }
 
 jar {

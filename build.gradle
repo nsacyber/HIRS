@@ -3,7 +3,8 @@ import java.util.concurrent.TimeUnit
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
-    id 'com.github.spotbugs' version '6.0.4' apply false
+    id 'com.github.spotbugs' version '6.0.4'
+    id 'checkstyle'
 }
 
 // Global checkstyle file
@@ -12,11 +13,29 @@ ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml"
 subprojects {
     apply plugin: "com.github.spotbugs"
 
+    checkstyle {
+        toolVersion = '10.20.0'
+        configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
+    }
+
+    checkstyleMain {
+        source = 'src/main/java'
+    }
+    checkstyleTest {
+        source = 'src/test/java'
+    }
+    tasks.withType(Checkstyle).configureEach {
+        reports {
+            xml.required = false
+            html.required = true
+        }
+    }
+
     spotbugs {
         excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
     }
 
-    tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
         reports {
             html.required = true
         }

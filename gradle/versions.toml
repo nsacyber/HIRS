@@ -1,9 +1,9 @@
 [versions]
-bouncyCastleVersion = "1.77"
-commonsCodecVersion = "1.15"
+bouncyCastleVersion = "1.79"
+commonsCodecVersion = "1.17.1"
 commonsFileUploadVersion = "1.5"
-commonsIoVersion = "2.4"
-commonsLang3Version = "3.13.0"
+commonsIoVersion = "2.18.0"
+commonsLang3Version = "3.16.0"
 gsonVersion = "2.10.1"
 glassfishJakartaJsonVersion = "1.1.4"
 glassfishJaxbRuntimeVersion = "2.3.1"
@@ -14,7 +14,7 @@ jakartaPersistenceApiVersion = "3.1.0"
 jakartaServletVersion = "3.0.0"
 jakartaXmlVersion = "4.0.0"
 jcommanderVersion = "1.83"
-log4jVersion = "2.19.0"
+log4jVersion = "2.24.2"
 lombokVersion = "1.18.34"
 mariadbVersion = "3.1.4"
 minimalJsonVersion = "0.9.5"
@@ -28,17 +28,17 @@ testngVersion = "7.4.0"
 tomcatVersion = "10.1.5"
 
 #test dependencies versions
-hamcrestVersion = "2.2"
+hamcrestVersion = "3.0"
 hsqldbVersion = "2.7.3"
-junitJupiterVersion = "5.9.3"
-junitPlatformVersion = "1.9.3"
-mockitoVersion = "4.2.0"
-slf4jVersion = "1.7.30"
+junitJupiterVersion = "5.11.3"
+junitPlatformVersion = "1.11.3"
+mockitoVersion = "5.14.2"
+slf4jVersion = "2.0.16"
 springTestVersion = "6.0.8"
 spotBugAnnotationVersion = "4.8.6"
 
 [libraries]
-bouncycastle = { module = "org.bouncycastle:bcmail-jdk18on", version.ref = "bouncyCastleVersion" }
+bouncycastle = { module = "org.bouncycastle:bcmail-jdk15to18", version.ref = "bouncyCastleVersion" }
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commonsCodecVersion" }
 commons-fileupload = { module = "commons-fileupload:commons-fileupload", version.ref = "commonsFileUploadVersion" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commonsIoVersion" }
