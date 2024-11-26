@@ -1,17 +1,7 @@
-plugins {
-    id 'java'
-}
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion")
 def jarVersion = properties.get("jarVersion")
 //println "packageVersion is ${projVersion}"
-
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
 
 repositories {
     mavenCentral()

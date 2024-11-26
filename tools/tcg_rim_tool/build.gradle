@@ -1,5 +1,4 @@
 plugins {
-    id "java"
     id 'com.netflix.nebula.ospackage' version '11.4.0'
     id 'com.intershop.gradle.jaxb' version '5.1.0'
 }
@@ -7,12 +6,6 @@ plugins {
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion");
 def jarVersion = properties.get("jarVersion");
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
 
 repositories {
     mavenCentral()
