@@ -5,15 +5,15 @@ commonsFileUploadVersion = "1.5"
 commonsIoVersion = "2.18.0"
 commonsLang3Version = "3.17.0"
 gsonVersion = "2.11.0"
-glassfishJakartaJsonVersion = "1.1.4"
+glassfishJakartaJsonVersion = "2.0.1"
 glassfishJaxbRuntimeVersion = "4.0.5"
 guavaVersion = "33.3.1-jre"
 hibernateCoreVersion = "6.1.7.Final"
 jacksonVersion = "2.18.0"
 jakartaPersistenceApiVersion = "3.1.0"
-jakartaServletVersion = "3.0.0"
-jakartaXmlVersion = "4.0.0"
-jcommanderVersion = "1.83"
+jakartaServletVersion = "3.0.1"
+jakartaXmlVersion = "4.0.2"
+jcommanderVersion = "2.0"
 log4jVersion = "2.24.2"
 lombokVersion = "1.18.34"
 mariadbVersion = "3.4.0"
@@ -44,7 +44,7 @@ commons-fileupload = { module = "commons-fileupload:commons-fileupload", version
 commons-io = { module = "commons-io:commons-io", version.ref = "commonsIoVersion" }
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3Version" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
-glassfish-jakarta-json = { module = "org.glassfish:javax.json", version.ref = "glassfishJakartaJsonVersion" }
+glassfish-jakarta-json = { module = "org.glassfish:jakarta.json", version.ref = "glassfishJakartaJsonVersion" }
 glassfish-jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "glassfishJaxbRuntimeVersion" }
 guava = { module = "com.google.guava:guava", version.ref = "guavaVersion" }
 hibernate-core = { module = "org.hibernate:hibernate-core", version.ref = "hibernateCoreVersion" }
