@@ -25,7 +25,7 @@ springBootVersion = "3.0.1"
 springDataJpaDatatablesVersion = "6.0.1"
 springRetryVersion = "2.0.0"
 testngVersion = "7.4.0"
-tomcatVersion = "11.0.1"
+tomcatVersion = "10.1.5"
 
 #test dependencies versions
 hamcrestVersion = "3.0"
