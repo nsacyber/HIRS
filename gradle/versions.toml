@@ -11,7 +11,6 @@ guavaVersion = "33.3.1-jre"
 hibernateCoreVersion = "6.2.32.Final"
 jacksonVersion = "2.18.0"
 jakartaPersistenceApiVersion = "3.2.0"
-jakartaServletVersion = "3.0.0"
 jakartaXmlVersion = "4.0.2"
 jcommanderVersion = "1.85"
 log4jVersion = "2.24.2"
@@ -50,7 +49,6 @@ hibernate-core = { module = "org.hibernate:hibernate-core", version.ref = "hiber
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jacksonVersion" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonVersion" }
 jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakartaPersistenceApiVersion" }
-jakarta-servlet = { module = "org.glassfish.web:jakarta.servlet.jsp.jstl", version.ref = "jakartaServletVersion" }
 jakarta-xml = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaXmlVersion" }
 jcommander = { module = "org.jcommander:jcommander", version.ref = "jcommanderVersion" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4jVersion" }

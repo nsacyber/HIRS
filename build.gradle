@@ -5,8 +5,9 @@ import java.util.concurrent.TimeUnit
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
-    id 'com.github.spotbugs' version '6.0.4' apply false
+    id 'com.autonomousapps.dependency-analysis' version "2.5.0"
     id 'checkstyle'
+    id 'com.github.spotbugs' version "6.0.4" apply false
     id 'java'
 }
 
@@ -14,6 +15,7 @@ plugins {
 ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
 subprojects {
+    apply plugin: 'com.autonomousapps.dependency-analysis'
     apply plugin: "com.github.spotbugs"
     apply plugin: "java"
     apply plugin: "checkstyle"

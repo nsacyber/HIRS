@@ -31,12 +31,9 @@ dependencies {
 
     implementation libs.bouncycastle
     implementation libs.gson
-    implementation libs.guava
     implementation libs.jakarta.persistence.api
-    implementation libs.jakarta.servlet
     implementation libs.jakarta.xml
     implementation libs.log4j.spring.boot
-    implementation libs.mariadb.java.client
 
     // pull the pci dependency and ...
     implementation(libs.pci) {
@@ -49,20 +46,21 @@ dependencies {
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.data.jpa
-    implementation libs.spring.boot.starter.log4j2
-    implementation libs.tomcat.embed.jasper
+    runtimeOnly libs.tomcat.embed.jasper
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
     providedRuntime libs.spring.boot.starter.tomcat
+    runtimeOnly libs.mariadb.java.client
 
     testImplementation libs.junit.jupiter
-    testImplementation libs.hsqldb
     testImplementation libs.spring.boot.starter.test
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
+
+    testRuntimeOnly libs.hsqldb
 }
 
 test {

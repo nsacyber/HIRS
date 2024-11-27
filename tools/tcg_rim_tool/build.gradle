@@ -14,7 +14,6 @@ dependencies {
     implementation libs.commons.codec
     implementation libs.glassfish.jakarta.json
     implementation libs.glassfish.jaxb.runtime
-    implementation libs.guava
     implementation libs.hibernate.core
     implementation libs.jcommander
     implementation libs.jackson.databind
