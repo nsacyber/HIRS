@@ -2,21 +2,15 @@ plugins {
     id 'application'
     id 'war'
     id 'com.netflix.nebula.ospackage' version '11.8.0'
-    id 'org.springframework.boot' version '3.0.1'
+    id 'org.springframework.boot' version '3.0.8'
     id 'io.spring.dependency-management' version '1.1.0'
 }
 
 // Get version from main project gradle
-def packVersion = properties.get("packageVersion");
-def jarVersion = properties.get("jarVersion");
-def projVersion = properties.get("projVersion");
+def packVersion = properties.get("packageVersion")
+def jarVersion = properties.get("jarVersion")
+def projVersion = properties.get("projVersion")
 //println "packageVersion is ${projVersion}"
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
 
 bootRun {
     if (project.hasProperty('debug')) {
@@ -36,7 +30,6 @@ dependencies {
     implementation project(':HIRS_AttestationCA')
 
     implementation libs.bouncycastle
-    implementation libs.commons.fileupload
     implementation libs.gson
     implementation libs.guava
     implementation libs.jakarta.persistence.api
