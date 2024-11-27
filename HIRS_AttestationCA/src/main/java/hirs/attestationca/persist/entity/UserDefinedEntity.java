@@ -19,10 +19,10 @@ public abstract class UserDefinedEntity extends ArchivableEntity {
 
     @Column(nullable = false, unique = true)
     @NonNull
-    private String name;
+    private String name = "";
 
     @ToString.Exclude
-    @Column(nullable = false, unique = false)
+    @Column(nullable = false)
     @NonNull
     private String description = "";
 
