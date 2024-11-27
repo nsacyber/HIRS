@@ -1,4 +1,5 @@
 [versions]
+apacheHttpClientVersion = "4.5.14"
 bouncyCastleVersion = "1.79"
 commonsCodecVersion = "1.17.1"
 commonsFileUploadVersion = "1.5"
@@ -22,7 +23,6 @@ ospackageVersion = "11.2.0"
 pciVersion = "0.3"
 protobufJavaVersion = "4.28.3"
 springBootVersion = "3.0.1"
-springDataJpaDatatablesVersion = "6.0.1"
 springRetryVersion = "2.0.0"
 testngVersion = "7.10.2"
 tomcatVersion = "10.1.33"
@@ -38,6 +38,7 @@ springTestVersion = "6.0.8"
 spotBugAnnotationVersion = "4.8.6"
 
 [libraries]
+apacheHttpClient = { module = "org.apache.httpcomponents:httpclient", version.ref = "apacheHttpClientVersion" }
 bouncycastle = { module = "org.bouncycastle:bcmail-jdk15to18", version.ref = "bouncyCastleVersion" }
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commonsCodecVersion" }
 commons-fileupload = { module = "commons-fileupload:commons-fileupload", version.ref = "commonsFileUploadVersion" }
@@ -69,7 +70,6 @@ spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-st
 spring-boot-starter-tomcat = { module = "org.springframework.boot:spring-boot-starter-tomcat", version.ref = "springBootVersion" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "springBootVersion" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBootVersion" }
-spring-data-jpa-datatables = { module = "com.github.darrachequesne:spring-data-jpa-datatables", version.ref = "springDataJpaDatatablesVersion" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
 tomcat-embed-jasper = { module = "org.apache.tomcat.embed:tomcat-embed-jasper", version.ref = "tomcatVersion" }
 testng = { module = "org.testng:testng", version.ref = "testngVersion" }

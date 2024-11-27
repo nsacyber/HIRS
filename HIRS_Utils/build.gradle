@@ -29,7 +29,15 @@ dependencies {
     implementation libs.log4j.core
     implementation libs.log4j.api
     implementation libs.minimal.json
-    implementation libs.pci
+
+    // pull the pci dependency and ...
+    implementation(libs.pci) {
+        // replace the default apache http client transitive dependency
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+    // with the non-vulnerable version of the apache http client dependency
+    implementation libs.apacheHttpClient
+    
     implementation libs.slf4j.simple
 
     compileOnly libs.lombok

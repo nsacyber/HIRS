@@ -33,9 +33,16 @@ dependencies {
     implementation libs.log4j.api
     implementation libs.log4j.core
     implementation libs.minimal.json
-    implementation libs.pci
+
+    // pull the pci dependency and ...
+    implementation(libs.pci) {
+        // replace the default apache http client transitive dependency
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+    // with the non-vulnerable version of the apache http client dependency
+    implementation libs.apacheHttpClient
+
     implementation libs.protobuf.java
-    implementation libs.spring.data.jpa.datatables
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.retry
     implementation libs.spring.boot.starter.web
