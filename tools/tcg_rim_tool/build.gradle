@@ -7,11 +7,6 @@ plugins {
 def packVersion = properties.get("packageVersion");
 def jarVersion = properties.get("jarVersion");
 
-repositories {
-    mavenCentral()
-    flatDir { dirs "lib" }
-}
-
 dependencies {
     implementation project(':HIRS_Utils')
 

@@ -2,7 +2,7 @@ plugins {
     id 'application'
     id 'war'
     id 'com.netflix.nebula.ospackage' version '11.8.0'
-    id 'org.springframework.boot' version '3.0.6'
+    id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.0'
 }
 
@@ -29,11 +29,6 @@ configurations {
         extendsFrom annotationProcessor
     }
     all*.exclude module: 'spring-boot-starter-logging'
-}
-
-repositories {
-    flatDir { dirs "lib" }
-    mavenCentral()
 }
 
 dependencies {

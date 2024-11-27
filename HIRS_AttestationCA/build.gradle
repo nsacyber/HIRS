@@ -3,12 +3,6 @@ plugins {
     id 'com.google.protobuf' version '0.9.4'
 }
 
-repositories {
-    mavenCentral()
-
-    flatDir { dirs "lib" }
-}
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor

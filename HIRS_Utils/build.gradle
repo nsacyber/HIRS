@@ -3,11 +3,6 @@ def packVersion = properties.get("packageVersion")
 def jarVersion = properties.get("jarVersion")
 //println "packageVersion is ${projVersion}"
 
-repositories {
-    mavenCentral()
-    flatDir { dirs "lib" }
-}
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -37,7 +32,7 @@ dependencies {
     }
     // with the non-vulnerable version of the apache http client dependency
     implementation libs.apacheHttpClient
-    
+
     implementation libs.slf4j.simple
 
     compileOnly libs.lombok

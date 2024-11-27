@@ -1,9 +1,3 @@
-repositories {
-    mavenCentral()
-
-    flatDir { dirs "lib" }
-}
-
 dependencies {
     implementation libs.commons.lang3
 

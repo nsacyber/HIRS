@@ -18,6 +18,11 @@ subprojects {
     apply plugin: "java"
     apply plugin: "checkstyle"
 
+    repositories {
+        flatDir { dirs "lib" }
+        mavenCentral()
+    }
+
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(17)
