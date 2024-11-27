@@ -30,8 +30,10 @@ dependencies {
     implementation project(':HIRS_AttestationCA')
 
     implementation libs.bouncycastle
+    implementation libs.guava
     implementation libs.gson
     implementation libs.jakarta.persistence.api
+    implementation libs.jakarta.servlet
     implementation libs.jakarta.xml
     implementation libs.log4j.spring.boot
 
@@ -43,24 +45,25 @@ dependencies {
     // with the non-vulnerable version of the apache http client dependency
     implementation libs.apacheHttpClient
 
+    implementation libs.mariadb.java.client
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.data.jpa
-    runtimeOnly libs.tomcat.embed.jasper
+    implementation libs.spring.boot.starter.log4j2
+    implementation libs.tomcat.embed.jasper
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
     providedRuntime libs.spring.boot.starter.tomcat
-    runtimeOnly libs.mariadb.java.client
 
     testImplementation libs.junit.jupiter
+    testImplementation libs.hsqldb
     testImplementation libs.spring.boot.starter.test
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 
-    testRuntimeOnly libs.hsqldb
 }
 
 test {
