@@ -98,13 +98,10 @@ public class ReferenceManifestDetailsPageController
      * @throws CertificateException     if a certificate doesn't parse.
      */
     public static HashMap<String, Object> getRimDetailInfo(final UUID uuid,
-                                                           final ReferenceManifestRepository
-                                                                   referenceManifestRepository,
-                                                           final ReferenceDigestValueRepository
-                                                                   referenceDigestValueRepository,
+                                                           final ReferenceManifestRepository referenceManifestRepository,
+                                                           final ReferenceDigestValueRepository referenceDigestValueRepository,
                                                            final CertificateRepository certificateRepository,
-                                                           final CACredentialRepository
-                                                                   caCertificateRepository)
+                                                           final CACredentialRepository caCertificateRepository)
             throws IOException,
             CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
@@ -141,14 +138,16 @@ public class ReferenceManifestDetailsPageController
      * @param certificateRepository       the certificate manager.
      * @param caCertificateRepository     the certificate manager.
      * @return mapping of the RIM information from the database.
-     * @throws java.io.IOException error for reading file bytes.
+     * @throws java.io.IOException      error for reading file bytes.
+     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
+     * @throws CertificateException     if a certificate doesn't parse.
      */
     private static HashMap<String, Object> getBaseRimInfo(
             final BaseReferenceManifest baseRim,
             final ReferenceManifestRepository referenceManifestRepository,
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCertificateRepository)
-            throws IOException {
+            throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
 
         // Software Identity
@@ -258,8 +257,8 @@ public class ReferenceManifestDetailsPageController
                                 caCertificateRepository));
                 RIM_VALIDATOR.setTrustStore(truststore);
             } catch (IOException e) {
-                log.error("Error building CA chain for {}: {}", caCert.getSubjectKeyIdentifier(),
-                        e.getMessage());
+                log.error("Error building CA chain for " + caCert.getSubjectKeyIdentifier() + ": "
+                        + e.getMessage());
             }
             if (RIM_VALIDATOR.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
                     caCert.getSubjectKeyIdString(), caCert.getEncodedPublicKey())) {
@@ -270,7 +269,7 @@ public class ReferenceManifestDetailsPageController
                         break;
                     }
                 } catch (SupplyChainValidatorException scvEx) {
-                    log.error("Error verifying cert chain: {}", scvEx.getMessage());
+                    log.error("Error verifying cert chain: " + scvEx.getMessage());
                 }
             }
         }
@@ -286,7 +285,7 @@ public class ReferenceManifestDetailsPageController
                 }
             }
         } catch (NullPointerException npEx) {
-            log.warn("Unable to link signing certificate: {}", npEx.getMessage());
+            log.warn("Unable to link signing certificate: " + npEx.getMessage());
         }
         return data;
     }
@@ -298,7 +297,7 @@ public class ReferenceManifestDetailsPageController
      * @return list of X509Certificates
      */
     private static List<X509Certificate> convertCACsToX509Certificates(
-            final Set<CertificateAuthorityCredential> set)
+            Set<CertificateAuthorityCredential> set)
             throws IOException {
         ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
         for (CertificateAuthorityCredential cac : set) {
@@ -485,7 +484,7 @@ public class ReferenceManifestDetailsPageController
             final ReferenceDigestValueRepository referenceDigestValueRepository)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
-        LinkedList<TpmPcrEvent> livelogEvents = new LinkedList<>();
+        LinkedList<TpmPcrEvent> evidence = new LinkedList<>();
         BaseReferenceManifest base = null;
         List<SupportReferenceManifest> supports = new ArrayList<>();
         SupportReferenceManifest baseSupport = null;
@@ -498,7 +497,7 @@ public class ReferenceManifestDetailsPageController
         data.put("validationResult", measurements.getOverallValidationResult());
         data.put("swidBase", true);
 
-        List<ReferenceDigestValue> eventValues = new LinkedList<>();
+        List<ReferenceDigestValue> assertions = new LinkedList<>();
         if (measurements.getDeviceName() != null) {
             supports.addAll(referenceManifestRepository.byDeviceName(measurements
                     .getDeviceName()));
@@ -518,19 +517,19 @@ public class ReferenceManifestDetailsPageController
                     data.put("associatedRim", base.getId());
                 }
 
-                eventValues.addAll(referenceDigestValueRepository.findBySupportRimId(baseSupport.getId()));
+                assertions.addAll(referenceDigestValueRepository.findBySupportRimId(baseSupport.getId()));
             }
         }
 
         TCGEventLog measurementLog = new TCGEventLog(measurements.getRimBytes());
         Map<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
 
-        for (ReferenceDigestValue rdv : eventValues) {
-            eventValueMap.put(rdv.getDigestValue(), rdv);
+        for (ReferenceDigestValue record : assertions) {
+            eventValueMap.put(record.getDigestValue(), record);
         }
         for (TpmPcrEvent measurementEvent : measurementLog.getEventList()) {
             if (!eventValueMap.containsKey(measurementEvent.getEventDigestStr())) {
-                livelogEvents.add(measurementEvent);
+                evidence.add(measurementEvent);
             }
         }
 
@@ -544,7 +543,7 @@ public class ReferenceManifestDetailsPageController
             String bootVariable;
             String variablePrefix = "Variable Name:";
             String variableSuffix = "UEFI_GUID";
-            for (TpmPcrEvent tpe : livelogEvents) {
+            for (TpmPcrEvent tpe : evidence) {
                 matchedEvents = new ArrayList<>();
                 for (TpmPcrEvent tpmPcrEvent : combinedBaselines) {
                     if (tpmPcrEvent.getEventType() == tpe.getEventType()) {
@@ -567,7 +566,7 @@ public class ReferenceManifestDetailsPageController
         }
 
         TCGEventLog logProcessor = new TCGEventLog(measurements.getRimBytes());
-        data.put("livelogEvents", livelogEvents);
+        data.put("livelogEvents", evidence);
         data.put("events", logProcessor.getEventList());
         getEventSummary(data, logProcessor.getEventList());
 
@@ -608,6 +607,12 @@ public class ReferenceManifestDetailsPageController
                 String uuidError = "Failed to parse ID from: " + params.getId();
                 messages.addError(uuidError);
                 log.error(uuidError, iaEx);
+            } catch (CertificateException cEx) {
+                log.error(cEx);
+            } catch (NoSuchAlgorithmException nsEx) {
+                log.error(nsEx);
+            } catch (IOException ioEx) {
+                log.error(ioEx);
             } catch (Exception ex) {
                 log.error(ex);
             }
