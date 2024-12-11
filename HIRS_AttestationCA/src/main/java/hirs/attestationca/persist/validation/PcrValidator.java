@@ -15,6 +15,7 @@ import org.apache.commons.codec.binary.Hex;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +63,7 @@ public class PcrValidator {
      * @param pcrValues RIM provided baseline PCRs
      */
     public PcrValidator(final String[] pcrValues) {
-        baselinePcrs = new String[TPMMeasurementRecord.MAX_PCR_ID + 1];
-        System.arraycopy(pcrValues, 0, baselinePcrs, 0, TPMMeasurementRecord.MAX_PCR_ID + 1);
+        baselinePcrs = Arrays.copyOf(pcrValues, TPMMeasurementRecord.MAX_PCR_ID + 1);
     }
 
     /**
@@ -149,7 +149,7 @@ public class PcrValidator {
                 }
 
                 if (!baselinePcrs[i].equals(storedPcrs[i])) {
-                    log.error("{} =/= {}", baselinePcrs[i], storedPcrs[i]);
+                    log.error(String.format("%s =/= %s", baselinePcrs[i], storedPcrs[i]));
                     sb.append(String.format(failureMsg, i));
                 }
             }
@@ -163,36 +163,36 @@ public class PcrValidator {
      * will ignore certin PCRs, Event Types and Event Variables present.
      *
      * @param tcgMeasurementLog Measurement log from the client
-     * @param eventValueMap     The events stored as baseline to compare
+     * @param eventLogRecords   The events stored as baseline to compare
      * @param policySettings    db entity that holds all of policy
      * @return the events that didn't pass
      */
     public List<TpmPcrEvent> validateTpmEvents(final TCGEventLog tcgMeasurementLog,
-                                               final Map<String, ReferenceDigestValue> eventValueMap,
+                                               final Map<String, ReferenceDigestValue> eventLogRecords,
                                                final PolicySettings policySettings) {
         List<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
         for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
             if (policySettings.isIgnoreImaEnabled() && tpe.getPcrIndex() == IMA_PCR) {
-                log.info("IMA Ignored -> {}", tpe);
+                log.info(String.format("IMA Ignored -> %s", tpe));
             } else if (policySettings.isIgnoretBootEnabled() && (tpe.getPcrIndex() >= TBOOT_PCR_START
                     && tpe.getPcrIndex() <= TBOOT_PCR_END)) {
-                log.info("TBOOT Ignored -> {}", tpe);
+                log.info(String.format("TBOOT Ignored -> %s", tpe));
             } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getPcrIndex() >= PXE_PCR_START
                     && tpe.getPcrIndex() <= PXE_PCR_END)) {
-                log.info("OS Evt Ignored -> {}", tpe);
+                log.info(String.format("OS Evt Ignored -> %s", tpe));
             } else {
                 if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
-                    log.info("GPT Ignored -> {}", tpe);
+                    log.info(String.format("GPT Ignored -> %s", tpe));
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
                                 || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
-                    log.info("OS Evt Ignored -> {}", tpe);
+                    log.info(String.format("OS Evt Ignored -> %s", tpe));
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_CFG)
                                 && tpe.getEventContentStr().contains("SecureBoot"))) {
-                    log.info("OS Evt Config Ignored -> {}", tpe);
+                    log.info(String.format("OS Evt Config Ignored -> %s", tpe));
                 } else {
-                    if (!eventValueMap.containsKey(tpe.getEventDigestStr())) {
+                    if (!eventLogRecords.containsKey(tpe.getEventDigestStr())) {
                         tpmPcrEvents.add(tpe);
                     }
                 }
@@ -251,13 +251,12 @@ public class PcrValidator {
             // other information.
             String calculatedString = Hex.encodeHexString(
                     pcrInfoShort.getCalculatedDigest());
-            log.debug(
-                    "Validating PCR information with the following:{}calculatedString = {}{}"
-                            + "quoteString = {}", System.lineSeparator(), calculatedString,
-                    System.lineSeparator(), quoteString);
+            log.debug("Validating PCR information with the following:"
+                    + System.lineSeparator() + "calculatedString = " + calculatedString
+                    + System.lineSeparator() + "quoteString = " + quoteString);
             validated = quoteString.contains(calculatedString);
             if (!validated) {
-                log.warn("{} not found in {}", calculatedString, quoteString);
+                log.warn(calculatedString + " not found in " + quoteString);
             }
         } catch (NoSuchAlgorithmException naEx) {
             log.error(naEx);
