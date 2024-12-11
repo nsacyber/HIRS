@@ -76,8 +76,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @param referenceDigestValueRepository this is the reference event manager
      */
     @Autowired
-    public ReferenceManifestPageController(final ReferenceManifestRepository referenceManifestRepository,
-                                           final ReferenceDigestValueRepository referenceDigestValueRepository) {
+    public ReferenceManifestPageController(
+            final ReferenceManifestRepository referenceManifestRepository,
+            final ReferenceDigestValueRepository referenceDigestValueRepository) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
@@ -177,10 +178,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             if (isBaseRim || isSupportRim) {
                 parseRIM(file, isSupportRim, messages, baseRims, supportRims);
             } else {
-                String errorString = "The file extension of " + fileName + " was not recognized." +
-                        " Base RIMs support the extension \".swidtag\", and support RIMs support " +
-                        "\".rimpcr\", \".rimel\", \".bin\", and \".log\". " +
-                        "Please verify your upload and retry.";
+                String errorString = "The file extension of " + fileName + " was not recognized."
+                        + " Base RIMs support the extension \".swidtag\", and support RIMs support "
+                        + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
+                        + "Please verify your upload and retry.";
                 log.error("File extension in " + fileName + " not recognized as base or support RIM.");
                 messages.addError(errorString);
             }
@@ -380,7 +381,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      *                    user.
      * @param baseRims    object to store multiple files
      * @param supportRims object to store multiple files
-     * @return a single or collection of reference manifest files.
      */
     private void parseRIM(
             final MultipartFile file, final boolean supportRIM,
