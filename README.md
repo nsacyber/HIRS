@@ -114,7 +114,7 @@ To install the HIRS_Provisioner.NET on Windows download the latest msi package f
 msiexec /package HIRS_Provisioner.NET.*.msi /quiet
 ```
 
-Then follow the instructions for setting up the HIRS_provisioner.NET in the [HIRS_Provisioner.NET Readme](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/HIRS%20.NET%20Provisioner%20Readme_2.2.pdf).
+Then follow the instructions for setting up the HIRS_provisioner.NET in the [HIRS_Provisioner.NET User Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS.NET_Provisioner_User_Guide_3.0.pdf).
 
 ## Usage
 
@@ -144,9 +144,9 @@ Version 1.1 added support for the [Platform Certificate v1.1 Specification](http
 
 Version 2.0 added support for the [PC Client Reference Integrity Manifest (RIM) Specification](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/) to provide firmware validation capability to the HIRS ACA. This requires that the manufacturer of a device provide a digitally signed RIM "Bundle" for each device. The HIRS ACA has a new page for uploading and viewing RIM Bundles and a policy setting for requiring Firmware validation.
 
-Version 3.0 was completely refactored to build and run on multiple platforms. The Base OS used for development of the ACA was migrated to Rocky Linux with updates to current dependencies (e.g. Java, Tomcat, Mariadb, etc.) and development tools (e.g. Gradle). New features introduced in Version 3.0 include support for the PC Client RIM 1.1 specification including composite RIMs, time-stamps, and counter signatures and detailed linkages between TCG Event Logs, OEM issuer certificates, and Reference Integrity Manifests (RIMs) have been added to provide greater granularity of information. Support for TPM 1.2 (HIRS_Provisioner) and the Cplus version of the TPM provsioner (HIRS_ProvisionerTPM2) was dropped from Version 3.0 and replaced with the [HIRS_Provisioner.NET](https://github.com/nsacyber/HIRS/tree/master/HIRS_Provisioner.NET).
+Version 3.0 was completely refactored to build and run on multiple platforms. The Base OS used for development of the ACA was migrated to Rocky Linux with updates to current dependencies (e.g. Java, Tomcat, Mariadb, etc.) and development tools (e.g. Gradle). New features introduced in Version 3.0 include support for the PC Client RIM 1.1 specification including composite RIMs, time-stamps, and counter signatures and detailed linkages between TCG Event Logs, OEM issuer certificates, and Reference Integrity Manifests (RIMs) have been added to provide greater granularity of information. Support for TPM 1.2 (HIRS_Provisioner) and the Cplus version of the TPM provsioner (HIRS_ProvisionerTPM2) was dropped from Version 3.0 and replaced with the [HIRS_Provisioner.NET](https://github.com/nsacyber/HIRS/tree/main/HIRS_Provisioner.NET).
 
-To support the TCG RIM concept a new [tools folder](https://github.com/nsacyber/HIRS/tree/master/tools) has been added to the HIRS project which contains a [tcg_rim_tool command line application](https://github.com/nsacyber/HIRS/tree/master/tools/tcg_rim_tool). The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the TCG PC Client RIM specification. It also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload any RIM file. See the [tgc_rim_tool READ.md](https://github.com/nsacyber/HIRS/blob/master/tools/tcg_rim_tool/README.md) for more details.
+To support the TCG RIM concept a new [tools folder](https://github.com/nsacyber/HIRS/tree/main/tools) has been added to the HIRS project which contains a [tcg_rim_tool command line application](https://github.com/nsacyber/HIRS/tree/main/tools/tcg_rim_tool). The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the TCG PC Client RIM specification. It also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload any RIM file. See the [tgc_rim_tool READ.md](https://github.com/nsacyber/HIRS/blob/main/tools/tcg_rim_tool/README.md) for more details.
 
 ## Quick Links:
 Background
@@ -154,10 +154,10 @@ Background
 * [Getting started with the ACA and Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Gettingstarted)
 
 HIRS Documentation
-* [HIRS ACA and TPM provisioner Users Guide](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/HIRS_ACA_UsersGuide_2.1.pdf)
-* [HIRS_Provisioner.NET Readme](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/HIRS%20.NET%20Provisioner%20Readme_2.2.pdf)
-* [TCG RIM Tool Users Guide](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/TCG%20Rim%20Tool%20User%20Guide%202.1.pdf)
-* [TCG Event Log Tool Users Guide](https://github.com/nsacyber/HIRS/blob/master/HIRS_AttestationCAPortal/src/main/webapp/docs/TCG%20Event%20Log%20Tool%20User%20Guide%202.1.pdf)
+* [HIRS ACA and TPM provisioner Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS.NET_Provisioner_User_Guide_3.0.pdf)
+* [HIRS_Provisioner.NET Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS_ACA_User_Guide_3.0.pdf)
+* [TCG RIM Tool Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS_TCG_RIM_Tool_Users_Guide_3.0.pdf)
+* [TCG Event Log Tool Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/TCG_Event_Log_Tool_User_Guide_3.0.pdf)
 
 HIRS Notes
 * [Installation notes](https://github.com/nsacyber/HIRS/wiki/installation_notes)
