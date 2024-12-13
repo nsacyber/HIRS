@@ -154,8 +154,8 @@ Background
 * [Getting started with the ACA and Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Gettingstarted)
 
 HIRS Documentation
-* [HIRS ACA and TPM provisioner Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS.NET_Provisioner_User_Guide_3.0.pdf)
-* [HIRS_Provisioner.NET Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS_ACA_User_Guide_3.0.pdf)
+* [HIRS ACA and TPM provisioner Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS_ACA_User_Guide_3.0.pdf)
+* [HIRS_Provisioner.NET Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS.NET_Provisioner_User_Guide_3.0.pdf)
 * [TCG RIM Tool Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS_TCG_RIM_Tool_Users_Guide_3.0.pdf)
 * [TCG Event Log Tool Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/TCG_Event_Log_Tool_User_Guide_3.0.pdf)
 
