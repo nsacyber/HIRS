@@ -1,5 +1,5 @@
 plugins {
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'io.spring.dependency-management' version '1.1.2'
     id 'com.google.protobuf' version '0.9.4'
 }
 
@@ -18,28 +18,28 @@ dependencies {
     implementation libs.commons.codec
     implementation libs.commons.io
     implementation libs.commons.lang3
-    implementation libs.hibernate.core
     implementation libs.guava
     implementation libs.jackson.core
     implementation libs.jackson.databind
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
-    implementation libs.log4j.api
-    implementation libs.log4j.core
+    implementation libs.spring.boot.starter.log4j2
     implementation libs.minimal.json
 
     // pull the pci dependency and ...
     implementation(libs.pci) {
-        // replace the default apache http client transitive dependency
+        // explicitly exclude the default apache http client transitive dependency
         exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     }
-    // with the non-vulnerable version of the apache http client dependency
+    // and explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 
     implementation libs.protobuf.java
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.retry
-    implementation libs.spring.boot.starter.web
+
+    // pull the spring-boot-starter-web dependency and ...
+    implementation(libs.spring.boot.starter.web)
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
@@ -48,11 +48,7 @@ dependencies {
     annotationProcessor libs.spotbugs.annotations
 
     testImplementation libs.commons.io
-    testImplementation libs.hamcrest
-    testImplementation libs.junit.jupiter
-    testImplementation libs.junit.platform.launcher
-    testImplementation libs.mockito.core
-    testImplementation libs.spring.test
+    testImplementation libs.spring.boot.starter.test
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok

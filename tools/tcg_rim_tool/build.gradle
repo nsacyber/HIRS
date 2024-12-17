@@ -16,12 +16,12 @@ dependencies {
     implementation libs.glassfish.jakarta.json
     implementation libs.glassfish.jaxb.runtime
     implementation libs.guava
-    implementation libs.hibernate.core
     implementation libs.jcommander
     implementation libs.jackson.databind
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
-    implementation libs.log4j.core
+    implementation libs.spring.boot.starter.log4j2
+    implementation libs.spring.boot.starter.data.jpa
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

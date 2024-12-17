@@ -4,10 +4,7 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-//    testCompile libs.mockito
-    testImplementation libs.junit.jupiter
-    testImplementation libs.junit.platform.launcher
-    testImplementation libs.hamcrest
+    testImplementation libs.spring.boot.starter.test
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok

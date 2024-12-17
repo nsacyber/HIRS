@@ -3,7 +3,7 @@ plugins {
     id 'war'
     id 'com.netflix.nebula.ospackage' version '11.8.0'
     id 'org.springframework.boot' version '3.0.8'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'io.spring.dependency-management' version '1.1.2'
 }
 
 // Get version from main project gradle
@@ -35,18 +35,20 @@ dependencies {
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.servlet
     implementation libs.jakarta.xml
-    implementation libs.log4j.spring.boot
 
     // pull the pci dependency and ...
     implementation(libs.pci) {
-        // replace the default apache http client transitive dependency
+        // explicitly exclude the default apache http client transitive dependency
         exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     }
-    // with the non-vulnerable version of the apache http client dependency
+    // and explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 
     implementation libs.mariadb.java.client
-    implementation libs.spring.boot.starter.web
+
+    // pull the spring-boot-starter-web dependency and ...
+    implementation(libs.spring.boot.starter.web)
+
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.boot.starter.log4j2
@@ -57,7 +59,6 @@ dependencies {
 
     providedRuntime libs.spring.boot.starter.tomcat
 
-    testImplementation libs.junit.jupiter
     testImplementation libs.hsqldb
     testImplementation libs.spring.boot.starter.test
 

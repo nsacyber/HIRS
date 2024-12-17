@@ -21,16 +21,15 @@ dependencies {
     implementation libs.jackson.databind
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
-    implementation libs.log4j.core
-    implementation libs.log4j.api
+    implementation libs.spring.boot.starter.log4j2
     implementation libs.minimal.json
 
     // pull the pci dependency and ...
     implementation(libs.pci) {
-        // replace the default apache http client transitive dependency
+        // explicitly exclude the default apache http client transitive dependency
         exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     }
-    // with the non-vulnerable version of the apache http client dependency
+    // and explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 
     implementation libs.slf4j.simple
@@ -38,10 +37,7 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    testImplementation libs.junit.jupiter
-    testImplementation libs.junit.platform.launcher
-    testImplementation libs.hamcrest
-    testImplementation libs.mockito.core
+    testImplementation libs.spring.boot.starter.test
     testImplementation project(path: ':HIRS_AttestationCA')
 
     testCompileOnly libs.lombok
