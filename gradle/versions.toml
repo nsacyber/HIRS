@@ -20,8 +20,8 @@ ospackageVersion = "11.2.0"
 pciVersion = "0.3"
 protobufJavaVersion = "4.28.3"
 springBootVersion = "3.4.0"
-springRetryVersion = "2.0.10"
 springCoreVersion = "6.2.1"
+springRetryVersion = "2.0.10"
 testngVersion = "7.10.2"
 tomcatVersion = "10.1.33"
 
@@ -58,8 +58,7 @@ spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-st
 spring-boot-starter-tomcat = { module = "org.springframework.boot:spring-boot-starter-tomcat", version.ref = "springBootVersion" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "springBootVersion" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBootVersion" }
-#spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springCoreVersion" }
-#spring-framework-web = { module = "org.springframework:spring-web", version.ref = "springCoreVersion" }
+spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springCoreVersion" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
 tomcat-embed-jasper = { module = "org.apache.tomcat.embed:tomcat-embed-jasper", version.ref = "tomcatVersion" }
 testng = { module = "org.testng:testng", version.ref = "testngVersion" }

@@ -1,9 +1,9 @@
 plugins {
     id 'application'
     id 'war'
-    id 'com.netflix.nebula.ospackage' version '11.8.0'
-    id 'org.springframework.boot' version '3.0.8'
-    id 'io.spring.dependency-management' version '1.1.2'
+    id 'com.netflix.nebula.ospackage' version '11.10.0'
+    id 'org.springframework.boot' version '3.0.13'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 // Get version from main project gradle
@@ -37,18 +37,13 @@ dependencies {
     implementation libs.jakarta.xml
 
     // pull the pci dependency and ...
-    implementation(libs.pci) {
-        // explicitly exclude the default apache http client transitive dependency
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-    }
+    implementation libs.pci
     // and explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 
     implementation libs.mariadb.java.client
-
-    // pull the spring-boot-starter-web dependency and ...
-    implementation(libs.spring.boot.starter.web)
-
+    implementation libs.spring.boot.starter.web
+    //implementation libs.spring.framework.webmvc
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.boot.starter.log4j2
@@ -64,7 +59,6 @@ dependencies {
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
-
 }
 
 test {

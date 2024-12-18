@@ -25,10 +25,7 @@ dependencies {
     implementation libs.minimal.json
 
     // pull the pci dependency and ...
-    implementation(libs.pci) {
-        // explicitly exclude the default apache http client transitive dependency
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-    }
+    implementation libs.pci
     // and explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 

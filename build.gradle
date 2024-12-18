@@ -6,7 +6,7 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '6.0.4' apply false
+    id 'com.github.spotbugs' version '6.0.13' apply false
     id 'java'
 }
 
