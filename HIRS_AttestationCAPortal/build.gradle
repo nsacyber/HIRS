@@ -1,24 +1,16 @@
 plugins {
     id 'application'
-    id 'java'
     id 'war'
-    id 'com.netflix.nebula.ospackage' version '11.8.0'
-    id 'org.springframework.boot' version '3.0.6'
-    id 'io.spring.dependency-management' version '1.1.0'
-    id 'checkstyle'
+    id 'com.netflix.nebula.ospackage' version '11.10.0'
+    id 'org.springframework.boot' version '3.0.13'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 // Get version from main project gradle
-def packVersion = properties.get("packageVersion");
-def jarVersion = properties.get("jarVersion");
-def projVersion = properties.get("projVersion");
+def packVersion = properties.get("packageVersion")
+def jarVersion = properties.get("jarVersion")
+def projVersion = properties.get("projVersion")
 //println "packageVersion is ${projVersion}"
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
 
 bootRun {
     if (project.hasProperty('debug')) {
@@ -33,63 +25,40 @@ configurations {
     all*.exclude module: 'spring-boot-starter-logging'
 }
 
-repositories {
-    flatDir { dirs "lib" }
-    mavenCentral()
-}
-
 dependencies {
     implementation project(':HIRS_Utils')
     implementation project(':HIRS_AttestationCA')
 
-    implementation libs.pci
-    implementation libs.gson
     implementation libs.bouncycastle
     implementation libs.guava
+    implementation libs.gson
+    implementation libs.jakarta.persistence.api
     implementation libs.jakarta.servlet
-    implementation libs.jakarta.api
     implementation libs.jakarta.xml
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
-    implementation 'org.apache.logging.log4j:log4j-spring-boot'
-    implementation 'org.projectlombok:lombok'
-    implementation 'commons-fileupload:commons-fileupload:1.5'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.5'
+    // pull the pci dependency and ...
+    implementation libs.pci
+    // and explicitly include the patched version of the apache http client dependency
+    implementation libs.apacheHttpClient
 
-    compileOnly 'org.projectlombok:lombok'
-    implementation 'org.mariadb.jdbc:mariadb-java-client:3.1.4'
-    annotationProcessor 'org.projectlombok:lombok'
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+    implementation libs.mariadb.java.client
+    implementation libs.spring.boot.starter.web
+    //implementation libs.spring.framework.webmvc
+    implementation libs.spring.boot.starter.validation
+    implementation libs.spring.boot.starter.data.jpa
+    implementation libs.spring.boot.starter.log4j2
+    implementation libs.tomcat.embed.jasper
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-    testImplementation 'org.hsqldb:hsqldb'
-}
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-checkstyle {
-    toolVersion = '10.12.7'
-    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
-}
-// https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
-configurations.checkstyle {
-    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
-        select("com.google.guava:guava:0")
-    }
-}
-checkstyleMain {
-    source = 'src/main/java'
-}
-checkstyleTest {
-    source = 'src/test/java'
-}
-tasks.withType(Checkstyle) {
-    reports {
-        xml.required = false
-        html.required = true
-    }
+    providedRuntime libs.spring.boot.starter.tomcat
+
+    testImplementation libs.hsqldb
+    testImplementation libs.spring.boot.starter.test
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }
 
 test {
