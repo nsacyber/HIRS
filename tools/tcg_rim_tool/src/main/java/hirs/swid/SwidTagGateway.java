@@ -9,6 +9,10 @@ import hirs.utils.xjc.ObjectFactory;
 import hirs.utils.xjc.ResourceCollection;
 import hirs.utils.xjc.SoftwareIdentity;
 import hirs.utils.xjc.SoftwareMeta;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
@@ -17,10 +21,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dom.DOMStructure;
@@ -190,6 +190,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for timestamp format in XML signature
+     *
      * @param timestampFormat
      */
     public void setTimestampFormat(String timestampFormat) {
@@ -198,6 +199,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for timestamp input - RFC3852 + file or RFC3339 + value
+     *
      * @param timestampArgument
      */
     public void setTimestampArgument(String timestampArgument) {
@@ -269,7 +271,7 @@ public class SwidTagGateway {
                 writeSwidTagFile(signedSoftwareIdentity, filename);
             } else {
                 System.out.println("The following fields cannot be empty or null: "
-                        + errorRequiredFields.substring(0, errorRequiredFields.length()-2));
+                        + errorRequiredFields.substring(0, errorRequiredFields.length() - 2));
                 System.exit(1);
             }
         } catch (JsonException e) {
@@ -555,6 +557,7 @@ public class SwidTagGateway {
             addNonNullAttribute(attributes, key, value);
         }
     }
+
     /**
      * This utility method checks if an attribute value is empty before adding it to the map.
      *
@@ -707,7 +710,8 @@ public class SwidTagGateway {
     /**
      * This method creates a timestamp element and populates it with data according to
      * the RFC format set in timestampFormat.  The element is returned within an XMLObject.
-     * @param doc the Document representing the XML to be signed
+     *
+     * @param doc        the Document representing the XML to be signed
      * @param sigFactory the SignatureFactory object
      * @return an XMLObject containing the timestamp element
      */
@@ -735,7 +739,7 @@ public class SwidTagGateway {
                 timeStampElement = doc.createElementNS(SwidTagConstants.RFC3339_NS,
                         SwidTagConstants.RFC3339_PFX + ":TimeStamp");
                 timeStampElement.setAttributeNS("http://www.w3.org/2000/xmlns/",
-                        "xmlns:" + SwidTagConstants.RFC3339_PFX,                 SwidTagConstants.RFC3339_NS);
+                        "xmlns:" + SwidTagConstants.RFC3339_PFX, SwidTagConstants.RFC3339_NS);
                 if (timestampArgument.isEmpty()) {
                     timeStampElement.setAttributeNS(SwidTagConstants.RFC3339_NS,
                             SwidTagConstants.RFC3339_PFX + ":" + SwidTagConstants.DATETIME,
@@ -754,7 +758,7 @@ public class SwidTagGateway {
         SignatureProperties signatureProperties = sigFactory.newSignatureProperties(
                 Collections.singletonList(signatureProperty), null);
         XMLObject xmlObject = sigFactory.newXMLObject(
-                Collections.singletonList(signatureProperties), null,null,null);
+                Collections.singletonList(signatureProperties), null, null, null);
 
         return xmlObject;
     }
