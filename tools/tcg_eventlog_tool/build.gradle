@@ -1,51 +1,17 @@
-import java.util.concurrent.TimeUnit
 plugins {
-      id "java"
-      id "com.netflix.nebula.ospackage" version "11.4.0"
-      id 'checkstyle'
+    id "com.netflix.nebula.ospackage" version "11.10.0"
 }
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion");
 def jarVersion = properties.get("jarVersion");
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-repositories {
-    mavenCentral()
-    flatDir { dirs "lib" }
-}
-
-dependencies { 
+dependencies {
     implementation project(':HIRS_Utils')
-    implementation libs.jcommander
     implementation libs.commons.io
+    implementation libs.jcommander
 }
 
 ext.configDir = new File(projectDir, 'config')
-
-checkstyle {
-    toolVersion = '10.12.7'
-    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
-}
-// https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
-configurations.checkstyle {
-    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
-        select("com.google.guava:guava:0")
-    }
-}
-checkstyleMain {
-    source ='src/main/java'
-}
-tasks.withType(Checkstyle) {
-    reports {
-        xml.required = false
-        html.required = true
-    }
-}
 
 jar {
     // Keep jar clean:
@@ -53,15 +19,15 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
-                 "Main-Class": "hirs.tcg_eventlog.Main",
-                 'Class-Path':configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
-           )
-     }
-     from {
-		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-	 }
-     //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
-     archiveVersion = jarVersion
+                "Main-Class": "hirs.tcg_eventlog.Main",
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
+    archiveVersion = jarVersion
 }
 
 // Produce packages
@@ -75,37 +41,37 @@ ospackage {
     user 'root'
     fileMode = 0755
 
-   into ('/opt/eltool/lib') {
-       from jar.outputs.files
-       from configurations.runtimeClasspath
+    into('/opt/eltool/lib') {
+        from jar.outputs.files
+        from configurations.runtimeClasspath
     }
-    into ('/opt/eltool/scripts') {
-      from ('scripts') {
-        exclude {
-            FileTreeElement details -> 
-               details.file.name.endsWith('.bat')
+    into('/opt/eltool/scripts') {
+        from('scripts') {
+            exclude {
+                FileTreeElement details ->
+                    details.file.name.endsWith('.bat')
+            }
         }
-      }
     }
-    into ('/opt/eltool/docs') {
-        from ('docs') {
-           exclude {
-               FileTreeElement details ->
-                   details.file.name.endsWith('.odt')
-           }
+    into('/opt/eltool/docs') {
+        from('docs') {
+            exclude {
+                FileTreeElement details ->
+                    details.file.name.endsWith('.odt')
+            }
         }
-       from('./') {
-         include {
-             FileTreeElement details ->
-                 details.file.name.endsWith('.md')
-          }        
-       }
+        from('./') {
+            include {
+                FileTreeElement details ->
+                    details.file.name.endsWith('.md')
+            }
+        }
     }
     // Copy vendor-table into /tmp to avoid conflict with the ACA 
     into('/opt/eltool/default-properties') {
-        from ('../../HIRS_Utils/src/main/resources/vendor-table.json') {
-         fileMode 0664
-         addParentDirs = true
+        from('../../HIRS_Utils/src/main/resources/vendor-table.json') {
+            fileMode 0664
+            addParentDirs = true
         }
     }
 
@@ -129,11 +95,11 @@ ospackage {
 }
 
 
-task buildZip(type: Zip){
+task buildZip(type: Zip) {
     dependsOn jar
-    from(tasks.jar.archiveFile){
-        rename( filename ->
-            "${project.name}.jar")
+    from(tasks.jar.archiveFile) {
+        rename(filename ->
+                "${project.name}.jar")
         into '/'
     }
 

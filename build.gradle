@@ -1,9 +1,13 @@
+import com.github.spotbugs.snom.SpotBugsTask
+
 import java.util.concurrent.TimeUnit
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
-    id 'com.github.spotbugs' version '6.0.4' apply false
+    id 'checkstyle'
+    id 'com.github.spotbugs' version '6.0.13' apply false
+    id 'java'
 }
 
 // Global checkstyle file
@@ -11,12 +15,44 @@ ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml"
 
 subprojects {
     apply plugin: "com.github.spotbugs"
+    apply plugin: "java"
+    apply plugin: "checkstyle"
+
+    repositories {
+        flatDir { dirs "lib" }
+        mavenCentral()
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    checkstyle {
+        toolVersion = '10.20.0'
+        configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
+    }
+
+    checkstyleMain {
+        source = 'src/main/java'
+    }
+    checkstyleTest {
+        source = 'src/test/java'
+    }
+
+    tasks.withType(Checkstyle).configureEach {
+        reports {
+            xml.required = false
+            html.required = true
+        }
+    }
 
     spotbugs {
         excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
     }
 
-    tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    tasks.withType(SpotBugsTask).configureEach {
         reports {
             html.required = true
         }

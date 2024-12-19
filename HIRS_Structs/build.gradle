@@ -1,54 +1,17 @@
-plugins {
-    id 'java'
-    id 'checkstyle'
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-repositories {
-    mavenCentral()
-
-    flatDir { dirs "lib" }
-}
-
 dependencies {
-    implementation 'org.apache.commons:commons-lang3:3.13.0'
+    implementation libs.commons.lang3
 
-//    testCompile libs.mockito
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-    testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testImplementation libs.spring.boot.starter.test
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }
 
 test {
     useJUnitPlatform()
-}
-
-checkstyle {
-    toolVersion = '10.12.7'
-    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
-}
-// https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
-configurations.checkstyle {
-    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
-        select("com.google.guava:guava:0")
-    }
-}
-checkstyleMain {
-    source = 'src/main/java'
-}
-checkstyleTest {
-    source = 'src/test/java'
-}
-tasks.withType(Checkstyle) {
-    reports {
-        xml.required = false
-        html.required = true
-    }
 }
 
 //publishing {
@@ -59,5 +22,3 @@ tasks.withType(Checkstyle) {
 //        }
 //    }
 //}
-
-
