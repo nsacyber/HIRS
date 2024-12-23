@@ -22,7 +22,6 @@ protobufJavaVersion = "4.28.3"
 springBootVersion = "3.4.0"
 springCoreVersion = "6.2.1"
 springRetryVersion = "2.0.10"
-testngVersion = "7.10.2"
 tomcatVersion = "10.1.33"
 
 #test dependencies versions
@@ -60,7 +59,6 @@ spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-start
 spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springCoreVersion" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
 tomcat-embed-jasper = { module = "org.apache.tomcat.embed:tomcat-embed-jasper", version.ref = "tomcatVersion" }
-testng = { module = "org.testng:testng", version.ref = "testngVersion" }
 
 # test dependencies
 hsqldb = { module = "org.hsqldb:hsqldb", version.ref = "hsqldbVersion" }
