@@ -25,7 +25,7 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    testImplementation libs.testng
+    testImplementation libs.spring.boot.starter.test
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
