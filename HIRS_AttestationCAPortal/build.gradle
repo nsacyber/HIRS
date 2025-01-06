@@ -36,23 +36,24 @@ dependencies {
     implementation libs.jakarta.servlet
     implementation libs.jakarta.xml
 
-    // pull the pci dependency and ...
     implementation libs.pci
-    // and explicitly include the patched version of the apache http client dependency
+    // explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 
     implementation libs.mariadb.java.client
     implementation libs.spring.boot.starter.web
+    // explicitly include the patched version of the snake yaml dependency
+    implementation libs.snake.yaml
     //implementation libs.spring.framework.webmvc
+    //implementation libs.logback.classic
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.boot.starter.log4j2
     implementation libs.tomcat.embed.jasper
+    //implementation "org.apache.tomcat.embed:tomcat-embed-core:11.0.0"
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
-
-    providedRuntime libs.spring.boot.starter.tomcat
 
     testImplementation libs.hsqldb
     testImplementation libs.spring.boot.starter.test
