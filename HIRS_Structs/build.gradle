@@ -5,6 +5,7 @@ dependencies {
     annotationProcessor libs.lombok
 
     testImplementation libs.spring.boot.starter.test
+
     // explicitly include the patched version of the logback-core dependency
     testImplementation libs.logback.classic
 

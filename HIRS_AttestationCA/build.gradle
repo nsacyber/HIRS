@@ -26,6 +26,7 @@ dependencies {
     implementation libs.minimal.json
 
     implementation libs.pci
+
     // explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 
@@ -33,9 +34,12 @@ dependencies {
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.retry
     implementation libs.spring.boot.starter.web
+
+    // explicitly include the patched version of the spring framework webmvc dependency
     implementation libs.spring.framework.webmvc
+
     // explicitly include the patched version of the logback-core dependency
-    //implementation libs.logback.classic
+    implementation libs.logback.classic
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
@@ -44,9 +48,12 @@ dependencies {
     annotationProcessor libs.spotbugs.annotations
 
     testImplementation libs.commons.io
-    testImplementation libs.spring.boot.starter.test
+
     // explicitly include the patched version of the logback-core dependency
     testImplementation libs.logback.classic
+
+    testImplementation libs.spring.boot.starter.test
+
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok

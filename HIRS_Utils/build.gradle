@@ -28,14 +28,14 @@ dependencies {
     // explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 
-    implementation libs.slf4j.simple
-
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
     testImplementation libs.spring.boot.starter.test
+
     // explicitly include the patched version of the logback-core dependency
     testImplementation libs.logback.classic
+
     testImplementation project(path: ':HIRS_AttestationCA')
 
     testCompileOnly libs.lombok
