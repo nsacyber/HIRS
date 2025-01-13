@@ -1,20 +1,6 @@
 plugins {
-    id 'java'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'com.google.protobuf' version '0.9.4'
-    id 'checkstyle'
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-repositories {
-    mavenCentral()
-
-    flatDir { dirs "lib" }
 }
 
 configurations {
@@ -27,63 +13,42 @@ dependencies {
     implementation project(':HIRS_Utils')
     implementation project(':HIRS_Structs')
 
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.0.1'
-    implementation 'com.github.darrachequesne:spring-data-jpa-datatables:6.0.1'
-    implementation 'org.springframework.retry:spring-retry:2.0.0'
-    implementation libs.springdatajpa
-
     implementation libs.bouncycastle
     implementation libs.commons.codec
+    implementation libs.commons.io
     implementation libs.commons.lang3
-    implementation libs.jakarta.api
-    implementation libs.jakarta.xml
-    implementation libs.hibernate.core
-    implementation libs.pci
     implementation libs.guava
     implementation libs.jackson.core
     implementation libs.jackson.databind
+    implementation libs.jakarta.persistence.api
+    implementation libs.jakarta.xml
+    implementation libs.spring.boot.starter.log4j2
     implementation libs.minimal.json
+
+    // pull the pci dependency and ...
+    implementation libs.pci
+    // and explicitly include the patched version of the apache http client dependency
+    implementation libs.apacheHttpClient
+
     implementation libs.protobuf.java
-    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
-    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation libs.spring.boot.starter.data.jpa
+    implementation libs.spring.retry
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.framework.webmvc
 
-    testImplementation 'org.apache.directory.studio:org.apache.commons.io:2.4'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-    testImplementation 'org.junit.platform:junit-platform-launcher:1.9.3'
-    testImplementation 'org.mockito:mockito-core:4.2.0'
-    testImplementation 'org.springframework:spring-test:6.0.8'
-
-    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotBugAnnotationVersion}"
-    annotationProcessor "com.github.spotbugs:spotbugs-annotations:${spotBugAnnotationVersion}"
-
-    // spring management
     compileOnly libs.lombok
-    implementation libs.lombok
     annotationProcessor libs.lombok
+
+    compileOnly libs.spotbugs.annotations
+    annotationProcessor libs.spotbugs.annotations
+
+    testImplementation libs.commons.io
+    testImplementation libs.spring.boot.starter.test
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }
-checkstyle {
-    toolVersion = '10.12.7'
-    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
-}
-// https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
-configurations.checkstyle {
-    resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
-        select("com.google.guava:guava:0")
-    }
-}
-checkstyleMain {
-    source = 'src/main/java'
-}
-checkstyleTest {
-    source = 'src/test/java'
-}
-tasks.withType(Checkstyle) {
-    reports {
-        xml.required = false
-        html.required = true
-    }
-}
+
 protobuf {
     protoc {
         artifact = 'com.google.protobuf:protoc:3.24.3'
