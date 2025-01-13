@@ -37,6 +37,7 @@
     <PackageReference Include="paccor.HardwareManifestPluginManager" Version="2.0.5" />
     <PackageReference Include="paccor.paccor_scripts" Version="2.0.5" />
     <PackageReference Include="paccor.pcie" Version="0.5.0" />
+    <PackageReference Include="paccor.smbios" Version="0.5.0" />
     <PackageReference Include="paccor.storage" Version="0.5.0" />
     <PackageReference Include="Packaging.Targets" Version="0.1.226">
       <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
@@ -46,7 +47,7 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="System.Management" Version="6.0.0" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
     <PackageReference Include="WiX" Version="3.14.1">
         <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
