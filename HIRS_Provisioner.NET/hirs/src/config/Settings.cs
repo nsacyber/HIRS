@@ -77,7 +77,7 @@ namespace hirs {
         public virtual string certificate_output_directory {
             get; private set;
         }
-        private List<IHardwareManifest> hardwareManifests = new();
+        private List<IHardwareManifestPlugin> hardwareManifests = new();
         private Dictionary<string, string> hardware_manifest_collectors_with_args = new();
         private bool hardware_manifest_collection_swid_enforced = false;
 
@@ -163,7 +163,7 @@ namespace hirs {
                 List<string> names = hardware_manifest_collectors_with_args.Keys.ToList();
                 if (!string.IsNullOrWhiteSpace(configFromSettingsFile[Options.hardware_manifest_collection_swid_enforced.ToString()])) {
                     string hardware_manifest_collection_swid_enforced_str = $"{ configFromSettingsFile[Options.hardware_manifest_collection_swid_enforced.ToString()] }";
-                    hardware_manifest_collection_swid_enforced = Boolean.Parse(hardware_manifest_collection_swid_enforced_str);
+                    hardware_manifest_collection_swid_enforced = bool.Parse(hardware_manifest_collection_swid_enforced_str);
                     Log.Debug("SWID enforcement of Hardware Manifest Plugins are " + (hardware_manifest_collection_swid_enforced ? "en" : "dis") + "abled in settings.");
                 }
                 hardwareManifests = HardwareManifestPluginManagerUtils.LoadPlugins(names, hardware_manifest_collection_swid_enforced);
@@ -196,23 +196,21 @@ namespace hirs {
 
         public virtual string RunHardwareManifestCollectors() {
             Log.Debug("Gathering data from loaded hardware manifest collectors.");
-            string manifestJson = "";
-            foreach (IHardwareManifest manifest in hardwareManifests) {
+            HardwareManifestProto.ManifestV2 manifestJson = new();
+            foreach (IHardwareManifestPlugin manifest in hardwareManifests) {
                 try {
                     Log.Debug("  Configuring " + manifest.Name);
-                    if (hardware_manifest_collectors_with_args.ContainsKey(manifest.Name)) {
-                        manifest.Configure(CLI.SplitArgs(hardware_manifest_collectors_with_args[manifest.Name]));
-                    }
-                    // TODO: Combine JSON Better
-                    // OR Return proto objects
                     Log.Debug("  Gathering from " + manifest.Name);
-                    manifestJson = string.Join(manifestJson, manifest.GatherHardwareManifestAsJsonString());
+                    if (manifest.GatherHardwareIdentifiers()) {
+                        manifestJson.MergeFrom(manifest.ManifestV2);
+                    }
                 } catch (Exception e) {
                     Log.Debug($"Problem retrieving hardware manifest from {manifest.Name}.", e.InnerException);
                 }
             }
-            //TODO: Verify JSON?
-            return manifestJson;
+            
+            string manifestString = manifestJson.ToString();
+            return manifestString;
         }
         #endregion
 
@@ -262,7 +260,7 @@ namespace hirs {
                 Log.Debug("Checking Auto Detect TPM setting.");
                 string auto_detect_tpm_str = $"{ configFromSettingsFile[Options.auto_detect_tpm.ToString()] }";
                 try {
-                    auto_detect_tpm = Boolean.Parse(auto_detect_tpm_str);
+                    auto_detect_tpm = bool.Parse(auto_detect_tpm_str);
                     Log.Debug(" Auto Detect TPM is " + (auto_detect_tpm ? "en" : "dis") + "abled.");
                 } catch (FormatException) {
                     auto_detect_tpm = false;

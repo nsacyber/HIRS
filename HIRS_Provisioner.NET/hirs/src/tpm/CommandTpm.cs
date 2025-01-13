@@ -30,14 +30,14 @@ namespace hirs {
         
         private readonly Tpm2 tpm;
 
-        private readonly Boolean simulator;
+        private readonly bool simulator;
 
         private List<AuthSession> sessionTracking = new List<AuthSession>();
 
         /**
          * For TCP TpmDevices
          */
-        public CommandTpm(Boolean sim, string ip, int port) {
+        public CommandTpm(bool sim, string ip, int port) {
             simulator = sim;
             Tpm2Device tpmDevice = new TcpTpmDevice(ip, port);
             tpm = TpmSetupByType(tpmDevice);
