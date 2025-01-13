@@ -19,6 +19,8 @@ import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import lombok.Getter;
+import lombok.Setter;
 import org.w3c.dom.Element;
 
 import java.math.BigInteger;
@@ -74,22 +76,70 @@ public class SoftwareIdentity
     })
     @XmlAnyElement(lax = true)
     protected List<Object> entityOrEvidenceOrLink;
+
+    /**
+     * corpus property.
+     */
+    @Setter
     @XmlAttribute(name = "corpus")
     protected Boolean corpus;
+
+    /**
+     * patch property.
+     */
+    @Setter
     @XmlAttribute(name = "patch")
     protected Boolean patch;
+
+    /**
+     * media property.
+     */
+    @Setter
+    @Getter
     @XmlAttribute(name = "media")
     protected String media;
+
+    /**
+     * name property.
+     */
+    @Setter
+    @Getter
     @XmlAttribute(name = "name", required = true)
     protected String name;
+
+    /**
+     * supplemental property.
+     */
+    @Setter
     @XmlAttribute(name = "supplemental")
     protected Boolean supplemental;
+
+    /**
+     * tagId property.
+     */
+    @Setter
+    @Getter
     @XmlAttribute(name = "tagId", required = true)
     protected String tagId;
+
+    /**
+     * tagVersion property.
+     */
+    @Setter
     @XmlAttribute(name = "tagVersion")
     protected BigInteger tagVersion;
+
+    /**
+     * version property.
+     */
+    @Setter
     @XmlAttribute(name = "version")
     protected String version;
+
+    /**
+     * versionScheme property.
+     */
+    @Setter
     @XmlAttribute(name = "versionScheme")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "NMTOKEN")
@@ -143,16 +193,6 @@ public class SoftwareIdentity
     }
 
     /**
-     * Sets the value of the corpus property.
-     *
-     * @param value allowed object is
-     *              {@link Boolean }
-     */
-    public void setCorpus(Boolean value) {
-        this.corpus = value;
-    }
-
-    /**
      * Gets the value of the patch property.
      *
      * @return possible object is
@@ -164,56 +204,6 @@ public class SoftwareIdentity
         } else {
             return patch;
         }
-    }
-
-    /**
-     * Sets the value of the patch property.
-     *
-     * @param value allowed object is
-     *              {@link Boolean }
-     */
-    public void setPatch(Boolean value) {
-        this.patch = value;
-    }
-
-    /**
-     * Gets the value of the media property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
-    public String getMedia() {
-        return media;
-    }
-
-    /**
-     * Sets the value of the media property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setMedia(String value) {
-        this.media = value;
-    }
-
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setName(String value) {
-        this.name = value;
     }
 
     /**
@@ -231,36 +221,6 @@ public class SoftwareIdentity
     }
 
     /**
-     * Sets the value of the supplemental property.
-     *
-     * @param value allowed object is
-     *              {@link Boolean }
-     */
-    public void setSupplemental(Boolean value) {
-        this.supplemental = value;
-    }
-
-    /**
-     * Gets the value of the tagId property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
-    public String getTagId() {
-        return tagId;
-    }
-
-    /**
-     * Sets the value of the tagId property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setTagId(String value) {
-        this.tagId = value;
-    }
-
-    /**
      * Gets the value of the tagVersion property.
      *
      * @return possible object is
@@ -272,16 +232,6 @@ public class SoftwareIdentity
         } else {
             return tagVersion;
         }
-    }
-
-    /**
-     * Sets the value of the tagVersion property.
-     *
-     * @param value allowed object is
-     *              {@link BigInteger }
-     */
-    public void setTagVersion(BigInteger value) {
-        this.tagVersion = value;
     }
 
     /**
@@ -299,16 +249,6 @@ public class SoftwareIdentity
     }
 
     /**
-     * Sets the value of the version property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setVersion(String value) {
-        this.version = value;
-    }
-
-    /**
      * Gets the value of the versionScheme property.
      *
      * @return possible object is
@@ -320,16 +260,6 @@ public class SoftwareIdentity
         } else {
             return versionScheme;
         }
-    }
-
-    /**
-     * Sets the value of the versionScheme property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setVersionScheme(String value) {
-        this.versionScheme = value;
     }
 
 }

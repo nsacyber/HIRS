@@ -3,6 +3,7 @@ package hirs.structs.elements.aca;
 import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
 import hirs.structs.elements.StructElements;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -13,11 +14,19 @@ import java.util.Arrays;
         "symmetricAttestation"})
 public class IdentityResponseEnvelope implements Struct {
 
+    /**
+     * the asymmetric contents block size
+     */
+    @Getter
     @StructElementLength(fieldName = "asymmetricContents")
     private int asymmetricContentsSize;
 
     private byte[] asymmetricContents;
 
+    /**
+     * the symmetric attestation.
+     */
+    @Getter
     private SymmetricAttestation symmetricAttestation;
 
     /**
@@ -29,21 +38,4 @@ public class IdentityResponseEnvelope implements Struct {
         return Arrays.copyOf(asymmetricContents, asymmetricContents.length);
     }
 
-    /**
-     * Gets the asymmetric contents block size.
-     *
-     * @return the asymmetric contents block size
-     */
-    public int getAsymmetricContentsSize() {
-        return asymmetricContentsSize;
-    }
-
-    /**
-     * Gets the symmetric attestation.
-     *
-     * @return the symmetric attestation.
-     */
-    public SymmetricAttestation getSymmetricAttestation() {
-        return symmetricAttestation;
-    }
 }
