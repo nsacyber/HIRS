@@ -41,7 +41,7 @@ public class AsymmetricPublicKey implements Struct {
     public static final short DEFAULT_RSA_SIGNATURE_SCHEME = 0x1;
 
     /**
-     * information regarding this key
+     * information regarding this key.
      */
     private AsymmetricKeyParams asymmetricKeyParams;
 

@@ -14,7 +14,7 @@ import lombok.Getter;
 public class PublicKey implements Struct {
 
     /**
-     * information regarding this key
+     * information regarding this key.
      */
     private AsymmetricKeyParams asymmetricKeyParams;
 

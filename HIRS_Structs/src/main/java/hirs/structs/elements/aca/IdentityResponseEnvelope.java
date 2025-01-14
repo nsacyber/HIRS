@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class IdentityResponseEnvelope implements Struct {
 
     /**
-     * the asymmetric contents block size
+     * the asymmetric contents block size.
      */
     @Getter
     @StructElementLength(fieldName = "asymmetricContents")

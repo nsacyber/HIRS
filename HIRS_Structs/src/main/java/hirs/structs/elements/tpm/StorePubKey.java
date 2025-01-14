@@ -13,7 +13,6 @@ import java.util.Arrays;
  */
 @StructElements(elements = {"keyLength", "key"})
 public class StorePubKey implements Struct {
-    
     @Getter
     @StructElementLength(fieldName = "key")
     private int keyLength;

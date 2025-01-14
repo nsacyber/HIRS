@@ -25,7 +25,7 @@ public class SymmetricKey implements Struct {
     public static final short SCHEME_CBC = 255;
 
     /**
-     * of the symmetric key
+     * algorithm id of the symmetric key.
      */
     @Getter
     private int algorithmId;
