@@ -59,6 +59,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         String hostName = device.getDeviceInfo().getNetworkInfo().getHostname();
         BaseReferenceManifest baseReferenceManifest = null;
         EventLogMeasurements measurement = null;
+        log.info("Validating firmware...");
 
         // This block was looking for a base RIM matching the device name
         // The base rim might not have a device name associated with it- i.e. if it's uploaded to the ACA
@@ -114,15 +115,19 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                     referenceManifestRepository.save(eventLog);
                     fwStatus = new AppraisalStatus(PASS, SupplyChainCredentialValidator.FIRMWARE_VALID);
                 } else {
+                    failedString = pcrStatus.getMessage();
+                    log.warn("PCR value validation failed: " + failedString);
                     passed = false;
                 }
             } else {
+                failedString = rimSignatureStatus.getMessage();
+                log.warn("RIM signature validation failed: " + failedString);
                 passed = false;
             }
         }
         if (!passed) {
             fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
-                    + "%s for %s can not be found", failedString, hostName));
+                    + "%s for %s cannot be found", failedString, hostName));
             if (measurement != null) {
                 measurement.setOverallValidationResult(fwStatus.getAppStatus());
                 referenceManifestRepository.save(measurement);
@@ -139,6 +144,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 baseReferenceManifest.getFileResources();
         AppraisalStatus rimSignatureStatus = new AppraisalStatus(PASS, "RIM signature valid.");
         boolean passed = true;
+        log.info("Validating RIM signature...");
 
         // verify signatures
         ReferenceManifestValidator referenceManifestValidator =
@@ -246,6 +252,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         String[] baseline = new String[Integer.SIZE];
         TCGEventLog logProcessor;
         AppraisalStatus pcrAppraisalStatus = new AppraisalStatus(PASS, "PCR values validated.");
+        log.info("Validating PCR values...");
+
         try {
             logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
             baseline = logProcessor.getExpectedPCRValues();
