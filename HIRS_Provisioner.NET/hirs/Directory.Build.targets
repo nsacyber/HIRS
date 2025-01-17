@@ -35,9 +35,12 @@
   <Target Name="CopyFiles" AfterTargets="DeletePDB">
     <ItemGroup>
       <PaccorScriptsDll Include="$(OUTDIR)paccor_scripts.dll"/>
+      <PaccorPcieDll Include="$(OUTDIR)Pcie.dll"/>
+      <PaccorSmbiosDll Include="$(OUTDIR)Smbios.dll"/>
+      <PaccorStorageDll Include="$(OUTDIR)Storage.dll"/>
     </ItemGroup>
     <Copy
-      SourceFiles="@(PaccorScriptsDll)"
+      SourceFiles="@(PaccorScriptsDll);@(PaccorPcieDll);@(PaccorSmbiosDll);@(PaccorStorageDll)"
       DestinationFolder="$(PublishDir)plugins"
     />
   </Target>
