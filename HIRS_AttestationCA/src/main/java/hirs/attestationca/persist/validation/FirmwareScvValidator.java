@@ -86,7 +86,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
         String failedString = "";
         if (baseReferenceManifest == null) {
-            failedString = "Base Reference Integrity Manifest\n";
+            failedString = "Base Reference Integrity Manifest not found for " + hostName + "\n";
             passed = false;
         } else if (measurement == null) {
             measurement = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(
@@ -99,7 +99,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         }
 
         if (measurement == null) {
-            failedString += "Bios measurement";
+            failedString += "Bios measurement not found for " + hostName;
             passed = false;
         }
 
@@ -126,8 +126,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             }
         }
         if (!passed) {
-            fwStatus = new AppraisalStatus(FAIL, String.format("Firmware Validation failed: "
-                    + "%s for %s cannot be found", failedString, hostName));
+            fwStatus = new AppraisalStatus(FAIL, failedString);
             if (measurement != null) {
                 measurement.setOverallValidationResult(fwStatus.getAppStatus());
                 referenceManifestRepository.save(measurement);
@@ -336,5 +335,10 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         }
 
         return pcrAppraisalStatus;
+    }
+
+    private static void logAndReportError(AppraisalStatus status, String errorString) {
+        status.setMessage(errorString);
+        log.error(errorString);
     }
 }
