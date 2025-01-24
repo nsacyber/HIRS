@@ -25,16 +25,21 @@ dependencies {
     implementation libs.spring.boot.starter.log4j2
     implementation libs.minimal.json
 
-    // pull the pci dependency and ...
     implementation libs.pci
-    // and explicitly include the patched version of the apache http client dependency
+
+    // explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 
     implementation libs.protobuf.java
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.retry
     implementation libs.spring.boot.starter.web
+
+    // explicitly include the patched version of the spring framework webmvc dependency
     implementation libs.spring.framework.webmvc
+
+    // explicitly include the patched version of the logback-core dependency
+    implementation libs.logback.classic
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
@@ -43,7 +48,12 @@ dependencies {
     annotationProcessor libs.spotbugs.annotations
 
     testImplementation libs.commons.io
+
+    // explicitly include the patched version of the logback-core dependency
+    testImplementation libs.logback.classic
+
     testImplementation libs.spring.boot.starter.test
+
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok

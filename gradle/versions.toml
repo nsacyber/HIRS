@@ -7,27 +7,30 @@ commonsLang3Version = "3.17.0"
 gsonVersion = "2.11.0"
 glassfishJakartaJsonVersion = "2.0.1"
 glassfishJaxbRuntimeVersion = "4.0.5"
-guavaVersion = "33.3.1-jre"
+guavaVersion = "33.4.0-jre"
 jacksonVersion = "2.18.2"
-jakartaPersistenceApiVersion = "3.2.0"
+jakartaPersistenceApiVersion = "3.1.0"
 jakartaServletVersion = "3.0.0"
 jakartaXmlVersion = "4.0.2"
 jcommanderVersion = "2.0"
 lombokVersion = "1.18.36"
+logbackClassicVersion = "1.5.13"
 mariadbVersion = "3.5.1"
 minimalJsonVersion = "0.9.5"
 ospackageVersion = "11.2.0"
 pciVersion = "0.3"
 protobufJavaVersion = "4.28.3"
-springBootVersion = "3.4.0"
-springCoreVersion = "6.2.1"
+snakeYamlVersion = "2.0"
+springBootVersion = "3.4.1"
+springFrameworkVersion = "6.2.1"
 springRetryVersion = "2.0.10"
-tomcatVersion = "10.1.33"
+tomcatVersion = "10.1.34"
 
 #test dependencies versions
 hsqldbVersion = "2.7.3"
-slf4jVersion = "2.0.16"
+jsonPathVersion = "2.9.0"
 spotBugAnnotationVersion = "4.8.6"
+xmlunitCoreVersion = "2.10.0"
 
 [libraries]
 apacheHttpClient = { module = "org.apache.httpcomponents:httpclient", version.ref = "apacheHttpClientVersion" }
@@ -45,24 +48,31 @@ jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-ap
 jakarta-servlet = { module = "org.glassfish.web:jakarta.servlet.jsp.jstl", version.ref = "jakartaServletVersion" }
 jakarta-xml = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaXmlVersion" }
 jcommander = { module = "org.jcommander:jcommander", version.ref = "jcommanderVersion" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logbackClassicVersion" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
 mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadbVersion" }
 minimal-json = { module = "com.eclipsesource.minimal-json:minimal-json", version.ref = "minimalJsonVersion" }
 pci = { module = "com.github.marandus:pci-ids", version.ref = "pciVersion" }
 protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufJavaVersion" }
-slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4jVersion" }
+snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "snakeYamlVersion" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "springBootVersion" }
 spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2", version.ref = "springBootVersion" }
-spring-boot-starter-tomcat = { module = "org.springframework.boot:spring-boot-starter-tomcat", version.ref = "springBootVersion" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "springBootVersion" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBootVersion" }
-spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springCoreVersion" }
+spring-framework-expression = { module = "org.springframework:spring-expression", version.ref = "springFrameworkVersion" }
+spring-framework-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "springFrameworkVersion" }
+spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springFrameworkVersion" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
+tomcat-embed-core = { module = "org.apache.tomcat.embed:tomcat-embed-core", version.ref = "tomcatVersion" }
 tomcat-embed-jasper = { module = "org.apache.tomcat.embed:tomcat-embed-jasper", version.ref = "tomcatVersion" }
+tomcat-embed-websocket = { module = "org.apache.tomcat.embed:tomcat-embed-websocket", version.ref = "tomcatVersion" }
+
 
 # test dependencies
 hsqldb = { module = "org.hsqldb:hsqldb", version.ref = "hsqldbVersion" }
+jsonPath = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonPathVersion" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBootVersion" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version.ref = "spotBugAnnotationVersion" }
+xmlunit-core = { module = "org.xmlunit:xmlunit-core", version.ref = "xmlunitCoreVersion" }
 
 [plugins]

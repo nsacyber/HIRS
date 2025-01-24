@@ -21,6 +21,7 @@ dependencies {
     implementation libs.jakarta.xml
     implementation libs.spring.boot.starter.log4j2
     implementation libs.spring.boot.starter.data.jpa
+    implementation libs.logback.classic
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
