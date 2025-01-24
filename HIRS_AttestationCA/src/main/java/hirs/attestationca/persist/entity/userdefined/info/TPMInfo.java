@@ -49,6 +49,10 @@ public class TPMInfo implements Serializable {
     @Column(nullable = true)
     private short tpmVersionRevMinor;
 
+    /**
+     * identity certificate for the device.
+     */
+    @Getter
     @XmlElement
     @XmlJavaTypeAdapter(X509CertificateAdapter.class)
     @Lob
@@ -176,15 +180,6 @@ public class TPMInfo implements Serializable {
                 new byte[0],
                 new byte[0]);
         identityCertificate = null;
-    }
-
-    /**
-     * Used to retrieve the identity certificate for the device.
-     *
-     * @return a byte array holding the certificate information
-     */
-    public X509Certificate getIdentityCertificate() {
-        return identityCertificate;
     }
 
     private void setIdentityCertificate(

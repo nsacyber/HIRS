@@ -3,6 +3,7 @@ package hirs.structs.elements.tpm;
 import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
 import hirs.structs.elements.StructElements;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -13,29 +14,27 @@ import java.util.Arrays;
 @StructElements(elements = {"keyLength", "totalPrimes", "exponentSize", "exponent"})
 public class RsaSubParams implements Struct {
 
+    /**
+     * the length of the key.
+     */
+    @Getter
     private int keyLength;
 
+    /**
+     * the total number of prime numbers in the key. Typically this is associated with the
+     * block size.
+     */
+    @Getter
     private int totalPrimes;
 
+    /**
+     * the size of the exponent block.
+     */
+    @Getter
     @StructElementLength(fieldName = "exponent")
     private int exponentSize;
 
     private byte[] exponent;
-
-    /**
-     * @return the length of the key
-     */
-    public int getKeyLength() {
-        return keyLength;
-    }
-
-    /**
-     * @return the total number of prime numbers in the key. Typically this is associated with the
-     * block size.
-     */
-    public int getTotalPrimes() {
-        return totalPrimes;
-    }
 
     /**
      * @return the public exponent of the key
@@ -44,10 +43,4 @@ public class RsaSubParams implements Struct {
         return Arrays.copyOf(exponent, exponent.length);
     }
 
-    /**
-     * @return the size of the exponent block.
-     */
-    public int getExponentSize() {
-        return exponentSize;
-    }
 }

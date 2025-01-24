@@ -3,12 +3,14 @@ package hirs.structs.converters;
 import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
 import hirs.structs.elements.StructElements;
+import lombok.Getter;
 
 import java.util.Arrays;
 
 /**
  * A struct to be embedded within TestStruct.
  */
+@Getter
 @StructElements(elements = {"embeddedSize", "embeddedShort", "embedded"})
 public class TestEmbeddedStruct implements Struct {
 
@@ -19,7 +21,6 @@ public class TestEmbeddedStruct implements Struct {
     private static final int HASH_CODE = 31;
 
     private static final byte[] DEFAULT_ARRAY = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
-
 
     @StructElementLength(fieldName = "embedded")
     private int embeddedSize = EMBEDDED_SIZE;
@@ -57,30 +58,4 @@ public class TestEmbeddedStruct implements Struct {
         return result;
     }
 
-    /**
-     * Getter.
-     *
-     * @return value
-     */
-    public byte[] getEmbedded() {
-        return embedded;
-    }
-
-    /**
-     * Getter.
-     *
-     * @return value
-     */
-    public short getEmbeddedShort() {
-        return embeddedShort;
-    }
-
-    /**
-     * Getter.
-     *
-     * @return value
-     */
-    public int getEmbeddedSize() {
-        return embeddedSize;
-    }
 }

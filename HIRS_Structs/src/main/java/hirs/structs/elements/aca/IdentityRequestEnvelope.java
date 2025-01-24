@@ -3,6 +3,7 @@ package hirs.structs.elements.aca;
 import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
 import hirs.structs.elements.StructElements;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -16,45 +17,47 @@ import java.util.Arrays;
         "deviceInfoReportLength", "deviceInfoReport"})
 public class IdentityRequestEnvelope implements Struct {
 
+    /**
+     * the length of the identity request blob.
+     */
+    @Getter
     @StructElementLength(fieldName = "request")
     private int requestLength;
 
     private byte[] request;
 
+    /**
+     * the length of the endorsementCredentialModulus blob.
+     */
+    @Getter
     @StructElementLength(fieldName = "endorsementCredentialModulus")
     private int endorsementCredentialModulusLength;
 
     private byte[] endorsementCredentialModulus;
 
+    /**
+     * the length of the endorsementCredential blob.
+     */
+    @Getter
     @StructElementLength(fieldName = "endorsementCredential")
     private int endorsementCredentialLength;
 
     private byte[] endorsementCredential;
 
+    /**
+     * the length of the device info report.
+     */
+    @Getter
     @StructElementLength(fieldName = "deviceInfoReport")
     private int deviceInfoReportLength;
 
     private byte[] deviceInfoReport;
 
     /**
-     * @return the length of the identity request blob.
-     */
-    public int getRequestLength() {
-        return requestLength;
-    }
-
-    /**
      * @return the identity request.
      */
     public byte[] getRequest() {
         return Arrays.copyOf(request, request.length);
-    }
-
-    /**
-     * @return the length of the endorsementCredentialModulus blob
-     */
-    public int getEndorsementCredentialModulusLength() {
-        return endorsementCredentialModulusLength;
     }
 
     /**
@@ -65,24 +68,10 @@ public class IdentityRequestEnvelope implements Struct {
     }
 
     /**
-     * @return the length of the endorsementCredential blob
-     */
-    public int getEndorsementCredentialLength() {
-        return endorsementCredentialLength;
-    }
-
-    /**
      * @return the endorsementCredential
      */
     public byte[] getEndorsementCredential() {
         return Arrays.copyOf(endorsementCredential, endorsementCredential.length);
-    }
-
-    /**
-     * @return the length of the device info report
-     */
-    public int getDeviceInfoReportLength() {
-        return deviceInfoReportLength;
     }
 
     /**

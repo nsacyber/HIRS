@@ -3,6 +3,7 @@ package hirs.structs.elements.tpm;
 import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
 import hirs.structs.elements.StructElements;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -16,23 +17,51 @@ import java.util.Arrays;
         "endorsementCredential", "platformCredential", "conformanceCredential"})
 public class IdentityProof implements Struct {
 
+    /**
+     * version of the TPM that created this data structure.
+     */
+    @Getter
     private Version version;
 
+    /**
+     * the size of the label area.
+     */
+    @Getter
     @StructElementLength(fieldName = "label")
     private int labelSize;
 
+    /**
+     * the size of the identity binding area.
+     */
+    @Getter
     @StructElementLength(fieldName = "identityBinding")
     private int identityBindingSize;
 
+    /**
+     * the size of the endorsement credential.
+     */
+    @Getter
     @StructElementLength(fieldName = "endorsementCredential")
     private int endorsementSize;
 
+    /**
+     * the size of the endorsement credential.
+     */
+    @Getter
     @StructElementLength(fieldName = "platformCredential")
     private int platformSize;
 
+    /**
+     * the size of the conformance credential.
+     */
+    @Getter
     @StructElementLength(fieldName = "conformanceCredential")
     private int conformanceSize;
 
+    /**
+     * public key of the new identity.
+     */
+    @Getter
     private AsymmetricPublicKey identityKey;
 
     private byte[] label;
@@ -44,55 +73,6 @@ public class IdentityProof implements Struct {
     private byte[] platformCredential;
 
     private byte[] conformanceCredential;
-
-    /**
-     * @return version of the TPM that created this data structure
-     */
-    public Version getVersion() {
-        return version;
-    }
-
-    /**
-     * @return the size of the label area
-     */
-    public int getLabelSize() {
-        return labelSize;
-    }
-
-    /**
-     * @return the size of the identity binding area
-     */
-    public int getIdentityBindingSize() {
-        return identityBindingSize;
-    }
-
-    /**
-     * @return the size of the endorsement credential
-     */
-    public int getEndorsementSize() {
-        return endorsementSize;
-    }
-
-    /**
-     * @return the size of the endorsement credential
-     */
-    public int getPlatformSize() {
-        return platformSize;
-    }
-
-    /**
-     * @return the size of the conformance credential
-     */
-    public int getConformanceSize() {
-        return conformanceSize;
-    }
-
-    /**
-     * @return public key of the new identity
-     */
-    public AsymmetricPublicKey getIdentityKey() {
-        return identityKey;
-    }
 
     /**
      * @return label of the identity

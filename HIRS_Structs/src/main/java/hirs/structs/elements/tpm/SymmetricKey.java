@@ -3,6 +3,7 @@ package hirs.structs.elements.tpm;
 import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
 import hirs.structs.elements.StructElements;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -23,35 +24,26 @@ public class SymmetricKey implements Struct {
      */
     public static final short SCHEME_CBC = 255;
 
+    /**
+     * algorithm id of the symmetric key.
+     */
+    @Getter
     private int algorithmId;
 
+    /**
+     * the encryption scheme of the symmetric key.
+     */
+    @Getter
     private short encryptionScheme;
 
+    /**
+     * the size the underlying symmetric key block.
+     */
+    @Getter
     @StructElementLength(fieldName = "key")
     private short keySize;
 
     private byte[] key;
-
-    /**
-     * @return of the symmetric key
-     */
-    public int getAlgorithmId() {
-        return algorithmId;
-    }
-
-    /**
-     * @return the encryption scheme of the symmetric key
-     */
-    public short getEncryptionScheme() {
-        return encryptionScheme;
-    }
-
-    /**
-     * @return the size the underlying symmetric key block.
-     */
-    public short getKeySize() {
-        return keySize;
-    }
 
     /**
      * @return the underlying key block.
