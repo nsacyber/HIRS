@@ -7,6 +7,7 @@ plugins {
     id 'application'
     id 'checkstyle'
     id 'com.github.spotbugs' version '6.0.13' apply false
+    id 'org.owasp.dependencycheck' version '11.1.1'
     id 'java'
 }
 
@@ -17,6 +18,7 @@ subprojects {
     apply plugin: "com.github.spotbugs"
     apply plugin: "java"
     apply plugin: "checkstyle"
+    apply plugin: "org.owasp.dependencycheck"
 
     repositories {
         flatDir { dirs "lib" }
