@@ -6,6 +6,8 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -26,9 +28,10 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
     private static final int COMPONENT_IDENTIFIER_URI = 1;
     private static final int PLATFORM_PROPERTIES = 2;
     private static final int PLATFORM_PROPERTIES_URI = 3;
+    private List<ComponentIdentifierV2> componentIdentifierV2;
 
     /**
-     * Constructor given the SEQUENCE that contains Platform Configuration.
+     * Constructor given the SEQUENCE that contains version 2 Platform Configuration.
      *
      * @param sequence containing the the Platform Configuration.
      * @throws IllegalArgumentException if there was an error on the parsing
@@ -88,6 +91,21 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
     }
 
     /**
+     * @return a collection of version 2 component identifiers.
+     */
+    public List<ComponentIdentifierV2> getComponentIdentifierV2() {
+        return Collections.unmodifiableList(componentIdentifierV2);
+    }
+
+    /**
+     * @param componentIdentifierV2 list of version 2 component identifiers
+     */
+    public void setComponentIdentifierV2(
+            final List<ComponentIdentifierV2> componentIdentifierV2) {
+        this.componentIdentifierV2 = new ArrayList<>(componentIdentifierV2);
+    }
+
+    /**
      * Creates a string representation of the Platform Configuration V2 object.
      *
      * @return a string representation of the Platform Configuration V2 object.
@@ -96,9 +114,9 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("PlatformConfiguration{");
-        sb.append("componentIdentifier=");
-        if (getComponentIdentifier().size() > 0) {
-            sb.append(getComponentIdentifier()
+        sb.append("componentIdentifierV2=");
+        if (!getComponentIdentifierV2().isEmpty()) {
+            sb.append(getComponentIdentifierV2()
                     .stream()
                     .map(Object::toString)
                     .collect(Collectors.joining(",")));
@@ -108,7 +126,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
             sb.append(getComponentIdentifierUri());
         }
         sb.append(", platformProperties=");
-        if (getPlatformProperties().size() > 0) {
+        if (!getPlatformProperties().isEmpty()) {
             sb.append(getPlatformProperties()
                     .stream()
                     .map(Object::toString)

@@ -14,11 +14,15 @@ import java.util.List;
  */
 @AllArgsConstructor
 public abstract class PlatformConfiguration {
-    private ArrayList<ComponentIdentifier> componentIdentifier = new ArrayList<>();
+
+    private List<ComponentIdentifier> componentIdentifier;
+
     @Getter
     @Setter
     private URIReference componentIdentifierUri;
-    private ArrayList<PlatformProperty> platformProperties = new ArrayList<>();
+
+    private List<PlatformProperty> platformProperties;
+
     @Getter
     @Setter
     private URIReference platformPropertiesUri;

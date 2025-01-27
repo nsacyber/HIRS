@@ -415,14 +415,13 @@ public class SupplyChainCredentialValidatorTest {
      * Checks if the ST Micro Endorsement Credential can be validated against the
      * ST/GlobalSIgn Certificate Chain.
      *
-     * @throws IOException          if error occurs while reading files
-     * @throws URISyntaxException   if error occurs while reading files
-     * @throws CertificateException if error occurs while processing X509 Certs
-     * @throws KeyStoreException    if error occurs while processing Keystore
+     * @throws IOException        if error occurs while reading files
+     * @throws URISyntaxException if error occurs while reading files
+     * @throws KeyStoreException  if error occurs while processing Keystore
      */
     @Test
     public final void testValidateEndorsementCredential()
-            throws URISyntaxException, IOException, CertificateException, KeyStoreException {
+            throws URISyntaxException, IOException, KeyStoreException {
 
         EndorsementCredential ekcert = new EndorsementCredential(Files.readAllBytes(
                 Paths.get(Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI()))
@@ -455,14 +454,13 @@ public class SupplyChainCredentialValidatorTest {
      * Validates a generated cert chain pretending to be from Intel. Credential was generated
      * with an intermediate CA. This tests the entire chain of validation back to the root CA.
      *
-     * @throws IOException          if error occurs while reading files
-     * @throws KeyStoreException    if there's an issue string certs to the keystore
-     * @throws CertificateException if error occurs while ingesting a certificate
-     * @throws URISyntaxException   if a URI can't be processed
+     * @throws IOException        if error occurs while reading files
+     * @throws KeyStoreException  if there's an issue string certs to the keystore
+     * @throws URISyntaxException if a URI can't be processed
      */
     @Test
     public final void validateIntelPlatformCredentials()
-            throws URISyntaxException, IOException, CertificateException, KeyStoreException {
+            throws URISyntaxException, IOException, KeyStoreException {
 
         Certificate intermediatecacert =
                 new CertificateAuthorityCredential(Files.readAllBytes(Paths.get(
@@ -855,7 +853,7 @@ public class SupplyChainCredentialValidatorTest {
         KeyPair caKeyPair = createKeyPair();
         KeyPair intermediateKeyPair = createKeyPair();
         KeyPair targetKeyPair = createKeyPair();
-        Set<X509Certificate> trustedCerts = new HashSet<X509Certificate>();
+        Set<X509Certificate> trustedCerts = new HashSet<>();
 
         X509Certificate caCert = createSelfSignedCertificate(caKeyPair);
         X509Certificate intermediateCert =
@@ -899,7 +897,7 @@ public class SupplyChainCredentialValidatorTest {
         KeyPair caKeyPair = createKeyPair();
         KeyPair intermediateKeyPair = createKeyPair();
         KeyPair targetKeyPair = createKeyPair();
-        Set<X509Certificate> trustedCerts = new HashSet<X509Certificate>();
+        Set<X509Certificate> trustedCerts = new HashSet<>();
 
         X509Certificate caCert = createSelfSignedCertificate(caKeyPair);
         X509Certificate intermediateCert =
@@ -938,7 +936,7 @@ public class SupplyChainCredentialValidatorTest {
             throws SupplyChainValidatorException {
         KeyPair caKeyPair = createKeyPair();
         KeyPair targetKeyPair = createKeyPair();
-        Set<X509Certificate> trustedCerts = new HashSet<X509Certificate>();
+        Set<X509Certificate> trustedCerts = new HashSet<>();
 
         X509Certificate caCert = createSelfSignedCertificate(caKeyPair);
         X509Certificate targetCert =
@@ -977,7 +975,7 @@ public class SupplyChainCredentialValidatorTest {
         KeyPair caKeyPair = createKeyPair();
         KeyPair intermediateKeyPair = createKeyPair();
         KeyPair targetKeyPair = createKeyPair();
-        Set<X509Certificate> trustedCerts = new HashSet<X509Certificate>();
+        Set<X509Certificate> trustedCerts = new HashSet<>();
 
         X509Certificate caCert = createSelfSignedCertificate(caKeyPair);
         X509Certificate intermediateCert =
@@ -1017,7 +1015,7 @@ public class SupplyChainCredentialValidatorTest {
         KeyPair caKeyPair = createKeyPair();
         KeyPair intermediateKeyPair = createKeyPair();
         KeyPair targetKeyPair = createKeyPair();
-        Set<X509Certificate> trustedCerts = new HashSet<X509Certificate>();
+        Set<X509Certificate> trustedCerts = new HashSet<>();
 
         X509Certificate caCert = createSelfSignedCertificate(caKeyPair);
         X509Certificate intermediateCert =
@@ -1051,7 +1049,7 @@ public class SupplyChainCredentialValidatorTest {
     public final void verifyX509CertificateAgainstCA() throws SupplyChainValidatorException {
         KeyPair caKeyPair = createKeyPair();
         KeyPair targetKeyPair = createKeyPair();
-        Set<X509Certificate> trustedCerts = new HashSet<X509Certificate>();
+        Set<X509Certificate> trustedCerts = new HashSet<>();
 
         X509Certificate caCert = createSelfSignedCertificate(caKeyPair);
         X509Certificate targetCert =
@@ -1175,13 +1173,12 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws URISyntaxException            failed to read certificate
      * @throws IOException                   failed to read certificate
-     * @throws KeyStoreException             failed to read key store
      * @throws SupplyChainValidatorException missing credential
      */
 
     @Test
     public final void testPlatformDnEquals() throws URISyntaxException, IOException,
-            KeyStoreException, SupplyChainValidatorException {
+            SupplyChainValidatorException {
         Certificate signingCert;
         signingCert = new CertificateAuthorityCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(INTEL_SIGNING_KEY)).toURI()))
@@ -1207,12 +1204,11 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws URISyntaxException            failed to read certificate
      * @throws IOException                   failed to read certificate
-     * @throws KeyStoreException             failed to read key store
      * @throws SupplyChainValidatorException missing credential
      */
     @Test
     public final void testPlatformDnNotEquals() throws URISyntaxException, IOException,
-            KeyStoreException, SupplyChainValidatorException {
+            SupplyChainValidatorException {
         Certificate signingCert;
         signingCert = new CertificateAuthorityCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(INTEL_INT_CA)).toURI()))
@@ -1237,12 +1233,11 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws URISyntaxException            failed to read certificate
      * @throws IOException                   failed to read certificate
-     * @throws KeyStoreException             failed to read key store
      * @throws SupplyChainValidatorException missing credential
      */
     @Test
     public final void testEndorsementDnEquals() throws URISyntaxException, IOException,
-            KeyStoreException, SupplyChainValidatorException {
+            SupplyChainValidatorException {
         Certificate signingCert;
         signingCert = new CertificateAuthorityCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(INT_CA_CERT02)).toURI()))
@@ -1268,12 +1263,11 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws URISyntaxException            failed to read certificate
      * @throws IOException                   failed to read certificate
-     * @throws KeyStoreException             failed to read key store
      * @throws SupplyChainValidatorException missing credential
      */
     @Test
     public final void testEndorsementDnNotEquals() throws URISyntaxException, IOException,
-            KeyStoreException, SupplyChainValidatorException {
+            SupplyChainValidatorException {
         Certificate signingCert;
         signingCert = new CertificateAuthorityCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(INTEL_INT_CA)).toURI()))

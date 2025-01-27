@@ -80,8 +80,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             deviceBaseboardSerialNumber = null;
         } else {
             deviceInfoSerialNumbers.put("board serial number", deviceBaseboardSerialNumber);
-            log.info("Using device board serial number for validation: "
-                    + deviceBaseboardSerialNumber);
+            log.info("Using device board serial number for validation: {}", deviceBaseboardSerialNumber);
         }
 
         if (StringUtils.isEmpty(deviceChassisSerialNumber)
@@ -89,16 +88,15 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             log.error("Failed to retrieve device chassis serial number");
         } else {
             deviceInfoSerialNumbers.put("chassis serial number", deviceChassisSerialNumber);
-            log.info("Using device chassis serial number for validation: "
-                    + deviceChassisSerialNumber);
+            log.info("Using device chassis serial number for validation: {}", deviceChassisSerialNumber);
         }
+
         if (StringUtils.isEmpty(deviceSystemSerialNumber)
                 || DeviceInfoEnums.NOT_SPECIFIED.equalsIgnoreCase(deviceSystemSerialNumber)) {
             log.error("Failed to retrieve device system serial number");
         } else {
             deviceInfoSerialNumbers.put("system serial number", deviceSystemSerialNumber);
-            log.info("Using device system serial number for validation: "
-                    + deviceSystemSerialNumber);
+            log.info("Using device system serial number for validation: {}", deviceSystemSerialNumber);
         }
 
         AppraisalStatus status;
@@ -233,12 +231,19 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         passesValidation &= fieldValidation;
 
-        // Retrieve the list of all components from the Platform Credential
-        List<ComponentIdentifier> allPcComponents
-                = new ArrayList<>(platformCredential.getComponentIdentifiers());
+        // Retrieve the list of all version 2 component identifiers from the Platform Credential
+        List<ComponentIdentifierV2> allPcComponents
+                = new ArrayList<>(platformCredential.getComponentIdentifiersV2());
 
         // All components listed in the Platform Credential must have a manufacturer and model
-        for (ComponentIdentifier pcComponent : allPcComponents) {
+        for (ComponentIdentifierV2 pcComponent : allPcComponents) {
+
+            fieldValidation = pcComponent.getComponentClass() != null;
+
+            if (!fieldValidation) {
+                resultMessage.append("Component class is null\n");
+            }
+
             fieldValidation = !hasEmptyValueForRequiredField("componentManufacturer",
                     pcComponent.getComponentManufacturer());
 
@@ -263,18 +268,24 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 .findByCertificateSerialNumberAndBoardSerialNumber(
                         platformCredential.getSerialNumber().toString(),
                         platformCredential.getPlatformSerial());
+
         // first create hash map based on hashCode
         List<ComponentResult> remainingComponentResults = checkDeviceHashMap(
                 componentInfos, componentResults);
+
         //this is used to get a unique count
         List<UUID> componentIdList = new ArrayList<>();
+
         int numOfAttributes = 0;
+
         if (!remainingComponentResults.isEmpty()) {
             List<ComponentAttributeResult> attributeResults = checkComponentClassMap(
                     componentInfos, remainingComponentResults);
 
             numOfAttributes = attributeResults.size();
+
             boolean saveAttributeResult;
+
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
                 saveAttributeResult = true;
                 if (ignoreRevisionAttribute) {
@@ -293,6 +304,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         }
 
         StringBuilder additionalInfo = new StringBuilder();
+
         if (numOfAttributes > 0) {
             resultMessage.append(String.format("There are %d component(s) not matched%n "
                             + "with %d total attributes mismatched.",
@@ -455,7 +467,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 if (ci.isVersion2() && PciIds.DB.isReady()) {
                     ci = AcaPciIds.translate((ComponentIdentifierV2) ci);
                 }
-                log.error("Unmatched component: " + ci);
+                log.error("Unmatched component: {}", ci);
                 fullDeltaChainComponents.add(ci);
                 invalidPcIds.append(String.format(
                         "Manufacturer=%s, Model=%s, Serial=%s, Revision=%s;%n",
@@ -532,6 +544,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     = allDeviceInfoComponents.stream().filter(componentInfo
                             -> componentInfo.getComponentManufacturer().equals(pcManufacturer))
                     .collect(Collectors.toList());
+
             // For each component listed in the platform credential from this manufacturer
             // find the ones that specify a serial number so we can match the most specific ones
             // first.
@@ -539,7 +552,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     = pcComponentsFromManufacturer.stream().filter(compIdentifier
                             -> compIdentifier.getComponentSerial() != null
                             && StringUtils.isNotEmpty(compIdentifier.getComponentSerial().getString()))
-                    .collect(Collectors.toList());
+                    .toList();
+
             // Now match up the components from the device info that are from the same
             // manufacturer and have a serial number. As matches are found, remove them from
             // both lists.
@@ -567,7 +581,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     = pcComponentsFromManufacturer.stream().filter(compIdentifier
                             -> compIdentifier.getComponentRevision() != null
                             && StringUtils.isNotEmpty(compIdentifier.getComponentRevision().getString()))
-                    .collect(Collectors.toList());
+                    .toList();
             // Now match up the components from the device info that are from the same
             // manufacturer and specify a value for the revision field. As matches are found,
             // remove them from both lists.
@@ -608,8 +622,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         if (!pcUnmatchedComponents.isEmpty()) {
             untrimmedPcComponents.clear();
             StringBuilder sb = new StringBuilder();
-            log.error(String.format("Platform Credential contained %d unmatched components:",
-                    pcUnmatchedComponents.size()));
+            log.error("Platform Credential contained {} unmatched components:", pcUnmatchedComponents.size());
 
             int unmatchedComponentCounter = 1;
             for (ComponentIdentifier unmatchedComponent : pcUnmatchedComponents) {
@@ -617,8 +630,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     unmatchedComponent =
                             AcaPciIds.translate((ComponentIdentifierV2) unmatchedComponent);
                 }
-                log.error("Unmatched component " + unmatchedComponentCounter++ + ": "
-                        + unmatchedComponent);
+                log.error("Unmatched component {}: {}", unmatchedComponentCounter++, unmatchedComponent);
                 sb.append(String.format("Manufacturer=%s, Model=%s, Serial=%s, Revision=%s;%n",
                         unmatchedComponent.getComponentManufacturer(),
                         unmatchedComponent.getComponentModel(),
@@ -797,8 +809,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
     private static boolean hasEmptyValueForRequiredField(final String description,
                                                          final String fieldValue) {
         if (StringUtils.isEmpty(fieldValue)) {
-            log.error("Required field was empty or null in Platform Credential: "
-                    + description);
+            log.error("Required field was empty or null in Platform Credential: {}", description);
             return true;
         }
         return false;
@@ -829,15 +840,15 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         String trimmedOtherValue = otherValue.trim();
 
         if (!trimmedFieldValue.equals(trimmedOtherValue)) {
-            log.debug(String.format("%s field in Platform Credential (%s) does not match "
-                            + "a related field in the DeviceInfoReport (%s)",
-                    platformCredentialFieldName, trimmedFieldValue, trimmedOtherValue));
+            log.debug("{} field in Platform Credential ({}) does not match "
+                            + "a related field in the DeviceInfoReport ({})",
+                    platformCredentialFieldName, trimmedFieldValue, trimmedOtherValue);
             return false;
         }
 
-        log.debug(String.format("%s field in Platform Credential matches "
-                        + "a related field in the DeviceInfoReport (%s)",
-                platformCredentialFieldName, trimmedFieldValue)
+        log.debug("{} field in Platform Credential matches "
+                        + "a related field in the DeviceInfoReport {}",
+                platformCredentialFieldName, trimmedFieldValue
         );
 
         return true;
@@ -853,8 +864,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
     private static boolean hasEmptyValueForRequiredField(final String description,
                                                          final ASN1UTF8String fieldValue) {
         if (fieldValue == null || StringUtils.isEmpty(fieldValue.getString().trim())) {
-            log.error("Required field was empty or null in Platform Credential: "
-                    + description);
+            log.error("Required field was empty or null in Platform Credential: {}", description);
             return true;
         }
         return false;
@@ -871,7 +881,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final List<ComponentInfo> componentInfos,
             final List<ComponentResult> compiledComponentList) {
         Map<Integer, List<ComponentInfo>> deviceHashMap = new HashMap<>();
-        componentInfos.stream().forEach((componentInfo) -> {
+        componentInfos.forEach((componentInfo) -> {
             List<ComponentInfo> innerList;
             Integer compInfoHash = componentInfo.hashCommonElements();
             if (deviceHashMap.containsKey(compInfoHash)) {
@@ -910,7 +920,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // continue down the options, move to a different method.
         // create component class mapping to component info
         Map<String, List<ComponentInfo>> componentDeviceMap = new HashMap<>();
-        componentInfos.stream().forEach((componentInfo) -> {
+        componentInfos.forEach((componentInfo) -> {
             List<ComponentInfo> innerList;
             String componentClass = componentInfo.getComponentClass();
             if (componentDeviceMap.containsKey(componentClass)) {
@@ -1000,11 +1010,13 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
     private static List<ComponentAttributeResult> findMismatchedValues(
             final List<ComponentInfo> componentClassInfo,
             final ComponentResult componentResult) {
+
         // this list only has those of the same class type
         Map<String, ComponentInfo> componentSerialMap = new HashMap<>();
-        componentClassInfo.stream().forEach((componentInfo) -> {
+        componentClassInfo.forEach((componentInfo) -> {
             componentSerialMap.put(componentInfo.getComponentSerial(), componentInfo);
         });
+
         // see if the serial exists
         ComponentInfo componentInfo = componentSerialMap.get(componentResult.getSerialNumber());
 

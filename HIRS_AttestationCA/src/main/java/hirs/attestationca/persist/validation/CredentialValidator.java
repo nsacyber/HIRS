@@ -35,7 +35,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      *
      * @param ec            the endorsement credential to verify.
      * @param trustStore    trust store holding trusted certificates.
-     * @param acceptExpired whether or not to accept expired and not yet valid certificates
+     * @param acceptExpired whether to accept expired and not yet valid certificates
      *                      as valid.
      * @return the result of the validation.
      */

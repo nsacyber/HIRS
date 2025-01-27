@@ -6,6 +6,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Plat
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TBBSecurityAssertion;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -64,25 +65,30 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      * TCPA Trusted Platform Endorsement.
      */
     public static final String CERTIFICATE_TYPE_1_2 = "TCPA Trusted Platform Endorsement";
+
     /**
      * TCG Trusted Platform Endorsement.
      */
     public static final String CERTIFICATE_TYPE_2_0 = "TCG Trusted Platform Endorsement";
     private static final int TCG_SPECIFICATION_LENGTH = 3;
+
     // These are Object Identifiers (OIDs) for sections in the credentials
     private static final String POLICY_QUALIFIER_CPSURI = "1.3.6.1.5.5.7.2.1";
     private static final String POLICY_QUALIFIER_USER_NOTICE = "1.3.6.1.5.5.7.2.2";
+
     // OID for TCG Attributes
     private static final String PLATFORM_MANUFACTURER = "2.23.133.2.4";
     private static final String PLATFORM_MODEL = "2.23.133.2.5";
     private static final String PLATFORM_VERSION = "2.23.133.2.6";
     private static final String PLATFORM_SERIAL = "2.23.133.2.23";
     private static final String PLATFORM_BASEBOARD_CHASSIS_COMBINED = "2.23.133.5.1.6";
+
     // OID for TCG Platform Class Common Attributes
     private static final String PLATFORM_MANUFACTURER_2_0 = "2.23.133.5.1.1";
     private static final String PLATFORM_MODEL_2_0 = "2.23.133.5.1.4";
     private static final String PLATFORM_VERSION_2_0 = "2.23.133.5.1.5";
     private static final String PLATFORM_SERIAL_2_0 = "2.23.133.5.1.6";
+
     // OID for Certificate Attributes
     private static final String TCG_PLATFORM_SPECIFICATION = "2.23.133.2.17";
     private static final String TPM_SECURITY_ASSERTION = "2.23.133.2.18";
@@ -582,8 +588,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                     break;
                 default:
                     // No class defined for this attribute
-                    log.warn("No class defined for attribute with OID: "
-                            + attr.getAttrType().getId());
+                    log.warn("No class defined for attribute with OID: {}", attr.getAttrType().getId());
                     break;
             }
         }
@@ -616,6 +621,24 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         if (getAttribute("platformConfiguration") != null
                 && getAttribute("platformConfiguration") instanceof PlatformConfiguration) {
             return (PlatformConfiguration) getAttribute("platformConfiguration");
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the Version 2 Platform Configuration Attribute from the Platform Certificate.
+     *
+     * @return a map with the Version 2 Platform Configuration information.
+     * @throws IllegalArgumentException when there is a parsing error
+     * @throws IOException              when reading the certificate.
+     */
+    public PlatformConfigurationV2 getPlatformConfigurationV2()
+            throws IllegalArgumentException, IOException {
+
+        if (getAttribute("platformConfiguration") != null
+                && getAttribute("platformConfiguration") instanceof PlatformConfigurationV2) {
+            return (PlatformConfigurationV2) getAttribute("platformConfiguration");
         }
 
         return null;
@@ -695,8 +718,26 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 return platformConfig.getComponentIdentifier();
             }
         } catch (IOException e) {
-            log.error("Unable to parse Platform Configuration from Credential or find"
+            log.error("Unable to parse Platform Configuration from Platform Credential or find"
                     + "component identifiers");
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Get the list of version 2 component identifiers if there are any.
+     *
+     * @return the list of version 2 component identifiers if there are any
+     */
+    public List<ComponentIdentifierV2> getComponentIdentifiersV2() {
+        try {
+            PlatformConfigurationV2 platformConfigV2 = getPlatformConfigurationV2();
+            if (platformConfigV2 != null) {
+                return platformConfigV2.getComponentIdentifierV2();
+            }
+        } catch (IOException e) {
+            log.error("Unable to parse Platform Configuration Version 2 from Platform Credential or find"
+                    + "version 2 component identifiers");
         }
         return Collections.emptyList();
     }
