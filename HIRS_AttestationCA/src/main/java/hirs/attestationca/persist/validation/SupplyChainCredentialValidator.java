@@ -270,7 +270,7 @@ public class SupplyChainCredentialValidator {
      * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
      *
      * @param hostName     the host machine associated with the component
-     * @param paccorOutput the output from PACCOR's allcomoponents.sh
+     * @param paccorOutput the output from PACCOR's allcomponents.sh
      * @return a list of ComponentInfo objects built from paccorOutput
      * @throws java.io.IOException if something goes wrong parsing the JSON
      */

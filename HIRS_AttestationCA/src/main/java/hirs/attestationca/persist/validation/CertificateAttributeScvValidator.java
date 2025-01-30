@@ -238,11 +238,11 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // All components listed in the Platform Credential must have a manufacturer and model
         for (ComponentIdentifierV2 pcComponent : allPcComponents) {
 
-            fieldValidation = pcComponent.getComponentClass() != null;
-
-            if (!fieldValidation) {
-                resultMessage.append("Component class is null\n");
-            }
+//            fieldValidation = pcComponent.getComponentClass() != null;
+//
+//            if (!fieldValidation) {
+//                resultMessage.append("Component class is null\n");
+//            }
 
             fieldValidation = !hasEmptyValueForRequiredField("componentManufacturer",
                     pcComponent.getComponentManufacturer());

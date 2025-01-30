@@ -159,6 +159,7 @@ public class AbstractProcessor {
             final ProvisionerTpm2.IdentityClaim identityClaim,
             final PublicKey ekPub, final CertificateRepository certificateRepository) {
         EndorsementCredential endorsementCredential = null;
+
         if (identityClaim.hasEndorsementCredential()) {
             endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
                     certificateRepository,
@@ -172,6 +173,7 @@ public class AbstractProcessor {
             log.warn("No endorsement credential was received in identity claim and no EK Public"
                     + " Key was provided to check for uploaded certificates.");
         }
+
         return endorsementCredential;
     }
 
@@ -254,7 +256,7 @@ public class AbstractProcessor {
      * @param endorsementCredential            the endorsement credential used to generate the AC
      * @param platformCredentials              the platform credentials used to generate the AC
      * @param device                           the device to which the attestation certificate is tied
-     * @param ldevID                         whether the certificate is a ldevid
+     * @param ldevID                           whether the certificate is a ldevid
      * @return whether the certificate was saved successfully
      * @throws {@link CertificateProcessingException} if error occurs in persisting the Attestation
      *                Certificate

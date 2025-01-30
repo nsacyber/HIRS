@@ -215,6 +215,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 //        device.getDeviceInfo().setPaccorOutputString(claim.getPaccorOutput());
         handleDeviceComponents(device.getDeviceInfo().getNetworkInfo().getHostname(),
                 claim.getPaccorOutput());
+
         // There are situations in which the claim is sent with no PCs
         // or a PC from the tpm which will be deprecated
         // this is to check what is in the platform object and pull
@@ -230,6 +231,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             platformCredentials.addAll(tempList);
         }
+
         // store component results objects
         for (PlatformCredential platformCredential : platformCredentials) {
             List<ComponentResult> componentResults = componentResultRepository
@@ -239,7 +241,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             if (componentResults.isEmpty()) {
                 savePlatformComponents(platformCredential);
             } else {
-                componentResults.stream().forEach((componentResult) -> {
+                componentResults.forEach((componentResult) -> {
                     componentResult.restore();
                     componentResult.resetCreateTime();
                     componentResultRepository.save(componentResult);
@@ -256,9 +258,16 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         AppraisalStatus.Status validationResult = summary.getOverallValidationResult();
         device.setSupplyChainValidationStatus(validationResult);
         this.deviceRepository.save(device);
+
         return validationResult;
     }
 
+    /**
+     * Helper method that utilizes the identity claim to produce a device info report.
+     *
+     * @param claim identity claim
+     * @return device info
+     */
     private Device processDeviceInfo(final ProvisionerTpm2.IdentityClaim claim) {
         DeviceInfoReport deviceInfoReport = null;
 
@@ -620,7 +629,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 .findByManufacturerAndModel(manufacturer, model);
 
         Map<String, ReferenceDigestValue> digestValueMap = new HashMap<>();
-        expectedValues.stream().forEach((rdv) -> {
+        expectedValues.forEach((rdv) -> {
             digestValueMap.put(rdv.getDigestValue(), rdv);
         });
 
@@ -728,6 +737,13 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         }
     }
 
+    /**
+     * Helper method that attempts to find all the provided device's components.
+     *
+     * @param hostName     device's host name
+     * @param paccorString
+     * @return number of components
+     */
     private int handleDeviceComponents(final String hostName, final String paccorString) {
         int deviceComponents = 0;
         Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
@@ -735,9 +751,11 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             List<ComponentInfo> componentInfos = SupplyChainCredentialValidator
                     .getComponentInfoFromPaccorOutput(hostName, paccorString);
 
+            deviceComponents = componentInfos.size();
+
             // check the DB for like component infos
             List<ComponentInfo> dbComponentInfos = this.componentInfoRepository.findByDeviceName(hostName);
-            dbComponentInfos.stream().forEach((infos) -> {
+            dbComponentInfos.forEach((infos) -> {
                 componentInfoMap.put(infos.hashCode(), infos);
             });
 
