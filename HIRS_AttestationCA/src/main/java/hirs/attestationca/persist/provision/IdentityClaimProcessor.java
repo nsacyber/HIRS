@@ -20,6 +20,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.info.FirmwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
@@ -156,6 +157,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         }
 
         ByteString blobStr = ByteString.copyFrom(new byte[] {});
+
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
@@ -173,12 +175,14 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             if (policySettings != null && policySettings.isIgnoreImaEnabled()) {
                 pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");
             }
+
             // Package response
             ProvisionerTpm2.IdentityClaimResponse response
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
+
             return response.toByteArray();
         } else {
             log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
@@ -201,6 +205,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      */
     private AppraisalStatus.Status doSupplyChainValidation(
             final ProvisionerTpm2.IdentityClaim claim, final PublicKey ekPub) {
+
         // attempt to find an endorsement credential to validate
         EndorsementCredential endorsementCredential =
                 parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
@@ -238,6 +243,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .findByCertificateSerialNumberAndBoardSerialNumber(
                             platformCredential.getSerialNumber().toString(),
                             platformCredential.getPlatformSerial());
+
             if (componentResults.isEmpty()) {
                 savePlatformComponents(platformCredential);
             } else {
@@ -254,6 +260,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 endorsementCredential, platformCredentials, device,
                 componentInfoRepository.findByDeviceName(device.getName()));
         device.setSummaryId(summary.getId().toString());
+
         // update the validation result in the device
         AppraisalStatus.Status validationResult = summary.getOverallValidationResult();
         device.setSupplyChainValidationStatus(validationResult);
@@ -284,13 +291,16 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         }
 
         log.info("Processing Device Info Report");
+
         // store device and device info report.
         Device device = null;
+
         if (deviceInfoReport.getNetworkInfo() != null
                 && deviceInfoReport.getNetworkInfo().getHostname() != null
                 && !deviceInfoReport.getNetworkInfo().getHostname().isEmpty()) {
             device = this.deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
         }
+
         if (device == null) {
             device = new Device(deviceInfoReport);
         }
@@ -329,6 +339,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 macAddressBytes[i] = hex.byteValue();
             }
         }
+
         NetworkInfo nw = new NetworkInfo(nwProto.getHostname(), ip, macAddressBytes);
 
         // Get firmware info
@@ -343,16 +354,19 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
         // Get hardware info
         ProvisionerTpm2.HardwareInfo hwProto = dv.getHw();
+
         // Make sure chassis info has at least one chassis
         String firstChassisSerialNumber = DeviceInfoEnums.NOT_SPECIFIED;
         if (hwProto.getChassisInfoCount() > 0) {
             firstChassisSerialNumber = hwProto.getChassisInfo(0).getSerialNumber();
         }
+
         // Make sure baseboard info has at least one baseboard
         String firstBaseboardSerialNumber = DeviceInfoEnums.NOT_SPECIFIED;
         if (hwProto.getBaseboardInfoCount() > 0) {
             firstBaseboardSerialNumber = hwProto.getBaseboardInfo(0).getSerialNumber();
         }
+
         HardwareInfo hw = new HardwareInfo(hwProto.getManufacturer(), hwProto.getProductName(),
                 hwProto.getProductVersion(), hwProto.getSystemSerialNumber(),
                 firstChassisSerialNumber, firstBaseboardSerialNumber);
@@ -618,6 +632,14 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         return dvReport;
     }
 
+    /**
+     * Helper method that generates digest records using the provided device's manufacturer and model
+     * information.
+     *
+     * @param manufacturer device manufacturer
+     * @param model        device model
+     * @return boolean that represents that status of the digest records generation
+     */
     private boolean generateDigestRecords(final String manufacturer, final String model) {
         List<ReferenceDigestValue> rdValues = new LinkedList<>();
         SupportReferenceManifest baseSupportRim = null;
@@ -718,21 +740,46 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         return true;
     }
 
+    /**
+     * Helper method that saves the provided platform certificate's components in the database.
+     *
+     * @param certificate certificate
+     */
     private void savePlatformComponents(final Certificate certificate) {
         PlatformCredential platformCredential;
+
         if (certificate instanceof PlatformCredential) {
             platformCredential = (PlatformCredential) certificate;
             ComponentResult componentResult;
-            for (ComponentIdentifier componentIdentifier : platformCredential
-                    .getComponentIdentifiers()) {
 
-                componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                        platformCredential.getSerialNumber().toString(),
-                        platformCredential.getPlatformChainType(),
-                        componentIdentifier);
-                componentResult.setFailedValidation(false);
-                componentResult.setDelta(!platformCredential.isPlatformBase());
-                componentResultRepository.save(componentResult);
+            // if the provided platform certificate is version 1.2
+            if (platformCredential.getCredentialType().equals(PlatformCredential.CERTIFICATE_TYPE_1_2)) {
+
+                for (ComponentIdentifier componentIdentifier : platformCredential
+                        .getComponentIdentifiers()) {
+                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformChainType(),
+                            componentIdentifier);
+                    componentResult.setFailedValidation(false);
+                    componentResult.setDelta(!platformCredential.isPlatformBase());
+                    componentResultRepository.save(componentResult);
+                }
+
+            }
+            // if the provided platform certificate is version 2.0
+            else if (platformCredential.getCredentialType()
+                    .equals(PlatformCredential.CERTIFICATE_TYPE_2_0)) {
+                for (ComponentIdentifierV2 componentIdentifierV2 : platformCredential
+                        .getComponentIdentifiersV2()) {
+                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformChainType(),
+                            componentIdentifierV2);
+                    componentResult.setFailedValidation(false);
+                    componentResult.setDelta(!platformCredential.isPlatformBase());
+                    componentResultRepository.save(componentResult);
+                }
             }
         }
     }
@@ -741,17 +788,14 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * Helper method that attempts to find all the provided device's components.
      *
      * @param hostName     device's host name
-     * @param paccorString
-     * @return number of components
+     * @param paccorString string representation of the paccor tool output
      */
-    private int handleDeviceComponents(final String hostName, final String paccorString) {
-        int deviceComponents = 0;
+    private void handleDeviceComponents(final String hostName, final String paccorString) {
         Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
+
         try {
             List<ComponentInfo> componentInfos = SupplyChainCredentialValidator
                     .getComponentInfoFromPaccorOutput(hostName, paccorString);
-
-            deviceComponents = componentInfos.size();
 
             // check the DB for like component infos
             List<ComponentInfo> dbComponentInfos = this.componentInfoRepository.findByDeviceName(hostName);
@@ -771,7 +815,5 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         } catch (IOException ioEx) {
             log.warn("Error parsing paccor string");
         }
-
-        return deviceComponents;
     }
 }

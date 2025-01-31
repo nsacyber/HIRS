@@ -355,6 +355,9 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         return verifier.verify(attCert.getSignatureValue().getOctets());
     }
 
+    /**
+     * @throws IOException
+     */
     private void parseFields() throws IOException {
         AttributeCertificateInfo certificate = getAttributeCertificate().getAcinfo();
         Map<String, String> policyQualifier = getPolicyQualifier(certificate);

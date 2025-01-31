@@ -19,6 +19,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertifica
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -165,21 +166,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @return the certificate class type
      */
     private static Class<? extends Certificate> getCertificateClass(final String certificateType) {
-        switch (certificateType) {
-            case PLATFORMCREDENTIAL:
-                return PlatformCredential.class;
-            case ENDORSEMENTCREDENTIAL:
-                return EndorsementCredential.class;
-            case ISSUEDCERTIFICATES:
-                return IssuedAttestationCertificate.class;
-            case IDEVIDCERTIFICATE:
-                return IDevIDCertificate.class;
-            case TRUSTCHAIN:
-                return CertificateAuthorityCredential.class;
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate type: %s", certificateType));
-        }
+        return switch (certificateType) {
+            case PLATFORMCREDENTIAL -> PlatformCredential.class;
+            case ENDORSEMENTCREDENTIAL -> EndorsementCredential.class;
+            case ISSUEDCERTIFICATES -> IssuedAttestationCertificate.class;
+            case IDEVIDCERTIFICATE -> IDevIDCertificate.class;
+            case TRUSTCHAIN -> CertificateAuthorityCredential.class;
+            default -> throw new IllegalArgumentException(
+                    String.format("Unknown certificate type: %s", certificateType));
+        };
     }
 
     /**
@@ -312,15 +307,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
                             .findBySerialNumber(pc.getHolderSerialNumber());
 
                     if (associatedEC != null) {
-                        log.debug("EC ID for holder s/n " + pc
-                                .getHolderSerialNumber() + " = " + associatedEC.getId());
+                        log.debug("EC ID for holder s/n {} = {}", pc
+                                .getHolderSerialNumber(), associatedEC.getId());
                     }
 
                     pc.setEndorsementCredential(associatedEC);
                 }
             }
 
-            log.debug("Returning list of size: " + records.size());
+            log.debug("Returning list of size: {}", records.size());
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
             FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
@@ -336,7 +331,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
             records.setRecordsFiltered(endorsementCredentialRepository.findByArchiveFlag(false).size());
 
-            log.debug("Returning list of size: " + records.size());
+            log.debug("Returning list of size: {}", records.size());
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(TRUSTCHAIN)) {
             FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
@@ -352,7 +347,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
             records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
 
-            log.debug("Returning list of size: " + records.size());
+            log.debug("Returning list of size: {}", records.size());
             return new DataTableResponse<>(records, input);
         } else if (certificateType.equals(ISSUEDCERTIFICATES)) {
             FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
@@ -384,7 +379,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
             records.setRecordsFiltered(iDevIDCertificateRepository.findByArchiveFlag(false).size());
 
-            log.debug("Returning list of size: " + records.size());
+            log.debug("Returning list of size: {}", records.size());
             return new DataTableResponse<>(records, input);
         }
 
@@ -443,7 +438,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             @PathVariable("certificateType") final String certificateType,
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete " + id);
+        log.info("Handling request to delete {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -506,7 +501,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @param id              the UUID of the cert to download
      * @param response        the response object (needed to update the header with the
      *                        file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/{certificateType}/download", method = RequestMethod.GET)
     public void download(
@@ -552,7 +547,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @ResponseBody
     @RequestMapping(value = "/trust-chain/download-aca-cert", method = RequestMethod.GET)
@@ -573,7 +568,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/trust-chain/bulk", method = RequestMethod.GET)
     public void caBulkDownload(final HttpServletResponse response)
@@ -605,7 +600,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/platform-credentials/bulk", method = RequestMethod.GET)
     public void pcBulkDownload(final HttpServletResponse response)
@@ -637,7 +632,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/issued-certificates/bulk", method = RequestMethod.GET)
     public void icBulkDownload(final HttpServletResponse response)
@@ -670,7 +665,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/endorsement-key-credentials/bulk", method = RequestMethod.GET)
     public void ekBulkDownload(final HttpServletResponse response)
@@ -696,6 +691,13 @@ public class CertificatePageController extends PageController<NoPageParams> {
         }
     }
 
+    /**
+     * @param zipOut
+     * @param certificates
+     * @param singleFileName
+     * @return
+     * @throws IOException
+     */
     private ZipOutputStream bulkDownload(final ZipOutputStream zipOut,
                                          final List<Certificate> certificates,
                                          final String singleFileName) throws IOException {
@@ -744,26 +746,21 @@ public class CertificatePageController extends PageController<NoPageParams> {
             final String certificateType,
             final int certificateHash) {
 
-        switch (certificateType) {
-            case PLATFORMCREDENTIAL:
-                return this.certificateRepository
-                        .findByCertificateHash(certificateHash,
-                                "PlatformCredential");
-            case ENDORSEMENTCREDENTIAL:
-                return this.certificateRepository
-                        .findByCertificateHash(certificateHash,
-                                "EndorsementCredential");
-            case TRUSTCHAIN:
-                return this.certificateRepository
-                        .findByCertificateHash(certificateHash,
-                                "CertificateAuthorityCredential");
-            case IDEVIDCERTIFICATE:
-                return this.certificateRepository
-                        .findByCertificateHash(certificateHash,
-                                "IDevIDCertificate");
-            default:
-                return null;
-        }
+        return switch (certificateType) {
+            case PLATFORMCREDENTIAL -> this.certificateRepository
+                    .findByCertificateHash(certificateHash,
+                            "PlatformCredential");
+            case ENDORSEMENTCREDENTIAL -> this.certificateRepository
+                    .findByCertificateHash(certificateHash,
+                            "EndorsementCredential");
+            case TRUSTCHAIN -> this.certificateRepository
+                    .findByCertificateHash(certificateHash,
+                            "CertificateAuthorityCredential");
+            case IDEVIDCERTIFICATE -> this.certificateRepository
+                    .findByCertificateHash(certificateHash,
+                            "IDevIDCertificate");
+            default -> null;
+        };
     }
 
     /**
@@ -779,11 +776,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
         List<PlatformCredential> associatedCertificates = new LinkedList<>();
 
         if (serialNumber != null) {
-            switch (certificateType) {
-                case PLATFORMCREDENTIAL:
-                    associatedCertificates.addAll(this.certificateRepository
-                            .byBoardSerialNumber(serialNumber));
-                default:
+            if (certificateType.equals(PLATFORMCREDENTIAL)) {
+                associatedCertificates.addAll(this.certificateRepository
+                        .byBoardSerialNumber(serialNumber));
             }
         }
 
@@ -1010,6 +1005,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
         log.error(failMessage);
     }
 
+    /**
+     * Helper method that attempts to manage the provided platform certificate's components.
+     *
+     * @param certificate certificate
+     */
     private void handlePlatformComponents(final Certificate certificate) {
         PlatformCredential platformCredential;
 
@@ -1019,17 +1019,38 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     .findByCertificateSerialNumberAndBoardSerialNumber(
                             platformCredential.getSerialNumber().toString(),
                             platformCredential.getPlatformSerial());
+
             if (componentResults.isEmpty()) {
                 ComponentResult componentResult;
-                for (ComponentIdentifier componentIdentifier : platformCredential
-                        .getComponentIdentifiers()) {
-                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                            platformCredential.getSerialNumber().toString(),
-                            platformCredential.getPlatformChainType(),
-                            componentIdentifier);
-                    componentResult.setFailedValidation(false);
-                    componentResult.setDelta(!platformCredential.isPlatformBase());
-                    componentResultRepository.save(componentResult);
+
+                // if the provided platform certificate is version 1.2
+                if (platformCredential.getCredentialType().equals(PlatformCredential.CERTIFICATE_TYPE_1_2)) {
+
+                    for (ComponentIdentifier componentIdentifier : platformCredential
+                            .getComponentIdentifiers()) {
+                        componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                                platformCredential.getSerialNumber().toString(),
+                                platformCredential.getPlatformChainType(),
+                                componentIdentifier);
+                        componentResult.setFailedValidation(false);
+                        componentResult.setDelta(!platformCredential.isPlatformBase());
+                        componentResultRepository.save(componentResult);
+                    }
+                }
+                // if the provided platform certificate is version 2.0
+                else if (platformCredential.getCredentialType()
+                        .equals(PlatformCredential.CERTIFICATE_TYPE_2_0)) {
+
+                    for (ComponentIdentifierV2 componentIdentifierV2 : platformCredential
+                            .getComponentIdentifiersV2()) {
+                        componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                                platformCredential.getSerialNumber().toString(),
+                                platformCredential.getPlatformChainType(),
+                                componentIdentifierV2);
+                        componentResult.setFailedValidation(false);
+                        componentResult.setDelta(!platformCredential.isPlatformBase());
+                        componentResultRepository.save(componentResult);
+                    }
                 }
             } else {
                 for (ComponentResult componentResult : componentResults) {

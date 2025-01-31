@@ -239,7 +239,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
             sb.append(getFieldReplaceable());
         }
         sb.append(", componentAddress=");
-        if (getComponentAddress().size() > 0) {
+        if (!getComponentAddress().isEmpty()) {
             sb.append(getComponentAddress()
                     .stream()
                     .map(Object::toString)

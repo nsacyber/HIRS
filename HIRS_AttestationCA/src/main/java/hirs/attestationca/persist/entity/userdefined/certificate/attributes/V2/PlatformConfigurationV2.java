@@ -38,7 +38,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
      */
     public PlatformConfigurationV2(final ASN1Sequence sequence) throws IllegalArgumentException {
         //Default values
-        setComponentIdentifier(new ArrayList<>());
+        setComponentIdentifierV2(new ArrayList<>());
         setComponentIdentifierUri(null);
         setPlatformProperties(new ArrayList<>());
         setPlatformPropertiesUri(null);
