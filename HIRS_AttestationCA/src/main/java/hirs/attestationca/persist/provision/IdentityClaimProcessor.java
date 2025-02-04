@@ -204,7 +204,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * @return the {@link AppraisalStatus} of the supply chain validation
      */
     private AppraisalStatus.Status doSupplyChainValidation(
-            final ProvisionerTpm2.IdentityClaim claim, final PublicKey ekPub) {
+            final ProvisionerTpm2.IdentityClaim claim, final PublicKey ekPub) throws IOException {
 
         // attempt to find an endorsement credential to validate
         EndorsementCredential endorsementCredential =
@@ -745,16 +745,15 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      *
      * @param certificate certificate
      */
-    private void savePlatformComponents(final Certificate certificate) {
+    private void savePlatformComponents(final Certificate certificate) throws IOException {
         PlatformCredential platformCredential;
 
         if (certificate instanceof PlatformCredential) {
             platformCredential = (PlatformCredential) certificate;
             ComponentResult componentResult;
 
-            // if the provided platform certificate is version 1.2
-            if (platformCredential.getCredentialType().equals(PlatformCredential.CERTIFICATE_TYPE_1_2)) {
-
+            // if the provided platform certificate is using version 1 Platform Configuration
+            if (platformCredential.getPlatformConfigurationV1() != null) {
                 for (ComponentIdentifier componentIdentifier : platformCredential
                         .getComponentIdentifiers()) {
                     componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
@@ -765,11 +764,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     componentResult.setDelta(!platformCredential.isPlatformBase());
                     componentResultRepository.save(componentResult);
                 }
-
             }
-            // if the provided platform certificate is version 2.0
-            else if (platformCredential.getCredentialType()
-                    .equals(PlatformCredential.CERTIFICATE_TYPE_2_0)) {
+            
+            // if the provided platform certificate is using version 2 Platform Configuration
+            else if (platformCredential.getPlatformConfigurationV2() != null) {
                 for (ComponentIdentifierV2 componentIdentifierV2 : platformCredential
                         .getComponentIdentifiersV2()) {
                     componentResult = new ComponentResult(platformCredential.getPlatformSerial(),

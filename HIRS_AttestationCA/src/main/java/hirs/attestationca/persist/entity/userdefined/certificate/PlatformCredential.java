@@ -2,7 +2,6 @@ package hirs.attestationca.persist.entity.userdefined.certificate;
 
 import com.google.common.base.Preconditions;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TBBSecurityAssertion;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
@@ -261,8 +260,8 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     /**
      * Verify if the AlgorithmIdentifiers are equal.
      *
-     * @param id1 AlgorithIdentifier one
-     * @param id2 AlgorithIdentifier two
+     * @param id1 Algorithm Identifier one
+     * @param id2 Algorithm Identifier two
      * @return True if are the same, False if not
      */
     public static boolean isAlgIdEqual(final AlgorithmIdentifier id1,
@@ -356,7 +355,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
-     * @throws IOException
+     * Parses the Platform Certificate fields.
      */
     private void parseFields() throws IOException {
         AttributeCertificateInfo certificate = getAttributeCertificate().getAcinfo();
@@ -412,7 +411,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
-     * Parse a 1.2 Platform Certificate (Attribute Certificate).
+     * Parses a 1.2 Platform Certificate (Attribute Certificate).
      *
      * @param certificate Attribute Certificate
      */
@@ -465,7 +464,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
-     * Parse a 2.0 Platform Certificate (Attribute Certificate).
+     * Parses a 2.0 Platform Certificate (Attribute Certificate).
      *
      * @param certificate Attribute Certificate
      */
@@ -514,7 +513,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
-     * Get the x509 Platform Certificate version.
+     * Retrieves the x509 Platform Certificate version.
      *
      * @return a big integer representing the certificate version.
      */
@@ -533,7 +532,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
-     * Get the cPSuri from the Certificate Policies.
+     * Retrieves the cPSuri from the Certificate Policies.
      *
      * @return cPSuri from the CertificatePolicies.
      * @throws IOException when reading the certificate.
@@ -549,7 +548,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
-     * Get the Platform Configuration Attribute from the Platform Certificate.
+     * Retrieves the Platform Configuration Attribute from the Platform Certificate.
      *
      * @return a map with all the attributes
      * @throws IllegalArgumentException when there is a parsing error
@@ -618,12 +617,12 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      * @throws IllegalArgumentException when there is a parsing error
      * @throws IOException              when reading the certificate.
      */
-    public PlatformConfiguration getPlatformConfiguration()
+    public PlatformConfigurationV1 getPlatformConfigurationV1()
             throws IllegalArgumentException, IOException {
 
         if (getAttribute("platformConfiguration") != null
-                && getAttribute("platformConfiguration") instanceof PlatformConfiguration) {
-            return (PlatformConfiguration) getAttribute("platformConfiguration");
+                && getAttribute("platformConfiguration") instanceof PlatformConfigurationV1) {
+            return (PlatformConfigurationV1) getAttribute("platformConfiguration");
         }
 
         return null;
@@ -710,15 +709,15 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
-     * Get the list of component identifiers if there are any.
+     * Retrieves the list of component identifiers if there are any.
      *
      * @return the list of component identifiers if there are any
      */
     public List<ComponentIdentifier> getComponentIdentifiers() {
         try {
-            PlatformConfiguration platformConfig = getPlatformConfiguration();
+            PlatformConfigurationV1 platformConfig = getPlatformConfigurationV1();
             if (platformConfig != null) {
-                return platformConfig.getComponentIdentifier();
+                return platformConfig.getComponentIdentifiers();
             }
         } catch (IOException e) {
             log.error("Unable to parse Platform Configuration from Platform Credential or find"
@@ -728,15 +727,16 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     }
 
     /**
-     * Get the list of version 2 component identifiers if there are any.
+     * Retrieves the list of version 2 component identifiers if there are any.
      *
      * @return the list of version 2 component identifiers if there are any
      */
     public List<ComponentIdentifierV2> getComponentIdentifiersV2() {
         try {
             PlatformConfigurationV2 platformConfigV2 = getPlatformConfigurationV2();
+
             if (platformConfigV2 != null) {
-                return platformConfigV2.getComponentIdentifierV2();
+                return platformConfigV2.getComponentIdentifiers();
             }
         } catch (IOException e) {
             log.error("Unable to parse Platform Configuration Version 2 from Platform Credential or find"

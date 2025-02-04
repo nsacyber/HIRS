@@ -23,6 +23,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -167,7 +168,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
+            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) throws IOException {
         boolean passesValidation = true;
         StringBuilder resultMessage = new StringBuilder();
         HardwareInfo hardwareInfo = deviceInfoReport.getHardwareInfo();
@@ -231,37 +232,41 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         passesValidation &= fieldValidation;
 
-        // Retrieve the list of all version 2 component identifiers from the Platform Credential
-        List<ComponentIdentifierV2> allPcComponents
-                = new ArrayList<>(platformCredential.getComponentIdentifiersV2());
+        if (platformCredential.getPlatformConfigurationV1() != null) {
 
-        // All components listed in the Platform Credential must have a manufacturer and model
-        for (ComponentIdentifierV2 pcComponent : allPcComponents) {
+            // Retrieve the list of all version 2 component identifiers from the Platform Credential
+            List<ComponentIdentifier> allPcComponents
+                    = new ArrayList<>(platformCredential.getComponentIdentifiers());
 
-//            fieldValidation = pcComponent.getComponentClass() != null;
-//
-//            if (!fieldValidation) {
-//                resultMessage.append("Component class is null\n");
-//            }
+            // All components listed in the Platform Credential must have a manufacturer and model
+            for (ComponentIdentifier pcComponent : allPcComponents) {
 
-            fieldValidation = !hasEmptyValueForRequiredField("componentManufacturer",
-                    pcComponent.getComponentManufacturer());
+                fieldValidation = !hasEmptyValueForRequiredField("componentManufacturer",
+                        pcComponent.getComponentManufacturer());
 
-            if (!fieldValidation) {
-                resultMessage.append("Component manufacturer is empty\n");
+                if (!fieldValidation) {
+                    resultMessage.append("Component manufacturer is empty\n");
+                }
+
+                passesValidation &= fieldValidation;
+
+                fieldValidation = !hasEmptyValueForRequiredField("componentModel",
+                        pcComponent.getComponentModel());
+
+                if (!fieldValidation) {
+                    resultMessage.append("Component model is empty\n");
+                }
+
+                passesValidation &= fieldValidation;
             }
 
-            passesValidation &= fieldValidation;
+        } else if (platformCredential.getPlatformConfigurationV2() != null) {
 
-            fieldValidation = !hasEmptyValueForRequiredField("componentModel",
-                    pcComponent.getComponentModel());
-
-            if (!fieldValidation) {
-                resultMessage.append("Component model is empty\n");
-            }
-
-            passesValidation &= fieldValidation;
+            // Retrieve the list of all version 2 component identifiers from the Platform Credential
+            List<ComponentIdentifierV2> allPcComponents
+                    = new ArrayList<>(platformCredential.getComponentIdentifiersV2());
         }
+
 
         // populate componentResults list
         List<ComponentResult> componentResults = componentResultRepository

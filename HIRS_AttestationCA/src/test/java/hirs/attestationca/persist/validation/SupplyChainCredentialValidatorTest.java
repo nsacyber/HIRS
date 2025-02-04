@@ -1990,7 +1990,7 @@ public class SupplyChainCredentialValidatorTest {
 //        ciV21Faulty.setComponentRevision(compId2.getComponentRevision());
 //        ciV21Faulty.setComponentManufacturerId(compId2.getComponentManufacturerId());
 //        ciV21Faulty.setFieldReplaceable(compId2.getFieldReplaceable());
-//        ciV21Faulty.setComponentAddress(compId2.getComponentAddress());
+//        ciV21Faulty.setComponentAddresses(compId2.getComponentAddresses());
 //        ciV21Faulty.setAttributeStatus(AttributeStatus.REMOVED);
 //        ciV22Faulty.setComponentManufacturer(compId3.getComponentManufacturer());
 //        ciV22Faulty.setComponentClass(compId3.getComponentClass());
@@ -1999,7 +1999,7 @@ public class SupplyChainCredentialValidatorTest {
 //        ciV22Faulty.setComponentRevision(compId3.getComponentRevision());
 //        ciV22Faulty.setComponentManufacturerId(compId3.getComponentManufacturerId());
 //        ciV22Faulty.setFieldReplaceable(compId3.getFieldReplaceable());
-//        ciV22Faulty.setComponentAddress(compId3.getComponentAddress());
+//        ciV22Faulty.setComponentAddresses(compId3.getComponentAddresses());
 //        ciV22Faulty.setAttributeStatus(AttributeStatus.REMOVED);
 //
 //        List<ComponentIdentifier> compList = new ArrayList<>(3);
@@ -2117,7 +2117,7 @@ public class SupplyChainCredentialValidatorTest {
 //        ciV21Faulty.setComponentRevision(compId2.getComponentRevision());
 //        ciV21Faulty.setComponentManufacturerId(compId2.getComponentManufacturerId());
 //        ciV21Faulty.setFieldReplaceable(compId2.getFieldReplaceable());
-//        ciV21Faulty.setComponentAddress(compId2.getComponentAddress());
+//        ciV21Faulty.setComponentAddresses(compId2.getComponentAddresses());
 //        ciV21Faulty.setAttributeStatus(AttributeStatus.REMOVED);
 //        ciV22Faulty.setComponentManufacturer(compId3.getComponentManufacturer());
 //        ciV22Faulty.setComponentModel(compId3.getComponentModel());
@@ -2125,7 +2125,7 @@ public class SupplyChainCredentialValidatorTest {
 //        ciV22Faulty.setComponentRevision(compId3.getComponentRevision());
 //        ciV22Faulty.setComponentManufacturerId(compId3.getComponentManufacturerId());
 //        ciV22Faulty.setFieldReplaceable(compId3.getFieldReplaceable());
-//        ciV22Faulty.setComponentAddress(compId3.getComponentAddress());
+//        ciV22Faulty.setComponentAddresses(compId3.getComponentAddresses());
 //        ciV22Faulty.setAttributeStatus(AttributeStatus.REMOVED);
 //
 //        List<ComponentIdentifier> compList = new ArrayList<>(3);

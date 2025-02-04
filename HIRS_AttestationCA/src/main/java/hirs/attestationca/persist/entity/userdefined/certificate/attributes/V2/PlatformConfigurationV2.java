@@ -1,7 +1,10 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2;
 
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformProperty;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 
@@ -11,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Basic class that handle Platform Configuration for the Platform Certificate
+ * Basic class that represents the Version 2 Platform Configuration used for the Platform Certificate
  * Attribute.
  * <pre>
  * PlatformConfiguration ::= SEQUENCE {
@@ -22,24 +25,49 @@ import java.util.stream.Collectors;
  *      platformPropertiesUri [3] IMPLICIT URIReference OPTIONAL }
  * </pre>
  */
-public class PlatformConfigurationV2 extends PlatformConfiguration {
+@AllArgsConstructor
+public class PlatformConfigurationV2 {
 
     private static final int COMPONENT_IDENTIFIER = 0;
+
     private static final int COMPONENT_IDENTIFIER_URI = 1;
+
     private static final int PLATFORM_PROPERTIES = 2;
+
     private static final int PLATFORM_PROPERTIES_URI = 3;
-    private List<ComponentIdentifierV2> componentIdentifierV2;
+
+    private List<ComponentIdentifierV2> componentIdentifiers;
+
+    @Getter
+    @Setter
+    private URIReference componentIdentifiersUri;
+
+    private List<PlatformProperty> platformProperties;
+
+    @Getter
+    @Setter
+    private URIReference platformPropertiesUri;
+
+    /**
+     * Default constructor.
+     */
+    public PlatformConfigurationV2() {
+        componentIdentifiers = new ArrayList<>();
+        componentIdentifiersUri = null;
+        platformProperties = new ArrayList<>();
+        platformPropertiesUri = null;
+    }
 
     /**
      * Constructor given the SEQUENCE that contains version 2 Platform Configuration.
      *
-     * @param sequence containing the the Platform Configuration.
-     * @throws IllegalArgumentException if there was an error on the parsing
+     * @param sequence containing the version 2 Platform Configuration.
+     * @throws IllegalArgumentException if there was an error while parsing
      */
     public PlatformConfigurationV2(final ASN1Sequence sequence) throws IllegalArgumentException {
         //Default values
-        setComponentIdentifierV2(new ArrayList<>());
-        setComponentIdentifierUri(null);
+        setComponentIdentifiers(new ArrayList<>());
+        setComponentIdentifiersUri(null);
         setPlatformProperties(new ArrayList<>());
         setPlatformPropertiesUri(null);
 
@@ -65,7 +93,7 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
                     //Get componentIdentifierURI
                     ASN1Sequence componentUri = ASN1Sequence.getInstance(taggedSequence, false);
                     //Save Component Identifier URI
-                    setComponentIdentifierUri(new URIReference(componentUri));
+                    setComponentIdentifiersUri(new URIReference(componentUri));
                     break;
                 case PLATFORM_PROPERTIES:
                     //Get platformProperties
@@ -93,16 +121,59 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
     /**
      * @return a collection of version 2 component identifiers.
      */
-    public List<ComponentIdentifierV2> getComponentIdentifierV2() {
-        return Collections.unmodifiableList(componentIdentifierV2);
+    public List<ComponentIdentifierV2> getComponentIdentifiers() {
+        return Collections.unmodifiableList(componentIdentifiers);
     }
 
     /**
-     * @param componentIdentifierV2 list of version 2 component identifiers
+     * @param componentIdentifiers list of version 2 component identifiers
      */
-    public void setComponentIdentifierV2(
-            final List<ComponentIdentifierV2> componentIdentifierV2) {
-        this.componentIdentifierV2 = new ArrayList<>(componentIdentifierV2);
+    public void setComponentIdentifiers(
+            final List<ComponentIdentifierV2> componentIdentifiers) {
+        this.componentIdentifiers = new ArrayList<>(componentIdentifiers);
+    }
+
+
+    /**
+     * Add function for the component identifier array.
+     *
+     * @param componentIdentifierV2 object to add
+     * @return status of the add, if successful or not
+     */
+    protected boolean add(final ComponentIdentifierV2 componentIdentifierV2) {
+        if (this.componentIdentifiers != null) {
+            return this.componentIdentifiers.add(componentIdentifierV2);
+        }
+
+        return false;
+    }
+
+    /**
+     * @return the platformProperties
+     */
+    public List<PlatformProperty> getPlatformProperties() {
+        return Collections.unmodifiableList(platformProperties);
+    }
+
+    /**
+     * @param platformProperties the platformProperties to set
+     */
+    public void setPlatformProperties(final List<PlatformProperty> platformProperties) {
+        this.platformProperties = new ArrayList<>(platformProperties);
+    }
+
+    /**
+     * Add function for the platform property array.
+     *
+     * @param platformProperty property object to add
+     * @return status of the add, if successful or not
+     */
+    protected boolean add(final PlatformProperty platformProperty) {
+        if (this.platformProperties != null) {
+            return this.platformProperties.add(platformProperty);
+        }
+
+        return false;
     }
 
     /**
@@ -113,17 +184,17 @@ public class PlatformConfigurationV2 extends PlatformConfiguration {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("PlatformConfiguration{");
-        sb.append("componentIdentifierV2=");
-        if (!getComponentIdentifierV2().isEmpty()) {
-            sb.append(getComponentIdentifierV2()
+        sb.append("PlatformConfigurationV2{");
+        sb.append("componentIdentifiers=");
+        if (!getComponentIdentifiers().isEmpty()) {
+            sb.append(getComponentIdentifiers()
                     .stream()
                     .map(Object::toString)
                     .collect(Collectors.joining(",")));
         }
-        sb.append(", componentIdentifierUri=");
-        if (getComponentIdentifierUri() != null) {
-            sb.append(getComponentIdentifierUri());
+        sb.append(", componentIdentifiersUri=");
+        if (getComponentIdentifiersUri() != null) {
+            sb.append(getComponentIdentifiersUri());
         }
         sb.append(", platformProperties=");
         if (!getPlatformProperties().isEmpty()) {

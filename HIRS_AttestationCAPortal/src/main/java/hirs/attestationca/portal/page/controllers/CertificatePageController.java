@@ -949,7 +949,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 }
 
                 this.certificateRepository.save(certificate);
-                handlePlatformComponents(certificate);
+                parseAndSaveComponentResults(certificate);
 
                 final String successMsg
                         = String.format("New certificate successfully uploaded (%s): ", fileName);
@@ -962,6 +962,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     fileName);
             messages.addError(failMessage + dbsEx.getMessage());
             log.error(failMessage, dbsEx);
+            return;
+        } catch (IOException ioException) {
+            final String ioExceptionMessage = "Failed to save component results in the database";
+            messages.addError(ioExceptionMessage + ioException.getMessage());
+            log.error(ioExceptionMessage, ioException);
             return;
         }
 
@@ -1006,11 +1011,12 @@ public class CertificatePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Helper method that attempts to manage the provided platform certificate's components.
+     * Helper method that utilizes the components of the provided platform certificate to generate
+     * a collection of component results and subsequently stores these results in the database.
      *
      * @param certificate certificate
      */
-    private void handlePlatformComponents(final Certificate certificate) {
+    private void parseAndSaveComponentResults(final Certificate certificate) throws IOException {
         PlatformCredential platformCredential;
 
         if (certificate instanceof PlatformCredential) {
@@ -1023,8 +1029,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
             if (componentResults.isEmpty()) {
                 ComponentResult componentResult;
 
-                // if the provided platform certificate is version 1.2
-                if (platformCredential.getCredentialType().equals(PlatformCredential.CERTIFICATE_TYPE_1_2)) {
+                // if the provided platform certificate is using version 1 Platform Configuration
+                if (platformCredential.getPlatformConfigurationV1() != null) {
 
                     for (ComponentIdentifier componentIdentifier : platformCredential
                             .getComponentIdentifiers()) {
@@ -1037,9 +1043,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
                         componentResultRepository.save(componentResult);
                     }
                 }
-                // if the provided platform certificate is version 2.0
-                else if (platformCredential.getCredentialType()
-                        .equals(PlatformCredential.CERTIFICATE_TYPE_2_0)) {
+                
+                // if the provided platform certificate is using version 2 Platform Configuration
+                else if (platformCredential.getPlatformConfigurationV2() != null) {
 
                     for (ComponentIdentifierV2 componentIdentifierV2 : platformCredential
                             .getComponentIdentifiersV2()) {

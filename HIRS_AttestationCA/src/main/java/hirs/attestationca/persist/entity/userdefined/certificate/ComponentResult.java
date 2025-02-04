@@ -98,7 +98,7 @@ public class ComponentResult extends ArchivableEntity {
      *
      * @param boardSerialNumber       associated platform certificate serial number.
      * @param certificateSerialNumber unique number associated with header info.
-     * @param certificateType         parameter holds version 1.2 or 2.0.
+     * @param certificateType         type of certificate. parameter holds version 1.2 or 2.0.
      * @param componentIdentifier     object with information from the platform certificate components.
      */
     public ComponentResult(final String boardSerialNumber, final String certificateSerialNumber,
@@ -116,7 +116,7 @@ public class ComponentResult extends ArchivableEntity {
         }
 
         StringBuilder sb = new StringBuilder();
-        for (ComponentAddress element : componentIdentifier.getComponentAddress()) {
+        for (ComponentAddress element : componentIdentifier.getComponentAddresses()) {
             sb.append(String.format("%s:%s;", element.getAddressTypeValue(),
                     element.getAddressValue().toString()));
         }
@@ -124,10 +124,10 @@ public class ComponentResult extends ArchivableEntity {
     }
 
     /**
-     * @param boardSerialNumber
-     * @param certificateSerialNumber
-     * @param certificateType
-     * @param componentIdentifierV2
+     * @param boardSerialNumber       associated platform certificate serial number
+     * @param certificateSerialNumber unique number associated with header info
+     * @param certificateType         type of certificate. Parameter holds version 1.2 or 2.0.
+     * @param componentIdentifierV2   version 2 component identifier
      */
     public ComponentResult(final String boardSerialNumber, final String certificateSerialNumber,
                            final String certificateType,
@@ -145,7 +145,7 @@ public class ComponentResult extends ArchivableEntity {
         }
 
         StringBuilder sb = new StringBuilder();
-        for (ComponentAddress element : componentIdentifierV2.getComponentAddress()) {
+        for (ComponentAddress element : componentIdentifierV2.getComponentAddresses()) {
             sb.append(String.format("%s:%s;", element.getAddressTypeValue(),
                     element.getAddressValue().toString()));
         }
@@ -156,10 +156,10 @@ public class ComponentResult extends ArchivableEntity {
         this.componentClassType = componentIdentifierV2.getComponentClass().getRegistryType();
         this.attributeStatus = componentIdentifierV2.getAttributeStatus();
         this.version2 = true;
-        if (componentIdentifierV2.getCertificateIdentifier() != null) {
-            this.issuerDN = componentIdentifierV2.getCertificateIdentifier().getIssuerDN().toString();
-            if (componentIdentifierV2.getComponentPlatformUri() != null) {
-                this.uniformResourceIdentifier = componentIdentifierV2.getComponentPlatformUri()
+        if (componentIdentifierV2.getComponentPlatformCert() != null) {
+            this.issuerDN = componentIdentifierV2.getComponentPlatformCert().getIssuerDN().toString();
+            if (componentIdentifierV2.getComponentPlatformCertUri() != null) {
+                this.uniformResourceIdentifier = componentIdentifierV2.getComponentPlatformCertUri()
                         .getUniformResourceIdentifier().toString();
             }
         }

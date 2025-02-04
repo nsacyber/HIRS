@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Basic class that handle component identifiers from the Platform Configuration
- * Attribute.
+ * Basic class that represents version 1 of the component identifiers from the Version 1
+ * Platform Configuration Attribute.
  * <pre>
  * ComponentIdentifier ::= SEQUENCE {
  *      componentManufacturer UTF8String (SIZE (1..STRMAX)),
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  *      componentRevision [1] IMPLICIT UTF8String (SIZE (1..STRMAX)) OPTIONAL,
  *      componentManufacturerId [2] IMPLICIT PrivateEnterpriseNumber OPTIONAL,
  *      fieldReplaceable [3] IMPLICIT BOOLEAN OPTIONAL,
- *      componentAddress [4] IMPLICIT
+ *      componentAddresses [4] IMPLICIT
  *          SEQUENCE(SIZE(1..CONFIGMAX)) OF ComponentAddress OPTIONAL}
  * where STRMAX is 256, CONFIGMAX is 32
  * </pre>
@@ -80,7 +80,7 @@ public class ComponentIdentifier {
 
     private ASN1Boolean fieldReplaceable;
 
-    private List<ComponentAddress> componentAddress;
+    private List<ComponentAddress> componentAddresses;
 
     private boolean validationResult = true;
 
@@ -94,7 +94,7 @@ public class ComponentIdentifier {
         componentRevision = new DERUTF8String(NOT_SPECIFIED_COMPONENT);
         componentManufacturerId = null;
         fieldReplaceable = null;
-        componentAddress = new ArrayList<>();
+        componentAddresses = new ArrayList<>();
     }
 
     /**
@@ -121,7 +121,7 @@ public class ComponentIdentifier {
         this.componentRevision = componentRevision;
         this.componentManufacturerId = componentManufacturerId;
         this.fieldReplaceable = fieldReplaceable;
-        this.componentAddress = componentAddress.stream().toList();
+        this.componentAddresses = componentAddress.stream().toList();
     }
 
     /**
@@ -160,7 +160,7 @@ public class ComponentIdentifier {
                     break;
                 case COMPONENT_ADDRESS:
                     ASN1Sequence addressesSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    componentAddress = retrieveComponentAddress(addressesSequence);
+                    componentAddresses = retrieveComponentAddress(addressesSequence);
                     break;
                 default:
                     throw new IllegalArgumentException("Component identifier contains "
@@ -229,14 +229,14 @@ public class ComponentIdentifier {
         if (fieldReplaceable != null) {
             sb.append(fieldReplaceable);
         }
-        sb.append(", componentAddress=");
-        if (!componentAddress.isEmpty()) {
-            sb.append(componentAddress
+        sb.append(", componentAddresses=");
+        if (!componentAddresses.isEmpty()) {
+            sb.append(componentAddresses
                     .stream()
                     .map(Object::toString)
                     .collect(Collectors.joining(",")));
         }
-        sb.append(", certificateIdentifier=");
+        sb.append(", componentPlatformCert=");
         sb.append("}");
 
         return sb.toString();
