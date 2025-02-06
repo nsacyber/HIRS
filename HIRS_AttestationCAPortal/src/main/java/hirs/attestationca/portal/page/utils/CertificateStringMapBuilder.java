@@ -406,9 +406,10 @@ public final class CertificateStringMapBuilder {
                 //Component Identifier - attempt to translate hardware IDs
                 List<ComponentIdentifierV2> componentIdentifiers =
                         platformConfigurationV2.getComponentIdentifiers();
-         /*       if (PciIds.DB.isReady()) {
-                    componentIdentifiers = AcaPciIds.translate(componentIdentifiers);
-                }*/
+                if (PciIds.DB.isReady()) {
+                    // todo esacost
+                    //componentIdentifiers = AcaPciIds.translate(componentIdentifiers);
+                }
                 data.put("componentsIdentifier", componentIdentifiers);
                 //Component Identifier URI
                 data.put("componentsIdentifierURI", platformConfigurationV2

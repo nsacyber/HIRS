@@ -558,8 +558,11 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
             throws IllegalArgumentException, IOException {
         Map<String, Object> attributes = new HashMap<>();
         ASN1Sequence attributeSequence;
+
+        ASN1Encodable[] asn1EncodableArray = getAttributeCertificate().getAcinfo().getAttributes().toArray();
+
         // Check all attributes for Platform Configuration
-        for (ASN1Encodable enc : getAttributeCertificate().getAcinfo().getAttributes().toArray()) {
+        for (ASN1Encodable enc : asn1EncodableArray) {
             Attribute attr = Attribute.getInstance(enc);
             attributeSequence
                     = ASN1Sequence.getInstance(attr.getAttrValues().getObjectAt(0));

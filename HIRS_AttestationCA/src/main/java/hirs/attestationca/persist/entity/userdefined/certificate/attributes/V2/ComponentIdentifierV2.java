@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
  * Platform Configuration Attribute.
  * <pre>
  * ComponentIdentifier ::= SEQUENCE {
+ *      componentClass ComponentClass
  *      componentManufacturer UTF8String (SIZE (1..STRMAX)),
  *      componentModel UTF8String (SIZE (1..STRMAX)),
  *      componentSerial[0] IMPLICIT UTF8String (SIZE (1..STRMAX)) OPTIONAL,
@@ -82,7 +83,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
      * @param componentManufacturerId  represents the component manufacturer ID
      * @param fieldReplaceable         represents if the component is replaceable
      * @param componentAddress         represents a list of addresses
-     * @param certificateIdentifier    object representing certificate Id
+     * @param componentPlatformCert    object representing certificate Id
      * @param componentPlatformCertUri object containing the URI Reference
      * @param attributeStatus          object containing enumerated status
      */
@@ -94,7 +95,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                                  final ASN1ObjectIdentifier componentManufacturerId,
                                  final ASN1Boolean fieldReplaceable,
                                  final List<ComponentAddress> componentAddress,
-                                 final CertificateIdentifier certificateIdentifier,
+                                 final CertificateIdentifier componentPlatformCert,
                                  final URIReference componentPlatformCertUri,
                                  final AttributeStatus attributeStatus) {
         super(componentManufacturer, componentModel, componentSerial,
@@ -102,7 +103,7 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                 componentAddress);
         this.componentClass = componentClass;
         // additional optional component identifiers
-        this.componentPlatformCert = certificateIdentifier;
+        this.componentPlatformCert = componentPlatformCert;
         this.componentPlatformCertUri = componentPlatformCertUri;
         this.attributeStatus = attributeStatus;
     }

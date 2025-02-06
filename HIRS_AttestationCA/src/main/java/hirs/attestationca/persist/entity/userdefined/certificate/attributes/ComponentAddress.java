@@ -10,7 +10,7 @@ import org.bouncycastle.asn1.ASN1UTF8String;
 /**
  * Basic class that represents the component addresses from the component identifier object.
  * <pre>
- * componentAddresses ::= SEQUENCE {
+ * componentAddress ::= SEQUENCE {
  *      addressType AddressType,
  *      addressValue UTF8String (SIZE (1..STRMAX)) }
  * where STRMAX is 256

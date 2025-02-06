@@ -234,11 +234,11 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         if (platformCredential.getPlatformConfigurationV1() != null) {
 
-            // Retrieve the list of all version 2 component identifiers from the Platform Credential
+            // Retrieve the list of all version 1 component identifiers from the Platform Credential
             List<ComponentIdentifier> allPcComponents
                     = new ArrayList<>(platformCredential.getComponentIdentifiers());
 
-            // All components listed in the Platform Credential must have a manufacturer and model
+            // All V1 components listed in the Platform Credential must have a manufacturer and model
             for (ComponentIdentifier pcComponent : allPcComponents) {
 
                 fieldValidation = !hasEmptyValueForRequiredField("componentManufacturer",
@@ -263,8 +263,30 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         } else if (platformCredential.getPlatformConfigurationV2() != null) {
 
             // Retrieve the list of all version 2 component identifiers from the Platform Credential
-            List<ComponentIdentifierV2> allPcComponents
+            List<ComponentIdentifierV2> allV2PcComponents
                     = new ArrayList<>(platformCredential.getComponentIdentifiersV2());
+
+            // All V2 components listed in the Platform Credential must have a manufacturer and model
+            for (ComponentIdentifierV2 pcComponent : allV2PcComponents) {
+
+                fieldValidation = !hasEmptyValueForRequiredField("componentManufacturer",
+                        pcComponent.getComponentManufacturer());
+
+                if (!fieldValidation) {
+                    resultMessage.append("Component manufacturer is empty\n");
+                }
+
+                passesValidation &= fieldValidation;
+
+                fieldValidation = !hasEmptyValueForRequiredField("componentModel",
+                        pcComponent.getComponentModel());
+
+                if (!fieldValidation) {
+                    resultMessage.append("Component model is empty\n");
+                }
+
+                passesValidation &= fieldValidation;
+            }
         }
 
 
@@ -452,7 +474,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         for (ComponentInfo cInfo : allDeviceInfoComponents) {
             for (ComponentIdentifier cId : fullDeltaChainComponents) {
                 ciV2 = (ComponentIdentifierV2) cId;
-                if (cInfo.getComponentClass().contains(
+                if (cInfo.getComponentClassValue().contains(
                         ciV2.getComponentClass().getComponentIdentifier())
                         && isMatch(cId, cInfo)) {
                     subCompIdList.remove(cId);
@@ -927,7 +949,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         Map<String, List<ComponentInfo>> componentDeviceMap = new HashMap<>();
         componentInfos.forEach((componentInfo) -> {
             List<ComponentInfo> innerList;
-            String componentClass = componentInfo.getComponentClass();
+            String componentClass = componentInfo.getComponentClassValue();
             if (componentDeviceMap.containsKey(componentClass)) {
                 innerList = componentDeviceMap.get(componentClass);
                 innerList.add(componentInfo);

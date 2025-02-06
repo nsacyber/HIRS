@@ -55,10 +55,14 @@ public class ComponentInfo extends ArchivableEntity {
 
     @XmlElement
     @Column
-    private String componentClass;
+    private String componentClassValue;
+
+    @XmlElement
+    @Column
+    private String componentClassRegistry;
 
     /**
-     * Base constructor for children.
+     * Constructor.
      *
      * @param componentManufacturer Component Manufacturer (must not be null)
      * @param componentModel        Component Model (must not be null)
@@ -87,24 +91,26 @@ public class ComponentInfo extends ArchivableEntity {
                          final String componentModel,
                          final String componentSerial,
                          final String componentRevision) {
-        if (isComplete(
-                componentManufacturer,
-                componentModel,
-                componentSerial,
-                componentRevision)) {
-            log.error("ComponentInfo: manufacturer and/or "
+
+        if ((StringUtils.isEmpty(componentManufacturer)
+                || StringUtils.isEmpty(componentModel))) {
+
+            log.error("Component Info's manufacturer and/or "
                     + "model can not be null");
             throw new NullPointerException("ComponentInfo: manufacturer and/or "
                     + "model can not be null");
         }
+
         this.deviceName = deviceName;
         this.componentManufacturer = componentManufacturer.trim();
         this.componentModel = componentModel.trim();
+
         if (componentSerial != null) {
             this.componentSerial = componentSerial.trim();
         } else {
             this.componentSerial = ComponentIdentifier.NOT_SPECIFIED_COMPONENT;
         }
+
         if (componentRevision != null) {
             this.componentRevision = componentRevision.trim();
         } else {
@@ -120,39 +126,22 @@ public class ComponentInfo extends ArchivableEntity {
      * @param componentModel        Component Model (must not be null)
      * @param componentSerial       Component Serial Number (can be null)
      * @param componentRevision     Component Revision or Version (can be null)
-     * @param componentClass        Component Class (can be null)
+     * @param componentClassValue   Component Class Value (can be null)
      */
     public ComponentInfo(final String deviceName,
                          final String componentManufacturer,
                          final String componentModel,
                          final String componentSerial,
                          final String componentRevision,
-                         final String componentClass) {
+                         final String componentClassValue,
+                         final String componentClassRegistry) {
         this(deviceName, componentManufacturer, componentModel,
                 componentSerial, componentRevision);
 
-        this.componentClass = Objects.requireNonNullElse(componentClass, StringUtils.EMPTY);
+        this.componentClassValue = Objects.requireNonNullElse(componentClassValue, StringUtils.EMPTY);
+        this.componentClassRegistry = Objects.requireNonNullElse(componentClassRegistry, StringUtils.EMPTY);
     }
 
-    /**
-     * Determines whether the given properties represent a
-     * ComponentInfo that will be useful in validation.
-     * Currently, only components which have a non-null
-     * manufacturer and model are considered valid.
-     *
-     * @param componentManufacturer a String containing a component's manufacturer
-     * @param componentModel        a String representing a component's model
-     * @param componentSerial       a String representing a component's serial number
-     * @param componentRevision     a String representing a component's revision
-     * @return true if the component is valid, false if not
-     */
-    public static boolean isComplete(final String componentManufacturer,
-                                     final String componentModel,
-                                     final String componentSerial,
-                                     final String componentRevision) {
-        return (StringUtils.isEmpty(componentManufacturer)
-                || StringUtils.isEmpty(componentModel));
-    }
 
     /**
      * Returns a hash code that is associated with common fields for components.
@@ -161,6 +150,6 @@ public class ComponentInfo extends ArchivableEntity {
      */
     public int hashCommonElements() {
         return Objects.hash(componentManufacturer, componentModel,
-                componentSerial, componentRevision, componentClass);
+                componentSerial, componentRevision, componentClassValue, componentClassRegistry);
     }
 }

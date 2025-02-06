@@ -11,7 +11,6 @@ import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
 import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
-import hirs.attestationca.persist.entity.userdefined.info.component.NICComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.utils.enums.DeviceInfoEnums;
@@ -1292,7 +1291,7 @@ public class SupplyChainCredentialValidatorTest {
      */
     @Test
     public void testMatcher() {
-        NICComponentInfo nicComponentInfo = new NICComponentInfo("Intel Corporation",
+        ComponentInfo nicComponentInfo = new ComponentInfo("Intel Corporation",
                 "Ethernet Connection I217-V",
                 "23:94:17:ba:86:5e",
                 "00");
@@ -1984,7 +1983,7 @@ public class SupplyChainCredentialValidatorTest {
 //        ComponentIdentifierV2 ciV21Faulty = new ComponentIdentifierV2();
 //        ComponentIdentifierV2 ciV22Faulty = new ComponentIdentifierV2();
 //        ciV21Faulty.setComponentManufacturer(compId2.getComponentManufacturer());
-//        ciV21Faulty.setComponentClass(compId2.getComponentClass());
+//        ciV21Faulty.setComponentClass(compId2.getComponentClassValue());
 //        ciV21Faulty.setComponentModel(compId2.getComponentModel());
 //        ciV21Faulty.setComponentSerial(compId2.getComponentSerial());
 //        ciV21Faulty.setComponentRevision(compId2.getComponentRevision());
@@ -1993,7 +1992,7 @@ public class SupplyChainCredentialValidatorTest {
 //        ciV21Faulty.setComponentAddresses(compId2.getComponentAddresses());
 //        ciV21Faulty.setAttributeStatus(AttributeStatus.REMOVED);
 //        ciV22Faulty.setComponentManufacturer(compId3.getComponentManufacturer());
-//        ciV22Faulty.setComponentClass(compId3.getComponentClass());
+//        ciV22Faulty.setComponentClass(compId3.getComponentClassValue());
 //        ciV22Faulty.setComponentModel(compId3.getComponentModel());
 //        ciV22Faulty.setComponentSerial(compId3.getComponentSerial());
 //        ciV22Faulty.setComponentRevision(compId3.getComponentRevision());
