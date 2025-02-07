@@ -145,8 +145,8 @@ public final class ValidationService {
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
         if (platformCredential == null) {
-            log.error("No platform credential to validate while evaluating platform credential attributes " +
-                    "status");
+            log.error("No platform credential to validate while evaluating platform credential attributes "
+                    + "status");
             return buildValidationRecord(validationType,
                     AppraisalStatus.Status.FAIL, "Platform credential is missing",
                     null, Level.ERROR);

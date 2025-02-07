@@ -283,107 +283,115 @@ public class CertificatePageController extends PageController<NoPageParams> {
         // special parsing for platform credential
         // Add the EndorsementCredential for each PlatformCredential based on the
         // serial number. (pc.HolderSerialNumber = ec.SerialNumber)
-        if (certificateType.equals(PLATFORMCREDENTIAL)) {
-            FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<PlatformCredential> pagedResult =
-                    this.platformCertificateRepository.findByArchiveFlag(false, paging);
+        switch (certificateType) {
+            case PLATFORMCREDENTIAL -> {
+                FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
+                org.springframework.data.domain.Page<PlatformCredential> pagedResult =
+                        this.platformCertificateRepository.findByArchiveFlag(false, paging);
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
-            }
-
-            records.setRecordsFiltered(platformCertificateRepository.findByArchiveFlag(false).size());
-            EndorsementCredential associatedEC;
-
-            if (!records.isEmpty()) {
-                // loop all the platform certificates
-                for (int i = 0; i < records.size(); i++) {
-                    PlatformCredential pc = records.get(i);
-                    // find the EC using the PC's "holder serial number"
-                    associatedEC = this.endorsementCredentialRepository
-                            .findBySerialNumber(pc.getHolderSerialNumber());
-
-                    if (associatedEC != null) {
-                        log.debug("EC ID for holder s/n {} = {}", pc
-                                .getHolderSerialNumber(), associatedEC.getId());
-                    }
-
-                    pc.setEndorsementCredential(associatedEC);
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
                 }
+
+                records.setRecordsFiltered(platformCertificateRepository.findByArchiveFlag(false).size());
+                EndorsementCredential associatedEC;
+
+                if (!records.isEmpty()) {
+                    // loop all the platform certificates
+                    for (PlatformCredential pc : records) {
+                        // find the EC using the PC's "holder serial number"
+                        associatedEC = this.endorsementCredentialRepository
+                                .findBySerialNumber(pc.getHolderSerialNumber());
+
+                        if (associatedEC != null) {
+                            log.debug("EC ID for holder s/n {} = {}", pc
+                                    .getHolderSerialNumber(), associatedEC.getId());
+                        }
+
+                        pc.setEndorsementCredential(associatedEC);
+                    }
+                }
+
+                log.debug("Returning the size of the list of platform credentials: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
+            case ENDORSEMENTCREDENTIAL -> {
+                FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
+                org.springframework.data.domain.Page<EndorsementCredential> pagedResult =
+                        this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
 
-            log.debug("Returning list of size: {}", records.size());
-            return new DataTableResponse<>(records, input);
-        } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
-            FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<EndorsementCredential> pagedResult =
-                    this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
+                }
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
+                records.setRecordsFiltered(endorsementCredentialRepository.findByArchiveFlag(false).size());
+
+                log.debug("Returning the size of the list of endorsement credentials: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
+            case TRUSTCHAIN -> {
+                FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
+                org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult =
+                        this.caCredentialRepository.findByArchiveFlag(false, paging);
 
-            records.setRecordsFiltered(endorsementCredentialRepository.findByArchiveFlag(false).size());
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
+                }
 
-            log.debug("Returning list of size: {}", records.size());
-            return new DataTableResponse<>(records, input);
-        } else if (certificateType.equals(TRUSTCHAIN)) {
-            FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult =
-                    this.caCredentialRepository.findByArchiveFlag(false, paging);
+                records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
+                log.debug("Returning the size of the list of certificate trust chains: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
+            case ISSUEDCERTIFICATES -> {
+                FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
+                org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult =
+                        this.issuedCertificateRepository.findByArchiveFlag(false, paging);
 
-            records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
+                }
 
-            log.debug("Returning list of size: {}", records.size());
-            return new DataTableResponse<>(records, input);
-        } else if (certificateType.equals(ISSUEDCERTIFICATES)) {
-            FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult =
-                    this.issuedCertificateRepository.findByArchiveFlag(false, paging);
+                records.setRecordsFiltered(issuedCertificateRepository.findByArchiveFlag(false).size());
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
+                log.debug("Returning the size of the list of issued certificates: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
+            case IDEVIDCERTIFICATE -> {
+                FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<IDevIDCertificate>();
+                org.springframework.data.domain.Page<IDevIDCertificate> pagedResult =
+                        this.iDevIDCertificateRepository.findByArchiveFlag(false, paging);
 
-            records.setRecordsFiltered(issuedCertificateRepository.findByArchiveFlag(false).size());
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
+                }
 
-            log.debug("Returning list of size: " + records.size());
-            return new DataTableResponse<>(records, input);
-        } else if (certificateType.equals(IDEVIDCERTIFICATE)) {
-            FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<IDevIDCertificate>();
-            org.springframework.data.domain.Page<IDevIDCertificate> pagedResult =
-                    this.iDevIDCertificateRepository.findByArchiveFlag(false, paging);
+                records.setRecordsFiltered(iDevIDCertificateRepository.findByArchiveFlag(false).size());
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
+                log.debug("Returning the size of the list of IDEVID certificates: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
-
-            records.setRecordsFiltered(iDevIDCertificateRepository.findByArchiveFlag(false).size());
-
-            log.debug("Returning list of size: {}", records.size());
-            return new DataTableResponse<>(records, input);
+            default -> {
+                log.error("Cannot provide the size of the records because the"
+                        + "provided certificate type does not exist.");
+                return new DataTableResponse<>(new FilteredRecordsList<>(), input);
+            }
         }
-
-        return new DataTableResponse<>(new FilteredRecordsList<>(), input);
     }
 
     /**
@@ -509,7 +517,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download " + id);
+        log.info("Handling request to download {}", id);
 
         try {
             UUID uuid = UUID.fromString(id);
@@ -692,11 +700,13 @@ public class CertificatePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * @param zipOut
-     * @param certificates
-     * @param singleFileName
-     * @return
-     * @throws IOException
+     * Helper method that packages a collection of certificates into a zip file.
+     *
+     * @param zipOut         zip outputs stream
+     * @param certificates   collection of certificates
+     * @param singleFileName zip file name
+     * @return zip outputs stream
+     * @throws IOException if there are any issues packaging or downloading the zip file
      */
     private ZipOutputStream bulkDownload(final ZipOutputStream zipOut,
                                          final List<Certificate> certificates,
@@ -729,9 +739,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * table, false otherwise.
      */
     private boolean hasDeviceTableToJoin(final String certificateType) {
-        boolean hasDevice = !certificateType.equals(TRUSTCHAIN);
         // Trust_Chain Credential do not contain the device table to join.
-        return hasDevice;
+        return !certificateType.equals(TRUSTCHAIN);
     }
 
     /**
@@ -1029,9 +1038,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             if (componentResults.isEmpty()) {
                 ComponentResult componentResult;
 
-                // if the provided platform certificate is using version 1 Platform Configuration
                 if (platformCredential.getPlatformConfigurationV1() != null) {
-
                     for (ComponentIdentifier componentIdentifier : platformCredential
                             .getComponentIdentifiers()) {
                         componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
@@ -1042,11 +1049,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                         componentResult.setDelta(!platformCredential.isPlatformBase());
                         componentResultRepository.save(componentResult);
                     }
-                }
-                
-                // if the provided platform certificate is using version 2 Platform Configuration
-                else if (platformCredential.getPlatformConfigurationV2() != null) {
-
+                } else if (platformCredential.getPlatformConfigurationV2() != null) {
                     for (ComponentIdentifierV2 componentIdentifierV2 : platformCredential
                             .getComponentIdentifiersV2()) {
                         componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
@@ -1068,6 +1071,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
         }
     }
 
+    /**
+     * Helper method that deletes component results based on the provided platform serial number.
+     *
+     * @param platformSerial platform serial number
+     */
     private void deleteComponentResults(final String platformSerial) {
         List<ComponentResult> componentResults = componentResultRepository
                 .findByBoardSerialNumber(platformSerial);

@@ -286,9 +286,21 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 }
 
                 passesValidation &= fieldValidation;
+
+                if (pcComponent.getComponentClass() == null) {
+                    passesValidation = false;
+                } else {
+                    fieldValidation = !hasEmptyValueForRequiredField("componentClassRegistry",
+                            pcComponent.getComponentClass().getRegistryType());
+
+                    if (!fieldValidation) {
+                        resultMessage.append("Component class registry is empty\n");
+                    }
+
+                    passesValidation &= fieldValidation;
+                }
             }
         }
-
 
         // populate componentResults list
         List<ComponentResult> componentResults = componentResultRepository

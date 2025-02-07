@@ -752,7 +752,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             platformCredential = (PlatformCredential) certificate;
             ComponentResult componentResult;
 
-            // if the provided platform certificate is using version 1 Platform Configuration
             if (platformCredential.getPlatformConfigurationV1() != null) {
                 for (ComponentIdentifier componentIdentifier : platformCredential
                         .getComponentIdentifiers()) {
@@ -764,10 +763,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     componentResult.setDelta(!platformCredential.isPlatformBase());
                     componentResultRepository.save(componentResult);
                 }
-            }
-            
-            // if the provided platform certificate is using version 2 Platform Configuration
-            else if (platformCredential.getPlatformConfigurationV2() != null) {
+            } else if (platformCredential.getPlatformConfigurationV2() != null) {
                 for (ComponentIdentifierV2 componentIdentifierV2 : platformCredential
                         .getComponentIdentifiersV2()) {
                     componentResult = new ComponentResult(platformCredential.getPlatformSerial(),

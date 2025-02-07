@@ -10,6 +10,8 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
 import hirs.attestationca.persist.util.AcaPciIds;
@@ -401,16 +403,31 @@ public final class CertificateStringMapBuilder {
             data.put("componentResults", compResults);
 
             //Get platform Configuration values and set map with it
-            PlatformConfigurationV2 platformConfigurationV2 = certificate.getPlatformConfigurationV2();
-            if (platformConfigurationV2 != null) {
-                //Component Identifier - attempt to translate hardware IDs
-                List<ComponentIdentifierV2> componentIdentifiers =
-                        platformConfigurationV2.getComponentIdentifiers();
+            if (certificate.getPlatformConfigurationV1() != null) {
+                PlatformConfigurationV1 platformConfigurationV1 = certificate.getPlatformConfigurationV1();
+
+                List<ComponentIdentifier> componentIdentifiersV1 =
+                        platformConfigurationV1.getComponentIdentifiers();
+
                 if (PciIds.DB.isReady()) {
-                    // todo esacost
-                    //componentIdentifiers = AcaPciIds.translate(componentIdentifiers);
+                    componentIdentifiersV1 = AcaPciIds.translate(componentIdentifiersV1);
                 }
-                data.put("componentsIdentifier", componentIdentifiers);
+                //Component Identifiers
+                data.put("componentsIdentifier", componentIdentifiersV1);
+
+                //Platform Properties
+                data.put("platformProperties", platformConfigurationV1.getPlatformProperties());
+                //Platform Properties URI
+                data.put("platformPropertiesURI", platformConfigurationV1.getPlatformPropertiesUri());
+
+            } else if (certificate.getPlatformConfigurationV2() != null) {
+                PlatformConfigurationV2 platformConfigurationV2 = certificate.getPlatformConfigurationV2();
+                
+                //Component Identifiers
+                List<ComponentIdentifierV2> componentIdentifiersV2 =
+                        platformConfigurationV2.getComponentIdentifiers();
+
+                data.put("componentsIdentifier", componentIdentifiersV2);
                 //Component Identifier URI
                 data.put("componentsIdentifierURI", platformConfigurationV2
                         .getComponentIdentifiersUri());
@@ -419,6 +436,7 @@ public final class CertificateStringMapBuilder {
                 //Platform Properties URI
                 data.put("platformPropertiesURI", platformConfigurationV2.getPlatformPropertiesUri());
             }
+
             //TBB Security Assertion
             data.put("tbbSecurityAssertion", certificate.getTBBSecurityAssertion());
 

@@ -121,12 +121,13 @@ public class ComponentInfo extends ArchivableEntity {
     /**
      * Constructor.
      *
-     * @param deviceName            the host machine associated with this component.
-     * @param componentManufacturer Component Manufacturer (must not be null)
-     * @param componentModel        Component Model (must not be null)
-     * @param componentSerial       Component Serial Number (can be null)
-     * @param componentRevision     Component Revision or Version (can be null)
-     * @param componentClassValue   Component Class Value (can be null)
+     * @param deviceName             the host machine associated with this component.
+     * @param componentManufacturer  Component Manufacturer (must not be null)
+     * @param componentModel         Component Model (must not be null)
+     * @param componentSerial        Component Serial Number (can be null)
+     * @param componentRevision      Component Revision or Version (can be null)
+     * @param componentClassValue    Component Class Value (can be null)
+     * @param componentClassRegistry Component Class Registry (can be null)
      */
     public ComponentInfo(final String deviceName,
                          final String componentManufacturer,
