@@ -236,7 +236,9 @@ public class ComponentIdentifier {
                     .map(Object::toString)
                     .collect(Collectors.joining(",")));
         }
-        sb.append(", componentPlatformCert=");
+        if (sb.charAt(sb.length() - 1) == ',') {
+            sb.deleteCharAt(sb.length() - 1);
+        }
         sb.append("}");
 
         return sb.toString();
