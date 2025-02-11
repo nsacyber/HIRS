@@ -28,7 +28,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install git curl nano cron mariadb-server
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
       - name: Execute Gradle build
         run: |
           ./gradlew build;
@@ -37,7 +37,7 @@ jobs:
         run: |
           sudo dpkg -i tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
       - name: RIM tests
-        run: | 
+        run: |
           ./.ci/tcg-rim-tool/scripts/run_all_tests.sh --verbose
 
 

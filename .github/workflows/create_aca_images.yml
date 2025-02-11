@@ -17,7 +17,7 @@ env:
   PUBLIC_IMAGE_NAME: ghcr.io/nsacyber/hirs/aca
   PUBLIC_IMAGE_TAG_LATEST: ghcr.io/nsacyber/hirs/aca:latest
   TAG_LATEST: ${{ github.event_name == 'release' || inputs.also_tag_latest }} # The public docker image will be tagged 'latest' for releases, or if this option is manually selected.
-jobs:   
+jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
@@ -27,44 +27,44 @@ jobs:
       WINDOWS_COMPAT_IMAGE_TAG: ${{ steps.setenv.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
       PUBLIC_IMAGE_TAG: ${{ steps.setenv.outputs.PUBLIC_IMAGE_TAG }}
     steps:
-    - name: Set env
-      id: setenv
-      shell: bash
-      run: |
-        # Parse docker image tag from GitHub tag if available
-        if [ "${{ github.ref_type }}" = "tag" ]; then
-          # tags start with refs/tags/. Also remove v if it exists.
-          export IMAGE_TAG_VAR=${GITHUB_REF:10}
-          export IMAGE_TAG_VAR=${IMAGE_TAG_VAR//v/}
-        else
-          # Not a tag, use the commit hash. Do not tag as latest.
-          export IMAGE_TAG_VAR=${GITHUB_SHA:0:7}
-        fi
-        # To lowercase
-        export IMAGE_TAG_VAR=${IMAGE_TAG_VAR,,}
-        
-        # Save to output
-        echo "IMAGE_TAG=$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
-        echo "ROCKY_IMAGE_TAG=$IMAGE_NAME_ROCKY:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
-        echo "WINDOWS_IMAGE_TAG=$IMAGE_NAME_WINDOWS:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
-        echo "WINDOWS_COMPAT_IMAGE_TAG=$IMAGE_NAME_WINDOWS_COMPAT:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
-        echo "PUBLIC_IMAGE_TAG=$PUBLIC_IMAGE_NAME:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
-    - name: Print env
-      run: |
-        echo GITHUB_REF_NAME=${{ github.ref_name }}
-        echo DOCKERFILE_ROCKY=$DOCKERFILE_ROCKY
-        echo DOCKERFILE_WINDOWS=$DOCKERFILE_WINDOWS
-        echo IMAGE_NAME_ROCKY=$IMAGE_NAME_ROCKY
-        echo IMAGE_NAME_WINDOWS=$IMAGE_NAME_WINDOWS
-        echo IMAGE_NAME_WINDOWS_COMPAT=$IMAGE_NAME_WINDOWS_COMPAT
-        echo PUBLIC_IMAGE_NAME=$PUBLIC_IMAGE_NAME
-        echo PUBLIC_IMAGE_TAG_LATEST=$PUBLIC_IMAGE_TAG_LATEST
-        echo TAG_LATEST=$TAG_LATEST
-        echo IMAGE_TAG=${{ steps.setenv.outputs.IMAGE_TAG }}
-        echo ROCKY_IMAGE_TAG=${{ steps.setenv.outputs.ROCKY_IMAGE_TAG }}
-        echo WINDOWS_IMAGE_TAG=${{ steps.setenv.outputs.WINDOWS_IMAGE_TAG }}
-        echo WINDOWS_COMPAT_IMAGE_TAG=${{ steps.setenv.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
-        echo PUBLIC_IMAGE_TAG=${{ steps.setenv.outputs.PUBLIC_IMAGE_TAG }}
+      - name: Set env
+        id: setenv
+        shell: bash
+        run: |
+          # Parse docker image tag from GitHub tag if available
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            # tags start with refs/tags/. Also remove v if it exists.
+            export IMAGE_TAG_VAR=${GITHUB_REF:10}
+            export IMAGE_TAG_VAR=${IMAGE_TAG_VAR//v/}
+          else
+            # Not a tag, use the commit hash. Do not tag as latest.
+            export IMAGE_TAG_VAR=${GITHUB_SHA:0:7}
+          fi
+          # To lowercase
+          export IMAGE_TAG_VAR=${IMAGE_TAG_VAR,,}
+          
+          # Save to output
+          echo "IMAGE_TAG=$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
+          echo "ROCKY_IMAGE_TAG=$IMAGE_NAME_ROCKY:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
+          echo "WINDOWS_IMAGE_TAG=$IMAGE_NAME_WINDOWS:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
+          echo "WINDOWS_COMPAT_IMAGE_TAG=$IMAGE_NAME_WINDOWS_COMPAT:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
+          echo "PUBLIC_IMAGE_TAG=$PUBLIC_IMAGE_NAME:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
+      - name: Print env
+        run: |
+          echo GITHUB_REF_NAME=${{ github.ref_name }}
+          echo DOCKERFILE_ROCKY=$DOCKERFILE_ROCKY
+          echo DOCKERFILE_WINDOWS=$DOCKERFILE_WINDOWS
+          echo IMAGE_NAME_ROCKY=$IMAGE_NAME_ROCKY
+          echo IMAGE_NAME_WINDOWS=$IMAGE_NAME_WINDOWS
+          echo IMAGE_NAME_WINDOWS_COMPAT=$IMAGE_NAME_WINDOWS_COMPAT
+          echo PUBLIC_IMAGE_NAME=$PUBLIC_IMAGE_NAME
+          echo PUBLIC_IMAGE_TAG_LATEST=$PUBLIC_IMAGE_TAG_LATEST
+          echo TAG_LATEST=$TAG_LATEST
+          echo IMAGE_TAG=${{ steps.setenv.outputs.IMAGE_TAG }}
+          echo ROCKY_IMAGE_TAG=${{ steps.setenv.outputs.ROCKY_IMAGE_TAG }}
+          echo WINDOWS_IMAGE_TAG=${{ steps.setenv.outputs.WINDOWS_IMAGE_TAG }}
+          echo WINDOWS_COMPAT_IMAGE_TAG=${{ steps.setenv.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
+          echo PUBLIC_IMAGE_TAG=${{ steps.setenv.outputs.PUBLIC_IMAGE_TAG }}
   
   rocky-image:
     needs: setup
@@ -72,78 +72,78 @@ jobs:
     env:
       TAG: ${{ needs.setup.outputs.ROCKY_IMAGE_TAG }}
     steps:
-    - name: Checkout main
-      uses: actions/checkout@v4
-      
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Build and push a release Docker image for ${{ github.repository }}
-      uses: docker/build-push-action@v5
-      with:
-        context: "{{defaultContext}}:.ci/docker"
-        file: Dockerfile.${{env.DOCKERFILE_ROCKY}}
-        build-args: REF=${{ github.ref_name }}
-        tags: ${{env.TAG}}
-        push: true
-        
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push a release Docker image for ${{ github.repository }}
+        uses: docker/build-push-action@v5
+        with:
+          context: "{{defaultContext}}:.ci/docker"
+          file: Dockerfile.${{env.DOCKERFILE_ROCKY}}
+          build-args: REF=${{ github.ref_name }}
+          tags: ${{env.TAG}}
+          push: true
+
   windows-11-image:
     needs: setup
     runs-on: windows-latest
     env:
       TAG: ${{ needs.setup.outputs.WINDOWS_IMAGE_TAG }}
     steps:
-    - name: Checkout main
-      uses: actions/checkout@v4
-      
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout main
+        uses: actions/checkout@v4
 
-    - name: Build the docker image for ${{ github.repository }}
-      run: |
-        cd ./.ci/docker
-        docker build --build-arg REF=${{ github.ref_name }} -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} .
-    
-    - name: Push the docker image
-      run: |
-        docker push ${{env.TAG}}
-        
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build the docker image for ${{ github.repository }}
+        run: |
+          cd ./.ci/docker
+          docker build --build-arg REF=${{ github.ref_name }} -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} .
+
+      - name: Push the docker image
+        run: |
+          docker push ${{env.TAG}}
+
   windows-compat-image: # This job uses a different runner and build arg than the other windows job.
     needs: setup
     runs-on: windows-2019
     env:
       TAG: ${{ needs.setup.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
     steps:
-    - name: Checkout main
-      uses: actions/checkout@v4
+      - name: Checkout main
+        uses: actions/checkout@v4
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build the docker image for ${{ github.repository }}
-      run: |
-        cd ./.ci/docker
-        docker build --build-arg REF=${{ github.ref_name }} -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} --build-arg BASE_IMAGE_TAG=lts-windowsservercore-1809 .
-        
-    - name: Push the docker image
-      run: |
-        docker push ${{env.TAG}}
-        
-        
+      - name: Build the docker image for ${{ github.repository }}
+        run: |
+          cd ./.ci/docker
+          docker build --build-arg REF=${{ github.ref_name }} -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} --build-arg BASE_IMAGE_TAG=lts-windowsservercore-1809 .
+
+      - name: Push the docker image
+        run: |
+          docker push ${{env.TAG}}
+  
+
   manifest:
-    needs: [setup, rocky-image, windows-11-image, windows-compat-image]
+    needs: [ setup, rocky-image, windows-11-image, windows-compat-image ]
     runs-on: ubuntu-latest
     env:
       IMAGE1: ${{ needs.setup.outputs.ROCKY_IMAGE_TAG }}
@@ -151,34 +151,34 @@ jobs:
       IMAGE3: ${{ needs.setup.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
       PUB: ${{ needs.setup.outputs.PUBLIC_IMAGE_TAG }}
     steps:
-    - name: Print env
-      run: |
-        echo IMAGE1=${{env.IMAGE1}}
-        echo IMAGE2=${{env.IMAGE2}}
-        echo IMAGE3=${{env.IMAGE3}}
-        echo PUB=${{env.PUB}}
-        
-    - name: Checkout main
-      uses: actions/checkout@v4
-      
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-          
-    - name: Create a new manifest
-      run: |
-        docker manifest create ${{env.PUB}} --amend ${{env.IMAGE1}} --amend ${{env.IMAGE2}} --amend ${{env.IMAGE3}}
-        
-    - name: Push the new manifest
-      run: |
-        docker manifest push ${{env.PUB}}
-        
-    - name: Create and push manifest latest if selected
-      if: env.TAG_LATEST != 'false'
-      run: |
-        docker manifest create $PUBLIC_IMAGE_TAG_LATEST --amend $IMAGE1 --amend $IMAGE2 --amend $IMAGE3
-        docker manifest push $PUBLIC_IMAGE_TAG_LATEST
+      - name: Print env
+        run: |
+          echo IMAGE1=${{env.IMAGE1}}
+          echo IMAGE2=${{env.IMAGE2}}
+          echo IMAGE3=${{env.IMAGE3}}
+          echo PUB=${{env.PUB}}
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create a new manifest
+        run: |
+          docker manifest create ${{env.PUB}} --amend ${{env.IMAGE1}} --amend ${{env.IMAGE2}} --amend ${{env.IMAGE3}}
+
+      - name: Push the new manifest
+        run: |
+          docker manifest push ${{env.PUB}}
+
+      - name: Create and push manifest latest if selected
+        if: env.TAG_LATEST != 'false'
+        run: |
+          docker manifest create $PUBLIC_IMAGE_TAG_LATEST --amend $IMAGE1 --amend $IMAGE2 --amend $IMAGE3
+          docker manifest push $PUBLIC_IMAGE_TAG_LATEST
  
