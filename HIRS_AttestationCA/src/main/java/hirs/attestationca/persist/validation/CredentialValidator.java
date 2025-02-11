@@ -190,14 +190,17 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             message = baseErrorMessage + "a platform credential";
             return new AppraisalStatus(FAIL, message);
         }
+
         if (deviceInfoReport == null) {
             message = baseErrorMessage + "a device info report";
             return new AppraisalStatus(FAIL, message);
         }
+
         if (endorsementCredential == null) {
             message = baseErrorMessage + "an endorsement credential";
             return new AppraisalStatus(FAIL, message);
         }
+
         if (componentInfos.isEmpty()) {
             message = baseErrorMessage + "a list of device components";
             return new AppraisalStatus(FAIL, message);

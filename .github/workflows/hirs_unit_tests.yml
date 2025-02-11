@@ -1,10 +1,10 @@
 # This workflow will build HIRS, run unit tests, and create HIRS artifacts
-# Updated: 8/15/23
+# Updated: 02/11/2025
 
 name: HIRS Build and Unit Test
 
 on:
-  # Runs this workflow whenever there is a push to main from a branch annotated with "v4"
+  # Runs this workflow whenever there is a push to main from a branch annotated with "v3"
   push:
     branches:
       - '*v3*'

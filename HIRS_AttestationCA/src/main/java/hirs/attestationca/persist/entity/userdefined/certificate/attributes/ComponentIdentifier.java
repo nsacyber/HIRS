@@ -106,7 +106,7 @@ public class ComponentIdentifier {
      * @param componentRevision       represents the component revision
      * @param componentManufacturerId represents the component manufacturer ID
      * @param fieldReplaceable        represents if the component is replaceable
-     * @param componentAddress        represents a list of addresses
+     * @param componentAddresses      represents a list of addresses
      */
     public ComponentIdentifier(final DERUTF8String componentManufacturer,
                                final DERUTF8String componentModel,
@@ -114,14 +114,14 @@ public class ComponentIdentifier {
                                final DERUTF8String componentRevision,
                                final ASN1ObjectIdentifier componentManufacturerId,
                                final ASN1Boolean fieldReplaceable,
-                               final List<ComponentAddress> componentAddress) {
+                               final List<ComponentAddress> componentAddresses) {
         this.componentManufacturer = componentManufacturer;
         this.componentModel = componentModel;
         this.componentSerial = componentSerial;
         this.componentRevision = componentRevision;
         this.componentManufacturerId = componentManufacturerId;
         this.fieldReplaceable = fieldReplaceable;
-        this.componentAddresses = componentAddress.stream().toList();
+        this.componentAddresses = componentAddresses.stream().toList();
     }
 
     /**

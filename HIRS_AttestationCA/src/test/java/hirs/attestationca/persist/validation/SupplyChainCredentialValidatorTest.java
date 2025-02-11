@@ -1,5 +1,7 @@
 package hirs.attestationca.persist.validation;
 
+import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
+import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
@@ -34,7 +36,10 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -206,6 +211,11 @@ public class SupplyChainCredentialValidatorTest {
 
     private static KeyStore emptyKeyStore;
 
+    @Mock
+    private ComponentResultRepository componentResultRepository;
+    @Mock
+    private ComponentAttributeRepository componentAttributeRepository;
+
     /**
      * Sets up a KeyStore for testing.
      *
@@ -243,57 +253,6 @@ public class SupplyChainCredentialValidatorTest {
         if (!f.delete()) {
             fail("file was not cleaned up");
         }
-    }
-
-    private static DeviceInfoReport setupDeviceInfoReport() {
-        hardwareInfo = new HardwareInfo(
-                "ACME",
-                "anvil",
-                "3.0",
-                "1234",
-                "567",
-                "890");
-
-        DeviceInfoReport deviceInfoReport = mock(DeviceInfoReport.class);
-        when(deviceInfoReport.getHardwareInfo()).thenReturn(hardwareInfo);
-        return deviceInfoReport;
-    }
-
-    private static DeviceInfoReport setupDeviceInfoReportWithComponents() throws IOException {
-        return setupDeviceInfoReportWithComponents(SAMPLE_PACCOR_OUTPUT_TXT);
-    }
-
-    private static DeviceInfoReport setupDeviceInfoReportWithNotSpecifiedComponents()
-            throws IOException {
-        return setupDeviceInfoReportWithComponents(SAMPLE_PACCOR_OUTPUT_NOT_SPECIFIED_TXT);
-    }
-
-    private static DeviceInfoReport setupDeviceInfoReportWithComponents(
-            final String paccorOutputResource) throws IOException {
-        DeviceInfoReport deviceInfoReport = setupDeviceInfoReport();
-        URL url = SupplyChainCredentialValidator.class.getResource(paccorOutputResource);
-        String paccorOutputString = IOUtils.toString(url, StandardCharsets.UTF_8);
-        when(deviceInfoReport.getPaccorOutputString()).thenReturn(paccorOutputString);
-        return deviceInfoReport;
-    }
-
-    /**
-     * Creates a new RSA 1024-bit KeyPair using a Bouncy Castle Provider.
-     *
-     * @return new KeyPair
-     */
-    private static KeyPair createKeyPair() {
-        final int keySize = 1024;
-        KeyPairGenerator gen;
-        KeyPair keyPair = null;
-        try {
-            gen = KeyPairGenerator.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
-            gen.initialize(keySize, SECURE_RANDOM);
-            keyPair = gen.generateKeyPair();
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            fail("Error occurred while generating key pair", e);
-        }
-        return keyPair;
     }
 
     /**
@@ -401,7 +360,113 @@ public class SupplyChainCredentialValidatorTest {
         return cert;
     }
 
-    private static InetAddress getTestIpAddress() {
+    @BeforeEach
+    public void setUpEachTest() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    /**
+     * Creates a new RSA 1024-bit KeyPair using a Bouncy Castle Provider.
+     *
+     * @return new KeyPair
+     */
+    private KeyPair createKeyPair() {
+        final int keySize = 1024;
+        KeyPairGenerator gen;
+        KeyPair keyPair = null;
+        try {
+            gen = KeyPairGenerator.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
+            gen.initialize(keySize, SECURE_RANDOM);
+            keyPair = gen.generateKeyPair();
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            fail("Error occurred while generating key pair", e);
+        }
+        return keyPair;
+    }
+
+    /**
+     * Helper method that creates a device info report.
+     *
+     * @return device info report
+     */
+    private DeviceInfoReport setupDeviceInfoReport() {
+        hardwareInfo = new HardwareInfo(
+                "ACME",
+                "anvil",
+                "3.0",
+                "1234",
+                "567",
+                "890");
+
+        DeviceInfoReport deviceInfoReport = mock(DeviceInfoReport.class);
+        when(deviceInfoReport.getHardwareInfo()).thenReturn(hardwareInfo);
+        return deviceInfoReport;
+    }
+
+    /**
+     * Helper method that creates a device info report that contains the provided components.
+     *
+     * @return device info report that contains provided components
+     * @throws IOException is thrown if issues arise from parsing out the paccor output
+     */
+    private DeviceInfoReport setupDeviceInfoReportWithComponents() throws IOException {
+        return setupDeviceInfoReportWithComponents(SAMPLE_PACCOR_OUTPUT_TXT);
+    }
+
+    /**
+     * Helper method that creates a device info report that contains the provided non-specified components.
+     *
+     * @return device info report that contains not specified components
+     * @throws IOException is thrown if issues arise from parsing out the paccor output
+     */
+    private DeviceInfoReport setupDeviceInfoReportWithNotSpecifiedComponents()
+            throws IOException {
+        return setupDeviceInfoReportWithComponents(SAMPLE_PACCOR_OUTPUT_NOT_SPECIFIED_TXT);
+    }
+
+    /**
+     * Helper method that generates a device info report using the provided sample paccor output.
+     *
+     * @param paccorOutputResource sample paccor output text
+     * @return device info report
+     * @throws IOException is thrown if issues arise from parsing out the paccor output
+     */
+    private DeviceInfoReport setupDeviceInfoReportWithComponents(
+            final String paccorOutputResource) throws IOException {
+        DeviceInfoReport deviceInfoReport = setupDeviceInfoReport();
+        URL url = SupplyChainCredentialValidator.class.getResource(paccorOutputResource);
+        String paccorOutputString = IOUtils.toString(url, StandardCharsets.UTF_8);
+        when(deviceInfoReport.getPaccorOutputString()).thenReturn(paccorOutputString);
+        return deviceInfoReport;
+    }
+
+    /**
+     * Helper method that generates a collection of component info that can be used
+     * for this class' test methods.
+     *
+     * @return a generic list of component info
+     */
+    private List<ComponentInfo> retrieveListOfComponentInfos() {
+
+        return List.of(
+                new ComponentInfo("the-device", "Dell Inc", "11",
+                        "9ZLUO9", "Not Specified", "020000123",
+                        "2.23.133.18.3.1"),
+                new ComponentInfo("the-device", "9090", "AE12",
+                        "Not Specified", "Not Specified", "00070700",
+                        "2.23.133.18.3.4"),
+                new ComponentInfo("the-device", "Not Specified", "109 NVM",
+                        "1110_1100_2230_0000_8CE3_8E10_0164_9CC7.", "Not Specified",
+                        "00060001", "2.23.133.18.3.5"));
+    }
+
+
+    /**
+     * Helper method that returns an IP Address.
+     *
+     * @return IP address
+     */
+    private InetAddress getTestIpAddress() {
         try {
             final byte[] byteAddress = new byte[] {127, 0, 0, 1};
             return InetAddress.getByAddress(byteAddress);
@@ -499,7 +564,7 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws Exception If there are errors.
      */
-//    @Test
+    @Test
     public final void validateIntelPlatformCredentialAttributes()
             throws Exception {
 
@@ -517,14 +582,17 @@ public class SupplyChainCredentialValidatorTest {
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
-                        deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        deviceInfoReport, ec, componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
     }
+
 
     /**
      * Checks if the Platform Credential contains the serial number from
@@ -532,7 +600,7 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws Exception If there are errors.
      */
-//    @Test
+    @Test
     public final void validatePlatformCredentialWithDeviceBaseboard()
             throws Exception {
         DeviceInfoReport deviceInfoReport = buildReport(new HardwareInfo(
@@ -549,10 +617,12 @@ public class SupplyChainCredentialValidatorTest {
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
-                        deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        deviceInfoReport, ec, componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -562,7 +632,7 @@ public class SupplyChainCredentialValidatorTest {
      * Checks if the Platform Credential contains the serial number from
      * the device in the chassis serial number field.
      */
-//    @Test
+    @Test
     public final void validatePlatformCredentialWithDeviceChassis()
             throws Exception {
 
@@ -580,10 +650,12 @@ public class SupplyChainCredentialValidatorTest {
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
-                        deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        deviceInfoReport, ec, componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -595,7 +667,7 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws Exception If there are errors.
      */
-//    @Test
+    @Test
     public final void validatePlatformCredentialWithDeviceSystemSerialNumber()
             throws Exception {
 
@@ -613,10 +685,12 @@ public class SupplyChainCredentialValidatorTest {
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
-                        deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        deviceInfoReport, ec, componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -626,7 +700,7 @@ public class SupplyChainCredentialValidatorTest {
      * Checks if validation occurs when the Platform Credential baseboard
      * serial number is in the device chassis serial number field.
      */
-//    @Test
+    @Test
     public final void validatePlatformCredentialCombinedWithChassisSerialNumbersMatchedBaseboard()
             throws Exception {
 
@@ -645,10 +719,12 @@ public class SupplyChainCredentialValidatorTest {
                 Files.readAllBytes(Paths.get(
                         Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
-                        deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        deviceInfoReport, ec, componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -658,7 +734,7 @@ public class SupplyChainCredentialValidatorTest {
      * Checks if validation occurs when the Platform Credential chassis
      * serial number is in the device baseboard serial number field.
      */
-//    @Test
+    @Test
     public final void validatePlatformCredentialCombinedWithBaseboardSerialNumbersMatchedChassis()
             throws Exception {
 
@@ -676,10 +752,12 @@ public class SupplyChainCredentialValidatorTest {
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
-                        deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        deviceInfoReport, ec, componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -689,7 +767,7 @@ public class SupplyChainCredentialValidatorTest {
      * Checks if validation occurs when the Platform Credential chassis
      * serial number is in the device system serial number field.
      */
-//    @Test
+    @Test
     public final void validatePlatformCredentialCombinedWithSystemSerialNumbersMatchedChassis()
             throws Exception {
 
@@ -707,10 +785,12 @@ public class SupplyChainCredentialValidatorTest {
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(pc,
-                        deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        deviceInfoReport, ec, componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -722,7 +802,7 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws Exception If there are errors.
      */
-//    @Test
+    @Test
     public final void validatePlatformCredentialWithNoDeviceSerialNumbers()
             throws Exception {
 
@@ -743,10 +823,12 @@ public class SupplyChainCredentialValidatorTest {
 
         String expectedMessage = "Platform serial did not match device info";
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(
-                        pc, deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        pc, deviceInfoReport, ec, componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals(expectedMessage, result.getMessage());
     }
@@ -757,7 +839,7 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws Exception If there are errors.
      */
-//    @Test
+    @Test
     public final void validatePlatformCredentialCombinedWithNoMatchedDeviceSerialNumbers()
             throws Exception {
 
@@ -777,10 +859,12 @@ public class SupplyChainCredentialValidatorTest {
 
         String expectedMessage = "Platform serial did not match device info";
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
                 CredentialValidator.validatePlatformCredentialAttributes(
-                        pc, deviceInfoReport, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        pc, deviceInfoReport, ec, componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals(expectedMessage, result.getMessage());
     }
@@ -1144,7 +1228,7 @@ public class SupplyChainCredentialValidatorTest {
      * @throws IOException        an error occurs when parsing the certificate
      * @throws URISyntaxException an error occurs parsing the certificate file path
      */
-//    @Test
+    @Test
     public final void verifyPlatformCredentialNullDeviceInfoReport()
             throws URISyntaxException, IOException {
         byte[] certBytes = Files.readAllBytes(Paths.get(
@@ -1159,9 +1243,12 @@ public class SupplyChainCredentialValidatorTest {
         String expectedMessage = "Can't validate platform credential attributes without a "
                 + "device info report";
 
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
         AppraisalStatus result =
-                CredentialValidator.validatePlatformCredentialAttributes(pc, null, ec, null, null,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                CredentialValidator.validatePlatformCredentialAttributes(pc, null, ec,
+                        componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals(expectedMessage, result.getMessage());
     }
@@ -1379,14 +1466,15 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws IOException if unable to set up DeviceInfoReport from resource file
      */
-//    @Test
+    //@Test TODO esacost
     public final void testValidatePlatformCredentialAttributesV2p0NoComponentsPass()
             throws IOException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReport();
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
-                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport, null, null,
+                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport,
+                        componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS,
                 appraisalStatus.getAppStatus());
@@ -1407,7 +1495,8 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
-                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport, null, null,
+                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport,
+                        componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, appraisalStatus.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1430,7 +1519,8 @@ public class SupplyChainCredentialValidatorTest {
                 .thenReturn(hardwareInfo.getSystemSerialNumber());
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
-                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport, null, null,
+                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport,
+                        componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, appraisalStatus.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1455,7 +1545,8 @@ public class SupplyChainCredentialValidatorTest {
                                 SAMPLE_TEST_PACCOR_CERT)).toURI())));
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
-                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport, null, null,
+                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport,
+                        componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, appraisalStatus.getAppStatus());
     }
@@ -1473,7 +1564,7 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1481,7 +1572,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getManufacturer()).thenReturn(null);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform manufacturer did not match\n", result.getMessage());
@@ -1489,7 +1580,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1497,7 +1588,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getModel()).thenReturn(null);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         assertEquals(result.getMessage(), "Platform model did not match\n");
@@ -1505,7 +1596,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1513,13 +1604,13 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getPlatformSerial()).thenReturn(null);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1527,7 +1618,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getVersion()).thenReturn(null);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1536,7 +1627,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1547,7 +1638,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedComponentIdentifiers);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component manufacturer is empty\n", result.getMessage());
@@ -1555,7 +1646,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1565,7 +1656,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedComponentIdentifiers);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component model is empty\n", result.getMessage());
@@ -1586,7 +1677,7 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1594,7 +1685,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getManufacturer()).thenReturn("");
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform manufacturer did not match\n", result.getMessage());
@@ -1602,7 +1693,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1610,7 +1701,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getModel()).thenReturn("");
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform model did not match\n", result.getMessage());
@@ -1618,7 +1709,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1626,7 +1717,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getPlatformSerial()).thenReturn("");
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform serial did not match\n", result.getMessage());
@@ -1634,7 +1725,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1642,7 +1733,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getVersion()).thenReturn("");
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform version did not match\n", result.getMessage());
@@ -1650,7 +1741,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1661,7 +1752,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedComponentIdentifiers);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component manufacturer is empty\n"
@@ -1673,7 +1764,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1683,7 +1774,7 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedComponentIdentifiers);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component model is empty\n", result.getMessage());
@@ -1703,7 +1794,7 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1725,7 +1816,7 @@ public class SupplyChainCredentialValidatorTest {
         );
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("There are unmatched components:\n"
@@ -1752,7 +1843,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1760,7 +1851,7 @@ public class SupplyChainCredentialValidatorTest {
 
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1781,7 +1872,7 @@ public class SupplyChainCredentialValidatorTest {
         PlatformCredential platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1794,7 +1885,7 @@ public class SupplyChainCredentialValidatorTest {
 
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component manufacturer is empty\n"
@@ -1806,7 +1897,7 @@ public class SupplyChainCredentialValidatorTest {
         platformCredential = setupMatchingPlatformCredential(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1818,7 +1909,7 @@ public class SupplyChainCredentialValidatorTest {
 
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component model is empty\n", result.getMessage());
@@ -1849,7 +1940,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1881,7 +1972,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1915,7 +2006,7 @@ public class SupplyChainCredentialValidatorTest {
 
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
-                        deviceInfoReport, null, null,
+                        deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
@@ -1926,8 +2017,8 @@ public class SupplyChainCredentialValidatorTest {
      * Tests that SupplyChainCredentialValidator passes with a base and delta certificate where
      * the base serial number and delta holder serial number match.
      *
-     * @throws java.io.IOException         Reading file for the certificates
-     * @throws java.net.URISyntaxException when loading certificates bytes
+     * @throws IOException        Reading file for the certificates
+     * @throws URISyntaxException when loading certificates bytes
      */
 //    @Test
     public final void testValidateDeltaPlatformCredentialAttributes()
@@ -2063,8 +2154,8 @@ public class SupplyChainCredentialValidatorTest {
      * Tests that SupplyChainCredentialValidator fails when a component needs to
      * be replaced but hasn't been by a delta certificate.
      *
-     * @throws java.io.IOException         Reading file for the certificates
-     * @throws java.net.URISyntaxException when loading certificates bytes
+     * @throws IOException        Reading file for the certificates
+     * @throws URISyntaxException when loading certificates bytes
      */
 //    @Test
     public final void testValidateChainFailure()
