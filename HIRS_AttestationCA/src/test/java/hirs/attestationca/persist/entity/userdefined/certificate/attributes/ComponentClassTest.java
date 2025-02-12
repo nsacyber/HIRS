@@ -147,8 +147,6 @@ public class ComponentClassTest {
         ComponentClass instance = new ComponentClass("2.23.133.18.3.4", Paths.get(
                 Objects.requireNonNull(this.getClass()
                         .getResource(JSON_FILE)).toURI()), componentIdentifier);
-        final String resultCategory = instance.getCategoryStr();
-        final String resultComponent = instance.getComponentStr();
         final String resultRegistry = instance.getRegistryType();
 
         assertEquals("PCIE", resultRegistry);
@@ -170,8 +168,6 @@ public class ComponentClassTest {
         ComponentClass instance = new ComponentClass("2.23.133.18.3.5", Paths.get(
                 Objects.requireNonNull(this.getClass()
                         .getResource(JSON_FILE)).toURI()), componentIdentifier);
-        final String resultCategory = instance.getCategoryStr();
-        final String resultComponent = instance.getComponentStr();
         final String resultRegistry = instance.getRegistryType();
 
         assertEquals("STORAGE", resultRegistry);

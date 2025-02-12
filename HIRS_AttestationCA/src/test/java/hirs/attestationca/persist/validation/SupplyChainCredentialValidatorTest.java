@@ -36,10 +36,8 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -358,11 +356,6 @@ public class SupplyChainCredentialValidatorTest {
             fail("Exception occurred while creating a cert", e);
         }
         return cert;
-    }
-
-    @BeforeEach
-    public void setUpEachTest() {
-        MockitoAnnotations.openMocks(this);
     }
 
     /**

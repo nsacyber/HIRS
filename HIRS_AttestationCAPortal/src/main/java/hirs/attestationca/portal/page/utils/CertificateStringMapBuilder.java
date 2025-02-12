@@ -422,7 +422,6 @@ public final class CertificateStringMapBuilder {
 
             } else if (certificate.getPlatformConfigurationV2() != null) {
                 PlatformConfigurationV2 platformConfigurationV2 = certificate.getPlatformConfigurationV2();
-                
                 //Component Identifiers
                 List<ComponentIdentifierV2> componentIdentifiersV2 =
                         platformConfigurationV2.getComponentIdentifiers();
