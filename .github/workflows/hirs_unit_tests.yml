@@ -84,7 +84,7 @@ jobs:
           fi; popd;'
     # Upload build report files
     - name: Archive report files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: HIRS_Build_Reports
         path: artifacts/upload_reports/*
