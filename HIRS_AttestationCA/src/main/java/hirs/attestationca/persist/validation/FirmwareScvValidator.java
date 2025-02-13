@@ -106,9 +106,11 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         if (passed) {
             AppraisalStatus rimSignatureStatus = validateRimSignature(baseReferenceManifest,
                     caCredentialRepository, referenceManifestRepository);
+            fwStatus = rimSignatureStatus;
             if (rimSignatureStatus.getAppStatus() == PASS) {
                 AppraisalStatus pcrStatus = validatePcrValues(device, hostName, baseReferenceManifest,
                         measurement, referenceDigestValueRepository, policySettings);
+                fwStatus = pcrStatus;
                 if (pcrStatus.getAppStatus() == PASS) {
                     EventLogMeasurements eventLog = measurement;
                     eventLog.setOverallValidationResult(PASS);
@@ -126,7 +128,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             }
         }
         if (!passed) {
-            fwStatus = new AppraisalStatus(FAIL, failedString);
             if (measurement != null) {
                 measurement.setOverallValidationResult(fwStatus.getAppStatus());
                 referenceManifestRepository.save(measurement);
