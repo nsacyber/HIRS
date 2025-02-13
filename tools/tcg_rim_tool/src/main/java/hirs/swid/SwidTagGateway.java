@@ -17,6 +17,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
+import lombok.Setter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -84,17 +85,64 @@ public class SwidTagGateway {
 
     private final ObjectFactory objectFactory = new ObjectFactory();
     private Marshaller marshaller;
+    /**
+     * String holding attributes file path
+     */
+    @Setter
     private String attributesFile;
+
+    /**
+     * boolean governing signing credentials
+     */
+    @Setter
     private boolean defaultCredentials;
+
+    /**
+     * JKS keystore file
+     */
+    @Setter
     private String jksTruststoreFile;
+
+    /**
+     * private key file in PEM format
+     */
+    @Setter
     private String pemPrivateKeyFile;
+
+    /**
+     * certificate file in PEM format
+     */
+    @Setter
     private String pemCertificateFile;
+
+    /**
+     * embed certificate file in signature block
+     */
+    @Setter
     private boolean embeddedCert;
+
+    /**
+     * event log support RIM
+     */
+    @Setter
     private String rimEventLog;
+
+    /**
+     * timestamp format in XML signature
+     */
+    @Setter
     private String timestampFormat;
+
+    /**
+     * timestamp input - RFC3852 + file or RFC3339 + value
+     */
+    @Setter
     private String timestampArgument;
+
     private String errorRequiredFields;
+
     private DocumentBuilderFactory dbf;
+    
     private DocumentBuilder builder;
 
     /**
@@ -122,88 +170,6 @@ public class SwidTagGateway {
                     + e.getMessage());
             System.exit(1);
         }
-    }
-
-    /**
-     * Setter for String holding attributes file path
-     *
-     * @param attributesFile
-     */
-    public void setAttributesFile(final String attributesFile) {
-        this.attributesFile = attributesFile;
-    }
-
-    /**
-     * Setter for boolean governing signing credentials
-     *
-     * @param defaultCredentials
-     * @return
-     */
-    public void setDefaultCredentials(final boolean defaultCredentials) {
-        this.defaultCredentials = defaultCredentials;
-    }
-
-    /**
-     * Setter for JKS keystore file
-     *
-     * @param jksTruststoreFile
-     */
-    public void setJksTruststoreFile(final String jksTruststoreFile) {
-        this.jksTruststoreFile = jksTruststoreFile;
-    }
-
-    /**
-     * Setter for private key file in PEM format
-     *
-     * @param pemPrivateKeyFile
-     */
-    public void setPemPrivateKeyFile(final String pemPrivateKeyFile) {
-        this.pemPrivateKeyFile = pemPrivateKeyFile;
-    }
-
-    /**
-     * Setter for certificate file in PEM format
-     *
-     * @param pemCertificateFile
-     */
-    public void setPemCertificateFile(final String pemCertificateFile) {
-        this.pemCertificateFile = pemCertificateFile;
-    }
-
-    /**
-     * Setter to embed certificate file in signature block
-     *
-     * @param embeddedCert
-     */
-    public void setEmbeddedCert(final boolean embeddedCert) {
-        this.embeddedCert = embeddedCert;
-    }
-
-    /**
-     * Setter for event log support RIM
-     *
-     * @param rimEventLog
-     */
-    public void setRimEventLog(final String rimEventLog) {
-        this.rimEventLog = rimEventLog;
-    }
-
-    /**
-     * Setter for timestamp format in XML signature
-     *
-     * @param timestampFormat
-     */
-    public void setTimestampFormat(String timestampFormat) {
-        this.timestampFormat = timestampFormat;
-    }
-
-    /**
-     * Setter for timestamp input - RFC3852 + file or RFC3339 + value
-     *
-     * @param timestampArgument
-     */
-    public void setTimestampArgument(String timestampArgument) {
-        this.timestampArgument = timestampArgument;
     }
 
     /**

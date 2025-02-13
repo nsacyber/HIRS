@@ -3,6 +3,7 @@ package hirs.structs.elements.tpm;
 import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
 import hirs.structs.elements.StructElements;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -12,18 +13,11 @@ import java.util.Arrays;
  */
 @StructElements(elements = {"keyLength", "key"})
 public class StorePubKey implements Struct {
-
+    @Getter
     @StructElementLength(fieldName = "key")
     private int keyLength;
 
     private byte[] key;
-
-    /**
-     * @return length of the key field
-     */
-    public int getKeyLength() {
-        return keyLength;
-    }
 
     /**
      * @return contains the public key information which varies depending on the key algorithm. In
