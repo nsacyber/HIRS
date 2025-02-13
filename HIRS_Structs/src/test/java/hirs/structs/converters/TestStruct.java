@@ -3,10 +3,12 @@ package hirs.structs.converters;
 import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
 import hirs.structs.elements.StructElements;
+import lombok.Getter;
 
 /**
  * A Struct class designed to fully test the design of the converter being tested.
  */
+@Getter
 @StructElements(
         elements = {"testShort", "testEmbeddedStruct", "testByte", "testVariableStructLength",
                 "testVariableStruct"})
@@ -52,48 +54,4 @@ public class TestStruct implements Struct {
         return result;
     }
 
-    /**
-     * Getter.
-     *
-     * @return value
-     */
-    public byte getTestByte() {
-        return testByte;
-    }
-
-    /**
-     * Getter.
-     *
-     * @return value
-     */
-    public short getTestShort() {
-        return testShort;
-    }
-
-    /**
-     * Getter.
-     *
-     * @return value
-     */
-    public TestEmbeddedStruct getTestEmbeddedStruct() {
-        return testEmbeddedStruct;
-    }
-
-    /**
-     * Getter.
-     *
-     * @return value
-     */
-    public TestVariableStruct getTestVariableStruct() {
-        return testVariableStruct;
-    }
-
-    /**
-     * Getter.
-     *
-     * @return value
-     */
-    public int getTestVariableStructLength() {
-        return testVariableStructLength;
-    }
 }

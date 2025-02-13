@@ -1,5 +1,7 @@
 package hirs.swid;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.Extension;
@@ -12,8 +14,24 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.DecoderException;
 
-import java.io.*;
-import java.security.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -24,6 +42,7 @@ import java.util.List;
 /**
  * This class parses private key, public key, and certificate for use in their respective java.security objects.
  */
+@Getter
 public class CredentialParser {
     private static final String X509 = "X.509";
     private static final String JKS = "JKS";
@@ -34,25 +53,13 @@ public class CredentialParser {
     private static final String PKCS8_FOOTER = "-----END PRIVATE KEY-----";
     private static final String CERTIFICATE_HEADER = "-----BEGIN CERTIFICATE-----";
     private static final String CERTIFICATE_FOOTER = "-----END CERTIFICATE-----";
+
+    @Setter
     private X509Certificate certificate;
+
     private PrivateKey privateKey;
+
     private PublicKey publicKey;
-
-    public X509Certificate getCertificate() {
-        return certificate;
-    }
-
-    public void setCertificate(X509Certificate certificate) {
-        this.certificate = certificate;
-    }
-
-    public PrivateKey getPrivateKey() {
-        return privateKey;
-    }
-
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
 
     public void parseJKSCredentials(String jksKeystore) {
         KeyStore.PrivateKeyEntry privateKeyEntry =
@@ -78,6 +85,7 @@ public class CredentialParser {
      * This method extracts certificate bytes from a string. The bytes are assumed to be
      * PEM format, and a header and footer are concatenated with the input string to
      * facilitate proper parsing.
+     *
      * @param pemString the input string
      * @return an X509Certificate created from the string
      * @throws CertificateException if instantiating the CertificateFactory errors
@@ -86,10 +94,10 @@ public class CredentialParser {
         try {
             CertificateFactory factory = CertificateFactory.getInstance(X509);
             InputStream inputStream = new ByteArrayInputStream((CERTIFICATE_HEADER
-                                                                + System.lineSeparator()
-                                                                + pemString
-                                                                + System.lineSeparator()
-                                                                + CERTIFICATE_FOOTER).getBytes());
+                    + System.lineSeparator()
+                    + pemString
+                    + System.lineSeparator()
+                    + CERTIFICATE_FOOTER).getBytes());
             return (X509Certificate) factory.generateCertificate(inputStream);
         } catch (CertificateException e) {
             throw e;
@@ -98,6 +106,7 @@ public class CredentialParser {
 
     /**
      * This method returns the X509Certificate object from a PEM certificate file.
+     *
      * @param certificateFile
      * @return
      * @throws FileNotFoundException
@@ -111,6 +120,7 @@ public class CredentialParser {
      * This method returns the X509Certificate found in a PEM file.
      * Unchecked typcase warnings are suppressed because the CertificateFactory
      * implements X509Certificate objects explicitly.
+     *
      * @param filename pem file
      * @return a list containing all X509Certificates extracted
      */
@@ -158,6 +168,7 @@ public class CredentialParser {
      * Both PKCS1 and PKCS8 formats are handled.
      * Algorithm argument is present to allow handling of multiple encryption algorithms,
      * but for now it is always RSA.
+     *
      * @param filename
      * @return
      */
@@ -218,6 +229,7 @@ public class CredentialParser {
 
     /**
      * This method reads a PKCS1 keypair from a PEM file.
+     *
      * @param filename
      * @return
      */
@@ -232,12 +244,14 @@ public class CredentialParser {
 
     /**
      * This method returns the private key from a JKS keystore.
+     *
      * @param keystoreFile
      * @param alias
      * @param password
      * @return KeyStore.PrivateKeyEntry
      */
-    private KeyStore.PrivateKeyEntry parseKeystorePrivateKey(String keystoreFile, String alias, String password) {
+    private KeyStore.PrivateKeyEntry parseKeystorePrivateKey(String keystoreFile, String alias,
+                                                             String password) {
         KeyStore keystore = null;
         KeyStore.PrivateKeyEntry privateKey = null;
         try {
@@ -247,7 +261,8 @@ public class CredentialParser {
                     new KeyStore.PasswordProtection(password.toCharArray()));
         } catch (FileNotFoundException e) {
             System.out.println("Cannot locate keystore " + keystoreFile);
-        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException | CertificateException | IOException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException |
+                 CertificateException | IOException e) {
             e.printStackTrace();
         }
 
@@ -256,6 +271,7 @@ public class CredentialParser {
 
     /**
      * This method returns the authorityInfoAccess from an X509Certificate.
+     *
      * @return
      * @throws IOException
      */
@@ -264,7 +280,7 @@ public class CredentialParser {
         byte[] extension = certificate.getExtensionValue(Extension.authorityInfoAccess.getId());
         if (extension != null && extension.length > 0) {
             AuthorityInformationAccess aia = AuthorityInformationAccess.getInstance(
-                                    JcaX509ExtensionUtils.parseExtensionValue(extension));
+                    JcaX509ExtensionUtils.parseExtensionValue(extension));
             for (AccessDescription ad : aia.getAccessDescriptions()) {
                 if (ad.getAccessMethod().toString().equals(SwidTagConstants.CA_ISSUERS)) {
                     sb.append("CA issuers - ");
@@ -279,6 +295,7 @@ public class CredentialParser {
 
     /**
      * This method returns the subjectKeyIdentifier from the local X509Certificate.
+     *
      * @return the String representation of the subjectKeyIdentifier
      * @throws IOException
      */
@@ -293,6 +310,7 @@ public class CredentialParser {
 
     /**
      * This method returns the subjectKeyIdentifier from a given X509Certificate.
+     *
      * @param certificate the cert to pull the subjectKeyIdentifier from
      * @return the String representation of the subjectKeyIdentifier
      * @throws IOException

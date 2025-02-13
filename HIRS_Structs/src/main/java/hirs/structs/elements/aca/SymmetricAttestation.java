@@ -4,6 +4,7 @@ import hirs.structs.elements.Struct;
 import hirs.structs.elements.StructElementLength;
 import hirs.structs.elements.StructElements;
 import hirs.structs.elements.tpm.SymmetricKeyParams;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -15,30 +16,20 @@ import java.util.Arrays;
 @StructElements(elements = {"credentialSize", "algorithm", "credential"})
 public class SymmetricAttestation implements Struct {
 
+    /**
+     * the size of the credential block.
+     */
+    @Getter
     @StructElementLength(fieldName = "credential")
     private int credentialSize;
 
+    /**
+     * the algorithm and other meta data regarding the key.
+     */
+    @Getter
     private SymmetricKeyParams algorithm;
 
     private byte[] credential;
-
-    /**
-     * Gets the credential block size.
-     *
-     * @return the size of the credential block
-     */
-    public int getCredentialSize() {
-        return credentialSize;
-    }
-
-    /**
-     * Gets the key parameters for the credential.
-     *
-     * @return the algorithm and other meta data regarding the key
-     */
-    public SymmetricKeyParams getAlgorithm() {
-        return algorithm;
-    }
 
     /**
      * Gets the credential block.
