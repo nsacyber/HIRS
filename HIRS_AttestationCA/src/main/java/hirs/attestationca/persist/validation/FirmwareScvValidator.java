@@ -338,7 +338,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         return pcrAppraisalStatus;
     }
 
-    private static void logAndReportError(AppraisalStatus status, String errorString) {
+    private static void logAndReportError(final AppraisalStatus status, final String errorString) {
         status.setMessage(errorString);
         log.error(errorString);
     }
