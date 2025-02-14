@@ -1306,8 +1306,8 @@ public class SupplyChainCredentialValidatorTest {
     }
 
     /**
-     * Second test that tests that TPM 2.0 Platform Credentials validate correctly against the device info report
-     * when there are components present, and when the PlatformSerial field holds the system's
+     * Second test that tests that TPM 2.0 Platform Credentials validate correctly against the device info
+     * report when there are components present, and when the PlatformSerial field holds the system's
      * serial number instead of the baseboard serial number.
      *
      * @throws IOException        if unable to set up DeviceInfoReport from resource file

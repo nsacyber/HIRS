@@ -265,12 +265,10 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             List<ComponentIdentifierV2> allV2PcComponents
                     = new ArrayList<>(platformCredential.getComponentIdentifiersV2());
 
-            if (componentInfos == null) {
-                log.error("The device's reported list of components is null.");
-                passesValidation = false;
-            } else if (componentInfos.size() != allV2PcComponents.size()) {
+            if (componentInfos.size() != allV2PcComponents.size()) {
                 log.error(
-                        "The device's reported list of components' sizes (size of {}) do not match the size (size of {}) "
+                        "The device's reported list of components' sizes (size of {}) " +
+                                "do not match the size (size of {}) "
                                 + "of the platform credential's version 2 component identifiers.",
                         componentInfos.size(), allV2PcComponents.size());
 
