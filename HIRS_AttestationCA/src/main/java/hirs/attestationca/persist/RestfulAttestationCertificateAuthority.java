@@ -108,7 +108,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
      * the client's desired attestation key, if the correct nonce is supplied.
      *
      * @param certificateRequest request containing nonce from earlier identity
-     *                           *                           claim handshake
+     *                           claim handshake
      * @return The response to the client provisioner.
      */
     @Override

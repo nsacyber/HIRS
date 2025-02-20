@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
  *      removed (2) }
  * </pre>
  */
+@Getter
 @AllArgsConstructor
 public enum AttributeStatus {
     /**
@@ -35,6 +36,5 @@ public enum AttributeStatus {
      */
     EMPTY_STATUS(StringUtils.EMPTY);
 
-    @Getter
     private final String value;
 }

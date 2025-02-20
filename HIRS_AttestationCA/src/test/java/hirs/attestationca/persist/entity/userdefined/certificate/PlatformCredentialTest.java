@@ -3,10 +3,11 @@ package hirs.attestationca.persist.entity.userdefined.certificate;
 import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfiguration;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformProperty;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TBBSecurityAssertion;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.encoders.Base64;
@@ -439,10 +440,10 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Path certPath = Paths.get(resource.toURI());
 
         PlatformCredential platformCert = new PlatformCredential(certPath);
-        PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
+        PlatformConfigurationV1 platformConfigV1 = platformCert.getPlatformConfigurationV1();
 
         //Check component identifier
-        List<ComponentIdentifier> allComponents = platformConfig.getComponentIdentifier();
+        List<ComponentIdentifier> allComponents = platformConfigV1.getComponentIdentifiers();
         if (allComponents.isEmpty()) {
             Assertions.fail("Component Identifier is empty.");
         }
@@ -472,14 +473,14 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         component = allComponents.get(component5Position);
         Assertions.assertEquals("Ethernet Connection I219-LM", component.getComponentModel()
                 .getString());
-        Assertions.assertEquals("8c:0f:6f:72:c6:c5", component.getComponentAddress().get(0)
+        Assertions.assertEquals("8c:0f:6f:72:c6:c5", component.getComponentAddresses().get(0)
                 .getAddressValue()
                 .getString());
-        Assertions.assertEquals("ethernet mac", component.getComponentAddress().get(0)
+        Assertions.assertEquals("ethernet mac", component.getComponentAddresses().get(0)
                 .getAddressTypeValue());
 
         //Check Platform Properties
-        List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
+        List<PlatformProperty> platformProperties = platformConfigV1.getPlatformProperties();
         if (platformProperties.isEmpty()) {
             Assertions.fail("Platform Properties is empty.");
         }
@@ -499,7 +500,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Assertions.assertEquals("true", property.getPropertyValue().getString());
 
         //Check Platform Properties URI
-        URIReference platformPropertyUri = platformConfig.getPlatformPropertiesUri();
+        URIReference platformPropertyUri = platformConfigV1.getPlatformPropertiesUri();
 
         Assertions.assertNotNull(platformPropertyUri);
         Assertions.assertEquals("https://www.intel.com/platformproperties.xml",
@@ -522,13 +523,13 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Path certPath = Paths.get(resource.toURI());
 
         PlatformCredential platformCert = new PlatformCredential(certPath);
-        PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
+        PlatformConfigurationV1 platformConfigV1 = platformCert.getPlatformConfigurationV1();
 
         //Check component identifier
-        List<ComponentIdentifier> allComponents = platformConfig.getComponentIdentifier();
+        List<ComponentIdentifier> allComponents = platformConfigV1.getComponentIdentifiers();
         Assertions.assertTrue(allComponents.isEmpty());
 
-        List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
+        List<PlatformProperty> platformProperties = platformConfigV1.getPlatformProperties();
         if (platformProperties.isEmpty()) {
             Assertions.fail("Platform Properties is empty.");
         }
@@ -560,10 +561,10 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Path certPath = Paths.get(resource.toURI());
 
         PlatformCredential platformCert = new PlatformCredential(certPath);
-        PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
+        PlatformConfigurationV1 platformConfigV1 = platformCert.getPlatformConfigurationV1();
 
         //Check component identifier
-        List<ComponentIdentifier> allComponents = platformConfig.getComponentIdentifier();
+        List<ComponentIdentifier> allComponents = platformConfigV1.getComponentIdentifiers();
         if (allComponents.isEmpty()) {
             Assertions.fail("Component Identifier is empty.");
         }
@@ -589,7 +590,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
                 .getString());
 
         //Check Platform Properties
-        List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
+        List<PlatformProperty> platformProperties = platformConfigV1.getPlatformProperties();
         if (platformProperties.isEmpty()) {
             Assertions.fail("Platform Properties is empty.");
         }
@@ -597,7 +598,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Assertions.assertEquals(platformProperties.size(), 2);
 
         //Check Platform Properties URI
-        URIReference platformPropertyUri = platformConfig.getPlatformPropertiesUri();
+        URIReference platformPropertyUri = platformConfigV1.getPlatformPropertiesUri();
 
         Assertions.assertNotNull(platformPropertyUri);
         Assertions.assertEquals("https://www.intel.com/platformproperties.xml",
@@ -629,10 +630,10 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Path certPath = Paths.get(resource.toURI());
 
         PlatformCredential platformCert = new PlatformCredential(certPath);
-        PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
+        PlatformConfigurationV1 platformConfigV1 = platformCert.getPlatformConfigurationV1();
 
         //Check component identifier
-        List<ComponentIdentifier> allComponents = platformConfig.getComponentIdentifier();
+        List<ComponentIdentifier> allComponents = platformConfigV1.getComponentIdentifiers();
         if (allComponents.isEmpty()) {
             Assertions.fail("Component Identifier is empty.");
         }
@@ -651,15 +652,15 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         //Check component #7
         final int component7Position = 6;
         component = allComponents.get(component7Position);
-        Assertions.assertTrue(component.getComponentAddress().size() > 0);
-        Assertions.assertEquals("8c:0f:6f:72:c6:c5", component.getComponentAddress().get(0)
+        Assertions.assertFalse(component.getComponentAddresses().isEmpty());
+        Assertions.assertEquals("8c:0f:6f:72:c6:c5", component.getComponentAddresses().get(0)
                 .getAddressValue()
                 .getString());
-        Assertions.assertEquals("ethernet mac", component.getComponentAddress().get(0)
+        Assertions.assertEquals("ethernet mac", component.getComponentAddresses().get(0)
                 .getAddressTypeValue());
 
         //Check Platform Properties
-        List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
+        List<PlatformProperty> platformProperties = platformConfigV1.getPlatformProperties();
         if (platformProperties.isEmpty()) {
             Assertions.fail("Platform Properties is empty.");
         }
@@ -667,7 +668,7 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Assertions.assertEquals(platformProperties.size(), 2);
 
         //Check Platform Properties URI
-        URIReference platformPropertyUri = platformConfig.getPlatformPropertiesUri();
+        URIReference platformPropertyUri = platformConfigV1.getPlatformPropertiesUri();
 
         Assertions.assertNotNull(platformPropertyUri);
         Assertions.assertEquals("https://www.intel.com/platformproperties.xml",
@@ -700,17 +701,17 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Path certPath = Paths.get(resource.toURI());
 
         PlatformCredential platformCert = new PlatformCredential(certPath);
-        PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
+        PlatformConfigurationV2 platformConfigV2 = platformCert.getPlatformConfigurationV2();
 
         //Check component identifier
-        List<ComponentIdentifier> allComponents = platformConfig.getComponentIdentifier();
+        List<ComponentIdentifierV2> allComponents = platformConfigV2.getComponentIdentifiers();
         Assertions.assertFalse(allComponents.isEmpty());
 
         final int component6Position = 5;
-        ComponentIdentifier component = allComponents.get(component6Position);
+        ComponentIdentifierV2 component = allComponents.get(component6Position);
         Assertions.assertTrue(component.isVersion2());
 
-        List<PlatformProperty> platformProperties = platformConfig.getPlatformProperties();
+        List<PlatformProperty> platformProperties = platformConfigV2.getPlatformProperties();
         if (platformProperties.isEmpty()) {
             Assertions.fail("Platform Properties is empty.");
         }
@@ -749,15 +750,15 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         Path certPath = Paths.get(resource.toURI());
 
         PlatformCredential platformCert = new PlatformCredential(certPath);
-        PlatformConfiguration platformConfig = platformCert.getPlatformConfiguration();
+        PlatformConfigurationV2 platformConfigV2 = platformCert.getPlatformConfigurationV2();
 
-        Assertions.assertInstanceOf(PlatformConfigurationV2.class, platformConfig);
-        Assertions.assertEquals(platformConfig.getPlatformPropertiesUri()
+        Assertions.assertInstanceOf(PlatformConfigurationV2.class, platformConfigV2);
+        Assertions.assertEquals(platformConfigV2.getPlatformPropertiesUri()
                         .getUniformResourceIdentifier().toString(),
                 "https://www.intel.com/platformproperties.xml");
-//        Assertions.assertNotNull(platformConfig.getComponentIdentifierUri());
+//        Assertions.assertNotNull(platformConfigV1.getComponentIdentifiersUri());
 
-//        Assertions.assertEquals(platformConfig.getComponentIdentifierUri()
+//        Assertions.assertEquals(platformConfigV1.getComponentIdentifiersUri()
 //                        .getUniformResourceIdentifier().toString(),
 //                "https://www.intel.com/platformidentifiers.xml");
 
