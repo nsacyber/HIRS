@@ -6,6 +6,7 @@ import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.AttributeStatus;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
@@ -265,47 +266,97 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             List<ComponentIdentifierV2> allV2PcComponents
                     = new ArrayList<>(platformCredential.getComponentIdentifiersV2());
 
-            if (componentInfos.size() != allV2PcComponents.size()) {
-                log.error(
-                        "The device's reported list of components' sizes (size of {}) " +
-                                "do not match the size (size of {}) "
-                                + "of the platform credential's version 2 component identifiers.",
-                        componentInfos.size(), allV2PcComponents.size());
 
-                passesValidation = false;
-            } else {
-                // All V2 components listed in the Platform Credential must have a manufacturer and model
-                for (ComponentIdentifierV2 pcComponent : allV2PcComponents) {
-                    fieldValidation = !isRequiredASN1StringFieldBlank("componentManufacturer",
-                            pcComponent.getComponentManufacturer());
+            // All V2 components listed in the Platform Credential must have a manufacturer and model
+            for (ComponentIdentifierV2 pcComponent : allV2PcComponents) {
+                fieldValidation = !isRequiredASN1StringFieldBlank("componentManufacturer",
+                        pcComponent.getComponentManufacturer());
+
+                if (!fieldValidation) {
+                    resultMessage.append("Component manufacturer is empty\n");
+                }
+
+                passesValidation &= fieldValidation;
+
+                fieldValidation = !isRequiredASN1StringFieldBlank("componentModel",
+                        pcComponent.getComponentModel());
+
+                if (!fieldValidation) {
+                    resultMessage.append("Component model is empty\n");
+                }
+
+                passesValidation &= fieldValidation;
+
+                if (pcComponent.getComponentClass() == null) {
+                    passesValidation = false;
+                } else {
+                    ComponentClass pcComponentClass = pcComponent.getComponentClass();
+
+                    // Component Class Registry Type field
+
+                    fieldValidation = !isRequiredStringFieldBlank("registryType",
+                            pcComponentClass.getRegistryType());
 
                     if (!fieldValidation) {
-                        resultMessage.append("Component manufacturer is empty\n");
+                        resultMessage.append("Component class registry type is empty or null\n");
                     }
 
                     passesValidation &= fieldValidation;
 
-                    fieldValidation = !isRequiredASN1StringFieldBlank("componentModel",
-                            pcComponent.getComponentModel());
+                    // Component Class Component Identifier field
+
+                    fieldValidation = !isRequiredStringFieldBlank("componentIdentifier",
+                            pcComponentClass.getComponentIdentifier());
 
                     if (!fieldValidation) {
-                        resultMessage.append("Component model is empty\n");
+                        resultMessage.append("Component class component identifier is empty or null\n");
                     }
 
                     passesValidation &= fieldValidation;
 
-                    if (pcComponent.getComponentClass() == null) {
-                        passesValidation = false;
-                    } else {
-                        fieldValidation = !isRequiredStringFieldBlank("componentClassRegistry",
-                                pcComponent.getComponentClass().getRegistryType());
+                    // Component Class category field
 
-                        if (!fieldValidation) {
-                            resultMessage.append("Component class registry is empty\n");
-                        }
+                    fieldValidation = !isRequiredStringFieldBlank("category",
+                            pcComponentClass.getCategory());
 
-                        passesValidation &= fieldValidation;
+                    if (!fieldValidation) {
+                        resultMessage.append("Component class category is empty or null\n");
                     }
+
+                    passesValidation &= fieldValidation;
+
+                    // Component Class Category String field
+
+                    fieldValidation = !isRequiredStringFieldBlank("categoryStr",
+                            pcComponentClass.getCategoryStr());
+
+                    if (!fieldValidation) {
+                        resultMessage.append("Component class category string is empty or null\n");
+                    }
+
+                    passesValidation &= fieldValidation;
+
+                    // Component Class Component String field
+
+                    fieldValidation = !isRequiredStringFieldBlank("componentStr",
+                            pcComponentClass.getComponentStr());
+
+                    if (!fieldValidation) {
+                        resultMessage.append("Component class string is empty or null\n");
+                    }
+
+                    passesValidation &= fieldValidation;
+
+                    // Component Class Component field
+
+                    fieldValidation = !isRequiredStringFieldBlank("component",
+                            pcComponentClass.getComponent());
+
+                    if (!fieldValidation) {
+                        resultMessage.append("Component class component is empty or null\n");
+                    }
+
+                    passesValidation &= fieldValidation;
                 }
             }
         }
