@@ -34,8 +34,8 @@
 
         <script>
             $(document).ready(function() {
-                var url = pagePath +'/list';
-                var columns = [
+                let url = pagePath +'/list';
+                let columns = [
                         {data: 'manufacturer',
                             orderable: true,
                             searchable:false},

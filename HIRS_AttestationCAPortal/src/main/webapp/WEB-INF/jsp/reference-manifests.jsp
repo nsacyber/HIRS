@@ -45,8 +45,8 @@
 
         <script>
             $(document).ready(function() {
-                var url = pagePath +'/list';
-                var columns = [
+                let url = pagePath +'/list';
+                let columns = [
                         {data: 'tagId'},
                         {data: 'rimType'},
                         {data: 'platformManufacturer'},
@@ -60,7 +60,7 @@
                                 // Set up a delete icon with link to handleDeleteRequest().
                                 // sets up a hidden input field containing the ID which is
                                 // used as a parameter to the REST POST call to delete
-                                var html = '';
+                                let html = '';
                                 html += rimDetailsLink(full.id);
                                 html += rimDownloadLink(full.id, pagePath);
                                 html += rimDeleteLink(full.id, pagePath);

@@ -2,7 +2,7 @@ name: Dotnet Provisioner Unit Tests
 
 on: push
 env:
-  DOTNET_VERSION: '6.0'
+  DOTNET_VERSION: '8S.0'
 jobs:
   dotnet_provisioner_unit_tests:
     name: Restore and Run Unit Tests
@@ -97,7 +97,7 @@ jobs:
 
   Evaluator:
     name: Evaluate Tests
-    needs: [dotnet_provisioner_unit_tests]
+    needs: [ dotnet_provisioner_unit_tests ]
     runs-on: ubuntu-latest
     continue-on-error: false
     steps:
@@ -110,7 +110,7 @@ jobs:
         run: |
           mkdir artifacts
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           path: artifacts
 

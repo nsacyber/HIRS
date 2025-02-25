@@ -96,8 +96,8 @@
         </div>
         <script>
             $(document).ready(function() {
-                var url = pagePath +'/list';
-                var signature = ${acaCertData.signature};
+                let url = pagePath +'/list';
+                let signature = ${acaCertData.signature};
 
                 //Format validity time
                 $("#validity span").each(function(){
@@ -109,11 +109,11 @@
 
                 <c:if test="${not empty acaCertData.encodedPublicKey}">
                     //Change publick key byte to hex
-                    var publicKey = ${acaCertData.encodedPublicKey};
+                    let publicKey = ${acaCertData.encodedPublicKey};
                     $("#encodedPublicKey").html(byteToHexString(publicKey));
                 </c:if>
 
-                var columns = [
+                let columns = [
                         {data: 'issuer'},
                         {data: 'subject'},
                         {
@@ -138,7 +138,7 @@
                                 // Set up a delete icon with link to handleDeleteRequest().
                                 // sets up a hidden input field containing the ID which is
                                 // used as a parameter to the REST POST call to delete
-                                var html = '';
+                                let html = '';
                                 html += certificateDetailsLink('certificateauthority', full.id, true);
                                 html += certificateDownloadLink(full.id, pagePath);
                                 html += certificateDeleteLink(full.id, pagePath);

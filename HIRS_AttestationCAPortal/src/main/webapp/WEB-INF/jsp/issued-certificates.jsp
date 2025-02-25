@@ -42,8 +42,8 @@
         </div>
         <script>
             $(document).ready(function() {
-                var url = pagePath + '/list';
-                var columns = [
+                let url = pagePath + '/list';
+                let columns = [
                         {
                             data: 'deviceName',
                             render: function (data, type, full, meta) {
@@ -83,10 +83,10 @@
                             searchable:false,
                             render: function (data, type, full, meta) {
                                 //Display endorsement credential
-                                var html = '';
+                                let html = '';
                                 if (full.endorsementCredential !== undefined
                                         && full.endorsementCredential !== null){
-                                    var id = full.endorsementCredential.id;
+                                    let id = full.endorsementCredential.id;
                                     html += certificateDetailsLink('endorsement', id, false) +'&nbsp;';
                                 }
                                 return html;
@@ -98,13 +98,13 @@
                             searchable:false,
                             render: function (data, type, full, meta) {
                                 //Display platform credential
-                                var html = '';
+                                let html = '';
                                 if (full.platformCredentials !== undefined
                                         && full.platformCredentials !== null) {
-                                    var size = full.platformCredentials.length;
+                                    let size = full.platformCredentials.length;
 
-                                    for(var i = 0; i < size; i++) {
-                                        var id = full.platformCredentials[i].id;
+                                    for(let i = 0; i < size; i++) {
+                                        let id = full.platformCredentials[i].id;
                                         html += certificateDetailsLink('platform', id, false) +'&nbsp;';
                                     }
                                 }
@@ -118,7 +118,7 @@
                             searchable:false,
                             render: function(data, type, full, meta) {
                                 // set up link to details page
-                                var html = '';
+                                let html = '';
                                 html += certificateDetailsLink('issued', full.id, true);
                                 html += certificateDownloadLink(full.id, pagePath);
                                 html += certificateDeleteLink(full.id, pagePath);

@@ -237,8 +237,8 @@ public class DevicePageController extends PageController<NoPageParams> {
         List<UUID> deviceIds = new ArrayList<>();
 
         // loop all the devices
-        for (int i = 0; i < deviceList.size(); i++) {
-            deviceIds.add(deviceList.get(i).getId());
+        for (Device device : deviceList) {
+            deviceIds.add(device.getId());
         }
 
         return deviceIds;

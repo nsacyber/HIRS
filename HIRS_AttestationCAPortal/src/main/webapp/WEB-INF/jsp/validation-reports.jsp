@@ -57,18 +57,18 @@
         </div>
         <script>
             $(document).ready(function () {
-                var url = portal + '/validation-reports/list';
-                var columns = [
+                let url = portal + '/validation-reports/list';
+                let columns = [
                     {
                         data: 'overallValidationResult',
                         searchable: false,
                         render: function (data, type, full, meta) {
-                            var html = '';
-                            var unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
+                            let html = '';
+                            let unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
 
                             // create status icon
-                            var result = full.overallValidationResult;
-                            var overallMessage = full.message;
+                            let result = full.overallValidationResult;
+                            let overallMessage = full.message;
                             if (result) {
                                 switch (result) {
                                     case "PASS":
@@ -135,21 +135,21 @@
                 ];
 
                 //Set data tables
-                var dataTable = setDataTables("#reportTable", url, columns);
+                let dataTable = setDataTables("#reportTable", url, columns);
                 dataTable.order([1, 'desc']).draw();    //order by createTime
             });
 
             $("#download").submit(function(e) {
-                var tableLength = $("#reportTable").rows;
-                var createTimes = "";
-                var deviceNames = "";
+                let tableLength = $("#reportTable").rows;
+                let createTimes = "";
+                let deviceNames = "";
                 $('#reportTable tr').not('thead tr').each(function() {
                     createTimes += $(this).find("td").eq(1).html() + ",";
                     deviceNames += $(this).find("td").eq(2).html() + ",";
                 });
                 createTimes = createTimes.substring(0, createTimes.length - 1);
                 deviceNames = deviceNames.substring(0, deviceNames.length - 1);
-                var params = [
+                let params = [
                                 {
                                     name: 'createTimes',
                                     value: createTimes
@@ -178,16 +178,16 @@
              * string is returned (and no icon will be displayed).
              */
             function getValidationDisplayHtml(full, validation_type) {
-                var html = '';
+                let html = '';
                 // loop through all the validations, looking for the one matching
                 // the validation_type.
-                for (var i = 0; i < full.validations.length; i++) {
-                    var curValidation = full.validations[i];
-                    var curResult = curValidation.validationResult;
-                    var curMessage = curValidation.message;
+                for (let i = 0; i < full.validations.length; i++) {
+                    let curValidation = full.validations[i];
+                    let curResult = curValidation.validationResult;
+                    let curMessage = curValidation.message;
 
                     if (curValidation.validationType === validation_type) {
-                        var unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
+                        let unknownStatus = '<img class="icon" src="${unknownIcon}" title="${unknownText}"/>';
 
                         // display appropriate icon based on result
                         if (curResult) {
@@ -195,7 +195,7 @@
                             // if this validation is associated with a certificate,
                             // link to the details page
                             if (curValidation.certificatesUsed.length > 0) {
-                                var certType = '';
+                                let certType = '';
                                 switch (validation_type) {
                                     case "PLATFORM_CREDENTIAL":
                                     case "PLATFORM_CREDENTIAL_ATTRIBUTES":

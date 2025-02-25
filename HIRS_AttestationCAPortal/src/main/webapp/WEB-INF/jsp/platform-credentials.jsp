@@ -51,8 +51,8 @@
 
         <script>
             $(document).ready(function() {
-                var url = pagePath +'/list';
-                var columns = [
+                let url = pagePath +'/list';
+                let columns = [
                         {
                             data: 'deviceName',
                             render: function (data, type, full, meta) {
@@ -96,9 +96,9 @@
                             render: function (data, type, full, meta) {
                                 //Display endorsement credential
                                 if(full.endorsementCredential === null) return '';
-                                var html = '';
+                                let html = '';
 
-                                var id = full.endorsementCredential.id;
+                                let id = full.endorsementCredential.id;
                                 html = certificateDetailsLink('endorsement', id, false) +'&nbsp;';
 
                                 return html;
@@ -112,7 +112,7 @@
                                 // Set up a delete icon with link to handleDeleteRequest().
                                 // sets up a hidden input field containing the ID which is
                                 // used as a parameter to the REST POST call to delete
-                                var html = '';
+                                let html = '';
                                 html += certificateDetailsLink('platform', full.id, true);
                                 html += certificateDownloadLink(full.id, pagePath);
                                 html += certificateDeleteLink(full.id, pagePath);

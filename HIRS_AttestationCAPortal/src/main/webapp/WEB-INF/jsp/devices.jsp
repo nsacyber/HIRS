@@ -43,13 +43,13 @@
         </div>
         <script>
             $(document).ready(function() {
-                var url = portal + '/devices/list';
-                var columns = [
+                let url = portal + '/devices/list';
+                let columns = [
                         {
                             data: 'supplyChainValidationStatus',
                             searchable:false,
                             render: function(data, type, full, meta) {
-                                var html = '';
+                                let html = '';
                                 switch(full.device.supplyChainValidationStatus){
                                     case "PASS":
                                         html= '<img src="${passIcon}" title="${passText}">';
@@ -80,11 +80,11 @@
                             render: function (data, type, full, meta) {
                                 //Display issued attestation certificate
                                 if(full.IssuedAttestationCertificate === undefined) return '';
-                                var size = full.IssuedAttestationCertificate.length;
-                                var html = '';
+                                let size = full.IssuedAttestationCertificate.length;
+                                let html = '';
 
-                                for(var i = 0; i < size; i++) {
-                                    var id = full.IssuedAttestationCertificate[i].id;
+                                for(let i = 0; i < size; i++) {
+                                    let id = full.IssuedAttestationCertificate[i].id;
                                     html += certificateDetailsLink('issued', id, false);
                                 }
 
@@ -98,11 +98,11 @@
                             render: function (data, type, full, meta) {
                                 //Display platform credential
                                 if(full.PlatformCredential === undefined) return '';
-                                var size = full.PlatformCredential.length;
-                                var html = '';
+                                let size = full.PlatformCredential.length;
+                                let html = '';
 
-                                for(var i = 0; i < size; i++) {
-                                    var id = full.PlatformCredential[i].id;
+                                for(let i = 0; i < size; i++) {
+                                    let id = full.PlatformCredential[i].id;
                                     html += certificateDetailsLink('platform', id, false) + '&nbsp;';
                                 }
 
@@ -116,11 +116,11 @@
                             render: function (data, type, full, meta) {
                                 //Display endorsement credential
                                 if(full.EndorsementCredential === undefined) return '';
-                                var size = full.EndorsementCredential.length;
-                                var html = '';
+                                let size = full.EndorsementCredential.length;
+                                let html = '';
 
-                                for(var i = 0; i < size; i++) {
-                                    var id = full.EndorsementCredential[i].id;
+                                for(let i = 0; i < size; i++) {
+                                    let id = full.EndorsementCredential[i].id;
                                     html += certificateDetailsLink('endorsement', id, false) +'&nbsp;';
                                 }
 

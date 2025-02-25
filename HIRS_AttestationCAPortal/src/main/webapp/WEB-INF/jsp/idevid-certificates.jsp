@@ -42,8 +42,8 @@
         </div>
         <script>
             $(document).ready(function() {
-                var url = pagePath +'/list';
-                var columns = [
+                let url = pagePath +'/list';
+                let columns = [
                         {data: 'issuer'},
                         {data: 'subject'},
                         {
@@ -68,7 +68,7 @@
                                 // Set up a delete icon with link to handleDeleteRequest().
                                 // sets up a hidden input field containing the ID which is
                                 // used as a parameter to the REST POST call to delete
-                                var html = '';
+                                let html = '';
                                 html += certificateDetailsLink('idevid', full.id, true);
                                 html += certificateDownloadLink(full.id, pagePath);
                                 html += certificateDeleteLink(full.id, pagePath);
