@@ -1,30 +1,36 @@
-//Convert a byte to HEX
-function byteToHexString(arr){
-    var str = "";
-    $.each(arr, function(index, value){
+/**
+ * Converts a byte to HEX.
+ */
+function byteToHexString(arr) {
+    let str = "";
+    $.each(arr, function (index, value) {
         str += ('0' + (value & 0xFF).toString(16)).slice(-2) + ":​";
     });
     return (str.substring(0, str.length - 2)).toUpperCase();
 }
 
-//Parse hex string for display
+/**
+ Parses hex string for display.
+*/
 function parseHexString(hexString) {
-    var str = hexString.toUpperCase();
+    let str = hexString.toUpperCase();
     //Do not parse if there is 2 characters
-    if(str.length === 2) {
+    if (str.length === 2) {
         return str;
     }
     return str.match(/.{2}/g).join(':​');
 }
 
-//Parse the HEX string value to display as byte hex string
-function parseSerialNumber(hexString){
-    var str = hexString.toUpperCase();
-    if(str.length % 2 !== 0) {
+/**
+ * Parses the HEX string value to display as byte hex string.
+ */
+function parseSerialNumber(hexString) {
+    let str = hexString.toUpperCase();
+    if (str.length % 2 !== 0) {
         str = '0' + hexString;
     }
     //Do not parse if there is 2 characters
-    if(str.length === 2) {
+    if (str.length === 2) {
         return str;
     }
     //Parse and return
@@ -38,9 +44,9 @@ function parseSerialNumber(hexString){
 * a POST call to delete the credential.
 */
 function handleDeleteRequest(id) {
-   if (confirm("Delete certificate?")) {
-       $('#deleteForm' + id).submit();
-   }
+    if (confirm("Delete certificate?")) {
+        $('#deleteForm' + id).submit();
+    }
 }
 
 /**
@@ -49,9 +55,9 @@ function handleDeleteRequest(id) {
 * a POST call to delete the reference integrity manifest.
 */
 function handleRimDeleteRequest(id) {
-   if (confirm("Delete RIM?")) {
-       $('#deleteForm' + id).submit();
-   }
+    if (confirm("Delete RIM?")) {
+        $('#deleteForm' + id).submit();
+    }
 }
 
 /**
@@ -63,7 +69,7 @@ function handleRimDeleteRequest(id) {
 * 
 */
 function setDataTables(id, url, columns) {
-    var dtable = $(id).DataTable({
+    let dtable = $(id).DataTable({
         processing: true,
         serverSide: true,
         ajax: {
@@ -87,21 +93,21 @@ function setDataTables(id, url, columns) {
 * @param sameType boolean indicating if the details is the same
 *       certificate type.
 */
-function certificateDetailsLink(type, id, sameType){
-    var href = portal + '/certificate-details?id=' + id + '&type=' + type;
-    var title = ""; 
-    var icon = icons;
+function certificateDetailsLink(type, id, sameType) {
+    let href = portal + '/certificate-details?id=' + id + '&type=' + type;
+    let title = "";
+    let icon = icons;
 
     //If the details is the same certificate type use assignment icon,
     //otherwise use the icon for the certificate type.
-    if(sameType){
-        title = "Details"; 
+    if (sameType) {
+        title = "Details";
         icon += '/ic_assignment_black_24dp.png';
     } else {
-        switch(type){
+        switch (type) {
             case "issued":
                 icon += "/ic_library_books_black_24dp.png";
-                title="View Issued Attestation Certificate Details"
+                title = "View Issued Attestation Certificate Details"
                 break;
             case "platform":
                 icon += "/ic_important_devices_black_24dp.png";
@@ -117,8 +123,8 @@ function certificateDetailsLink(type, id, sameType){
                 break;
         }
     }
-    var html = '<a href=' + href + '>'
-                + '<img src="' + icon + '" title="' + title + '"></a>';
+    let html = '<a href=' + href + '>'
+        + '<img src="' + icon + '" title="' + title + '"></a>';
     return html;
 }
 
@@ -127,16 +133,16 @@ function certificateDetailsLink(type, id, sameType){
 * type and ID with the corresponding icon.
 * @param id of the rim
 */
-function rimDetailsLink(id){
-    var href = portal + '/rim-details?id=' + id;
-    var title = ""; 
-    var icon = icons;
+function rimDetailsLink(id) {
+    let href = portal + '/rim-details?id=' + id;
+    let title = "";
+    let icon = icons;
 
-    title = "Details"; 
+    title = "Details";
     icon += '/ic_assignment_black_24dp.png';
 
-    var html = '<a href=' + href + '>'
-                + '<img src="' + icon + '" title="' + title + '"></a>';
+    let html = '<a href=' + href + '>'
+        + '<img src="' + icon + '" title="' + title + '"></a>';
     return html;
 }
 
@@ -145,14 +151,14 @@ function rimDetailsLink(id){
 * @param id of the certificate
 * @param pagePath path to the link
 */
-function certificateDeleteLink(id, pagePath){
-    var icon = icons + '/ic_delete_black_24dp.png';
-    var formURL = pagePath + "/delete";
+function certificateDeleteLink(id, pagePath) {
+    let icon = icons + '/ic_delete_black_24dp.png';
+    let formURL = pagePath + "/delete";
 
-    var html = '<a href="#!" onclick="handleDeleteRequest(\'' + id + '\')">'
-               + '<img src="' + icon + '" title="Delete"></a>'
-               + '<form id="deleteForm' + id + '" action="' + formURL + '" method="post">'
-               + '<input name="id" type="hidden" value="' + id + '"></form>';
+    let html = '<a href="#!" onclick="handleDeleteRequest(\'' + id + '\')">'
+        + '<img src="' + icon + '" title="Delete"></a>'
+        + '<form id="deleteForm' + id + '" action="' + formURL + '" method="post">'
+        + '<input name="id" type="hidden" value="' + id + '"></form>';
     return html;
 }
 
@@ -161,14 +167,14 @@ function certificateDeleteLink(id, pagePath){
 * @param id of the RIM
 * @param pagePath path to the link
 */
-function rimDeleteLink(id, pagePath){
-    var icon = icons + '/ic_delete_black_24dp.png';
-    var formURL = pagePath + "/delete";
+function rimDeleteLink(id, pagePath) {
+    let icon = icons + '/ic_delete_black_24dp.png';
+    let formURL = pagePath + "/delete";
 
-    var html = '<a href="#!" onclick="handleRimDeleteRequest(\'' + id + '\')">'
-               + '<img src="' + icon + '" title="Delete"></a>'
-               + '<form id="deleteForm' + id + '" action="' + formURL + '" method="post">'
-               + '<input name="id" type="hidden" value="' + id + '"></form>';
+    let html = '<a href="#!" onclick="handleRimDeleteRequest(\'' + id + '\')">'
+        + '<img src="' + icon + '" title="Delete"></a>'
+        + '<form id="deleteForm' + id + '" action="' + formURL + '" method="post">'
+        + '<input name="id" type="hidden" value="' + id + '"></form>';
     return html;
 }
 
@@ -177,12 +183,12 @@ function rimDeleteLink(id, pagePath){
 * @param id of the certificate
 * @param pagePath path to the link
 */
-function certificateDownloadLink(id, pagePath){
-    var icon = icons + '/ic_file_download_black_24dp.png';
-    var href = pagePath + '/download?id=' + id;
-    
-    var html = '<a href="' + href + '">'
-            + '<img src="' + icon + '" title="Download Certificate"></a>';
+function certificateDownloadLink(id, pagePath) {
+    let icon = icons + '/ic_file_download_black_24dp.png';
+    let href = pagePath + '/download?id=' + id;
+
+    let html = '<a href="' + href + '">'
+        + '<img src="' + icon + '" title="Download Certificate"></a>';
 
     return html;
 }
@@ -192,12 +198,12 @@ function certificateDownloadLink(id, pagePath){
 * @param id of the rim
 * @param pagePath path to the link
 */
-function rimDownloadLink(id, pagePath){
-    var icon = icons + '/ic_file_download_black_24dp.png';
-    var href = pagePath + '/download?id=' + id;
-    
-    var html = '<a href="' + href + '">'
-            + '<img src="' + icon + '" title="Download Reference Integrity Manifest"></a>';
+function rimDownloadLink(id, pagePath) {
+    let icon = icons + '/ic_file_download_black_24dp.png';
+    let href = pagePath + '/download?id=' + id;
+
+    let html = '<a href="' + href + '">'
+        + '<img src="' + icon + '" title="Download Reference Integrity Manifest"></a>';
 
     return html;
 }
@@ -207,10 +213,9 @@ function rimDownloadLink(id, pagePath){
 * @param date to format
 */
 function formatCertificateDate(dateText) {
-    var date = +dateText; // Convert to numeric
+    let date = +dateText; // Convert to numeric
 
-    if (date == 253402300799000)
-    {
+    if (date == 253402300799000) {
         return 'Indefinite';
     }
 
