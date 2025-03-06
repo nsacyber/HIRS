@@ -14,7 +14,6 @@ jakartaServletVersion = "3.0.0"
 jakartaXmlVersion = "4.0.2"
 jcommanderVersion = "2.0"
 lombokVersion = "1.18.36"
-logbackClassicVersion = "1.5.13"
 mariadbVersion = "3.5.1"
 minimalJsonVersion = "0.9.5"
 ospackageVersion = "11.2.0"
@@ -48,7 +47,6 @@ jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-ap
 jakarta-servlet = { module = "org.glassfish.web:jakarta.servlet.jsp.jstl", version.ref = "jakartaServletVersion" }
 jakarta-xml = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaXmlVersion" }
 jcommander = { module = "org.jcommander:jcommander", version.ref = "jcommanderVersion" }
-logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logbackClassicVersion" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
 mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadbVersion" }
 minimal-json = { module = "com.eclipsesource.minimal-json:minimal-json", version.ref = "minimalJsonVersion" }
