@@ -4,6 +4,9 @@ plugins {
 }
 
 configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -38,9 +41,6 @@ dependencies {
     // explicitly include the patched version of the spring framework webmvc dependency
     implementation libs.spring.framework.webmvc
 
-    // explicitly include the patched version of the logback-core dependency
-    implementation libs.logback.classic
-
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
@@ -48,12 +48,7 @@ dependencies {
     annotationProcessor libs.spotbugs.annotations
 
     testImplementation libs.commons.io
-
-    // explicitly include the patched version of the logback-core dependency
-    testImplementation libs.logback.classic
-
     testImplementation libs.spring.boot.starter.test
-
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
