@@ -8,7 +8,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1UTF8String;
 
 /**
- * Basic class that handle component addresses from the component identifier.
+ * Basic class that represents the component addresses from the component identifier object.
  * <pre>
  * componentAddress ::= SEQUENCE {
  *      addressType AddressType,

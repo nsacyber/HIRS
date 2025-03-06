@@ -42,10 +42,6 @@ dependencies {
     testAnnotationProcessor libs.lombok
 }
 
-test {
-    useJUnitPlatform()
-}
-
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {

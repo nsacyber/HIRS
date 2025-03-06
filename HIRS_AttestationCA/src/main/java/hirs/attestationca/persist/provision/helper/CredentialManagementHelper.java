@@ -16,7 +16,6 @@ import java.util.List;
 public final class CredentialManagementHelper {
 
     private CredentialManagementHelper() {
-
     }
 
     /**
@@ -48,7 +47,7 @@ public final class CredentialManagementHelper {
             );
         }
 
-        log.info("Parsing Endorsement Credential of length " + endorsementBytes.length);
+        log.info("Parsing Endorsement Credential of length {}", endorsementBytes.length);
 
         EndorsementCredential endorsementCredential;
         try {
@@ -58,16 +57,18 @@ public final class CredentialManagementHelper {
             log.error(iae.getMessage());
             throw iae;
         }
+
         int certificateHash = endorsementCredential.getCertificateHash();
         EndorsementCredential existingCredential = (EndorsementCredential) certificateRepository
                 .findByCertificateHash(certificateHash);
+
         if (existingCredential == null) {
-            log.info("No Endorsement Credential found with hash: " + certificateHash);
+            log.info("No Endorsement Credential found with hash: {}", certificateHash);
             endorsementCredential.setDeviceName(deviceName);
             return certificateRepository.save(endorsementCredential);
         } else if (existingCredential.isArchived()) {
-            // if the EK is stored in the DB and it's archived, unarchive.
-            log.info("Unarchiving credential");
+            // if the EK is stored in the DB and it's archived, un-archive it.
+            log.info("Un-archiving endorsement credential");
             existingCredential.restore();
             existingCredential.resetCreateTime();
             certificateRepository.save(existingCredential);
@@ -102,15 +103,19 @@ public final class CredentialManagementHelper {
             );
         }
 
-        log.info("Parsing Platform Credential of length " + platformBytes.length);
+        log.info("Parsing Platform Credential of length {}", platformBytes.length);
+
         try {
             PlatformCredential platformCredential =
                     PlatformCredential.parseWithPossibleHeader(platformBytes);
+
             if (platformCredential == null) {
                 return null;
             }
+
             PlatformCredential existingCredential = (PlatformCredential) certificateRepository
                     .findByCertificateHash(platformCredential.getCertificateHash());
+
             if (existingCredential == null) {
                 if (platformCredential.getPlatformSerial() != null) {
                     List<PlatformCredential> certificates = certificateRepository
@@ -121,10 +126,10 @@ public final class CredentialManagementHelper {
                             if (pc.isPlatformBase() && platformCredential.isPlatformBase()) {
                                 // found a base in the database associated with
                                 // parsed certificate
-                                log.error(String.format("Base certificate stored"
+                                log.error("Base certificate stored"
                                                 + " in database with same platform"
-                                                + "serial number. (%s)",
-                                        platformCredential.getPlatformSerial()));
+                                                + "serial number. ({})",
+                                        platformCredential.getPlatformSerial());
                                 return null;
                             }
                         }
@@ -133,8 +138,8 @@ public final class CredentialManagementHelper {
                 platformCredential.setDeviceName(deviceName);
                 return certificateRepository.save(platformCredential);
             } else if (existingCredential.isArchived()) {
-                // if the PC is stored in the DB and it's archived, unarchive.
-                log.info("Unarchiving credential");
+                // if the PC is stored in the DB and it's archived, un-archive it.
+                log.info("Un-archiving platform credential");
                 existingCredential.restore();
                 certificateRepository.save(existingCredential);
                 return existingCredential;

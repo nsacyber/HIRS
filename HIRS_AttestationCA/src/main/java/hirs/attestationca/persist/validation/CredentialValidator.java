@@ -35,7 +35,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      *
      * @param ec            the endorsement credential to verify.
      * @param trustStore    trust store holding trusted certificates.
-     * @param acceptExpired whether or not to accept expired and not yet valid certificates
+     * @param acceptExpired whether to accept expired and not yet valid certificates
      *                      as valid.
      * @return the result of the validation.
      */
@@ -100,7 +100,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      *
      * @param pc            The platform credential to verify.
      * @param trustStore    trust store holding trusted certificates.
-     * @param acceptExpired whether or not to accept expired certificates as valid.
+     * @param acceptExpired whether to accept expired certificates as valid.
      * @return The result of the validation.
      */
     public static AppraisalStatus validatePlatformCredential(final PlatformCredential pc,
@@ -183,21 +183,24 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
+            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) throws IOException {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
         if (platformCredential == null) {
             message = baseErrorMessage + "a platform credential";
             return new AppraisalStatus(FAIL, message);
         }
+
         if (deviceInfoReport == null) {
             message = baseErrorMessage + "a device info report";
             return new AppraisalStatus(FAIL, message);
         }
+
         if (endorsementCredential == null) {
             message = baseErrorMessage + "an endorsement credential";
             return new AppraisalStatus(FAIL, message);
         }
+
         if (componentInfos.isEmpty()) {
             message = baseErrorMessage + "a list of device components";
             return new AppraisalStatus(FAIL, message);

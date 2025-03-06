@@ -83,10 +83,6 @@ dependencies {
     testImplementation libs.xmlunit.core
 }
 
-test {
-    useJUnitPlatform()
-}
-
 task buildVersion() {
     doLast {
         def verFile = new File(projectDir, "build/VERSION")
