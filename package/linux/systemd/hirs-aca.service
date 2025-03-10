@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=root
 Group=root
-ExecStart=/usr/bin/bash /opt/hirs/aca/scripts/aca/aca_bootRun.sh -w
+ExecStart=/usr/bin/bash /opt/hirs/aca/scripts/aca/aca_bootRun.sh -d -w
 SuccessExitStatus=0
 Restart=always
 RestartSec=60
