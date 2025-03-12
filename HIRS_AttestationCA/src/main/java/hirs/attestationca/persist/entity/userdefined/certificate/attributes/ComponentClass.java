@@ -161,7 +161,7 @@ ComponentClass {
      * @param component string representation of the component ID
      * @return the int representation of the component
      */
-    private static String verifyComponentValue(final String component) {
+    private String verifyComponentValue(final String component) {
         String componentValue = ERROR;
 
         if (component != null) {
