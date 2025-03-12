@@ -22,11 +22,11 @@ import java.io.Serializable;
 public class HardwareInfo implements Serializable {
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
+    @Column(nullable = false)
     private String manufacturer = DeviceInfoEnums.NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
+    @Column(nullable = false)
     private String productName = DeviceInfoEnums.NOT_SPECIFIED;
 
     @XmlElement
@@ -34,15 +34,15 @@ public class HardwareInfo implements Serializable {
     private String version = DeviceInfoEnums.NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
+    @Column(nullable = false)
     private String systemSerialNumber = DeviceInfoEnums.NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
+    @Column(nullable = false)
     private String chassisSerialNumber = DeviceInfoEnums.NOT_SPECIFIED;
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
+    @Column(nullable = false)
     private String baseboardSerialNumber = DeviceInfoEnums.NOT_SPECIFIED;
 
     /**

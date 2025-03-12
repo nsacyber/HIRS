@@ -76,6 +76,12 @@ public class CertificateIdentifier {
         }
     }
 
+    /**
+     * Helper method that parses the attribute certificate id from the provided attribute
+     * certificate ASN1 Sequence.
+     *
+     * @param attrCertSeq ASN1 attribute certificate sequence
+     */
     private void parseAttributeCertId(final ASN1Sequence attrCertSeq) {
         //Check if it have a valid number of identifiers
         if (attrCertSeq.size() != SEQUENCE_NUMBER) {
@@ -87,6 +93,11 @@ public class CertificateIdentifier {
         hashSigValue = attrCertSeq.getObjectAt(1).toString();
     }
 
+    /**
+     * Helper method that parses the generic certificate id from the provided issuer serial ASN1 sequence.
+     *
+     * @param issuerSerialSeq ASN1 issuer serial sequence
+     */
     private void parseGenericCertId(final ASN1Sequence issuerSerialSeq) {
         //Check if it have a valid number of identifiers
         if (issuerSerialSeq.size() != SEQUENCE_NUMBER) {

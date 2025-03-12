@@ -1,27 +1,52 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Basic class that handle Platform Configuration for the Platform Certificate
+ * Basic class that represents the Version 1 Platform Configuration used for the Platform Certificate
  * Attribute.
  * <pre>
  * PlatformConfiguration ::= SEQUENCE {
- *      componentIdentifier [0] IMPLICIT SEQUENCE(SIZE(1..CONFIGMAX)) OF
+ *      componentIdentifiers [0] IMPLICIT SEQUENCE(SIZE(1..CONFIGMAX)) OF
  *           ComponentIdentifier OPTIONAL,
  *      platformProperties [1] IMPLICIT SEQUENCE(SIZE(1..CONFIGMAX)) OF Properties OPTIONAL,
  *      platformPropertiesUri [2] IMPLICIT URIReference OPTIONAL }
  * </pre>
  */
-public class PlatformConfigurationV1 extends PlatformConfiguration {
+@AllArgsConstructor
+public class PlatformConfigurationV1 {
 
     private static final int COMPONENT_IDENTIFIER = 0;
+
     private static final int PLATFORM_PROPERTIES = 1;
+
     private static final int PLATFORM_PROPERTIES_URI = 2;
+
+    private List<ComponentIdentifier> componentIdentifiers;
+
+    private List<PlatformProperty> platformProperties;
+
+    @Getter
+    @Setter
+    private URIReference platformPropertiesUri;
+
+    /**
+     * Default constructor.
+     */
+    public PlatformConfigurationV1() {
+        componentIdentifiers = new ArrayList<>();
+        platformProperties = new ArrayList<>();
+        platformPropertiesUri = null;
+    }
 
     /**
      * Constructor given the SEQUENCE that contains Platform Configuration.
@@ -32,7 +57,7 @@ public class PlatformConfigurationV1 extends PlatformConfiguration {
     public PlatformConfigurationV1(final ASN1Sequence sequence) throws IllegalArgumentException {
 
         //Default values
-        setComponentIdentifier(new ArrayList<>());
+        setComponentIdentifiers(new ArrayList<>());
         setPlatformProperties(new ArrayList<>());
         setPlatformPropertiesUri(null);
 
@@ -42,7 +67,7 @@ public class PlatformConfigurationV1 extends PlatformConfiguration {
             //Set information based on the set tagged
             switch (taggedSequence.getTagNo()) {
                 case COMPONENT_IDENTIFIER:
-                    //Get componentIdentifier
+                    //Get componentIdentifiers
                     ASN1Sequence componentConfiguration
                             = ASN1Sequence.getInstance(taggedSequence, false);
 
@@ -78,6 +103,62 @@ public class PlatformConfigurationV1 extends PlatformConfiguration {
     }
 
     /**
+     * @return list of version 1 component identifiers
+     */
+    public List<ComponentIdentifier> getComponentIdentifiers() {
+        return Collections.unmodifiableList(componentIdentifiers);
+    }
+
+    /**
+     * @param componentIdentifiers list of version 1 component identifiers
+     */
+    public void setComponentIdentifiers(final List<ComponentIdentifier> componentIdentifiers) {
+        this.componentIdentifiers = new ArrayList<>(componentIdentifiers);
+    }
+
+    /**
+     * Add function for the version 1 component identifier array.
+     *
+     * @param componentIdentifier object to add
+     * @return status of the add, if successful or not
+     */
+    protected boolean add(final ComponentIdentifier componentIdentifier) {
+        if (this.componentIdentifiers != null) {
+            return this.componentIdentifiers.add(componentIdentifier);
+        }
+
+        return false;
+    }
+
+    /**
+     * @return the platformProperties
+     */
+    public List<PlatformProperty> getPlatformProperties() {
+        return Collections.unmodifiableList(platformProperties);
+    }
+
+    /**
+     * @param platformProperties the platformProperties to set
+     */
+    public void setPlatformProperties(final List<PlatformProperty> platformProperties) {
+        this.platformProperties = new ArrayList<>(platformProperties);
+    }
+
+    /**
+     * Add function for the platform property array.
+     *
+     * @param platformProperty property object to add
+     * @return status of the add, if successful or not
+     */
+    protected boolean add(final PlatformProperty platformProperty) {
+        if (this.platformProperties != null) {
+            return this.platformProperties.add(platformProperty);
+        }
+
+        return false;
+    }
+
+    /**
      * Creates a string representation of the Platform Configuration V1 object.
      *
      * @return a string representation of the Platform Configuration V1 object.
@@ -86,15 +167,15 @@ public class PlatformConfigurationV1 extends PlatformConfiguration {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("PlatformConfiguration{");
-        sb.append("componentIdentifier=");
-        if (getComponentIdentifier().size() > 0) {
-            sb.append(getComponentIdentifier()
+        sb.append("componentIdentifiers=");
+        if (!getComponentIdentifiers().isEmpty()) {
+            sb.append(getComponentIdentifiers()
                     .stream()
                     .map(Object::toString)
                     .collect(Collectors.joining(",")));
         }
         sb.append(", platformProperties=");
-        if (getPlatformProperties().size() > 0) {
+        if (!getPlatformProperties().isEmpty()) {
             sb.append(getPlatformProperties()
                     .stream()
                     .map(Object::toString)

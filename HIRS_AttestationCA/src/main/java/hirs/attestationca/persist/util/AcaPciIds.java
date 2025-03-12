@@ -110,9 +110,9 @@ public final class AcaPciIds {
                         component.getComponentRevision(),
                         component.getComponentManufacturerId(),
                         component.getFieldReplaceable(),
-                        component.getComponentAddress(),
-                        component.getCertificateIdentifier(),
-                        component.getComponentPlatformUri(),
+                        component.getComponentAddresses(),
+                        component.getComponentPlatformCert(),
+                        component.getComponentPlatformCertUri(),
                         component.getAttributeStatus());
             }
 

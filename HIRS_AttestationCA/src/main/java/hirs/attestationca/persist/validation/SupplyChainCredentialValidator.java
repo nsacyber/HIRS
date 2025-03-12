@@ -270,7 +270,7 @@ public class SupplyChainCredentialValidator {
      * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
      *
      * @param hostName     the host machine associated with the component
-     * @param paccorOutput the output from PACCOR's allcomoponents.sh
+     * @param paccorOutput the output from PACCOR's allcomponents.sh
      * @return a list of ComponentInfo objects built from paccorOutput
      * @throws java.io.IOException if something goes wrong parsing the JSON
      */
@@ -296,17 +296,23 @@ public class SupplyChainCredentialValidator {
                             getJSONNodeValueAsText(next, "REVISION")));
                 } else {
                     // version 2
-                    String componentClass = StringUtils.EMPTY;
+                    String componentClassValue = StringUtils.EMPTY;
+                    String componentClassRegistry = StringUtils.EMPTY;
+
                     for (JsonNode subNode : compClassNodes) {
-                        componentClass = getJSONNodeValueAsText(subNode,
+                        componentClassValue = getJSONNodeValueAsText(subNode,
                                 "COMPONENTCLASSVALUE");
+                        componentClassRegistry = getJSONNodeValueAsText(subNode,
+                                "COMPONENTCLASSREGISTRY");
                     }
+
                     componentInfoList.add(new ComponentInfo(hostName,
                             getJSONNodeValueAsText(next, "MANUFACTURER"),
                             getJSONNodeValueAsText(next, "MODEL"),
                             getJSONNodeValueAsText(next, "SERIAL"),
                             getJSONNodeValueAsText(next, "REVISION"),
-                            componentClass));
+                            componentClassValue,
+                            componentClassRegistry));
                 }
             }
         }
