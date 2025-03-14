@@ -165,21 +165,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @return the certificate class type
      */
     private static Class<? extends Certificate> getCertificateClass(final String certificateType) {
-        switch (certificateType) {
-            case PLATFORMCREDENTIAL:
-                return PlatformCredential.class;
-            case ENDORSEMENTCREDENTIAL:
-                return EndorsementCredential.class;
-            case ISSUEDCERTIFICATES:
-                return IssuedAttestationCertificate.class;
-            case IDEVIDCERTIFICATE:
-                return IDevIDCertificate.class;
-            case TRUSTCHAIN:
-                return CertificateAuthorityCredential.class;
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate type: %s", certificateType));
-        }
+        return switch (certificateType) {
+            case PLATFORMCREDENTIAL -> PlatformCredential.class;
+            case ENDORSEMENTCREDENTIAL -> EndorsementCredential.class;
+            case ISSUEDCERTIFICATES -> IssuedAttestationCertificate.class;
+            case IDEVIDCERTIFICATE -> IDevIDCertificate.class;
+            case TRUSTCHAIN -> CertificateAuthorityCredential.class;
+            default -> throw new IllegalArgumentException(
+                    String.format("Unknown certificate type: %s", certificateType));
+        };
     }
 
     /**
@@ -288,107 +282,115 @@ public class CertificatePageController extends PageController<NoPageParams> {
         // special parsing for platform credential
         // Add the EndorsementCredential for each PlatformCredential based on the
         // serial number. (pc.HolderSerialNumber = ec.SerialNumber)
-        if (certificateType.equals(PLATFORMCREDENTIAL)) {
-            FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<PlatformCredential> pagedResult =
-                    this.platformCertificateRepository.findByArchiveFlag(false, paging);
+        switch (certificateType) {
+            case PLATFORMCREDENTIAL -> {
+                FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
+                org.springframework.data.domain.Page<PlatformCredential> pagedResult =
+                        this.platformCertificateRepository.findByArchiveFlag(false, paging);
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
-            }
-
-            records.setRecordsFiltered(platformCertificateRepository.findByArchiveFlag(false).size());
-            EndorsementCredential associatedEC;
-
-            if (!records.isEmpty()) {
-                // loop all the platform certificates
-                for (int i = 0; i < records.size(); i++) {
-                    PlatformCredential pc = records.get(i);
-                    // find the EC using the PC's "holder serial number"
-                    associatedEC = this.endorsementCredentialRepository
-                            .findBySerialNumber(pc.getHolderSerialNumber());
-
-                    if (associatedEC != null) {
-                        log.debug("EC ID for holder s/n " + pc
-                                .getHolderSerialNumber() + " = " + associatedEC.getId());
-                    }
-
-                    pc.setEndorsementCredential(associatedEC);
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
                 }
+
+                records.setRecordsFiltered(platformCertificateRepository.findByArchiveFlag(false).size());
+                EndorsementCredential associatedEC;
+
+                if (!records.isEmpty()) {
+                    // loop all the platform certificates
+                    for (PlatformCredential pc : records) {
+                        // find the EC using the PC's "holder serial number"
+                        associatedEC = this.endorsementCredentialRepository
+                                .findBySerialNumber(pc.getHolderSerialNumber());
+
+                        if (associatedEC != null) {
+                            log.debug("EC ID for holder s/n {} = {}", pc
+                                    .getHolderSerialNumber(), associatedEC.getId());
+                        }
+
+                        pc.setEndorsementCredential(associatedEC);
+                    }
+                }
+
+                log.debug("Returning the size of the list of platform credentials: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
+            case ENDORSEMENTCREDENTIAL -> {
+                FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
+                org.springframework.data.domain.Page<EndorsementCredential> pagedResult =
+                        this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
 
-            log.debug("Returning list of size: " + records.size());
-            return new DataTableResponse<>(records, input);
-        } else if (certificateType.equals(ENDORSEMENTCREDENTIAL)) {
-            FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<EndorsementCredential> pagedResult =
-                    this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
+                }
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
+                records.setRecordsFiltered(endorsementCredentialRepository.findByArchiveFlag(false).size());
+
+                log.debug("Returning the size of the list of endorsement credentials: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
+            case TRUSTCHAIN -> {
+                FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
+                org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult =
+                        this.caCredentialRepository.findByArchiveFlag(false, paging);
 
-            records.setRecordsFiltered(endorsementCredentialRepository.findByArchiveFlag(false).size());
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
+                }
 
-            log.debug("Returning list of size: " + records.size());
-            return new DataTableResponse<>(records, input);
-        } else if (certificateType.equals(TRUSTCHAIN)) {
-            FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult =
-                    this.caCredentialRepository.findByArchiveFlag(false, paging);
+                records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
+                log.debug("Returning the size of the list of certificate trust chains: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
+            case ISSUEDCERTIFICATES -> {
+                FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
+                org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult =
+                        this.issuedCertificateRepository.findByArchiveFlag(false, paging);
 
-            records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
+                }
 
-            log.debug("Returning list of size: " + records.size());
-            return new DataTableResponse<>(records, input);
-        } else if (certificateType.equals(ISSUEDCERTIFICATES)) {
-            FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
-            org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult =
-                    this.issuedCertificateRepository.findByArchiveFlag(false, paging);
+                records.setRecordsFiltered(issuedCertificateRepository.findByArchiveFlag(false).size());
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
+                log.debug("Returning the size of the list of issued certificates: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
+            case IDEVIDCERTIFICATE -> {
+                FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<IDevIDCertificate>();
+                org.springframework.data.domain.Page<IDevIDCertificate> pagedResult =
+                        this.iDevIDCertificateRepository.findByArchiveFlag(false, paging);
 
-            records.setRecordsFiltered(issuedCertificateRepository.findByArchiveFlag(false).size());
+                if (pagedResult.hasContent()) {
+                    records.addAll(pagedResult.getContent());
+                    records.setRecordsTotal(pagedResult.getContent().size());
+                } else {
+                    records.setRecordsTotal(input.getLength());
+                }
 
-            log.debug("Returning list of size: " + records.size());
-            return new DataTableResponse<>(records, input);
-        } else if (certificateType.equals(IDEVIDCERTIFICATE)) {
-            FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<IDevIDCertificate>();
-            org.springframework.data.domain.Page<IDevIDCertificate> pagedResult =
-                    this.iDevIDCertificateRepository.findByArchiveFlag(false, paging);
+                records.setRecordsFiltered(iDevIDCertificateRepository.findByArchiveFlag(false).size());
 
-            if (pagedResult.hasContent()) {
-                records.addAll(pagedResult.getContent());
-                records.setRecordsTotal(pagedResult.getContent().size());
-            } else {
-                records.setRecordsTotal(input.getLength());
+                log.debug("Returning the size of the list of IDEVID certificates: {}", records.size());
+                return new DataTableResponse<>(records, input);
             }
-
-            records.setRecordsFiltered(iDevIDCertificateRepository.findByArchiveFlag(false).size());
-
-            log.debug("Returning list of size: " + records.size());
-            return new DataTableResponse<>(records, input);
+            default -> {
+                log.error("Cannot provide the size of the records because the"
+                        + "provided certificate type does not exist.");
+                return new DataTableResponse<>(new FilteredRecordsList<>(), input);
+            }
         }
-
-        return new DataTableResponse<>(new FilteredRecordsList<>(), input);
     }
 
     /**
@@ -443,7 +445,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             @PathVariable("certificateType") final String certificateType,
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete " + id);
+        log.info("Handling request to delete {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -506,7 +508,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @param id              the UUID of the cert to download
      * @param response        the response object (needed to update the header with the
      *                        file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/{certificateType}/download", method = RequestMethod.GET)
     public void download(
@@ -514,7 +516,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download " + id);
+        log.info("Handling request to download {}", id);
 
         try {
             UUID uuid = UUID.fromString(id);
@@ -552,7 +554,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @ResponseBody
     @RequestMapping(value = "/trust-chain/download-aca-cert", method = RequestMethod.GET)
@@ -573,7 +575,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/trust-chain/bulk", method = RequestMethod.GET)
     public void caBulkDownload(final HttpServletResponse response)
@@ -605,7 +607,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/platform-credentials/bulk", method = RequestMethod.GET)
     public void pcBulkDownload(final HttpServletResponse response)
@@ -637,7 +639,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/issued-certificates/bulk", method = RequestMethod.GET)
     public void icBulkDownload(final HttpServletResponse response)
@@ -670,7 +672,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @throws IOException when writing to response output stream
      */
     @RequestMapping(value = "/endorsement-key-credentials/bulk", method = RequestMethod.GET)
     public void ekBulkDownload(final HttpServletResponse response)
@@ -696,6 +698,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
         }
     }
 
+    /**
+     * Helper method that packages a collection of certificates into a zip file.
+     *
+     * @param zipOut         zip outputs stream
+     * @param certificates   collection of certificates
+     * @param singleFileName zip file name
+     * @return zip outputs stream
+     * @throws IOException if there are any issues packaging or downloading the zip file
+     */
     private ZipOutputStream bulkDownload(final ZipOutputStream zipOut,
                                          final List<Certificate> certificates,
                                          final String singleFileName) throws IOException {
@@ -727,9 +738,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * table, false otherwise.
      */
     private boolean hasDeviceTableToJoin(final String certificateType) {
-        boolean hasDevice = !certificateType.equals(TRUSTCHAIN);
         // Trust_Chain Credential do not contain the device table to join.
-        return hasDevice;
+        return !certificateType.equals(TRUSTCHAIN);
     }
 
     /**
@@ -744,26 +754,21 @@ public class CertificatePageController extends PageController<NoPageParams> {
             final String certificateType,
             final int certificateHash) {
 
-        switch (certificateType) {
-            case PLATFORMCREDENTIAL:
-                return this.certificateRepository
-                        .findByCertificateHash(certificateHash,
-                                "PlatformCredential");
-            case ENDORSEMENTCREDENTIAL:
-                return this.certificateRepository
-                        .findByCertificateHash(certificateHash,
-                                "EndorsementCredential");
-            case TRUSTCHAIN:
-                return this.certificateRepository
-                        .findByCertificateHash(certificateHash,
-                                "CertificateAuthorityCredential");
-            case IDEVIDCERTIFICATE:
-                return this.certificateRepository
-                        .findByCertificateHash(certificateHash,
-                                "IDevIDCertificate");
-            default:
-                return null;
-        }
+        return switch (certificateType) {
+            case PLATFORMCREDENTIAL -> this.certificateRepository
+                    .findByCertificateHash(certificateHash,
+                            "PlatformCredential");
+            case ENDORSEMENTCREDENTIAL -> this.certificateRepository
+                    .findByCertificateHash(certificateHash,
+                            "EndorsementCredential");
+            case TRUSTCHAIN -> this.certificateRepository
+                    .findByCertificateHash(certificateHash,
+                            "CertificateAuthorityCredential");
+            case IDEVIDCERTIFICATE -> this.certificateRepository
+                    .findByCertificateHash(certificateHash,
+                            "IDevIDCertificate");
+            default -> null;
+        };
     }
 
     /**
@@ -779,11 +784,9 @@ public class CertificatePageController extends PageController<NoPageParams> {
         List<PlatformCredential> associatedCertificates = new LinkedList<>();
 
         if (serialNumber != null) {
-            switch (certificateType) {
-                case PLATFORMCREDENTIAL:
-                    associatedCertificates.addAll(this.certificateRepository
-                            .byBoardSerialNumber(serialNumber));
-                default:
+            if (certificateType.equals(PLATFORMCREDENTIAL)) {
+                associatedCertificates.addAll(this.certificateRepository
+                        .byBoardSerialNumber(serialNumber));
             }
         }
 
@@ -1010,6 +1013,12 @@ public class CertificatePageController extends PageController<NoPageParams> {
         log.error(failMessage);
     }
 
+    /**
+     * Helper method that utilizes the components of the provided platform certificate to generate
+     * a collection of component results and subsequently stores these results in the database.
+     *
+     * @param certificate certificate
+     */
     private void handlePlatformComponents(final Certificate certificate) {
         PlatformCredential platformCredential;
 
@@ -1021,8 +1030,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
                             platformCredential.getPlatformSerial());
             if (componentResults.isEmpty()) {
                 ComponentResult componentResult;
-                for (ComponentIdentifier componentIdentifier : platformCredential
-                        .getComponentIdentifiers()) {
+
+                List<ComponentIdentifier> componentIdentifiers = platformCredential.getComponentIdentifiers();
+
+                for (ComponentIdentifier componentIdentifier : componentIdentifiers) {
                     componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
                             platformCredential.getSerialNumber().toString(),
                             platformCredential.getPlatformChainType(),
@@ -1041,6 +1052,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
         }
     }
 
+    /**
+     * Helper method that deletes component results based on the provided platform serial number.
+     *
+     * @param platformSerial platform serial number
+     */
     private void deleteComponentResults(final String platformSerial) {
         List<ComponentResult> componentResults = componentResultRepository
                 .findByBoardSerialNumber(platformSerial);

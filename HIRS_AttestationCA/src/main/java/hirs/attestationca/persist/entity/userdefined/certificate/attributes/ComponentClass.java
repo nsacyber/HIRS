@@ -155,7 +155,7 @@ ComponentClass {
      * @param component string representation of the component ID
      * @return the int representation of the component
      */
-    private static String verifyComponentValue(final String component) {
+    private String verifyComponentValue(final String component) {
         String componentValue = ERROR;
 
         if (component != null) {
@@ -223,7 +223,7 @@ ComponentClass {
                     } else if (componentMask.equals(UNKNOWN)) {
                         this.componentStr = UNKNOWN_STRING;
                     } else {
-                        getComponent(componentTypes);
+                        setComponentString(componentTypes);
                     }
                 }
             }
@@ -247,12 +247,11 @@ ComponentClass {
     }
 
     /**
-     * Getter for the component associated with the component JSON Object mapped
-     * in the JSON file.
+     * Sets the component string value based on the provided JSON object's components.
      *
-     * @param components JSON Object for the categories components
+     * @param components JSON Object components
      */
-    private void getComponent(final JsonObject components) {
+    private void setComponentString(final JsonObject components) {
         String typeID;
 
         if (components != null) {
@@ -263,6 +262,11 @@ ComponentClass {
                     componentStr = member.getValue().asString();
                 }
             }
+        }
+
+        // if the component string is still null after doing a lookup
+        if (componentStr == null) {
+            componentStr = UNKNOWN_STRING;
         }
     }
 }
