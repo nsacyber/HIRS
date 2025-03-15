@@ -1,13 +1,13 @@
 package hirs.swid.utils;
 
 public class CredentialArgumentValidator {
-    private String truststoreFile;
-    private String certificateFile;
-    private String privateKeyFile;
-    private String format;
-    private boolean isValidating;
-    private String errorMessage;
     private static final String PEM = "PEM";
+    private final String truststoreFile;
+    private final String certificateFile;
+    private final String privateKeyFile;
+    private final boolean isValidating;
+    private String format;
+    private String errorMessage;
 
     public CredentialArgumentValidator(String truststoreFile,
                                        String certificateFile,
@@ -62,11 +62,11 @@ public class CredentialArgumentValidator {
                 return true;
             } else {
                 if (certificateFile.isEmpty()) {
-                    errorMessage = "A public certificate must be specified by \'-p\' " +
+                    errorMessage = "A public certificate must be specified by '-p' " +
                             "for signing operations.";
                 }
                 if (privateKeyFile.isEmpty()) {
-                    errorMessage = "A private key must be specified by \'-k\' " +
+                    errorMessage = "A private key must be specified by '-k' " +
                             "for signing operations.";
                 }
                 return false;

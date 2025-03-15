@@ -562,8 +562,11 @@ public class SwidTagGateway {
     /**
      * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
      * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
+     *
+     * @param doc The document to sign
+     * @return Document the signed document
      */
-    private Document signXMLDocument(Document doc) {
+    private Document signXMLDocument(final Document doc) {
         XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
         List xmlObjectList = null;
         String signatureId = null;
@@ -681,7 +684,7 @@ public class SwidTagGateway {
      * @param sigFactory the SignatureFactory object
      * @return an XMLObject containing the timestamp element
      */
-    private XMLObject createXmlTimestamp(Document doc, XMLSignatureFactory sigFactory) {
+    private XMLObject createXmlTimestamp(final Document doc, final XMLSignatureFactory sigFactory) {
         Element timeStampElement = null;
         switch (timestampFormat.toUpperCase()) {
             case "RFC3852":
@@ -716,6 +719,9 @@ public class SwidTagGateway {
                             timestampArgument);
                 }
                 break;
+            default:
+                System.out.println("A timestamp format must be specified.");
+                System.exit(1);
         }
         DOMStructure timestampObject = new DOMStructure(timeStampElement);
         SignatureProperty signatureProperty = sigFactory.newSignatureProperty(
