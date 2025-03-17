@@ -349,7 +349,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
                 records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
 
-                log.debug("Returning the size of the list of certificate trust chains: {}", records.size());
+                log.debug("Returning the size of the list of trust chain certificates: {}", records.size());
                 return new DataTableResponse<>(records, input);
             }
             case ISSUEDCERTIFICATES -> {
@@ -1039,8 +1039,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 ComponentResult componentResult;
 
                 if (platformCredential.getPlatformConfigurationV1() != null) {
-                    for (ComponentIdentifier componentIdentifier : platformCredential
-                            .getComponentIdentifiers()) {
+
+                    List<ComponentIdentifier> componentIdentifiers =
+                            platformCredential.getComponentIdentifiers();
+
+                    for (ComponentIdentifier componentIdentifier : componentIdentifiers) {
                         componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
                                 platformCredential.getSerialNumber().toString(),
                                 platformCredential.getPlatformChainType(),
@@ -1050,8 +1053,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
                         componentResultRepository.save(componentResult);
                     }
                 } else if (platformCredential.getPlatformConfigurationV2() != null) {
-                    for (ComponentIdentifierV2 componentIdentifierV2 : platformCredential
-                            .getComponentIdentifiersV2()) {
+
+                    List<ComponentIdentifierV2> componentIdentifiersV2 =
+                            platformCredential.getComponentIdentifiersV2();
+
+                    for (ComponentIdentifierV2 componentIdentifierV2 : componentIdentifiersV2) {
                         componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
                                 platformCredential.getSerialNumber().toString(),
                                 platformCredential.getPlatformChainType(),

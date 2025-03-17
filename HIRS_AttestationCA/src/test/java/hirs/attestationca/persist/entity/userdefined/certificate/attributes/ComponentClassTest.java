@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests for the ComponentClassTest class.
@@ -29,8 +29,8 @@ public class ComponentClassTest {
                 componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertEquals(resultComponent, "Unknown");
-        assertEquals(resultCategory, "None");
+        assertEquals("Unknown", resultComponent);
+        assertEquals("None", resultCategory);
     }
 
     /**
@@ -41,12 +41,12 @@ public class ComponentClassTest {
     @Test
     public void testGetComponentNoneOther() throws URISyntaxException {
         final String componentIdentifier = "00000000";
-        ComponentClass instance = new ComponentClass("TCG", Paths.get(Objects.requireNonNull(this.getClass()
-                .getResource(JSON_FILE)).toURI()), componentIdentifier);
+        ComponentClass instance = new ComponentClass("TCG", Paths.get(this.getClass()
+                .getResource(JSON_FILE).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertEquals(resultComponent, "Unknown");
-        assertEquals(resultCategory, "None");
+        assertEquals("Unknown", resultComponent);
+        assertEquals("None", resultCategory);
     }
 
     /**
@@ -57,12 +57,12 @@ public class ComponentClassTest {
     @Test
     public void testGetComponentBlank() throws URISyntaxException {
         final String componentIdentifier = "";
-        ComponentClass instance = new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                .getResource(JSON_FILE)).toURI()), componentIdentifier);
+        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+                .getResource(JSON_FILE).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertEquals(resultComponent, "Unknown");
-        assertEquals(resultCategory, "None");
+        assertEquals("Unknown", resultComponent);
+        assertEquals("None", resultCategory);
     }
 
     /**
@@ -73,12 +73,12 @@ public class ComponentClassTest {
     @Test
     public void testGetComponentNFEx() throws URISyntaxException {
         final String componentIdentifier = "99999999";
-        ComponentClass instance = new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                .getResource(JSON_FILE)).toURI()), componentIdentifier);
+        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+                .getResource(JSON_FILE).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertEquals(resultComponent, "Unknown");
-        assertEquals(resultCategory, "None");
+        assertEquals("Unknown", resultComponent);
+        assertEquals("None", resultCategory);
     }
 
     /**
@@ -89,12 +89,12 @@ public class ComponentClassTest {
     @Test
     public void testGetComponentNull() throws URISyntaxException {
         final String componentIdentifier = null;
-        ComponentClass instance = new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                .getResource(JSON_FILE)).toURI()), componentIdentifier);
+        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+                .getResource(JSON_FILE).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertEquals(resultComponent, "Unknown");
-        assertEquals(resultCategory, "None");
+        assertEquals("Unknown", resultComponent);
+        assertEquals("None", resultCategory);
     }
 
     /**
@@ -106,12 +106,12 @@ public class ComponentClassTest {
     @Test
     public void testGetComponentStandardQueryTCG() throws URISyntaxException {
         final String componentIdentifier = "0x00040002";
-        ComponentClass instance = new ComponentClass(Paths.get(Objects.requireNonNull(this.getClass()
-                .getResource(JSON_FILE)).toURI()), componentIdentifier);
+        ComponentClass instance = new ComponentClass(Paths.get(this.getClass()
+                .getResource(JSON_FILE).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertEquals(resultComponent, "SAS Bridgeboard");
-        assertEquals(resultCategory, "Modules");
+        assertEquals("SAS Bridgeboard", resultComponent);
+        assertEquals("Modules", resultCategory);
     }
 
     /**
@@ -257,8 +257,8 @@ public class ComponentClassTest {
                         .getResource(JSON_FILE)).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertEquals(resultComponent, "SAS Bridgeboard");
-        assertEquals(resultCategory, "Modules");
+        assertEquals("SAS Bridgeboard", resultComponent);
+        assertEquals("Modules", resultCategory);
     }
 
     /**
@@ -274,8 +274,8 @@ public class ComponentClassTest {
                         .getResource(JSON_FILE)).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertEquals(resultComponent, "SAS Bridgeboard");
-        assertEquals(resultCategory, "Modules");
+        assertEquals("SAS Bridgeboard", resultComponent);
+        assertEquals("Modules", resultCategory);
     }
 
     /**
@@ -290,8 +290,9 @@ public class ComponentClassTest {
                 .getResource(JSON_FILE)).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertNull(resultComponent);
-        assertEquals(resultCategory, "Modules");
+        assertNotNull(resultComponent);
+        assertEquals("Unknown", resultComponent);
+        assertEquals("Modules", resultCategory);
     }
 
     /**
@@ -306,8 +307,9 @@ public class ComponentClassTest {
                 .getResource(JSON_FILE)).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertNull(resultComponent);
-        assertEquals(resultCategory, "Modules");
+        assertNotNull(resultComponent);
+        assertEquals("Unknown", resultComponent);
+        assertEquals("Modules", resultCategory);
     }
 
     /**
@@ -322,7 +324,7 @@ public class ComponentClassTest {
                 .getResource(JSON_FILE)).toURI()), componentIdentifier);
         final String resultCategory = instance.getCategoryStr();
         final String resultComponent = instance.getComponentStr();
-        assertEquals(resultComponent, "Unknown");
-        assertEquals(resultCategory, "None");
+        assertEquals("Unknown", resultComponent);
+        assertEquals("None", resultCategory);
     }
 }
