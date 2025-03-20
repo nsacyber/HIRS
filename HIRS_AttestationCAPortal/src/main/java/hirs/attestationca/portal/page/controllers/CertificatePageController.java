@@ -43,9 +43,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -244,9 +245,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @return the data table
      */
     @ResponseBody
-    @RequestMapping(value = "/{certificateType}/list",
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            method = RequestMethod.GET)
+    @GetMapping(value = "/{certificateType}/list",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<? extends Certificate> getTableData(
             @PathVariable("certificateType") final String certificateType,
             final DataTableInput input) {
@@ -402,7 +402,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "/{certificateType}/upload", method = RequestMethod.POST)
+    @PostMapping("/{certificateType}/upload")
     protected RedirectView upload(
             @PathVariable("certificateType") final String certificateType,
             @RequestParam("file") final MultipartFile[] files,
@@ -440,7 +440,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "/{certificateType}/delete", method = RequestMethod.POST)
+    @PostMapping("/{certificateType}/delete")
     public RedirectView delete(
             @PathVariable("certificateType") final String certificateType,
             @RequestParam final String id,
@@ -510,7 +510,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *                        file name)
      * @throws IOException when writing to response output stream
      */
-    @RequestMapping(value = "/{certificateType}/download", method = RequestMethod.GET)
+    @GetMapping("/{certificateType}/download")
     public void download(
             @PathVariable("certificateType") final String certificateType,
             @RequestParam final String id,
@@ -557,7 +557,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      * @throws IOException when writing to response output stream
      */
     @ResponseBody
-    @RequestMapping(value = "/trust-chain/download-aca-cert", method = RequestMethod.GET)
+    @GetMapping("/trust-chain/download-aca-cert")
     public void downloadAcaCertificate(final HttpServletResponse response)
             throws IOException {
 
@@ -577,7 +577,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *                 file name)
      * @throws IOException when writing to response output stream
      */
-    @RequestMapping(value = "/trust-chain/bulk", method = RequestMethod.GET)
+    @GetMapping("/trust-chain/bulk")
     public void caBulkDownload(final HttpServletResponse response)
             throws IOException {
         log.info("Handling request to download all trust chain certificates");
@@ -609,7 +609,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *                 file name)
      * @throws IOException when writing to response output stream
      */
-    @RequestMapping(value = "/platform-credentials/bulk", method = RequestMethod.GET)
+    @GetMapping("/platform-credentials/bulk")
     public void pcBulkDownload(final HttpServletResponse response)
             throws IOException {
         log.info("Handling request to download all platform certificates");
@@ -641,7 +641,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *                 file name)
      * @throws IOException when writing to response output stream
      */
-    @RequestMapping(value = "/issued-certificates/bulk", method = RequestMethod.GET)
+    @GetMapping("/issued-certificates/bulk")
     public void icBulkDownload(final HttpServletResponse response)
             throws IOException {
         log.info("Handling request to download all issued certificates");
@@ -674,7 +674,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *                 file name)
      * @throws IOException when writing to response output stream
      */
-    @RequestMapping(value = "/endorsement-key-credentials/bulk", method = RequestMethod.GET)
+    @GetMapping("/endorsement-key-credentials/bulk")
     public void ekBulkDownload(final HttpServletResponse response)
             throws IOException {
         log.info("Handling request to download all endorsement certificates");

@@ -16,9 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -95,8 +96,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
      */
     @Override
     @ResponseBody
-    @RequestMapping(value = "/identity-claim-tpm2/process",
-            method = RequestMethod.POST,
+    @PostMapping(value = "/identity-claim-tpm2/process",
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processIdentityClaimTpm2(@RequestBody final byte[] identityClaim) {
         return super.processIdentityClaimTpm2(identityClaim);
@@ -113,8 +113,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
      */
     @Override
     @ResponseBody
-    @RequestMapping(value = "/request-certificate-tpm2",
-            method = RequestMethod.POST,
+    @PostMapping(value = "/request-certificate-tpm2",
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest) {
         return super.processCertificateRequest(certificateRequest);
@@ -129,7 +128,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
      */
     @Override
     @ResponseBody
-    @RequestMapping(value = "/public-key", method = RequestMethod.GET)
+    @GetMapping("/public-key")
     public byte[] getPublicKey() {
         return super.getPublicKey();
     }

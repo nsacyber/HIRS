@@ -29,8 +29,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,16 +108,15 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * information
      */
     @ResponseBody
-    @RequestMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            method = RequestMethod.GET)
+    @GetMapping(value = "/list",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<ReferenceManifest> getTableData(
             @Valid final DataTableInput input) {
-        log.debug("Handling request for summary list: " + input);
+        log.debug("Handling request for summary list: {}", input);
 
         String orderColumnName = input.getOrderColumnName();
-        log.info("Ordering on column: " + orderColumnName);
-        log.info("Querying with the following dataTableInput: " + input);
+        log.info("Ordering on column: {}", orderColumnName);
+        log.info("Querying with the following dataTableInput: {}", input);
 
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
@@ -137,7 +137,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         records.setRecordsFiltered(referenceManifestRepository.findByArchiveFlag(false).size());
 
-        log.debug("Returning list of size: " + records.size());
+        log.debug("Returning list of size: {}", records.size());
         return new DataTableResponse<>(records, input);
     }
 
@@ -150,7 +150,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @throws URISyntaxException if malformed URI
      * @throws Exception          if malformed URI
      */
-    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    @PostMapping("/upload")
     protected RedirectView upload(
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException, Exception {
@@ -162,7 +162,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         Matcher matcher;
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
-        log.info(String.format("Processing %s uploaded files", files.length));
+        log.info("Processing {} uploaded files", files.length);
 
         // loop through the files
         for (MultipartFile file : files) {
@@ -182,16 +182,16 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                         + " Base RIMs support the extension \".swidtag\", and support RIMs support "
                         + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
                         + "Please verify your upload and retry.";
-                log.error("File extension in " + fileName + " not recognized as base or support RIM.");
+                log.error("File extension in {} not recognized as base or support RIM.", fileName);
                 messages.addError(errorString);
             }
         }
         baseRims.forEach((rim) -> {
-            log.info(String.format("Storing swidtag %s", rim.getFileName()));
+            log.info("Storing swidtag {}", rim.getFileName());
             this.referenceManifestRepository.save(rim);
         });
         supportRims.forEach((rim) -> {
-            log.info(String.format("Storing event log %s", rim.getFileName()));
+            log.info("Storing event log {}", rim.getFileName());
             this.referenceManifestRepository.save(rim);
         });
 
@@ -223,10 +223,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "/delete", method = RequestMethod.POST)
+    @PostMapping("/delete")
     public RedirectView delete(@RequestParam final String id,
                                final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete " + id);
+        log.info("Handling request to delete {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -267,11 +267,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
-    @RequestMapping(value = "/download", method = RequestMethod.GET)
+    @GetMapping("/download")
     public void download(@RequestParam final String id,
                          final HttpServletResponse response)
             throws IOException {
-        log.info("Handling RIM request to download " + id);
+        log.info("Handling RIM request to download {}", id);
 
         try {
             ReferenceManifest referenceManifest = getRimFromDb(id);
@@ -282,10 +282,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 // send a 404 error when invalid Reference Manifest
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
-                StringBuilder fileName = new StringBuilder("filename=\"");
-                fileName.append(referenceManifest.getFileName());
                 // Set filename for download.
-                response.setHeader("Content-Disposition", "attachment;" + fileName);
+                response.setHeader("Content-Disposition",
+                        "attachment;" + "filename=\"" + referenceManifest.getFileName()
+                        // Set filename for download.
+                );
                 response.setContentType("application/octet-stream");
 
                 // write cert to output stream
@@ -307,7 +308,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      *                 file name)
      * @throws java.io.IOException when writing to response output stream
      */
-    @RequestMapping(value = "/bulk", method = RequestMethod.GET)
+    @GetMapping("/bulk")
     public void bulk(final HttpServletResponse response)
             throws IOException {
         log.info("Handling request to download all Reference Integrity Manifests");
@@ -481,7 +482,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      */
     private ReferenceManifest findBaseRim(final SupportReferenceManifest supportRim) {
         if (supportRim != null && (supportRim.getId() != null
-                && !supportRim.getId().toString().equals(""))) {
+                && !supportRim.getId().toString().isEmpty())) {
             List<BaseReferenceManifest> baseRims = new LinkedList<>();
             baseRims.addAll(this.referenceManifestRepository
                     .getBaseByManufacturerModel(supportRim.getPlatformManufacturer(),
@@ -522,11 +523,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
                             this.referenceDigestValueRepository.save(newRdv);
                         }
-                    } catch (CertificateException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchAlgorithmException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
+                    } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
                     }
                 } else {
