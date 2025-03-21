@@ -1,9 +1,9 @@
 package hirs.swid;
 
+import com.beust.jcommander.JCommander;
 import hirs.swid.utils.Commander;
 import hirs.swid.utils.TimestampArgumentValidator;
 import hirs.utils.rim.ReferenceManifestValidator;
-import com.beust.jcommander.JCommander;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.File;
@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 @Log4j2
 public class Main {
 
@@ -33,7 +34,7 @@ public class Main {
             for (String opt : unknownOpts) {
                 sb.append(opt + ", ");
             }
-            exitWithErrorCode(sb.substring(0,sb.lastIndexOf(",")));
+            exitWithErrorCode(sb.substring(0, sb.lastIndexOf(",")));
         } else if (commander.isHelp()) {
             jc.usage();
             System.out.println(commander.printHelpExamples());
@@ -79,7 +80,7 @@ public class Main {
                     case "BASE":
                         gateway.setAttributesFile(attributesFile);
                         gateway.setRimEventLog(rimEventLog);
-                        if (defaultKey){
+                        if (defaultKey) {
                             gateway.setDefaultCredentials(true);
                             gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         } else {

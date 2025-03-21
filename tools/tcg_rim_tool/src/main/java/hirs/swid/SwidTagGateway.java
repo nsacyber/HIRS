@@ -79,62 +79,62 @@ import java.util.Map;
 
 /**
  * This class provides interaction with the SWID Tag schema as defined in
- * http://standards.iso.org/iso/19770/-2/2015/schema.xsd
+ * http://standards.iso.org/iso/19770/-2/2015/schema.xsd.
  */
 public class SwidTagGateway {
 
     private final ObjectFactory objectFactory = new ObjectFactory();
     private Marshaller marshaller;
     /**
-     * String holding attributes file path
+     * String holding attributes file path.
      */
     @Setter
     private String attributesFile;
 
     /**
-     * boolean governing signing credentials
+     * boolean governing signing credentials.
      */
     @Setter
     private boolean defaultCredentials;
 
     /**
-     * JKS keystore file
+     * JKS keystore file.
      */
     @Setter
     private String jksTruststoreFile;
 
     /**
-     * private key file in PEM format
+     * private key file in PEM format.
      */
     @Setter
     private String pemPrivateKeyFile;
 
     /**
-     * certificate file in PEM format
+     * certificate file in PEM format.
      */
     @Setter
     private String pemCertificateFile;
 
     /**
-     * embed certificate file in signature block
+     * embed certificate file in signature block.
      */
     @Setter
     private boolean embeddedCert;
 
     /**
-     * event log support RIM
+     * event log support RIM.
      */
     @Setter
     private String rimEventLog;
 
     /**
-     * timestamp format in XML signature
+     * timestamp format in XML signature.
      */
     @Setter
     private String timestampFormat;
 
     /**
-     * timestamp input - RFC3852 + file or RFC3339 + value
+     * timestamp input - RFC3852 + file or RFC3339 + value.
      */
     @Setter
     private String timestampArgument;
@@ -142,11 +142,11 @@ public class SwidTagGateway {
     private String errorRequiredFields;
 
     private DocumentBuilderFactory dbf;
-    
+
     private DocumentBuilder builder;
 
     /**
-     * Default constructor initializes jaxbcontext, marshaller, and unmarshaller
+     * Default constructor initializes jaxbcontext, marshaller, and unmarshaller.
      */
     public SwidTagGateway() {
         try {
@@ -255,7 +255,8 @@ public class SwidTagGateway {
     /**
      * This method writes a Document object out to the file specified by generatedFile.
      *
-     * @param swidTag
+     * @param swidTag the swidtag document to write out
+     * @param output  the path to write out to
      */
     public void writeSwidTagFile(final Document swidTag, final String output) {
         try {
@@ -342,7 +343,7 @@ public class SwidTagGateway {
             if (isTagCreator) {
                 String regid = jsonObject.getString(SwidTagConstants.REGID, "");
                 if (regid.isEmpty()) {
-                    //throw exception that regid is required
+                    errorRequiredFields += SwidTagConstants.ENTITY + "." + SwidTagConstants.REGID + ", ";
                 } else {
                     entity.setRegid(regid);
                 }
@@ -389,41 +390,41 @@ public class SwidTagGateway {
     private SoftwareMeta createSoftwareMeta(final JsonObject jsonObject) {
         SoftwareMeta softwareMeta = objectFactory.createSoftwareMeta();
         Map<QName, String> attributes = softwareMeta.getOtherAttributes();
-        addNonNullAttribute(attributes, SwidTagConstants._COLLOQUIAL_VERSION,
+        addNonNullAttribute(attributes, SwidTagConstants.N8060_COLLOQUIAL_VERSION,
                 jsonObject.getString(SwidTagConstants.COLLOQUIAL_VERSION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._EDITION,
+        addNonNullAttribute(attributes, SwidTagConstants.N8060_EDITION,
                 jsonObject.getString(SwidTagConstants.EDITION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PRODUCT,
+        addNonNullAttribute(attributes, SwidTagConstants.N8060_PRODUCT,
                 jsonObject.getString(SwidTagConstants.PRODUCT, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._REVISION,
+        addNonNullAttribute(attributes, SwidTagConstants.N8060_REVISION,
                 jsonObject.getString(SwidTagConstants.REVISION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PAYLOAD_TYPE,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_PAYLOAD_TYPE,
                 jsonObject.getString(SwidTagConstants.PAYLOAD_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_STR,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_PLATFORM_MANUFACTURER_STR,
                 jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_STR, ""), true);
-        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MANUFACTURER_ID,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_PLATFORM_MANUFACTURER_ID,
                 jsonObject.getString(SwidTagConstants.PLATFORM_MANUFACTURER_ID, ""), true);
-        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_MODEL,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_PLATFORM_MODEL,
                 jsonObject.getString(SwidTagConstants.PLATFORM_MODEL, ""), true);
-        addNonNullAttribute(attributes, SwidTagConstants._PLATFORM_VERSION,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_PLATFORM_VERSION,
                 jsonObject.getString(SwidTagConstants.PLATFORM_VERSION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MANUFACTURER_STR,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_FIRMWARE_MANUFACTURER_STR,
                 jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_STR, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MANUFACTURER_ID,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_FIRMWARE_MANUFACTURER_ID,
                 jsonObject.getString(SwidTagConstants.FIRMWARE_MANUFACTURER_ID, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_MODEL,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_FIRMWARE_MODEL,
                 jsonObject.getString(SwidTagConstants.FIRMWARE_MODEL, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._FIRMWARE_VERSION,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_FIRMWARE_VERSION,
                 jsonObject.getString(SwidTagConstants.FIRMWARE_VERSION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_BINDING_SPEC,
                 jsonObject.getString(SwidTagConstants.BINDING_SPEC, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._BINDING_SPEC_VERSION,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_BINDING_SPEC_VERSION,
                 jsonObject.getString(SwidTagConstants.BINDING_SPEC_VERSION, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PC_URI_LOCAL,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_PC_URI_LOCAL,
                 jsonObject.getString(SwidTagConstants.PC_URI_LOCAL, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._PC_URI_GLOBAL,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_PC_URI_GLOBAL,
                 jsonObject.getString(SwidTagConstants.PC_URI_GLOBAL, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._RIM_LINK_HASH,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_RIM_LINK_HASH,
                 jsonObject.getString(SwidTagConstants.RIM_LINK_HASH, ""));
 
         return softwareMeta;
@@ -441,12 +442,12 @@ public class SwidTagGateway {
         if (jsonObject == null) {
             errorRequiredFields += SwidTagConstants.PAYLOAD + ", ";
         } else {
-            addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARPREFIX,
-                    jsonObject.getString(SwidTagConstants._N8060_ENVVARPREFIX.getLocalPart(), ""));
-            addNonNullAttribute(attributes, SwidTagConstants._N8060_ENVVARSUFFIX,
-                    jsonObject.getString(SwidTagConstants._N8060_ENVVARSUFFIX.getLocalPart(), ""));
-            addNonNullAttribute(attributes, SwidTagConstants._N8060_PATHSEPARATOR,
-                    jsonObject.getString(SwidTagConstants._N8060_PATHSEPARATOR.getLocalPart(), ""));
+            addNonNullAttribute(attributes, SwidTagConstants.N8060_ENVVARPREFIX,
+                    jsonObject.getString(SwidTagConstants.N8060_ENVVARPREFIX.getLocalPart(), ""));
+            addNonNullAttribute(attributes, SwidTagConstants.N8060_ENVVARSUFFIX,
+                    jsonObject.getString(SwidTagConstants.N8060_ENVVARSUFFIX.getLocalPart(), ""));
+            addNonNullAttribute(attributes, SwidTagConstants.N8060_PATHSEPARATOR,
+                    jsonObject.getString(SwidTagConstants.N8060_PATHSEPARATOR.getLocalPart(), ""));
         }
 
         return payload;
@@ -466,15 +467,15 @@ public class SwidTagGateway {
                 SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
         if (!supportRimFormat.equals(SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING)) {
             if (supportRimFormat.isEmpty()) {
-                attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT,
+                attributes.put(SwidTagConstants.RIM_SUPPORT_RIM_FORMAT,
                         SwidTagConstants.TCG_EVENTLOG_ASSERTION);
             } else {
-                attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, supportRimFormat);
+                attributes.put(SwidTagConstants.RIM_SUPPORT_RIM_FORMAT, supportRimFormat);
             }
         }
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_SUPPORT_RIM_TYPE,
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_SUPPORT_RIM_URI_GLOBAL,
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
 
         return directory;
@@ -488,7 +489,7 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return File object created from the properties
      */
-    private hirs.utils.xjc.File createFile(JsonObject jsonObject) throws Exception {
+    private hirs.utils.xjc.File createFile(final JsonObject jsonObject) throws Exception {
         hirs.utils.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         Map<QName, String> attributes = file.getOtherAttributes();
@@ -496,27 +497,29 @@ public class SwidTagGateway {
                 SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
         if (!supportRimFormat.equals(SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING)) {
             if (supportRimFormat.isEmpty()) {
-                attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT,
+                attributes.put(SwidTagConstants.RIM_SUPPORT_RIM_FORMAT,
                         SwidTagConstants.TCG_EVENTLOG_ASSERTION);
             } else {
-                attributes.put(SwidTagConstants._SUPPORT_RIM_FORMAT, supportRimFormat);
+                attributes.put(SwidTagConstants.RIM_SUPPORT_RIM_FORMAT, supportRimFormat);
             }
         }
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_TYPE,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_SUPPORT_RIM_TYPE,
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
-        addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
+        addNonNullAttribute(attributes, SwidTagConstants.RIM_SUPPORT_RIM_URI_GLOBAL,
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
         File rimEventLogFile = new File(rimEventLog);
         file.setSize(new BigInteger(Long.toString(rimEventLogFile.length())));
-        addNonNullAttribute(attributes, SwidTagConstants._SHA256_HASH,
+        addNonNullAttribute(attributes, SwidTagConstants.SHA256_HASH,
                 jsonObject.getString(SwidTagConstants.HASH,
                         HashSwid.get256Hash(rimEventLog)), true);
 
         return file;
     }
 
-    private void addNonNullAttribute(Map<QName, String> attributes, QName key, String value,
-                                     boolean required) {
+    private void addNonNullAttribute(final Map<QName, String> attributes,
+                                     final QName key,
+                                     final String value,
+                                     final boolean required) {
         if (required && value.isEmpty()) {
             errorRequiredFields += key.getLocalPart() + ", ";
         } else {
@@ -532,7 +535,8 @@ public class SwidTagGateway {
      * @param value
      */
     private void addNonNullAttribute(final Map<QName, String> attributes,
-                                     final QName key, String value) {
+                                     final QName key,
+                                     final String value) {
         if (!value.isEmpty()) {
             attributes.put(key, value);
         }
@@ -545,7 +549,7 @@ public class SwidTagGateway {
      * @param element to convert
      * @return a Document object
      */
-    private Document convertToDocument(JAXBElement element) {
+    private Document convertToDocument(final JAXBElement element) {
         Document doc = null;
         try {
             doc = builder.newDocument();
@@ -562,8 +566,11 @@ public class SwidTagGateway {
     /**
      * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
      * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
+     *
+     * @param doc the Document object to be signed
+     * @return the Document with a signature attached
      */
-    private Document signXMLDocument(Document doc) {
+    private Document signXMLDocument(final Document doc) {
         XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
         List xmlObjectList = null;
         String signatureId = null;
@@ -600,7 +607,13 @@ public class SwidTagGateway {
                 System.exit(1);
             }
             refList.add(timestampRef);
-            xmlObjectList = Collections.singletonList(createXmlTimestamp(doc, sigFactory));
+            XMLObject timestampObj = createXmlTimestamp(doc, sigFactory);
+            if (timestampObj != null) {
+                xmlObjectList = Collections.singletonList(timestampObj);
+            } else {
+                System.out.println("Invalid timestamp format given: " + timestampFormat);
+                System.exit(1);
+            }
             signatureId = "RimSignature";
         }
         SignedInfo signedInfo = null;
@@ -681,7 +694,7 @@ public class SwidTagGateway {
      * @param sigFactory the SignatureFactory object
      * @return an XMLObject containing the timestamp element
      */
-    private XMLObject createXmlTimestamp(Document doc, XMLSignatureFactory sigFactory) {
+    private XMLObject createXmlTimestamp(final Document doc, final XMLSignatureFactory sigFactory) {
         Element timeStampElement = null;
         switch (timestampFormat.toUpperCase()) {
             case "RFC3852":
@@ -716,6 +729,8 @@ public class SwidTagGateway {
                             timestampArgument);
                 }
                 break;
+            default:
+                return null;
         }
         DOMStructure timestampObject = new DOMStructure(timeStampElement);
         SignatureProperty signatureProperty = sigFactory.newSignatureProperty(
