@@ -92,18 +92,21 @@ public class ComponentInfo extends ArchivableEntity {
                          final String componentSerial,
                          final String componentRevision) {
 
-        if ((StringUtils.isEmpty(componentManufacturer)
-                || StringUtils.isEmpty(componentModel))) {
+        if (componentManufacturer == null) {
+            log.error("Component Info's manufacturer cannot be null.");
+            this.componentManufacturer = "";
+        } else {
+            this.componentManufacturer = componentModel.trim();
+        }
 
-            log.error("Component Info's manufacturer and/or "
-                    + "model can not be null");
-            throw new NullPointerException("ComponentInfo: manufacturer and/or "
-                    + "model can not be null");
+        if (componentModel == null) {
+            log.error("Component Info's model cannot be null.");
+            this.componentModel = "";
+        } else {
+            this.componentModel = componentModel.trim();
         }
 
         this.deviceName = deviceName;
-        this.componentManufacturer = componentManufacturer.trim();
-        this.componentModel = componentModel.trim();
 
         if (componentSerial != null) {
             this.componentSerial = componentSerial.trim();
