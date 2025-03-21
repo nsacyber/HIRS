@@ -98,7 +98,7 @@ public class ComponentResult extends ArchivableEntity {
      *
      * @param boardSerialNumber       associated platform certificate serial number.
      * @param certificateSerialNumber unique number associated with header info.
-     * @param certificateType         parameter holds version 1.2 or 2.0.
+     * @param certificateType         type of certificate. parameter holds version 1.2 or 2.0.
      * @param componentIdentifier     object with information from the platform certificate components.
      */
     public ComponentResult(final String boardSerialNumber, final String certificateSerialNumber,
@@ -116,28 +116,51 @@ public class ComponentResult extends ArchivableEntity {
         }
 
         StringBuilder sb = new StringBuilder();
-        for (ComponentAddress element : componentIdentifier.getComponentAddress()) {
+        for (ComponentAddress element : componentIdentifier.getComponentAddresses()) {
+            sb.append(String.format("%s:%s;", element.getAddressTypeValue(),
+                    element.getAddressValue().toString()));
+        }
+        componentAddress = sb.toString();
+    }
+
+    /**
+     * @param boardSerialNumber       associated platform certificate serial number
+     * @param certificateSerialNumber unique number associated with header info
+     * @param certificateType         type of certificate. Parameter holds version 1.2 or 2.0.
+     * @param componentIdentifierV2   version 2 component identifier
+     */
+    public ComponentResult(final String boardSerialNumber, final String certificateSerialNumber,
+                           final String certificateType,
+                           final ComponentIdentifierV2 componentIdentifierV2) {
+
+        this.boardSerialNumber = boardSerialNumber;
+        this.certificateSerialNumber = certificateSerialNumber;
+        this.certificateType = certificateType;
+        this.manufacturer = componentIdentifierV2.getComponentManufacturer().toString();
+        this.model = componentIdentifierV2.getComponentModel().toString();
+        this.serialNumber = componentIdentifierV2.getComponentSerial().toString();
+        this.revisionNumber = componentIdentifierV2.getComponentRevision().toString();
+        if (componentIdentifierV2.getFieldReplaceable() != null) {
+            this.fieldReplaceable = componentIdentifierV2.getFieldReplaceable().isTrue();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (ComponentAddress element : componentIdentifierV2.getComponentAddresses()) {
             sb.append(String.format("%s:%s;", element.getAddressTypeValue(),
                     element.getAddressValue().toString()));
         }
         componentAddress = sb.toString();
 
-        // V2 fields
-        if (componentIdentifier.isVersion2()
-                && componentIdentifier instanceof ComponentIdentifierV2 ciV2) {
-            // this is a downside of findbugs, the code is set up to indicate if a CI is V2 or not
-            // but find bugs is throwing a flag because instanceof isn't being used.
-            this.componentClassValue = ciV2.getComponentClass().getComponentIdentifier();
-            this.componentClassStr = ciV2.getComponentClass().toString();
-            this.componentClassType = ciV2.getComponentClass().getRegistryType();
-            this.attributeStatus = ciV2.getAttributeStatus();
-            this.version2 = true;
-            if (ciV2.getCertificateIdentifier() != null) {
-                this.issuerDN = ciV2.getCertificateIdentifier().getIssuerDN().toString();
-                if (ciV2.getComponentPlatformUri() != null) {
-                    this.uniformResourceIdentifier = ciV2.getComponentPlatformUri()
-                            .getUniformResourceIdentifier().toString();
-                }
+        this.componentClassValue = componentIdentifierV2.getComponentClass().getComponentIdentifier();
+        this.componentClassStr = componentIdentifierV2.getComponentClass().toString();
+        this.componentClassType = componentIdentifierV2.getComponentClass().getRegistryType();
+        this.attributeStatus = componentIdentifierV2.getAttributeStatus();
+        this.version2 = true;
+        if (componentIdentifierV2.getComponentPlatformCert() != null) {
+            this.issuerDN = componentIdentifierV2.getComponentPlatformCert().getIssuerDN().toString();
+            if (componentIdentifierV2.getComponentPlatformCertUri() != null) {
+                this.uniformResourceIdentifier = componentIdentifierV2.getComponentPlatformCertUri()
+                        .getUniformResourceIdentifier().toString();
             }
         }
     }

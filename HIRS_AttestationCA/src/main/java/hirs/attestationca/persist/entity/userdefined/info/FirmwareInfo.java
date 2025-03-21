@@ -19,11 +19,11 @@ import java.io.Serializable;
 public class FirmwareInfo implements Serializable {
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
+    @Column(nullable = false)
     private final String biosVendor;
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
+    @Column(nullable = false)
     private final String biosVersion;
 
     @XmlElement

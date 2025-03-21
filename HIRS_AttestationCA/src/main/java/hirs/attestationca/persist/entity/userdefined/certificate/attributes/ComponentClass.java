@@ -33,6 +33,10 @@ ComponentClass {
 
     private static final String SMBIOS_COMPONENT_REGISTRY = "2.23.133.18.3.3";
 
+    private static final String PCIE_BASED_COMPONENT_REGISTRY = "2.23.133.18.3.4";
+
+    private static final String STORAGE_COMPONENT_REGISTRY = "2.23.133.18.3.5";
+
     private static final Path WINDOWS_JSON_PATH = FileSystems.getDefault().getPath(
             "C:/", "ProgramData", "hirs", "aca", "default-properties", "component-class.json");
 
@@ -122,6 +126,8 @@ ComponentClass {
         this.registryType = switch (registryOid) {
             case TCG_COMPONENT_REGISTRY -> "TCG";
             case SMBIOS_COMPONENT_REGISTRY -> "SMBIOS";
+            case PCIE_BASED_COMPONENT_REGISTRY -> "PCIE";
+            case STORAGE_COMPONENT_REGISTRY -> "STORAGE";
             default -> UNKNOWN_STRING;
         };
 
