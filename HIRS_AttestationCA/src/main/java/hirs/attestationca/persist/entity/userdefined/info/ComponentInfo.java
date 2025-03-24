@@ -96,7 +96,7 @@ public class ComponentInfo extends ArchivableEntity {
             log.error("Component Info's manufacturer cannot be null.");
             this.componentManufacturer = "";
         } else {
-            this.componentManufacturer = componentModel.trim();
+            this.componentManufacturer = componentManufacturer.trim();
         }
 
         if (componentModel == null) {
