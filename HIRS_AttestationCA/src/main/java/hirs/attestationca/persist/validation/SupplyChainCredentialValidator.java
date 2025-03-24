@@ -335,7 +335,7 @@ public class SupplyChainCredentialValidator {
         if (node.hasNonNull(fieldName)) {
             return node.findValue(fieldName).textValue();
         }
-        return "";
+        return null;
     }
 
     /**
