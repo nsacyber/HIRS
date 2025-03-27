@@ -92,6 +92,13 @@ public class ComponentInfo extends ArchivableEntity {
                          final String componentSerial,
                          final String componentRevision) {
 
+        if (deviceName == null) {
+            log.error("Component Info's device name cannot be null.");
+            this.deviceName = "";
+        } else {
+            this.deviceName = deviceName;
+        }
+
         if (componentManufacturer == null) {
             log.error("Component Info's manufacturer cannot be null.");
             this.componentManufacturer = "";
@@ -105,8 +112,6 @@ public class ComponentInfo extends ArchivableEntity {
         } else {
             this.componentModel = componentModel.trim();
         }
-
-        this.deviceName = deviceName;
 
         if (componentSerial != null) {
             this.componentSerial = componentSerial.trim();

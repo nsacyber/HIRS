@@ -195,11 +195,19 @@ public class AbstractProcessor {
         List<PlatformCredential> platformCredentials = new LinkedList<>();
 
         if (identityClaim.getPlatformCredentialCount() > 0) {
-            for (ByteString platformCredential : identityClaim.getPlatformCredentialList()) {
+
+            List<ByteString> platformCredentialList = identityClaim.getPlatformCredentialList();
+
+            for (ByteString platformCredential : platformCredentialList) {
                 if (!platformCredential.isEmpty()) {
-                    platformCredentials.add(CredentialManagementHelper.storePlatformCredential(
-                            certificateRepository, platformCredential.toByteArray(),
-                            identityClaim.getDv().getNw().getHostname()));
+                    PlatformCredential storedPlatformCredential =
+                            CredentialManagementHelper.storePlatformCredential(
+                                    certificateRepository, platformCredential.toByteArray(),
+                                    identityClaim.getDv().getNw().getHostname());
+
+                    if (storedPlatformCredential != null) {
+                        platformCredentials.add(storedPlatformCredential);
+                    }
                 }
             }
         } else if (endorsementCredential != null) {

@@ -90,14 +90,17 @@ public final class CredentialManagementHelper {
             final byte[] platformBytes, final String deviceName) {
 
         if (certificateRepository == null) {
+            log.error("The provided certificate repository is null.");
             throw new IllegalArgumentException("null certificate manager");
         }
 
         if (platformBytes == null) {
+            log.error("The provided platform credential byte array is null.");
             throw new IllegalArgumentException("null platform credential bytes");
         }
 
         if (platformBytes.length == 0) {
+            log.error("The provided platform credential byte array is null.");
             throw new IllegalArgumentException(
                     "zero-length byte array given for platform credential"
             );
@@ -110,6 +113,7 @@ public final class CredentialManagementHelper {
                     PlatformCredential.parseWithPossibleHeader(platformBytes);
 
             if (platformCredential == null) {
+                log.error("The platform credential that was parsed was null");
                 return null;
             }
 
@@ -147,7 +151,7 @@ public final class CredentialManagementHelper {
 
             return existingCredential;
         } catch (DBManagerException dbEx) {
-            log.error("Error retrieving or saving platform credential", dbEx);
+            log.error("Error retrieving or saving platform credential to the database", dbEx);
         } catch (Exception e) {
             log.error("Error parsing platform credential", e);
         }
