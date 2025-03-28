@@ -113,7 +113,8 @@ public final class CredentialManagementHelper {
                     PlatformCredential.parseWithPossibleHeader(platformBytes);
 
             if (platformCredential == null) {
-                log.error("The platform credential that was parsed was null");
+                log.error("The platform credential that was parsed with the provided"
+                        + "byte array was null");
                 return null;
             }
 
@@ -155,6 +156,10 @@ public final class CredentialManagementHelper {
         } catch (Exception e) {
             log.error("Error parsing platform credential", e);
         }
+
+        log.error("Due to an exception being thrown while "
+                + " attempting to store platform certificate(s) "
+                + "this method will return a null platform certificate.");
         return null;
     }
 }

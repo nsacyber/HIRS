@@ -989,16 +989,17 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final List<ComponentInfo> componentInfos,
             final List<ComponentResult> compiledComponentList) {
         Map<Integer, List<ComponentInfo>> deviceHashMap = new HashMap<>();
+
         componentInfos.forEach((componentInfo) -> {
-            List<ComponentInfo> innerList;
+            List<ComponentInfo> innerList = new ArrayList<>();
             Integer compInfoHash = componentInfo.hashCommonElements();
+
             if (deviceHashMap.containsKey(compInfoHash)) {
                 innerList = deviceHashMap.get(compInfoHash);
-                innerList.add(componentInfo);
-            } else {
-                innerList = new ArrayList<>(0);
-                innerList.add(componentInfo);
             }
+
+            innerList.add(componentInfo);
+
             deviceHashMap.put(compInfoHash, innerList);
         });
 
@@ -1028,23 +1029,37 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // continue down the options, move to a different method.
         // create component class mapping to component info
         Map<String, List<ComponentInfo>> componentDeviceMap = new HashMap<>();
+
         componentInfos.forEach((componentInfo) -> {
-            List<ComponentInfo> innerList;
+            List<ComponentInfo> innerList = new ArrayList<>();
             String componentClass = componentInfo.getComponentClassValue();
+
             if (componentDeviceMap.containsKey(componentClass)) {
                 innerList = componentDeviceMap.get(componentClass);
-                innerList.add(componentInfo);
-            } else {
-                innerList = new ArrayList<>(0);
-                innerList.add(componentInfo);
             }
+
+            innerList.add(componentInfo);
+
             componentDeviceMap.put(componentClass, innerList);
         });
 
         List<ComponentInfo> componentClassInfo;
         List<ComponentAttributeResult> attributeResults = new ArrayList<>();
+
         for (ComponentResult componentResult : remainingComponentResults) {
+
             componentClassInfo = componentDeviceMap.get(componentResult.getComponentClassValue());
+
+            if (componentClassInfo == null) {
+                log.error("The retrieved list of component class info is null. The null list"
+                                + "is associated with the component result's component class value of {}",
+                        componentResult.getComponentClassValue());
+
+                //move on to the next iteration since there is nothing we can do with the null
+                // component class info
+                continue;
+            }
+
             if (componentClassInfo.size() == 1) {
                 attributeResults.addAll(generateComponentAttributeResults(
                         componentClassInfo.get(0), componentResult));
