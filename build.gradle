@@ -9,6 +9,7 @@ plugins {
     id 'com.github.spotbugs' version '6.0.13' apply false
     id 'org.owasp.dependencycheck' version '11.1.1'
     id 'java'
+    id 'jacoco'
 }
 
 // Global checkstyle file
@@ -19,6 +20,7 @@ subprojects {
     apply plugin: "java"
     apply plugin: "checkstyle"
     apply plugin: "org.owasp.dependencycheck"
+    apply plugin: "jacoco"
 
     repositories {
         flatDir { dirs "lib" }
@@ -29,6 +31,20 @@ subprojects {
         toolchain {
             languageVersion = JavaLanguageVersion.of(17)
         }
+    }
+
+    jacoco {
+        toolVersion = '0.8.12'
+    }
+
+    if (project.name != 'tcg_rim_tool') // run tests on every subproject except for rim_tools
+        test {
+            useJUnitPlatform() // Use JUnit platform
+            finalizedBy jacocoTestReport // Generate the JaCoCo report after running tests
+        }
+
+    jacocoTestReport {
+        dependsOn test // tests are required to run before generating the report
     }
 
     checkstyle {
@@ -60,7 +76,6 @@ subprojects {
         }
     }
 }
-
 
 dependencies {
     repositories {

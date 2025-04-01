@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -108,7 +109,8 @@ public class SupplyChainValidationService {
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
                                                             final List<PlatformCredential> pcs,
                                                             final Device device,
-                                                            final List<ComponentInfo> componentInfos) {
+                                                            final List<ComponentInfo> componentInfos)
+            throws IOException {
         boolean acceptExpiredCerts = getPolicySettings().isExpiredCertificateValidationEnabled();
         provisionSessionId = UUID.randomUUID();
         PlatformCredential baseCredential = null;
@@ -153,6 +155,7 @@ public class SupplyChainValidationService {
                         pcErrorMessage = String.format("%s%s%n", pcErrorMessage,
                                 platformScv.getMessage());
                     }
+
                     // set the base credential
                     if (pc.isPlatformBase()) {
                         baseCredential = pc;
@@ -407,9 +410,9 @@ public class SupplyChainValidationService {
     }
 
     /**
-     * Helper function to get a fresh load of the default policy from the DB.
+     * Helper function that retrieves the default policy settings from the database.
      *
-     * @return The default Supply Chain Policy
+     * @return The default Supply Chain Policy Settings
      */
     private PolicySettings getPolicySettings() {
         PolicySettings defaultSettings = this.policyRepository.findByName("Default");
