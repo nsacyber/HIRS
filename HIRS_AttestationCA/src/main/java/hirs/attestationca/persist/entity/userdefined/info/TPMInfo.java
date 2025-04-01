@@ -30,23 +30,23 @@ public class TPMInfo implements Serializable {
     private static final int MAX_BLOB_SIZE = 65535;
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.MED_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoEnums.MED_STRING_LENGTH)
     private String tpmMake;
 
     @XmlElement
-    @Column(nullable = true)
+    @Column
     private short tpmVersionMajor;
 
     @XmlElement
-    @Column(nullable = true)
+    @Column
     private short tpmVersionMinor;
 
     @XmlElement
-    @Column(nullable = true)
+    @Column
     private short tpmVersionRevMajor;
 
     @XmlElement
-    @Column(nullable = true)
+    @Column
     private short tpmVersionRevMinor;
 
     /**
@@ -60,13 +60,13 @@ public class TPMInfo implements Serializable {
     @JsonIgnore
     private X509Certificate identityCertificate;
 
-    @Column(nullable = true, columnDefinition = "blob")
+    @Column(columnDefinition = "blob")
     private byte[] pcrValues;
 
-    @Column(nullable = true, columnDefinition = "blob")
+    @Column(columnDefinition = "blob")
     private byte[] tpmQuoteHash;
 
-    @Column(nullable = true, columnDefinition = "blob")
+    @Column(columnDefinition = "blob")
     private byte[] tpmQuoteSignature;
 
     /**

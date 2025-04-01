@@ -16,10 +16,6 @@ dependencies {
     testAnnotationProcessor libs.lombok
 }
 
-test {
-    useJUnitPlatform()
-}
-
 //publishing {
 //    publications {
 //        maven(MavenPublication) {

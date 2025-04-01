@@ -16,7 +16,6 @@ import java.util.List;
 public final class CredentialManagementHelper {
 
     private CredentialManagementHelper() {
-
     }
 
     /**
@@ -48,7 +47,7 @@ public final class CredentialManagementHelper {
             );
         }
 
-        log.info("Parsing Endorsement Credential of length " + endorsementBytes.length);
+        log.info("Parsing Endorsement Credential of length {}", endorsementBytes.length);
 
         EndorsementCredential endorsementCredential;
         try {
@@ -58,16 +57,18 @@ public final class CredentialManagementHelper {
             log.error(iae.getMessage());
             throw iae;
         }
+
         int certificateHash = endorsementCredential.getCertificateHash();
         EndorsementCredential existingCredential = (EndorsementCredential) certificateRepository
                 .findByCertificateHash(certificateHash);
+
         if (existingCredential == null) {
-            log.info("No Endorsement Credential found with hash: " + certificateHash);
+            log.info("No Endorsement Credential found with hash: {}", certificateHash);
             endorsementCredential.setDeviceName(deviceName);
             return certificateRepository.save(endorsementCredential);
         } else if (existingCredential.isArchived()) {
-            // if the EK is stored in the DB and it's archived, unarchive.
-            log.info("Unarchiving credential");
+            // if the EK is stored in the DB and it's archived, un-archive it.
+            log.info("Un-archiving endorsement credential");
             existingCredential.restore();
             existingCredential.resetCreateTime();
             certificateRepository.save(existingCredential);
@@ -89,28 +90,37 @@ public final class CredentialManagementHelper {
             final byte[] platformBytes, final String deviceName) {
 
         if (certificateRepository == null) {
+            log.error("The provided certificate repository is null.");
             throw new IllegalArgumentException("null certificate manager");
         }
 
         if (platformBytes == null) {
+            log.error("The provided platform credential byte array is null.");
             throw new IllegalArgumentException("null platform credential bytes");
         }
 
         if (platformBytes.length == 0) {
+            log.error("The provided platform credential byte array is null.");
             throw new IllegalArgumentException(
                     "zero-length byte array given for platform credential"
             );
         }
 
-        log.info("Parsing Platform Credential of length " + platformBytes.length);
+        log.info("Parsing Platform Credential of length {}", platformBytes.length);
+
         try {
             PlatformCredential platformCredential =
                     PlatformCredential.parseWithPossibleHeader(platformBytes);
+
             if (platformCredential == null) {
+                log.error("The platform credential that was parsed with the provided"
+                        + "byte array was null");
                 return null;
             }
+
             PlatformCredential existingCredential = (PlatformCredential) certificateRepository
                     .findByCertificateHash(platformCredential.getCertificateHash());
+
             if (existingCredential == null) {
                 if (platformCredential.getPlatformSerial() != null) {
                     List<PlatformCredential> certificates = certificateRepository
@@ -121,10 +131,10 @@ public final class CredentialManagementHelper {
                             if (pc.isPlatformBase() && platformCredential.isPlatformBase()) {
                                 // found a base in the database associated with
                                 // parsed certificate
-                                log.error(String.format("Base certificate stored"
+                                log.error("Base certificate stored"
                                                 + " in database with same platform"
-                                                + "serial number. (%s)",
-                                        platformCredential.getPlatformSerial()));
+                                                + "serial number. ({})",
+                                        platformCredential.getPlatformSerial());
                                 return null;
                             }
                         }
@@ -133,8 +143,8 @@ public final class CredentialManagementHelper {
                 platformCredential.setDeviceName(deviceName);
                 return certificateRepository.save(platformCredential);
             } else if (existingCredential.isArchived()) {
-                // if the PC is stored in the DB and it's archived, unarchive.
-                log.info("Unarchiving credential");
+                // if the PC is stored in the DB and it's archived, un-archive it.
+                log.info("Un-archiving platform credential");
                 existingCredential.restore();
                 certificateRepository.save(existingCredential);
                 return existingCredential;
@@ -142,10 +152,14 @@ public final class CredentialManagementHelper {
 
             return existingCredential;
         } catch (DBManagerException dbEx) {
-            log.error("Error retrieving or saving platform credential", dbEx);
+            log.error("Error retrieving or saving platform credential to the database", dbEx);
         } catch (Exception e) {
             log.error("Error parsing platform credential", e);
         }
+
+        log.error("Due to an exception being thrown while "
+                + " attempting to store platform certificate(s) "
+                + "this method will return a null platform certificate.");
         return null;
     }
 }

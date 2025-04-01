@@ -1,8 +1,9 @@
+# Updated: 02/11/2025
 name: Dotnet Provisioner Unit Tests
 
 on: push
 env:
-  DOTNET_VERSION: '6.0'
+  DOTNET_VERSION: '8.0'
 jobs:
   dotnet_provisioner_unit_tests:
     name: Restore and Run Unit Tests
@@ -97,7 +98,7 @@ jobs:
 
   Evaluator:
     name: Evaluate Tests
-    needs: [dotnet_provisioner_unit_tests]
+    needs: [ dotnet_provisioner_unit_tests ]
     runs-on: ubuntu-latest
     continue-on-error: false
     steps:

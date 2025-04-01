@@ -19,6 +19,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertifica
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -348,7 +349,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
                 records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
 
-                log.debug("Returning the size of the list of certificate trust chains: {}", records.size());
+                log.debug("Returning the size of the list of trust chain certificates: {}", records.size());
                 return new DataTableResponse<>(records, input);
             }
             case ISSUEDCERTIFICATES -> {
@@ -957,7 +958,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 }
 
                 this.certificateRepository.save(certificate);
-                handlePlatformComponents(certificate);
+                parseAndSaveComponentResults(certificate);
 
                 final String successMsg
                         = String.format("New certificate successfully uploaded (%s): ", fileName);
@@ -970,6 +971,11 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     fileName);
             messages.addError(failMessage + dbsEx.getMessage());
             log.error(failMessage, dbsEx);
+            return;
+        } catch (IOException ioException) {
+            final String ioExceptionMessage = "Failed to save component results in the database";
+            messages.addError(ioExceptionMessage + ioException.getMessage());
+            log.error(ioExceptionMessage, ioException);
             return;
         }
 
@@ -1019,7 +1025,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *
      * @param certificate certificate
      */
-    private void handlePlatformComponents(final Certificate certificate) {
+    private void parseAndSaveComponentResults(final Certificate certificate) throws IOException {
         PlatformCredential platformCredential;
 
         if (certificate instanceof PlatformCredential) {
@@ -1028,19 +1034,38 @@ public class CertificatePageController extends PageController<NoPageParams> {
                     .findByCertificateSerialNumberAndBoardSerialNumber(
                             platformCredential.getSerialNumber().toString(),
                             platformCredential.getPlatformSerial());
+
             if (componentResults.isEmpty()) {
                 ComponentResult componentResult;
 
-                List<ComponentIdentifier> componentIdentifiers = platformCredential.getComponentIdentifiers();
+                if (platformCredential.getPlatformConfigurationV1() != null) {
 
-                for (ComponentIdentifier componentIdentifier : componentIdentifiers) {
-                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                            platformCredential.getSerialNumber().toString(),
-                            platformCredential.getPlatformChainType(),
-                            componentIdentifier);
-                    componentResult.setFailedValidation(false);
-                    componentResult.setDelta(!platformCredential.isPlatformBase());
-                    componentResultRepository.save(componentResult);
+                    List<ComponentIdentifier> componentIdentifiers =
+                            platformCredential.getComponentIdentifiers();
+
+                    for (ComponentIdentifier componentIdentifier : componentIdentifiers) {
+                        componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                                platformCredential.getSerialNumber().toString(),
+                                platformCredential.getPlatformChainType(),
+                                componentIdentifier);
+                        componentResult.setFailedValidation(false);
+                        componentResult.setDelta(!platformCredential.isPlatformBase());
+                        componentResultRepository.save(componentResult);
+                    }
+                } else if (platformCredential.getPlatformConfigurationV2() != null) {
+
+                    List<ComponentIdentifierV2> componentIdentifiersV2 =
+                            platformCredential.getComponentIdentifiersV2();
+
+                    for (ComponentIdentifierV2 componentIdentifierV2 : componentIdentifiersV2) {
+                        componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                                platformCredential.getSerialNumber().toString(),
+                                platformCredential.getPlatformChainType(),
+                                componentIdentifierV2);
+                        componentResult.setFailedValidation(false);
+                        componentResult.setDelta(!platformCredential.isPlatformBase());
+                        componentResultRepository.save(componentResult);
+                    }
                 }
             } else {
                 for (ComponentResult componentResult : componentResults) {
