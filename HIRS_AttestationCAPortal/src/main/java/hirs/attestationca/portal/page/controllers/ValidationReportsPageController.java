@@ -28,9 +28,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -111,8 +111,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @return the data table response containing the supply chain summary records
      */
     @ResponseBody
-    @RequestMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE,
-            method = RequestMethod.GET)
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<SupplyChainValidationSummary> getTableData(
             final DataTableInput input) {
 
@@ -146,7 +145,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param response object
      * @throws IOException thrown by BufferedWriter object
      */
-    @PostMapping(value = "download")
+    @PostMapping("download")
     public void download(final HttpServletRequest request,
                          final HttpServletResponse response) throws IOException {
 
@@ -340,7 +339,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                                            final String company,
                                            final String contractNumber) {
         JsonObject systemData = new JsonObject();
-        String deviceName = deviceRepository.findById((pc)
+        String deviceName = deviceRepository.findById(pc
                 .getDeviceId()).get().getName();
 
         systemData.addProperty("Company", company);
