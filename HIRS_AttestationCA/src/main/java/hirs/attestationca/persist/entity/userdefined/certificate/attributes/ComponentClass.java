@@ -149,7 +149,16 @@ ComponentClass {
             default:
                 this.category = this.componentIdentifier.substring(0, MID_INDEX) + this.category;
                 this.component = OTHER + this.componentIdentifier.substring(MID_INDEX);
-                findStringValues(JsonUtils.getSpecificJsonObject(componentClassPath, registryType));
+
+                // if the registry type is of type PCIE, attempt to use the included library to parse the string values
+                if (this.registryType.equals("PCIE")) {
+                    findStringValuesForPCIE();
+                }
+                // for all other registry types, attempt to retrieve the string values using the component class json file
+                else {
+                    findStringValuesFromJSONObject(
+                            JsonUtils.getSpecificJsonObject(componentClassPath, registryType));
+                }
                 break;
         }
     }
@@ -191,22 +200,29 @@ ComponentClass {
      */
     @Override
     public String toString() {
-        String resultString;
         if (componentStr.equals(UNKNOWN_STRING) || component.equals(OTHER_STRING)) {
-            resultString = String.format("%s%n%s", registryType, categoryStr);
-        } else {
-            resultString = String.format("%s%n%s - %s", registryType, categoryStr, componentStr);
+            return String.format("%s%n%s", registryType, categoryStr);
         }
-        return resultString;
+        return String.format("%s%n%s - %s", registryType, categoryStr, componentStr);
     }
 
     /**
-     * Getter for the Category mapped to the associated value in.
-     *
-     * @param categories a JSON object associated with mapped categories in file
-     *                   {}@link componentIdentifier}.
+     * Helper method that attempts to find and set the category and component string using the provided library. This method
+     * will be used only for the PCIE registry types.
      */
-    private void findStringValues(final JsonObject categories) {
+    private void findStringValuesForPCIE() {
+        //TODO placeholders
+        this.categoryStr = NONE_STRING;
+        this.componentStr = UNKNOWN_STRING;
+    }
+
+    /**
+     * Helper method that attempts to find and set the category and component string using the provided JSON object. This
+     * method will typically be used for the SMBIOS and TCG registry types.
+     *
+     * @param categories a JSON object associated with mapped categories in file.
+     */
+    private void findStringValuesFromJSONObject(final JsonObject categories) {
         String categoryID;
         String componentMask;
         boolean found = false;
