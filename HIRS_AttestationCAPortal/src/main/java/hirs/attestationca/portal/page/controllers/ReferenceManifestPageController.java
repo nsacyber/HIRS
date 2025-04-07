@@ -112,11 +112,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             method = RequestMethod.GET)
     public DataTableResponse<ReferenceManifest> getTableData(
             @Valid final DataTableInput input) {
-        log.debug("Handling request for summary list: " + input);
+        log.debug("Handling request for summary list: {}", input);
 
         String orderColumnName = input.getOrderColumnName();
-        log.info("Ordering on column: " + orderColumnName);
-        log.info("Querying with the following dataTableInput: " + input);
+        log.debug("Ordering on column: {}", orderColumnName);
+        log.debug("Querying with the following dataTableInput: {}", input);
 
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
@@ -137,7 +137,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         records.setRecordsFiltered(referenceManifestRepository.findByArchiveFlag(false).size());
 
-        log.debug("Returning list of size: " + records.size());
+        log.debug("Returning list of size: {}", records.size());
         return new DataTableResponse<>(records, input);
     }
 
@@ -282,10 +282,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 // send a 404 error when invalid Reference Manifest
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
-                StringBuilder fileName = new StringBuilder("filename=\"");
-                fileName.append(referenceManifest.getFileName());
                 // Set filename for download.
-                response.setHeader("Content-Disposition", "attachment;" + fileName);
+                response.setHeader("Content-Disposition",
+                        "attachment;" + "filename=\"" + referenceManifest.getFileName()
+                        // Set filename for download.
+                );
                 response.setContentType("application/octet-stream");
 
                 // write cert to output stream

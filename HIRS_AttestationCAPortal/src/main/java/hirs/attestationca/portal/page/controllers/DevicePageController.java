@@ -99,7 +99,7 @@ public class DevicePageController extends PageController<NoPageParams> {
             final DataTableInput input) {
         log.debug("Handling request for device list");
         String orderColumnName = input.getOrderColumnName();
-        log.info("Ordering on column: {}", orderColumnName);
+        log.debug("Ordering on column: {}", orderColumnName);
 
         // get all the devices
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();

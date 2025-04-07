@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.CriteriaModifier;
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.DBServiceException;
 import hirs.attestationca.persist.FilteredRecordsList;
@@ -21,6 +20,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.util.CredentialHelper;
+import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -29,17 +29,17 @@ import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.CertificateStringMapBuilder;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.DecoderException;
-import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -56,13 +56,13 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.lang.ref.Reference;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -237,6 +237,33 @@ public class CertificatePageController extends PageController<NoPageParams> {
     }
 
     /**
+     * @return
+     */
+    private String buildSearchQuery(@NotNull String searchTerm, List<Column> columns) {
+
+        StringBuilder searchQuery = new StringBuilder();
+
+        if (!StringUtils.isBlank(searchTerm)) {
+            // Iterate over columns and add search conditions for the ones that are searchable
+            boolean firstCondition = true;
+
+            for (Column column : columns) {
+                if (column.isSearchable()) {
+                    if (!firstCondition) {
+                        searchQuery.append(" OR ");
+                    }
+
+                    searchQuery.append(column.getName()).append(" LIKE '%").append(searchTerm).append("%'");
+
+                    firstCondition = false;
+                }
+            }
+        }
+
+        return searchQuery.toString();
+    }
+
+    /**
      * Queries for the list of Certificates and returns a data table response
      * with the records.
      *
@@ -257,25 +284,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        // check that the alert is not archived and that it is in the specified report
-        CriteriaModifier criteriaModifier = new CriteriaModifier() {
-            @Override
-            public void modify(final CriteriaQuery criteriaQuery) {
-                Session session = entityManager.unwrap(Session.class);
-                CriteriaBuilder cb = session.getCriteriaBuilder();
-                Root<Certificate> rimRoot = criteriaQuery.from(Reference.class);
-                criteriaQuery.select(rimRoot).distinct(true)
-                        .where(cb.isNull(rimRoot.get(Certificate.ARCHIVE_FIELD)));
-
-                // add a device alias if this query includes the device table
-                // for getting the device (e.g. device name).
-                // use left join, since device may be null. Query will return all
-                // Certs of this type, whether it has a Device or not (device field may be null)
-                // if (hasDeviceTableToJoin(certificateType)) {
-                //   criteria.createAlias("device", "device", JoinType.LEFT_OUTER_JOIN);
-                //}
-            }
-        };
+        //String searchQuery = buildSearchQuery(input.getSearch().getValue(), input.getColumns());
 
         int currentPage = input.getStart() / input.getLength();
         Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -286,8 +295,32 @@ public class CertificatePageController extends PageController<NoPageParams> {
         switch (certificateType) {
             case PLATFORMCREDENTIAL -> {
                 FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
-                org.springframework.data.domain.Page<PlatformCredential> pagedResult =
-                        this.platformCertificateRepository.findByArchiveFlag(false, paging);
+
+                org.springframework.data.domain.Page<PlatformCredential> pagedResult = null;
+
+                if (StringUtils.isBlank(input.getSearch().getValue())) {
+                    pagedResult =
+                            this.platformCertificateRepository.findByArchiveFlag(false, paging);
+                } else {
+
+                    Specification<PlatformCredential> spec = (root, query, criteriaBuilder) -> {
+                        List<Predicate> predicates = new ArrayList<>();
+
+                        for (Column column : input.getColumns()) {
+                            if (column.isSearchable()) {
+                                predicates.add(criteriaBuilder.like(
+                                        criteriaBuilder.lower(root.get(column.getName())),
+                                        "%" + column.getSearch().getValue().toLowerCase() + "%"
+                                ));
+                            }
+                        }
+
+                        // Combine predicates into a single query (AND all conditions)
+                        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+                    };
+
+                    pagedResult = platformCertificateRepository.findAll(spec, paging);
+                }
 
                 if (pagedResult.hasContent()) {
                     records.addAll(pagedResult.getContent());

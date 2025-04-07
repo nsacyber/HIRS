@@ -30,14 +30,14 @@ public class Column {
     /**
      * Column's name.
      *
-     * @see http://datatables.net/reference/option/columns.name
+     * @see https://datatables.net/reference/option/columns.name
      */
     private String name;
 
     /**
      * Flag to indicate if this column is searchable (true) or not (false).
      *
-     * @see http://datatables.net/reference/option/columns.searchable
+     * @see https://datatables.net/reference/option/columns.searchable
      */
     @NotNull
     private boolean searchable;
@@ -45,7 +45,7 @@ public class Column {
     /**
      * Flag to indicate if this column is orderable (true) or not (false).
      *
-     * @see http://datatables.net/reference/option/columns.orderable
+     * @see https://datatables.net/reference/option/columns.orderable
      */
     @NotNull
     private boolean orderable;

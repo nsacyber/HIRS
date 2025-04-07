@@ -89,10 +89,10 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
             method = RequestMethod.GET)
     public DataTableResponse<ReferenceDigestValue> getTableData(
             @Valid final DataTableInput input) {
-        log.info("Handling request for summary list: " + input);
+        log.debug("Handling request for summary list: {}", input);
 
         String orderColumnName = input.getOrderColumnName();
-        log.info("Ordering on column: " + orderColumnName);
+        log.debug("Ordering on column: {}", orderColumnName);
 
         // check that the alert is not archived and that it is in the specified report
         CriteriaModifier criteriaModifier = new CriteriaModifier() {
@@ -106,7 +106,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
             }
         };
 
-        log.info("Querying with the following dataTableInput: " + input.toString());
+        log.debug("Querying with the following dataTableInput: {}", input);
 
         FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
 
@@ -139,7 +139,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
             }
         }
 
-        log.debug("Returning list of size: " + referenceDigestValues.size());
+        log.debug("Returning list of size: {}", referenceDigestValues.size());
         return new DataTableResponse<>(referenceDigestValues, input);
     }
 }
