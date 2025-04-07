@@ -4,6 +4,9 @@ def jarVersion = properties.get("jarVersion")
 //println "packageVersion is ${projVersion}"
 
 configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -33,17 +36,10 @@ dependencies {
 
     testImplementation libs.spring.boot.starter.test
 
-    // explicitly include the patched version of the logback-core dependency
-    testImplementation libs.logback.classic
-
     testImplementation project(path: ':HIRS_AttestationCA')
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
-}
-
-test {
-    useJUnitPlatform()
 }
 
 jar {

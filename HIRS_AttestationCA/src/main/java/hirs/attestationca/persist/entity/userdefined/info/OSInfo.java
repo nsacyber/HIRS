@@ -21,11 +21,11 @@ import java.io.Serializable;
 public class OSInfo implements Serializable {
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
+    @Column(nullable = false)
     private final String osName;
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH, nullable = false)
+    @Column(nullable = false)
     private final String osVersion;
 
     @XmlElement
@@ -33,11 +33,11 @@ public class OSInfo implements Serializable {
     private final String osArch;
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH)
     private final String distribution;
 
     @XmlElement
-    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH, nullable = true)
+    @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH)
     private final String distributionRelease;
 
     /**

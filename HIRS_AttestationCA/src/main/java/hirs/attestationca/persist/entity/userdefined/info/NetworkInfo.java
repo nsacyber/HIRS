@@ -23,7 +23,7 @@ public class NetworkInfo implements Serializable {
 
     @XmlElement
     @Getter
-    @Column(length = DeviceInfoEnums.LONG_STRING_LENGTH)
+    @Column
     private String hostname;
 
     @XmlElement

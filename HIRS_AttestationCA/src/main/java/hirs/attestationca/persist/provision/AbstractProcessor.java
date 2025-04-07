@@ -159,6 +159,7 @@ public class AbstractProcessor {
             final ProvisionerTpm2.IdentityClaim identityClaim,
             final PublicKey ekPub, final CertificateRepository certificateRepository) {
         EndorsementCredential endorsementCredential = null;
+
         if (identityClaim.hasEndorsementCredential()) {
             endorsementCredential = CredentialManagementHelper.storeEndorsementCredential(
                     certificateRepository,
@@ -172,6 +173,7 @@ public class AbstractProcessor {
             log.warn("No endorsement credential was received in identity claim and no EK Public"
                     + " Key was provided to check for uploaded certificates.");
         }
+
         return endorsementCredential;
     }
 
@@ -191,12 +193,21 @@ public class AbstractProcessor {
             final EndorsementCredential endorsementCredential,
             final CertificateRepository certificateRepository) {
         List<PlatformCredential> platformCredentials = new LinkedList<>();
+
         if (identityClaim.getPlatformCredentialCount() > 0) {
-            for (ByteString platformCredential : identityClaim.getPlatformCredentialList()) {
+
+            List<ByteString> platformCredentialList = identityClaim.getPlatformCredentialList();
+
+            for (ByteString platformCredential : platformCredentialList) {
                 if (!platformCredential.isEmpty()) {
-                    platformCredentials.add(CredentialManagementHelper.storePlatformCredential(
-                            certificateRepository, platformCredential.toByteArray(),
-                            identityClaim.getDv().getNw().getHostname()));
+                    PlatformCredential storedPlatformCredential =
+                            CredentialManagementHelper.storePlatformCredential(
+                                    certificateRepository, platformCredential.toByteArray(),
+                                    identityClaim.getDv().getNw().getHostname());
+
+                    if (storedPlatformCredential != null) {
+                        platformCredentials.add(storedPlatformCredential);
+                    }
                 }
             }
         } else if (endorsementCredential != null) {
@@ -206,6 +217,7 @@ public class AbstractProcessor {
         } else {
             log.warn("No platform credential received in identity claim.");
         }
+
         return platformCredentials;
     }
 
@@ -219,7 +231,7 @@ public class AbstractProcessor {
     private EndorsementCredential getEndorsementCredential(
             final PublicKey ekPublicKey,
             final CertificateRepository certificateRepository) {
-        log.debug("Searching for endorsement credential based on public key: " + ekPublicKey);
+        log.debug("Searching for endorsement credential based on public key: {}", ekPublicKey);
 
         if (ekPublicKey == null) {
             throw new IllegalArgumentException("Cannot look up an EC given a null public key");
@@ -254,10 +266,8 @@ public class AbstractProcessor {
      * @param endorsementCredential            the endorsement credential used to generate the AC
      * @param platformCredentials              the platform credentials used to generate the AC
      * @param device                           the device to which the attestation certificate is tied
-     * @param ldevID                         whether the certificate is a ldevid
+     * @param ldevID                           whether the certificate is a ldevid
      * @return whether the certificate was saved successfully
-     * @throws {@link CertificateProcessingException} if error occurs in persisting the Attestation
-     *                Certificate
      */
     public boolean saveAttestationCertificate(final CertificateRepository certificateRepository,
                                               final byte[] derEncodedAttestationCertificate,
@@ -286,7 +296,7 @@ public class AbstractProcessor {
                 generateCertificate = ldevID ? policySettings.isIssueDevIdCertificate()
                         : policySettings.isIssueAttestationCertificate();
 
-                if (issuedAc != null && issuedAc.size() > 0
+                if (issuedAc != null && !issuedAc.isEmpty()
                         && (ldevID ? policySettings.isDevIdExpirationFlag()
                         : policySettings.isGenerateOnExpiration())) {
                     if (issuedAc.get(0).getEndValidity().after(currentDate)) {
@@ -322,13 +332,13 @@ public class AbstractProcessor {
         if (ec == null) {
             log.warn("Cannot look for platform credential(s).  Endorsement credential was null.");
         } else {
-            log.debug("Searching for platform credential(s) based on holder serial number: "
-                    + ec.getSerialNumber());
+            log.debug("Searching for platform credential(s) based on holder serial number: {}",
+                    ec.getSerialNumber());
             credentials = certificateRepository.getByHolderSerialNumber(ec.getSerialNumber());
             if (credentials == null || credentials.isEmpty()) {
                 log.warn("No platform credential(s) found");
             } else {
-                log.debug("Platform Credential(s) found: " + credentials.size());
+                log.debug("Platform Credential(s) found: {}", credentials.size());
             }
         }
 

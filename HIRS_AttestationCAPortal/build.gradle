@@ -19,10 +19,12 @@ bootRun {
 }
 
 configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
     compileOnly {
         extendsFrom annotationProcessor
     }
-    all*.exclude module: 'spring-boot-starter-logging'
 }
 
 dependencies {
@@ -79,10 +81,6 @@ dependencies {
 
     // explicitly include the patched version of the xmlunit-core dependency
     testImplementation libs.xmlunit.core
-}
-
-test {
-    useJUnitPlatform()
 }
 
 task buildVersion() {

@@ -33,6 +33,10 @@ ComponentClass {
 
     private static final String SMBIOS_COMPONENT_REGISTRY = "2.23.133.18.3.3";
 
+    private static final String PCIE_BASED_COMPONENT_REGISTRY = "2.23.133.18.3.4";
+
+    private static final String STORAGE_COMPONENT_REGISTRY = "2.23.133.18.3.5";
+
     private static final Path WINDOWS_JSON_PATH = FileSystems.getDefault().getPath(
             "C:/", "ProgramData", "hirs", "aca", "default-properties", "component-class.json");
 
@@ -122,6 +126,8 @@ ComponentClass {
         this.registryType = switch (registryOid) {
             case TCG_COMPONENT_REGISTRY -> "TCG";
             case SMBIOS_COMPONENT_REGISTRY -> "SMBIOS";
+            case PCIE_BASED_COMPONENT_REGISTRY -> "PCIE";
+            case STORAGE_COMPONENT_REGISTRY -> "STORAGE";
             default -> UNKNOWN_STRING;
         };
 
@@ -155,7 +161,7 @@ ComponentClass {
      * @param component string representation of the component ID
      * @return the int representation of the component
      */
-    private static String verifyComponentValue(final String component) {
+    private String verifyComponentValue(final String component) {
         String componentValue = ERROR;
 
         if (component != null) {
@@ -223,7 +229,7 @@ ComponentClass {
                     } else if (componentMask.equals(UNKNOWN)) {
                         this.componentStr = UNKNOWN_STRING;
                     } else {
-                        getComponent(componentTypes);
+                        setComponentString(componentTypes);
                     }
                 }
             }
@@ -247,12 +253,11 @@ ComponentClass {
     }
 
     /**
-     * Getter for the component associated with the component JSON Object mapped
-     * in the JSON file.
+     * Sets the component string value based on the provided JSON object's components.
      *
-     * @param components JSON Object for the categories components
+     * @param components JSON Object components
      */
-    private void getComponent(final JsonObject components) {
+    private void setComponentString(final JsonObject components) {
         String typeID;
 
         if (components != null) {
@@ -263,6 +268,11 @@ ComponentClass {
                     componentStr = member.getValue().asString();
                 }
             }
+        }
+
+        // if the component string is still null after doing a lookup
+        if (componentStr == null) {
+            componentStr = UNKNOWN_STRING;
         }
     }
 }
