@@ -19,6 +19,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestati
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -28,10 +29,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.CertificateStringMapBuilder;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.DecoderException;
@@ -39,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -62,7 +59,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -70,6 +66,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -98,8 +95,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
     private final IssuedCertificateRepository issuedCertificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final IDevIDCertificateRepository iDevIDCertificateRepository;
-    @Autowired(required = false)
-    private EntityManager entityManager;
+    private final CertificateService certificateService;
     private CertificateAuthorityCredential certificateAuthorityCredential;
 
     /**
@@ -122,6 +118,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                                      final IssuedCertificateRepository issuedCertificateRepository,
                                      final CACredentialRepository caCredentialRepository,
                                      final IDevIDCertificateRepository iDevIDCertificateRepository,
+                                     final CertificateService certificateService,
                                      final X509Certificate acaCertificate) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
@@ -131,6 +128,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.caCredentialRepository = caCredentialRepository;
         this.iDevIDCertificateRepository = iDevIDCertificateRepository;
+        this.certificateService = certificateService;
 
         try {
             certificateAuthorityCredential
@@ -237,30 +235,16 @@ public class CertificatePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * @return
+     * Helper method that returns a list of column names that are searchable.
+     *
+     * @return searchable column names
      */
-    private String buildSearchQuery(@NotNull String searchTerm, List<Column> columns) {
+    private List<String> findSearchableColumnsNames(List<Column> columns) {
 
-        StringBuilder searchQuery = new StringBuilder();
-
-        if (!StringUtils.isBlank(searchTerm)) {
-            // Iterate over columns and add search conditions for the ones that are searchable
-            boolean firstCondition = true;
-
-            for (Column column : columns) {
-                if (column.isSearchable()) {
-                    if (!firstCondition) {
-                        searchQuery.append(" OR ");
-                    }
-
-                    searchQuery.append(column.getName()).append(" LIKE '%").append(searchTerm).append("%'");
-
-                    firstCondition = false;
-                }
-            }
-        }
-
-        return searchQuery.toString();
+        // grab all the columns that are searchable, then grab all of those columns names and
+        // create a list of those string names
+        return columns.stream().filter(Column::isSearchable).map(Column::getName)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -282,12 +266,14 @@ public class CertificatePageController extends PageController<NoPageParams> {
 
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
+
         log.debug("Ordering on column: {}", orderColumnName);
 
-        //String searchQuery = buildSearchQuery(input.getSearch().getValue(), input.getColumns());
+        String searchText = input.getSearch().getValue();
+        List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
         int currentPage = input.getStart() / input.getLength();
-        Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
         // special parsing for platform credential
         // Add the EndorsementCredential for each PlatformCredential based on the
@@ -296,30 +282,18 @@ public class CertificatePageController extends PageController<NoPageParams> {
             case PLATFORMCREDENTIAL -> {
                 FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
 
-                org.springframework.data.domain.Page<PlatformCredential> pagedResult = null;
+                org.springframework.data.domain.Page<PlatformCredential> pagedResult;
 
-                if (StringUtils.isBlank(input.getSearch().getValue())) {
+                if (StringUtils.isBlank(searchText)) {
                     pagedResult =
-                            this.platformCertificateRepository.findByArchiveFlag(false, paging);
+                            this.platformCertificateRepository.findByArchiveFlag(false, pageable);
                 } else {
-
-                    Specification<PlatformCredential> spec = (root, query, criteriaBuilder) -> {
-                        List<Predicate> predicates = new ArrayList<>();
-
-                        for (Column column : input.getColumns()) {
-                            if (column.isSearchable()) {
-                                predicates.add(criteriaBuilder.like(
-                                        criteriaBuilder.lower(root.get(column.getName())),
-                                        "%" + column.getSearch().getValue().toLowerCase() + "%"
-                                ));
-                            }
-                        }
-
-                        // Combine predicates into a single query (AND all conditions)
-                        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-                    };
-
-                    pagedResult = platformCertificateRepository.findAll(spec, paging);
+                    pagedResult =
+                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                                    PlatformCredential.class,
+                                    searchableColumns,
+                                    searchText,
+                                    false, pageable);
                 }
 
                 if (pagedResult.hasContent()) {
@@ -353,8 +327,19 @@ public class CertificatePageController extends PageController<NoPageParams> {
             }
             case ENDORSEMENTCREDENTIAL -> {
                 FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
-                org.springframework.data.domain.Page<EndorsementCredential> pagedResult =
-                        this.endorsementCredentialRepository.findByArchiveFlag(false, paging);
+
+                org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
+
+                if (StringUtils.isBlank(searchText)) {
+                    pagedResult = this.endorsementCredentialRepository.findByArchiveFlag(false, pageable);
+                } else {
+                    pagedResult =
+                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                                    EndorsementCredential.class,
+                                    searchableColumns,
+                                    searchText,
+                                    false, pageable);
+                }
 
                 if (pagedResult.hasContent()) {
                     records.addAll(pagedResult.getContent());
@@ -370,8 +355,21 @@ public class CertificatePageController extends PageController<NoPageParams> {
             }
             case TRUSTCHAIN -> {
                 FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
-                org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult =
-                        this.caCredentialRepository.findByArchiveFlag(false, paging);
+
+                org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult;
+
+                if (StringUtils.isBlank(searchText)) {
+                    pagedResult =
+                            this.caCredentialRepository.findByArchiveFlag(false, pageable);
+                } else {
+                    pagedResult =
+                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                                    CertificateAuthorityCredential.class,
+                                    searchableColumns,
+                                    searchText,
+                                    false, pageable);
+                }
+
 
                 if (pagedResult.hasContent()) {
                     records.addAll(pagedResult.getContent());
@@ -387,8 +385,19 @@ public class CertificatePageController extends PageController<NoPageParams> {
             }
             case ISSUEDCERTIFICATES -> {
                 FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
-                org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult =
-                        this.issuedCertificateRepository.findByArchiveFlag(false, paging);
+                org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult;
+
+                if (StringUtils.isBlank(searchText)) {
+                    pagedResult =
+                            this.issuedCertificateRepository.findByArchiveFlag(false, pageable);
+                } else {
+                    pagedResult =
+                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                                    IssuedAttestationCertificate.class,
+                                    searchableColumns,
+                                    searchText,
+                                    false, pageable);
+                }
 
                 if (pagedResult.hasContent()) {
                     records.addAll(pagedResult.getContent());
@@ -403,9 +412,20 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 return new DataTableResponse<>(records, input);
             }
             case IDEVIDCERTIFICATE -> {
-                FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<IDevIDCertificate>();
-                org.springframework.data.domain.Page<IDevIDCertificate> pagedResult =
-                        this.iDevIDCertificateRepository.findByArchiveFlag(false, paging);
+                FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<>();
+                org.springframework.data.domain.Page<IDevIDCertificate> pagedResult;
+
+                if (StringUtils.isBlank(searchText)) {
+                    pagedResult =
+                            this.iDevIDCertificateRepository.findByArchiveFlag(false, pageable);
+                } else {
+                    pagedResult =
+                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                                    IDevIDCertificate.class,
+                                    searchableColumns,
+                                    searchText,
+                                    false, pageable);
+                }
 
                 if (pagedResult.hasContent()) {
                     records.addAll(pagedResult.getContent());
