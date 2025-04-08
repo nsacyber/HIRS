@@ -6,19 +6,14 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
-import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
 import hirs.attestationca.persist.entity.manager.IDevIDCertificateRepository;
 import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
-import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
-import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.Column;
@@ -41,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -62,7 +58,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -84,14 +79,10 @@ public class CertificatePageController extends PageController<NoPageParams> {
      */
     static final String ACA_CERT_DATA = "acaCertData";
     private static final String TRUSTCHAIN = "trust-chain";
-    private static final String PLATFORMCREDENTIAL = "platform-credentials";
     private static final String IDEVIDCERTIFICATE = "idevid-certificates";
-    private static final String ENDORSEMENTCREDENTIAL = "endorsement-key-credentials";
     private static final String ISSUEDCERTIFICATES = "issued-certificates";
     private final CertificateRepository certificateRepository;
-    private final PlatformCertificateRepository platformCertificateRepository;
     private final ComponentResultRepository componentResultRepository;
-    private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final IssuedCertificateRepository issuedCertificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final IDevIDCertificateRepository iDevIDCertificateRepository;
@@ -101,20 +92,16 @@ public class CertificatePageController extends PageController<NoPageParams> {
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param certificateRepository           the general certificate manager
-     * @param platformCertificateRepository   the platform credential manager
-     * @param componentResultRepository       the component result repo
-     * @param endorsementCredentialRepository the endorsement credential manager
-     * @param issuedCertificateRepository     the issued certificate manager
-     * @param caCredentialRepository          the ca credential manager
-     * @param iDevIDCertificateRepository     the IDevID certificate repository
-     * @param acaCertificate                  the ACA's X509 certificate
+     * @param certificateRepository       the general certificate manager
+     * @param componentResultRepository   the component result repo
+     * @param issuedCertificateRepository the issued certificate manager
+     * @param caCredentialRepository      the ca credential manager
+     * @param iDevIDCertificateRepository the IDevID certificate repository
+     * @param acaCertificate              the ACA's X509 certificate
      */
     @Autowired
     public CertificatePageController(final CertificateRepository certificateRepository,
-                                     final PlatformCertificateRepository platformCertificateRepository,
                                      final ComponentResultRepository componentResultRepository,
-                                     final EndorsementCredentialRepository endorsementCredentialRepository,
                                      final IssuedCertificateRepository issuedCertificateRepository,
                                      final CACredentialRepository caCredentialRepository,
                                      final IDevIDCertificateRepository iDevIDCertificateRepository,
@@ -122,9 +109,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
                                      final X509Certificate acaCertificate) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
-        this.platformCertificateRepository = platformCertificateRepository;
         this.componentResultRepository = componentResultRepository;
-        this.endorsementCredentialRepository = endorsementCredentialRepository;
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.caCredentialRepository = caCredentialRepository;
         this.iDevIDCertificateRepository = iDevIDCertificateRepository;
@@ -149,8 +134,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
     private static Page getCertificatePage(final String certificateType) {
         // get page information (default to TRUST_CHAIN)
         return switch (certificateType) {
-            case PLATFORMCREDENTIAL -> Page.PLATFORM_CREDENTIALS;
-            case ENDORSEMENTCREDENTIAL -> Page.ENDORSEMENT_KEY_CREDENTIALS;
             case ISSUEDCERTIFICATES -> Page.ISSUED_CERTIFICATES;
             case IDEVIDCERTIFICATE -> Page.IDEVID_CERTIFICATES;
             default -> Page.TRUST_CHAIN;
@@ -165,8 +148,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
      */
     private static Class<? extends Certificate> getCertificateClass(final String certificateType) {
         return switch (certificateType) {
-            case PLATFORMCREDENTIAL -> PlatformCredential.class;
-            case ENDORSEMENTCREDENTIAL -> EndorsementCredential.class;
             case ISSUEDCERTIFICATES -> IssuedAttestationCertificate.class;
             case IDEVIDCERTIFICATE -> IDevIDCertificate.class;
             case TRUSTCHAIN -> CertificateAuthorityCredential.class;
@@ -206,14 +187,8 @@ public class CertificatePageController extends PageController<NoPageParams> {
         HashMap<String, String> data = new HashMap<>();
         // add page information
         switch (certificateType) {
-            case PLATFORMCREDENTIAL:
-                mav = getBaseModelAndView(Page.PLATFORM_CREDENTIALS);
-                break;
             case IDEVIDCERTIFICATE:
                 mav = getBaseModelAndView(Page.IDEVID_CERTIFICATES);
-                break;
-            case ENDORSEMENTCREDENTIAL:
-                mav = getBaseModelAndView(Page.ENDORSEMENT_KEY_CREDENTIALS);
                 break;
             case ISSUEDCERTIFICATES:
                 mav = getBaseModelAndView(Page.ISSUED_CERTIFICATES);
@@ -241,26 +216,15 @@ public class CertificatePageController extends PageController<NoPageParams> {
      */
     private List<String> findSearchableColumnsNames(List<Column> columns) {
 
-        // grab all the columns that are searchable, then grab all of those columns names and
-        // create a list of those string names
+        // Retrieve all searchable columns and collect their names into a list of strings.
         return columns.stream().filter(Column::isSearchable).map(Column::getName)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Queries for the list of Certificates and returns a data table response
-     * with the records.
-     *
-     * @param certificateType String containing the certificate type
-     * @param input           the DataTables search/query parameters
-     * @return the data table
-     */
     @ResponseBody
-    @RequestMapping(value = "/{certificateType}/list",
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            method = RequestMethod.GET)
-    public DataTableResponse<? extends Certificate> getTableData(
-            @PathVariable("certificateType") final String certificateType,
+    @GetMapping(value = "/trust-chain/list",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DataTableResponse<? extends Certificate> getTrustChainTableData(
             final DataTableInput input) {
         log.debug("Handling list request: {}", input);
 
@@ -275,177 +239,131 @@ public class CertificatePageController extends PageController<NoPageParams> {
         int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
-        // special parsing for platform credential
-        // Add the EndorsementCredential for each PlatformCredential based on the
-        // serial number. (pc.HolderSerialNumber = ec.SerialNumber)
-        switch (certificateType) {
-            case PLATFORMCREDENTIAL -> {
-                FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
+        FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
 
-                org.springframework.data.domain.Page<PlatformCredential> pagedResult;
+        org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult;
 
-                if (StringUtils.isBlank(searchText)) {
-                    pagedResult =
-                            this.platformCertificateRepository.findByArchiveFlag(false, pageable);
-                } else {
-                    pagedResult =
-                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
-                                    PlatformCredential.class,
-                                    searchableColumns,
-                                    searchText,
-                                    false, pageable);
-                }
-
-                if (pagedResult.hasContent()) {
-                    records.addAll(pagedResult.getContent());
-                    records.setRecordsTotal(pagedResult.getContent().size());
-                } else {
-                    records.setRecordsTotal(input.getLength());
-                }
-
-                records.setRecordsFiltered(platformCertificateRepository.findByArchiveFlag(false).size());
-                EndorsementCredential associatedEC;
-
-                if (!records.isEmpty()) {
-                    // loop all the platform certificates
-                    for (PlatformCredential pc : records) {
-                        // find the EC using the PC's "holder serial number"
-                        associatedEC = this.endorsementCredentialRepository
-                                .findBySerialNumber(pc.getHolderSerialNumber());
-
-                        if (associatedEC != null) {
-                            log.debug("EC ID for holder s/n {} = {}", pc
-                                    .getHolderSerialNumber(), associatedEC.getId());
-                        }
-
-                        pc.setEndorsementCredential(associatedEC);
-                    }
-                }
-
-                log.debug("Returning the size of the list of platform credentials: {}", records.size());
-                return new DataTableResponse<>(records, input);
-            }
-            case ENDORSEMENTCREDENTIAL -> {
-                FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
-
-                org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
-
-                if (StringUtils.isBlank(searchText)) {
-                    pagedResult = this.endorsementCredentialRepository.findByArchiveFlag(false, pageable);
-                } else {
-                    pagedResult =
-                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
-                                    EndorsementCredential.class,
-                                    searchableColumns,
-                                    searchText,
-                                    false, pageable);
-                }
-
-                if (pagedResult.hasContent()) {
-                    records.addAll(pagedResult.getContent());
-                    records.setRecordsTotal(pagedResult.getContent().size());
-                } else {
-                    records.setRecordsTotal(input.getLength());
-                }
-
-                records.setRecordsFiltered(endorsementCredentialRepository.findByArchiveFlag(false).size());
-
-                log.debug("Returning the size of the list of endorsement credentials: {}", records.size());
-                return new DataTableResponse<>(records, input);
-            }
-            case TRUSTCHAIN -> {
-                FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
-
-                org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult;
-
-                if (StringUtils.isBlank(searchText)) {
-                    pagedResult =
-                            this.caCredentialRepository.findByArchiveFlag(false, pageable);
-                } else {
-                    pagedResult =
-                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
-                                    CertificateAuthorityCredential.class,
-                                    searchableColumns,
-                                    searchText,
-                                    false, pageable);
-                }
-
-
-                if (pagedResult.hasContent()) {
-                    records.addAll(pagedResult.getContent());
-                    records.setRecordsTotal(pagedResult.getContent().size());
-                } else {
-                    records.setRecordsTotal(input.getLength());
-                }
-
-                records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
-
-                log.debug("Returning the size of the list of trust chain certificates: {}", records.size());
-                return new DataTableResponse<>(records, input);
-            }
-            case ISSUEDCERTIFICATES -> {
-                FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
-                org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult;
-
-                if (StringUtils.isBlank(searchText)) {
-                    pagedResult =
-                            this.issuedCertificateRepository.findByArchiveFlag(false, pageable);
-                } else {
-                    pagedResult =
-                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
-                                    IssuedAttestationCertificate.class,
-                                    searchableColumns,
-                                    searchText,
-                                    false, pageable);
-                }
-
-                if (pagedResult.hasContent()) {
-                    records.addAll(pagedResult.getContent());
-                    records.setRecordsTotal(pagedResult.getContent().size());
-                } else {
-                    records.setRecordsTotal(input.getLength());
-                }
-
-                records.setRecordsFiltered(issuedCertificateRepository.findByArchiveFlag(false).size());
-
-                log.debug("Returning the size of the list of issued certificates: {}", records.size());
-                return new DataTableResponse<>(records, input);
-            }
-            case IDEVIDCERTIFICATE -> {
-                FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<>();
-                org.springframework.data.domain.Page<IDevIDCertificate> pagedResult;
-
-                if (StringUtils.isBlank(searchText)) {
-                    pagedResult =
-                            this.iDevIDCertificateRepository.findByArchiveFlag(false, pageable);
-                } else {
-                    pagedResult =
-                            this.certificateService.findBySearchableColumnsAndArchiveFlag(
-                                    IDevIDCertificate.class,
-                                    searchableColumns,
-                                    searchText,
-                                    false, pageable);
-                }
-
-                if (pagedResult.hasContent()) {
-                    records.addAll(pagedResult.getContent());
-                    records.setRecordsTotal(pagedResult.getContent().size());
-                } else {
-                    records.setRecordsTotal(input.getLength());
-                }
-
-                records.setRecordsFiltered(iDevIDCertificateRepository.findByArchiveFlag(false).size());
-
-                log.debug("Returning the size of the list of IDEVID certificates: {}", records.size());
-                return new DataTableResponse<>(records, input);
-            }
-            default -> {
-                log.error("Cannot provide the size of the records because the"
-                        + "provided certificate type does not exist.");
-                return new DataTableResponse<>(new FilteredRecordsList<>(), input);
-            }
+        if (StringUtils.isBlank(searchText)) {
+            pagedResult =
+                    this.caCredentialRepository.findByArchiveFlag(false, pageable);
+        } else {
+            pagedResult =
+                    this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                            CertificateAuthorityCredential.class,
+                            searchableColumns,
+                            searchText,
+                            false, pageable);
         }
+
+
+        if (pagedResult.hasContent()) {
+            records.addAll(pagedResult.getContent());
+            records.setRecordsTotal(pagedResult.getContent().size());
+        } else {
+            records.setRecordsTotal(input.getLength());
+        }
+
+        records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
+
+        log.debug("Returning the size of the list of trust chain certificates: {}", records.size());
+        return new DataTableResponse<>(records, input);
     }
+
+
+    @ResponseBody
+    @GetMapping(value = "/idevid-certificates/list",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DataTableResponse<? extends Certificate> getIDevIdCertificatesTableData(
+            final DataTableInput input) {
+
+        log.debug("Handling list request: {}", input);
+
+        // attempt to get the column property based on the order index.
+        String orderColumnName = input.getOrderColumnName();
+
+        log.debug("Ordering on column: {}", orderColumnName);
+
+        String searchText = input.getSearch().getValue();
+        List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+
+        int currentPage = input.getStart() / input.getLength();
+        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+
+        FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<>();
+        org.springframework.data.domain.Page<IDevIDCertificate> pagedResult;
+
+        if (StringUtils.isBlank(searchText)) {
+            pagedResult =
+                    this.iDevIDCertificateRepository.findByArchiveFlag(false, pageable);
+        } else {
+            pagedResult =
+                    this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                            IDevIDCertificate.class,
+                            searchableColumns,
+                            searchText,
+                            false, pageable);
+        }
+
+        if (pagedResult.hasContent()) {
+            records.addAll(pagedResult.getContent());
+            records.setRecordsTotal(pagedResult.getContent().size());
+        } else {
+            records.setRecordsTotal(input.getLength());
+        }
+
+        records.setRecordsFiltered(iDevIDCertificateRepository.findByArchiveFlag(false).size());
+
+        log.debug("Returning the size of the list of IDEVID certificates: {}", records.size());
+        return new DataTableResponse<>(records, input);
+    }
+
+    @ResponseBody
+    @GetMapping(value = "/issued-certificates/list",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DataTableResponse<? extends Certificate> getIssuedCertificatesTableData(
+            final DataTableInput input) {
+        log.debug("Handling list request: {}", input);
+
+        // attempt to get the column property based on the order index.
+        String orderColumnName = input.getOrderColumnName();
+
+        log.debug("Ordering on column: {}", orderColumnName);
+
+        String searchText = input.getSearch().getValue();
+        List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+
+        int currentPage = input.getStart() / input.getLength();
+        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+
+        FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
+        org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult;
+
+        if (StringUtils.isBlank(searchText)) {
+            pagedResult =
+                    this.issuedCertificateRepository.findByArchiveFlag(false, pageable);
+        } else {
+            pagedResult =
+                    this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                            IssuedAttestationCertificate.class,
+                            searchableColumns,
+                            searchText,
+                            false, pageable);
+        }
+
+        if (pagedResult.hasContent()) {
+            records.addAll(pagedResult.getContent());
+            records.setRecordsTotal(pagedResult.getContent().size());
+        } else {
+            records.setRecordsTotal(input.getLength());
+        }
+
+        records.setRecordsFiltered(issuedCertificateRepository.findByArchiveFlag(false).size());
+
+        log.debug("Returning the size of the list of issued certificates: {}", records.size());
+        return new DataTableResponse<>(records, input);
+
+    }
+
 
     /**
      * Upload and processes a credential.
@@ -631,7 +549,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *                 file name)
      * @throws IOException when writing to response output stream
      */
-    @RequestMapping(value = "/trust-chain/bulk", method = RequestMethod.GET)
+    @RequestMapping(value = "/trust-chain/bulk-download", method = RequestMethod.GET)
     public void caBulkDownload(final HttpServletResponse response)
             throws IOException {
         log.info("Handling request to download all trust chain certificates");
@@ -655,37 +573,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
         }
     }
 
-    /**
-     * Handles request to download the certs by writing it to the response stream
-     * for download in bulk.
-     *
-     * @param response the response object (needed to update the header with the
-     *                 file name)
-     * @throws IOException when writing to response output stream
-     */
-    @RequestMapping(value = "/platform-credentials/bulk", method = RequestMethod.GET)
-    public void pcBulkDownload(final HttpServletResponse response)
-            throws IOException {
-        log.info("Handling request to download all platform certificates");
-        String fileName = "platform_certificates.zip";
-        final String singleFileName = "Platform_Certificate";
-        String zipFileName;
-
-        // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-        response.setContentType("application/zip");
-
-        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByType("PlatformCredential"), singleFileName);
-            // write cert to output stream
-        } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: ";
-            log.error(uuidError, ex);
-            // send a 404 error when invalid certificate
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
-    }
 
     /**
      * Handles request to download the certs by writing it to the response stream
@@ -695,7 +582,7 @@ public class CertificatePageController extends PageController<NoPageParams> {
      *                 file name)
      * @throws IOException when writing to response output stream
      */
-    @RequestMapping(value = "/issued-certificates/bulk", method = RequestMethod.GET)
+    @RequestMapping(value = "/issued-certificates/bulk-download", method = RequestMethod.GET)
     public void icBulkDownload(final HttpServletResponse response)
             throws IOException {
         log.info("Handling request to download all issued certificates");
@@ -710,38 +597,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             // get all files
             bulkDownload(zipOut, this.certificateRepository.findByType("IssuedAttestationCertificate"),
-                    singleFileName);
-            // write cert to output stream
-        } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: ";
-            log.error(uuidError, ex);
-            // send a 404 error when invalid certificate
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
-    }
-
-    /**
-     * Handles request to download the certs by writing it to the response stream
-     * for download in bulk.
-     *
-     * @param response the response object (needed to update the header with the
-     *                 file name)
-     * @throws IOException when writing to response output stream
-     */
-    @RequestMapping(value = "/endorsement-key-credentials/bulk", method = RequestMethod.GET)
-    public void ekBulkDownload(final HttpServletResponse response)
-            throws IOException {
-        log.info("Handling request to download all endorsement certificates");
-        String fileName = "endorsement_certificates.zip";
-        final String singleFileName = "Endorsement_Certificates";
-
-        // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-        response.setContentType("application/zip");
-
-        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            // get all files
-            bulkDownload(zipOut, this.certificateRepository.findByType("EndorsementCredential"),
                     singleFileName);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
@@ -809,12 +664,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
             final int certificateHash) {
 
         return switch (certificateType) {
-            case PLATFORMCREDENTIAL -> this.certificateRepository
-                    .findByCertificateHash(certificateHash,
-                            "PlatformCredential");
-            case ENDORSEMENTCREDENTIAL -> this.certificateRepository
-                    .findByCertificateHash(certificateHash,
-                            "EndorsementCredential");
             case TRUSTCHAIN -> this.certificateRepository
                     .findByCertificateHash(certificateHash,
                             "CertificateAuthorityCredential");
@@ -823,28 +672,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
                             "IDevIDCertificate");
             default -> null;
         };
-    }
-
-    /**
-     * Gets the certificate by the platform serial number.
-     *
-     * @param certificateType String containing the certificate type
-     * @param serialNumber    the platform serial number
-     * @return the certificate or null if none is found
-     */
-    private List<PlatformCredential> getCertificateByBoardSN(
-            final String certificateType,
-            final String serialNumber) {
-        List<PlatformCredential> associatedCertificates = new LinkedList<>();
-
-        if (serialNumber != null) {
-            if (certificateType.equals(PLATFORMCREDENTIAL)) {
-                associatedCertificates.addAll(this.certificateRepository
-                        .byBoardSerialNumber(serialNumber));
-            }
-        }
-
-        return associatedCertificates;
     }
 
     /**
@@ -877,10 +704,6 @@ public class CertificatePageController extends PageController<NoPageParams> {
         }
         try {
             switch (certificateType) {
-                case PLATFORMCREDENTIAL:
-                    return new PlatformCredential(fileBytes);
-                case ENDORSEMENTCREDENTIAL:
-                    return new EndorsementCredential(fileBytes);
                 case IDEVIDCERTIFICATE:
                     return new IDevIDCertificate(fileBytes);
                 case TRUSTCHAIN:
@@ -1070,78 +893,5 @@ public class CertificatePageController extends PageController<NoPageParams> {
                 + " certificate already exists (%s): ", fileName);
         messages.addError(failMessage);
         log.error(failMessage);
-    }
-
-    /**
-     * Helper method that utilizes the components of the provided platform certificate to generate
-     * a collection of component results and subsequently stores these results in the database.
-     *
-     * @param certificate certificate
-     */
-    private void parseAndSaveComponentResults(final Certificate certificate) throws IOException {
-        PlatformCredential platformCredential;
-
-        if (certificate instanceof PlatformCredential) {
-            platformCredential = (PlatformCredential) certificate;
-            List<ComponentResult> componentResults = componentResultRepository
-                    .findByCertificateSerialNumberAndBoardSerialNumber(
-                            platformCredential.getSerialNumber().toString(),
-                            platformCredential.getPlatformSerial());
-
-            if (componentResults.isEmpty()) {
-                ComponentResult componentResult;
-
-                if (platformCredential.getPlatformConfigurationV1() != null) {
-
-                    List<ComponentIdentifier> componentIdentifiers =
-                            platformCredential.getComponentIdentifiers();
-
-                    for (ComponentIdentifier componentIdentifier : componentIdentifiers) {
-                        componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                                platformCredential.getSerialNumber().toString(),
-                                platformCredential.getPlatformChainType(),
-                                componentIdentifier);
-                        componentResult.setFailedValidation(false);
-                        componentResult.setDelta(!platformCredential.isPlatformBase());
-                        componentResultRepository.save(componentResult);
-                    }
-                } else if (platformCredential.getPlatformConfigurationV2() != null) {
-
-                    List<ComponentIdentifierV2> componentIdentifiersV2 =
-                            platformCredential.getComponentIdentifiersV2();
-
-                    for (ComponentIdentifierV2 componentIdentifierV2 : componentIdentifiersV2) {
-                        componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                                platformCredential.getSerialNumber().toString(),
-                                platformCredential.getPlatformChainType(),
-                                componentIdentifierV2);
-                        componentResult.setFailedValidation(false);
-                        componentResult.setDelta(!platformCredential.isPlatformBase());
-                        componentResultRepository.save(componentResult);
-                    }
-                }
-            } else {
-                for (ComponentResult componentResult : componentResults) {
-                    componentResult.restore();
-                    componentResult.resetCreateTime();
-                    componentResultRepository.save(componentResult);
-                }
-            }
-        }
-    }
-
-    /**
-     * Helper method that deletes component results based on the provided platform serial number.
-     *
-     * @param platformSerial platform serial number
-     */
-    private void deleteComponentResults(final String platformSerial) {
-        List<ComponentResult> componentResults = componentResultRepository
-                .findByBoardSerialNumber(platformSerial);
-
-        for (ComponentResult componentResult : componentResults) {
-            componentResult.archive();
-            componentResultRepository.save(componentResult);
-        }
     }
 }

@@ -19,7 +19,7 @@
   <jsp:body>
     <div class="aca-input-box-header">
       Issued Credentials
-      <a href="${portal}/certificate-request/issued-certificates/bulk"> 
+      <a href="${portal}/certificate-request/issued-certificates/bulk-download">
          <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Issued Certificates">
       </a>
     </div>

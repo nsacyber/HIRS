@@ -32,7 +32,7 @@
         >
           <input id="importFile" type="file" name="file" multiple="multiple" />
         </my:file-chooser>
-        <a href="${portal}/certificate-request/platform-credentials/bulk">
+        <a href="${portal}/certificate-request/platform-credentials/bulk-download">
           <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Platform Certificates">  
         </a>
       </form:form>

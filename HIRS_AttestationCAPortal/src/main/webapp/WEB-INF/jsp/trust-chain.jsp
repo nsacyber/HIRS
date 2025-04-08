@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!-- <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%-- JSP TAGS --%>
 <%@taglib prefix="c" uri="jakarta.tags.core" %>
@@ -6,7 +6,7 @@
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 
-<%-- CONTENT --%>
+<%-- CONTENT --%> -->
 <my:page>
   <jsp:attribute name="script">
     <script
@@ -87,7 +87,7 @@
     </my:details-viewer>
 
     <a href="${portal}/certificate-request/trust-chain/download-aca-cert">
-      <img src="${baseURL}/images/icons/ic_file_download_black_24dp.png" title="Download ACA Certificate">
+      <!-- <img src="${baseURL}/images/icons/ic_file_download_black_24dp.png" title="Download ACA Certificate"> -->
     </a>
     <div class="aca-input-box-header">
       <form:form
@@ -99,8 +99,8 @@
         <my:file-chooser id="tc-editor" label="Import Trust Chain Certificates">
           <input id="importFile" type="file" name="file" multiple="multiple" />
         </my:file-chooser>
-        <a href="${portal}/certificate-request/trust-chain/bulk">
-          <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Trust Chain Certificates">
+        <a href="${portal}/certificate-request/trust-chain/bulk-download">
+          <!-- <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Trust Chain Certificates"> -->
         </a>
       </form:form>
     </div>
@@ -119,69 +119,77 @@
       </table>
     </div>
     <script>
-      $(document).ready(function() {
-          let url = pagePath +'/list';
-          let signature = ${acaCertData.signature};
+      $(document).ready(function () {
+        let url = pagePath + "/list";
+        let acaCertDataSignature = ${acaCertData.signature};
 
-          //Format validity time
-          $("#validity span").each(function(){
-              $(this).text(formatCertificateDate($(this).text()));
-          });
+        //Format validity time
+        $("#validity span").each(function () {
+          $(this).text(formatCertificateDate($(this).text()));
+        });
 
-          //Convert byte array to string
-          $("#signature").html(byteToHexString(signature));
+        //Convert byte array to string
+        $("#signature").html(byteToHexString(acaCertDataSignature));
 
-          <c:if test="${not empty acaCertData.encodedPublicKey}">
-              //Change publick key byte to hex
-              let publicKey = ${acaCertData.encodedPublicKey};
-              $("#encodedPublicKey").html(byteToHexString(publicKey));
-          </c:if>
+        //Change public key byte to hex
+        <c:if test="${not empty acaCertData.encodedPublicKey}">
+          let publicKey = ${acaCertData.encodedPublicKey};
+          $("#encodedPublicKey").html(byteToHexString(publicKey));
+        </c:if>;
 
-          let columns = [
-                  {
-                    name: "issuer",
-                    data: "issuer",
-                    orderable: true,
-                    searchable: true,
-                  },
-                  {
-                    name: 'subject',
-                    data: 'subject'
-                  },
-                  {
-                      name: 'beginValidity',
-                      data: 'beginValidity',
-                      searchable:false,
-                      render: function (data, type, full, meta) {
-                          return formatCertificateDate(full.beginValidity);
-                      }
-                  },
-                  {
-                      name: 'endValidity',
-                      data: 'endValidity',
-                      searchable:false,
-                      render: function (data, type, full, meta) {
-                          return formatCertificateDate(full.endValidity);
-                      }
-                  },
-                  {
-                      data: 'id',
-                      orderable: false,
-                      searchable:false,
-                      render: function(data, type, full, meta) {
-                          // Set up a delete icon with link to handleDeleteRequest().
-                          // sets up a hidden input field containing the ID which is
-                          // used as a parameter to the REST POST call to delete
-                          let html = '';
-                          html += certificateDetailsLink('certificateauthority', full.id, true);
-                          html += certificateDownloadLink(full.id, pagePath);
-                          html += certificateDeleteLink(full.id, pagePath);
-                          return html;
-                      }
-                  }
-              ];
-          //Set data tables
-          setDataTables("#trustChainTable", url, columns);
+        let columns = [
+          {
+            name: "issuer",
+            data: "issuer",
+            orderable: true,
+            searchable: true,
+          },
+          {
+            name: "subject",
+            data: "subject",
+            orderable: true,
+            searchable: true,
+          },
+          {
+            name: "beginValidity",
+            data: "beginValidity",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, full, meta) {
+              return formatCertificateDate(full.beginValidity);
+            },
+          },
+          {
+            name: "endValidity",
+            data: "endValidity",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, full, meta) {
+              return formatCertificateDate(full.endValidity);
+            },
+          },
+          {
+            data: "id",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, full, meta) {
+              // Set up a delete icon with link to handleDeleteRequest().
+              // sets up a hidden input field containing the ID which is
+              // used as a parameter to the REST POST call to delete
+              let html = "";
+              html += certificateDetailsLink(
+                "certificateauthority",
+                full.id,
+                true
+              );
+              html += certificateDownloadLink(full.id, pagePath);
+              html += certificateDeleteLink(full.id, pagePath);
+              return html;
+            },
+          },
+        ];
+        //Set data tables
+        setDataTables("#trustChainTable", url, columns);
       });
     </script>
   </jsp:body>

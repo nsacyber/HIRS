@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!-- <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%-- JSP TAGS --%>
 <%@taglib prefix="c" uri="jakarta.tags.core" %>
@@ -6,8 +6,7 @@
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 
-<%-- CONTENT --%>
-
+<%-- CONTENT --%> -->
 <my:page>
   <jsp:attribute name="script">
     <script
@@ -34,9 +33,9 @@
           <input id="importFile" type="file" name="file" multiple="multiple" />
         </my:file-chooser>
         <a
-          href="${portal}/certificate-request/endorsement-key-credentials/bulk"
+          href="${portal}/certificate-request/endorsement-key-credentials/bulk-download"
         >
-          <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Endorsement Certificates">
+          <!-- <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Endorsement Certificates"> -->
         </a>
       </form:form>
     </div>
@@ -63,6 +62,7 @@
         let url = pagePath + "/list";
         let columns = [
           {
+            name: "deviceName",
             data: "deviceName",
             searchable: true,
             orderable: true,
@@ -71,12 +71,28 @@
               return full.deviceName;
             },
           },
-          { data: "issuer", searchable: true, orderable: true },
-          { data: "credentialType", searchable: true, orderable: true },
-          { data: "manufacturer", searchable: true, orderable: true },
-          { data: "model", searchable: true, orderable: true },
-          { data: "version", searchable: true, orderable: true },
+          { name: "issuer", data: "issuer", searchable: true, orderable: true },
           {
+            name: "credentialType",
+            data: "credentialType",
+            searchable: true,
+            orderable: true,
+          },
+          {
+            name: "manufacturer",
+            data: "manufacturer",
+            searchable: true,
+            orderable: true,
+          },
+          { name: "model", data: "model", searchable: true, orderable: true },
+          {
+            name: "version",
+            data: "version",
+            searchable: true,
+            orderable: true,
+          },
+          {
+            name: "beginValidity",
             data: "beginValidity",
             searchable: false,
             render: function (data, type, full, meta) {
@@ -84,6 +100,7 @@
             },
           },
           {
+            name: "endValidity",
             data: "endValidity",
             searchable: false,
             render: function (data, type, full, meta) {
