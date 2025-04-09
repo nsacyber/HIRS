@@ -52,7 +52,7 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
 public class EndorsementCredentialPageController extends PageController<NoPageParams> {
 
-    private static final String ENDORSEMENTCREDENTIAL = "endorsement-key-credentials";
+    private static final String ENDORSEMENT_CREDENTIALS = "endorsement-key-credentials";
 
     private final CertificateRepository certificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
@@ -131,7 +131,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Handles request to download the cert by writing it to the response stream
+     * Handles request to download the endorsement credential by writing it to the response stream
      * for download.
      *
      * @param id       the UUID of the cert to download
@@ -140,7 +140,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void ekSingleDownload(
+    public void downloadSingleEndorsementCredential(
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
@@ -188,9 +188,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/bulk-download")
-    public void ekBulkDownload(final HttpServletResponse response)
+    public void endorsementCredentialBulkDownload(final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download all endorsement certificates");
+        log.info("Handling request to download all endorsement credentials");
 
         final String fileName = "endorsement_certificates.zip";
 
@@ -200,16 +200,16 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
 
-            // find all the uploaded endorsement certificates
+            // find all the uploaded endorsement credentials
             List<Certificate> certificates = this.certificateRepository.findByType("EndorsementCredential");
 
-            // convert the list of certificates to a list of endorsement certificates
+            // convert the list of certificates to a list of endorsement credentials
             List<EndorsementCredential> uploadedEKs = certificates.stream()
                     .filter(eachPC -> eachPC instanceof EndorsementCredential)
                     .map(eachPC -> (EndorsementCredential) eachPC).toList();
 
             // get all files
-            bulkDownload(zipOut, uploadedEKs);
+            bulkDownloadEndorsementCredentials(zipOut, uploadedEKs);
             // write cert to output stream
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
@@ -220,7 +220,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Upload and processes a credential.
+     * Upload and processes an endorsement credential.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -232,7 +232,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
 
-        log.info("Handling request to upload one or more endorsement certificates");
+        log.info("Handling request to upload one or more endorsement credentials");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -241,13 +241,13 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         List<String> successMessages = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            //Parse certificate
+            //Parse endorsement credential
             EndorsementCredential parseEndorsementCredential = parseEndorsementCredential(file, messages);
 
             //Store only if it was parsed
             if (parseEndorsementCredential != null) {
                 certificateService.storeCertificate(
-                        ENDORSEMENTCREDENTIAL,
+                        ENDORSEMENT_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parseEndorsementCredential);
             }
@@ -260,9 +260,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Archives (soft delete) the credential.
+     * Archives (soft delete) the endorsement credential.
      *
-     * @param id   the UUID of the cert to delete
+     * @param id   the UUID of the endorsement cert to delete
      * @param attr RedirectAttributes used to forward data back to the original
      *             page.
      * @return redirect to this page
@@ -272,7 +272,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     public RedirectView delete(
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete endorsement certificate id {}", id);
+        log.info("Handling request to delete endorsement credential id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -283,7 +283,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
             UUID uuid = UUID.fromString(id);
 
-            this.certificateService.deleteCertificate(uuid, ENDORSEMENTCREDENTIAL,
+            this.certificateService.deleteCertificate(uuid, ENDORSEMENT_CREDENTIALS,
                     successMessages, errorMessages);
 
         } catch (IllegalArgumentException ex) {
@@ -321,7 +321,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @return endorsement credential
      */
     private EndorsementCredential parseEndorsementCredential(MultipartFile file, PageMessages messages) {
-        log.info("Received endorsement certificate file of size: {}", file.getSize());
+        log.info("Received endorsement credential file of size: {}", file.getSize());
 
         byte[] fileBytes;
         String fileName = file.getOriginalFilename();
@@ -331,36 +331,36 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
             final String failMessage = String.format(
-                    "Failed to read uploaded endorsement certificate file (%s): ", fileName);
+                    "Failed to read uploaded endorsement credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
             messages.addError(failMessage + ioEx.getMessage());
             return null;
         }
 
-        // attempt to build the endorsement certificate from the uploaded bytes
+        // attempt to build the endorsement credential from the uploaded bytes
         try {
             return new EndorsementCredential(fileBytes);
         } catch (IOException ioEx) {
             final String failMessage = String.format(
-                    "Failed to parse uploaded endorsement certificate file (%s): ", fileName);
+                    "Failed to parse uploaded endorsement credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
             messages.addError(failMessage + ioEx.getMessage());
             return null;
         } catch (DecoderException dEx) {
             final String failMessage = String.format(
-                    "Failed to parse uploaded endorsement certificate pem file (%s): ", fileName);
+                    "Failed to parse uploaded endorsement credential pem file (%s): ", fileName);
             log.error(failMessage, dEx);
             messages.addError(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
             final String failMessage = String.format(
-                    "endorsement certificate format not recognized(%s): ", fileName);
+                    "Endorsement credential format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
             messages.addError(failMessage + iaEx.getMessage());
             return null;
         } catch (IllegalStateException isEx) {
             final String failMessage = String.format(
-                    "Unexpected object while parsing endorsement certificate %s ", fileName);
+                    "Unexpected object while parsing endorsement credential %s ", fileName);
             log.error(failMessage, isEx);
             messages.addError(failMessage + isEx.getMessage());
             return null;
@@ -368,18 +368,19 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Helper method that packages a collection of certificates into a zip file.
+     * Helper method that packages a collection of endorsement credentials into a zip file.
      *
      * @param zipOut                 zip outputs stream
-     * @param endorsementCredentials collection of endorsement certificates
+     * @param endorsementCredentials collection of endorsement credentials
      * @throws IOException if there are any issues packaging or downloading the zip file
      */
-    private void bulkDownload(final ZipOutputStream zipOut,
-                              final List<EndorsementCredential> endorsementCredentials) throws IOException {
+    private void bulkDownloadEndorsementCredentials(final ZipOutputStream zipOut,
+                                                    final List<EndorsementCredential> endorsementCredentials)
+            throws IOException {
         String zipFileName;
         final String singleFileName = "Endorsement_Certificates";
 
-        // get all files
+        // get all endorsement credentials
         for (EndorsementCredential endorsementCredential : endorsementCredentials) {
             zipFileName = String.format("%s[%s].cer", singleFileName,
                     Integer.toHexString(endorsementCredential.getCertificateHash()));

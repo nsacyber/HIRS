@@ -114,7 +114,6 @@ public class IssuedCertificateController extends PageController<NoPageParams> {
 
         log.debug("Returning the size of the list of issued certificates: {}", records.size());
         return new DataTableResponse<>(records, input);
-
     }
 
     /**
@@ -127,11 +126,11 @@ public class IssuedCertificateController extends PageController<NoPageParams> {
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void download(
+    public void issuedCertificateSingleDownload(
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download {}", id);
+        log.info("Handling request to download issued certificate id {}", id);
 
         try {
             UUID uuid = UUID.fromString(id);

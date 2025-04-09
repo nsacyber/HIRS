@@ -54,7 +54,7 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials")
 public class PlatformCredentialPageController extends PageController<NoPageParams> {
 
-    private static final String PLATFORMCREDENTIAL = "platform-credentials";
+    private static final String PLATFORM_CREDENTIALS = "platform-credentials";
 
     private final CertificateRepository certificateRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
@@ -134,7 +134,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         EndorsementCredential associatedEC;
 
         if (!records.isEmpty()) {
-            // loop all the platform certificates
+            // loop all the platform credentials
             for (PlatformCredential pc : records) {
                 // find the EC using the PC's "holder serial number"
                 associatedEC = this.endorsementCredentialRepository
@@ -163,18 +163,18 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void platformCredentialSingleDownload(
+    public void downloadSinglePlatformCredential(
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download platform certificate id {}", id);
+        log.info("Handling request to download platform credential id {}", id);
 
         try {
             UUID uuid = UUID.fromString(id);
             Certificate certificate = certificateRepository.getCertificate(uuid);
 
             if (certificate == null) {
-                log.warn("Unable to locate platform certificate record with ID: {}", uuid);
+                log.warn("Unable to locate platform credential record with ID: {}", uuid);
                 // send a 404 error when invalid certificate
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             } else {
@@ -194,14 +194,14 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                 }
             }
         } catch (IllegalArgumentException ex) {
-            log.error("Failed to parse platform certificate ID from: " + id, ex);
+            log.error("Failed to parse platform credential ID from: " + id, ex);
             // send a 404 error when invalid certificate
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Handles request to download the certs by writing it to the response stream
+     * Handles request to download the platform crednetials by writing it to the response stream
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
@@ -209,9 +209,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/bulk-download")
-    public void platformCredentialsBulkDownload(final HttpServletResponse response)
+    public void bulkDownloadPlatformCredentials(final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download all platform certificates");
+        log.info("Handling request to download all platform credentials");
 
         final String fileName = "platform_certificates.zip";
 
@@ -221,10 +221,10 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
 
-            // find all the uploaded platform certificates
+            // find all the uploaded platform credentials
             List<Certificate> certificates = this.certificateRepository.findByType("PlatformCredential");
 
-            // convert the list of certificates to a list of platform certificates
+            // convert the list of certificates to a list of platform credentials
             List<PlatformCredential> uploadedPCs = certificates.stream()
                     .filter(eachPC -> eachPC instanceof PlatformCredential)
                     .map(eachPC -> (PlatformCredential) eachPC).toList();
@@ -232,7 +232,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             // get all files and write certificates to output stream
             bulkDownloadPlatformCertificates(zipOut, uploadedPCs);
         } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse platform certificate ID from: ";
+            String uuidError = "Failed to parse platform credential ID from: ";
             log.error(uuidError, ex);
             // send a 404 error when invalid certificate
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -240,7 +240,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
-     * Upload and processes a credential.
+     * Upload and processes a platform credential.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -252,7 +252,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
 
-        log.info("Handling request to upload one or more platform certificates");
+        log.info("Handling request to upload one or more platform credentials");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -261,13 +261,13 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         List<String> successMessages = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            //Parse certificate
+            //Parse platform credential
             PlatformCredential parsedPlatformCredential = parsePlatformCredential(file, messages);
 
             //Store only if it was parsed
             if (parsedPlatformCredential != null) {
                 certificateService.storeCertificate(
-                        PLATFORMCREDENTIAL,
+                        PLATFORM_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedPlatformCredential);
             }
@@ -281,9 +281,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
 
     /**
-     * Archives (soft delete) the credential.
+     * Archives (soft delete) the platform credential.
      *
-     * @param id   the UUID of the cert to delete
+     * @param id   the UUID of the platform cert to delete
      * @param attr RedirectAttributes used to forward data back to the original
      *             page.
      * @return redirect to this page
@@ -293,7 +293,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     public RedirectView delete(
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete platform certificate id {}", id);
+        log.info("Handling request to delete platform credential id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -304,7 +304,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
             UUID uuid = UUID.fromString(id);
 
-            this.certificateService.deleteCertificate(uuid, PLATFORMCREDENTIAL,
+            this.certificateService.deleteCertificate(uuid, PLATFORM_CREDENTIALS,
                     successMessages, errorMessages);
 
         } catch (IllegalArgumentException ex) {
@@ -340,7 +340,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @return platform credential
      */
     private PlatformCredential parsePlatformCredential(MultipartFile file, PageMessages messages) {
-        log.info("Received platform certificate file of size: {}", file.getSize());
+        log.info("Received platform credential file of size: {}", file.getSize());
 
         byte[] fileBytes;
         String fileName = file.getOriginalFilename();
@@ -350,36 +350,36 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
             final String failMessage = String.format(
-                    "Failed to read uploaded platform certificate file (%s): ", fileName);
+                    "Failed to read uploaded platform credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
             messages.addError(failMessage + ioEx.getMessage());
             return null;
         }
 
-        // attempt to build the platform certificate from the uploaded bytes
+        // attempt to build the platform credential from the uploaded bytes
         try {
             return new PlatformCredential(fileBytes);
         } catch (IOException ioEx) {
             final String failMessage = String.format(
-                    "Failed to parse uploaded platform certificate file (%s): ", fileName);
+                    "Failed to parse uploaded platform credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
             messages.addError(failMessage + ioEx.getMessage());
             return null;
         } catch (DecoderException dEx) {
             final String failMessage = String.format(
-                    "Failed to parse uploaded platform certificate pem file (%s): ", fileName);
+                    "Failed to parse uploaded platform credential pem file (%s): ", fileName);
             log.error(failMessage, dEx);
             messages.addError(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
             final String failMessage = String.format(
-                    "platform certificate format not recognized(%s): ", fileName);
+                    "platform credential format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
             messages.addError(failMessage + iaEx.getMessage());
             return null;
         } catch (IllegalStateException isEx) {
             final String failMessage = String.format(
-                    "Unexpected object while parsing platform certificate %s ", fileName);
+                    "Unexpected object while parsing platform credential %s ", fileName);
             log.error(failMessage, isEx);
             messages.addError(failMessage + isEx.getMessage());
             return null;
@@ -390,7 +390,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * Helper method that packages a collection of platform credentials into a zip file.
      *
      * @param zipOut              zip outputs stream
-     * @param platformCredentials collection of  platform certificates
+     * @param platformCredentials collection of  platform credentials
      * @throws IOException if there are any issues packaging or downloading the zip file
      */
     private void bulkDownloadPlatformCertificates(final ZipOutputStream zipOut,

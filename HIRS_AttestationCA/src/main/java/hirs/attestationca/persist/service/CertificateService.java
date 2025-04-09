@@ -102,12 +102,13 @@ public class CertificateService {
     }
 
     /**
-     * Store the given certificate in the database.
+     * Stored the given certificate in the database.
      *
      * @param certificateType String containing the certificate type
      * @param fileName        contain the name of the file of the certificate to
      *                        be stored
-     * @param successMessages contains any messages that will be display on the page
+     * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages   contains any error messages that will be displayed on the page
      * @param certificate     the certificate to store
      */
     public void storeCertificate(
@@ -217,6 +218,14 @@ public class CertificateService {
         log.error(failMessage);
     }
 
+    /**
+     * Soft deletes the provided certificate from the database.
+     *
+     * @param uuid            the UUId of the cert to delete
+     * @param certificateType the type of certificate
+     * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages   contains any error messages that will be displayed on the page
+     */
     public void deleteCertificate(UUID uuid, String certificateType,
                                   final List<String> successMessages,
                                   final List<String> errorMessages) {
@@ -285,7 +294,7 @@ public class CertificateService {
     }
 
     /**
-     * Gets the certificate by the platform serial number.
+     * Retrieves the platform certificate by the platform serial number.
      *
      * @param serialNumber the platform serial number
      * @return the certificate or null if none is found
@@ -321,7 +330,6 @@ public class CertificateService {
                 ComponentResult componentResult;
 
                 if (platformCredential.getPlatformConfigurationV1() != null) {
-
                     List<ComponentIdentifier> componentIdentifiers =
                             platformCredential.getComponentIdentifiers();
 
@@ -335,7 +343,6 @@ public class CertificateService {
                         componentResultRepository.save(componentResult);
                     }
                 } else if (platformCredential.getPlatformConfigurationV2() != null) {
-
                     List<ComponentIdentifierV2> componentIdentifiersV2 =
                             platformCredential.getComponentIdentifiersV2();
 
@@ -359,7 +366,6 @@ public class CertificateService {
         }
     }
 
-
     /**
      * Helper method that deletes component results based on the provided platform serial number.
      *
@@ -374,5 +380,4 @@ public class CertificateService {
             componentResultRepository.save(componentResult);
         }
     }
-
 }
