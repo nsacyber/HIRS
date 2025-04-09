@@ -1,4 +1,4 @@
-<!-- <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%-- JSP TAGS --%>
 <%@taglib prefix="c" uri="jakarta.tags.core" %>
@@ -6,7 +6,7 @@
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 
-<%-- CONTENT --%> -->
+<%-- CONTENT --%>
 <my:page>
   <jsp:attribute name="script">
     <script
@@ -35,7 +35,7 @@
         <a
           href="${portal}/certificate-request/endorsement-key-credentials/bulk-download"
         >
-          <!-- <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Endorsement Certificates"> -->
+           <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Endorsement Certificates">
         </a>
       </form:form>
     </div>

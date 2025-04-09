@@ -2,7 +2,6 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
@@ -25,7 +24,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @Log4j2
@@ -54,17 +51,14 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
     private static final String ENDORSEMENT_CREDENTIALS = "endorsement-key-credentials";
 
-    private final CertificateRepository certificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final CertificateService certificateService;
 
     @Autowired
     public EndorsementCredentialPageController(
-            final CertificateRepository certificateRepository,
             final EndorsementCredentialRepository endorsementCredentialRepository,
             final CertificateService certificateService) {
         super(Page.TRUST_CHAIN);
-        this.certificateRepository = certificateRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
         this.certificateService = certificateService;
     }
@@ -83,13 +77,20 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         return getBaseModelAndView(Page.ENDORSEMENT_KEY_CREDENTIALS);
     }
 
+    /**
+     * Retrieves the collection of endorsement credentials that will be displayed on the endorsement
+     * credentials page.
+     *
+     * @param input data table input received from the front-end
+     * @return data table of endorsement credentials
+     */
     @ResponseBody
     @GetMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<EndorsementCredential> getEndorsementCredentialsTableData(
             final DataTableInput input) {
 
-        log.debug("Handling list request: {}", input);
+        log.debug("Handling list request for endorsement credentials: {}", input);
 
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
@@ -148,7 +149,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         try {
             UUID uuid = UUID.fromString(id);
-            Certificate certificate = certificateRepository.getCertificate(uuid);
+            Certificate certificate = this.certificateService.findCertificate(uuid);
 
             if (certificate == null) {
                 // Use the term "record" here to avoid user confusion b/t cert and cred
@@ -156,20 +157,18 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                 log.warn(notFoundMessage);
                 // send a 404 error when invalid certificate
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            } else {
-                if (certificate instanceof EndorsementCredential uploadedEndorsementCredential) {
-                    String fileName = "filename=\"" + EndorsementCredential.class.getSimpleName()
-                            + "_"
-                            + uploadedEndorsementCredential.getSerialNumber()
-                            + ".cer\"";
+            } else if (certificate instanceof EndorsementCredential uploadedEndorsementCredential) {
+                String fileName = "filename=\"" + EndorsementCredential.class.getSimpleName()
+                        + "_"
+                        + uploadedEndorsementCredential.getSerialNumber()
+                        + ".cer\"";
 
-                    // Set filename for download.
-                    response.setHeader("Content-Disposition", "attachment;" + fileName);
-                    response.setContentType("application/octet-stream");
+                // Set filename for download.
+                response.setHeader("Content-Disposition", "attachment;" + fileName);
+                response.setContentType("application/octet-stream");
 
-                    // write cert to output stream
-                    response.getOutputStream().write(certificate.getRawBytes());
-                }
+                // write cert to output stream
+                response.getOutputStream().write(certificate.getRawBytes());
             }
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: " + id;
@@ -180,7 +179,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Handles request to download the certs by writing it to the response stream
+     * Handles request to download the endorsement credentials by writing it to the response stream
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
@@ -188,29 +187,20 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/bulk-download")
-    public void endorsementCredentialBulkDownload(final HttpServletResponse response)
+    public void bulkDownloadEndorsementCredentials(final HttpServletResponse response)
             throws IOException {
         log.info("Handling request to download all endorsement credentials");
 
         final String fileName = "endorsement_certificates.zip";
+        final String singleFileName = "Endorsement_Certificates";
 
         // Set filename for download.
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-
-            // find all the uploaded endorsement credentials
-            List<Certificate> certificates = this.certificateRepository.findByType("EndorsementCredential");
-
-            // convert the list of certificates to a list of endorsement credentials
-            List<EndorsementCredential> uploadedEKs = certificates.stream()
-                    .filter(eachPC -> eachPC instanceof EndorsementCredential)
-                    .map(eachPC -> (EndorsementCredential) eachPC).toList();
-
-            // get all files
-            bulkDownloadEndorsementCredentials(zipOut, uploadedEKs);
-            // write cert to output stream
+            //  write endorsement credentials to output stream and bulk download them
+            this.certificateService.bulkDownloadCertificates(zipOut, ENDORSEMENT_CREDENTIALS, singleFileName);
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse ID from: ";
             log.error(uuidError, ex);
@@ -220,7 +210,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Upload and processes an endorsement credential.
+     * Uploads and processes an endorsement credential.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -228,7 +218,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
-    protected RedirectView upload(
+    protected RedirectView uploadEndorsementCredential(
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
 
@@ -242,14 +232,14 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         for (MultipartFile file : files) {
             //Parse endorsement credential
-            EndorsementCredential parseEndorsementCredential = parseEndorsementCredential(file, messages);
+            EndorsementCredential parsedEndorsementCredential = parseEndorsementCredential(file, messages);
 
             //Store only if it was parsed
-            if (parseEndorsementCredential != null) {
+            if (parsedEndorsementCredential != null) {
                 certificateService.storeCertificate(
                         ENDORSEMENT_CREDENTIALS,
                         file.getOriginalFilename(),
-                        successMessages, errorMessages, parseEndorsementCredential);
+                        successMessages, errorMessages, parsedEndorsementCredential);
             }
         }
 
@@ -260,16 +250,16 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Archives (soft delete) the endorsement credential.
+     * Archives (soft deletes) the endorsement credential.
      *
-     * @param id   the UUID of the endorsement cert to delete
+     * @param id   the UUID of the endorsement certificate to delete
      * @param attr RedirectAttributes used to forward data back to the original
      *             page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView delete(
+    public RedirectView deleteEndorsementCredential(
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
         log.info("Handling request to delete endorsement credential id {}", id);
@@ -365,34 +355,5 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             messages.addError(failMessage + isEx.getMessage());
             return null;
         }
-    }
-
-    /**
-     * Helper method that packages a collection of endorsement credentials into a zip file.
-     *
-     * @param zipOut                 zip outputs stream
-     * @param endorsementCredentials collection of endorsement credentials
-     * @throws IOException if there are any issues packaging or downloading the zip file
-     */
-    private void bulkDownloadEndorsementCredentials(final ZipOutputStream zipOut,
-                                                    final List<EndorsementCredential> endorsementCredentials)
-            throws IOException {
-        String zipFileName;
-        final String singleFileName = "Endorsement_Certificates";
-
-        // get all endorsement credentials
-        for (EndorsementCredential endorsementCredential : endorsementCredentials) {
-            zipFileName = String.format("%s[%s].cer", singleFileName,
-                    Integer.toHexString(endorsementCredential.getCertificateHash()));
-            // configure the zip entry, the properties of the 'file'
-            ZipEntry zipEntry = new ZipEntry(zipFileName);
-            zipEntry.setSize((long) endorsementCredential.getRawBytes().length * Byte.SIZE);
-            zipEntry.setTime(System.currentTimeMillis());
-            zipOut.putNextEntry(zipEntry);
-            // the content of the resource
-            StreamUtils.copy(endorsementCredential.getRawBytes(), zipOut);
-            zipOut.closeEntry();
-        }
-        zipOut.finish();
     }
 }

@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
@@ -37,16 +36,16 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
     private static final String EKCERT = "certificates/fakeIntelIntermediateCA.pem";
     private static final String BADEKCERT = "certificates/badCert.pem";
     // Base path for the page
-    private String pagePath;
-    // Repository manager to handle data access between certificate entity and data storage in db
-    @Autowired
-    private CertificateRepository certificateRepository;
+    private final String pagePath;
+
     // Repository manager to handle data access between endorsement certificate entity and data storage in db
     @Autowired
     private EndorsementCredentialRepository endorsementCredentialRepository;
+
     // A file that contains a cert that is not an EK Cert. Should be parsable as a general cert,
     // but should (eventually) not be stored as an EK because it isn't one.
     private MockMultipartFile nonEkCertFile;
+
     // A file that is not a cert at all, and just contains garbage text.
     private MockMultipartFile badCertFile;
 

@@ -2,7 +2,6 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
@@ -27,7 +26,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @Log4j2
@@ -56,18 +53,16 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
     private static final String PLATFORM_CREDENTIALS = "platform-credentials";
 
-    private final CertificateRepository certificateRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final CertificateService certificateService;
 
     @Autowired
-    public PlatformCredentialPageController(final CertificateRepository certificateRepository,
-                                            final PlatformCertificateRepository platformCertificateRepository,
-                                            final EndorsementCredentialRepository endorsementCredentialRepository,
-                                            final CertificateService certificateService) {
+    public PlatformCredentialPageController(
+            final PlatformCertificateRepository platformCertificateRepository,
+            final EndorsementCredentialRepository endorsementCredentialRepository,
+            final CertificateService certificateService) {
         super(Page.TRUST_CHAIN);
-        this.certificateRepository = certificateRepository;
         this.platformCertificateRepository = platformCertificateRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
         this.certificateService = certificateService;
@@ -87,6 +82,13 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         return getBaseModelAndView(Page.PLATFORM_CREDENTIALS);
     }
 
+    /**
+     * Retrieves the collection of platform credentials that will be displayed on the platform
+     * credentials page.
+     *
+     * @param input data table input received from the front-end
+     * @return data table of platform credentials
+     */
     @ResponseBody
     @GetMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -154,10 +156,10 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
-     * Handles request to download the cert by writing it to the response stream
+     * Handles request to download the platform credential by writing it to the response stream
      * for download.
      *
-     * @param id       the UUID of the cert to download
+     * @param id       the UUID of the platform credential to download
      * @param response the response object (needed to update the header with the
      *                 file name)
      * @throws IOException when writing to response output stream
@@ -171,7 +173,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         try {
             UUID uuid = UUID.fromString(id);
-            Certificate certificate = certificateRepository.getCertificate(uuid);
+            Certificate certificate = this.certificateService.findCertificate(uuid);
 
             if (certificate == null) {
                 log.warn("Unable to locate platform credential record with ID: {}", uuid);
@@ -189,7 +191,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                     response.setHeader("Content-Disposition", "attachment;" + fileName);
                     response.setContentType("application/octet-stream");
 
-                    // write cert to output stream
+                    // write platform credential to output stream
                     response.getOutputStream().write(certificate.getRawBytes());
                 }
             }
@@ -201,7 +203,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
-     * Handles request to download the platform crednetials by writing it to the response stream
+     * Handles request to download the platform credentials by writing it to the response stream
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
@@ -214,23 +216,15 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.info("Handling request to download all platform credentials");
 
         final String fileName = "platform_certificates.zip";
+        final String singleFileName = "Platform_Certificate";
 
         // Set filename for download.
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-
-            // find all the uploaded platform credentials
-            List<Certificate> certificates = this.certificateRepository.findByType("PlatformCredential");
-
-            // convert the list of certificates to a list of platform credentials
-            List<PlatformCredential> uploadedPCs = certificates.stream()
-                    .filter(eachPC -> eachPC instanceof PlatformCredential)
-                    .map(eachPC -> (PlatformCredential) eachPC).toList();
-
-            // get all files and write certificates to output stream
-            bulkDownloadPlatformCertificates(zipOut, uploadedPCs);
+            //  write platform credentials to output stream and bulk download them
+            this.certificateService.bulkDownloadCertificates(zipOut, PLATFORM_CREDENTIALS, singleFileName);
         } catch (IllegalArgumentException ex) {
             String uuidError = "Failed to parse platform credential ID from: ";
             log.error(uuidError, ex);
@@ -283,14 +277,14 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     /**
      * Archives (soft delete) the platform credential.
      *
-     * @param id   the UUID of the platform cert to delete
+     * @param id   the UUID of the platform credential to delete
      * @param attr RedirectAttributes used to forward data back to the original
      *             page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView delete(
+    public RedirectView deletePlatformCredential(
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
         log.info("Handling request to delete platform credential id {}", id);
@@ -308,11 +302,11 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                     successMessages, errorMessages);
 
         } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: " + id;
+            String uuidError = "Failed to parse platform credential ID from: " + id;
             messages.addError(uuidError);
             log.error(uuidError, ex);
         } catch (DBManagerException ex) {
-            String dbError = "Failed to archive cert: " + id;
+            String dbError = "Failed to archive platform credential: " + id;
             messages.addError(dbError);
             log.error(dbError, ex);
         }
@@ -384,34 +378,5 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             messages.addError(failMessage + isEx.getMessage());
             return null;
         }
-    }
-
-    /**
-     * Helper method that packages a collection of platform credentials into a zip file.
-     *
-     * @param zipOut              zip outputs stream
-     * @param platformCredentials collection of  platform credentials
-     * @throws IOException if there are any issues packaging or downloading the zip file
-     */
-    private void bulkDownloadPlatformCertificates(final ZipOutputStream zipOut,
-                                                  final List<PlatformCredential> platformCredentials)
-            throws IOException {
-        String zipFileName;
-        final String singleFileName = "Platform_Certificate";
-
-        // get all files
-        for (PlatformCredential platformCredential : platformCredentials) {
-            zipFileName = String.format("%s[%s].cer", singleFileName,
-                    Integer.toHexString(platformCredential.getCertificateHash()));
-            // configure the zip entry, the properties of the 'file'
-            ZipEntry zipEntry = new ZipEntry(zipFileName);
-            zipEntry.setSize((long) platformCredential.getRawBytes().length * Byte.SIZE);
-            zipEntry.setTime(System.currentTimeMillis());
-            zipOut.putNextEntry(zipEntry);
-            // the content of the resource
-            StreamUtils.copy(platformCredential.getRawBytes(), zipOut);
-            zipOut.closeEntry();
-        }
-        zipOut.finish();
     }
 }

@@ -7,7 +7,6 @@
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 
 <%-- CONTENT --%>
-
 <my:page>
   <jsp:attribute name="script">
     <script

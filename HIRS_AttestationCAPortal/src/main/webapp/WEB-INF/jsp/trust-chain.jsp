@@ -5,7 +5,6 @@
 <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
-
 <%-- CONTENT --%>
 <my:page>
   <jsp:attribute name="script">
@@ -87,7 +86,7 @@
     </my:details-viewer>
 
     <a href="${portal}/certificate-request/trust-chain/download-aca-cert">
-      <!-- <img src="${baseURL}/images/icons/ic_file_download_black_24dp.png" title="Download ACA Certificate"> -->
+      <img src="${baseURL}/images/icons/ic_file_download_black_24dp.png" title="Download ACA Certificate">
     </a>
     <div class="aca-input-box-header">
       <form:form
@@ -100,7 +99,7 @@
           <input id="importFile" type="file" name="file" multiple="multiple" />
         </my:file-chooser>
         <a href="${portal}/certificate-request/trust-chain/bulk-download">
-          <!-- <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Trust Chain Certificates"> -->
+          <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Trust Chain Certificates">
         </a>
       </form:form>
     </div>

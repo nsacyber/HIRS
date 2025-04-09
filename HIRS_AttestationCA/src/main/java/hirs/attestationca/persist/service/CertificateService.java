@@ -21,11 +21,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Service layer class that handles the storage and retrieval of all types of certificates.
@@ -34,11 +37,11 @@ import java.util.UUID;
 @Service
 public class CertificateService {
 
-    private static final String TRUSTCHAIN = "trust-chain";
-    private static final String PLATFORMCREDENTIAL = "platform-credentials";
-    private static final String IDEVIDCERTIFICATE = "idevid-certificates";
-    private static final String ENDORSEMENTCREDENTIAL = "endorsement-key-credentials";
-    private static final String ISSUEDCERTIFICATES = "issued-certificates";
+    private static final String TRUST_CHAIN = "trust-chain";
+    private static final String PLATFORM_CREDENTIALS = "platform-credentials";
+    private static final String IDEVID_CERTIFICATES = "idevid-certificates";
+    private static final String ENDORSEMENT_CREDENTIALS = "endorsement-key-credentials";
+    private static final String ISSUED_CERTIFICATES = "issued-certificates";
 
     private final CertificateRepository certificateRepository;
     private final ComponentResultRepository componentResultRepository;
@@ -56,7 +59,7 @@ public class CertificateService {
     /**
      * @param entityClass       generic entity class
      * @param searchableColumns list of the searchable column name
-     * @param searchText        text that waas input in the search textbox
+     * @param searchText        text that was input in the search textbox
      * @param archiveFlag       archive flag
      * @param pageable          pageable
      * @param <T>               generic entity class
@@ -102,6 +105,14 @@ public class CertificateService {
     }
 
     /**
+     * @param uuid
+     * @return
+     */
+    public Certificate findCertificate(UUID uuid) {
+        return this.certificateRepository.getCertificate(uuid);
+    }
+
+    /**
      * Stored the given certificate in the database.
      *
      * @param certificateType String containing the certificate type
@@ -125,18 +136,18 @@ public class CertificateService {
             existingCertificate = getCertificateByHash(
                     certificateType,
                     certificate.getCertificateHash());
-        } catch (DBServiceException dbsEx) {
+        } catch (Exception exception) {
             final String failMessage = "Querying for existing certificate failed ("
                     + fileName + "): ";
-            errorMessages.add(failMessage + dbsEx.getMessage());
-            log.error(failMessage, dbsEx);
+            errorMessages.add(failMessage + exception.getMessage());
+            log.error(failMessage, exception);
             return;
         }
 
         try {
             // save the new certificate if no match is found
             if (existingCertificate == null) {
-                if (certificateType.equals(PLATFORMCREDENTIAL)) {
+                if (certificateType.equals(PLATFORM_CREDENTIALS)) {
                     PlatformCredential platformCertificate = (PlatformCredential) certificate;
                     if (platformCertificate.isPlatformBase()) {
                         List<PlatformCredential> sharedCertificates = getPlatformCertificateByBoardSN(
@@ -186,6 +197,7 @@ public class CertificateService {
                 existingCertificate.resetCreateTime();
                 this.certificateRepository.save(existingCertificate);
 
+                //todo
                 List<ComponentResult> componentResults = componentResultRepository
                         .findByBoardSerialNumber(((PlatformCredential) existingCertificate)
                                 .getPlatformSerial());
@@ -238,7 +250,7 @@ public class CertificateService {
             errorMessages.add(notFoundMessage);
             log.warn(notFoundMessage);
         } else {
-            if (certificateType.equals(PLATFORMCREDENTIAL)) {
+            if (certificateType.equals(PLATFORM_CREDENTIALS)) {
                 PlatformCredential platformCertificate = (PlatformCredential) certificate;
                 if (platformCertificate.isPlatformBase()) {
                     // only do this if the base is being deleted.
@@ -266,7 +278,63 @@ public class CertificateService {
     }
 
     /**
-     * Gets the certificate by the hash code of its bytes. Looks for both
+     * Helper method that packages a collection of certificates into a zip file.
+     *
+     * @param zipOut         zip outputs streams
+     * @param singleFileName zip file name
+     * @throws IOException if there are any issues packaging or downloading the zip file
+     */
+    public void bulkDownloadCertificates(final ZipOutputStream zipOut,
+                                         final String certificateType,
+                                         final String singleFileName) throws IOException {
+        String zipFileName;
+        final List<Certificate> certificates = findCertificatesByType(certificateType);
+
+        // get all files
+        for (Certificate certificate : certificates) {
+            zipFileName = String.format("%s[%s].cer", singleFileName,
+                    Integer.toHexString(certificate.getCertificateHash()));
+            // configure the zip entry, the properties of the 'file'
+            ZipEntry zipEntry = new ZipEntry(zipFileName);
+            zipEntry.setSize((long) certificate.getRawBytes().length * Byte.SIZE);
+            zipEntry.setTime(System.currentTimeMillis());
+            zipOut.putNextEntry(zipEntry);
+            // the content of the resource
+            StreamUtils.copy(certificate.getRawBytes(), zipOut);
+            zipOut.closeEntry();
+        }
+        zipOut.finish();
+    }
+
+    /**
+     * Retrieves the list of certificates based on the certificate type.
+     *
+     * @param certificateType certificate type
+     * @return list of certificates
+     */
+    private List<Certificate> findCertificatesByType(String certificateType) {
+        return switch (certificateType) {
+            case PLATFORM_CREDENTIALS -> this.certificateRepository
+                    .findByType(
+                            "PlatformCredential");
+            case ENDORSEMENT_CREDENTIALS -> this.certificateRepository
+                    .findByType(
+                            "EndorsementCredential");
+            case TRUST_CHAIN -> this.certificateRepository
+                    .findByType(
+                            "CertificateAuthorityCredential");
+            case IDEVID_CERTIFICATES -> this.certificateRepository
+                    .findByType(
+                            "IDevIDCertificate");
+            case ISSUED_CERTIFICATES -> this.certificateRepository.
+                    findByType("IssuedAttestationCertificate");
+            default -> throw new IllegalArgumentException("The provided certificate type {"
+                    + certificateType + "} does not exist");
+        };
+    }
+
+    /**
+     * Retrieves the certificate by the hash code of its bytes. Looks for both
      * archived and unarchived certificates.
      *
      * @param certificateType String containing the certificate type
@@ -277,19 +345,20 @@ public class CertificateService {
             final String certificateType,
             final int certificateHash) {
         return switch (certificateType) {
-            case PLATFORMCREDENTIAL -> this.certificateRepository
+            case PLATFORM_CREDENTIALS -> this.certificateRepository
                     .findByCertificateHash(certificateHash,
                             "PlatformCredential");
-            case ENDORSEMENTCREDENTIAL -> this.certificateRepository
+            case ENDORSEMENT_CREDENTIALS -> this.certificateRepository
                     .findByCertificateHash(certificateHash,
                             "EndorsementCredential");
-            case TRUSTCHAIN -> this.certificateRepository
+            case TRUST_CHAIN -> this.certificateRepository
                     .findByCertificateHash(certificateHash,
                             "CertificateAuthorityCredential");
-            case IDEVIDCERTIFICATE -> this.certificateRepository
+            case IDEVID_CERTIFICATES -> this.certificateRepository
                     .findByCertificateHash(certificateHash,
                             "IDevIDCertificate");
-            default -> null;
+            default -> throw new IllegalArgumentException("The provided certificate type {"
+                    + certificateType + "} does not exist");
         };
     }
 
