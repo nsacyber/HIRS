@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
@@ -118,7 +118,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-pc-validation", method = RequestMethod.POST)
+    @PostMapping("update-pc-validation")
     public RedirectView updatePcVal(@ModelAttribute final PolicyPageModel ppModel,
                                     final RedirectAttributes attr) throws URISyntaxException {
 
@@ -169,7 +169,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-pc-attribute-validation", method = RequestMethod.POST)
+    @PostMapping("update-pc-attribute-validation")
     public RedirectView updatePcAttributeVal(@ModelAttribute final PolicyPageModel ppModel,
                                              final RedirectAttributes attr)
             throws URISyntaxException {
@@ -219,7 +219,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-revision-ignore", method = RequestMethod.POST)
+    @PostMapping("update-revision-ignore")
     public RedirectView updateIgnoreRevisionAttribute(@ModelAttribute final PolicyPageModel ppModel,
                                                       final RedirectAttributes attr)
             throws URISyntaxException {
@@ -270,7 +270,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-issue-attestation", method = RequestMethod.POST)
+    @PostMapping("update-issue-attestation")
     public RedirectView updateAttestationVal(@ModelAttribute final PolicyPageModel ppModel,
                                              final RedirectAttributes attr)
             throws URISyntaxException {
@@ -314,7 +314,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-issue-devid", method = RequestMethod.POST)
+    @PostMapping("update-issue-devid")
     public RedirectView updateDevIdVal(@ModelAttribute final PolicyPageModel ppModel,
                                        final RedirectAttributes attr)
             throws URISyntaxException {
@@ -359,7 +359,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-expire-on", method = RequestMethod.POST)
+    @PostMapping("update-expire-on")
     public RedirectView updateExpireOnVal(@ModelAttribute final PolicyPageModel ppModel,
                                           final RedirectAttributes attr)
             throws URISyntaxException {
@@ -429,7 +429,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-devid-expire-on", method = RequestMethod.POST)
+    @PostMapping("update-devid-expire-on")
     public RedirectView updateDevIdExpireOnVal(@ModelAttribute final PolicyPageModel ppModel,
                                                final RedirectAttributes attr)
             throws URISyntaxException {
@@ -499,7 +499,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-threshold", method = RequestMethod.POST)
+    @PostMapping("update-threshold")
     public RedirectView updateThresholdVal(@ModelAttribute final PolicyPageModel ppModel,
                                            final RedirectAttributes attr)
             throws URISyntaxException {
@@ -570,7 +570,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-devid-threshold", method = RequestMethod.POST)
+    @PostMapping("update-devid-threshold")
     public RedirectView updateDevIdThresholdVal(@ModelAttribute final PolicyPageModel ppModel,
                                                 final RedirectAttributes attr)
             throws URISyntaxException {
@@ -640,7 +640,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-ec-validation", method = RequestMethod.POST)
+    @PostMapping("update-ec-validation")
     public RedirectView updateEcVal(@ModelAttribute final PolicyPageModel ppModel,
                                     final RedirectAttributes attr) throws URISyntaxException {
 
@@ -692,7 +692,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-firmware-validation", method = RequestMethod.POST)
+    @PostMapping("update-firmware-validation")
     public RedirectView updateFirmwareVal(@ModelAttribute final PolicyPageModel ppModel,
                                           final RedirectAttributes attr) throws URISyntaxException {
 
@@ -749,7 +749,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-ima-ignore", method = RequestMethod.POST)
+    @PostMapping("update-ima-ignore")
     public RedirectView updateIgnoreIma(@ModelAttribute final PolicyPageModel ppModel,
                                         final RedirectAttributes attr) throws URISyntaxException {
         // set the data received to be populated back into the form
@@ -800,7 +800,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-tboot-ignore", method = RequestMethod.POST)
+    @PostMapping("update-tboot-ignore")
     public RedirectView updateIgnoreTboot(@ModelAttribute final PolicyPageModel ppModel,
                                           final RedirectAttributes attr) throws URISyntaxException {
         // set the data received to be populated back into the form
@@ -851,7 +851,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-gpt-ignore", method = RequestMethod.POST)
+    @PostMapping("update-gpt-ignore")
     public RedirectView updateIgnoreGptEvents(@ModelAttribute final PolicyPageModel ppModel,
                                               final RedirectAttributes attr) throws URISyntaxException {
         // set the data received to be populated back into the form
@@ -902,7 +902,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @RequestMapping(value = "update-os-evt-ignore", method = RequestMethod.POST)
+    @PostMapping("update-os-evt-ignore")
     public RedirectView updateIgnoreOsEvents(
             @ModelAttribute final PolicyPageModel ppModel,
             final RedirectAttributes attr)
@@ -995,6 +995,15 @@ public class PolicyPageController extends PageController<NoPageParams> {
         return policy;
     }
 
+    /**
+     * Helper method that saves the provided policy to the database and displays a success message.
+     *
+     * @param ppModel        policy page model
+     * @param model          model
+     * @param messages       page messages
+     * @param successMessage success message
+     * @param settings       policy settings
+     */
     private void savePolicyAndApplySuccessMessage(
             final PolicyPageModel ppModel, final Map<String, Object> model,
             final PageMessages messages, final String successMessage,
@@ -1004,7 +1013,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
         // Log and set the success message
         messages.addSuccessMessage(successMessage);
-        log.debug("ACA Policy set to: " + ppModel.toString());
+        log.debug("ACA Policy set to: {}", ppModel.toString());
 
         model.put(MESSAGES_ATTRIBUTE, messages);
     }

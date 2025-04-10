@@ -27,8 +27,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -84,15 +84,14 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
      * information
      */
     @ResponseBody
-    @RequestMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            method = RequestMethod.GET)
+    @GetMapping(value = "/list",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<ReferenceDigestValue> getTableData(
             @Valid final DataTableInput input) {
-        log.debug("Handling request for summary list: {}", input);
+        log.info("Handling request for summary list: {}", input);
 
         String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: {}", orderColumnName);
+        log.info("Ordering on column: {}", orderColumnName);
 
         // check that the alert is not archived and that it is in the specified report
         CriteriaModifier criteriaModifier = new CriteriaModifier() {
@@ -106,7 +105,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
             }
         };
 
-        log.debug("Querying with the following dataTableInput: {}", input);
+        log.info("Querying with the following dataTableInput: {}", input);
 
         FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
 

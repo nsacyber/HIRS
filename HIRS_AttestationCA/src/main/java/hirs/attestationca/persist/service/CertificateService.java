@@ -48,6 +48,13 @@ public class CertificateService {
     private final ComponentResultRepository componentResultRepository;
     private final EntityManager entityManager;
 
+    /**
+     * Con
+     *
+     * @param certificateRepository
+     * @param componentResultRepository
+     * @param entityManager
+     */
     @Autowired
     public CertificateService(final CertificateRepository certificateRepository,
                               final ComponentResultRepository componentResultRepository,
