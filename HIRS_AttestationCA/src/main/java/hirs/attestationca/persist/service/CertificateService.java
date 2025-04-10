@@ -49,11 +49,11 @@ public class CertificateService {
     private final EntityManager entityManager;
 
     /**
-     * Con
+     * Constructor for the Certificate Service.
      *
-     * @param certificateRepository
-     * @param componentResultRepository
-     * @param entityManager
+     * @param certificateRepository     certificateRepository
+     * @param componentResultRepository componentResultRepository
+     * @param entityManager             entityManager
      */
     @Autowired
     public CertificateService(final CertificateRepository certificateRepository,
@@ -65,6 +65,9 @@ public class CertificateService {
     }
 
     /**
+     * Takes the provided column names, the search term that the user entered and attempts to find
+     * certificates whose field values matches the provided search term.
+     *
      * @param entityClass       generic entity class
      * @param searchableColumns list of the searchable column name
      * @param searchText        text that was input in the search textbox
@@ -73,11 +76,12 @@ public class CertificateService {
      * @param <T>               generic entity class
      * @return page full of the generic certificates.
      */
-    public <T extends Certificate> Page<T> findBySearchableColumnsAndArchiveFlag(Class<T> entityClass,
-                                                                                 List<String> searchableColumns,
-                                                                                 String searchText,
-                                                                                 Boolean archiveFlag,
-                                                                                 Pageable pageable) {
+    public <T extends Certificate> Page<T> findCertificatesBySearchableColumnsAndArchiveFlag(
+            Class<T> entityClass,
+            final List<String> searchableColumns,
+            final String searchText,
+            Boolean archiveFlag,
+            Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
         Root<T> certificate = query.from(entityClass);
@@ -88,6 +92,12 @@ public class CertificateService {
         if (!StringUtils.isBlank(searchText)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
+
+                // todo
+                if (columnName.contains(".")) {
+
+                }
+
                 Predicate predicate =
                         criteriaBuilder.like(criteriaBuilder.lower(certificate.get(columnName)),
                                 "%" + searchText.toLowerCase() + "%");

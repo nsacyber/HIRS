@@ -136,7 +136,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<CertificateAuthorityCredential> getTrustChainCertificatesTableData(
             final DataTableInput input) {
-        log.info("Receiving request to display list of trust chain certificates");
+        log.info("Received request to display list of trust chain certificates");
         log.debug("Request received a datatable input object for the trust chain certificates page: {}",
                 input);
 
@@ -145,8 +145,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        String searchText = input.getSearch().getValue();
-        List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final String searchText = input.getSearch().getValue();
+        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
         int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -160,7 +160,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                     this.caCredentialRepository.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
-                    this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                    this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             CertificateAuthorityCredential.class,
                             searchableColumns,
                             searchText,
@@ -195,7 +195,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
-        log.info("Receiving request to download trust chain certificate {}", id);
+        log.info("Received request to download trust chain certificate {}", id);
 
         try {
             UUID uuid = UUID.fromString(id);
@@ -252,7 +252,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     public void downloadAcaCertificate(final HttpServletResponse response)
             throws IOException {
 
-        log.info("Receiving request to download the ACA server trust chain certificate");
+        log.info("Received request to download the ACA server trust chain certificate");
 
         // Set filename for download.
         response.setHeader("Content-Disposition", "attachment; filename=\"hirs-aca-cert.cer\"");
@@ -273,7 +273,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     @GetMapping("/bulk-download")
     public void bulkDownloadTrustChainCertificates(final HttpServletResponse response)
             throws IOException {
-        log.info("Receiving request to download all trust chain certificates");
+        log.info("Received request to download all trust chain certificates");
         final String fileName = "trust-chain.zip";
         final String singleFileName = "ca-certificates";
 
@@ -307,7 +307,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
 
-        log.info("Receiving request to upload one or more trust chain certificates");
+        log.info("Received request to upload one or more trust chain certificates");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -351,7 +351,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     public RedirectView deleteTrustChainCertificate(
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Receiving request to delete trust chain certificate id {}", id);
+        log.info("Received request to delete trust chain certificate id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();

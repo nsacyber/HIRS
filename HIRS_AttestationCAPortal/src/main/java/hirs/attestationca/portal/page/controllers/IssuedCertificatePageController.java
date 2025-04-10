@@ -48,7 +48,7 @@ import java.util.zip.ZipOutputStream;
 @Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
-public class IssuedCertificateController extends PageController<NoPageParams> {
+public class IssuedCertificatePageController extends PageController<NoPageParams> {
 
     private static final String ISSUED_CERTIFICATES = "issued-certificates";
 
@@ -62,7 +62,7 @@ public class IssuedCertificateController extends PageController<NoPageParams> {
      * @param certificateService          certificateService
      */
     @Autowired
-    public IssuedCertificateController(
+    public IssuedCertificatePageController(
             final IssuedCertificateRepository issuedCertificateRepository,
             final CertificateService certificateService) {
         super(Page.TRUST_CHAIN);
@@ -96,7 +96,7 @@ public class IssuedCertificateController extends PageController<NoPageParams> {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(
             final DataTableInput input) {
-        log.info("Receiving request to display list of issued attestation certificates");
+        log.info("Received request to display list of issued attestation certificates");
         log.debug("Request received a datatable input object for the issued attestation certificate page: "
                 + "{}", input);
 
@@ -105,8 +105,8 @@ public class IssuedCertificateController extends PageController<NoPageParams> {
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        String searchText = input.getSearch().getValue();
-        List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final String searchText = input.getSearch().getValue();
+        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
         int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -119,7 +119,7 @@ public class IssuedCertificateController extends PageController<NoPageParams> {
                     this.issuedCertificateRepository.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
-                    this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                    this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             IssuedAttestationCertificate.class,
                             searchableColumns,
                             searchText,
@@ -153,7 +153,7 @@ public class IssuedCertificateController extends PageController<NoPageParams> {
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
-        log.info("Receiving request to download issued certificate id {}", id);
+        log.info("Received request to download issued certificate id {}", id);
 
         try {
             UUID uuid = UUID.fromString(id);
@@ -208,7 +208,7 @@ public class IssuedCertificateController extends PageController<NoPageParams> {
     @GetMapping("/bulk-download")
     public void bulkDownloadIssuedCertificates(final HttpServletResponse response)
             throws IOException {
-        log.info("Receiving request to download all issued certificates");
+        log.info("Received request to download all issued certificates");
 
         final String singleFileName = "Issued_Certificate";
         final String fileName = "issued_certificates.zip";
@@ -243,7 +243,7 @@ public class IssuedCertificateController extends PageController<NoPageParams> {
     public RedirectView deleteIssuedCertificate(
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Receiving request to delete issued attestation certificate id {}", id);
+        log.info("Received request to delete issued attestation certificate id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();

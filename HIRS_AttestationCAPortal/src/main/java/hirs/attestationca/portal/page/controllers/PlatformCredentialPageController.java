@@ -104,7 +104,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(
             final DataTableInput input) {
-        log.info("Receiving request to display list of platform credentials");
+        log.info("Received request to display list of platform credentials");
         log.debug("Request received a datatable input object for the platform credentials page: {}", input);
 
         // attempt to get the column property based on the order index.
@@ -112,8 +112,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        String searchText = input.getSearch().getValue();
-        List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final String searchText = input.getSearch().getValue();
+        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
         int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -127,7 +127,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                     this.platformCertificateRepository.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
-                    this.certificateService.findBySearchableColumnsAndArchiveFlag(
+                    this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             PlatformCredential.class,
                             searchableColumns,
                             searchText,
@@ -179,7 +179,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
-        log.info("Receiving request to download platform credential id {}", id);
+        log.info("Received request to download platform credential id {}", id);
 
         try {
             UUID uuid = UUID.fromString(id);
@@ -232,7 +232,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     @GetMapping("/bulk-download")
     public void bulkDownloadPlatformCredentials(final HttpServletResponse response)
             throws IOException {
-        log.info("Receiving request to download all platform credentials");
+        log.info("Received request to download all platform credentials");
 
         final String fileName = "platform_certificates.zip";
         final String singleFileName = "Platform_Certificate";
@@ -267,7 +267,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
 
-        log.info("Receiving request to upload one or more platform credentials");
+        log.info("Received request to upload one or more platform credentials");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -310,7 +310,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     public RedirectView deletePlatformCredential(
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Receiving request to delete platform credential id {}", id);
+        log.info("Received request to delete platform credential id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -350,6 +350,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
+     * N
      * Attempts to parse the provided file in order to create a Platform Credential.
      *
      * @param file     file

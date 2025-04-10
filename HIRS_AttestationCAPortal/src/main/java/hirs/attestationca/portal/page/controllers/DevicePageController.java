@@ -97,7 +97,7 @@ public class DevicePageController extends PageController<NoPageParams> {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<HashMap<String, Object>> getTableData(
             final DataTableInput input) {
-        log.debug("Receiving request to for device list");
+        log.debug("Received request to for device list");
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 

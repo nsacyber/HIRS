@@ -12,15 +12,17 @@ import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummar
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.attestationca.persist.service.ValidationSummaryReportsService;
+import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +49,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Controller for the Validation Reports page.
@@ -63,12 +66,12 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             + "Model,SN,Verification Date,Device Status";
     private static final String COMPONENT_COLUMN_HEADERS = "Component name,Component manufacturer,"
             + "Component model,Component SN,Issuer,Component status";
+
     private final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository;
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
-    @Autowired(required = false)
-    private EntityManager entityManager;
+    private final ValidationSummaryReportsService validationSummaryReportsService;
 
     /**
      * Constructor providing the Page's display and routing specification.
@@ -77,18 +80,21 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param certificateRepository                 the certificate manager
      * @param deviceRepository                      the device manager
      * @param platformCertificateRepository         the platform certificate manager
+     * @param validationSummaryReportsService       the validation summary reports service
      */
     @Autowired
     public ValidationReportsPageController(
             final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository,
             final CertificateRepository certificateRepository,
             final DeviceRepository deviceRepository,
-            final PlatformCertificateRepository platformCertificateRepository) {
+            final PlatformCertificateRepository platformCertificateRepository,
+            final ValidationSummaryReportsService validationSummaryReportsService) {
         super(Page.VALIDATION_REPORTS);
         this.supplyChainValidatorSummaryRepository = supplyChainValidatorSummaryRepository;
         this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;
         this.platformCertificateRepository = platformCertificateRepository;
+        this.validationSummaryReportsService = validationSummaryReportsService;
     }
 
     /**
@@ -105,26 +111,46 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
-     * Gets the list of validation summaries per the data table input query.
+     * Processes request to retrieve the collection of supply chain summary records that will be displayed
+     * on the validation reports page.
      *
      * @param input the data table query.
      * @return the data table response containing the supply chain summary records
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<SupplyChainValidationSummary> getTableData(
+    public DataTableResponse<SupplyChainValidationSummary> getValidationReportsTableData(
             final DataTableInput input) {
 
-        log.debug("Handling request for summary list: {}", input);
+        log.info("Received request to display list of validation reports");
+        log.debug("Request received a datatable input object for the validation reports page: {}", input);
+
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
+        final String searchText = input.getSearch().getValue();
+        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+
         FilteredRecordsList<SupplyChainValidationSummary> records = new FilteredRecordsList<>();
+
         int currentPage = input.getStart() / input.getLength();
-        Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult =
-                supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(paging);
+
+        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+
+        org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult;
+
+        if (StringUtils.isBlank(searchText)) {
+            pagedResult =
+                    this.supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(pageable);
+        } else {
+            pagedResult =
+                    this.validationSummaryReportsService.findValidationReportsBySearchableColumnsAndArchiveFlag(
+                            searchableColumns,
+                            searchText,
+                            false,
+                            pageable);
+        }
 
         if (pagedResult.hasContent()) {
             records.addAll(pagedResult.getContent());
@@ -135,6 +161,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
         records.setRecordsFiltered(supplyChainValidatorSummaryRepository.count());
 
+        log.info("Returning the size of the list of validation reports: {}", records.size());
         return new DataTableResponse<>(records, input);
     }
 
@@ -145,11 +172,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param response object
      * @throws IOException thrown by BufferedWriter object
      */
-    @PostMapping("download")
+    @PostMapping("/download")
     public void download(final HttpServletRequest request,
                          final HttpServletResponse response) throws IOException {
 
-        log.info("Downloading validation report");
+        log.info("Received request to download validation report");
         String company = "";
         String contractNumber = "";
         Pattern pattern = Pattern.compile("^\\w*$");
@@ -325,6 +352,18 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
+     * Helper method that returns a list of column names that are searchable.
+     *
+     * @param columns columns
+     * @return searchable column names
+     */
+    private List<String> findSearchableColumnsNames(final List<Column> columns) {
+        // Retrieve all searchable columns and collect their names into a list of strings.
+        return columns.stream().filter(Column::isSearchable).map(Column::getName)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * This method builds a JSON object from the system and component data in a
      * validation report.
      *
@@ -339,7 +378,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                                            final String company,
                                            final String contractNumber) {
         JsonObject systemData = new JsonObject();
-        String deviceName = deviceRepository.findById(pc
+        String deviceName = deviceRepository.findById((pc)
                 .getDeviceId()).get().getName();
 
         systemData.addProperty("Company", company);
