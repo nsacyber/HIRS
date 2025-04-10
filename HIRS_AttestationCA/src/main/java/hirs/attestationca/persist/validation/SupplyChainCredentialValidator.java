@@ -93,7 +93,9 @@ public class SupplyChainCredentialValidator {
                 throw new SupplyChainValidatorException("Truststore is empty");
             }
         } catch (KeyStoreException ksEx) {
-            log.error("Error accessing trust store: " + ksEx.getMessage());
+            log.error(
+                    "Error accessing trust store while trying to verify the X509 Attribute"
+                            + " Certificate Holder: {}", ksEx.getMessage());
         }
 
         try {
@@ -134,7 +136,8 @@ public class SupplyChainCredentialValidator {
                 throw new SupplyChainValidatorException("Truststore is empty");
             }
         } catch (KeyStoreException ksEx) {
-            log.error("Error accessing trust store: " + ksEx.getMessage());
+            log.error("Error accessing trust store while trying to verify the X509 Certificate: {}",
+                    ksEx.getMessage());
         }
 
         try {
@@ -147,8 +150,9 @@ public class SupplyChainCredentialValidator {
 
             return validateCertChain(cert, trustedCerts).isEmpty();
         } catch (KeyStoreException ksEx) {
-            log.error("Error accessing keystore", ksEx);
-            throw new SupplyChainValidatorException("Error with the trust store", ksEx);
+            log.error("Error accessing keystore while trying to verify the X509 Certificate", ksEx);
+            throw new SupplyChainValidatorException(
+                    "Error accessing keystore while trying to verify the X509 Certificate", ksEx);
         }
     }
 
@@ -191,7 +195,7 @@ public class SupplyChainCredentialValidator {
 
                 if (issuerMatchesSubject && signatureMatchesPublicKey) {
                     if (isSelfSigned(trustedCert)) {
-                        log.info("CA Root found.");
+                        log.info("CA Root found while validating the X509 Attribute Certificate Holder.");
                         return "";
                     } else {
                         foundRootOfCertChain = intCAError;
@@ -244,7 +248,7 @@ public class SupplyChainCredentialValidator {
                         trustedCert);
                 if (issuerMatchesSubject && signatureMatchesPublicKey) {
                     if (isSelfSigned(trustedCert)) {
-                        log.info("CA Root found.");
+                        log.info("CA Root found while validating X509 Certificate.");
                         return "";
                     } else {
                         foundRootOfCertChain = intCAError;
@@ -270,7 +274,7 @@ public class SupplyChainCredentialValidator {
      * Parses the output from PACCOR's allcomponents.sh script into ComponentInfo objects.
      *
      * @param hostName     the host machine associated with the component
-     * @param paccorOutput the output from PACCOR's allcomoponents.sh
+     * @param paccorOutput the output from PACCOR's allcomponents.sh
      * @return a list of ComponentInfo objects built from paccorOutput
      * @throws java.io.IOException if something goes wrong parsing the JSON
      */
@@ -296,17 +300,23 @@ public class SupplyChainCredentialValidator {
                             getJSONNodeValueAsText(next, "REVISION")));
                 } else {
                     // version 2
-                    String componentClass = StringUtils.EMPTY;
+                    String componentClassValue = StringUtils.EMPTY;
+                    String componentClassRegistry = StringUtils.EMPTY;
+
                     for (JsonNode subNode : compClassNodes) {
-                        componentClass = getJSONNodeValueAsText(subNode,
+                        componentClassValue = getJSONNodeValueAsText(subNode,
                                 "COMPONENTCLASSVALUE");
+                        componentClassRegistry = getJSONNodeValueAsText(subNode,
+                                "COMPONENTCLASSREGISTRY");
                     }
+
                     componentInfoList.add(new ComponentInfo(hostName,
                             getJSONNodeValueAsText(next, "MANUFACTURER"),
                             getJSONNodeValueAsText(next, "MODEL"),
                             getJSONNodeValueAsText(next, "SERIAL"),
                             getJSONNodeValueAsText(next, "REVISION"),
-                            componentClass));
+                            componentClassValue,
+                            componentClassRegistry));
                 }
             }
         }
@@ -314,6 +324,13 @@ public class SupplyChainCredentialValidator {
         return componentInfoList;
     }
 
+    /**
+     * Helper method that attempts to retrieve the value as text from the provided Json Node.
+     *
+     * @param node      json node
+     * @param fieldName field name
+     * @return string json node value
+     */
     private static String getJSONNodeValueAsText(final JsonNode node, final String fieldName) {
         if (node.hasNonNull(fieldName)) {
             return node.findValue(fieldName).textValue();
@@ -398,8 +415,7 @@ public class SupplyChainCredentialValidator {
         } catch (NoSuchProviderException e) {
             log.info("Incorrect provider for cert signature validation");
         } catch (SignatureException e) {
-            log.info(String.format("%s.verify(%s)", cert.getSubjectX500Principal(),
-                    signingCert.getSubjectX500Principal()));
+            log.info("{}.verify({})", cert.getSubjectX500Principal(), signingCert.getSubjectX500Principal());
         }
         return false;
 
@@ -444,8 +460,7 @@ public class SupplyChainCredentialValidator {
             return cert.isSignatureValid(contentVerifierProvider);
         } catch (OperatorCreationException | CertException e) {
             log.info("Exception thrown while verifying certificate", e);
-            log.info(String.format("%s.isSignatureValid(%s)", cert.getSerialNumber(),
-                    signingKey.getFormat()));
+            log.info("{}.isSignatureValid({})", cert.getSerialNumber(), signingKey.getFormat());
             return false;
         }
     }

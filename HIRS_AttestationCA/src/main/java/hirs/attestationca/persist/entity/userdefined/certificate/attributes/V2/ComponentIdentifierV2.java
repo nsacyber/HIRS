@@ -20,17 +20,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Basic class that handle component identifiers from the Platform Configuration
- * Attribute.
+ * Basic class that represents version 2 of the component identifiers from the Version 2
+ * Platform Configuration Attribute.
  * <pre>
  * ComponentIdentifier ::= SEQUENCE {
+ *      componentClass ComponentClass
  *      componentManufacturer UTF8String (SIZE (1..STRMAX)),
  *      componentModel UTF8String (SIZE (1..STRMAX)),
  *      componentSerial[0] IMPLICIT UTF8String (SIZE (1..STRMAX)) OPTIONAL,
  *      componentRevision [1] IMPLICIT UTF8String (SIZE (1..STRMAX)) OPTIONAL,
  *      componentManufacturerId [2] IMPLICIT PrivateEnterpriseNumber OPTIONAL,
  *      fieldReplaceable [3] IMPLICIT BOOLEAN OPTIONAL,
- *      componentAddress [4] IMPLICIT
+ *      componentAddresses [4] IMPLICIT
  *          SEQUENCE(SIZE(1..CONFIGMAX)) OF ComponentAddress OPTIONAL
  *      componentPlatformCert [5] IMPLICIT CertificateIdentifier OPTIONAL,
  *      componentPlatformCertUri [6] IMPLICIT URIReference OPTIONAL,
@@ -48,15 +49,15 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     // Additional optional identifiers for version 2
     private static final int COMPONENT_PLATFORM_CERT = 5;
 
-    private static final int COMPONENT_PLATFORM_URI = 6;
+    private static final int COMPONENT_PLATFORM_CERT_URI = 6;
 
     private static final int ATTRIBUTE_STATUS = 7;
 
     private ComponentClass componentClass;
 
-    private CertificateIdentifier certificateIdentifier;
+    private CertificateIdentifier componentPlatformCert;
 
-    private URIReference componentPlatformUri;
+    private URIReference componentPlatformCertUri;
 
     private AttributeStatus attributeStatus;
 
@@ -66,25 +67,25 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
     public ComponentIdentifierV2() {
         super();
         componentClass = new ComponentClass();
-        certificateIdentifier = null;
-        componentPlatformUri = null;
+        componentPlatformCert = null;
+        componentPlatformCertUri = null;
         attributeStatus = AttributeStatus.EMPTY_STATUS;
     }
 
     /**
      * Constructor given the components values.
      *
-     * @param componentClass          represent the component type
-     * @param componentManufacturer   represents the component manufacturer
-     * @param componentModel          represents the component model
-     * @param componentSerial         represents the component serial number
-     * @param componentRevision       represents the component revision
-     * @param componentManufacturerId represents the component manufacturer ID
-     * @param fieldReplaceable        represents if the component is replaceable
-     * @param componentAddress        represents a list of addresses
-     * @param certificateIdentifier   object representing certificate Id
-     * @param componentPlatformUri    object containing the URI Reference
-     * @param attributeStatus         object containing enumerated status
+     * @param componentClass           represent the component type
+     * @param componentManufacturer    represents the component manufacturer
+     * @param componentModel           represents the component model
+     * @param componentSerial          represents the component serial number
+     * @param componentRevision        represents the component revision
+     * @param componentManufacturerId  represents the component manufacturer ID
+     * @param fieldReplaceable         represents if the component is replaceable
+     * @param componentAddress         represents a list of addresses
+     * @param componentPlatformCert    object representing certificate Id
+     * @param componentPlatformCertUri object containing the URI Reference
+     * @param attributeStatus          object containing enumerated status
      */
     public ComponentIdentifierV2(final ComponentClass componentClass,
                                  final DERUTF8String componentManufacturer,
@@ -94,16 +95,16 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                                  final ASN1ObjectIdentifier componentManufacturerId,
                                  final ASN1Boolean fieldReplaceable,
                                  final List<ComponentAddress> componentAddress,
-                                 final CertificateIdentifier certificateIdentifier,
-                                 final URIReference componentPlatformUri,
+                                 final CertificateIdentifier componentPlatformCert,
+                                 final URIReference componentPlatformCertUri,
                                  final AttributeStatus attributeStatus) {
         super(componentManufacturer, componentModel, componentSerial,
                 componentRevision, componentManufacturerId, fieldReplaceable,
                 componentAddress);
         this.componentClass = componentClass;
         // additional optional component identifiers
-        this.certificateIdentifier = certificateIdentifier;
-        this.componentPlatformUri = componentPlatformUri;
+        this.componentPlatformCert = componentPlatformCert;
+        this.componentPlatformCertUri = componentPlatformCertUri;
         this.attributeStatus = attributeStatus;
     }
 
@@ -150,15 +151,15 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
                     break;
                 case COMPONENT_ADDRESS:
                     ASN1Sequence addressesSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    this.setComponentAddress(retrieveComponentAddress(addressesSequence));
+                    this.setComponentAddresses(retrieveComponentAddress(addressesSequence));
                     break;
                 case COMPONENT_PLATFORM_CERT:
                     ASN1Sequence ciSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    certificateIdentifier = new CertificateIdentifier(ciSequence);
+                    componentPlatformCert = new CertificateIdentifier(ciSequence);
                     break;
-                case COMPONENT_PLATFORM_URI:
+                case COMPONENT_PLATFORM_CERT_URI:
                     ASN1Sequence uriSequence = ASN1Sequence.getInstance(taggedObj, false);
-                    this.componentPlatformUri = new URIReference(uriSequence);
+                    this.componentPlatformCertUri = new URIReference(uriSequence);
                     break;
                 case ATTRIBUTE_STATUS:
                     ASN1Enumerated enumerated = ASN1Enumerated.getInstance(taggedObj, false);
@@ -172,34 +173,6 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         }
     }
 
-    /**
-     * @return true if the component has been modified.
-     */
-    public final boolean isAdded() {
-        return getAttributeStatus() == AttributeStatus.ADDED;
-    }
-
-    /**
-     * @return true if the component has been modified.
-     */
-    public final boolean isModified() {
-        return getAttributeStatus() == AttributeStatus.MODIFIED;
-    }
-
-    /**
-     * @return true if the component has been removed.
-     */
-    public final boolean isRemoved() {
-        return getAttributeStatus() == AttributeStatus.REMOVED;
-    }
-
-    /**
-     * @return true if the component status wasn't set.
-     */
-    public final boolean isEmpty() {
-        return (getAttributeStatus() == AttributeStatus.EMPTY_STATUS)
-                || (getAttributeStatus() == null);
-    }
 
     /**
      * @return indicates the type of platform certificate.
@@ -238,20 +211,20 @@ public class ComponentIdentifierV2 extends ComponentIdentifier {
         if (getFieldReplaceable() != null) {
             sb.append(getFieldReplaceable());
         }
-        sb.append(", componentAddress=");
-        if (getComponentAddress().size() > 0) {
-            sb.append(getComponentAddress()
+        sb.append(", componentAddresses=");
+        if (!getComponentAddresses().isEmpty()) {
+            sb.append(getComponentAddresses()
                     .stream()
                     .map(Object::toString)
                     .collect(Collectors.joining(",")));
         }
-        sb.append(", certificateIdentifier=");
-        if (certificateIdentifier != null) {
-            sb.append(certificateIdentifier);
+        sb.append(", componentPlatformCert=");
+        if (componentPlatformCert != null) {
+            sb.append(componentPlatformCert);
         }
-        sb.append(", componentPlatformUri=");
-        if (componentPlatformUri != null) {
-            sb.append(componentPlatformUri);
+        sb.append(", componentPlatformCertUri=");
+        if (componentPlatformCertUri != null) {
+            sb.append(componentPlatformCertUri);
         }
         sb.append(", status=");
         if (attributeStatus != null) {
