@@ -9,6 +9,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -65,11 +66,11 @@ public class CertificateService {
      * @param <T>               generic entity class
      * @return page full of the generic certificates.
      */
-    public <T> Page<T> findBySearchableColumnsAndArchiveFlag(Class<T> entityClass,
-                                                             List<String> searchableColumns,
-                                                             String searchText,
-                                                             Boolean archiveFlag,
-                                                             Pageable pageable) {
+    public <T extends Certificate> Page<T> findBySearchableColumnsAndArchiveFlag(Class<T> entityClass,
+                                                                                 List<String> searchableColumns,
+                                                                                 String searchText,
+                                                                                 Boolean archiveFlag,
+                                                                                 Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
         Root<T> certificate = query.from(entityClass);
@@ -105,15 +106,17 @@ public class CertificateService {
     }
 
     /**
-     * @param uuid
-     * @return
+     * Attempts to find a certificate whose uuid matches the provided uuid.
+     *
+     * @param uuid certificate uuid
+     * @return certificate
      */
     public Certificate findCertificate(UUID uuid) {
         return this.certificateRepository.getCertificate(uuid);
     }
 
     /**
-     * Stored the given certificate in the database.
+     * Stores the given certificate in the database.
      *
      * @param certificateType String containing the certificate type
      * @param fileName        contain the name of the file of the certificate to
@@ -238,17 +241,19 @@ public class CertificateService {
      * @param successMessages contains any success messages that will be displayed on the page
      * @param errorMessages   contains any error messages that will be displayed on the page
      */
-    public void deleteCertificate(UUID uuid, String certificateType,
+    public void deleteCertificate(final UUID uuid,
+                                  final String certificateType,
                                   final List<String> successMessages,
                                   final List<String> errorMessages) {
 
-        Certificate certificate = certificateRepository.getCertificate(uuid);
+        Certificate certificate = findCertificate(uuid);
 
         if (certificate == null) {
             // Use the term "record" here to avoid user confusion b/t cert and cred
             String notFoundMessage = "Unable to locate record with ID: " + uuid;
             errorMessages.add(notFoundMessage);
             log.warn(notFoundMessage);
+            throw new EntityNotFoundException(notFoundMessage);
         } else {
             if (certificateType.equals(PLATFORM_CREDENTIALS)) {
                 PlatformCredential platformCertificate = (PlatformCredential) certificate;

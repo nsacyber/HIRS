@@ -42,34 +42,51 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
 
     // Random UUID for certificate search.
     private static final String ID = "046b6c7f-0b8a-43b9-b35d-6489e6daee91";
+
     private static final String TEST_CA_CERTIFICATE
             = "/certificates/fakestmtpmekint02.pem";
+
     private static final String TEST_ROOT_CA_CERTIFICATE
             = "/certificates/fakeCA.pem";
+
     private static final String ISSUED_CLIENT_CERT
             = "/certificates/sample_identity_cert.cer";
+
     private static final String TEST_ENDORSEMENT_CREDENTIAL
             = "/endorsement_credentials/tpmcert.pem";
+
     private static final String TEST_PLATFORM_CREDENTIAL
             = "/platform_credentials/Intel_pc.cer";
+
     private static final String TEST_PLATFORM_CREDENTIAL_2
             = "/platform_credentials/basic_plat_cert_2-0.pem";
+
     private static final String TEST_PLATFORM_CREDENTIAL_2_PCI
             = "/platform_credentials/pciids_plat_cert_2-0.pem";
+
     // Base path for the page
     private final String pagePath;
+
     // Repository manager to handle data access between device entity and data storage in db
     @Autowired
     private DeviceRepository deviceRepository;
+
     // Repository manager to handle data access between certificate entity and data storage in db
     @Autowired
     private CertificateRepository certificateRepository;
+
     private CertificateAuthorityCredential caCertificate;
+
     private CertificateAuthorityCredential caRootCertificate;
+
     private PlatformCredential platformCredential;
+
     private PlatformCredential platformCredential2;
+
     private PlatformCredential platformCertificatePCI;
+
     private EndorsementCredential endorsementCredential;
+
     private IssuedAttestationCertificate issuedCredential;
 
     /**
@@ -171,7 +188,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                         .param("id", ID)
                         .param("type", "certificateauthority"))
                 .andExpect(status().isOk())
-                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("error",
+                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
                         hasItem("Unable to find certificate with ID: " + ID))))
                 .andReturn();
     }
@@ -189,7 +206,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                         .param("id", ID)
                         .param("type", "invalid"))
                 .andExpect(status().isOk())
-                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("error",
+                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
                         hasItem("Invalid certificate type: invalid"))))
                 .andReturn();
     }
@@ -206,7 +223,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                 .perform(MockMvcRequestBuilders.get(pagePath)
                         .param("id", ID))
                 .andExpect(status().isOk())
-                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("error",
+                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
                         hasItem("Type was not provided"))))
                 .andReturn();
     }

@@ -183,7 +183,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                         + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
                         + "Please verify your upload and retry.";
                 log.error("File extension in " + fileName + " not recognized as base or support RIM.");
-                messages.addError(errorString);
+                messages.addErrorMessage(errorString);
             }
         }
         baseRims.forEach((rim) -> {
@@ -236,21 +236,21 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
             if (referenceManifest == null) {
                 String notFoundMessage = "Unable to locate RIM with ID: " + id;
-                messages.addError(notFoundMessage);
+                messages.addErrorMessage(notFoundMessage);
                 log.warn(notFoundMessage);
             } else {
                 referenceManifestRepository.delete(referenceManifest);
                 String deleteCompletedMessage = "RIM successfully deleted";
-                messages.addInfo(deleteCompletedMessage);
+                messages.addInfoMessage(deleteCompletedMessage);
                 log.info(deleteCompletedMessage);
             }
         } catch (IllegalArgumentException iaEx) {
             String uuidError = "Failed to parse ID from: " + id;
-            messages.addError(uuidError);
+            messages.addErrorMessage(uuidError);
             log.error(uuidError, iaEx);
         } catch (DBManagerException dbmEx) {
             String dbError = "Failed to archive cert: " + id;
-            messages.addError(dbError);
+            messages.addErrorMessage(dbError);
             log.error(dbError, dbmEx);
         }
 
@@ -400,7 +400,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             final String failMessage
                     = String.format("Failed to read uploaded file (%s): ", fileName);
             log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            messages.addErrorMessage(failMessage + e.getMessage());
         }
 
         try {
@@ -409,26 +409,26 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 if (referenceManifestRepository.findByHexDecHashAndRimType(
                         supportRim.getHexDecHash(), supportRim.getRimType()) == null) {
                     supportRims.add(supportRim);
-                    messages.addInfo("Saved support RIM " + fileName);
+                    messages.addInfoMessage("Saved support RIM " + fileName);
                 }
             } else {
                 baseRim = new BaseReferenceManifest(fileName, fileBytes);
                 if (referenceManifestRepository.findByHexDecHashAndRimType(
                         baseRim.getHexDecHash(), baseRim.getRimType()) == null) {
                     baseRims.add(baseRim);
-                    messages.addInfo("Saved base RIM " + fileName);
+                    messages.addInfoMessage("Saved base RIM " + fileName);
                 }
             }
         } catch (IOException | NullPointerException ioEx) {
             final String failMessage
                     = String.format("Failed to parse support RIM file (%s): ", fileName);
             log.error(failMessage, ioEx);
-            messages.addError(failMessage + ioEx.getMessage());
+            messages.addErrorMessage(failMessage + ioEx.getMessage());
         } catch (UnmarshalException e) {
             final String failMessage
                     = String.format("Failed to parse base RIM file (%s): ", fileName);
             log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            messages.addErrorMessage(failMessage + e.getMessage());
         } catch (Exception e) {
             final String failMessage
                     = String.format("Failed to parse (%s): ", fileName);

@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
@@ -16,6 +15,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.CertificateStringMapBuilder;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +54,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Controller for the Trust Chain Certificates page.
+ */
 @Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain")
@@ -71,6 +74,14 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     private final CertificateService certificateService;
     private CertificateAuthorityCredential certificateAuthorityCredential;
 
+    /**
+     * Constructor for the Trust Chain Certificate page.
+     *
+     * @param certificateRepository  certificateRepository
+     * @param caCredentialRepository caCredentialRepository
+     * @param certificateService     certificateService
+     * @param acaCertificate         acaCertificate
+     */
     @Autowired
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
@@ -92,12 +103,12 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Returns the path for the view and the data model for the page.
+     * Returns the path for the view and the data model for the Trust Chain certificate page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
      *               redirect.
-     * @return the path for the view and data model for the page.
+     * @return the path for the view and data model for the Trust Chain certificate page.
      */
     @RequestMapping
     public ModelAndView initPage(
@@ -114,15 +125,20 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * @param input
-     * @return
+     * Processes request to retrieve the collection of trust chain certificates that will be
+     * displayed on the trust chain certificates page.
+     *
+     * @param input data table input received from the front-end
+     * @return data table of trust chain certificates
      */
     @ResponseBody
     @GetMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<CertificateAuthorityCredential> getTrustChainCertificatesTableData(
             final DataTableInput input) {
-        log.debug("Handling list request for trust chain certificates: {}", input);
+        log.info("Receiving request to display list of trust chain certificates");
+        log.debug("Request received a datatable input object for the trust chain certificates page: {}",
+                input);
 
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
@@ -161,7 +177,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
 
-        log.debug("Returning the size of the list of trust chain certificates: {}", records.size());
+        log.info("Returning the size of the list of trust chain certificates: {}", records.size());
         return new DataTableResponse<>(records, input);
     }
 
@@ -179,41 +195,52 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download {}", id);
+        log.info("Receiving request to download trust chain certificate {}", id);
 
         try {
             UUID uuid = UUID.fromString(id);
             Certificate certificate = this.certificateService.findCertificate(uuid);
 
             if (certificate == null) {
-                // Use the term "record" here to avoid user confusion b/t cert and cred
-                String notFoundMessage = "Unable to locate record with ID: " + uuid;
-                log.warn(notFoundMessage);
-                // send a 404 error when invalid certificate
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            } else {
-                String fileName = "filename=\"" + CertificateAuthorityCredential.class.getSimpleName()
-                        + "_"
-                        + certificate.getSerialNumber()
-                        + ".cer\"";
-
-                // Set filename for download.
-                response.setHeader("Content-Disposition", "attachment;" + fileName);
-                response.setContentType("application/octet-stream");
-
-                // write cert to output stream
-                response.getOutputStream().write(certificate.getRawBytes());
+                final String errorMessage =
+                        "Unable to locate trust chain certificate record with ID " + uuid;
+                log.warn(errorMessage);
+                throw new EntityNotFoundException(errorMessage);
+            } else if (!(certificate instanceof CertificateAuthorityCredential)) {
+                final String errorMessage =
+                        "Unable to cast the found certificate to a trust chain certificate "
+                                + "object";
+                log.warn(errorMessage);
+                throw new ClassCastException(errorMessage);
             }
-        } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: " + id;
-            log.error(uuidError, ex);
-            // send a 404 error when invalid certificate
+
+            final CertificateAuthorityCredential trustChainCertificate =
+                    (CertificateAuthorityCredential) certificate;
+
+            final String fileName = "filename=\"" + CertificateAuthorityCredential.class.getSimpleName()
+                    + "_"
+                    + trustChainCertificate.getSerialNumber()
+                    + ".cer\"";
+
+            // Set filename for download.
+            response.setHeader("Content-Disposition", "attachment;" + fileName);
+            response.setContentType("application/octet-stream");
+
+            // write trust chain certificate to output stream
+            response.getOutputStream().write(certificate.getRawBytes());
+
+        } catch (Exception ex) {
+            log.error("An exception was thrown while attempting to download the"
+                    + " specified trust chain certificate", ex);
+
+            // send a 404 error when an exception is thrown while attempting to download the
+            // specified trust chain certificate
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Handles request to download the ACA cert by writing it to the response
+     * Processes request to download the ACA cert by writing it to the response
      * stream for download.
      *
      * @param response the response object (needed to update the header with the
@@ -225,6 +252,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     public void downloadAcaCertificate(final HttpServletResponse response)
             throws IOException {
 
+        log.info("Receiving request to download the ACA server trust chain certificate");
+
         // Set filename for download.
         response.setHeader("Content-Disposition", "attachment; filename=\"hirs-aca-cert.cer\"");
         response.setContentType("application/octet-stream");
@@ -234,7 +263,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Handles request to download the certs by writing it to the response stream
+     * Processes request to bulk download all the trust chain certificate by writing it to the response stream
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
@@ -244,7 +273,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     @GetMapping("/bulk-download")
     public void bulkDownloadTrustChainCertificates(final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download all trust chain certificates");
+        log.info("Receiving request to download all trust chain certificates");
         final String fileName = "trust-chain.zip";
         final String singleFileName = "ca-certificates";
 
@@ -256,14 +285,17 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             //  write trust chain certificates to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, TRUST_CHAIN, singleFileName);
         } catch (Exception ex) {
-            log.error("Failed to bulk download trust chain certificates: ", ex);
-            // send a 404 error when invalid certificate
+            log.error("An exception was thrown while attempting to bulk download all the"
+                    + "trust chain certificates", ex);
+
+            // send a 404 error when an exception is thrown while attempting to download the
+            // trust chain certificates
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Uploads and processes a trust chain certificate.
+     * Processes request to upload one or more trust chain certificates.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -275,15 +307,15 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
 
-        log.info("Handling request to upload one or more trust chain certificates");
+        log.info("Receiving request to upload one or more trust chain certificates");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
-        List<String> errorMessages = new ArrayList<>();
-        List<String> successMessages = new ArrayList<>();
-
         for (MultipartFile file : files) {
+            List<String> errorMessages = new ArrayList<>();
+            List<String> successMessages = new ArrayList<>();
+
             //Parse trust chain certificate
             CertificateAuthorityCredential parsedTrustChainCertificate =
                     parseTrustChainCertificate(file, messages);
@@ -294,10 +326,10 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                         TRUST_CHAIN,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedTrustChainCertificate);
-            }
 
-            var a = successMessages;
-            var b = errorMessages;
+                messages.addSuccessMessages(successMessages);
+                messages.addErrorMessages(errorMessages);
+            }
         }
 
         //Add messages to the model
@@ -307,7 +339,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Archives (soft deletes) the trust chain certificate.
+     * Processes request to archive/soft delete the provided trust chain certificate.
      *
      * @param id   the UUID of the trust chain certificate to delete
      * @param attr RedirectAttributes used to forward data back to the original
@@ -316,35 +348,31 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteTrustChainCertificates(
+    public RedirectView deleteTrustChainCertificate(
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete trust chain certificate id {}", id);
+        log.info("Receiving request to delete trust chain certificate id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
-        try {
-            List<String> successMessages = new ArrayList<>();
-            List<String> errorMessages = new ArrayList<>();
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
 
+        try {
             UUID uuid = UUID.fromString(id);
 
             this.certificateService.deleteCertificate(uuid, TRUST_CHAIN,
                     successMessages, errorMessages);
 
-            var a = successMessages;
-
-        } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: " + id;
-            messages.addError(uuidError);
-            log.error(uuidError, ex);
-        } catch (DBManagerException ex) {
-            String dbError = "Failed to archive cert: " + id;
-            messages.addError(dbError);
-            log.error(dbError, ex);
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while attempting to delete"
+                    + " the specified trust chain certificate";
+            messages.addErrorMessage(errorMessage);
+            log.error(errorMessage, exception);
         }
-
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.TRUST_CHAIN, new NoPageParams(), model, attr);
@@ -353,9 +381,10 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     /**
      * Helper method that returns a list of column names that are searchable.
      *
+     * @param columns columns
      * @return searchable column names
      */
-    private List<String> findSearchableColumnsNames(List<Column> columns) {
+    private List<String> findSearchableColumnsNames(final List<Column> columns) {
 
         // Retrieve all searchable columns and collect their names into a list of strings.
         return columns.stream().filter(Column::isSearchable).map(Column::getName)
@@ -369,8 +398,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @param messages page messages
      * @return trust chain certificate
      */
-    private CertificateAuthorityCredential parseTrustChainCertificate(MultipartFile file,
-                                                                      PageMessages messages) {
+    private CertificateAuthorityCredential parseTrustChainCertificate(final MultipartFile file,
+                                                                      final PageMessages messages) {
         log.info("Received trust chain certificate file of size: {}", file.getSize());
 
         byte[] fileBytes;
@@ -383,7 +412,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             final String failMessage = String.format(
                     "Failed to read uploaded trust chain certificate file (%s): ", fileName);
             log.error(failMessage, ioEx);
-            messages.addError(failMessage + ioEx.getMessage());
+            messages.addErrorMessage(failMessage + ioEx.getMessage());
             return null;
         }
 
@@ -398,6 +427,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                     for (java.security.cert.Certificate certificate : c) {
                         List<String> successMessages = new ArrayList<>();
                         List<String> errorMessages = new ArrayList<>();
+
                         this.certificateService.storeCertificate(
                                 TRUST_CHAIN,
                                 file.getOriginalFilename(),
@@ -405,6 +435,9 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                                 errorMessages,
                                 new CertificateAuthorityCredential(
                                         certificate.getEncoded()));
+
+                        messages.addSuccessMessages(successMessages);
+                        messages.addErrorMessages(errorMessages);
                     }
 
                     // stop the main thread from saving/storing
@@ -419,27 +452,26 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             final String failMessage = String.format(
                     "Failed to parse uploaded trust chain certificate file (%s): ", fileName);
             log.error(failMessage, ioEx);
-            messages.addError(failMessage + ioEx.getMessage());
+            messages.addErrorMessage(failMessage + ioEx.getMessage());
             return null;
         } catch (DecoderException dEx) {
             final String failMessage = String.format(
                     "Failed to parse uploaded trust chain certificate pem file (%s): ", fileName);
             log.error(failMessage, dEx);
-            messages.addError(failMessage + dEx.getMessage());
+            messages.addErrorMessage(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
             final String failMessage = String.format(
                     "Trust chain certificate format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
-            messages.addError(failMessage + iaEx.getMessage());
+            messages.addErrorMessage(failMessage + iaEx.getMessage());
             return null;
         } catch (IllegalStateException isEx) {
             final String failMessage = String.format(
                     "Unexpected object while parsing trust chain certificate %s ", fileName);
             log.error(failMessage, isEx);
-            messages.addError(failMessage + isEx.getMessage());
+            messages.addErrorMessage(failMessage + isEx.getMessage());
             return null;
         }
     }
-
 }

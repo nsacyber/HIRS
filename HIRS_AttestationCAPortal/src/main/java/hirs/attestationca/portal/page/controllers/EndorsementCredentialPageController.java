@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
@@ -13,6 +12,7 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +44,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Controller for the Endorsement Key Credentials page.
+ */
 @Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
@@ -54,6 +57,12 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final CertificateService certificateService;
 
+    /**
+     * Constructor for the Endorsement Credential page.
+     *
+     * @param endorsementCredentialRepository endorsementCredentialRepository
+     * @param certificateService              certificateService
+     */
     @Autowired
     public EndorsementCredentialPageController(
             final EndorsementCredentialRepository endorsementCredentialRepository,
@@ -64,12 +73,12 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Returns the path for the view and the data model for the page.
+     * Returns the path for the view and the data model for the Endorsement Key Credentials page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
      *               redirect.
-     * @return the path for the view and data model for the page.
+     * @return the path for the view and data model for the Endorsement Key Credentials page.
      */
     @RequestMapping
     public ModelAndView initPage(
@@ -78,8 +87,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Retrieves the collection of endorsement credentials that will be displayed on the endorsement
-     * credentials page.
+     * Processes request to retrieve the collection of endorsement credentials that will be
+     * displayed on the endorsement credentials page.
      *
      * @param input data table input received from the front-end
      * @return data table of endorsement credentials
@@ -89,8 +98,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<EndorsementCredential> getEndorsementCredentialsTableData(
             final DataTableInput input) {
-
-        log.debug("Handling list request for endorsement credentials: {}", input);
+        log.info("Receiving request to display list of endorsement credentials");
+        log.debug("Request received a datatable input object for the endorsement credentials page: {}",
+                input);
 
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
@@ -132,10 +142,10 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Handles request to download the endorsement credential by writing it to the response stream
+     * Processes request to download the endorsement credential by writing it to the response stream
      * for download.
      *
-     * @param id       the UUID of the cert to download
+     * @param id       the UUID of the endorsement credential to download
      * @param response the response object (needed to update the header with the
      *                 file name)
      * @throws IOException when writing to response output stream
@@ -145,41 +155,50 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download endorsement credential id {}", id);
+        log.info("Receiving request to download endorsement credential id {}", id);
 
         try {
             UUID uuid = UUID.fromString(id);
             Certificate certificate = this.certificateService.findCertificate(uuid);
 
             if (certificate == null) {
-                // Use the term "record" here to avoid user confusion b/t cert and cred
-                String notFoundMessage = "Unable to locate record with ID: " + uuid;
-                log.warn(notFoundMessage);
-                // send a 404 error when invalid certificate
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            } else if (certificate instanceof EndorsementCredential uploadedEndorsementCredential) {
-                String fileName = "filename=\"" + EndorsementCredential.class.getSimpleName()
-                        + "_"
-                        + uploadedEndorsementCredential.getSerialNumber()
-                        + ".cer\"";
+                final String errorMessage = "Unable to locate endorsement credential record with ID " + uuid;
+                log.warn(errorMessage);
+                throw new EntityNotFoundException(errorMessage);
+            } else if (!(certificate instanceof EndorsementCredential)) {
+                final String errorMessage =
+                        "Unable to cast the found certificate to a endorsement credential object";
+                log.warn(errorMessage);
+                throw new ClassCastException(errorMessage);
 
-                // Set filename for download.
-                response.setHeader("Content-Disposition", "attachment;" + fileName);
-                response.setContentType("application/octet-stream");
-
-                // write cert to output stream
-                response.getOutputStream().write(certificate.getRawBytes());
             }
-        } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: " + id;
-            log.error(uuidError, ex);
-            // send a 404 error when invalid certificate
+
+            final EndorsementCredential endorsementCredential = (EndorsementCredential) certificate;
+
+            final String fileName = "filename=\"" + EndorsementCredential.class.getSimpleName()
+                    + "_"
+                    + endorsementCredential.getSerialNumber()
+                    + ".cer\"";
+
+            // Set filename for download.
+            response.setHeader("Content-Disposition", "attachment;" + fileName);
+            response.setContentType("application/octet-stream");
+
+            // write endorsement credential to output stream
+            response.getOutputStream().write(certificate.getRawBytes());
+
+        } catch (Exception ex) {
+            log.error("An exception was thrown while attempting to download the"
+                    + " specified endorsement credential", ex);
+
+            // send a 404 error when an exception is thrown while attempting to download the
+            // specified endorsement credential
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Handles request to download the endorsement credentials by writing it to the response stream
+     * Processes request to bulk download all the endorsement credentials by writing it to the response stream
      * for download in bulk.
      *
      * @param response the response object (needed to update the header with the
@@ -189,7 +208,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     @GetMapping("/bulk-download")
     public void bulkDownloadEndorsementCredentials(final HttpServletResponse response)
             throws IOException {
-        log.info("Handling request to download all endorsement credentials");
+        log.info("Receiving request to download all endorsement credentials");
 
         final String fileName = "endorsement_certificates.zip";
         final String singleFileName = "Endorsement_Certificates";
@@ -201,16 +220,18 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             //  write endorsement credentials to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, ENDORSEMENT_CREDENTIALS, singleFileName);
-        } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: ";
-            log.error(uuidError, ex);
-            // send a 404 error when invalid certificate
+        } catch (Exception ex) {
+            log.error("An exception was thrown while attempting to bulk download all the"
+                    + "endorsement credentials", ex);
+
+            // send a 404 error when an exception is thrown while attempting to download the
+            // endorsement credentials
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Uploads and processes an endorsement credential.
+     * Processes request to upload one or more endorsement credentials to the ACA.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -222,15 +243,15 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
 
-        log.info("Handling request to upload one or more endorsement credentials");
+        log.info("Receiving request to upload one or more endorsement credentials");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
-        List<String> errorMessages = new ArrayList<>();
-        List<String> successMessages = new ArrayList<>();
-
         for (MultipartFile file : files) {
+            List<String> errorMessages = new ArrayList<>();
+            List<String> successMessages = new ArrayList<>();
+
             //Parse endorsement credential
             EndorsementCredential parsedEndorsementCredential = parseEndorsementCredential(file, messages);
 
@@ -240,6 +261,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                         ENDORSEMENT_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedEndorsementCredential);
+
+                messages.addSuccessMessages(successMessages);
+                messages.addErrorMessages(errorMessages);
             }
         }
 
@@ -250,7 +274,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Archives (soft deletes) the endorsement credential.
+     * Processes request to archive/soft delete the provided endorsement credential.
      *
      * @param id   the UUID of the endorsement certificate to delete
      * @param attr RedirectAttributes used to forward data back to the original
@@ -262,28 +286,26 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     public RedirectView deleteEndorsementCredential(
             @RequestParam final String id,
             final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete endorsement credential id {}", id);
+        log.info("Receiving request to delete endorsement credential id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
         try {
-            List<String> successMessages = new ArrayList<>();
-            List<String> errorMessages = new ArrayList<>();
-
             UUID uuid = UUID.fromString(id);
 
             this.certificateService.deleteCertificate(uuid, ENDORSEMENT_CREDENTIALS,
                     successMessages, errorMessages);
 
-        } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: " + id;
-            messages.addError(uuidError);
-            log.error(uuidError, ex);
-        } catch (DBManagerException ex) {
-            String dbError = "Failed to archive cert: " + id;
-            messages.addError(dbError);
-            log.error(dbError, ex);
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while attempting to delete"
+                    + " endorsement credential";
+            messages.addErrorMessage(errorMessage);
+            log.error(errorMessage, exception);
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
@@ -293,9 +315,10 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     /**
      * Helper method that returns a list of column names that are searchable.
      *
+     * @param columns columns
      * @return searchable column names
      */
-    private List<String> findSearchableColumnsNames(List<Column> columns) {
+    private List<String> findSearchableColumnsNames(final List<Column> columns) {
 
         // Retrieve all searchable columns and collect their names into a list of strings.
         return columns.stream().filter(Column::isSearchable).map(Column::getName)
@@ -310,7 +333,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @param messages page messages
      * @return endorsement credential
      */
-    private EndorsementCredential parseEndorsementCredential(MultipartFile file, PageMessages messages) {
+    private EndorsementCredential parseEndorsementCredential(final MultipartFile file,
+                                                             final PageMessages messages) {
         log.info("Received endorsement credential file of size: {}", file.getSize());
 
         byte[] fileBytes;
@@ -323,7 +347,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             final String failMessage = String.format(
                     "Failed to read uploaded endorsement credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
-            messages.addError(failMessage + ioEx.getMessage());
+            messages.addErrorMessage(failMessage + ioEx.getMessage());
             return null;
         }
 
@@ -334,25 +358,25 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             final String failMessage = String.format(
                     "Failed to parse uploaded endorsement credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
-            messages.addError(failMessage + ioEx.getMessage());
+            messages.addErrorMessage(failMessage + ioEx.getMessage());
             return null;
         } catch (DecoderException dEx) {
             final String failMessage = String.format(
                     "Failed to parse uploaded endorsement credential pem file (%s): ", fileName);
             log.error(failMessage, dEx);
-            messages.addError(failMessage + dEx.getMessage());
+            messages.addErrorMessage(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
             final String failMessage = String.format(
                     "Endorsement credential format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
-            messages.addError(failMessage + iaEx.getMessage());
+            messages.addErrorMessage(failMessage + iaEx.getMessage());
             return null;
         } catch (IllegalStateException isEx) {
             final String failMessage = String.format(
                     "Unexpected object while parsing endorsement credential %s ", fileName);
             log.error(failMessage, isEx);
-            messages.addError(failMessage + isEx.getMessage());
+            messages.addErrorMessage(failMessage + isEx.getMessage());
             return null;
         }
     }

@@ -99,8 +99,8 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
         assertEquals("New certificate successfully uploaded (" + pathTokens[1] + "): ",
-                pageMessages.getSuccess().get(0));
-        assertEquals(0, pageMessages.getError().size());
+                pageMessages.getSuccessMessages().get(0));
+        assertEquals(0, pageMessages.getErrorMessages().size());
 
         // verify the cert was actually stored
         List<EndorsementCredential> records =
@@ -147,8 +147,8 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
         // verify redirection messages
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
-        assertEquals(1, pageMessages.getError().size());
-        assertEquals(0, pageMessages.getSuccess().size());
+        assertEquals(1, pageMessages.getErrorMessages().size());
+        assertEquals(0, pageMessages.getSuccessMessages().size());
 
         // verify the cert was not actually stored
         List<EndorsementCredential> records =

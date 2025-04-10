@@ -77,12 +77,12 @@ public class CertificateDetailsPageController extends PageController<Certificate
         // Check if parameters were set
         if (params.getId() == null) {
             String typeError = "ID was not provided";
-            messages.addError(typeError);
+            messages.addErrorMessage(typeError);
             log.error(typeError);
             mav.addObject(MESSAGES_ATTRIBUTE, messages);
         } else if (params.getType() == null) {
             String typeError = "Type was not provided";
-            messages.addError(typeError);
+            messages.addErrorMessage(typeError);
             log.error(typeError);
             mav.addObject(MESSAGES_ATTRIBUTE, messages);
         } else {
@@ -112,20 +112,20 @@ public class CertificateDetailsPageController extends PageController<Certificate
                         break;
                     default:
                         String typeError = "Invalid certificate type: " + params.getType();
-                        messages.addError(typeError);
+                        messages.addErrorMessage(typeError);
                         log.error(typeError);
                         mav.addObject(MESSAGES_ATTRIBUTE, messages);
                         break;
                 }
             } catch (IllegalArgumentException | IOException ex) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
-                messages.addError(uuidError);
+                messages.addErrorMessage(uuidError);
                 log.error(uuidError, ex);
             }
 
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find certificate with ID: " + params.getId();
-                messages.addError(notFoundMessage);
+                messages.addErrorMessage(notFoundMessage);
                 log.warn(notFoundMessage);
                 mav.addObject(MESSAGES_ATTRIBUTE, messages);
             } else {

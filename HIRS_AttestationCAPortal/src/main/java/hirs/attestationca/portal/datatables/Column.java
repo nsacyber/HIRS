@@ -27,7 +27,6 @@ public class Column {
     @NotBlank
     private String data;
 
-
     /**
      * Column's name.
      *
@@ -35,7 +34,7 @@ public class Column {
      */
     @NotBlank
     private String name;
-    
+
     /**
      * Flag to indicate if this column is searchable (true) or not (false).
      *
