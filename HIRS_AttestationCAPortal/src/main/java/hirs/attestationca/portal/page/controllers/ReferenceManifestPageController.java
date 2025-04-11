@@ -8,6 +8,8 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import hirs.attestationca.persist.service.ReferenceManifestService;
+import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -16,7 +18,6 @@ import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.xml.bind.UnmarshalException;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -67,8 +69,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     private static final String SUPPORT_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
-    @Autowired(required = false)
-    private EntityManager entityManager;
+    private final ReferenceManifestService referenceManifestService;
 
     /**
      * Constructor providing the Page's display and routing specification.
@@ -79,10 +80,12 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     @Autowired
     public ReferenceManifestPageController(
             final ReferenceManifestRepository referenceManifestRepository,
-            final ReferenceDigestValueRepository referenceDigestValueRepository) {
+            final ReferenceDigestValueRepository referenceDigestValueRepository,
+            ReferenceManifestService referenceManifestService) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
+        this.referenceManifestService = referenceManifestService;
     }
 
     /**
@@ -112,11 +115,15 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<ReferenceManifest> getTableData(
             @Valid final DataTableInput input) {
-        log.debug("Handling request for summary list: {}", input);
+        log.info("Received request to display list of reference manifests");
+        log.debug("Request received a datatable input object for the reference manifest page " +
+                " page: {}", input);
 
         String orderColumnName = input.getOrderColumnName();
-        log.info("Ordering on column: {}", orderColumnName);
-        log.info("Querying with the following dataTableInput: {}", input);
+        log.debug("Ordering on column: {}", orderColumnName);
+
+        final String searchText = input.getSearch().getValue();
+        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
         FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
         int currentPage = input.getStart() / input.getLength();
@@ -183,7 +190,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                         + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
                         + "Please verify your upload and retry.";
                 log.error("File extension in {} not recognized as base or support RIM.", fileName);
-                messages.addError(errorString);
+                messages.addErrorMessage(errorString);
             }
         }
         baseRims.forEach((rim) -> {
@@ -236,21 +243,21 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
             if (referenceManifest == null) {
                 String notFoundMessage = "Unable to locate RIM with ID: " + id;
-                messages.addError(notFoundMessage);
+                messages.addErrorMessage(notFoundMessage);
                 log.warn(notFoundMessage);
             } else {
                 referenceManifestRepository.delete(referenceManifest);
                 String deleteCompletedMessage = "RIM successfully deleted";
-                messages.addInfo(deleteCompletedMessage);
+                messages.addInfoMessage(deleteCompletedMessage);
                 log.info(deleteCompletedMessage);
             }
         } catch (IllegalArgumentException iaEx) {
             String uuidError = "Failed to parse ID from: " + id;
-            messages.addError(uuidError);
+            messages.addErrorMessage(uuidError);
             log.error(uuidError, iaEx);
         } catch (DBManagerException dbmEx) {
             String dbError = "Failed to archive cert: " + id;
-            messages.addError(dbError);
+            messages.addErrorMessage(dbError);
             log.error(dbError, dbmEx);
         }
 
@@ -400,7 +407,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             final String failMessage
                     = String.format("Failed to read uploaded file (%s): ", fileName);
             log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            messages.addErrorMessage(failMessage + e.getMessage());
         }
 
         try {
@@ -409,32 +416,45 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 if (referenceManifestRepository.findByHexDecHashAndRimType(
                         supportRim.getHexDecHash(), supportRim.getRimType()) == null) {
                     supportRims.add(supportRim);
-                    messages.addInfo("Saved support RIM " + fileName);
+                    messages.addInfoMessage("Saved support RIM " + fileName);
                 }
             } else {
                 baseRim = new BaseReferenceManifest(fileName, fileBytes);
                 if (referenceManifestRepository.findByHexDecHashAndRimType(
                         baseRim.getHexDecHash(), baseRim.getRimType()) == null) {
                     baseRims.add(baseRim);
-                    messages.addInfo("Saved base RIM " + fileName);
+                    messages.addInfoMessage("Saved base RIM " + fileName);
                 }
             }
         } catch (IOException | NullPointerException ioEx) {
             final String failMessage
                     = String.format("Failed to parse support RIM file (%s): ", fileName);
             log.error(failMessage, ioEx);
-            messages.addError(failMessage + ioEx.getMessage());
+            messages.addErrorMessage(failMessage + ioEx.getMessage());
         } catch (UnmarshalException e) {
             final String failMessage
                     = String.format("Failed to parse base RIM file (%s): ", fileName);
             log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            messages.addErrorMessage(failMessage + e.getMessage());
         } catch (Exception e) {
             final String failMessage
                     = String.format("Failed to parse (%s): ", fileName);
             log.error(failMessage, e);
         }
     }
+
+    /**
+     * Helper method that returns a list of column names that are searchable.
+     *
+     * @param columns columns
+     * @return searchable column names
+     */
+    private List<String> findSearchableColumnsNames(final List<Column> columns) {
+        // Retrieve all searchable columns and collect their names into a list of strings.
+        return columns.stream().filter(Column::isSearchable).map(Column::getName)
+                .collect(Collectors.toList());
+    }
+
 
     private Map<String, SupportReferenceManifest> updateSupportRimInfo(
             final List<SupportReferenceManifest> dbSupportRims) {

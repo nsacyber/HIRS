@@ -162,21 +162,16 @@ public abstract class PageControllerTest {
             throw new IOException("Could not resolve path URI", e);
         }
 
-        switch (certificateClass.getSimpleName()) {
-            case "EndorsementCredential":
-                return new EndorsementCredential(fPath);
-            case "PlatformCredential":
-                return new PlatformCredential(fPath);
-            case "CertificateAuthorityCredential":
-                return new CertificateAuthorityCredential(fPath);
-            case "IssuedAttestationCertificate":
-                return new IssuedAttestationCertificate(fPath,
-                        endorsementCredential, platformCredentials, false);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate class %s", certificateClass.getName())
-                );
-        }
+        return switch (certificateClass.getSimpleName()) {
+            case "EndorsementCredential" -> new EndorsementCredential(fPath);
+            case "PlatformCredential" -> new PlatformCredential(fPath);
+            case "CertificateAuthorityCredential" -> new CertificateAuthorityCredential(fPath);
+            case "IssuedAttestationCertificate" -> new IssuedAttestationCertificate(fPath,
+                    endorsementCredential, platformCredentials, false);
+            default -> throw new IllegalArgumentException(
+                    String.format("Unknown certificate class %s", certificateClass.getName())
+            );
+        };
     }
 
     /**

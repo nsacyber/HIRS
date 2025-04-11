@@ -24,16 +24,19 @@ import java.util.Map;
 public class DataTableInput {
 
     private static final int DEFAULT_LENGTH = 10;
+
     /**
      * Order parameter.
      */
     @NotEmpty
     private final List<Order> order = new ArrayList<>();
+
     /**
      * Per-column search parameter.
      */
     @NotEmpty
     private final List<Column> columns = new ArrayList<>();
+
     /**
      * Draw counter. This is used by DataTables to ensure that the Ajax returns from server-side
      * processing requests are drawn in sequence by DataTables (Ajax requests are asynchronous and
@@ -44,6 +47,7 @@ public class DataTableInput {
     @Min(0)
     @Setter
     private int draw = 1;
+
     /**
      * Paging first record indicator. This is the start point in the current data set
      * (0 index based - i.e. 0 is the first record).
@@ -52,6 +56,7 @@ public class DataTableInput {
     @Min(0)
     @Setter
     private int start = 0;
+
     /**
      * Number of records that the table can display in the current draw. It is expected that the
      * number of records returned will be equal to this number,
@@ -63,6 +68,7 @@ public class DataTableInput {
     @Min(-1)
     @Setter
     private int length = DEFAULT_LENGTH;
+
     /**
      * Global search parameter.
      */

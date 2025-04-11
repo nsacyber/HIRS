@@ -142,7 +142,7 @@ public abstract class PageController<P extends PageParams> {
         String defaultUri = "../" + newPage.getViewName();
         // create uri with specified parameters
         URIBuilder uri = new URIBuilder("../" + newPage.getViewName());
-        log.debug("Redirection URI = " + uri.toString());
+        log.debug("Redirection URI = {}", uri.toString());
 
         if (params != null) {
             for (Map.Entry<String, ?> e : params.asMap().entrySet()) {
