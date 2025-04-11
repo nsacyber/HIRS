@@ -78,6 +78,8 @@
           {
             name: "name",
             data: "name",
+            searchable: true,
+            orderable: true,
             render: function (data, type, full, meta) {
               return full.device.name;
             },

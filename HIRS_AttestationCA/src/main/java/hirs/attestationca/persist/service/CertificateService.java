@@ -93,7 +93,10 @@ public class CertificateService {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
 
-                // todo
+                // there is a possibility that one of the column names
+                // that matches one of the class fields is nested (e.g. device.name) ,
+                // and we will need to do further work to extract the
+                // field name
                 if (columnName.contains(".")) {
 
                 }

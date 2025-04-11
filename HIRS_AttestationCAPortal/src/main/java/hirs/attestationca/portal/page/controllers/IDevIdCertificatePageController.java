@@ -66,7 +66,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     @Autowired
     public IDevIdCertificatePageController(final IDevIDCertificateRepository iDevIDCertificateRepository,
                                            final CertificateService certificateService) {
-        super(Page.TRUST_CHAIN);
+        super(Page.IDEVID_CERTIFICATES);
         this.iDevIDCertificateRepository = iDevIDCertificateRepository;
         this.certificateService = certificateService;
     }

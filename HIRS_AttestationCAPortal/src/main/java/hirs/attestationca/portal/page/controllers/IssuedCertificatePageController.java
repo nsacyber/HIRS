@@ -65,7 +65,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     public IssuedCertificatePageController(
             final IssuedCertificateRepository issuedCertificateRepository,
             final CertificateService certificateService) {
-        super(Page.TRUST_CHAIN);
+        super(Page.ISSUED_CERTIFICATES);
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.certificateService = certificateService;
     }

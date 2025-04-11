@@ -67,7 +67,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     public EndorsementCredentialPageController(
             final EndorsementCredentialRepository endorsementCredentialRepository,
             final CertificateService certificateService) {
-        super(Page.TRUST_CHAIN);
+        super(Page.ENDORSEMENT_KEY_CREDENTIALS);
         this.endorsementCredentialRepository = endorsementCredentialRepository;
         this.certificateService = certificateService;
     }
@@ -319,12 +319,10 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @return searchable column names
      */
     private List<String> findSearchableColumnsNames(final List<Column> columns) {
-
         // Retrieve all searchable columns and collect their names into a list of strings.
         return columns.stream().filter(Column::isSearchable).map(Column::getName)
                 .collect(Collectors.toList());
     }
-
 
     /**
      * Attempts to parse the provided file in order to create an Endorsement Credential.

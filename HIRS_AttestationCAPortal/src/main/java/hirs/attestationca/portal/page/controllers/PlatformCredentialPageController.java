@@ -72,7 +72,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             final PlatformCertificateRepository platformCertificateRepository,
             final EndorsementCredentialRepository endorsementCredentialRepository,
             final CertificateService certificateService) {
-        super(Page.TRUST_CHAIN);
+        super(Page.PLATFORM_CREDENTIALS);
         this.platformCertificateRepository = platformCertificateRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
         this.certificateService = certificateService;
