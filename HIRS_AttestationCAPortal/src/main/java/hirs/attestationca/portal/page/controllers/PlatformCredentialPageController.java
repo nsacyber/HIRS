@@ -263,7 +263,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
-    protected RedirectView upload(
+    protected RedirectView uploadPlatformCredentials(
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
 

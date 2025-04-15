@@ -39,10 +39,12 @@ public class DevicePageController extends PageController<NoPageParams> {
 
     /**
      * Device Page Controller constructor.
+     *
+     * @param deviceService device service
      */
     @Autowired
     public DevicePageController(
-            DeviceService deviceService) {
+            final DeviceService deviceService) {
         super(Page.DEVICES);
         this.deviceService = deviceService;
     }
@@ -66,7 +68,7 @@ public class DevicePageController extends PageController<NoPageParams> {
      * information that will be displayed on the devices page.
      *
      * @param input data table input.
-     * @return a data table response
+     * @return data table of devices
      */
     @ResponseBody
     @GetMapping(value = "/list",
@@ -109,6 +111,7 @@ public class DevicePageController extends PageController<NoPageParams> {
         FilteredRecordsList<HashMap<String, Object>> records
                 = this.deviceService.retrieveDevicesAndAssociatedCertificates(deviceList);
 
+        log.info("Returning the size of the list of devices: {}", records.size());
         return new DataTableResponse<>(records, input);
     }
 

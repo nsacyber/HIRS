@@ -69,7 +69,7 @@ public class CertificateService {
      * certificates whose field values matches the provided search term.
      *
      * @param entityClass       generic entity class
-     * @param searchableColumns list of the searchable column name
+     * @param searchableColumns list of the searchable column names
      * @param searchText        text that was input in the search textbox
      * @param archiveFlag       archive flag
      * @param pageable          pageable
@@ -77,14 +77,14 @@ public class CertificateService {
      * @return page full of the generic certificates.
      */
     public <T extends Certificate> Page<T> findCertificatesBySearchableColumnsAndArchiveFlag(
-            Class<T> entityClass,
+            final Class<T> entityClass,
             final List<String> searchableColumns,
             final String searchText,
-            Boolean archiveFlag,
-            Pageable pageable) {
+            final boolean archiveFlag,
+            final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
-        Root<T> certificate = query.from(entityClass);
+        Root<T> rootCertificate = query.from(entityClass);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -102,7 +102,7 @@ public class CertificateService {
                 }
 
                 Predicate predicate =
-                        criteriaBuilder.like(criteriaBuilder.lower(certificate.get(columnName)),
+                        criteriaBuilder.like(criteriaBuilder.lower(rootCertificate.get(columnName)),
                                 "%" + searchText.toLowerCase() + "%");
                 predicates.add(predicate);
             }
@@ -112,7 +112,7 @@ public class CertificateService {
 
         // Add archiveFlag condition if specified
         query.where(criteriaBuilder.and(likeConditions,
-                criteriaBuilder.equal(certificate.get("archiveFlag"), archiveFlag)));
+                criteriaBuilder.equal(rootCertificate.get("archiveFlag"), archiveFlag)));
 
         // Apply pagination
         TypedQuery<T> typedQuery = entityManager.createQuery(query);
@@ -131,7 +131,7 @@ public class CertificateService {
      * @param uuid certificate uuid
      * @return certificate
      */
-    public Certificate findCertificate(UUID uuid) {
+    public Certificate findCertificate(final UUID uuid) {
         return this.certificateRepository.getCertificate(uuid);
     }
 
@@ -303,7 +303,7 @@ public class CertificateService {
     }
 
     /**
-     * Helper method that packages a collection of certificates into a zip file.
+     * Packages a collection of certificates into a zip file.
      *
      * @param zipOut         zip outputs streams
      * @param singleFileName zip file name
