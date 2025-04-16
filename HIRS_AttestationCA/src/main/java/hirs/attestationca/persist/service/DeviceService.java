@@ -13,6 +13,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
@@ -90,21 +92,29 @@ public class DeviceService {
         if (!StringUtils.isBlank(searchText)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
+                // Get the attribute type from entity root
+                Path<?> fieldPath = deviceRoot.get(columnName);
 
-                // there is a possibility that one of the column names
-                // that matches one of the class fields is nested (e.g. device.name) ,
-                // and we will need to do further work to extract the
-                // field name
-                // todo
-                if (columnName.contains(".")) {
-
+                //  if the field is a string type
+                if (String.class.equals(fieldPath.getJavaType())) {
+                    Predicate predicate =
+                            criteriaBuilder.like(
+                                    criteriaBuilder.lower(deviceRoot.get(columnName)),
+                                    "%" + searchText.toLowerCase() + "%");
+                    predicates.add(predicate);
                 }
+                // if the field is a non-string type
+                else {
+                    // convert the field to a string
+                    Expression<String> fieldAsString = criteriaBuilder
+                            .literal(fieldPath).as(String.class);
 
-                Predicate predicate =
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(deviceRoot.get(columnName)),
-                                "%" + searchText.toLowerCase() + "%");
-                predicates.add(predicate);
+                    Predicate predicate = criteriaBuilder.like(
+                            criteriaBuilder.lower(fieldAsString),
+                            "%" + searchText.toLowerCase() + "%"
+                    );
+                    predicates.add(predicate);
+                }
             }
         }
 

@@ -15,6 +15,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,6 +63,12 @@ public class ValidationSummaryReportsService {
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
 
+    /**
+     * @param platformCertificateRepository platform certificate repository
+     * @param certificateRepository         certificate repository
+     * @param deviceRepository              device repository
+     * @param entityManager                 entity manager
+     */
     @Autowired
     public ValidationSummaryReportsService(final PlatformCertificateRepository platformCertificateRepository,
                                            final CertificateRepository certificateRepository,
@@ -86,8 +94,8 @@ public class ValidationSummaryReportsService {
     public Page<SupplyChainValidationSummary> findValidationReportsBySearchableColumnsAndArchiveFlag(
             final List<String> searchableColumns,
             final String searchText,
-            Boolean archiveFlag,
-            Pageable pageable) {
+            final boolean archiveFlag,
+            final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<SupplyChainValidationSummary> query =
                 criteriaBuilder.createQuery(SupplyChainValidationSummary.class);
@@ -108,13 +116,34 @@ public class ValidationSummaryReportsService {
                 // todo
                 if (columnName.contains(".")) {
 
+                    continue;
                 }
 
-                Predicate predicate =
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(supplyChainValidationSummaryRoot.get(columnName)),
-                                "%" + searchText.toLowerCase() + "%");
-                predicates.add(predicate);
+                // assuming the column name is not a nested entity field
+                // Get the attribute type from entity root
+                Path<?> fieldPath = supplyChainValidationSummaryRoot.get(columnName);
+
+                //  if the field is a string type
+                if (String.class.equals(fieldPath.getJavaType())) {
+
+                    Predicate predicate =
+                            criteriaBuilder.like(
+                                    criteriaBuilder.lower(supplyChainValidationSummaryRoot.get(columnName)),
+                                    "%" + searchText.toLowerCase() + "%");
+                    predicates.add(predicate);
+                }
+                // if the field is a non-string type
+                else {
+                    // convert the field to a string
+                    Expression<String> fieldAsString = criteriaBuilder
+                            .literal(fieldPath).as(String.class);
+
+                    Predicate predicate = criteriaBuilder.like(
+                            criteriaBuilder.lower(fieldAsString),
+                            "%" + searchText.toLowerCase() + "%"
+                    );
+                    predicates.add(predicate);
+                }
             }
         }
 

@@ -6,6 +6,7 @@ import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -61,13 +62,10 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain")
 public class TrustChainCertificatePageController extends PageController<NoPageParams> {
-
     /**
      * Model attribute name used by initPage for the aca cert info.
      */
     static final String ACA_CERT_DATA = "acaCertData";
-
-    private static final String TRUST_CHAIN = "trust-chain";
 
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
@@ -182,7 +180,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Handles request to download the trust chain certificate by writing it to the response stream
+     * Processes request to download the trust chain certificate by writing it to the response stream
      * for download.
      *
      * @param id       the UUID of the trust chain certificate to download
@@ -283,7 +281,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             //  write trust chain certificates to output stream and bulk download them
-            this.certificateService.bulkDownloadCertificates(zipOut, TRUST_CHAIN, singleFileName);
+            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
+                    singleFileName);
         } catch (Exception ex) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "trust chain certificates", ex);
@@ -323,7 +322,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             //Store only if it was parsed
             if (parsedTrustChainCertificate != null) {
                 certificateService.storeCertificate(
-                        TRUST_CHAIN,
+                        CertificateType.TRUST_CHAIN,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedTrustChainCertificate);
 
@@ -362,7 +361,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         try {
             UUID uuid = UUID.fromString(id);
 
-            this.certificateService.deleteCertificate(uuid, TRUST_CHAIN,
+            this.certificateService.deleteCertificate(uuid, CertificateType.TRUST_CHAIN,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);
@@ -429,7 +428,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                         List<String> errorMessages = new ArrayList<>();
 
                         this.certificateService.storeCertificate(
-                                TRUST_CHAIN,
+                                CertificateType.TRUST_CHAIN,
                                 file.getOriginalFilename(),
                                 successMessages,
                                 errorMessages,

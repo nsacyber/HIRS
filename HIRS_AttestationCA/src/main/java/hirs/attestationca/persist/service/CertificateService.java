@@ -13,6 +13,8 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
@@ -37,13 +39,6 @@ import java.util.zip.ZipOutputStream;
 @Log4j2
 @Service
 public class CertificateService {
-
-    private static final String TRUST_CHAIN = "trust-chain";
-    private static final String PLATFORM_CREDENTIALS = "platform-credentials";
-    private static final String IDEVID_CERTIFICATES = "idevid-certificates";
-    private static final String ENDORSEMENT_CREDENTIALS = "endorsement-key-credentials";
-    private static final String ISSUED_CERTIFICATES = "issued-certificates";
-
     private final CertificateRepository certificateRepository;
     private final ComponentResultRepository componentResultRepository;
     private final EntityManager entityManager;
@@ -93,18 +88,28 @@ public class CertificateService {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
 
-                // there is a possibility that one of the column names
-                // that matches one of the class fields is nested (e.g. device.name) ,
-                // and we will need to do further work to extract the
-                // field name
-                if (columnName.contains(".")) {
+                // Get the attribute type from entity root
+                Path<?> fieldPath = rootCertificate.get(columnName);
 
+                //  if the field is a string type
+                if (String.class.equals(fieldPath.getJavaType())) {
+                    Predicate predicate =
+                            criteriaBuilder.like(criteriaBuilder.lower(rootCertificate.get(columnName)),
+                                    "%" + searchText.toLowerCase() + "%");
+                    predicates.add(predicate);
                 }
+                // if the field is a non-string type
+                else {
+                    // convert the field to a string
+                    Expression<String> fieldAsString = criteriaBuilder
+                            .literal(fieldPath).as(String.class);
 
-                Predicate predicate =
-                        criteriaBuilder.like(criteriaBuilder.lower(rootCertificate.get(columnName)),
-                                "%" + searchText.toLowerCase() + "%");
-                predicates.add(predicate);
+                    Predicate predicate = criteriaBuilder.like(
+                            criteriaBuilder.lower(fieldAsString),
+                            "%" + searchText.toLowerCase() + "%"
+                    );
+                    predicates.add(predicate);
+                }
             }
         }
 
@@ -146,7 +151,7 @@ public class CertificateService {
      * @param certificate     the certificate to store
      */
     public void storeCertificate(
-            final String certificateType,
+            final CertificateType certificateType,
             final String fileName,
             final List<String> successMessages,
             final List<String> errorMessages,
@@ -170,7 +175,7 @@ public class CertificateService {
         try {
             // save the new certificate if no match is found
             if (existingCertificate == null) {
-                if (certificateType.equals(PLATFORM_CREDENTIALS)) {
+                if (certificateType.equals(CertificateType.PLATFORM_CREDENTIALS)) {
                     PlatformCredential platformCertificate = (PlatformCredential) certificate;
                     if (platformCertificate.isPlatformBase()) {
                         List<PlatformCredential> sharedCertificates = getPlatformCertificateByBoardSN(
@@ -262,7 +267,7 @@ public class CertificateService {
      * @param errorMessages   contains any error messages that will be displayed on the page
      */
     public void deleteCertificate(final UUID uuid,
-                                  final String certificateType,
+                                  final CertificateType certificateType,
                                   final List<String> successMessages,
                                   final List<String> errorMessages) {
 
@@ -275,7 +280,7 @@ public class CertificateService {
             log.warn(notFoundMessage);
             throw new EntityNotFoundException(notFoundMessage);
         } else {
-            if (certificateType.equals(PLATFORM_CREDENTIALS)) {
+            if (certificateType.equals(CertificateType.PLATFORM_CREDENTIALS)) {
                 PlatformCredential platformCertificate = (PlatformCredential) certificate;
                 if (platformCertificate.isPlatformBase()) {
                     // only do this if the base is being deleted.
@@ -305,12 +310,13 @@ public class CertificateService {
     /**
      * Packages a collection of certificates into a zip file.
      *
-     * @param zipOut         zip outputs streams
-     * @param singleFileName zip file name
+     * @param zipOut          zip outputs streams
+     * @param singleFileName  zip file name
+     * @param certificateType certificate type
      * @throws IOException if there are any issues packaging or downloading the zip file
      */
     public void bulkDownloadCertificates(final ZipOutputStream zipOut,
-                                         final String certificateType,
+                                         final CertificateType certificateType,
                                          final String singleFileName) throws IOException {
         String zipFileName;
         final List<Certificate> certificates = findCertificatesByType(certificateType);
@@ -337,7 +343,7 @@ public class CertificateService {
      * @param certificateType certificate type
      * @return list of certificates
      */
-    private List<Certificate> findCertificatesByType(String certificateType) {
+    private List<Certificate> findCertificatesByType(final CertificateType certificateType) {
         return switch (certificateType) {
             case PLATFORM_CREDENTIALS -> this.certificateRepository
                     .findByType(
@@ -367,7 +373,7 @@ public class CertificateService {
      * @return the certificate or null if none is found
      */
     private Certificate getCertificateByHash(
-            final String certificateType,
+            final CertificateType certificateType,
             final int certificateHash) {
         return switch (certificateType) {
             case PLATFORM_CREDENTIALS -> this.certificateRepository

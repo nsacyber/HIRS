@@ -7,6 +7,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -53,9 +54,6 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials")
 public class PlatformCredentialPageController extends PageController<NoPageParams> {
-
-    private static final String PLATFORM_CREDENTIALS = "platform-credentials";
-
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final CertificateService certificateService;
@@ -243,7 +241,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             //  write platform credentials to output stream and bulk download them
-            this.certificateService.bulkDownloadCertificates(zipOut, PLATFORM_CREDENTIALS, singleFileName);
+            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
+                    singleFileName);
         } catch (Exception ex) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "platform credentials", ex);
@@ -282,7 +281,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             //Store only if it was parsed
             if (parsedPlatformCredential != null) {
                 certificateService.storeCertificate(
-                        PLATFORM_CREDENTIALS,
+                        CertificateType.PLATFORM_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedPlatformCredential);
 
@@ -321,7 +320,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         try {
             UUID uuid = UUID.fromString(id);
 
-            this.certificateService.deleteCertificate(uuid, PLATFORM_CREDENTIALS,
+            this.certificateService.deleteCertificate(uuid, CertificateType.PLATFORM_CREDENTIALS,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);

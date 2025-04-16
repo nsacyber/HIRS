@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.manager.IDevIDCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -51,9 +52,6 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates")
 public class IDevIdCertificatePageController extends PageController<NoPageParams> {
-
-    private static final String IDEVID_CERTIFICATE = "idevid-certificates";
-
     private final IDevIDCertificateRepository iDevIDCertificateRepository;
     private final CertificateService certificateService;
 
@@ -216,7 +214,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             //  write idevid certificates to output stream and bulk download them
-            this.certificateService.bulkDownloadCertificates(zipOut, IDEVID_CERTIFICATE, singleFileName);
+            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.IDEVID_CERTIFICATES,
+                    singleFileName);
         } catch (Exception ex) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "idevid certificates", ex);
@@ -256,7 +255,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
             //Store only if it was parsed
             if (parsedIDevIDCertificate != null) {
                 certificateService.storeCertificate(
-                        IDEVID_CERTIFICATE,
+                        CertificateType.IDEVID_CERTIFICATES,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedIDevIDCertificate);
 
@@ -295,7 +294,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         try {
             UUID uuid = UUID.fromString(id);
 
-            this.certificateService.deleteCertificate(uuid, IDEVID_CERTIFICATE,
+            this.certificateService.deleteCertificate(uuid, CertificateType.IDEVID_CERTIFICATES,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);

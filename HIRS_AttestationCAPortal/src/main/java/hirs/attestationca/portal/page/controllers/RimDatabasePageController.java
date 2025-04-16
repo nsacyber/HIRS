@@ -6,17 +6,25 @@ import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.ReferenceDigestValueService;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,26 +50,27 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final ReferenceManifestRepository referenceManifestRepository;
-    private final ReferenceDigestValueService referenceDigestValueService;
+    private final EntityManager entityManager;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceDigestValueRepository the referenceDigestValueRepository object
      * @param referenceManifestRepository    the reference manifest manager object
+     * @param entityManager                  entity manager
      */
     @Autowired
     public RimDatabasePageController(final ReferenceDigestValueRepository referenceDigestValueRepository,
                                      final ReferenceManifestRepository referenceManifestRepository,
-                                     ReferenceDigestValueService referenceDigestValueService) {
+                                     final EntityManager entityManager) {
         super(Page.RIM_DATABASE);
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.referenceManifestRepository = referenceManifestRepository;
-        this.referenceDigestValueService = referenceDigestValueService;
+        this.entityManager = entityManager;
     }
 
     /**
-     * Returns the filePath for the view and the data model for the page.
+     * Returns the filePath for the view and the data model for the RimDatabase page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
@@ -84,7 +94,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
     @ResponseBody
     @GetMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<ReferenceDigestValue> getTableData(
+    public DataTableResponse<ReferenceDigestValue> getRDVTableData(
             @Valid final DataTableInput input) {
         log.info("Received request to display list of TPM events");
         log.debug("Request received a datatable input object for the RIM database page: {}", input);
@@ -106,7 +116,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                     this.referenceDigestValueRepository.findAll(pageable);
         } else {
             pagedResult =
-                    this.referenceDigestValueService.findReferenceDigestValuesBySearchableColumns(
+                    findReferenceDigestValuesBySearchableColumns(
                             searchableColumns,
                             searchText, pageable);
         }
@@ -151,5 +161,71 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         // Retrieve all searchable columns and collect their names into a list of strings.
         return columns.stream().filter(Column::isSearchable).map(Column::getName)
                 .collect(Collectors.toList());
+    }
+
+
+    /**
+     * Takes the provided column names, the search term that the user entered and attempts to find
+     * reference digest values whose field values matches the provided search term.
+     *
+     * @param searchableColumns list of the searchable column name
+     * @param searchText        text that was input in the search textbox
+     * @param pageable          pageable
+     * @return page full of reference digest values
+     */
+    private org.springframework.data.domain.Page<ReferenceDigestValue>
+    findReferenceDigestValuesBySearchableColumns(
+            final List<String> searchableColumns,
+            final String searchText,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ReferenceDigestValue> query =
+                criteriaBuilder.createQuery(ReferenceDigestValue.class);
+        Root<ReferenceDigestValue> referenceDigestValueRoot =
+                query.from(ReferenceDigestValue.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Dynamically add search conditions for each field that should be searchable
+        if (!StringUtils.isBlank(searchText)) {
+            // Dynamically loop through columns and create LIKE conditions for each searchable column
+            for (String columnName : searchableColumns) {
+                // Get the attribute type from entity root
+                Path<?> fieldPath = referenceDigestValueRoot.get(columnName);
+
+                //  if the field is a string type
+                if (String.class.equals(fieldPath.getJavaType())) {
+                    Predicate predicate =
+                            criteriaBuilder.like(
+                                    criteriaBuilder.lower(referenceDigestValueRoot.get(columnName)),
+                                    "%" + searchText.toLowerCase() + "%");
+                    predicates.add(predicate);
+                }
+                // if the field is a non-string type
+                else {
+                    // convert the field to a string
+                    Expression<String> fieldAsString = criteriaBuilder
+                            .literal(fieldPath).as(String.class);
+
+                    Predicate predicate = criteriaBuilder.like(
+                            criteriaBuilder.lower(fieldAsString),
+                            "%" + searchText.toLowerCase() + "%"
+                    );
+                    predicates.add(predicate);
+                }
+            }
+        }
+
+        query.where(criteriaBuilder.or(predicates.toArray(new Predicate[0])));
+
+        // Apply pagination
+        TypedQuery<ReferenceDigestValue> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<ReferenceDigestValue> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
     }
 }

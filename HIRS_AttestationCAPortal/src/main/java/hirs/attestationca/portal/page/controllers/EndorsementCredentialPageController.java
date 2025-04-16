@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -51,9 +52,6 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
 public class EndorsementCredentialPageController extends PageController<NoPageParams> {
-
-    private static final String ENDORSEMENT_CREDENTIALS = "endorsement-key-credentials";
-
     private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final CertificateService certificateService;
 
@@ -219,7 +217,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             //  write endorsement credentials to output stream and bulk download them
-            this.certificateService.bulkDownloadCertificates(zipOut, ENDORSEMENT_CREDENTIALS, singleFileName);
+            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
+                    singleFileName);
         } catch (Exception ex) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "endorsement credentials", ex);
@@ -258,7 +257,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             //Store only if it was parsed
             if (parsedEndorsementCredential != null) {
                 certificateService.storeCertificate(
-                        ENDORSEMENT_CREDENTIALS,
+                        CertificateType.ENDORSEMENT_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedEndorsementCredential);
 
@@ -296,7 +295,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         try {
             UUID uuid = UUID.fromString(id);
 
-            this.certificateService.deleteCertificate(uuid, ENDORSEMENT_CREDENTIALS,
+            this.certificateService.deleteCertificate(uuid, CertificateType.ENDORSEMENT_CREDENTIALS,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);

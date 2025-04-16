@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -49,9 +50,6 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
-
-    private static final String ISSUED_CERTIFICATES = "issued-certificates";
-
     private final IssuedCertificateRepository issuedCertificateRepository;
     private final CertificateService certificateService;
 
@@ -219,7 +217,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             //  write issued attestation certificates to output stream and bulk download them
-            this.certificateService.bulkDownloadCertificates(zipOut, ISSUED_CERTIFICATES, singleFileName);
+            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
+                    singleFileName);
         } catch (Exception ex) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "issued attestation certificates", ex);
@@ -254,7 +253,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         try {
             UUID uuid = UUID.fromString(id);
 
-            this.certificateService.deleteCertificate(uuid, ISSUED_CERTIFICATES,
+            this.certificateService.deleteCertificate(uuid, CertificateType.ISSUED_CERTIFICATES,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);

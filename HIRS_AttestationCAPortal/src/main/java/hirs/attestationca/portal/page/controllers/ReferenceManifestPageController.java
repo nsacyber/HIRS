@@ -7,7 +7,6 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.ReferenceManifestService;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -17,19 +16,29 @@ import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,6 +63,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -68,24 +78,24 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     private static final String SUPPORT_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
-    private final ReferenceManifestService referenceManifestService;
+    private final EntityManager entityManager;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestRepository    the reference manifest manager
      * @param referenceDigestValueRepository this is the reference event manager
-     * @param referenceManifestService       reference manifest service
+     * @param entityManager                  entity manager
      */
     @Autowired
     public ReferenceManifestPageController(
             final ReferenceManifestRepository referenceManifestRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository,
-            final ReferenceManifestService referenceManifestService) {
+            final EntityManager entityManager) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
-        this.referenceManifestService = referenceManifestService;
+        this.entityManager = entityManager;
     }
 
     /**
@@ -129,13 +139,12 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult;
 
         if (StringUtils.isBlank(searchText)) {
-            pagedResult = this.referenceManifestService.findAllRIMsByArchiveFlag(false, pageable);
+            pagedResult = this.referenceManifestRepository.findByArchiveFlag(false, pageable);
         } else {
-            pagedResult =
-                    this.referenceManifestService.findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns
-                            , searchText,
-                            false,
-                            pageable);
+            pagedResult = findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns
+                    , searchText,
+                    false,
+                    pageable);
         }
 
         int rimCount = 0;
@@ -247,7 +256,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         try {
             UUID uuid = UUID.fromString(id);
-            ReferenceManifest referenceManifest = this.referenceManifestService.findSpecifiedRIM(uuid);
+            ReferenceManifest referenceManifest = findSpecifiedRIM(uuid);
 
             if (referenceManifest == null) {
                 final String notFoundMessage = "Unable to locate RIM with ID: " + uuid;
@@ -293,10 +302,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
+        // write cert to output stream
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.referenceManifestService.bulkDownloadRIMS(zipOut);
-
-            // write cert to output stream
+            bulkDownloadRIMS(zipOut);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "reference integrity manifests", exception);
@@ -326,7 +334,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         try {
             UUID uuid = UUID.fromString(id);
-            ReferenceManifest referenceManifest = this.referenceManifestService.findSpecifiedRIM(uuid);
+            ReferenceManifest referenceManifest = findSpecifiedRIM(uuid);
 
             if (referenceManifest == null) {
                 String notFoundMessage = "Unable to locate RIM to delete with ID: " + id;
@@ -335,10 +343,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 throw new EntityNotFoundException(notFoundMessage);
             }
 
-            this.referenceManifestService.deleteSpecifiedRIM(referenceManifest);
+            this.referenceManifestRepository.delete(referenceManifest);
 
             String deleteCompletedMessage = "RIM successfully deleted";
-            messages.addInfoMessage(deleteCompletedMessage);
+            messages.addSuccessMessage(deleteCompletedMessage);
             log.info(deleteCompletedMessage);
 
         } catch (Exception exception) {
@@ -352,6 +360,126 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, attr);
     }
 
+    /**
+     * Takes the provided column names, the search term that the user entered and attempts to find
+     * RIMS whose field values matches the provided search term.
+     *
+     * @param searchableColumns list of the searchable column names
+     * @param searchText        text that was input in the search textbox
+     * @param archiveFlag       archive flag
+     * @param pageable          pageable
+     * @return page full of reference manifests
+     */
+    private org.springframework.data.domain.Page<ReferenceManifest> findRIMSBySearchableColumnsAndArchiveFlag(
+            final List<String> searchableColumns,
+            final String searchText,
+            final boolean archiveFlag,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
+        Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Dynamically add search conditions for each field that should be searchable
+        if (!StringUtils.isBlank(searchText)) {
+            // Dynamically loop through columns and create LIKE conditions for each searchable column
+            for (String columnName : searchableColumns) {
+                // Get the attribute type from entity root
+                Path<?> fieldPath = rimRoot.get(columnName);
+
+                //  if the field is a string type
+                if (String.class.equals(fieldPath.getJavaType())) {
+                    Predicate predicate =
+                            criteriaBuilder.like(
+                                    criteriaBuilder.lower(rimRoot.get(columnName)),
+                                    "%" + searchText.toLowerCase() + "%");
+                    predicates.add(predicate);
+                }
+                // if the field is a non-string type
+                else {
+                    // convert the field to a string
+                    Expression<String> fieldAsString = criteriaBuilder
+                            .literal(fieldPath).as(String.class);
+
+                    Predicate predicate = criteriaBuilder.like(
+                            criteriaBuilder.lower(fieldAsString),
+                            "%" + searchText.toLowerCase() + "%"
+                    );
+                    predicates.add(predicate);
+                }
+            }
+        }
+
+        Predicate likeConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+
+        // Add archiveFlag condition if specified
+        query.where(criteriaBuilder.and(likeConditions,
+                criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag)));
+
+        // Apply pagination
+        TypedQuery<ReferenceManifest> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<ReferenceManifest> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * This method takes the parameter and looks for this information in the
+     * Database.
+     *
+     * @param uuid RIM uuid
+     * @return the associated RIM from the DB
+     */
+    private ReferenceManifest findSpecifiedRIM(final UUID uuid) {
+        if (referenceManifestRepository.existsById(uuid)) {
+            return referenceManifestRepository.getReferenceById(uuid);
+        }
+        return null;
+    }
+
+    /**
+     * Packages a collection of RIMs into a zip file.
+     *
+     * @param zipOut zip outputs streams
+     * @throws IOException if there are any issues packaging or downloading the zip file
+     */
+    private void bulkDownloadRIMS(final ZipOutputStream zipOut) throws IOException {
+        List<ReferenceManifest> allRIMs = this.referenceManifestRepository.findAll();
+
+        List<ReferenceManifest> referenceManifestList = new ArrayList<>();
+
+        for (ReferenceManifest rim : allRIMs) {
+            if ((rim instanceof BaseReferenceManifest)
+                    || (rim instanceof SupportReferenceManifest)) {
+                referenceManifestList.add(rim);
+            }
+        }
+
+        String zipFileName;
+
+        // get all files
+        for (ReferenceManifest rim : referenceManifestList) {
+            if (rim.getFileName().isEmpty()) {
+                zipFileName = "";
+            } else {
+                // configure the zip entry, the properties of the 'file'
+                zipFileName = rim.getFileName();
+            }
+            ZipEntry zipEntry = new ZipEntry(zipFileName);
+            zipEntry.setSize((long) rim.getRimBytes().length * Byte.SIZE);
+            zipEntry.setTime(System.currentTimeMillis());
+            zipOut.putNextEntry(zipEntry);
+            // the content of the resource
+            StreamUtils.copy(rim.getRimBytes(), zipOut);
+            zipOut.closeEntry();
+        }
+        zipOut.finish();
+    }
 
     /**
      * Takes the rim files provided and returns a {@link ReferenceManifest}
