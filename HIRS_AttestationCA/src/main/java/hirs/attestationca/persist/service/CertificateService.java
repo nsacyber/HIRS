@@ -204,14 +204,16 @@ public class CertificateService {
                 existingCertificate.resetCreateTime();
                 this.certificateRepository.save(existingCertificate);
 
-                //todo
-                List<ComponentResult> componentResults = componentResultRepository
-                        .findByBoardSerialNumber(((PlatformCredential) existingCertificate)
-                                .getPlatformSerial());
-                for (ComponentResult componentResult : componentResults) {
-                    componentResult.restore();
-                    componentResult.resetCreateTime();
-                    this.componentResultRepository.save(componentResult);
+                if (existingCertificate instanceof PlatformCredential existingPlatformCredential) {
+                    List<ComponentResult> componentResults = componentResultRepository
+                            .findByBoardSerialNumber(existingPlatformCredential
+                                    .getPlatformSerial());
+                    
+                    for (ComponentResult componentResult : componentResults) {
+                        componentResult.restore();
+                        componentResult.resetCreateTime();
+                        this.componentResultRepository.save(componentResult);
+                    }
                 }
 
                 final String successMsg = String.format("Pre-existing certificate "
