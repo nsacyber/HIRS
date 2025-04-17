@@ -15,8 +15,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
@@ -86,14 +84,14 @@ public class ValidationSummaryReportsService {
      * validation summaries whose field values matches the provided search term.
      *
      * @param searchableColumns list of the searchable column name
-     * @param searchText        text that was input in the search textbox
+     * @param searchTerm        text that was input in the search textbox
      * @param archiveFlag       archive flag
      * @param pageable          pageable
      * @return page full of the validation summaries.
      */
     public Page<SupplyChainValidationSummary> findValidationReportsBySearchableColumnsAndArchiveFlag(
             final List<String> searchableColumns,
-            final String searchText,
+            final String searchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -105,7 +103,7 @@ public class ValidationSummaryReportsService {
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchText)) {
+        if (!StringUtils.isBlank(searchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
 
@@ -115,35 +113,14 @@ public class ValidationSummaryReportsService {
                 // field name
                 // todo
                 if (columnName.contains(".")) {
-
                     continue;
                 }
 
-                // assuming the column name is not a nested entity field
-                // Get the attribute type from entity root
-                Path<?> fieldPath = supplyChainValidationSummaryRoot.get(columnName);
-
-                //  if the field is a string type
-                if (String.class.equals(fieldPath.getJavaType())) {
-
-                    Predicate predicate =
-                            criteriaBuilder.like(
-                                    criteriaBuilder.lower(supplyChainValidationSummaryRoot.get(columnName)),
-                                    "%" + searchText.toLowerCase() + "%");
-                    predicates.add(predicate);
-                }
-                // if the field is a non-string type
-                else {
-                    // convert the field to a string
-                    Expression<String> fieldAsString = criteriaBuilder
-                            .literal(fieldPath).as(String.class);
-
-                    Predicate predicate = criteriaBuilder.like(
-                            criteriaBuilder.lower(fieldAsString),
-                            "%" + searchText.toLowerCase() + "%"
-                    );
-                    predicates.add(predicate);
-                }
+                Predicate predicate =
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(supplyChainValidationSummaryRoot.get(columnName)),
+                                "%" + searchTerm.toLowerCase() + "%");
+                predicates.add(predicate);
             }
         }
 

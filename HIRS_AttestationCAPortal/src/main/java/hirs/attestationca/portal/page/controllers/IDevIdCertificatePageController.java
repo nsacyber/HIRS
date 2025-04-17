@@ -104,16 +104,17 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchText = input.getSearch().getValue();
+        final String searchTerm = input.getSearch().getValue();
         final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
-        int currentPage = input.getStart() / input.getLength();
+        final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
-        FilteredRecordsList<IDevIDCertificate> records = new FilteredRecordsList<>();
+        FilteredRecordsList<IDevIDCertificate> idevidFilteredRecordsList =
+                new FilteredRecordsList<>();
         org.springframework.data.domain.Page<IDevIDCertificate> pagedResult;
 
-        if (StringUtils.isBlank(searchText)) {
+        if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
                     this.iDevIDCertificateRepository.findByArchiveFlag(false, pageable);
         } else {
@@ -121,21 +122,20 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             IDevIDCertificate.class,
                             searchableColumns,
-                            searchText,
+                            searchTerm,
                             false, pageable);
         }
 
         if (pagedResult.hasContent()) {
-            records.addAll(pagedResult.getContent());
-            records.setRecordsTotal(pagedResult.getContent().size());
-        } else {
-            records.setRecordsTotal(input.getLength());
+            idevidFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        records.setRecordsFiltered(iDevIDCertificateRepository.findByArchiveFlag(false).size());
+        idevidFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        idevidFilteredRecordsList.setRecordsTotal(findIDevIdCertificateRepositoryCount());
 
-        log.info("Returning the size of the list of IDEVID certificates: {}", records.size());
-        return new DataTableResponse<>(records, input);
+        log.info("Returning the size of the list of IDEVID certificates: {}"
+                , idevidFilteredRecordsList.size());
+        return new DataTableResponse<>(idevidFilteredRecordsList, input);
     }
 
     /**
@@ -321,6 +321,15 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         // Retrieve all searchable columns and collect their names into a list of strings.
         return columns.stream().filter(Column::isSearchable).map(Column::getName)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves the total number of records in the idevid certificate repository.
+     *
+     * @return total number of records in the idevid certificate repository.
+     */
+    private long findIDevIdCertificateRepositoryCount() {
+        return iDevIDCertificateRepository.findByArchiveFlag(false).size();
     }
 
     /**

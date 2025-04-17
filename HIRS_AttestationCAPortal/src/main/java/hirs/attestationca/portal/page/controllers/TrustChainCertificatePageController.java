@@ -143,17 +143,18 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchText = input.getSearch().getValue();
+        final String searchTerm = input.getSearch().getValue();
         final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
-        int currentPage = input.getStart() / input.getLength();
+        final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
-        FilteredRecordsList<CertificateAuthorityCredential> records = new FilteredRecordsList<>();
+        FilteredRecordsList<CertificateAuthorityCredential> caFilteredRecordsList =
+                new FilteredRecordsList<>();
 
         org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult;
 
-        if (StringUtils.isBlank(searchText)) {
+        if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
                     this.caCredentialRepository.findByArchiveFlag(false, pageable);
         } else {
@@ -161,22 +162,20 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             CertificateAuthorityCredential.class,
                             searchableColumns,
-                            searchText,
+                            searchTerm,
                             false, pageable);
         }
 
-
         if (pagedResult.hasContent()) {
-            records.addAll(pagedResult.getContent());
-            records.setRecordsTotal(pagedResult.getContent().size());
-        } else {
-            records.setRecordsTotal(input.getLength());
+            caFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        records.setRecordsFiltered(caCredentialRepository.findByArchiveFlag(false).size());
+        caFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        caFilteredRecordsList.setRecordsTotal(findTrustChainCertificateRepoCount());
 
-        log.info("Returning the size of the list of trust chain certificates: {}", records.size());
-        return new DataTableResponse<>(records, input);
+        log.info("Returning the size of the list of trust chain certificates: {}"
+                , caFilteredRecordsList.size());
+        return new DataTableResponse<>(caFilteredRecordsList, input);
     }
 
     /**
@@ -388,6 +387,15 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         // Retrieve all searchable columns and collect their names into a list of strings.
         return columns.stream().filter(Column::isSearchable).map(Column::getName)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves the total number of records in the certificate authority (trust chain) repository.
+     *
+     * @return total number of records in the certificate authority (trust chain) repository.
+     */
+    private long findTrustChainCertificateRepoCount() {
+        return this.caCredentialRepository.findByArchiveFlag(false).size();
     }
 
     /**

@@ -82,37 +82,35 @@ public class DevicePageController extends PageController<NoPageParams> {
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchText = input.getSearch().getValue();
+        final String searchTerm = input.getSearch().getValue();
         final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
         // get all the devices
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
 
-        int currentPage = input.getStart() / input.getLength();
+        final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<Device> pagedResult;
 
-        if (StringUtils.isBlank(searchText)) {
+        if (StringUtils.isBlank(searchTerm)) {
             pagedResult = this.deviceService.findAllDevices(pageable);
         } else {
-            pagedResult = this.deviceService.findAllDevicesBySearchableColumns(searchableColumns, searchText,
+            pagedResult = this.deviceService.findAllDevicesBySearchableColumns(searchableColumns, searchTerm,
                     pageable);
         }
 
         if (pagedResult.hasContent()) {
             deviceList.addAll(pagedResult.getContent());
-            deviceList.setRecordsTotal(pagedResult.getContent().size());
-        } else {
-            deviceList.setRecordsTotal(input.getLength());
         }
 
-        deviceList.setRecordsFiltered(this.deviceService.findDeviceRepositoryCount());
+        deviceList.setRecordsFiltered(pagedResult.getTotalElements());
+        deviceList.setRecordsTotal(this.deviceService.findDeviceRepositoryCount());
 
-        FilteredRecordsList<HashMap<String, Object>> records
+        FilteredRecordsList<HashMap<String, Object>> devicesAndAssociatedCertificates
                 = this.deviceService.retrieveDevicesAndAssociatedCertificates(deviceList);
 
-        log.info("Returning the size of the list of devices: {}", records.size());
-        return new DataTableResponse<>(records, input);
+        log.info("Returning the size of the list of devices: {}", devicesAndAssociatedCertificates.size());
+        return new DataTableResponse<>(devicesAndAssociatedCertificates, input);
     }
 
     /**

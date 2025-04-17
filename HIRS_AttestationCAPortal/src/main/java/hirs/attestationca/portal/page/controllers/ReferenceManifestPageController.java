@@ -21,8 +21,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletResponse;
@@ -130,39 +128,43 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchText = input.getSearch().getValue();
+        final String searchTerm = input.getSearch().getValue();
         final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
-        FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
-        int currentPage = input.getStart() / input.getLength();
+        final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+
+        FilteredRecordsList<ReferenceManifest> rimFilteredRecordsList = new FilteredRecordsList<>();
+
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult;
 
-        if (StringUtils.isBlank(searchText)) {
+        if (StringUtils.isBlank(searchTerm)) {
             pagedResult = this.referenceManifestRepository.findByArchiveFlag(false, pageable);
         } else {
             pagedResult = findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns
-                    , searchText,
+                    , searchTerm,
                     false,
                     pageable);
         }
 
-        int rimCount = 0;
-
         if (pagedResult.hasContent()) {
-            for (ReferenceManifest manifest : pagedResult.getContent()) {
-                records.add(manifest);
-                rimCount++;
-            }
-            records.setRecordsTotal(rimCount);
-        } else {
-            records.setRecordsTotal(input.getLength());
+            rimFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        records.setRecordsFiltered(referenceManifestRepository.findByArchiveFlag(false).size());
+        rimFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        rimFilteredRecordsList.setRecordsTotal(findRIMRepoCount());
 
-        log.info("Returning the size of the list of reference manifests: {}", records.size());
-        return new DataTableResponse<>(records, input);
+        log.info("Returning the size of the list of reference manifests: {}", rimFilteredRecordsList.size());
+        return new DataTableResponse<>(rimFilteredRecordsList, input);
+    }
+
+    /**
+     * Retrieves the total number of records in the RIM repository.
+     *
+     * @return total number of records in the RIM repository.
+     */
+    private long findRIMRepoCount() {
+        return this.referenceManifestRepository.findByArchiveFlag(false).size();
     }
 
     /**
@@ -172,12 +174,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @param attr  the redirection attributes
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
-     * @throws Exception          if malformed URI
      */
     @PostMapping("/upload")
     protected RedirectView uploadRIMs(
             @RequestParam("file") final MultipartFile[] files,
-            final RedirectAttributes attr) throws URISyntaxException, Exception {
+            final RedirectAttributes attr) throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String fileName;
@@ -365,14 +366,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * RIMS whose field values matches the provided search term.
      *
      * @param searchableColumns list of the searchable column names
-     * @param searchText        text that was input in the search textbox
+     * @param searchTerm        text that was input in the search textbox
      * @param archiveFlag       archive flag
      * @param pageable          pageable
      * @return page full of reference manifests
      */
     private org.springframework.data.domain.Page<ReferenceManifest> findRIMSBySearchableColumnsAndArchiveFlag(
             final List<String> searchableColumns,
-            final String searchText,
+            final String searchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -382,32 +383,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchText)) {
+        if (!StringUtils.isBlank(searchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
-                // Get the attribute type from entity root
-                Path<?> fieldPath = rimRoot.get(columnName);
-
-                //  if the field is a string type
-                if (String.class.equals(fieldPath.getJavaType())) {
-                    Predicate predicate =
-                            criteriaBuilder.like(
-                                    criteriaBuilder.lower(rimRoot.get(columnName)),
-                                    "%" + searchText.toLowerCase() + "%");
-                    predicates.add(predicate);
-                }
-                // if the field is a non-string type
-                else {
-                    // convert the field to a string
-                    Expression<String> fieldAsString = criteriaBuilder
-                            .literal(fieldPath).as(String.class);
-
-                    Predicate predicate = criteriaBuilder.like(
-                            criteriaBuilder.lower(fieldAsString),
-                            "%" + searchText.toLowerCase() + "%"
-                    );
-                    predicates.add(predicate);
-                }
+                Predicate predicate =
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(rimRoot.get(columnName)),
+                                "%" + searchTerm.toLowerCase() + "%");
+                predicates.add(predicate);
             }
         }
 

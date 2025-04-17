@@ -105,38 +105,39 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchText = input.getSearch().getValue();
+        final String searchTerm = input.getSearch().getValue();
         final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
-        int currentPage = input.getStart() / input.getLength();
+        final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
-        FilteredRecordsList<EndorsementCredential> records = new FilteredRecordsList<>();
+        FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList =
+                new FilteredRecordsList<>();
 
         org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
 
-        if (StringUtils.isBlank(searchText)) {
+        if (StringUtils.isBlank(searchTerm)) {
             pagedResult = this.endorsementCredentialRepository.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             EndorsementCredential.class,
                             searchableColumns,
-                            searchText,
+                            searchTerm,
                             false, pageable);
         }
 
         if (pagedResult.hasContent()) {
-            records.addAll(pagedResult.getContent());
-            records.setRecordsTotal(pagedResult.getContent().size());
-        } else {
-            records.setRecordsTotal(input.getLength());
+            ekFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        records.setRecordsFiltered(endorsementCredentialRepository.findByArchiveFlag(false).size());
+        ekFilteredRecordsList.setRecordsFiltered(
+                pagedResult.getTotalElements());
+        ekFilteredRecordsList.setRecordsTotal(findEndorsementCredentialRepositoryCount());
 
-        log.debug("Returning the size of the list of endorsement credentials: {}", records.size());
-        return new DataTableResponse<>(records, input);
+        log.debug("Returning the size of the list of endorsement credentials: {}",
+                ekFilteredRecordsList.size());
+        return new DataTableResponse<>(ekFilteredRecordsList, input);
     }
 
     /**
@@ -321,6 +322,15 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         // Retrieve all searchable columns and collect their names into a list of strings.
         return columns.stream().filter(Column::isSearchable).map(Column::getName)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves the total number of records in the endorsement credential repository.
+     *
+     * @return total number of records in the endorsement credential repository.
+     */
+    private long findEndorsementCredentialRepositoryCount() {
+        return this.endorsementCredentialRepository.findByArchiveFlag(false).size();
     }
 
     /**

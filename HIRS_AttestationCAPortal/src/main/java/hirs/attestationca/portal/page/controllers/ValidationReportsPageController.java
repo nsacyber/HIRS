@@ -89,40 +89,40 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchText = input.getSearch().getValue();
+        final String searchTerm = input.getSearch().getValue();
         final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
-        FilteredRecordsList<SupplyChainValidationSummary> records = new FilteredRecordsList<>();
+        FilteredRecordsList<SupplyChainValidationSummary> reportsFilteredRecordsList =
+                new FilteredRecordsList<>();
 
-        int currentPage = input.getStart() / input.getLength();
+        final int currentPage = input.getStart() / input.getLength();
 
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
         org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult;
 
-        if (StringUtils.isBlank(searchText)) {
+        if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
                     this.supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(pageable);
         } else {
             pagedResult =
                     this.validationSummaryReportsService.findValidationReportsBySearchableColumnsAndArchiveFlag(
                             searchableColumns,
-                            searchText,
+                            searchTerm,
                             false,
                             pageable);
         }
 
         if (pagedResult.hasContent()) {
-            records.addAll(pagedResult.getContent());
-            records.setRecordsTotal(pagedResult.getContent().size());
-        } else {
-            records.setRecordsTotal(input.getLength());
+            reportsFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        records.setRecordsFiltered(supplyChainValidatorSummaryRepository.count());
+        reportsFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        reportsFilteredRecordsList.setRecordsTotal(this.supplyChainValidatorSummaryRepository.count());
 
-        log.info("Returning the size of the list of validation reports: {}", records.size());
-        return new DataTableResponse<>(records, input);
+        log.info("Returning the size of the list of validation reports: {}"
+                , reportsFilteredRecordsList.size());
+        return new DataTableResponse<>(reportsFilteredRecordsList, input);
     }
 
     /**

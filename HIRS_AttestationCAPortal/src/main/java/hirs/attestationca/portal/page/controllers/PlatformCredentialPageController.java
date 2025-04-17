@@ -110,17 +110,17 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchText = input.getSearch().getValue();
+        final String searchTerm = input.getSearch().getValue();
         final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
-        int currentPage = input.getStart() / input.getLength();
+        final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
-        FilteredRecordsList<PlatformCredential> records = new FilteredRecordsList<>();
+        FilteredRecordsList<PlatformCredential> pcFilteredRecordsList = new FilteredRecordsList<>();
 
         org.springframework.data.domain.Page<PlatformCredential> pagedResult;
 
-        if (StringUtils.isBlank(searchText)) {
+        if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
                     this.platformCertificateRepository.findByArchiveFlag(false, pageable);
         } else {
@@ -128,24 +128,22 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             PlatformCredential.class,
                             searchableColumns,
-                            searchText,
+                            searchTerm,
                             false, pageable);
         }
 
         if (pagedResult.hasContent()) {
-            records.addAll(pagedResult.getContent());
-            records.setRecordsTotal(pagedResult.getContent().size());
-        } else {
-            records.setRecordsTotal(input.getLength());
+            pcFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        records.setRecordsFiltered(platformCertificateRepository.findByArchiveFlag(false).size());
+        pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        pcFilteredRecordsList.setRecordsTotal(findPlatformCredentialRepositoryCount());
 
         EndorsementCredential associatedEC;
 
-        if (!records.isEmpty()) {
+        if (!pcFilteredRecordsList.isEmpty()) {
             // loop all the platform credentials
-            for (PlatformCredential pc : records) {
+            for (PlatformCredential pc : pcFilteredRecordsList) {
                 // find the EC using the PC's "holder serial number"
                 associatedEC = this.endorsementCredentialRepository
                         .findBySerialNumber(pc.getHolderSerialNumber());
@@ -159,8 +157,17 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             }
         }
 
-        log.info("Returning the size of the list of platform credentials: {}", records.size());
-        return new DataTableResponse<>(records, input);
+        log.info("Returning the size of the list of platform credentials: {}", pcFilteredRecordsList.size());
+        return new DataTableResponse<>(pcFilteredRecordsList, input);
+    }
+
+    /**
+     * Retrieves the total number of records in the platform credential repository.
+     *
+     * @return total number of records in the platform credential repository.
+     */
+    private long findPlatformCredentialRepositoryCount() {
+        return this.platformCertificateRepository.findByArchiveFlag(false).size();
     }
 
     /**

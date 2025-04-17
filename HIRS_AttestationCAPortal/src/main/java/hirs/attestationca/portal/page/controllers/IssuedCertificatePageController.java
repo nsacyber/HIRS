@@ -103,16 +103,17 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchText = input.getSearch().getValue();
+        final String searchTerm = input.getSearch().getValue();
         final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
-        int currentPage = input.getStart() / input.getLength();
+        final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
-        FilteredRecordsList<IssuedAttestationCertificate> records = new FilteredRecordsList<>();
+        FilteredRecordsList<IssuedAttestationCertificate> issuedCertificateFilteredRecordsList =
+                new FilteredRecordsList<>();
         org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult;
 
-        if (StringUtils.isBlank(searchText)) {
+        if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
                     this.issuedCertificateRepository.findByArchiveFlag(false, pageable);
         } else {
@@ -120,21 +121,20 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             IssuedAttestationCertificate.class,
                             searchableColumns,
-                            searchText,
+                            searchTerm,
                             false, pageable);
         }
 
         if (pagedResult.hasContent()) {
-            records.addAll(pagedResult.getContent());
-            records.setRecordsTotal(pagedResult.getContent().size());
-        } else {
-            records.setRecordsTotal(input.getLength());
+            issuedCertificateFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        records.setRecordsFiltered(issuedCertificateRepository.findByArchiveFlag(false).size());
+        issuedCertificateFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        issuedCertificateFilteredRecordsList.setRecordsTotal(findIssuedCertificateRepoCount());
 
-        log.info("Returning the size of the list of issued certificates: {}", records.size());
-        return new DataTableResponse<>(records, input);
+        log.info("Returning the size of the list of issued certificates: {}"
+                , issuedCertificateFilteredRecordsList.size());
+        return new DataTableResponse<>(issuedCertificateFilteredRecordsList, input);
     }
 
     /**
@@ -276,9 +276,17 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * @return searchable column names
      */
     private List<String> findSearchableColumnsNames(final List<Column> columns) {
-
         // Retrieve all searchable columns and collect their names into a list of strings.
         return columns.stream().filter(Column::isSearchable).map(Column::getName)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves the total number of records in the issued certificate repository.
+     *
+     * @return total number of records in the issued certificaterepository.
+     */
+    private long findIssuedCertificateRepoCount() {
+        return this.issuedCertificateRepository.findByArchiveFlag(false).size();
     }
 }

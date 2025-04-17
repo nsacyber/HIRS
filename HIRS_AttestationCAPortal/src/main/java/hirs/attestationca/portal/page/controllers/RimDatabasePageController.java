@@ -16,7 +16,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -102,33 +101,31 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchText = input.getSearch().getValue();
+        final String searchTerm = input.getSearch().getValue();
         final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
 
         FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
 
-        int currentPage = input.getStart() / input.getLength();
+        final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult;
 
-        if (StringUtils.isBlank(searchText)) {
+        if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
                     this.referenceDigestValueRepository.findAll(pageable);
         } else {
             pagedResult =
                     findReferenceDigestValuesBySearchableColumns(
                             searchableColumns,
-                            searchText, pageable);
+                            searchTerm, pageable);
         }
 
         if (pagedResult.hasContent()) {
             referenceDigestValues.addAll(pagedResult.getContent());
-            referenceDigestValues.setRecordsTotal(pagedResult.getContent().size());
-        } else {
-            referenceDigestValues.setRecordsTotal(input.getLength());
         }
 
-        referenceDigestValues.setRecordsFiltered(referenceDigestValueRepository.count());
+        referenceDigestValues.setRecordsFiltered(pagedResult.getTotalElements());
+        referenceDigestValues.setRecordsTotal(referenceDigestValueRepository.count());
 
         // might be able to get rid of this, maybe right a query that looks for not updated
         SupportReferenceManifest support;
@@ -146,10 +143,10 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
             }
         }
 
-        log.info("Returning the size of the list of TPM events: {}", referenceDigestValues.size());
+        log.info("Returning the size of the list of reference digest values: {}"
+                , pagedResult.getTotalElements());
         return new DataTableResponse<>(referenceDigestValues, input);
     }
-
 
     /**
      * Helper method that returns a list of column names that are searchable.
@@ -163,20 +160,19 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                 .collect(Collectors.toList());
     }
 
-
     /**
      * Takes the provided column names, the search term that the user entered and attempts to find
      * reference digest values whose field values matches the provided search term.
      *
      * @param searchableColumns list of the searchable column name
-     * @param searchText        text that was input in the search textbox
+     * @param searchTerm        text that was input in the search textbox
      * @param pageable          pageable
      * @return page full of reference digest values
      */
     private org.springframework.data.domain.Page<ReferenceDigestValue>
     findReferenceDigestValuesBySearchableColumns(
             final List<String> searchableColumns,
-            final String searchText,
+            final String searchTerm,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ReferenceDigestValue> query =
@@ -187,7 +183,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchText)) {
+        if (!StringUtils.isBlank(searchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
                 // Get the attribute type from entity root
@@ -198,20 +194,19 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                     Predicate predicate =
                             criteriaBuilder.like(
                                     criteriaBuilder.lower(referenceDigestValueRoot.get(columnName)),
-                                    "%" + searchText.toLowerCase() + "%");
+                                    "%" + searchTerm.toLowerCase() + "%");
                     predicates.add(predicate);
                 }
                 // if the field is a non-string type
-                else {
-                    // convert the field to a string
-                    Expression<String> fieldAsString = criteriaBuilder
-                            .literal(fieldPath).as(String.class);
-
-                    Predicate predicate = criteriaBuilder.like(
-                            criteriaBuilder.lower(fieldAsString),
-                            "%" + searchText.toLowerCase() + "%"
-                    );
-                    predicates.add(predicate);
+                else if (Integer.class.equals(fieldPath.getJavaType())) {
+                    // For Integer fields, use EQUAL if the search term is numeric
+                    try {
+                        Integer searchInteger = Integer.valueOf(searchTerm); // Will throw if not a number
+                        Predicate predicate = criteriaBuilder.equal(fieldPath, searchInteger);
+                        predicates.add(predicate);
+                    } catch (NumberFormatException e) {
+                        // If the searchTerm is not a valid number, skip this field
+                    }
                 }
             }
         }

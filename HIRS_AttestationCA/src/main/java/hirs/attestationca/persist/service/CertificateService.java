@@ -13,8 +13,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
@@ -63,18 +61,18 @@ public class CertificateService {
      * Takes the provided column names, the search term that the user entered and attempts to find
      * certificates whose field values matches the provided search term.
      *
-     * @param entityClass       generic entity class
+     * @param entityClass       generic certificate entity class
      * @param searchableColumns list of the searchable column names
-     * @param searchText        text that was input in the search textbox
+     * @param searchTerm        text that was input in the search textbox
      * @param archiveFlag       archive flag
      * @param pageable          pageable
-     * @param <T>               generic entity class
+     * @param <T>               generic entity class that extends from certificate
      * @return page full of the generic certificates.
      */
     public <T extends Certificate> Page<T> findCertificatesBySearchableColumnsAndArchiveFlag(
             final Class<T> entityClass,
             final List<String> searchableColumns,
-            final String searchText,
+            final String searchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -84,32 +82,13 @@ public class CertificateService {
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchText)) {
+        if (!StringUtils.isBlank(searchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
-
-                // Get the attribute type from entity root
-                Path<?> fieldPath = rootCertificate.get(columnName);
-
-                //  if the field is a string type
-                if (String.class.equals(fieldPath.getJavaType())) {
-                    Predicate predicate =
-                            criteriaBuilder.like(criteriaBuilder.lower(rootCertificate.get(columnName)),
-                                    "%" + searchText.toLowerCase() + "%");
-                    predicates.add(predicate);
-                }
-                // if the field is a non-string type
-                else {
-                    // convert the field to a string
-                    Expression<String> fieldAsString = criteriaBuilder
-                            .literal(fieldPath).as(String.class);
-
-                    Predicate predicate = criteriaBuilder.like(
-                            criteriaBuilder.lower(fieldAsString),
-                            "%" + searchText.toLowerCase() + "%"
-                    );
-                    predicates.add(predicate);
-                }
+                Predicate predicate =
+                        criteriaBuilder.like(criteriaBuilder.lower(rootCertificate.get(columnName)),
+                                "%" + searchTerm.toLowerCase() + "%");
+                predicates.add(predicate);
             }
         }
 
