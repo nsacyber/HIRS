@@ -22,7 +22,7 @@ public class Column {
     /**
      * Column's data source.
      *
-     * @see http://datatables.net/reference/option/columns.data
+     * @see https://datatables.net/reference/option/columns.data
      */
     @NotBlank
     private String data;
@@ -30,14 +30,15 @@ public class Column {
     /**
      * Column's name.
      *
-     * @see http://datatables.net/reference/option/columns.name
+     * @see https://datatables.net/reference/option/columns.name
      */
+    @NotBlank
     private String name;
 
     /**
      * Flag to indicate if this column is searchable (true) or not (false).
      *
-     * @see http://datatables.net/reference/option/columns.searchable
+     * @see https://datatables.net/reference/option/columns.searchable
      */
     @NotNull
     private boolean searchable;
@@ -45,7 +46,7 @@ public class Column {
     /**
      * Flag to indicate if this column is orderable (true) or not (false).
      *
-     * @see http://datatables.net/reference/option/columns.orderable
+     * @see https://datatables.net/reference/option/columns.orderable
      */
     @NotNull
     private boolean orderable;
@@ -55,14 +56,4 @@ public class Column {
      */
     @NotNull
     private Search search;
-
-    /**
-     * Set the search value to apply to this column.
-     *
-     * @param searchValue if any, the search value to apply
-     */
-    public void setSearchValue(final String searchValue) {
-        this.search.setValue(searchValue);
-    }
-
 }

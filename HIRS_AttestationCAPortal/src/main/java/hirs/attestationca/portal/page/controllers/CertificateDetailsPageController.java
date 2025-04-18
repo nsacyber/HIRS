@@ -3,7 +3,6 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
-import hirs.attestationca.persist.entity.manager.IDevIDCertificateRepository;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -35,26 +34,22 @@ public class CertificateDetailsPageController extends PageController<Certificate
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final ComponentResultRepository componentResultRepository;
-    private final IDevIDCertificateRepository iDevIDCertificateRepository;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param certificateRepository       the certificate repository
-     * @param componentResultRepository   the component result repository
-     * @param caCredentialRepository      the ca credential manager
-     * @param iDevIDCertificateRepository the idevid certificate repository
+     * @param certificateRepository     the certificate repository
+     * @param componentResultRepository the component result repository
+     * @param caCredentialRepository    the ca credential manager
      */
     @Autowired
     public CertificateDetailsPageController(final CertificateRepository certificateRepository,
                                             final ComponentResultRepository componentResultRepository,
-                                            final CACredentialRepository caCredentialRepository,
-                                            final IDevIDCertificateRepository iDevIDCertificateRepository) {
+                                            final CACredentialRepository caCredentialRepository) {
         super(Page.CERTIFICATE_DETAILS);
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
         this.caCredentialRepository = caCredentialRepository;
-        this.iDevIDCertificateRepository = iDevIDCertificateRepository;
     }
 
     /**
@@ -77,12 +72,12 @@ public class CertificateDetailsPageController extends PageController<Certificate
         // Check if parameters were set
         if (params.getId() == null) {
             String typeError = "ID was not provided";
-            messages.addError(typeError);
+            messages.addErrorMessage(typeError);
             log.error(typeError);
             mav.addObject(MESSAGES_ATTRIBUTE, messages);
         } else if (params.getType() == null) {
             String typeError = "Type was not provided";
-            messages.addError(typeError);
+            messages.addErrorMessage(typeError);
             log.error(typeError);
             mav.addObject(MESSAGES_ATTRIBUTE, messages);
         } else {
@@ -112,20 +107,20 @@ public class CertificateDetailsPageController extends PageController<Certificate
                         break;
                     default:
                         String typeError = "Invalid certificate type: " + params.getType();
-                        messages.addError(typeError);
+                        messages.addErrorMessage(typeError);
                         log.error(typeError);
                         mav.addObject(MESSAGES_ATTRIBUTE, messages);
                         break;
                 }
             } catch (IllegalArgumentException | IOException ex) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
-                messages.addError(uuidError);
+                messages.addErrorMessage(uuidError);
                 log.error(uuidError, ex);
             }
 
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find certificate with ID: " + params.getId();
-                messages.addError(notFoundMessage);
+                messages.addErrorMessage(notFoundMessage);
                 log.warn(notFoundMessage);
                 mav.addObject(MESSAGES_ATTRIBUTE, messages);
             } else {

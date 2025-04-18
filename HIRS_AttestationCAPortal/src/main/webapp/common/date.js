@@ -4,13 +4,13 @@
  * Requires moment.js
  */
 
-var dateTimeOutputFormat = "YYYY-MM-DD HH:mm:ss";
+let dateTimeOutputFormat = "YYYY-MM-DD HH:mm:ss";
 
-var dateInputFormat = ["YYYY-MM-DD","YYYY/MM/DD","MM-DD-YYYY","MM/DD/YYYY"];
-var dateOutputFormat = "YYYY-MM-DD";
+let dateInputFormat = ["YYYY-MM-DD","YYYY/MM/DD","MM-DD-YYYY","MM/DD/YYYY"];
+let dateOutputFormat = "YYYY-MM-DD";
 
-var timeInputFormat = "HH:mm:ss.SSS";
-var timeOutputFormat = "HH:mm";
+let timeInputFormat = "HH:mm:ss.SSS";
+let timeOutputFormat = "HH:mm";
 
 function parseDate(dt, inputFormat) {
     return moment(dt, inputFormat);

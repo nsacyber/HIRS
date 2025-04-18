@@ -14,8 +14,8 @@
     <link type="text/css" rel="stylesheet" href="${common}/banner.css"/>
     <script>
         $(document).ready(function(){
-            var headerHeight = $('#header').height();
-            var topBannerHeight = $(".topBanner").height();
+            let headerHeight = $('#header').height();
+            let topBannerHeight = $(".topBanner").height();
 
             //Add margins
             $('body').css({'padding-top': headerHeight + topBannerHeight });
@@ -26,15 +26,15 @@
 
             function setHeights(){
                 //Set bannerColor
-                var bannerColor = "${banner.bannerColor}";
+                let bannerColor = "${banner.bannerColor}";
                 $('.bannerColor').css({'background-color': bannerColor});
 
                 //get basic heights
-                var mainHeight = $('.main, .main-without-navigation').height();
-                var contentHeight = $('.content').height();
-                var spacerHeight = $('.spacer').height() + $('.extra-spacer').height();
-                var bottomBannerHeight = $(".bottomBanner").height() + $(".bottomBannerInfo").height();
-                var pageHeaderHeight = $('.page-header').height() +
+                let mainHeight = $('.main, .main-without-navigation').height();
+                let contentHeight = $('.content').height();
+                let spacerHeight = $('.spacer').height() + $('.extra-spacer').height();
+                let bottomBannerHeight = $(".bottomBanner").height() + $(".bottomBannerInfo").height();
+                let pageHeaderHeight = $('.page-header').height() +
                         parseInt($('.page-header').css('margin-top').replace('px', '')) +
                         parseInt($('.page-header').css('margin-bottom').replace('px', '')) +
                         parseInt($('.page-header').css('padding-top').replace('px', '')) +
@@ -42,7 +42,7 @@
                         parseInt($('.page-header').css('border-bottom-width').replace('px', '')) + 1;
 
                 //Current total
-                var totalHeight = pageHeaderHeight + contentHeight + spacerHeight + bottomBannerHeight;
+                let totalHeight = pageHeaderHeight + contentHeight + spacerHeight + bottomBannerHeight;
 
                 //Check if there is still space
                 if(mainHeight > totalHeight) {
