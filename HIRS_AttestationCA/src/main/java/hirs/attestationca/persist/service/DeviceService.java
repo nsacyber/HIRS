@@ -131,7 +131,7 @@ public class DeviceService {
     }
 
     /**
-     * Returns the list of devices combined with the certificates.
+     * Returns the list of devices associated with the platform and endorsement certificates.
      *
      * @param deviceList list containing the devices
      * @return a record list after the device and certificate was mapped together.

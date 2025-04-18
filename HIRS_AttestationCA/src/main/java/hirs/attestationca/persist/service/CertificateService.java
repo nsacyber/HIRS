@@ -44,9 +44,9 @@ public class CertificateService {
     /**
      * Constructor for the Certificate Service.
      *
-     * @param certificateRepository     certificateRepository
-     * @param componentResultRepository componentResultRepository
-     * @param entityManager             entityManager
+     * @param certificateRepository     certificate repository
+     * @param componentResultRepository component result repository
+     * @param entityManager             entity manager
      */
     @Autowired
     public CertificateService(final CertificateRepository certificateRepository,
@@ -208,7 +208,6 @@ public class CertificateService {
                     List<ComponentResult> componentResults = componentResultRepository
                             .findByBoardSerialNumber(existingPlatformCredential
                                     .getPlatformSerial());
-                    
                     for (ComponentResult componentResult : componentResults) {
                         componentResult.restore();
                         componentResult.resetCreateTime();

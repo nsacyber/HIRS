@@ -8,13 +8,13 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -61,9 +60,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     /**
      * Constructor for the Platform Credential page.
      *
-     * @param platformCertificateRepository   platformCertificateRepository
-     * @param endorsementCredentialRepository endorsementCredentialRepository
-     * @param certificateService              certificateService
+     * @param platformCertificateRepository   platform certificate repository
+     * @param endorsementCredentialRepository endorsement credential repository
+     * @param certificateService              certificate service
      */
     @Autowired
     public PlatformCredentialPageController(
@@ -91,7 +90,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
-     * Processes request to retrieve the collection of platform credentials that will be displayed
+     * Processes the request to retrieve a list of platform credentials for display
      * on the platform credentials page.
      *
      * @param input data table input received from the front-end
@@ -101,7 +100,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     @GetMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(
-            final DataTableInput input) {
+            final DataTableInput input) throws Exception {
         log.info("Received request to display list of platform credentials");
         log.debug("Request received a datatable input object for the platform credentials page: {}", input);
 
@@ -111,7 +110,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+
+        final List<String> searchableColumns =
+                ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class, input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -162,17 +163,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
-     * Retrieves the total number of records in the platform credential repository.
-     *
-     * @return total number of records in the platform credential repository.
-     */
-    private long findPlatformCredentialRepositoryCount() {
-        return this.platformCertificateRepository.findByArchiveFlag(false).size();
-    }
-
-    /**
-     * Processes request to download the platform credential by writing it to the response stream
-     * for download.
+     * Processes the request to download the selected platform credential.
      *
      * @param id       the UUID of the platform credential to download
      * @param response the response object (needed to update the header with the
@@ -180,14 +171,14 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadSinglePlatformCredential(
+    public void downloadPlatformCredential(
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download platform credential id {}", id);
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
             Certificate certificate = this.certificateService.findCertificate(uuid);
 
             if (certificate == null) {
@@ -216,9 +207,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             // write platform credential to output stream
             response.getOutputStream().write(certificate.getRawBytes());
 
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + " specified platform credential", ex);
+                    + " specified platform credential", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // specified platform credential
@@ -227,8 +218,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
-     * Processes request to bulk download all the platform credentials by writing it to the response stream
-     * for download in bulk.
+     * Processes the request to bulk download all the platform credentials.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -250,9 +240,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             //  write platform credentials to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
                     singleFileName);
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
-                    + "platform credentials", ex);
+                    + "platform credentials", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             //platform credentials
@@ -261,7 +251,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
-     * Processes request to upload one or more platform credentials to the ACA.
+     * Processes the request to upload one or more platform credentials to the ACA.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -304,7 +294,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
-     * Processes request to archive/soft delete the provided platform credential.
+     * Processes the request to archive/soft delete the provided platform credential.
      *
      * @param id   the UUID of the platform credential to delete
      * @param attr RedirectAttributes used to forward data back to the original
@@ -325,7 +315,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
 
             this.certificateService.deleteCertificate(uuid, CertificateType.PLATFORM_CREDENTIALS,
                     successMessages, errorMessages);
@@ -344,15 +334,12 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     }
 
     /**
-     * Helper method that returns a list of column names that are searchable.
+     * Retrieves the total number of records in the platform credential repository.
      *
-     * @param columns columns
-     * @return searchable column names
+     * @return total number of records in the platform credential repository.
      */
-    private List<String> findSearchableColumnsNames(final List<Column> columns) {
-        // Retrieve all searchable columns and collect their names into a list of strings.
-        return columns.stream().filter(Column::isSearchable).map(Column::getName)
-                .collect(Collectors.toList());
+    private long findPlatformCredentialRepositoryCount() {
+        return this.platformCertificateRepository.findByArchiveFlag(false).size();
     }
 
     /**

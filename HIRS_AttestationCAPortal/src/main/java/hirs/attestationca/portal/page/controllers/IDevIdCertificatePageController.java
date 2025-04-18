@@ -6,13 +6,13 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -58,8 +57,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     /**
      * Constructor for the IDevID Certificate page.
      *
-     * @param iDevIDCertificateRepository iDevIDCertificateRepository
-     * @param certificateService          certificateService
+     * @param iDevIDCertificateRepository iDevID certificate repository
+     * @param certificateService          certificate service
      */
     @Autowired
     public IDevIdCertificatePageController(final IDevIDCertificateRepository iDevIDCertificateRepository,
@@ -84,8 +83,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes request to retrieve the collection of idevid certificates that will
-     * be displayed on the idevid certificates page.
+     * Processes the request to retrieve a list of idevid certificates for display
+     * on the idevid certificates page.
      *
      * @param input data table input received from the front-end
      * @return data table of idevid certificates
@@ -105,7 +104,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final List<String> searchableColumns =
+                ControllerPagesUtils.findSearchableColumnsNames(IDevIDCertificate.class, input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -133,14 +133,13 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         idevidFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         idevidFilteredRecordsList.setRecordsTotal(findIDevIdCertificateRepositoryCount());
 
-        log.info("Returning the size of the list of IDEVID certificates: {}"
-                , idevidFilteredRecordsList.size());
+        log.info("Returning the size of the list of IDEVID certificates: "
+                + "{}", idevidFilteredRecordsList.size());
         return new DataTableResponse<>(idevidFilteredRecordsList, input);
     }
 
     /**
-     * Processes request to download the IDevId certificate by writing it to the response stream
-     * for download.
+     * Processes the request to download the specified IDevId certificate.
      *
      * @param id       the UUID of the idevid certificate to download
      * @param response the response object (needed to update the header with the
@@ -148,14 +147,14 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadSingleIDevIdCertificate(
+    public void downloadIDevIdCertificate(
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download idevid certificate id {}", id);
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
             Certificate certificate = this.certificateService.findCertificate(uuid);
 
             if (certificate == null) {
@@ -164,7 +163,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                 throw new EntityNotFoundException(errorMessage);
             } else if (!(certificate instanceof IDevIDCertificate)) {
                 final String errorMessage =
-                        "Unable to cast the found certificate to a idevid certificate object";
+                        "Unable to cast the found certificate to an idevid certificate object";
                 log.warn(errorMessage);
                 throw new ClassCastException(errorMessage);
 
@@ -182,9 +181,9 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
             // write idevid certificate to output stream
             response.getOutputStream().write(certificate.getRawBytes());
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + " specified idevid certificate", ex);
+                    + " specified idevid certificate", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // specified idevid certificate
@@ -193,8 +192,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes request to bulk download all the IDevID Certificates by writing it to the response stream
-     * for download in bulk.
+     * Processes the request to bulk download all the IDevID Certificates.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -216,18 +214,18 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
             //  write idevid certificates to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.IDEVID_CERTIFICATES,
                     singleFileName);
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
-                    + "idevid certificates", ex);
+                    + "idevid certificates", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
-            // specified platform credential
+            // specified idevid certificates
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Processes request to upload one or more idevid certificates to the ACA.
+     * Processes the request to upload one or more idevid certificates to the ACA.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -271,7 +269,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes request to archive/soft delete the provided idevid certificate.
+     * Processes the request to archive/soft delete the provided idevid certificate.
      *
      * @param id   the UUID of the idevid certificate to delete
      * @param attr RedirectAttributes used to forward data back to the original
@@ -292,7 +290,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
 
             this.certificateService.deleteCertificate(uuid, CertificateType.IDEVID_CERTIFICATES,
                     successMessages, errorMessages);
@@ -308,19 +306,6 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.IDEVID_CERTIFICATES, new NoPageParams(), model, attr);
-    }
-
-    /**
-     * Helper method that returns a list of column names that are searchable.
-     *
-     * @param columns columns
-     * @return searchable column names
-     */
-    private List<String> findSearchableColumnsNames(final List<Column> columns) {
-
-        // Retrieve all searchable columns and collect their names into a list of strings.
-        return columns.stream().filter(Column::isSearchable).map(Column::getName)
-                .collect(Collectors.toList());
     }
 
     /**

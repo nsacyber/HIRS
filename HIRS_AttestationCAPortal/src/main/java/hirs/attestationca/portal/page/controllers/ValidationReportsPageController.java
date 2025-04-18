@@ -4,12 +4,12 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.service.ValidationSummaryReportsService;
-import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
@@ -29,7 +29,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Controller for the Validation Reports page.
@@ -58,20 +57,20 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
-     * Returns the path for the view and the data model for the page.
+     * Returns the path for the view and the data model for the validation reports page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from redirect.
-     * @return the path for the view and data model for the page.
+     * @return the path for the view and data model validation reports page.
      */
     @Override
     @RequestMapping
     public ModelAndView initPage(final NoPageParams params, final Model model) {
-        return getBaseModelAndView();
+        return getBaseModelAndView(Page.VALIDATION_REPORTS);
     }
 
     /**
-     * Processes request to retrieve the collection of supply chain summary records that will be displayed
+     * Processes the request to retrieve a list of supply chain summary records for display
      * on the validation reports page.
      *
      * @param input the data table query.
@@ -90,7 +89,9 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final List<String> searchableColumns =
+                ControllerPagesUtils.findSearchableColumnsNames(SupplyChainValidationSummary.class,
+                        input.getColumns());
 
         FilteredRecordsList<SupplyChainValidationSummary> reportsFilteredRecordsList =
                 new FilteredRecordsList<>();
@@ -106,11 +107,12 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                     this.supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(pageable);
         } else {
             pagedResult =
-                    this.validationSummaryReportsService.findValidationReportsBySearchableColumnsAndArchiveFlag(
-                            searchableColumns,
-                            searchTerm,
-                            false,
-                            pageable);
+                    this.validationSummaryReportsService
+                            .findValidationReportsBySearchableColumnsAndArchiveFlag(
+                                    searchableColumns,
+                                    searchTerm,
+                                    false,
+                                    pageable);
         }
 
         if (pagedResult.hasContent()) {
@@ -120,13 +122,13 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         reportsFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         reportsFilteredRecordsList.setRecordsTotal(this.supplyChainValidatorSummaryRepository.count());
 
-        log.info("Returning the size of the list of validation reports: {}"
-                , reportsFilteredRecordsList.size());
+        log.info("Returning the size of the list of validation reports: "
+                + "{}", reportsFilteredRecordsList.size());
         return new DataTableResponse<>(reportsFilteredRecordsList, input);
     }
 
     /**
-     * Processes request to download the validation summary report.
+     * Processes the request to download the selected validation summary report.
      *
      * @param request  http request
      * @param response http response
@@ -137,17 +139,5 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         log.info("Received request to download validation report");
 
         this.validationSummaryReportsService.downloadValidationReports(request, response);
-    }
-
-    /**
-     * Helper method that returns a list of column names that are searchable.
-     *
-     * @param columns columns
-     * @return searchable column names
-     */
-    private List<String> findSearchableColumnsNames(final List<Column> columns) {
-        // Retrieve all searchable columns and collect their names into a list of strings.
-        return columns.stream().filter(Column::isSearchable).map(Column::getName)
-                .collect(Collectors.toList());
     }
 }

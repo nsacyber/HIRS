@@ -6,13 +6,13 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
@@ -40,7 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -56,8 +55,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     /**
      * Constructor for the Issued Attestation Certificate page.
      *
-     * @param issuedCertificateRepository issuedCertificateRepository
-     * @param certificateService          certificateService
+     * @param issuedCertificateRepository issued certificate repository
+     * @param certificateService          certificate service
      */
     @Autowired
     public IssuedCertificatePageController(
@@ -83,8 +82,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes request to retrieve the collection of issued attestation certificates
-     * that will be displayed on the issued certificates page.
+     * Processes the request to retrieve a list of issued attestation certificates
+     * for display on the issued certificates page.
      *
      * @param input data table input received from the front-end
      * @return data table of issued certificates
@@ -104,7 +103,9 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final List<String> searchableColumns =
+                ControllerPagesUtils.findSearchableColumnsNames(IssuedAttestationCertificate.class,
+                        input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -132,14 +133,13 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         issuedCertificateFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         issuedCertificateFilteredRecordsList.setRecordsTotal(findIssuedCertificateRepoCount());
 
-        log.info("Returning the size of the list of issued certificates: {}"
-                , issuedCertificateFilteredRecordsList.size());
+        log.info("Returning the size of the list of issued certificates: "
+                + "{}", issuedCertificateFilteredRecordsList.size());
         return new DataTableResponse<>(issuedCertificateFilteredRecordsList, input);
     }
 
     /**
-     * Processes request to download the issued attestation certificate by writing it to the response stream
-     * for download.
+     * Processes the request to download the specified issued attestation certificate.
      *
      * @param id       the UUID of the issued attestation certificate to download
      * @param response the response object (needed to update the header with the
@@ -147,14 +147,14 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadSingleIssuedCertificate(
+    public void downloadIssuedCertificate(
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download issued certificate id {}", id);
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
             Certificate certificate = this.certificateService.findCertificate(uuid);
 
             if (certificate == null) {
@@ -185,9 +185,9 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             // write issued certificate to output stream
             response.getOutputStream().write(certificate.getRawBytes());
 
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + " specified issued attestation certificate", ex);
+                    + " specified issued attestation certificate", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // specified issued attestation certificate
@@ -196,8 +196,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes request to bulk download all the issued attestation certificates by writing it
-     * to the response stream for download in bulk.
+     * Processes the request to bulk download all the issued attestation certificates.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -219,9 +218,9 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             //  write issued attestation certificates to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
                     singleFileName);
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
-                    + "issued attestation certificates", ex);
+                    + "issued attestation certificates", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // issued attestation certificates
@@ -230,7 +229,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes request to archive/soft delete the provided  issued attestation certificate.
+     * Processes the request to archive/soft delete the specified issued attestation certificate.
      *
      * @param id   the UUID of the issued attestation certificate to delete
      * @param attr RedirectAttributes used to forward data back to the original
@@ -251,7 +250,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
 
             this.certificateService.deleteCertificate(uuid, CertificateType.ISSUED_CERTIFICATES,
                     successMessages, errorMessages);
@@ -270,21 +269,9 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Helper method that returns a list of column names that are searchable.
-     *
-     * @param columns columns
-     * @return searchable column names
-     */
-    private List<String> findSearchableColumnsNames(final List<Column> columns) {
-        // Retrieve all searchable columns and collect their names into a list of strings.
-        return columns.stream().filter(Column::isSearchable).map(Column::getName)
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Retrieves the total number of records in the issued certificate repository.
      *
-     * @return total number of records in the issued certificaterepository.
+     * @return total number of records in the issued certificate repository.
      */
     private long findIssuedCertificateRepoCount() {
         return this.issuedCertificateRepository.findByArchiveFlag(false).size();

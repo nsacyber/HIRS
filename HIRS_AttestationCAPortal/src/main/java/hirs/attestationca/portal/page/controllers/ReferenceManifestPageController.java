@@ -7,13 +7,13 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import jakarta.persistence.EntityManager;
@@ -60,7 +60,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -82,7 +81,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestRepository    the reference manifest manager
-     * @param referenceDigestValueRepository this is the reference event manager
+     * @param referenceDigestValueRepository reference digest value manager
      * @param entityManager                  entity manager
      */
     @Autowired
@@ -97,21 +96,21 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Returns the filePath for the view and the data model for the page.
+     * Returns the filePath for the view and the data model for the Reference Manifest page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
      *               redirect.
-     * @return the filePath for the view and data model for the page.
+     * @return the filePath for the view and data model for the Reference Manifest page.
      */
     @Override
     public ModelAndView initPage(final NoPageParams params,
                                  final Model model) {
-        return getBaseModelAndView();
+        return getBaseModelAndView(Page.REFERENCE_MANIFESTS);
     }
 
     /**
-     * Processes request to retrieve the collection of RIMs that will be displayed on the RIM page.
+     * Processes the request to retrieve a list of RIMs for display on the RIM page.
      *
      * @param input data table input
      * @return data table of RIMs
@@ -129,7 +128,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final List<String> searchableColumns =
+                ControllerPagesUtils.findSearchableColumnsNames(ReferenceManifest.class, input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -141,9 +141,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult = this.referenceManifestRepository.findByArchiveFlag(false, pageable);
         } else {
-            pagedResult = findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns
-                    , searchTerm,
-                    false,
+            pagedResult = findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns, searchTerm, false,
                     pageable);
         }
 
@@ -159,16 +157,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Retrieves the total number of records in the RIM repository.
-     *
-     * @return total number of records in the RIM repository.
-     */
-    private long findRIMRepoCount() {
-        return this.referenceManifestRepository.findByArchiveFlag(false).size();
-    }
-
-    /**
-     * Processes request to upload one or more reference manifest(s) to the ACA.
+     * Processes the request to upload one or more reference manifest(s) to the ACA.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -235,14 +224,12 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
-
         return redirectTo(Page.REFERENCE_MANIFESTS,
                 new NoPageParams(), model, attr);
     }
 
     /**
-     * Processes request to download the RIM by writing it to the response stream
-     * for download.
+     * Processes the request to download the RIM .
      *
      * @param id       the UUID of the rim to download
      * @param response the response object (needed to update the header with the
@@ -250,13 +237,13 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @throws java.io.IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadSingleRIM(@RequestParam final String id,
-                                  final HttpServletResponse response)
+    public void downloadRIM(@RequestParam final String id,
+                            final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download RIM id {}", id);
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
             ReferenceManifest referenceManifest = findSpecifiedRIM(uuid);
 
             if (referenceManifest == null) {
@@ -274,9 +261,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             // write cert to output stream
             response.getOutputStream().write(referenceManifest.getRimBytes());
 
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + " specified RIM", ex);
+                    + " specified RIM", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // specified RIM
@@ -285,8 +272,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes request to bulk download RIMs by writing it to the response stream
-     * for download in bulk.
+     * Processes the request to bulk download RIMs .
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -317,7 +303,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes request to archive/soft delete the provided Reference Integrity Manifest.
+     * Processes the request to archive/soft delete the provided Reference Integrity Manifest.
      *
      * @param id   the UUID of the rim to delete
      * @param attr RedirectAttributes used to forward data back to the original
@@ -326,15 +312,15 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView delete(@RequestParam final String id,
-                               final RedirectAttributes attr) throws URISyntaxException {
+    public RedirectView deleteRIM(@RequestParam final String id,
+                                  final RedirectAttributes attr) throws URISyntaxException {
         log.info("Received request to delete RIM id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
             ReferenceManifest referenceManifest = findSpecifiedRIM(uuid);
 
             if (referenceManifest == null) {
@@ -409,6 +395,15 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         // Wrap the result in a Page object to return pagination info
         List<ReferenceManifest> resultList = typedQuery.getResultList();
         return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * Retrieves the total number of records in the RIM repository.
+     *
+     * @return total number of records in the RIM repository.
+     */
+    private long findRIMRepoCount() {
+        return this.referenceManifestRepository.findByArchiveFlag(false).size();
     }
 
     /**
@@ -528,18 +523,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         }
     }
 
-    /**
-     * Helper method that returns a list of column names that are searchable.
-     *
-     * @param columns columns
-     * @return searchable column names
-     */
-    private List<String> findSearchableColumnsNames(final List<Column> columns) {
-        // Retrieve all searchable columns and collect their names into a list of strings.
-        return columns.stream().filter(Column::isSearchable).map(Column::getName)
-                .collect(Collectors.toList());
-    }
-
     private Map<String, SupportReferenceManifest> updateSupportRimInfo(
             final List<SupportReferenceManifest> dbSupportRims) {
         SupportReferenceManifest supportRim;
@@ -604,7 +587,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
     private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) {
         List<ReferenceDigestValue> referenceValues;
-        TCGEventLog logProcessor = null;
+        TCGEventLog logProcessor;
         ReferenceManifest baseRim;
         ReferenceDigestValue newRdv;
 

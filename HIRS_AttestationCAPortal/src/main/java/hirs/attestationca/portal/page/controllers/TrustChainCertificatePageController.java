@@ -8,7 +8,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuth
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.util.CredentialHelper;
-import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -16,6 +15,7 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.CertificateStringMapBuilder;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -123,7 +122,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes request to retrieve the collection of trust chain certificates that will be
+     * Processes the request to retrieve a list of trust chain certificates that will be
      * displayed on the trust chain certificates page.
      *
      * @param input data table input received from the front-end
@@ -144,7 +143,9 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final List<String> searchableColumns =
+                ControllerPagesUtils.findSearchableColumnsNames(CertificateAuthorityCredential.class,
+                        input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -173,14 +174,13 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         caFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         caFilteredRecordsList.setRecordsTotal(findTrustChainCertificateRepoCount());
 
-        log.info("Returning the size of the list of trust chain certificates: {}"
-                , caFilteredRecordsList.size());
+        log.info("Returning the size of the list of trust chain certificates: "
+                + " {}", caFilteredRecordsList.size());
         return new DataTableResponse<>(caFilteredRecordsList, input);
     }
 
     /**
-     * Processes request to download the trust chain certificate by writing it to the response stream
-     * for download.
+     * Processes the request to download the selected trust chain certificate.
      *
      * @param id       the UUID of the trust chain certificate to download
      * @param response the response object (needed to update the header with the
@@ -188,14 +188,14 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadSingleTrustChainCertificate(
+    public void downloadTrustChainCertificate(
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download trust chain certificate {}", id);
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
             Certificate certificate = this.certificateService.findCertificate(uuid);
 
             if (certificate == null) {
@@ -226,9 +226,9 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             // write trust chain certificate to output stream
             response.getOutputStream().write(certificate.getRawBytes());
 
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + " specified trust chain certificate", ex);
+                    + " specified trust chain certificate", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // specified trust chain certificate
@@ -237,8 +237,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes request to download the ACA cert by writing it to the response
-     * stream for download.
+     * Processes the request to download the ACA trust chain certificate.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -260,8 +259,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes request to bulk download all the trust chain certificate by writing it to the response stream
-     * for download in bulk.
+     * Processes the request to bulk download all the trust chain certificates.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -282,9 +280,9 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             //  write trust chain certificates to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
                     singleFileName);
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
-                    + "trust chain certificates", ex);
+                    + "trust chain certificates", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // trust chain certificates
@@ -293,7 +291,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes request to upload one or more trust chain certificates.
+     * Processes the request to upload one or more trust chain certificates.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -337,7 +335,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes request to archive/soft delete the provided trust chain certificate.
+     * Processes the request to archive/soft delete the provided trust chain certificate.
      *
      * @param id   the UUID of the trust chain certificate to delete
      * @param attr RedirectAttributes used to forward data back to the original
@@ -358,7 +356,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
 
             this.certificateService.deleteCertificate(uuid, CertificateType.TRUST_CHAIN,
                     successMessages, errorMessages);
@@ -374,19 +372,6 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.TRUST_CHAIN, new NoPageParams(), model, attr);
-    }
-
-    /**
-     * Helper method that returns a list of column names that are searchable.
-     *
-     * @param columns columns
-     * @return searchable column names
-     */
-    private List<String> findSearchableColumnsNames(final List<Column> columns) {
-
-        // Retrieve all searchable columns and collect their names into a list of strings.
-        return columns.stream().filter(Column::isSearchable).map(Column::getName)
-                .collect(Collectors.toList());
     }
 
     /**

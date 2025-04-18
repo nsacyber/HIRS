@@ -6,13 +6,13 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -58,8 +57,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     /**
      * Constructor for the Endorsement Credential page.
      *
-     * @param endorsementCredentialRepository endorsementCredentialRepository
-     * @param certificateService              certificateService
+     * @param endorsementCredentialRepository endorsement credential repository
+     * @param certificateService              certificate service
      */
     @Autowired
     public EndorsementCredentialPageController(
@@ -85,8 +84,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes request to retrieve the collection of endorsement credentials that will be
-     * displayed on the endorsement credentials page.
+     * Processes the request to retrieve a list of endorsement credentials for display
+     * on the endorsement credentials page.
      *
      * @param input data table input received from the front-end
      * @return data table of endorsement credentials
@@ -106,7 +105,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final List<String> searchableColumns =
+                ControllerPagesUtils.findSearchableColumnsNames(EndorsementCredential.class,
+                        input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -135,14 +136,13 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                 pagedResult.getTotalElements());
         ekFilteredRecordsList.setRecordsTotal(findEndorsementCredentialRepositoryCount());
 
-        log.debug("Returning the size of the list of endorsement credentials: {}",
+        log.info("Returning the size of the list of endorsement credentials: {}",
                 ekFilteredRecordsList.size());
         return new DataTableResponse<>(ekFilteredRecordsList, input);
     }
 
     /**
-     * Processes request to download the endorsement credential by writing it to the response stream
-     * for download.
+     * Processes the request to download the specified endorsement credential.
      *
      * @param id       the UUID of the endorsement credential to download
      * @param response the response object (needed to update the header with the
@@ -150,14 +150,14 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadSingleEndorsementCredential(
+    public void downloadEndorsementCredential(
             @RequestParam final String id,
             final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download endorsement credential id {}", id);
 
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
             Certificate certificate = this.certificateService.findCertificate(uuid);
 
             if (certificate == null) {
@@ -169,7 +169,6 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                         "Unable to cast the found certificate to a endorsement credential object";
                 log.warn(errorMessage);
                 throw new ClassCastException(errorMessage);
-
             }
 
             final EndorsementCredential endorsementCredential = (EndorsementCredential) certificate;
@@ -186,9 +185,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             // write endorsement credential to output stream
             response.getOutputStream().write(certificate.getRawBytes());
 
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + " specified endorsement credential", ex);
+                    + " specified endorsement credential", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // specified endorsement credential
@@ -197,8 +196,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes request to bulk download all the endorsement credentials by writing it to the response stream
-     * for download in bulk.
+     * Processes the request to bulk download all the endorsement credentials.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -220,9 +218,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             //  write endorsement credentials to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
                     singleFileName);
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
-                    + "endorsement credentials", ex);
+                    + "endorsement credentials", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // endorsement credentials
@@ -231,7 +229,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes request to upload one or more endorsement credentials to the ACA.
+     * Processes the request to upload one or more endorsement credentials to the ACA.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
@@ -274,7 +272,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes request to archive/soft delete the provided endorsement credential.
+     * Processes the request to archive/soft delete the specified endorsement credential.
      *
      * @param id   the UUID of the endorsement certificate to delete
      * @param attr RedirectAttributes used to forward data back to the original
@@ -294,7 +292,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         List<String> successMessages = new ArrayList<>();
         List<String> errorMessages = new ArrayList<>();
         try {
-            UUID uuid = UUID.fromString(id);
+            final UUID uuid = UUID.fromString(id);
 
             this.certificateService.deleteCertificate(uuid, CertificateType.ENDORSEMENT_CREDENTIALS,
                     successMessages, errorMessages);
@@ -310,18 +308,6 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, attr);
-    }
-
-    /**
-     * Helper method that returns a list of column names that are searchable.
-     *
-     * @param columns columns
-     * @return searchable column names
-     */
-    private List<String> findSearchableColumnsNames(final List<Column> columns) {
-        // Retrieve all searchable columns and collect their names into a list of strings.
-        return columns.stream().filter(Column::isSearchable).map(Column::getName)
-                .collect(Collectors.toList());
     }
 
     /**

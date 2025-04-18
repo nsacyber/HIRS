@@ -6,12 +6,12 @@ import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -37,7 +37,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Controller for the TPM Events page.
@@ -69,21 +68,21 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Returns the filePath for the view and the data model for the RimDatabase page.
+     * Returns the filePath for the view and the data model for the RIM Database page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
      *               redirect.
-     * @return the filePath for the view and data model for the page.
+     * @return the filePath for the view and data model for the RIM Database page.
      */
     @Override
     public ModelAndView initPage(final NoPageParams params,
                                  final Model model) {
-        return getBaseModelAndView();
+        return getBaseModelAndView(Page.RIM_DATABASE);
     }
 
     /**
-     * Processes request to retrieve the collection of TPM Events that will be displayed
+     * Processes the request to retrieve a list of reference digest values for display
      * on the rim database page.
      *
      * @param input the data tables input
@@ -102,7 +101,9 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns = findSearchableColumnsNames(input.getColumns());
+        final List<String> searchableColumns =
+                ControllerPagesUtils.findSearchableColumnsNames(ReferenceDigestValue.class,
+                        input.getColumns());
 
         FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
 
@@ -143,21 +144,9 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
             }
         }
 
-        log.info("Returning the size of the list of reference digest values: {}"
-                , pagedResult.getTotalElements());
+        log.info("Returning the size of the list of reference digest values: "
+                + "{}", pagedResult.getTotalElements());
         return new DataTableResponse<>(referenceDigestValues, input);
-    }
-
-    /**
-     * Helper method that returns a list of column names that are searchable.
-     *
-     * @param columns columns
-     * @return searchable column names
-     */
-    private List<String> findSearchableColumnsNames(final List<Column> columns) {
-        // Retrieve all searchable columns and collect their names into a list of strings.
-        return columns.stream().filter(Column::isSearchable).map(Column::getName)
-                .collect(Collectors.toList());
     }
 
     /**
@@ -189,16 +178,14 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                 // Get the attribute type from entity root
                 Path<?> fieldPath = referenceDigestValueRoot.get(columnName);
 
-                //  if the field is a string type
+                // if the field is a string type
                 if (String.class.equals(fieldPath.getJavaType())) {
                     Predicate predicate =
                             criteriaBuilder.like(
                                     criteriaBuilder.lower(referenceDigestValueRoot.get(columnName)),
                                     "%" + searchTerm.toLowerCase() + "%");
                     predicates.add(predicate);
-                }
-                // if the field is a non-string type
-                else if (Integer.class.equals(fieldPath.getJavaType())) {
+                } else if (Integer.class.equals(fieldPath.getJavaType())) {
                     // For Integer fields, use EQUAL if the search term is numeric
                     try {
                         Integer searchInteger = Integer.valueOf(searchTerm); // Will throw if not a number
