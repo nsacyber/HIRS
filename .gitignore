@@ -140,6 +140,11 @@ HIRS_ProvisionerTPM2/scripts/tpm_aca_provision
 tools/tcg_rim_tool/generated_swidTag.swidtag
 .ci/tcg-rim-tool/scripts/tmp
 
+# vscode files
+.vs/
+.vscode/
+.idea/
+
 ### c# build files, visual studio files
 *.user
 *.cache

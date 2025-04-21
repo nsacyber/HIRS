@@ -75,10 +75,10 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     /**
      * Constructor for the Trust Chain Certificate page.
      *
-     * @param certificateRepository  certificateRepository
-     * @param caCredentialRepository caCredentialRepository
-     * @param certificateService     certificateService
-     * @param acaCertificate         acaCertificate
+     * @param certificateRepository  certificate repository
+     * @param caCredentialRepository caCredential repository
+     * @param certificateService     certificate service
+     * @param acaCertificate         ACA Certificate
      */
     @Autowired
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
