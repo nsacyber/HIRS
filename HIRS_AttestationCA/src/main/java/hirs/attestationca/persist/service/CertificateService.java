@@ -27,6 +27,7 @@ import org.springframework.util.StreamUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -71,7 +72,7 @@ public class CertificateService {
      */
     public <T extends Certificate> Page<T> findCertificatesBySearchableColumnsAndArchiveFlag(
             final Class<T> entityClass,
-            final List<String> searchableColumns,
+            final Set<String> searchableColumns,
             final String searchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {

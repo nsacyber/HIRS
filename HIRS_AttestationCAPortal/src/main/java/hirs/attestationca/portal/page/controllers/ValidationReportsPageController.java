@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Controller for the Validation Reports page.
@@ -89,7 +89,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns =
+        final Set<String> searchableColumns =
                 ControllerPagesUtils.findSearchableColumnsNames(SupplyChainValidationSummary.class,
                         input.getColumns());
 

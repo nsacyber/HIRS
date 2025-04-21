@@ -15,6 +15,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,6 +40,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,7 +93,7 @@ public class ValidationSummaryReportsService {
      * @return page full of the validation summaries.
      */
     public Page<SupplyChainValidationSummary> findValidationReportsBySearchableColumnsAndArchiveFlag(
-            final List<String> searchableColumns,
+            final Set<String> searchableColumns,
             final String searchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
@@ -107,20 +110,37 @@ public class ValidationSummaryReportsService {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
 
-                // there is a possibility that one of the column names
-                // that matches one of the class fields is nested (e.g. device.name) ,
-                // and we will need to do further work to extract the
-                // field name
-                // todo
-                if (columnName.contains(".")) {
-                    continue;
+                // if there is no period and this is a non-nested field
+                if (!columnName.contains(".")) {
+                    Predicate predicate =
+                            criteriaBuilder.like(
+                                    criteriaBuilder.lower(supplyChainValidationSummaryRoot.get(columnName)),
+                                    "%" + searchTerm.toLowerCase() + "%");
+                    predicates.add(predicate);
                 }
+                // If there's a period, we are dealing with a nested entity (e.g., "device.id")
+                else {
+                    String[] nestedColumnName = columnName.split("\\.");
 
-                Predicate predicate =
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(supplyChainValidationSummaryRoot.get(columnName)),
+                    // The first part is the name of the related entity (e.g., "device")
+                    String entityName = nestedColumnName[0];
+
+                    // The second part is the field name on the related entity (e.g., "name")
+                    String fieldName = nestedColumnName[1];
+
+                    // Handle the case where the related entity is the "device" field
+                    if (entityName.equals("device")) {
+                        // Join the device entity
+                        Join<SupplyChainValidationSummary, Device> deviceJoin =
+                                supplyChainValidationSummaryRoot.join("device", JoinType.LEFT);
+
+                        // Add predicate for the nested field (e.g. or device.name)
+                        Predicate predicate = criteriaBuilder.like(
+                                criteriaBuilder.lower(deviceJoin.get(fieldName)),
                                 "%" + searchTerm.toLowerCase() + "%");
-                predicates.add(predicate);
+                        predicates.add(predicate);
+                    }
+                }
             }
         }
 

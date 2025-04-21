@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Controller for the Devices page.
@@ -82,7 +82,7 @@ public class DevicePageController extends PageController<NoPageParams> {
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns =
+        final Set<String> searchableColumns =
                 ControllerPagesUtils.findSearchableColumnsNames(Device.class, input.getColumns());
 
         // get all the devices

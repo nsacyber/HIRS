@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -75,7 +76,7 @@ public class DeviceService {
      * @return page full of devices
      */
     public Page<Device> findAllDevicesBySearchableColumns(
-            final List<String> searchableColumns,
+            final Set<String> searchableColumns,
             final String searchTerm,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();

@@ -36,7 +36,7 @@ public final class ControllerPagesUtils {
 
         // In order to grab all the specified class' field names,
         // we will want to "climb the inheritance ladder" and grab the
-        // specified class' super class and its ancestors' field name. We will continue going up the ladder
+        // specified class' super class and its ancestors' field names. We will continue going up the ladder
         // until there are no more superclasses left.
         while (currentClass != null) {
             // grab the current class' non-static declared field names
@@ -58,13 +58,13 @@ public final class ControllerPagesUtils {
      *
      * @param pageControllerClass the controller's entity class
      * @param columns             table columns
-     * @return searchable column names
+     * @return set of searchable column names
      */
-    public static List<String> findSearchableColumnsNames(
+    public static Set<String> findSearchableColumnsNames(
             final Class<?> pageControllerClass,
             final List<Column> columns) {
 
-        // grab all the non-static declared fields of the provided class
+        // grab all the provided class' non-static declared fields
         Set<String> nonStaticFields = getNonStaticFieldNames(pageControllerClass);
 
         // grab the list of column names that are searchable
@@ -73,22 +73,28 @@ public final class ControllerPagesUtils {
                 .map(Column::getName)
                 .toList());
 
-        List<String> validSearchableColumnNames = new ArrayList<>();
+        Set<String> validSearchableColumnNames = new HashSet<>();
 
-        // since platform chain type is not a column type on the platform credential page,
+        // since platform chain type is not a column on the platform credential page,
         // but it is a field that is represented by the credential type column in the platform credential page
-        // we want to include that as one of the searchable column name
+        // we want to include that as one of the searchable column names
         if (PlatformCredential.class.isAssignableFrom(pageControllerClass)) {
             searchableColumnNames.add("platformChainType");
         }
 
-        // loop through the provided searchable column names and
+        // loop through the provided searchable column names
         for (String columnName : searchableColumnNames) {
+            // if the column name is a nested field (usually indicated by periods)
+            if (columnName.contains(".")) {
+                // add the column name to the set
+                validSearchableColumnNames.add(columnName);
+                continue;
+            }
             // loop through the non-static field names
             for (String nonStaticField : nonStaticFields) {
                 // if there is a match between the column name and the non-static field
                 if (columnName.equalsIgnoreCase(nonStaticField)) {
-                    // add the non-static field name
+                    // add the non-static field name to the set
                     validSearchableColumnNames.add(nonStaticField);
                     break;
                 }

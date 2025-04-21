@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -128,7 +129,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns =
+        final Set<String> searchableColumns =
                 ControllerPagesUtils.findSearchableColumnsNames(ReferenceManifest.class, input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
@@ -358,7 +359,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @return page full of reference manifests
      */
     private org.springframework.data.domain.Page<ReferenceManifest> findRIMSBySearchableColumnsAndArchiveFlag(
-            final List<String> searchableColumns,
+            final Set<String> searchableColumns,
             final String searchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {

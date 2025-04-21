@@ -37,6 +37,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Controller for the TPM Events page.
@@ -101,7 +102,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns =
+        final Set<String> searchableColumns =
                 ControllerPagesUtils.findSearchableColumnsNames(ReferenceDigestValue.class,
                         input.getColumns());
 
@@ -160,7 +161,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
      */
     private org.springframework.data.domain.Page<ReferenceDigestValue>
     findReferenceDigestValuesBySearchableColumns(
-            final List<String> searchableColumns,
+            final Set<String> searchableColumns,
             final String searchTerm,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();

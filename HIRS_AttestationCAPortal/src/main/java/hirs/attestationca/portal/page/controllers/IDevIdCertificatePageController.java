@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.zip.ZipOutputStream;
 
@@ -104,7 +105,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final List<String> searchableColumns =
+        final Set<String> searchableColumns =
                 ControllerPagesUtils.findSearchableColumnsNames(IDevIDCertificate.class, input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
