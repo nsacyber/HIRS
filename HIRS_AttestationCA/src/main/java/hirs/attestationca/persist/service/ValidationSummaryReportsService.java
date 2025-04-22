@@ -117,9 +117,7 @@ public class ValidationSummaryReportsService {
                                     criteriaBuilder.lower(supplyChainValidationSummaryRoot.get(columnName)),
                                     "%" + searchTerm.toLowerCase() + "%");
                     predicates.add(predicate);
-                }
-                // If there's a period, we are dealing with a nested entity (e.g., "device.id")
-                else {
+                } else { // If there's a period, we are dealing with a nested entity (e.g., "device.id")
                     String[] nestedColumnName = columnName.split("\\.");
 
                     // The first part is the name of the related entity (e.g., "device")
