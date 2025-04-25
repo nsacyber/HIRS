@@ -28,6 +28,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -70,7 +72,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final CertificateService certificateService;
-    private CertificateAuthorityCredential certificateAuthorityCredential;
+    private final List<CertificateAuthorityCredential> certificateAuthorityCredentials;
 
     /**
      * Constructor for the Trust Chain Certificate page.
@@ -78,21 +80,24 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @param certificateRepository  certificate repository
      * @param caCredentialRepository caCredential repository
      * @param certificateService     certificate service
-     * @param acaCertificate         ACA Certificate
+     * @param acaTrustChain          ACA Trust Chain certificates
      */
     @Autowired
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
                                                final CertificateService certificateService,
-                                               final X509Certificate acaCertificate) {
+                                               final X509Certificate[] acaTrustChain) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;
         this.certificateService = certificateService;
+        this.certificateAuthorityCredentials = new ArrayList<>();
 
         try {
-            certificateAuthorityCredential
-                    = new CertificateAuthorityCredential(acaCertificate.getEncoded());
+            for (X509Certificate eachCert : acaTrustChain) {
+                certificateAuthorityCredentials.add(
+                        new CertificateAuthorityCredential(eachCert.getEncoded()));
+            }
         } catch (IOException ioEx) {
             log.error("Failed to read ACA certificate", ioEx);
         } catch (CertificateEncodingException ceEx) {
@@ -116,7 +121,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         mav.addObject(ACA_CERT_DATA,
                 new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInformation(
-                        certificateAuthorityCredential, this.certificateRepository,
+                        this.certificateAuthorityCredentials, this.certificateRepository,
                         this.caCredentialRepository)));
 
         return mav;
@@ -238,7 +243,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes the request to download the ACA trust chain certificate.
+     * Processes the request to download the ACA trust chain certificates.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -249,14 +254,41 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     public void downloadAcaCertificate(final HttpServletResponse response)
             throws IOException {
 
-        log.info("Received request to download the ACA server trust chain certificate");
+        log.info("Received request to download the ACA server trust chain certificates");
+
+        final String fileName = "hirs-aca-trust-chain-certs.zip";
+        final String singleFileName = "hirs-aca-trust-chain-cert";
 
         // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=\"hirs-aca-cert.cer\"");
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
         response.setContentType("application/octet-stream");
 
-        // write cert to output stream
-        response.getOutputStream().write(certificateAuthorityCredential.getRawBytes());
+        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+            //  write trust chain certificates to output stream and bulk download them
+            String zipFileName;
+
+            // get all files
+            for (CertificateAuthorityCredential acaCert : certificateAuthorityCredentials) {
+                zipFileName = String.format("%s[%s].cer", singleFileName,
+                        Integer.toHexString(acaCert.getCertificateHash()));
+                // configure the zip entry, the properties of the 'file'
+                ZipEntry zipEntry = new ZipEntry(zipFileName);
+                zipEntry.setSize((long) acaCert.getRawBytes().length * Byte.SIZE);
+                zipEntry.setTime(System.currentTimeMillis());
+                zipOut.putNextEntry(zipEntry);
+                // the content of the resource
+                StreamUtils.copy(acaCert.getRawBytes(), zipOut);
+                zipOut.closeEntry();
+            }
+            zipOut.finish();
+        } catch (Exception exception) {
+            log.error("An exception was thrown while attempting to bulk download all the"
+                    + "aca trust chain certificates", exception);
+
+            // send a 404 error when an exception is thrown while attempting to download the
+            // aca certificates
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     /**

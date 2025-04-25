@@ -30,12 +30,23 @@ import javax.sql.DataSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Security;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Provides application context configuration for the Attestation Certificate
@@ -75,7 +86,13 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     private String keyStorePassword;
 
     @Value("${aca.certificates.signing-key-alias}")
-    private String keyAlias;
+    private String signingKeyAlias;
+
+    @Value("${aca.certificates.intermediate-key-alias}")
+    private String intermediateKeyAlias;
+
+    @Value("${aca.certificates.root-key-alias}")
+    private String rootKeyAlias;
 
     @Autowired
     private Environment environment;
@@ -158,14 +175,14 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         try {
 
             // load the key from the key store
-            PrivateKey acaKey = (PrivateKey) keyStore.getKey(keyAlias,
+            PrivateKey acaKey = (PrivateKey) keyStore.getKey(signingKeyAlias,
                     keyStorePassword.toCharArray());
 
             // break early if the certificate is not available.
             if (acaKey == null) {
                 throw new BeanInitializationException(String.format("Key with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", keyAlias, keyStoreLocation));
+                        + "specified certificate. ", signingKeyAlias, keyStoreLocation));
             }
             return acaKey;
         } catch (Exception ex) {
@@ -182,19 +199,69 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         KeyStore keyStore = keyStore();
 
         try {
-            X509Certificate acaCertificate = (X509Certificate) keyStore.getCertificate(keyAlias);
+            X509Certificate acaCertificate = (X509Certificate) keyStore.getCertificate(signingKeyAlias);
 
             // break early if the certificate is not available.
             if (acaCertificate == null) {
                 throw new BeanInitializationException(String.format("Certificate with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", keyAlias, keyStoreLocation));
+                        + "specified certificate. ", signingKeyAlias, keyStoreLocation));
             }
 
             return acaCertificate;
         } catch (KeyStoreException ksEx) {
             throw new BeanInitializationException("Encountered error loading ACA certificate "
                     + "from key store: " + ksEx.getMessage(), ksEx);
+        }
+    }
+
+    /**
+     * @return the array of {@link X509Certificate}  ACA trust chain certificates
+     */
+    @Bean
+    public X509Certificate[] acaTrustChainCertificates() {
+        KeyStore keyStore = keyStore();
+
+        try {
+            X509Certificate leafACACert = (X509Certificate) keyStore.getCertificate(signingKeyAlias);
+
+            X509Certificate intermediateACACert =
+                    (X509Certificate) keyStore.getCertificate(intermediateKeyAlias);
+
+            X509Certificate rootACACert = (X509Certificate) keyStore.getCertificate(rootKeyAlias);
+
+            List<X509Certificate> certChain =
+                    List.of(leafACACert, intermediateACACert, rootACACert);
+
+            // Create a CertPath from the certificate chain
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+            CertPath certPath = certFactory.generateCertPath(certChain);
+
+            // Initialize CertPathValidator
+            CertPathValidator certPathValidator = CertPathValidator.getInstance("PKIX");
+
+            // Create TrustAnchor from the root certificate
+            Set<TrustAnchor> trustAnchors = Set.of(new TrustAnchor(rootACACert, null));
+
+            // Initialize PKIX parameters
+            PKIXParameters pkixParams = new PKIXParameters(trustAnchors);
+            pkixParams.setRevocationEnabled(false);  // You can enable revocation checks if needed
+
+            // Validate the CertPath
+            try {
+                certPathValidator.validate(certPath, pkixParams);
+                System.out.println("The certificate chain is valid and trusted.");
+            } catch (CertPathValidatorException e) {
+                System.out.println("The certificate chain is not valid: " + e.getMessage());
+            }
+
+
+            return new X509Certificate[] {(X509Certificate) keyStore.getCertificate(signingKeyAlias)};
+        } catch (KeyStoreException ksEx) {
+            throw new BeanInitializationException("Encountered error loading ACA certificate "
+                    + "from key store: " + ksEx.getMessage(), ksEx);
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | CertificateException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -214,11 +281,10 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
 
             return keyStore;
         } catch (Exception ex) {
-            log.error(String.format(
-                    "Encountered error while loading ACA key store. The most common issue is "
-                            + "that configured password does not work on the configured key"
-                            + " store %s.", keyStorePath));
-            log.error(String.format("Exception message: %s", ex.getMessage()));
+            log.error("Encountered error while loading ACA key store. The most common issue is "
+                    + "that configured password does not work on the configured key"
+                    + " store {}.", keyStorePath);
+            log.error("Exception message: {}", ex.getMessage());
             throw new BeanInitializationException(ex.getMessage(), ex);
         }
     }
@@ -265,8 +331,7 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
      */
     @Bean(name = "multipartResolver")
     public StandardServletMultipartResolver multipartResolver() {
-        StandardServletMultipartResolver resolver = new StandardServletMultipartResolver();
-        return resolver;
+        return new StandardServletMultipartResolver();
     }
 
 //    @Bean(name="default-settings")
