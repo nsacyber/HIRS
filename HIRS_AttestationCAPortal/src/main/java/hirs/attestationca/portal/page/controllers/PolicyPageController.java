@@ -951,14 +951,14 @@ public class PolicyPageController extends PageController<NoPageParams> {
                                                 final PolicyManagerException pmEx,
                                                 final String message, final String error) {
         log.error(message, pmEx);
-        messages.addError(error);
+        messages.addErrorMessage(error);
         model.put(MESSAGES_ATTRIBUTE, messages);
     }
 
     private void handleUserError(final Map<String, Object> model,
                                  final PageMessages messages,
                                  final String errorMessage) {
-        messages.addError(errorMessage);
+        messages.addErrorMessage(errorMessage);
         model.put(MESSAGES_ATTRIBUTE, messages);
     }
 
@@ -1012,7 +1012,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         policyRepository.saveAndFlush(settings);
 
         // Log and set the success message
-        messages.addSuccess(successMessage);
+        messages.addSuccessMessage(successMessage);
         log.debug("ACA Policy set to: {}", ppModel.toString());
 
         model.put(MESSAGES_ATTRIBUTE, messages);

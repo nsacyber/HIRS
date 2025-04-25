@@ -1,10 +1,10 @@
 // From https://github.com/jquery/jquery/blob/master/src/serialize.js
 // Overrides data serialization to allow Spring MVC to correctly map input parameters : column[0][data] now becomes column[0].data
 (function($) {
-	var r20 = /%20/g, rbracket = /\[\]$/, rCRLF = /\r?\n/g, rsubmitterTypes = /^(?:submit|button|image|reset|file)$/i, rsubmittable = /^(?:input|select|textarea|keygen)/i;
+	let r20 = /%20/g, rbracket = /\[\]$/, rCRLF = /\r?\n/g, rsubmitterTypes = /^(?:submit|button|image|reset|file)$/i, rsubmittable = /^(?:input|select|textarea|keygen)/i;
 
 	function customBuildParams(prefix, obj, traditional, add) {
-		var name;
+		let name;
 
 		if (jQuery.isArray(obj)) {
 			// Serialize array item.
@@ -37,7 +37,7 @@
 	}
 
 	$.param = function(a, traditional) {
-		var prefix, s = [], add = function(key, value) {
+		let prefix, s = [], add = function(key, value) {
 			// If value is a function, invoke it and return its value
 			value = jQuery.isFunction(value) ? value() : (value == null ? ""
 					: value);

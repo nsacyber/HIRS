@@ -597,7 +597,7 @@
 <script>
     function eventSearch(txtInput) {
         // Declare variables
-        var input, filter, table, tr, td, i, txtValue, txtFound;
+        let input, filter, table, tr, td, i, txtValue, txtFound;
 
         if (txtInput === null) {
             input = document.getElementById("eventInput");
@@ -635,14 +635,14 @@
     }
     window.onload = function () {
         // Constant retrieved from server-side via JSP
-        var maxRows = 11;
+        let maxRows = 11;
 
-        var table = document.getElementById('eventLog');
-        var wrapper = table.parentNode;
-        var rowsInTable = table.rows.length;
-        var height = 0;
+        let table = document.getElementById('eventLog');
+        let wrapper = table.parentNode;
+        let rowsInTable = table.rows.length;
+        let height = 0;
         if (rowsInTable > maxRows) {
-            for (var i = 0; i < maxRows; i++) {
+            for (let i = 0; i < maxRows; i++) {
                 height += table.rows[i].clientHeight;
             }
             wrapper.style.height = height + "px";

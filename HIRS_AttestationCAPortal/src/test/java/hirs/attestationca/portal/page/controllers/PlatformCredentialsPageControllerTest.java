@@ -111,8 +111,8 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
         // verify redirection messages
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
-        assertEquals(1, pageMessages.getSuccess().size());
-        assertEquals(0, pageMessages.getError().size());
+        assertEquals(1, pageMessages.getSuccessMessages().size());
+        assertEquals(0, pageMessages.getErrorMessages().size());
 
         // verify the cert was actually stored
         List<Certificate> records =
@@ -173,11 +173,11 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
         // verify redirection messages
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
-        assertEquals(1, pageMessages.getSuccess().size());
-        assertEquals(0, pageMessages.getError().size());
+        assertEquals(1, pageMessages.getSuccessMessages().size());
+        assertEquals(0, pageMessages.getErrorMessages().size());
         assertEquals("Pre-existing certificate found and unarchived ("
                         + pathTokens[1] + "): ",
-                pageMessages.getSuccess().get(0));
+                pageMessages.getSuccessMessages().get(0));
 
         // verify there is still only one cert in db
         List<Certificate> records = certificateRepository.findAll();
@@ -216,8 +216,8 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
         // verify redirection messages
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
-        assertEquals(0, pageMessages.getSuccess().size());
-        assertEquals(1, pageMessages.getError().size());
+        assertEquals(0, pageMessages.getSuccessMessages().size());
+        assertEquals(1, pageMessages.getErrorMessages().size());
 
         // verify the cert was not actually stored
         List<Certificate> records =
@@ -243,8 +243,8 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
         // verify redirection messages
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
-        assertEquals(1, pageMessages.getError().size());
-        assertEquals(0, pageMessages.getSuccess().size());
+        assertEquals(1, pageMessages.getErrorMessages().size());
+        assertEquals(0, pageMessages.getSuccessMessages().size());
 
         // verify the cert was not actually stored
         List<Certificate> records =

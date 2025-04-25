@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
@@ -14,14 +13,23 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -49,6 +57,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,93 +76,99 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     private static final String SUPPORT_RIM_FILE_PATTERN = "([^\\s]+(\\.(?i)(rimpcr|rimel|bin|log))$)";
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
-    @Autowired(required = false)
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
      * @param referenceManifestRepository    the reference manifest manager
-     * @param referenceDigestValueRepository this is the reference event manager
+     * @param referenceDigestValueRepository reference digest value manager
+     * @param entityManager                  entity manager
      */
     @Autowired
     public ReferenceManifestPageController(
             final ReferenceManifestRepository referenceManifestRepository,
-            final ReferenceDigestValueRepository referenceDigestValueRepository) {
+            final ReferenceDigestValueRepository referenceDigestValueRepository,
+            final EntityManager entityManager) {
         super(Page.REFERENCE_MANIFESTS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
+        this.entityManager = entityManager;
     }
 
     /**
-     * Returns the filePath for the view and the data model for the page.
+     * Returns the filePath for the view and the data model for the Reference Manifest page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
      *               redirect.
-     * @return the filePath for the view and data model for the page.
+     * @return the filePath for the view and data model for the Reference Manifest page.
      */
     @Override
     public ModelAndView initPage(final NoPageParams params,
                                  final Model model) {
-        return getBaseModelAndView();
+        return getBaseModelAndView(Page.REFERENCE_MANIFESTS);
     }
 
     /**
-     * Returns the list of RIMs using the data table input for paging, ordering,
-     * and filtering.
+     * Processes the request to retrieve a list of RIMs for display on the RIM page.
      *
-     * @param input the data tables input
-     * @return the data tables response, including the result set and paging
-     * information
+     * @param input data table input
+     * @return data table of RIMs
      */
     @ResponseBody
     @GetMapping(value = "/list",
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<ReferenceManifest> getTableData(
+    public DataTableResponse<ReferenceManifest> getRIMTableData(
             @Valid final DataTableInput input) {
-        log.debug("Handling request for summary list: {}", input);
+        log.info("Received request to display list of reference manifests");
+        log.debug("Request received a datatable input object for the reference manifest page "
+                + " page: {}", input);
 
         String orderColumnName = input.getOrderColumnName();
-        log.info("Ordering on column: {}", orderColumnName);
-        log.info("Querying with the following dataTableInput: {}", input);
+        log.debug("Ordering on column: {}", orderColumnName);
 
-        FilteredRecordsList<ReferenceManifest> records = new FilteredRecordsList<>();
-        int currentPage = input.getStart() / input.getLength();
-        Pageable paging = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<ReferenceManifest> pagedResult =
-                referenceManifestRepository.findByArchiveFlag(false, paging);
-        int rimCount = 0;
+        final String searchTerm = input.getSearch().getValue();
+        final Set<String> searchableColumns =
+                ControllerPagesUtils.findSearchableColumnsNames(ReferenceManifest.class, input.getColumns());
 
-        if (pagedResult.hasContent()) {
-            for (ReferenceManifest manifest : pagedResult.getContent()) {
-                records.add(manifest);
-                rimCount++;
-            }
-            records.setRecordsTotal(rimCount);
+        final int currentPage = input.getStart() / input.getLength();
+        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+
+        FilteredRecordsList<ReferenceManifest> rimFilteredRecordsList = new FilteredRecordsList<>();
+
+        org.springframework.data.domain.Page<ReferenceManifest> pagedResult;
+
+        if (StringUtils.isBlank(searchTerm)) {
+            pagedResult = this.referenceManifestRepository.findByArchiveFlag(false, pageable);
         } else {
-            records.setRecordsTotal(input.getLength());
+            pagedResult = findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns, searchTerm, false,
+                    pageable);
         }
 
-        records.setRecordsFiltered(referenceManifestRepository.findByArchiveFlag(false).size());
+        if (pagedResult.hasContent()) {
+            rimFilteredRecordsList.addAll(pagedResult.getContent());
+        }
 
-        log.debug("Returning list of size: {}", records.size());
-        return new DataTableResponse<>(records, input);
+        rimFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        rimFilteredRecordsList.setRecordsTotal(findRIMRepoCount());
+
+        log.info("Returning the size of the list of reference manifests: {}", rimFilteredRecordsList.size());
+        return new DataTableResponse<>(rimFilteredRecordsList, input);
     }
 
     /**
-     * Upload and processes a reference manifest(s).
+     * Processes the request to upload one or more reference manifest(s) to the ACA.
      *
      * @param files the files to process
      * @param attr  the redirection attributes
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
-     * @throws Exception          if malformed URI
      */
     @PostMapping("/upload")
-    protected RedirectView upload(
+    protected RedirectView uploadRIMs(
             @RequestParam("file") final MultipartFile[] files,
-            final RedirectAttributes attr) throws URISyntaxException, Exception {
+            final RedirectAttributes attr) throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         String fileName;
@@ -183,13 +198,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                         + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
                         + "Please verify your upload and retry.";
                 log.error("File extension in {} not recognized as base or support RIM.", fileName);
-                messages.addError(errorString);
+                messages.addErrorMessage(errorString);
             }
         }
         baseRims.forEach((rim) -> {
             log.info("Storing swidtag {}", rim.getFileName());
             this.referenceManifestRepository.save(rim);
         });
+
         supportRims.forEach((rim) -> {
             log.info("Storing event log {}", rim.getFileName());
             this.referenceManifestRepository.save(rim);
@@ -205,17 +221,90 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         // pass in the updated support rims
         // and either update or add the events
-        processTpmEvents(new ArrayList<SupportReferenceManifest>(updatedSupportRims.values()));
+        processTpmEvents(new ArrayList<>(updatedSupportRims.values()));
 
         //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
-
         return redirectTo(Page.REFERENCE_MANIFESTS,
                 new NoPageParams(), model, attr);
     }
 
     /**
-     * Archives (soft delete) the Reference Integrity Manifest entry.
+     * Processes the request to download the RIM .
+     *
+     * @param id       the UUID of the rim to download
+     * @param response the response object (needed to update the header with the
+     *                 file name)
+     * @throws java.io.IOException when writing to response output stream
+     */
+    @GetMapping("/download")
+    public void downloadRIM(@RequestParam final String id,
+                            final HttpServletResponse response)
+            throws IOException {
+        log.info("Received request to download RIM id {}", id);
+
+        try {
+            final UUID uuid = UUID.fromString(id);
+            ReferenceManifest referenceManifest = findSpecifiedRIM(uuid);
+
+            if (referenceManifest == null) {
+                final String notFoundMessage = "Unable to locate RIM with ID: " + uuid;
+                log.warn(notFoundMessage);
+                throw new EntityNotFoundException(notFoundMessage);
+            }
+
+            // Set filename for download.
+            response.setHeader("Content-Disposition",
+                    "attachment;" + "filename=\"" + referenceManifest.getFileName()
+            );
+            response.setContentType("application/octet-stream");
+
+            // write cert to output stream
+            response.getOutputStream().write(referenceManifest.getRimBytes());
+
+        } catch (Exception exception) {
+            log.error("An exception was thrown while attempting to download the"
+                    + " specified RIM", exception);
+
+            // send a 404 error when an exception is thrown while attempting to download the
+            // specified RIM
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Processes the request to bulk download RIMs .
+     *
+     * @param response the response object (needed to update the header with the
+     *                 file name)
+     * @throws IOException when writing to response output stream
+     */
+    @GetMapping("/bulk-download")
+    public void bulkDownloadRIMs(final HttpServletResponse response)
+            throws IOException {
+        log.info("Handling request to download all Reference Integrity Manifests");
+        String fileName = "rims.zip";
+
+
+        // Set filename for download.
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.setContentType("application/zip");
+
+        // write cert to output stream
+        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+            bulkDownloadRIMS(zipOut);
+        } catch (Exception exception) {
+            log.error("An exception was thrown while attempting to bulk download all the"
+                    + "reference integrity manifests", exception);
+
+            // send a 404 error when an exception is thrown while attempting to download the
+            // reference manifests
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Processes the request to archive/soft delete the provided Reference Integrity Manifest.
      *
      * @param id   the UUID of the rim to delete
      * @param attr RedirectAttributes used to forward data back to the original
@@ -224,34 +313,35 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView delete(@RequestParam final String id,
-                               final RedirectAttributes attr) throws URISyntaxException {
-        log.info("Handling request to delete {}", id);
+    public RedirectView deleteRIM(@RequestParam final String id,
+                                  final RedirectAttributes attr) throws URISyntaxException {
+        log.info("Received request to delete RIM id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
         try {
-            ReferenceManifest referenceManifest = getRimFromDb(id);
+            final UUID uuid = UUID.fromString(id);
+            ReferenceManifest referenceManifest = findSpecifiedRIM(uuid);
 
             if (referenceManifest == null) {
-                String notFoundMessage = "Unable to locate RIM with ID: " + id;
-                messages.addError(notFoundMessage);
+                String notFoundMessage = "Unable to locate RIM to delete with ID: " + id;
+                messages.addErrorMessage(notFoundMessage);
                 log.warn(notFoundMessage);
-            } else {
-                referenceManifestRepository.delete(referenceManifest);
-                String deleteCompletedMessage = "RIM successfully deleted";
-                messages.addInfo(deleteCompletedMessage);
-                log.info(deleteCompletedMessage);
+                throw new EntityNotFoundException(notFoundMessage);
             }
-        } catch (IllegalArgumentException iaEx) {
-            String uuidError = "Failed to parse ID from: " + id;
-            messages.addError(uuidError);
-            log.error(uuidError, iaEx);
-        } catch (DBManagerException dbmEx) {
-            String dbError = "Failed to archive cert: " + id;
-            messages.addError(dbError);
-            log.error(dbError, dbmEx);
+
+            this.referenceManifestRepository.delete(referenceManifest);
+
+            String deleteCompletedMessage = "RIM successfully deleted";
+            messages.addSuccessMessage(deleteCompletedMessage);
+            log.info(deleteCompletedMessage);
+
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while attempting to download the"
+                    + " specified RIM";
+            messages.addErrorMessage(errorMessage);
+            log.error(errorMessage, exception);
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
@@ -259,117 +349,115 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Handles request to download the rim by writing it to the response stream
-     * for download.
+     * Takes the provided column names, the search term that the user entered and attempts to find
+     * RIMS whose field values matches the provided search term.
      *
-     * @param id       the UUID of the rim to download
-     * @param response the response object (needed to update the header with the
-     *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @param searchableColumns list of the searchable column names
+     * @param searchTerm        text that was input in the search textbox
+     * @param archiveFlag       archive flag
+     * @param pageable          pageable
+     * @return page full of reference manifests
      */
-    @GetMapping("/download")
-    public void download(@RequestParam final String id,
-                         final HttpServletResponse response)
-            throws IOException {
-        log.info("Handling RIM request to download {}", id);
+    private org.springframework.data.domain.Page<ReferenceManifest> findRIMSBySearchableColumnsAndArchiveFlag(
+            final Set<String> searchableColumns,
+            final String searchTerm,
+            final boolean archiveFlag,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
+        Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
 
-        try {
-            ReferenceManifest referenceManifest = getRimFromDb(id);
+        List<Predicate> predicates = new ArrayList<>();
 
-            if (referenceManifest == null) {
-                String notFoundMessage = "Unable to locate RIM with ID: " + id;
-                log.warn(notFoundMessage);
-                // send a 404 error when invalid Reference Manifest
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            } else {
-                // Set filename for download.
-                response.setHeader("Content-Disposition",
-                        "attachment;" + "filename=\"" + referenceManifest.getFileName()
-                        // Set filename for download.
-                );
-                response.setContentType("application/octet-stream");
-
-                // write cert to output stream
-                response.getOutputStream().write(referenceManifest.getRimBytes());
+        // Dynamically add search conditions for each field that should be searchable
+        if (!StringUtils.isBlank(searchTerm)) {
+            // Dynamically loop through columns and create LIKE conditions for each searchable column
+            for (String columnName : searchableColumns) {
+                Predicate predicate =
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(rimRoot.get(columnName)),
+                                "%" + searchTerm.toLowerCase() + "%");
+                predicates.add(predicate);
             }
-        } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: " + id;
-            log.error(uuidError, ex);
-            // send a 404 error when invalid certificate
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
+
+        Predicate likeConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+
+        // Add archiveFlag condition if specified
+        query.where(criteriaBuilder.and(likeConditions,
+                criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag)));
+
+        // Apply pagination
+        TypedQuery<ReferenceManifest> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<ReferenceManifest> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
     }
 
     /**
-     * Handles request to download bulk of RIMs by writing it to the response stream
-     * for download in bulk.
+     * Retrieves the total number of records in the RIM repository.
      *
-     * @param response the response object (needed to update the header with the
-     *                 file name)
-     * @throws java.io.IOException when writing to response output stream
+     * @return total number of records in the RIM repository.
      */
-    @GetMapping("/bulk")
-    public void bulk(final HttpServletResponse response)
-            throws IOException {
-        log.info("Handling request to download all Reference Integrity Manifests");
-        String fileName = "rims.zip";
-        String zipFileName;
-
-        // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-        response.setContentType("application/zip");
-
-        List<ReferenceManifest> referenceManifestList = new LinkedList<>();
-        for (ReferenceManifest rim : referenceManifestRepository.findAll()) {
-            if ((rim instanceof BaseReferenceManifest)
-                    || (rim instanceof SupportReferenceManifest)) {
-                referenceManifestList.add(rim);
-            }
-        }
-
-        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            // get all files
-            for (ReferenceManifest rim : referenceManifestList) {
-                if (rim.getFileName().isEmpty()) {
-                    zipFileName = "";
-                } else {
-                    // configure the zip entry, the properties of the 'file'
-                    zipFileName = rim.getFileName();
-                }
-                ZipEntry zipEntry = new ZipEntry(zipFileName);
-                zipEntry.setSize((long) rim.getRimBytes().length * Byte.SIZE);
-                zipEntry.setTime(System.currentTimeMillis());
-                zipOut.putNextEntry(zipEntry);
-                // the content of the resource
-                StreamUtils.copy(rim.getRimBytes(), zipOut);
-                zipOut.closeEntry();
-            }
-            zipOut.finish();
-            // write cert to output stream
-        } catch (IllegalArgumentException ex) {
-            String uuidError = "Failed to parse ID from: ";
-            log.error(uuidError, ex);
-            // send a 404 error when invalid certificate
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
+    private long findRIMRepoCount() {
+        return this.referenceManifestRepository.findByArchiveFlag(false).size();
     }
 
     /**
      * This method takes the parameter and looks for this information in the
      * Database.
      *
-     * @param id of the RIM
+     * @param uuid RIM uuid
      * @return the associated RIM from the DB
-     * @throws IllegalArgumentException
      */
-    private ReferenceManifest getRimFromDb(final String id) throws IllegalArgumentException {
-        UUID uuid = UUID.fromString(id);
-
+    private ReferenceManifest findSpecifiedRIM(final UUID uuid) {
         if (referenceManifestRepository.existsById(uuid)) {
             return referenceManifestRepository.getReferenceById(uuid);
-        } else {
-            return null;
         }
+        return null;
+    }
+
+    /**
+     * Packages a collection of RIMs into a zip file.
+     *
+     * @param zipOut zip outputs streams
+     * @throws IOException if there are any issues packaging or downloading the zip file
+     */
+    private void bulkDownloadRIMS(final ZipOutputStream zipOut) throws IOException {
+        List<ReferenceManifest> allRIMs = this.referenceManifestRepository.findAll();
+
+        List<ReferenceManifest> referenceManifestList = new ArrayList<>();
+
+        for (ReferenceManifest rim : allRIMs) {
+            if ((rim instanceof BaseReferenceManifest)
+                    || (rim instanceof SupportReferenceManifest)) {
+                referenceManifestList.add(rim);
+            }
+        }
+
+        String zipFileName;
+
+        // get all files
+        for (ReferenceManifest rim : referenceManifestList) {
+            if (rim.getFileName().isEmpty()) {
+                zipFileName = "";
+            } else {
+                // configure the zip entry, the properties of the 'file'
+                zipFileName = rim.getFileName();
+            }
+            ZipEntry zipEntry = new ZipEntry(zipFileName);
+            zipEntry.setSize((long) rim.getRimBytes().length * Byte.SIZE);
+            zipEntry.setTime(System.currentTimeMillis());
+            zipOut.putNextEntry(zipEntry);
+            // the content of the resource
+            StreamUtils.copy(rim.getRimBytes(), zipOut);
+            zipOut.closeEntry();
+        }
+        zipOut.finish();
     }
 
     /**
@@ -400,7 +488,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             final String failMessage
                     = String.format("Failed to read uploaded file (%s): ", fileName);
             log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            messages.addErrorMessage(failMessage + e.getMessage());
         }
 
         try {
@@ -409,26 +497,26 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 if (referenceManifestRepository.findByHexDecHashAndRimType(
                         supportRim.getHexDecHash(), supportRim.getRimType()) == null) {
                     supportRims.add(supportRim);
-                    messages.addInfo("Saved support RIM " + fileName);
+                    messages.addInfoMessage("Saved support RIM " + fileName);
                 }
             } else {
                 baseRim = new BaseReferenceManifest(fileName, fileBytes);
                 if (referenceManifestRepository.findByHexDecHashAndRimType(
                         baseRim.getHexDecHash(), baseRim.getRimType()) == null) {
                     baseRims.add(baseRim);
-                    messages.addInfo("Saved base RIM " + fileName);
+                    messages.addInfoMessage("Saved base RIM " + fileName);
                 }
             }
         } catch (IOException | NullPointerException ioEx) {
             final String failMessage
                     = String.format("Failed to parse support RIM file (%s): ", fileName);
             log.error(failMessage, ioEx);
-            messages.addError(failMessage + ioEx.getMessage());
+            messages.addErrorMessage(failMessage + ioEx.getMessage());
         } catch (UnmarshalException e) {
             final String failMessage
                     = String.format("Failed to parse base RIM file (%s): ", fileName);
             log.error(failMessage, e);
-            messages.addError(failMessage + e.getMessage());
+            messages.addErrorMessage(failMessage + e.getMessage());
         } catch (Exception e) {
             final String failMessage
                     = String.format("Failed to parse (%s): ", fileName);
@@ -500,7 +588,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
     private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) {
         List<ReferenceDigestValue> referenceValues;
-        TCGEventLog logProcessor = null;
+        TCGEventLog logProcessor;
         ReferenceManifest baseRim;
         ReferenceDigestValue newRdv;
 
