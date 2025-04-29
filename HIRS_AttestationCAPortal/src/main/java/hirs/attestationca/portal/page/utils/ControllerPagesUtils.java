@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.page.utils;
 
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.portal.datatables.Column;
 import lombok.extern.log4j.Log4j2;
@@ -7,6 +8,7 @@ import lombok.extern.log4j.Log4j2;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -102,5 +104,33 @@ public final class ControllerPagesUtils {
         }
 
         return validSearchableColumnNames;
+    }
+
+    /**
+     * Helper method that converts any kind of certificate into a PEM string.
+     *
+     * @param certificate certificate
+     * @return PEM string of certificate
+     */
+    public static String convertCertificateToPem(final Certificate certificate) {
+        return "-----BEGIN CERTIFICATE-----\n"
+                + Base64.getEncoder()
+                .encodeToString(certificate.getRawBytes())
+                + "\n-----END CERTIFICATE-----\n";
+    }
+
+    /**
+     * Helper method that converts an array of certificates (presumably a trust chain of certificates)
+     * into a PEM string.
+     *
+     * @param certificates array of certificates
+     * @return PEM string of array of certificates
+     */
+    public static String convertCertificateArrayToPem(final Certificate[] certificates) {
+        StringBuilder trustChainPEM = new StringBuilder();
+        for (Certificate certificate : certificates) {
+            trustChainPEM.append(convertCertificateToPem(certificate));
+        }
+        return trustChainPEM.toString();
     }
 }

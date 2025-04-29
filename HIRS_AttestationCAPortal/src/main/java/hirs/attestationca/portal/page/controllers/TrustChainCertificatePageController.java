@@ -29,7 +29,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -265,26 +264,68 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            //  write trust chain certificates to output stream and bulk download them
-            String zipFileName;
+            final int positionOfIntermediateCert = 3;
+            final int positionOfRootCert = 4;
 
-            // get all files
-            for (CertificateAuthorityCredential acaCert : certificateAuthorityCredentials) {
-                // grab the cert's subject info,
-                // remove all parts of the subject string by splitting the string on the common name (CN)
-                // and extract the common name from the second array element
-                String commonName = acaCert.getSubject().split("CN=")[1];
-                zipFileName = String.format("%s[%s].cer", commonName,
-                        Integer.toHexString(acaCert.getCertificateHash()));
-                // configure the zip entry, the properties of the 'file'
-                ZipEntry zipEntry = new ZipEntry(zipFileName);
-                zipEntry.setSize((long) acaCert.getRawBytes().length * Byte.SIZE);
-                zipEntry.setTime(System.currentTimeMillis());
-                zipOut.putNextEntry(zipEntry);
-                // the content of the resource
-                StreamUtils.copy(acaCert.getRawBytes(), zipOut);
-                zipOut.closeEntry();
-            }
+            final CertificateAuthorityCredential intermediateCertificate =
+                    certificateAuthorityCredentials.get(positionOfIntermediateCert);
+
+            final CertificateAuthorityCredential rootCertificate =
+                    certificateAuthorityCredentials.get(positionOfRootCert);
+
+            // PEM file of the first leaf certificate, intermediate certificate and root certificate
+            final String combinedPem1 =
+                    ControllerPagesUtils.convertCertificateArrayToPem(
+                            new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(0),
+                                    intermediateCertificate,
+                                    rootCertificate});
+
+            // Create a zip entry
+            final String zipFileName1 = "combined_leafone_intermediate_root.pem";
+            ZipEntry zipEntry = new ZipEntry(zipFileName1);
+            zipEntry.setSize(combinedPem1.getBytes(StandardCharsets.UTF_8).length);
+            zipEntry.setTime(System.currentTimeMillis());
+            zipOut.putNextEntry(zipEntry);
+
+            // Write PEM content to zip
+            zipOut.write(combinedPem1.getBytes(StandardCharsets.UTF_8));
+            zipOut.closeEntry();
+
+            // PEM file of the second leaf certificate, intermediate certificate and root certificate
+            final String combinedPem2 =
+                    ControllerPagesUtils.convertCertificateArrayToPem(
+                            new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(1),
+                                    intermediateCertificate,
+                                    rootCertificate});
+
+            // Create a zip entry
+            final String zipFileName2 = "combined_leaftwo_intermediate_root.pem";
+            ZipEntry zipEntry2 = new ZipEntry(zipFileName2);
+            zipEntry2.setSize(combinedPem2.getBytes(StandardCharsets.UTF_8).length);
+            zipEntry2.setTime(System.currentTimeMillis());
+            zipOut.putNextEntry(zipEntry2);
+
+            // Write PEM content to zip
+            zipOut.write(combinedPem2.getBytes(StandardCharsets.UTF_8));
+            zipOut.closeEntry();
+
+            // PEM file of the third leaf certificate, intermediate certificate and root certificate
+            final String combinedPem3 =
+                    ControllerPagesUtils.convertCertificateArrayToPem(
+                            new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(2),
+                                    intermediateCertificate,
+                                    rootCertificate});
+
+            // Create a zip entry
+            final String zipFileName3 = "combined_leafthree_intermediate_root.pem";
+            ZipEntry zipEntry3 = new ZipEntry(zipFileName3);
+            zipEntry3.setSize(combinedPem3.getBytes(StandardCharsets.UTF_8).length);
+            zipEntry3.setTime(System.currentTimeMillis());
+            zipOut.putNextEntry(zipEntry3);
+
+            // Write PEM content to zip
+            zipOut.write(combinedPem3.getBytes(StandardCharsets.UTF_8));
+            zipOut.closeEntry();
             zipOut.finish();
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
