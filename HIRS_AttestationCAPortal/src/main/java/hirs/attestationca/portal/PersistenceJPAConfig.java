@@ -248,8 +248,8 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
             validateCertificateChain(leafThreeACACert, intermediateACACert, rootACACert);
 
             X509Certificate[] certsChainArray =
-                    new X509Certificate[] {leafOneACACert, leafTwoACACert, leafThreeACACert
-                            , intermediateACACert, rootACACert};
+                    new X509Certificate[] {leafOneACACert, leafTwoACACert, leafThreeACACert,
+                            intermediateACACert, rootACACert};
 
             log.info("The ACA certificate chain is valid and trusted");
             return certsChainArray;
@@ -257,14 +257,15 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
             throw new BeanInitializationException("Encountered error loading ACA certificates "
                     + "from key store: " + ksEx.getMessage(), ksEx);
         } catch (CertificateException certificateException) {
-            throw new BeanInitializationException("Encountered an error loading up the certificate factory.");
+            throw new BeanInitializationException("Encountered an error loading up the certificate factory.",
+                    certificateException);
         } catch (CertPathValidatorException | InvalidAlgorithmParameterException exception) {
             throw new BeanInitializationException(
                     "Encountered an error while validating the leaf, intermediate and root "
                             + " ACA certificates.", exception);
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
             throw new BeanInitializationException(
-                    "Encountered an error while initializing Cert Path validator, exception",
+                    "Encountered an error while initializing Cert Path validator",
                     noSuchAlgorithmException);
         }
     }
@@ -316,23 +317,25 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     }
 
     /**
-     * Helper method that validates the provided leaf certificate against the established intermediate and root certificates.
+     * Helper method that validates the provided leaf certificate against the
+     * established intermediate and root certificates.
      *
-     * @param leaf         leaf certificate
-     * @param intermediate intermediate certificate
-     * @param root         root certificate
+     * @param leafCert         leaf certificate
+     * @param intermediateCert intermediate certificate
+     * @param rootCert         root certificate
      * @throws CertificateException               if there is an error parsing certificates
      *                                            /creating the CertPath
      * @throws InvalidAlgorithmParameterException if the PKIX parameters are invalid
      * @throws NoSuchAlgorithmException           if the PKIX algorithm is not available in the environment
      * @throws CertPathValidatorException         if the certificate chain is invalid or cannot be validated
      */
-    private void validateCertificateChain(X509Certificate leaf, X509Certificate intermediate,
-                                          X509Certificate root)
+    private void validateCertificateChain(final X509Certificate leafCert,
+                                          final X509Certificate intermediateCert,
+                                          final X509Certificate rootCert)
             throws CertificateException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
             CertPathValidatorException {
         List<X509Certificate> certChain =
-                List.of(leaf, intermediate);
+                List.of(leafCert, intermediateCert);
 
         // Create a CertPath from the certificate chain
         CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
@@ -342,7 +345,7 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         CertPathValidator certPathValidator = CertPathValidator.getInstance("PKIX");
 
         // Create TrustAnchor from the root certificate
-        Set<TrustAnchor> trustAnchors = Set.of(new TrustAnchor(root, null));
+        Set<TrustAnchor> trustAnchors = Set.of(new TrustAnchor(rootCert, null));
 
         // Initialize PKIX parameters
         PKIXParameters pkixParams = new PKIXParameters(trustAnchors);

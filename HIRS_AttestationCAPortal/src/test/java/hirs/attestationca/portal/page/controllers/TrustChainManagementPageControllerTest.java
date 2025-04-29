@@ -175,10 +175,12 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
     /**
      * Helper method to create the byte array for the ZIP content.
+     *
+     * @return byte array representation of the test zip file content
      */
     private byte[] createZipFileContent() throws IOException, CertificateEncodingException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ZipOutputStream zipOut = new ZipOutputStream(baos)) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try (ZipOutputStream zipOut = new ZipOutputStream(byteArrayOutputStream)) {
             for (X509Certificate cert : acaTrustChain) {
                 // create a certificate authority credential off of the x509 cert
                 CertificateAuthorityCredential cac = new CertificateAuthorityCredential(cert.getEncoded());
@@ -199,7 +201,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
                 zipOut.closeEntry();
             }
         }
-        return baos.toByteArray(); // Return the ZIP file content as byte array
+        return byteArrayOutputStream.toByteArray(); // Return the ZIP file content as byte array
     }
 
     /**
