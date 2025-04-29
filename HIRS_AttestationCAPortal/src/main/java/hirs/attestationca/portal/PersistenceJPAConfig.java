@@ -86,8 +86,14 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     @Value("${server.ssl.key-store-password:''}")
     private String keyStorePassword;
 
-    @Value("${aca.certificates.signing-key-alias}")
-    private String signingKeyAlias;
+    @Value("${aca.certificates.leaf-one-key-alias}")
+    private String leaf1KeyAlias;
+
+    @Value("${aca.certificates.leaf-two-key-alias}")
+    private String leaf2KeyAlias;
+
+    @Value("${aca.certificates.leaf-three-key-alias}")
+    private String leaf3KeyAlias;
 
     @Value("${aca.certificates.intermediate-key-alias}")
     private String intermediateKeyAlias;
@@ -176,14 +182,14 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         try {
 
             // load the key from the key store
-            PrivateKey acaKey = (PrivateKey) keyStore.getKey(signingKeyAlias,
+            PrivateKey acaKey = (PrivateKey) keyStore.getKey(leaf1KeyAlias,
                     keyStorePassword.toCharArray());
 
             // break early if the certificate is not available.
             if (acaKey == null) {
                 throw new BeanInitializationException(String.format("Key with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", signingKeyAlias, keyStoreLocation));
+                        + "specified certificate. ", leaf1KeyAlias, keyStoreLocation));
             }
             return acaKey;
         } catch (Exception ex) {
@@ -201,13 +207,13 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         KeyStore keyStore = keyStore();
 
         try {
-            X509Certificate leafACACertificate = (X509Certificate) keyStore.getCertificate(signingKeyAlias);
+            X509Certificate leafACACertificate = (X509Certificate) keyStore.getCertificate(leaf1KeyAlias);
 
             // break early if the certificate is not available.
             if (leafACACertificate == null) {
                 throw new BeanInitializationException(String.format("Leaf ACA certificate with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", signingKeyAlias, keyStoreLocation));
+                        + "specified certificate. ", leaf1KeyAlias, keyStoreLocation));
             }
 
             return leafACACertificate;
@@ -231,27 +237,20 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
             X509Certificate intermediateACACert =
                     (X509Certificate) keyStore.getCertificate(intermediateKeyAlias);
 
-            X509Certificate leafACACert = (X509Certificate) keyStore.getCertificate(signingKeyAlias);
+            X509Certificate leafOneACACert = (X509Certificate) keyStore.getCertificate(leaf1KeyAlias);
+            X509Certificate leafTwoACACert = (X509Certificate) keyStore.getCertificate(leaf2KeyAlias);
+            X509Certificate leafThreeACACert = (X509Certificate) keyStore.getCertificate(leaf3KeyAlias);
+
+            // validate the three leaf ACA certs against the intermediate and root ACA certs
+            // we want to verify that the root and intermediate ACA certs have signed the three leaf certs
+            validateCertificateChain(leafOneACACert, intermediateACACert, rootACACert);
+            validateCertificateChain(leafTwoACACert, intermediateACACert, rootACACert);
+            validateCertificateChain(leafThreeACACert, intermediateACACert, rootACACert);
 
             X509Certificate[] certsChainArray =
-                    new X509Certificate[] {leafACACert, intermediateACACert, rootACACert};
+                    new X509Certificate[] {leafOneACACert, leafTwoACACert, leafThreeACACert
+                            , intermediateACACert, rootACACert};
 
-            // Create a CertPath from the certificate chain
-            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-            CertPath certPath = certFactory.generateCertPath(List.of(certsChainArray));
-
-            // Initialize CertPathValidator
-            CertPathValidator certPathValidator = CertPathValidator.getInstance("PKIX");
-
-            // Create TrustAnchor from the root certificate
-            Set<TrustAnchor> trustAnchors = Set.of(new TrustAnchor(rootACACert, null));
-
-            // Initialize PKIX parameters
-            PKIXParameters pkixParams = new PKIXParameters(trustAnchors);
-            pkixParams.setRevocationEnabled(false);  // You can enable revocation checks if needed
-
-            // Validate the CertPath
-            certPathValidator.validate(certPath, pkixParams);
             log.info("The ACA certificate chain is valid and trusted");
             return certsChainArray;
         } catch (KeyStoreException ksEx) {
@@ -314,6 +313,42 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     @Bean
     public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
+    }
+
+    /**
+     * Helper method that validates the provided leaf certificate against the established intermediate and root certificates.
+     *
+     * @param leaf         leaf certificate
+     * @param intermediate intermediate certificate
+     * @param root         root certificate
+     * @throws CertificateException               if there is an error parsing certificates
+     *                                            /creating the CertPath
+     * @throws InvalidAlgorithmParameterException if the PKIX parameters are invalid
+     * @throws NoSuchAlgorithmException           if the PKIX algorithm is not available in the environment
+     * @throws CertPathValidatorException         if the certificate chain is invalid or cannot be validated
+     */
+    private void validateCertificateChain(X509Certificate leaf, X509Certificate intermediate,
+                                          X509Certificate root)
+            throws CertificateException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+            CertPathValidatorException {
+        List<X509Certificate> certChain =
+                List.of(leaf, intermediate);
+
+        // Create a CertPath from the certificate chain
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+        CertPath certPath = certFactory.generateCertPath(certChain);
+
+        // Initialize CertPathValidator
+        CertPathValidator certPathValidator = CertPathValidator.getInstance("PKIX");
+
+        // Create TrustAnchor from the root certificate
+        Set<TrustAnchor> trustAnchors = Set.of(new TrustAnchor(root, null));
+
+        // Initialize PKIX parameters
+        PKIXParameters pkixParams = new PKIXParameters(trustAnchors);
+        pkixParams.setRevocationEnabled(false);
+
+        certPathValidator.validate(certPath, pkixParams);
     }
 
     final Properties additionalProperties() {
