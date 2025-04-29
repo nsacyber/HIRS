@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -195,47 +196,49 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
      * @return the {@link X509Certificate} of the ACA
      */
     @Bean
-    public X509Certificate acaCertificate() {
+    @Qualifier("leafACACert")
+    public X509Certificate leafACACertificate() {
         KeyStore keyStore = keyStore();
 
         try {
-            X509Certificate acaCertificate = (X509Certificate) keyStore.getCertificate(signingKeyAlias);
+            X509Certificate leafACACertificate = (X509Certificate) keyStore.getCertificate(signingKeyAlias);
 
             // break early if the certificate is not available.
-            if (acaCertificate == null) {
-                throw new BeanInitializationException(String.format("Certificate with alias "
+            if (leafACACertificate == null) {
+                throw new BeanInitializationException(String.format("Leaf ACA certificate with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
                         + "specified certificate. ", signingKeyAlias, keyStoreLocation));
             }
 
-            return acaCertificate;
+            return leafACACertificate;
         } catch (KeyStoreException ksEx) {
-            throw new BeanInitializationException("Encountered error loading ACA certificate "
+            throw new BeanInitializationException("Encountered error loading leaf ACA certificate "
                     + "from key store: " + ksEx.getMessage(), ksEx);
         }
     }
 
     /**
-     * @return the array of {@link X509Certificate}  ACA trust chain certificates
+     * @return the array of {@link X509Certificate} ACA trust chain certificates
      */
     @Bean
+    @Qualifier("acaTrustChainCerts")
     public X509Certificate[] acaTrustChainCertificates() {
         KeyStore keyStore = keyStore();
 
         try {
-            X509Certificate leafACACert = (X509Certificate) keyStore.getCertificate(signingKeyAlias);
+            X509Certificate rootACACert = (X509Certificate) keyStore.getCertificate(rootKeyAlias);
 
             X509Certificate intermediateACACert =
                     (X509Certificate) keyStore.getCertificate(intermediateKeyAlias);
 
-            X509Certificate rootACACert = (X509Certificate) keyStore.getCertificate(rootKeyAlias);
+            X509Certificate leafACACert = (X509Certificate) keyStore.getCertificate(signingKeyAlias);
 
-            List<X509Certificate> certChain =
-                    List.of(leafACACert, intermediateACACert, rootACACert);
+            X509Certificate[] certsChainArray =
+                    new X509Certificate[] {leafACACert, intermediateACACert, rootACACert};
 
             // Create a CertPath from the certificate chain
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-            CertPath certPath = certFactory.generateCertPath(certChain);
+            CertPath certPath = certFactory.generateCertPath(List.of(certsChainArray));
 
             // Initialize CertPathValidator
             CertPathValidator certPathValidator = CertPathValidator.getInstance("PKIX");
@@ -248,20 +251,22 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
             pkixParams.setRevocationEnabled(false);  // You can enable revocation checks if needed
 
             // Validate the CertPath
-            try {
-                certPathValidator.validate(certPath, pkixParams);
-                System.out.println("The certificate chain is valid and trusted.");
-            } catch (CertPathValidatorException e) {
-                System.out.println("The certificate chain is not valid: " + e.getMessage());
-            }
-
-
-            return new X509Certificate[] {(X509Certificate) keyStore.getCertificate(signingKeyAlias)};
+            certPathValidator.validate(certPath, pkixParams);
+            log.info("The ACA certificate chain is valid and trusted");
+            return certsChainArray;
         } catch (KeyStoreException ksEx) {
-            throw new BeanInitializationException("Encountered error loading ACA certificate "
+            throw new BeanInitializationException("Encountered error loading ACA certificates "
                     + "from key store: " + ksEx.getMessage(), ksEx);
-        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | CertificateException e) {
-            throw new RuntimeException(e);
+        } catch (CertificateException certificateException) {
+            throw new BeanInitializationException("Encountered an error loading up the certificate factory.");
+        } catch (CertPathValidatorException | InvalidAlgorithmParameterException exception) {
+            throw new BeanInitializationException(
+                    "Encountered an error while validating the leaf, intermediate and root "
+                            + " ACA certificates.", exception);
+        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
+            throw new BeanInitializationException(
+                    "Encountered an error while initializing Cert Path validator, exception",
+                    noSuchAlgorithmException);
         }
     }
 

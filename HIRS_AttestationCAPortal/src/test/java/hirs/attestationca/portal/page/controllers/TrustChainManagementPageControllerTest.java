@@ -2,22 +2,29 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.attestationca.portal.page.PageMessages;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.servlet.FlashMap;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static hirs.attestationca.portal.page.Page.TRUST_CHAIN;
 import static org.hamcrest.Matchers.hasEntry;
@@ -43,8 +50,12 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     // Repository manager to handle data access between certificate entity and data storage in db
     @Autowired
     private CertificateRepository certificateRepository;
+
     @Autowired
-    private X509Certificate acaCert;
+    @Qualifier("acaTrustChainCerts")
+    private X509Certificate[] acaTrustChain;
+
+
     // A file that contains a cert that is not an UTC Cert. Should be parsable as a general
     // cert, but should (eventually) not be stored as an UTC because it isn't one.
     private MockMultipartFile nonCaCertFile;
@@ -105,17 +116,17 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
      */
     @Test
     @Rollback
-    public void testDownloadAcaCert() throws Exception {
+    public void testDownloadAcaCertChain() throws Exception {
 
         // verify cert file attachment and content
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(
-                        pagePath + "/download-aca-cert"))
+                        pagePath + "/download-aca-cert-chain"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("application/octet-stream"))
+                .andExpect(content().contentType("application/zip"))
                 .andExpect(header().string("Content-Disposition",
-                        "attachment; filename=\"hirs-aca-cert.cer\""))
-                .andExpect(content().bytes(acaCert.getEncoded()));
+                        "attachment; filename=hirs-aca-trust-chain-certs.zip"))
+                .andExpect(content().bytes(createZipFileContent()));
     }
 
     /**
@@ -160,6 +171,35 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     public void uploadAndArchiveCaTrustCert() throws Exception {
         Certificate cert = uploadTestCert();
         archiveTestCert(cert);
+    }
+
+    /**
+     * Helper method to create the byte array for the ZIP content.
+     */
+    private byte[] createZipFileContent() throws IOException, CertificateEncodingException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zipOut = new ZipOutputStream(baos)) {
+            for (X509Certificate cert : acaTrustChain) {
+                // create a certificate authority credential off of the x509 cert
+                CertificateAuthorityCredential cac = new CertificateAuthorityCredential(cert.getEncoded());
+
+                // retrieve the certificate's common name
+                String commonName = cac.getSubject().split("CN=")[1];
+
+                // use the common name and the certificate's hash to create the file name
+                String fileName = String.format("%s[%s].cer", commonName,
+                        Integer.toHexString(cac.getCertificateHash()));
+
+                ZipEntry zipEntry = new ZipEntry(fileName);
+                zipEntry.setSize((long) cac.getRawBytes().length * Byte.SIZE);
+                zipEntry.setTime(System.currentTimeMillis());
+                zipOut.putNextEntry(zipEntry);
+                // the content of the resource
+                StreamUtils.copy(cac.getRawBytes(), zipOut);
+                zipOut.closeEntry();
+            }
+        }
+        return baos.toByteArray(); // Return the ZIP file content as byte array
     }
 
     /**

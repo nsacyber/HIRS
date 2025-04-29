@@ -22,6 +22,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -77,16 +78,17 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     /**
      * Constructor for the Trust Chain Certificate page.
      *
-     * @param certificateRepository  certificate repository
-     * @param caCredentialRepository caCredential repository
-     * @param certificateService     certificate service
-     * @param acaTrustChain          ACA Trust Chain certificates
+     * @param certificateRepository     certificate repository
+     * @param caCredentialRepository    caCredential repository
+     * @param certificateService        certificate service
+     * @param acaTrustChainCertificates ACA Trust Chain certificates
      */
     @Autowired
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
                                                final CertificateService certificateService,
-                                               final X509Certificate[] acaTrustChain) {
+                                               @Qualifier("acaTrustChainCerts")
+                                               final X509Certificate[] acaTrustChainCertificates) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;
@@ -94,8 +96,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         this.certificateAuthorityCredentials = new ArrayList<>();
 
         try {
-            for (X509Certificate eachCert : acaTrustChain) {
-                certificateAuthorityCredentials.add(
+            for (X509Certificate eachCert : acaTrustChainCertificates) {
+                this.certificateAuthorityCredentials.add(
                         new CertificateAuthorityCredential(eachCert.getEncoded()));
             }
         } catch (IOException ioEx) {
@@ -250,18 +252,17 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @ResponseBody
-    @GetMapping("/download-aca-cert")
-    public void downloadAcaCertificate(final HttpServletResponse response)
+    @GetMapping("/download-aca-cert-chain")
+    public void downloadACATrustChain(final HttpServletResponse response)
             throws IOException {
 
         log.info("Received request to download the ACA server trust chain certificates");
 
         final String fileName = "hirs-aca-trust-chain-certs.zip";
-        final String singleFileName = "hirs-aca-trust-chain-cert";
 
         // Set filename for download.
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-        response.setContentType("application/octet-stream");
+        response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             //  write trust chain certificates to output stream and bulk download them
@@ -269,7 +270,11 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
             // get all files
             for (CertificateAuthorityCredential acaCert : certificateAuthorityCredentials) {
-                zipFileName = String.format("%s[%s].cer", singleFileName,
+                // grab the cert's subject info,
+                // remove all parts of the subject string by splitting the string on the common name (CN)
+                // and extract the common name from the second array element
+                String commonName = acaCert.getSubject().split("CN=")[1];
+                zipFileName = String.format("%s[%s].cer", commonName,
                         Integer.toHexString(acaCert.getCertificateHash()));
                 // configure the zip entry, the properties of the 'file'
                 ZipEntry zipEntry = new ZipEntry(zipFileName);
@@ -282,7 +287,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             }
             zipOut.finish();
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the"
+            log.error("An exception was thrown while attempting to download the"
                     + "aca trust chain certificates", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the

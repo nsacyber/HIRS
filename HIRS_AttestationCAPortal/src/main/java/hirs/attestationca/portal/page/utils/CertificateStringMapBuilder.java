@@ -258,7 +258,6 @@ public final class CertificateStringMapBuilder {
         HashMap<String, String> data = new HashMap<>();
 
         if (certificates != null) {
-
             for (CertificateAuthorityCredential certificate : certificates) {
                 data.putAll(
                         getGeneralCertificateInfo(certificate, certificateRepository,
