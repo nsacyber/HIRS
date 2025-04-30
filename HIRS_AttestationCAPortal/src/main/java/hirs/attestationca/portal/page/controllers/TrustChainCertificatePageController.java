@@ -41,6 +41,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
@@ -54,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -257,79 +257,40 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         log.info("Received request to download the ACA server trust chain certificates");
 
-        final String fileName = "hirs-aca-trust-chain-certs.zip";
+        final int positionOfIntermediateCert = 3;
+        final int positionOfRootCert = 4;
 
-        // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-        response.setContentType("application/zip");
-
-        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            final int positionOfIntermediateCert = 3;
-            final int positionOfRootCert = 4;
-
+        // Get the output stream of the response
+        try (OutputStream outputStream = response.getOutputStream()) {
             final CertificateAuthorityCredential intermediateCertificate =
                     certificateAuthorityCredentials.get(positionOfIntermediateCert);
 
             final CertificateAuthorityCredential rootCertificate =
                     certificateAuthorityCredentials.get(positionOfRootCert);
 
-            // PEM file of the first leaf certificate, intermediate certificate and root certificate
-            final String combinedPem1 =
+            // PEM file of all three leaf certificates, intermediate certificate and root certificate
+            final String fullChainPEM =
                     ControllerPagesUtils.convertCertificateArrayToPem(
                             new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(0),
+                                    certificateAuthorityCredentials.get(1),
+                                    certificateAuthorityCredentials.get(2),
                                     intermediateCertificate,
                                     rootCertificate});
 
-            // Create a zip entry
-            final String zipFileName1 = "combined_leafone_intermediate_root.pem";
-            ZipEntry zipEntry = new ZipEntry(zipFileName1);
-            zipEntry.setSize(combinedPem1.getBytes(StandardCharsets.UTF_8).length);
-            zipEntry.setTime(System.currentTimeMillis());
-            zipOut.putNextEntry(zipEntry);
+            final String PEMFileName = "hirs-aca-trust_chain.pem ";
+            
+            // Set the response headers for file download
+            response.setContentType("application/x-pem-file");  // MIME type for PEM files
+            response.setHeader("Content-Disposition", "attachment; filename=" + PEMFileName);
+            response.setContentLength(fullChainPEM.length());
 
-            // Write PEM content to zip
-            zipOut.write(combinedPem1.getBytes(StandardCharsets.UTF_8));
-            zipOut.closeEntry();
+            // Write the PEM string to the output stream
+            outputStream.write(fullChainPEM.getBytes(StandardCharsets.UTF_8));
+            outputStream.flush();  // Ensure all data is written
 
-            // PEM file of the second leaf certificate, intermediate certificate and root certificate
-            final String combinedPem2 =
-                    ControllerPagesUtils.convertCertificateArrayToPem(
-                            new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(1),
-                                    intermediateCertificate,
-                                    rootCertificate});
-
-            // Create a zip entry
-            final String zipFileName2 = "combined_leaftwo_intermediate_root.pem";
-            ZipEntry zipEntry2 = new ZipEntry(zipFileName2);
-            zipEntry2.setSize(combinedPem2.getBytes(StandardCharsets.UTF_8).length);
-            zipEntry2.setTime(System.currentTimeMillis());
-            zipOut.putNextEntry(zipEntry2);
-
-            // Write PEM content to zip
-            zipOut.write(combinedPem2.getBytes(StandardCharsets.UTF_8));
-            zipOut.closeEntry();
-
-            // PEM file of the third leaf certificate, intermediate certificate and root certificate
-            final String combinedPem3 =
-                    ControllerPagesUtils.convertCertificateArrayToPem(
-                            new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(2),
-                                    intermediateCertificate,
-                                    rootCertificate});
-
-            // Create a zip entry
-            final String zipFileName3 = "combined_leafthree_intermediate_root.pem";
-            ZipEntry zipEntry3 = new ZipEntry(zipFileName3);
-            zipEntry3.setSize(combinedPem3.getBytes(StandardCharsets.UTF_8).length);
-            zipEntry3.setTime(System.currentTimeMillis());
-            zipOut.putNextEntry(zipEntry3);
-
-            // Write PEM content to zip
-            zipOut.write(combinedPem3.getBytes(StandardCharsets.UTF_8));
-            zipOut.closeEntry();
-            zipOut.finish();
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + "aca trust chain certificates", exception);
+                    + "aca trust chain", exception);
 
             // send a 404 error when an exception is thrown while attempting to download the
             // aca certificates
