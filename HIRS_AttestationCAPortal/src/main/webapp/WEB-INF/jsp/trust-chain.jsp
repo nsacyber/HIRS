@@ -16,7 +16,7 @@
   <jsp:attribute name="pageHeaderTitle">Trust Chain Management</jsp:attribute>
 
   <jsp:body>
-    <span class="aca-input-box-header"> HIRS Attestation CA Certificate Chain </span>
+    <span class="aca-input-box-header"> HIRS Attestation Certificate Chain </span>
     <my:details-viewer
       id="aca-cert-viewer"
       label="HIRS Attestation Root Certificate"
@@ -86,7 +86,7 @@
     </my:details-viewer>
 
     <a href="${portal}/certificate-request/trust-chain/download-aca-cert-chain">
-      <img src="${baseURL}/images/icons/ic_file_download_black_24dp.png" title="Download ACA Certificate Trust Chain">
+      <img src="${baseURL}/images/icons/ic_file_download_black_24dp.png" title="Download Certificate Chain">
     </a>
     <div class="aca-input-box-header">
       <form:form
