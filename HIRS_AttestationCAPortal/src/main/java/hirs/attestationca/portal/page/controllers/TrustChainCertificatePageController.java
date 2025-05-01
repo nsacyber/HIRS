@@ -257,28 +257,17 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         log.info("Received request to download the ACA server trust chain certificates");
 
-        final int positionOfIntermediateCert = 3;
-        final int positionOfRootCert = 4;
-
         // Get the output stream of the response
         try (OutputStream outputStream = response.getOutputStream()) {
-            final CertificateAuthorityCredential intermediateCertificate =
-                    certificateAuthorityCredentials.get(positionOfIntermediateCert);
-
-            final CertificateAuthorityCredential rootCertificate =
-                    certificateAuthorityCredentials.get(positionOfRootCert);
-
-            // PEM file of all three leaf certificates, intermediate certificate and root certificate
+            // PEM file of the leaf certificate, intermediate certificate and root certificate (in that order)
             final String fullChainPEM =
                     ControllerPagesUtils.convertCertificateArrayToPem(
                             new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(0),
                                     certificateAuthorityCredentials.get(1),
-                                    certificateAuthorityCredentials.get(2),
-                                    intermediateCertificate,
-                                    rootCertificate});
+                                    certificateAuthorityCredentials.get(2)});
 
             final String PEMFileName = "hirs-aca-trust_chain.pem ";
-            
+
             // Set the response headers for file download
             response.setContentType("application/x-pem-file");  // MIME type for PEM files
             response.setHeader("Content-Disposition", "attachment; filename=" + PEMFileName);

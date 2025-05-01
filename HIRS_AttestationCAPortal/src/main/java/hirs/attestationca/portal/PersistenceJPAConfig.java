@@ -86,12 +86,6 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     @Value("${server.ssl.key-store-password:''}")
     private String keyStorePassword;
 
-    @Value("${aca.certificates.leaf-one-key-alias}")
-    private String leaf1KeyAlias;
-
-    @Value("${aca.certificates.leaf-two-key-alias}")
-    private String leaf2KeyAlias;
-
     @Value("${aca.certificates.leaf-three-key-alias}")
     private String leaf3KeyAlias;
 
@@ -182,14 +176,14 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         try {
 
             // load the key from the key store
-            PrivateKey acaKey = (PrivateKey) keyStore.getKey(leaf1KeyAlias,
+            PrivateKey acaKey = (PrivateKey) keyStore.getKey(leaf3KeyAlias,
                     keyStorePassword.toCharArray());
 
             // break early if the certificate is not available.
             if (acaKey == null) {
                 throw new BeanInitializationException(String.format("Key with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", leaf1KeyAlias, keyStoreLocation));
+                        + "specified certificate. ", leaf3KeyAlias, keyStoreLocation));
             }
             return acaKey;
         } catch (Exception ex) {
@@ -207,13 +201,13 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         KeyStore keyStore = keyStore();
 
         try {
-            X509Certificate leafACACertificate = (X509Certificate) keyStore.getCertificate(leaf1KeyAlias);
+            X509Certificate leafACACertificate = (X509Certificate) keyStore.getCertificate(leaf3KeyAlias);
 
             // break early if the certificate is not available.
             if (leafACACertificate == null) {
                 throw new BeanInitializationException(String.format("Leaf ACA certificate with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", leaf1KeyAlias, keyStoreLocation));
+                        + "specified certificate. ", leaf3KeyAlias, keyStoreLocation));
             }
 
             return leafACACertificate;
@@ -237,18 +231,14 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
             X509Certificate intermediateACACert =
                     (X509Certificate) keyStore.getCertificate(intermediateKeyAlias);
 
-            X509Certificate leafOneACACert = (X509Certificate) keyStore.getCertificate(leaf1KeyAlias);
-            X509Certificate leafTwoACACert = (X509Certificate) keyStore.getCertificate(leaf2KeyAlias);
             X509Certificate leafThreeACACert = (X509Certificate) keyStore.getCertificate(leaf3KeyAlias);
 
-            // validate the three leaf ACA certs against the intermediate and root ACA certs
-            // we want to verify that the root and intermediate ACA certs have signed the three leaf certs
-            validateCertificateChain(leafOneACACert, intermediateACACert, rootACACert);
-            validateCertificateChain(leafTwoACACert, intermediateACACert, rootACACert);
+            // verify that the leaf ACA cert has been signed by the intermediate certificate and that
+            // intermediate certificate has been signed by the root certificate
             validateCertificateChain(leafThreeACACert, intermediateACACert, rootACACert);
 
             X509Certificate[] certsChainArray =
-                    new X509Certificate[] {leafOneACACert, leafTwoACACert, leafThreeACACert,
+                    new X509Certificate[] {leafThreeACACert,
                             intermediateACACert, rootACACert};
 
             log.info("The ACA certificate chain is valid and trusted");
