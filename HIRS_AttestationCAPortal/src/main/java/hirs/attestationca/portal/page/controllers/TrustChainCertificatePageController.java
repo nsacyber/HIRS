@@ -266,11 +266,11 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                                     certificateAuthorityCredentials.get(1),
                                     certificateAuthorityCredentials.get(2)});
 
-            final String PEMFileName = "hirs-aca-trust_chain.pem ";
+            final String pemFileName = "hirs-aca-trust_chain.pem ";
 
             // Set the response headers for file download
             response.setContentType("application/x-pem-file");  // MIME type for PEM files
-            response.setHeader("Content-Disposition", "attachment; filename=" + PEMFileName);
+            response.setHeader("Content-Disposition", "attachment; filename=" + pemFileName);
             response.setContentLength(fullChainPEM.length());
 
             // Write the PEM string to the output stream
