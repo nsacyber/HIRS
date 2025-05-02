@@ -36,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -172,7 +173,8 @@ public class ValidationSummaryReportsService {
         String contractNumber = "";
         Pattern pattern = Pattern.compile("^\\w*$");
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd");
-        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
+        DateTimeFormatter dateTimeFormat =
+                DateTimeFormatter.ofPattern("EEE, dd MMM uuuu HH:mm:ss z");
         LocalDate startDate = null;
         LocalDate endDate = null;
         ArrayList<LocalDate> createTimes = new ArrayList<>();
@@ -225,10 +227,15 @@ public class ValidationSummaryReportsService {
                     //todo issue #922
                     if (!parameterValue.equals(UNDEFINED)
                             && !parameterValue.isEmpty()) {
-                        String[] timestamps = parameterValue.split(",");
+                        String[] timestamps = parameterValue.split(";");
+
                         for (String timestamp : timestamps) {
-                            createTimes.add(LocalDateTime.parse(timestamp,
-                                    dateTimeFormat).toLocalDate());
+                            ZonedDateTime zonedDateTime = ZonedDateTime.parse(timestamp, dateTimeFormat);
+
+                            // Convert to LocalDateTime (drops time zone info)
+                            LocalDate localDate = zonedDateTime.toLocalDate();
+
+                            createTimes.add(localDate);
                         }
                     }
                     break;
