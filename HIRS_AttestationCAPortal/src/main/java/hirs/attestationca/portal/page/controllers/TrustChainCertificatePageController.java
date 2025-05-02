@@ -7,6 +7,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.TrustChainCertificateService;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -70,6 +71,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final CertificateService certificateService;
+    private final TrustChainCertificateService trustChainCertificateService;
     private CertificateAuthorityCredential certificateAuthorityCredential;
 
     /**
@@ -84,11 +86,13 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
                                                final CertificateService certificateService,
+                                               TrustChainCertificateService trustChainCertificateService,
                                                final X509Certificate acaCertificate) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;
         this.certificateService = certificateService;
+        this.trustChainCertificateService = trustChainCertificateService;
 
         try {
             certificateAuthorityCredential

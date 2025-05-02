@@ -6,6 +6,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.EndorsementCredentialService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -53,6 +54,7 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
 public class EndorsementCredentialPageController extends PageController<NoPageParams> {
     private final EndorsementCredentialRepository endorsementCredentialRepository;
+    private final EndorsementCredentialService endorsementCredentialService;
     private final CertificateService certificateService;
 
     /**
@@ -64,9 +66,11 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     @Autowired
     public EndorsementCredentialPageController(
             final EndorsementCredentialRepository endorsementCredentialRepository,
+            EndorsementCredentialService endorsementCredentialService,
             final CertificateService certificateService) {
         super(Page.ENDORSEMENT_KEY_CREDENTIALS);
         this.endorsementCredentialRepository = endorsementCredentialRepository;
+        this.endorsementCredentialService = endorsementCredentialService;
         this.certificateService = certificateService;
     }
 

@@ -12,6 +12,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import hirs.attestationca.persist.service.ReferenceManifestService;
 import hirs.attestationca.persist.service.ValidationService;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.persist.validation.SupplyChainValidatorException;
@@ -61,6 +62,7 @@ public class ReferenceManifestDetailsPageController
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCertificateRepository;
+    private final ReferenceManifestService referenceManifestService;
 
     /**
      * Constructor providing the Page's display and routing specification.
@@ -75,12 +77,14 @@ public class ReferenceManifestDetailsPageController
             final ReferenceManifestRepository referenceManifestRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository,
             final CertificateRepository certificateRepository,
-            final CACredentialRepository caCertificateRepository) {
+            final CACredentialRepository caCertificateRepository,
+            final ReferenceManifestService referenceManifestService) {
         super(Page.RIM_DETAILS);
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.certificateRepository = certificateRepository;
         this.caCertificateRepository = caCertificateRepository;
+        this.referenceManifestService = referenceManifestService;
     }
 
     /**

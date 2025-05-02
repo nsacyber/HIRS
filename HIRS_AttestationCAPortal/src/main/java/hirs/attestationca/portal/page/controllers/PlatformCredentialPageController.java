@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.PlatformCredentialService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -57,6 +58,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
     private final CertificateService certificateService;
+    private final PlatformCredentialService platformCredentialService;
 
     /**
      * Constructor for the Platform Credential page.
@@ -69,11 +71,13 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     public PlatformCredentialPageController(
             final PlatformCertificateRepository platformCertificateRepository,
             final EndorsementCredentialRepository endorsementCredentialRepository,
-            final CertificateService certificateService) {
+            final CertificateService certificateService,
+            PlatformCredentialService platformCredentialService) {
         super(Page.PLATFORM_CREDENTIALS);
         this.platformCertificateRepository = platformCertificateRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
         this.certificateService = certificateService;
+        this.platformCredentialService = platformCredentialService;
     }
 
     /**

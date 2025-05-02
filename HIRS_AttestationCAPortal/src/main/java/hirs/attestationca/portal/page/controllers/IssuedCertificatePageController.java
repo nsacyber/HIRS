@@ -6,6 +6,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.IssuedAttestationCertificateService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -51,6 +52,7 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
     private final IssuedCertificateRepository issuedCertificateRepository;
+    private final IssuedAttestationCertificateService issuedAttestationCertificateService;
     private final CertificateService certificateService;
 
     /**
@@ -62,9 +64,11 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     @Autowired
     public IssuedCertificatePageController(
             final IssuedCertificateRepository issuedCertificateRepository,
+            final IssuedAttestationCertificateService issuedAttestationCertificateService,
             final CertificateService certificateService) {
         super(Page.ISSUED_CERTIFICATES);
         this.issuedCertificateRepository = issuedCertificateRepository;
+        this.issuedAttestationCertificateService = issuedAttestationCertificateService;
         this.certificateService = certificateService;
     }
 
