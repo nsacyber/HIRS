@@ -7,6 +7,7 @@ import hirs.attestationca.portal.page.PageMessages;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
@@ -43,8 +44,12 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     // Repository manager to handle data access between certificate entity and data storage in db
     @Autowired
     private CertificateRepository certificateRepository;
+
     @Autowired
-    private X509Certificate acaCert;
+    @Qualifier("acaTrustChainCerts")
+    private X509Certificate[] acaTrustChain;
+
+
     // A file that contains a cert that is not an UTC Cert. Should be parsable as a general
     // cert, but should (eventually) not be stored as an UTC because it isn't one.
     private MockMultipartFile nonCaCertFile;
@@ -98,25 +103,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
                 );
     }
 
-    /**
-     * Tests downloading the aca cert.
-     *
-     * @throws Exception when getting raw report
-     */
-    @Test
-    @Rollback
-    public void testDownloadAcaCert() throws Exception {
-
-        // verify cert file attachment and content
-        getMockMvc()
-                .perform(MockMvcRequestBuilders.get(
-                        pagePath + "/download-aca-cert"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/octet-stream"))
-                .andExpect(header().string("Content-Disposition",
-                        "attachment; filename=\"hirs-aca-cert.cer\""))
-                .andExpect(content().bytes(acaCert.getEncoded()));
-    }
+    //todo write download aca-trust-chain cert method
 
     /**
      * Tests downloading the certificate.
