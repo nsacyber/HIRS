@@ -340,8 +340,6 @@ public class CertificateService {
                             "IDevIDCertificate");
             case ISSUED_CERTIFICATES -> this.certificateRepository.
                     findByType("IssuedAttestationCertificate");
-            default -> throw new IllegalArgumentException("The provided certificate type {"
-                    + certificateType + "} does not exist");
         };
     }
 

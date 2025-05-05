@@ -235,41 +235,46 @@ public final class CertificateStringMapBuilder {
         String notFoundMessage = "Unable to find Certificate Authority "
                 + "Credential with ID: " + uuid;
 
-        return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository, certificate,
+        return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository,
+                List.of(certificate),
                 notFoundMessage);
     }
 
     /**
      * Returns the Trust Chain credential information.
      *
-     * @param certificate             the certificate
+     * @param certificates            the certificates
      * @param certificateRepository   the certificate repository for retrieving certs.
      * @param caCertificateRepository the certificate repository for retrieving certs.
      * @return a hash map with the endorsement certificate information.
      */
     public static HashMap<String, String> getCertificateAuthorityInformation(
-            final CertificateAuthorityCredential certificate,
+            final List<CertificateAuthorityCredential> certificates,
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCertificateRepository) {
-        return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository, certificate,
+        return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository, certificates,
                 "No cert provided for mapping");
     }
 
     private static HashMap<String, String> getCertificateAuthorityInfoHelper(
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCertificateRepository,
-            final CertificateAuthorityCredential certificate, final String notFoundMessage) {
+            final List<CertificateAuthorityCredential> certificates, final String notFoundMessage) {
         HashMap<String, String> data = new HashMap<>();
 
-        if (certificate != null) {
-            data.putAll(
-                    getGeneralCertificateInfo(certificate, certificateRepository, caCertificateRepository));
-            data.put("subjectKeyIdentifier",
-                    Arrays.toString(certificate.getSubjectKeyIdentifier()));
-            //x509 credential version
-            data.put("x509Version", Integer.toString(certificate
-                    .getX509CredentialVersion()));
-            data.put("credentialType", certificate.getCredentialType());
+        if (certificates != null) {
+            for (CertificateAuthorityCredential certificate : certificates) {
+                data.putAll(
+                        getGeneralCertificateInfo(certificate, certificateRepository,
+                                caCertificateRepository));
+                data.put("subjectKeyIdentifier",
+                        Arrays.toString(certificate.getSubjectKeyIdentifier()));
+                //x509 credential version
+                data.put("x509Version", Integer.toString(certificate
+                        .getX509CredentialVersion()));
+                data.put("credentialType", certificate.getCredentialType());
+            }
+
         } else {
             log.error(notFoundMessage);
         }

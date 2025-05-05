@@ -23,6 +23,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -41,6 +42,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
@@ -71,32 +73,36 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final CertificateService certificateService;
+    private final List<CertificateAuthorityCredential> certificateAuthorityCredentials;
     private final TrustChainCertificateService trustChainCertificateService;
-    private CertificateAuthorityCredential certificateAuthorityCredential;
 
     /**
      * Constructor for the Trust Chain Certificate page.
      *
-     * @param certificateRepository  certificate repository
-     * @param caCredentialRepository caCredential repository
-     * @param certificateService     certificate service
-     * @param acaCertificate         ACA Certificate
+     * @param certificateRepository     certificate repository
+     * @param caCredentialRepository    caCredential repository
+     * @param certificateService        certificate service
+     * @param acaTrustChainCertificates ACA Trust Chain certificates
      */
     @Autowired
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
                                                final CertificateService certificateService,
-                                               TrustChainCertificateService trustChainCertificateService,
-                                               final X509Certificate acaCertificate) {
+                                               final TrustChainCertificateService trustChainCertificateService,
+                                               @Qualifier("acaTrustChainCerts")
+                                               final X509Certificate[] acaTrustChainCertificates) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;
         this.certificateService = certificateService;
         this.trustChainCertificateService = trustChainCertificateService;
+        this.certificateAuthorityCredentials = new ArrayList<>();
 
         try {
-            certificateAuthorityCredential
-                    = new CertificateAuthorityCredential(acaCertificate.getEncoded());
+            for (X509Certificate eachCert : acaTrustChainCertificates) {
+                this.certificateAuthorityCredentials.add(
+                        new CertificateAuthorityCredential(eachCert.getEncoded()));
+            }
         } catch (IOException ioEx) {
             log.error("Failed to read ACA certificate", ioEx);
         } catch (CertificateEncodingException ceEx) {
@@ -120,7 +126,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         mav.addObject(ACA_CERT_DATA,
                 new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInformation(
-                        certificateAuthorityCredential, this.certificateRepository,
+                        this.certificateAuthorityCredentials, this.certificateRepository,
                         this.caCredentialRepository)));
 
         return mav;
@@ -242,25 +248,47 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     }
 
     /**
-     * Processes the request to download the ACA trust chain certificate.
+     * Processes the request to download the ACA trust chain certificates.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
      * @throws IOException when writing to response output stream
      */
     @ResponseBody
-    @GetMapping("/download-aca-cert")
-    public void downloadAcaCertificate(final HttpServletResponse response)
+    @GetMapping("/download-aca-cert-chain")
+    public void downloadACATrustChain(final HttpServletResponse response)
             throws IOException {
 
-        log.info("Received request to download the ACA server trust chain certificate");
+        log.info("Received request to download the ACA server trust chain certificates");
 
-        // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=\"hirs-aca-cert.cer\"");
-        response.setContentType("application/octet-stream");
+        // Get the output stream of the response
+        try (OutputStream outputStream = response.getOutputStream()) {
+            // PEM file of the leaf certificate, intermediate certificate and root certificate (in that order)
+            final String fullChainPEM =
+                    ControllerPagesUtils.convertCertificateArrayToPem(
+                            new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(0),
+                                    certificateAuthorityCredentials.get(1),
+                                    certificateAuthorityCredentials.get(2)});
 
-        // write cert to output stream
-        response.getOutputStream().write(certificateAuthorityCredential.getRawBytes());
+            final String pemFileName = "hirs-aca-trust_chain.pem ";
+
+            // Set the response headers for file download
+            response.setContentType("application/x-pem-file");  // MIME type for PEM files
+            response.setHeader("Content-Disposition", "attachment; filename=" + pemFileName);
+            response.setContentLength(fullChainPEM.length());
+
+            // Write the PEM string to the output stream
+            outputStream.write(fullChainPEM.getBytes(StandardCharsets.UTF_8));
+            outputStream.flush();  // Ensure all data is written
+
+        } catch (Exception exception) {
+            log.error("An exception was thrown while attempting to download the"
+                    + "aca trust chain", exception);
+
+            // send a 404 error when an exception is thrown while attempting to download the
+            // aca certificates
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     /**

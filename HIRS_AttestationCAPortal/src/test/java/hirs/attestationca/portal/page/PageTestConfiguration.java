@@ -3,6 +3,7 @@ package hirs.attestationca.portal.page;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
@@ -23,6 +24,7 @@ import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -39,7 +41,7 @@ public class PageTestConfiguration {
     /**
      * Test ACA cert.
      */
-    public static final String FAKE_ROOT_CA = "/certificates/fakeCA.pem";
+    public static final String FAKE_CA = "/certificates/fakeCA.pem";
 
     /**
      * Represents the environment in which the current application is running.
@@ -49,19 +51,37 @@ public class PageTestConfiguration {
     private Environment environment;
 
     /**
-     * Gets a test x509 cert as the ACA cert for ACA portal tests.
+     * Gets a test leaf x509 cert as the ACA cert for ACA portal tests.
      *
      * @return the {@link X509Certificate} of the ACA
      * @throws URISyntaxException if there's a syntax error on the path to the cert
      * @throws IOException        exception reading the file
      */
     @Bean
-    public X509Certificate acaCertificate() throws URISyntaxException, IOException {
+    @Qualifier("leafACACert")
+    public X509Certificate leafACACertificate() throws URISyntaxException, IOException {
 
         CertificateAuthorityCredential credential = new CertificateAuthorityCredential(
-                Files.readAllBytes(Paths.get(getClass().getResource(FAKE_ROOT_CA).toURI()))
+                Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(FAKE_CA)).toURI()))
         );
         return credential.getX509Certificate();
+    }
+
+    /**
+     * Gets an array of test ACA X509 certificates.
+     *
+     * @return an array of {@link X509Certificate} ACA trust chain certificates
+     * @throws URISyntaxException if there's a syntax error on the path to the cert
+     * @throws IOException        exception reading the file
+     */
+    @Bean
+    @Qualifier("acaTrustChainCerts")
+    public X509Certificate[] acaTrustChainCertificates() throws URISyntaxException, IOException {
+
+        CertificateAuthorityCredential leafCredential = new CertificateAuthorityCredential(
+                Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(FAKE_CA)).toURI()))
+        );
+        return new X509Certificate[] {leafCredential.getX509Certificate()};
     }
 
     /**
@@ -125,8 +145,7 @@ public class PageTestConfiguration {
     public PrivateKey privateKey() {
         try {
             KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
-            PrivateKey dummyPrivKey = keyGenerator.generateKeyPair().getPrivate();
-            return dummyPrivKey;
+            return keyGenerator.generateKeyPair().getPrivate();
         } catch (GeneralSecurityException e) {
             throw new AssertionError(e);
         }
