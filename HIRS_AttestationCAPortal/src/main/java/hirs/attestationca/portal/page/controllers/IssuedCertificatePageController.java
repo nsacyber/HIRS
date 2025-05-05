@@ -1,7 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.service.CertificateService;
@@ -51,23 +50,20 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
-    private final IssuedCertificateRepository issuedCertificateRepository;
     private final IssuedAttestationCertificateService issuedAttestationCertificateService;
     private final CertificateService certificateService;
 
     /**
      * Constructor for the Issued Attestation Certificate page.
      *
-     * @param issuedCertificateRepository issued certificate repository
-     * @param certificateService          certificate service
+     * @param issuedAttestationCertificateService issued certificate service
+     * @param certificateService                  certificate service
      */
     @Autowired
     public IssuedCertificatePageController(
-            final IssuedCertificateRepository issuedCertificateRepository,
             final IssuedAttestationCertificateService issuedAttestationCertificateService,
             final CertificateService certificateService) {
         super(Page.ISSUED_CERTIFICATES);
-        this.issuedCertificateRepository = issuedCertificateRepository;
         this.issuedAttestationCertificateService = issuedAttestationCertificateService;
         this.certificateService = certificateService;
     }
@@ -121,7 +117,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
-                    this.issuedCertificateRepository.findByArchiveFlag(false, pageable);
+                    this.issuedAttestationCertificateService.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
@@ -136,7 +132,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         }
 
         issuedCertificateFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        issuedCertificateFilteredRecordsList.setRecordsTotal(findIssuedCertificateRepoCount());
+        issuedCertificateFilteredRecordsList.setRecordsTotal(
+                this.issuedAttestationCertificateService.findIssuedCertificateRepoCount());
 
         log.info("Returning the size of the list of issued certificates: "
                 + "{}", issuedCertificateFilteredRecordsList.size());
@@ -271,14 +268,5 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.ISSUED_CERTIFICATES, new NoPageParams(), model, attr);
-    }
-
-    /**
-     * Retrieves the total number of records in the issued certificate repository.
-     *
-     * @return total number of records in the issued certificate repository.
-     */
-    private long findIssuedCertificateRepoCount() {
-        return this.issuedCertificateRepository.findByArchiveFlag(false).size();
     }
 }

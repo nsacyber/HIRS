@@ -13,6 +13,10 @@ public class ReferenceDigestValueService {
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
 
+    /**
+     * @param referenceManifestRepository
+     * @param referenceDigestValueRepository
+     */
     @Autowired
     public ReferenceDigestValueService(ReferenceManifestRepository referenceManifestRepository,
                                        ReferenceDigestValueRepository referenceDigestValueRepository) {

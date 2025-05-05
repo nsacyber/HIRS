@@ -1,11 +1,11 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.IDevIDCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.IDevIdCertificateService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -17,7 +17,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,21 +51,22 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates")
 public class IDevIdCertificatePageController extends PageController<NoPageParams> {
-    private final IDevIDCertificateRepository iDevIDCertificateRepository;
     private final CertificateService certificateService;
+    private final IDevIdCertificateService iDevIdCertificateService;
 
     /**
      * Constructor for the IDevID Certificate page.
      *
-     * @param iDevIDCertificateRepository iDevID certificate repository
-     * @param certificateService          certificate service
+     * @param certificateService       certificate service
+     * @param iDevIdCertificateService iDevId certificate service
      */
     @Autowired
-    public IDevIdCertificatePageController(final IDevIDCertificateRepository iDevIDCertificateRepository,
-                                           final CertificateService certificateService) {
+    public IDevIdCertificatePageController(
+            final CertificateService certificateService,
+            final IDevIdCertificateService iDevIdCertificateService) {
         super(Page.IDEVID_CERTIFICATES);
-        this.iDevIDCertificateRepository = iDevIDCertificateRepository;
         this.certificateService = certificateService;
+        this.iDevIdCertificateService = iDevIdCertificateService;
     }
 
     /**
@@ -117,7 +117,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
-                    this.iDevIDCertificateRepository.findByArchiveFlag(false, pageable);
+                    this.iDevIdCertificateService.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
@@ -132,7 +132,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         }
 
         idevidFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        idevidFilteredRecordsList.setRecordsTotal(findIDevIdCertificateRepositoryCount());
+        idevidFilteredRecordsList.setRecordsTotal(
+                this.iDevIdCertificateService.findIDevIdCertificateRepositoryCount());
 
         log.info("Returning the size of the list of IDEVID certificates: "
                 + "{}", idevidFilteredRecordsList.size());
@@ -249,7 +250,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
             //Parse IDevId Certificate
             IDevIDCertificate parsedIDevIDCertificate =
-                    parseIDevIDCertificate(file, messages);
+                    this.iDevIdCertificateService.parseIDevIDCertificate(file, errorMessages);
 
             //Store only if it was parsed
             if (parsedIDevIDCertificate != null) {
@@ -307,69 +308,5 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.IDEVID_CERTIFICATES, new NoPageParams(), model, attr);
-    }
-
-    /**
-     * Retrieves the total number of records in the idevid certificate repository.
-     *
-     * @return total number of records in the idevid certificate repository.
-     */
-    private long findIDevIdCertificateRepositoryCount() {
-        return iDevIDCertificateRepository.findByArchiveFlag(false).size();
-    }
-
-    /**
-     * Attempts to parse the provided file in order to create an IDevId Certificate.
-     *
-     * @param file     file
-     * @param messages page messages
-     * @return IDevId certificate
-     */
-    private IDevIDCertificate parseIDevIDCertificate(final MultipartFile file,
-                                                     final PageMessages messages) {
-        log.info("Received IDevId certificate file of size: {}", file.getSize());
-
-        byte[] fileBytes;
-        String fileName = file.getOriginalFilename();
-
-        // attempt to retrieve file bytes from the provided file
-        try {
-            fileBytes = file.getBytes();
-        } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to read uploaded IDevId certificate file (%s): ", fileName);
-            log.error(failMessage, ioEx);
-            messages.addErrorMessage(failMessage + ioEx.getMessage());
-            return null;
-        }
-
-        // attempt to build the IDevId certificate from the uploaded bytes
-        try {
-            return new IDevIDCertificate(fileBytes);
-        } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded IDevId certificate file (%s): ", fileName);
-            log.error(failMessage, ioEx);
-            messages.addErrorMessage(failMessage + ioEx.getMessage());
-            return null;
-        } catch (DecoderException dEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded IDevId certificate pem file (%s): ", fileName);
-            log.error(failMessage, dEx);
-            messages.addErrorMessage(failMessage + dEx.getMessage());
-            return null;
-        } catch (IllegalArgumentException iaEx) {
-            final String failMessage = String.format(
-                    "IDevId certificate format not recognized(%s): ", fileName);
-            log.error(failMessage, iaEx);
-            messages.addErrorMessage(failMessage + iaEx.getMessage());
-            return null;
-        } catch (IllegalStateException isEx) {
-            final String failMessage = String.format(
-                    "Unexpected object while parsing IDevId certificate %s ", fileName);
-            log.error(failMessage, isEx);
-            messages.addErrorMessage(failMessage + isEx.getMessage());
-            return null;
-        }
     }
 }

@@ -14,6 +14,10 @@ public class ReferenceManifestService {
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
 
+    /**
+     * @param referenceManifestRepository
+     * @param referenceDigestValueRepository
+     */
     @Autowired
     public ReferenceManifestService(ReferenceManifestRepository referenceManifestRepository,
                                     ReferenceDigestValueRepository referenceDigestValueRepository) {
