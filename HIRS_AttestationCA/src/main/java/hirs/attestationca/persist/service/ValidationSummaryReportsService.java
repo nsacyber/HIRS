@@ -54,7 +54,6 @@ public class ValidationSummaryReportsService {
 
     private static final String DEFAULT_COMPANY = "AllDevices";
     private static final String UNDEFINED = "undefined";
-    private static final String TRUE = "true";
     private static final String SYSTEM_COLUMN_HEADERS = "Verified Manufacturer,"
             + "Model,SN,Verification Date,Device Status";
     private static final String COMPONENT_COLUMN_HEADERS = "Component name,Component manufacturer,"
@@ -180,11 +179,6 @@ public class ValidationSummaryReportsService {
         ArrayList<LocalDate> createTimes = new ArrayList<>();
         String[] deviceNames = new String[] {};
         StringBuilder columnHeaders = new StringBuilder();
-        boolean systemOnly = false;
-        boolean componentOnly = false;
-        String filterManufacturer = "";
-        String filterSerial = "";
-        boolean jsonVersion = false;
 
         final Enumeration<String> parameters = request.getParameterNames();
 
@@ -224,7 +218,6 @@ public class ValidationSummaryReportsService {
                     }
                     break;
                 case "createTimes":
-                    //todo issue #922
                     if (!parameterValue.equals(UNDEFINED)
                             && !parameterValue.isEmpty()) {
                         String[] timestamps = parameterValue.split(";");
@@ -245,120 +238,70 @@ public class ValidationSummaryReportsService {
                         deviceNames = parameterValue.split(",");
                     }
                     break;
-                case "system":
-                    if (parameterValue.equals(TRUE)) {
-                        systemOnly = true;
-                        if (!columnHeaders.isEmpty()) {
-                            columnHeaders.insert(0, ",");
-                        }
-                        columnHeaders.insert(0, SYSTEM_COLUMN_HEADERS);
-                    }
-                    break;
-                case "component":
-                    if (parameterValue.equals(TRUE)) {
-                        componentOnly = true;
-                        if (!columnHeaders.isEmpty()) {
-                            columnHeaders.append(",");
-                        }
-                        columnHeaders.append(COMPONENT_COLUMN_HEADERS);
-                    }
-                    break;
-                case "manufacturer":
-                    if (parameterValue != null && !parameterValue.isEmpty()) {
-                        filterManufacturer = parameterValue;
-                    }
-                    break;
-                case "serial":
-                    if (parameterValue != null && !parameterValue.isEmpty()) {
-                        filterSerial = parameterValue;
-                    }
-                    break;
-                case "json":
-                    response.setHeader("Content-Type", "application/json");
-                    jsonVersion = true;
-                    break;
                 default:
             }
         }
 
-        if (!jsonVersion) {
-            response.setHeader("Content-Type", "text/csv");
-            response.setHeader("Content-Disposition",
-                    "attachment;filename=validation_report.csv");
-        }
+        response.setHeader("Content-Type", "text/csv");
+        response.setHeader("Content-Disposition",
+                "attachment;filename=validation_report.csv");
 
         BufferedWriter bufferedWriter = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8));
 
         StringBuilder reportData = new StringBuilder();
-        JsonArray jsonReportData = new JsonArray();
+
         for (int i = 0; i < deviceNames.length; i++) {
             if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(startDate))
                     && (createTimes.get(i).isBefore(endDate)
                     || createTimes.get(i).isEqual(endDate))) {
                 Device device = deviceRepository.findByName(deviceNames[i]);
                 PlatformCredential pc = platformCertificateRepository.findByDeviceId(device.getId()).get(0);
-                if (jsonVersion) {
-                    jsonReportData.add(assembleJsonContent(pc, parseComponents(pc),
-                            company, contractNumber));
-                } else {
-                    if (i == 0) {
-                        bufferedWriter.append("Company: ").append(company).append("\n");
-                        bufferedWriter.append("Contract number: ").append(contractNumber).append("\n");
-                    }
 
-                    if (systemOnly && componentOnly) {
-                        systemOnly = false;
-                        componentOnly = false;
-                    }
-
-                    if ((filterManufacturer.isEmpty() || filterManufacturer.equals(
-                            pc.getManufacturer()))
-                            && (filterSerial.isEmpty() || filterSerial.equals(
-                            pc.getPlatformSerial()))) {
-                        if (!componentOnly) {
-                            reportData.append(pc.getManufacturer())
-                                    .append(",")
-                                    .append(pc.getModel())
-                                    .append(",")
-                                    .append(pc.getPlatformSerial())
-                                    .append(",")
-                                    .append(LocalDateTime.now())
-                                    .append(",")
-                                    .append(device.getSupplyChainValidationStatus())
-                                    .append(",");
-                        }
-
-                        if (!systemOnly) {
-                            ArrayList<ArrayList<String>> parsedComponents = parseComponents(pc);
-                            for (ArrayList<String> component : parsedComponents) {
-                                for (String data : component) {
-                                    reportData.append(data).append(",");
-                                }
-                                reportData.deleteCharAt(reportData.length() - 1);
-                                reportData.append(System.lineSeparator());
-                                if (!componentOnly) {
-                                    reportData.append(",,,,,");
-                                }
-                            }
-                            reportData = reportData.delete(
-                                    reportData.lastIndexOf(System.lineSeparator()) + 1,
-                                    reportData.length());
-                        }
-                    }
+                if (i == 0) {
+                    bufferedWriter.append("Company: ").append(company).append("\n");
+                    bufferedWriter.append("Contract number: ").append(contractNumber).append("\n");
                 }
+
+                // component only
+                // todo issue 922
+//                reportData.append(pc.getManufacturer())
+//                        .append(",")
+//                        .append(pc.getModel())
+//                        .append(",")
+//                        .append(pc.getPlatformSerial())
+//                        .append(",")
+//                        .append(LocalDateTime.now())
+//                        .append(",")
+//                        .append(device.getSupplyChainValidationStatus())
+//                        .append(",");
+
+                // system only
+                ArrayList<ArrayList<String>> parsedComponents = parsePlatformCredentialComponents(pc);
+
+                for (ArrayList<String> component : parsedComponents) {
+                    for (String data : component) {
+                        reportData.append(data).append(",");
+                    }
+                    reportData.deleteCharAt(reportData.length() - 1);
+                    reportData.append(System.lineSeparator());
+//                        if (!componentOnly) {
+//                            reportData.append(",,,,,");
+//                        }
+                }
+                reportData = reportData.delete(
+                        reportData.lastIndexOf(System.lineSeparator()) + 1,
+                        reportData.length());
             }
         }
 
-        if (!jsonVersion) {
-            if (columnHeaders.isEmpty()) {
-                columnHeaders = new StringBuilder(SYSTEM_COLUMN_HEADERS + "," + COMPONENT_COLUMN_HEADERS);
-            }
-            bufferedWriter.append(columnHeaders.toString()).append(System.lineSeparator());
-            bufferedWriter.append(reportData.toString());
-        } else {
-            bufferedWriter.append(jsonReportData.toString());
+
+        if (columnHeaders.isEmpty()) {
+            columnHeaders = new StringBuilder(SYSTEM_COLUMN_HEADERS + "," + COMPONENT_COLUMN_HEADERS);
         }
+        bufferedWriter.append(columnHeaders.toString()).append(System.lineSeparator());
+        bufferedWriter.append(reportData.toString());
+
         bufferedWriter.flush();
     }
 
@@ -416,23 +359,29 @@ public class ValidationSummaryReportsService {
      * - Model
      * - Serial number
      * - Pass/fail status (based on componentFailures string)
+     * todo issue 922
      *
      * @param pc the platform credential.
      * @return the ArrayList of ArrayLists containing the parsed component data.
      */
-    private ArrayList<ArrayList<String>> parseComponents(final PlatformCredential pc) {
+    private ArrayList<ArrayList<String>> parsePlatformCredentialComponents(final PlatformCredential pc)
+            throws IOException {
         ArrayList<ArrayList<String>> parsedComponents = new ArrayList<>();
         ArrayList<ArrayList<Object>> chainComponents = new ArrayList<>();
 
+        // get all the certificates associated with the platform serial
+        List<PlatformCredential> chainCertificates =
+                certificateRepository.byBoardSerialNumber(pc.getPlatformSerial());
+
         StringBuilder componentFailureString = new StringBuilder();
-        if (pc.getComponentIdentifiers() != null
-                && !pc.getComponentIdentifiers().isEmpty()) {
-            componentFailureString.append(pc.getComponentFailures());
-            // get all the certificates associated with the platform serial
-            List<PlatformCredential> chainCertificates =
-                    certificateRepository.byBoardSerialNumber(pc.getPlatformSerial());
+        componentFailureString.append(pc.getComponentFailures());
+        log.info("Component failures: {}", componentFailureString);
+
+        if (pc.getPlatformConfigurationV1() != null && pc.getComponentIdentifiers() != null) {
+            List<ComponentIdentifier> componentIdentifiers = pc.getComponentIdentifiers();
+
             // combine all components in each certificate
-            for (ComponentIdentifier ci : pc.getComponentIdentifiers()) {
+            for (ComponentIdentifier ci : componentIdentifiers) {
                 ArrayList<Object> issuerAndComponent = new ArrayList<>();
                 issuerAndComponent.add(pc.getHolderIssuer());
                 issuerAndComponent.add(ci);
@@ -442,7 +391,8 @@ public class ValidationSummaryReportsService {
             for (PlatformCredential cert : chainCertificates) {
                 componentFailureString.append(cert.getComponentFailures());
                 if (!cert.isPlatformBase()) {
-                    for (ComponentIdentifier ci : cert.getComponentIdentifiers()) {
+                    List<ComponentIdentifier> chainComponentIdentifiers = cert.getComponentIdentifiers();
+                    for (ComponentIdentifier ci : chainComponentIdentifiers) {
                         ArrayList<Object> issuerAndComponent = new ArrayList<>();
                         issuerAndComponent.add(cert.getHolderIssuer());
                         issuerAndComponent.add(ci);
@@ -450,7 +400,65 @@ public class ValidationSummaryReportsService {
                     }
                 }
             }
-            log.info("Component failures: {}", componentFailureString);
+
+            for (ArrayList<Object> issuerAndComponent : chainComponents) {
+                ArrayList<String> componentData = new ArrayList<>();
+                String issuer = (String) issuerAndComponent.get(0);
+                issuer = issuer.replaceAll(",", " ");
+                ComponentIdentifier ci = (ComponentIdentifier) issuerAndComponent.get(1);
+                if (ci instanceof ComponentIdentifierV2) {
+                    String componentClass =
+                            ((ComponentIdentifierV2) ci).getComponentClass().toString();
+                    String[] splitStrings = componentClass.split("\r\n|\n|\r");
+                    StringBuilder sb = new StringBuilder();
+                    for (String s : splitStrings) {
+                        sb.append(s);
+                        sb.append(" ");
+                    }
+                    sb = sb.deleteCharAt(sb.length() - 1);
+                    componentData.add(sb.toString());
+                } else {
+                    componentData.add("Platform Component");
+                }
+                componentData.add(ci.getComponentManufacturer().getString());
+                componentData.add(ci.getComponentModel().getString());
+                componentData.add(ci.getComponentSerial().getString());
+                componentData.add(issuer);
+                //Failing components are identified by hashcode
+                if (componentFailureString.toString().contains(String.valueOf(ci.hashCode()))) {
+                    componentData.add("Fail");
+                } else {
+                    componentData.add("Pass");
+                }
+                parsedComponents.add(componentData);
+                log.info(String.join(",", componentData));
+            }
+
+        } else if (pc.getPlatformConfigurationV2() != null && pc.getComponentIdentifiersV2() != null) {
+            List<ComponentIdentifierV2> componentIdentifiersV2 = pc.getComponentIdentifiersV2();
+
+            // combine all components in each certificate
+            for (ComponentIdentifierV2 ci2 : componentIdentifiersV2) {
+                ArrayList<Object> issuerAndComponent = new ArrayList<>();
+                issuerAndComponent.add(pc.getHolderIssuer());
+                issuerAndComponent.add(ci2);
+                chainComponents.add(issuerAndComponent);
+            }
+
+            for (PlatformCredential cert : chainCertificates) {
+                componentFailureString.append(cert.getComponentFailures());
+                if (!cert.isPlatformBase()) {
+                    List<ComponentIdentifierV2> chainComponentIdentifiersV2 =
+                            cert.getComponentIdentifiersV2();
+                    for (ComponentIdentifierV2 ci2 : chainComponentIdentifiersV2) {
+                        ArrayList<Object> issuerAndComponent = new ArrayList<>();
+                        issuerAndComponent.add(cert.getHolderIssuer());
+                        issuerAndComponent.add(ci2);
+                        chainComponents.add(issuerAndComponent);
+                    }
+                }
+            }
+
             for (ArrayList<Object> issuerAndComponent : chainComponents) {
                 ArrayList<String> componentData = new ArrayList<>();
                 String issuer = (String) issuerAndComponent.get(0);
