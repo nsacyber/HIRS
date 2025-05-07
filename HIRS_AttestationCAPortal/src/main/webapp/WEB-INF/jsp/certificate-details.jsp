@@ -405,10 +405,10 @@
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
                         <div id="holder" class="col col-md-8">
                             <c:if test="${not empty initialData.holderIssuer}">
-                                <div>Holder Certificate:&nbsp;<span>${initialData.holderIssuer}</span></div>
+                                <div>Holder Certificate Issuer:&nbsp;<span>${initialData.holderIssuer}</span></div>
                             </c:if>
                             <div id="certificateid">
-                                <div>Holder Identifier:&nbsp;
+                                <div>Holder Certificate Serial Number:&nbsp;
                                     <c:choose>
                                         <c:when test="${not empty initialData.holderId}">
                                             <span>

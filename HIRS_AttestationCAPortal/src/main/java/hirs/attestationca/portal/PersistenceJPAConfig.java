@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -30,12 +31,23 @@ import javax.sql.DataSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Security;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Provides application context configuration for the Attestation Certificate
@@ -74,8 +86,14 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     @Value("${server.ssl.key-store-password:''}")
     private String keyStorePassword;
 
-    @Value("${aca.certificates.signing-key-alias}")
-    private String keyAlias;
+    @Value("${aca.certificates.leaf-three-key-alias}")
+    private String leaf3KeyAlias;
+
+    @Value("${aca.certificates.intermediate-key-alias}")
+    private String intermediateKeyAlias;
+
+    @Value("${aca.certificates.root-key-alias}")
+    private String rootKeyAlias;
 
     @Autowired
     private Environment environment;
@@ -158,14 +176,14 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         try {
 
             // load the key from the key store
-            PrivateKey acaKey = (PrivateKey) keyStore.getKey(keyAlias,
+            PrivateKey acaKey = (PrivateKey) keyStore.getKey(leaf3KeyAlias,
                     keyStorePassword.toCharArray());
 
             // break early if the certificate is not available.
             if (acaKey == null) {
                 throw new BeanInitializationException(String.format("Key with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", keyAlias, keyStoreLocation));
+                        + "specified certificate. ", leaf3KeyAlias, keyStoreLocation));
             }
             return acaKey;
         } catch (Exception ex) {
@@ -178,23 +196,67 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
      * @return the {@link X509Certificate} of the ACA
      */
     @Bean
-    public X509Certificate acaCertificate() {
+    @Qualifier("leafACACert")
+    public X509Certificate leafACACertificate() {
         KeyStore keyStore = keyStore();
 
         try {
-            X509Certificate acaCertificate = (X509Certificate) keyStore.getCertificate(keyAlias);
+            X509Certificate leafACACertificate = (X509Certificate) keyStore.getCertificate(leaf3KeyAlias);
 
             // break early if the certificate is not available.
-            if (acaCertificate == null) {
-                throw new BeanInitializationException(String.format("Certificate with alias "
+            if (leafACACertificate == null) {
+                throw new BeanInitializationException(String.format("Leaf ACA certificate with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
-                        + "specified certificate. ", keyAlias, keyStoreLocation));
+                        + "specified certificate. ", leaf3KeyAlias, keyStoreLocation));
             }
 
-            return acaCertificate;
+            return leafACACertificate;
         } catch (KeyStoreException ksEx) {
-            throw new BeanInitializationException("Encountered error loading ACA certificate "
+            throw new BeanInitializationException("Encountered error loading leaf ACA certificate "
                     + "from key store: " + ksEx.getMessage(), ksEx);
+        }
+    }
+
+    /**
+     * @return the array of {@link X509Certificate} ACA trust chain certificates
+     */
+    @Bean
+    @Qualifier("acaTrustChainCerts")
+    public X509Certificate[] acaTrustChainCertificates() {
+        KeyStore keyStore = keyStore();
+
+        try {
+            X509Certificate rootACACert = (X509Certificate) keyStore.getCertificate(rootKeyAlias);
+
+            X509Certificate intermediateACACert =
+                    (X509Certificate) keyStore.getCertificate(intermediateKeyAlias);
+
+            X509Certificate leafThreeACACert = (X509Certificate) keyStore.getCertificate(leaf3KeyAlias);
+
+            // verify that the leaf ACA cert has been signed by the intermediate certificate and that
+            // intermediate certificate has been signed by the root certificate
+            validateCertificateChain(leafThreeACACert, intermediateACACert, rootACACert);
+
+            X509Certificate[] certsChainArray =
+                    new X509Certificate[] {leafThreeACACert,
+                            intermediateACACert, rootACACert};
+
+            log.info("The ACA certificate chain is valid and trusted");
+            return certsChainArray;
+        } catch (KeyStoreException ksEx) {
+            throw new BeanInitializationException("Encountered error loading ACA certificates "
+                    + "from key store: " + ksEx.getMessage(), ksEx);
+        } catch (CertificateException certificateException) {
+            throw new BeanInitializationException("Encountered an error loading up the certificate factory.",
+                    certificateException);
+        } catch (CertPathValidatorException | InvalidAlgorithmParameterException exception) {
+            throw new BeanInitializationException(
+                    "Encountered an error while validating the leaf, intermediate and root "
+                            + " ACA certificates.", exception);
+        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
+            throw new BeanInitializationException(
+                    "Encountered an error while initializing Cert Path validator",
+                    noSuchAlgorithmException);
         }
     }
 
@@ -214,11 +276,10 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
 
             return keyStore;
         } catch (Exception ex) {
-            log.error(String.format(
-                    "Encountered error while loading ACA key store. The most common issue is "
-                            + "that configured password does not work on the configured key"
-                            + " store %s.", keyStorePath));
-            log.error(String.format("Exception message: %s", ex.getMessage()));
+            log.error("Encountered error while loading ACA key store. The most common issue is "
+                    + "that configured password does not work on the configured key"
+                    + " store {}.", keyStorePath);
+            log.error("Exception message: {}", ex.getMessage());
             throw new BeanInitializationException(ex.getMessage(), ex);
         }
     }
@@ -245,6 +306,44 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
+    /**
+     * Helper method that validates the provided leaf certificate against the
+     * established intermediate and root certificates.
+     *
+     * @param leafCert         leaf certificate
+     * @param intermediateCert intermediate certificate
+     * @param rootCert         root certificate
+     * @throws CertificateException               if there is an error parsing certificates
+     *                                            /creating the CertPath
+     * @throws InvalidAlgorithmParameterException if the PKIX parameters are invalid
+     * @throws NoSuchAlgorithmException           if the PKIX algorithm is not available in the environment
+     * @throws CertPathValidatorException         if the certificate chain is invalid or cannot be validated
+     */
+    private void validateCertificateChain(final X509Certificate leafCert,
+                                          final X509Certificate intermediateCert,
+                                          final X509Certificate rootCert)
+            throws CertificateException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+            CertPathValidatorException {
+        List<X509Certificate> certChain =
+                List.of(leafCert, intermediateCert);
+
+        // Create a CertPath from the certificate chain
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+        CertPath certPath = certFactory.generateCertPath(certChain);
+
+        // Initialize CertPathValidator
+        CertPathValidator certPathValidator = CertPathValidator.getInstance("PKIX");
+
+        // Create TrustAnchor from the root certificate
+        Set<TrustAnchor> trustAnchors = Set.of(new TrustAnchor(rootCert, null));
+
+        // Initialize PKIX parameters
+        PKIXParameters pkixParams = new PKIXParameters(trustAnchors);
+        pkixParams.setRevocationEnabled(false);
+
+        certPathValidator.validate(certPath, pkixParams);
+    }
+
     final Properties additionalProperties() {
         final Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty("hibernate.hbm2ddl.auto",
@@ -265,8 +364,7 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
      */
     @Bean(name = "multipartResolver")
     public StandardServletMultipartResolver multipartResolver() {
-        StandardServletMultipartResolver resolver = new StandardServletMultipartResolver();
-        return resolver;
+        return new StandardServletMultipartResolver();
     }
 
 //    @Bean(name="default-settings")

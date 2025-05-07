@@ -12,6 +12,7 @@ import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.structs.converters.StructConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
@@ -64,7 +65,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
     public RestfulAttestationCertificateAuthority(
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey,
-            final X509Certificate acaCertificate,
+            @Qualifier("leafACACert") final X509Certificate acaCertificate,
             final StructConverter structConverter,
             final ComponentResultRepository componentResultRepository,
             final ComponentInfoRepository componentInfoRepository,
