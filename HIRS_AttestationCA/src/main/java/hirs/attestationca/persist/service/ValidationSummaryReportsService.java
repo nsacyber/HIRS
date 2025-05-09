@@ -366,11 +366,7 @@ public class ValidationSummaryReportsService {
                 log.debug("Parsed Component Identifiers V1: {}",
                         String.join(",", componentData));
             }
-
-        }
-
-        // if the platform credential's has a list of version 2 component identifiers
-        else if (pc.getPlatformConfigurationV2() != null && pc.getComponentIdentifiersV2() != null) {
+        } else if (pc.getPlatformConfigurationV2() != null && pc.getComponentIdentifiersV2() != null) {
             List<ComponentIdentifierV2> componentIdentifiersV2 = pc.getComponentIdentifiersV2();
 
             // combine all components in each certificate
