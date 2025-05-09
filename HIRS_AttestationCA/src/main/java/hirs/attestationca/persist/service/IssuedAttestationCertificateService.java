@@ -18,7 +18,7 @@ public class IssuedAttestationCertificateService {
     private final IssuedCertificateRepository issuedCertificateRepository;
 
     /**
-     * @param issuedCertificateRepository
+     * @param issuedCertificateRepository issued certificate repository
      */
     @Autowired
     public IssuedAttestationCertificateService(
@@ -27,8 +27,8 @@ public class IssuedAttestationCertificateService {
     }
 
     /**
-     * @param archiveFlag
-     * @param pageable
+     * @param archiveFlag archive flag
+     * @param pageable    pageable
      * @return
      */
     public Page<IssuedAttestationCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable) {

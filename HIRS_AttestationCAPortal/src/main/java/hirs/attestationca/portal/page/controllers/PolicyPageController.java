@@ -2,6 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
+import hirs.attestationca.persist.service.PolicyService;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -48,6 +49,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
     private static final String ENABLED_CHECKED_PARAMETER_VALUE = "checked";
     private static final String ENABLED_EXPIRES_PARAMETER_VALUE = "expires";
     private final PolicyRepository policyRepository;
+    private final PolicyService policyService;
 
     /**
      * Constructor.
@@ -55,9 +57,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param policyRepository the policy service
      */
     @Autowired
-    public PolicyPageController(final PolicyRepository policyRepository) {
+    public PolicyPageController(final PolicyRepository policyRepository, PolicyService policyService) {
         super(Page.POLICY);
         this.policyRepository = policyRepository;
+        this.policyService = policyService;
 
         if (this.policyRepository.findByName("Default") == null) {
             this.policyRepository.saveAndFlush(new PolicySettings("Default",

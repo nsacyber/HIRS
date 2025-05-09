@@ -19,7 +19,6 @@ import hirs.utils.BouncyCastleUtils;
 import hirs.utils.PciIds;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -40,14 +39,11 @@ import java.util.UUID;
 public final class CertificateStringMapBuilder {
 
     //todo issue 923
-    private final CertificateRepository certificateRepository;
 
     /**
-     * @param certificateRepository certificate repository
+     * This private constructor was created to silence checkstyle error.
      */
-    @Autowired
-    private CertificateStringMapBuilder(CertificateRepository certificateRepository) {
-        this.certificateRepository = certificateRepository;
+    private CertificateStringMapBuilder() {
     }
 
     /**

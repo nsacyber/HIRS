@@ -258,10 +258,10 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                         CertificateType.IDEVID_CERTIFICATES,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedIDevIDCertificate);
-
-                messages.addSuccessMessages(successMessages);
-                messages.addErrorMessages(errorMessages);
             }
+
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
         }
 
         //Add messages to the model

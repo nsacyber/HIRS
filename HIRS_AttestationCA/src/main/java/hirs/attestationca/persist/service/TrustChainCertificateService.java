@@ -29,13 +29,16 @@ import java.util.List;
 public class TrustChainCertificateService {
 
     private final CACredentialRepository caCredentialRepository;
+    private final CertificateService certificateService;
 
     /**
-     * @param caCredentialRepository
+     * @param caCredentialRepository certificate authority credential repository
      */
     @Autowired
-    public TrustChainCertificateService(final CACredentialRepository caCredentialRepository) {
+    public TrustChainCertificateService(final CACredentialRepository caCredentialRepository,
+                                        CertificateService certificateService) {
         this.caCredentialRepository = caCredentialRepository;
+        this.certificateService = certificateService;
     }
 
     /**
@@ -50,11 +53,12 @@ public class TrustChainCertificateService {
     /**
      * Attempts to parse the provided file in order to create a trust chain certificate.
      *
-     * @param file     file
-     * @param messages page messages
+     * @param file          file
+     * @param errorMessages error messages
      * @return trust chain certificate
      */
     public CertificateAuthorityCredential parseTrustChainCertificate(final MultipartFile file,
+                                                                     final List<String> successMessages,
                                                                      final List<String> errorMessages) {
         log.info("Received trust chain certificate file of size: {}", file.getSize());
 
@@ -68,7 +72,7 @@ public class TrustChainCertificateService {
             final String failMessage = String.format(
                     "Failed to read uploaded trust chain certificate file (%s): ", fileName);
             log.error(failMessage, ioEx);
-            messages.addErrorMessage(failMessage + ioEx.getMessage());
+            errorMessages.add(failMessage + ioEx.getMessage());
             return null;
         }
 
@@ -81,19 +85,19 @@ public class TrustChainCertificateService {
                             cf.generateCertificates(certInputStream);
 
                     for (java.security.cert.Certificate certificate : c) {
-                        List<String> successMessages = new ArrayList<>();
-                        List<String> errorMessages = new ArrayList<>();
+                        List<String> moreSuccessMessages = new ArrayList<>();
+                        List<String> moreErrorMessages = new ArrayList<>();
 
                         this.certificateService.storeCertificate(
                                 CertificateType.TRUST_CHAIN,
                                 file.getOriginalFilename(),
-                                successMessages,
-                                errorMessages,
+                                moreSuccessMessages,
+                                moreErrorMessages,
                                 new CertificateAuthorityCredential(
                                         certificate.getEncoded()));
 
-                        messages.addSuccessMessages(successMessages);
-                        messages.addErrorMessages(errorMessages);
+                        successMessages.addAll(moreSuccessMessages);
+                        errorMessages.addAll(moreErrorMessages);
                     }
 
                     // stop the main thread from saving/storing
@@ -108,25 +112,25 @@ public class TrustChainCertificateService {
             final String failMessage = String.format(
                     "Failed to parse uploaded trust chain certificate file (%s): ", fileName);
             log.error(failMessage, ioEx);
-            messages.addErrorMessage(failMessage + ioEx.getMessage());
+            errorMessages.add(failMessage + ioEx.getMessage());
             return null;
         } catch (DecoderException dEx) {
             final String failMessage = String.format(
                     "Failed to parse uploaded trust chain certificate pem file (%s): ", fileName);
             log.error(failMessage, dEx);
-            messages.addErrorMessage(failMessage + dEx.getMessage());
+            errorMessages.add(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
             final String failMessage = String.format(
                     "Trust chain certificate format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
-            messages.addErrorMessage(failMessage + iaEx.getMessage());
+            errorMessages.add(failMessage + iaEx.getMessage());
             return null;
         } catch (IllegalStateException isEx) {
             final String failMessage = String.format(
                     "Unexpected object while parsing trust chain certificate %s ", fileName);
             log.error(failMessage, isEx);
-            messages.addErrorMessage(failMessage + isEx.getMessage());
+            errorMessages.add(failMessage + isEx.getMessage());
             return null;
         }
     }

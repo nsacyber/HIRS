@@ -342,7 +342,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
             //Parse trust chain certificate
             CertificateAuthorityCredential parsedTrustChainCertificate =
-                    this.trustChainCertificateService.parseTrustChainCertificate(file, errorMessages);
+                    this.trustChainCertificateService.parseTrustChainCertificate(file, successMessages,
+                            errorMessages);
 
             //Store only if it was parsed
             if (parsedTrustChainCertificate != null) {
@@ -350,10 +351,10 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                         CertificateType.TRUST_CHAIN,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedTrustChainCertificate);
-
-                messages.addSuccessMessages(successMessages);
-                messages.addErrorMessages(errorMessages);
             }
+
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
         }
 
         //Add messages to the model

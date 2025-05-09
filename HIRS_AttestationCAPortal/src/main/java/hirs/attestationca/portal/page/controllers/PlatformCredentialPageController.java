@@ -278,10 +278,10 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                         CertificateType.PLATFORM_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedPlatformCredential);
-
-                messages.addSuccessMessages(successMessages);
-                messages.addErrorMessages(errorMessages);
             }
+            
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
         }
 
         //Add messages to the model

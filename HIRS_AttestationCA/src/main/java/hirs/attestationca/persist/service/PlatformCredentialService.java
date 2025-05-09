@@ -26,6 +26,10 @@ public class PlatformCredentialService {
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
+    /**
+     * @param platformCertificateRepository   platform certificate repository
+     * @param endorsementCredentialRepository endorsement credential repository
+     */
     @Autowired
     public PlatformCredentialService(final PlatformCertificateRepository platformCertificateRepository,
                                      final EndorsementCredentialRepository endorsementCredentialRepository) {
@@ -34,17 +38,21 @@ public class PlatformCredentialService {
     }
 
     /**
-     * @param archiveFlag
-     * @param pageable
-     * @return
+     * Retrieves a page of platform credentials using the provided archive flag and pageable value.
+     *
+     * @param archiveFlag archive flag
+     * @param pageable    pageable
+     * @return page of platform credentials
      */
     public Page<PlatformCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable) {
         return this.platformCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
     /**
-     * @param holderSerialNumber
-     * @return
+     * Retrieves an endorsement credential using the provided holder serial number.
+     *
+     * @param holderSerialNumber big integer representation of the holder serial number
+     * @return endorsement credential
      */
     public EndorsementCredential findECBySerialNumber(BigInteger holderSerialNumber) {
         return this.endorsementCredentialRepository.findBySerialNumber(holderSerialNumber);
@@ -62,12 +70,12 @@ public class PlatformCredentialService {
     /**
      * Attempts to parse the provided file in order to create a Platform Credential.
      *
-     * @param file     file
-     * @param messages page messages
+     * @param file          file
+     * @param errorMessages error messages
      * @return platform credential
      */
     public PlatformCredential parsePlatformCredential(final MultipartFile file,
-                                                      List<String> errorMessages
+                                                      final List<String> errorMessages
     ) {
         log.info("Received platform credential file of size: {}", file.getSize());
 
@@ -114,5 +122,4 @@ public class PlatformCredentialService {
             return null;
         }
     }
-
 }

@@ -22,14 +22,17 @@ public class IDevIdCertificateService {
 
     private final IDevIDCertificateRepository iDevIDCertificateRepository;
 
+    /**
+     * @param iDevIDCertificateRepository
+     */
     @Autowired
     public IDevIdCertificateService(IDevIDCertificateRepository iDevIDCertificateRepository) {
         this.iDevIDCertificateRepository = iDevIDCertificateRepository;
     }
 
     /**
-     * @param archiveFlag
-     * @param pageable
+     * @param archiveFlag archive flag
+     * @param pageable    pageable
      * @return
      */
     public Page<IDevIDCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable) {
@@ -48,8 +51,8 @@ public class IDevIdCertificateService {
     /**
      * Attempts to parse the provided file in order to create an IDevId Certificate.
      *
-     * @param file     file
-     * @param messages page messages
+     * @param file          file
+     * @param errorMessages error messages
      * @return IDevId certificate
      */
     public IDevIDCertificate parseIDevIDCertificate(final MultipartFile file,

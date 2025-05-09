@@ -23,7 +23,7 @@ public class EndorsementCredentialService {
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
     /**
-     * @param endorsementCredentialRepository
+     * @param endorsementCredentialRepository endorsement credential repository
      */
     @Autowired
     public EndorsementCredentialService(
@@ -33,8 +33,8 @@ public class EndorsementCredentialService {
 
 
     /**
-     * @param archiveFlag
-     * @param pageable
+     * @param archiveFlag archive flag
+     * @param pageable    pageable
      * @return
      */
     public Page<EndorsementCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable) {

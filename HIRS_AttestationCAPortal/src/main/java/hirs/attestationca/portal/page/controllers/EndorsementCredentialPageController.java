@@ -262,10 +262,10 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                         CertificateType.ENDORSEMENT_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedEndorsementCredential);
-
-                messages.addSuccessMessages(successMessages);
-                messages.addErrorMessages(errorMessages);
             }
+
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
         }
 
         //Add messages to the model
