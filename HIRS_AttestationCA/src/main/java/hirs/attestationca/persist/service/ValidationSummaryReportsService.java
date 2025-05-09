@@ -1,8 +1,6 @@
 package hirs.attestationca.persist.service;
 
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
@@ -41,6 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -178,14 +177,14 @@ public class ValidationSummaryReportsService {
         LocalDate endDate = null;
         ArrayList<LocalDate> createTimes = new ArrayList<>();
         String[] deviceNames = new String[] {};
-        StringBuilder columnHeaders = new StringBuilder();
 
         final Enumeration<String> parameters = request.getParameterNames();
 
         while (parameters.hasMoreElements()) {
             String parameter = parameters.nextElement();
             String parameterValue = request.getParameter(parameter);
-            log.info("{}: {}", parameter, parameterValue);
+            log.debug("HTTP Servlet Request Param: {}: HTTP Servlet Request Param Value: {}", parameter,
+                    parameterValue);
             switch (parameter) {
                 case "company":
                     Matcher companyMatcher = pattern.matcher(parameterValue);
@@ -252,9 +251,10 @@ public class ValidationSummaryReportsService {
         StringBuilder reportData = new StringBuilder();
 
         for (int i = 0; i < deviceNames.length; i++) {
-            if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(startDate))
+            if ((createTimes.get(i).isAfter(startDate) || createTimes.get(i).isEqual(
+                    Objects.requireNonNull(startDate)))
                     && (createTimes.get(i).isBefore(endDate)
-                    || createTimes.get(i).isEqual(endDate))) {
+                    || createTimes.get(i).isEqual(Objects.requireNonNull(endDate)))) {
                 Device device = deviceRepository.findByName(deviceNames[i]);
                 PlatformCredential pc = platformCertificateRepository.findByDeviceId(device.getId()).get(0);
 
@@ -263,103 +263,45 @@ public class ValidationSummaryReportsService {
                     bufferedWriter.append("Contract number: ").append(contractNumber).append("\n");
                 }
 
-                // component only
-                // todo issue 922
-//                reportData.append(pc.getManufacturer())
-//                        .append(",")
-//                        .append(pc.getModel())
-//                        .append(",")
-//                        .append(pc.getPlatformSerial())
-//                        .append(",")
-//                        .append(LocalDateTime.now())
-//                        .append(",")
-//                        .append(device.getSupplyChainValidationStatus())
-//                        .append(",");
+                StringBuilder systemInfo = new StringBuilder();
+                systemInfo.append(pc.getManufacturer())
+                        .append(",")
+                        .append(pc.getModel())
+                        .append(",")
+                        .append(pc.getPlatformSerial())
+                        .append(",")
+                        .append(LocalDateTime.now())
+                        .append(",")
+                        .append(device.getSupplyChainValidationStatus())
+                        .append(",");
 
-                // system only
                 ArrayList<ArrayList<String>> parsedComponents = parsePlatformCredentialComponents(pc);
 
                 for (ArrayList<String> component : parsedComponents) {
+                    reportData.append(systemInfo);
                     for (String data : component) {
                         reportData.append(data).append(",");
                     }
                     reportData.deleteCharAt(reportData.length() - 1);
                     reportData.append(System.lineSeparator());
-//                        if (!componentOnly) {
-//                            reportData.append(",,,,,");
-//                        }
                 }
-                reportData = reportData.delete(
-                        reportData.lastIndexOf(System.lineSeparator()) + 1,
-                        reportData.length());
             }
         }
 
-
-        if (columnHeaders.isEmpty()) {
-            columnHeaders = new StringBuilder(SYSTEM_COLUMN_HEADERS + "," + COMPONENT_COLUMN_HEADERS);
-        }
-        bufferedWriter.append(columnHeaders.toString()).append(System.lineSeparator());
+        bufferedWriter.append(new StringBuilder(SYSTEM_COLUMN_HEADERS + "," + COMPONENT_COLUMN_HEADERS))
+                .append(System.lineSeparator());
         bufferedWriter.append(reportData.toString());
-
         bufferedWriter.flush();
     }
 
-
     /**
-     * This method builds a JSON object from the system and component data in a
-     * validation report.
-     *
-     * @param pc               the platform credential used to validate.
-     * @param parsedComponents component data parsed from the platform credential.
-     * @param company          company name.
-     * @param contractNumber   contract number.
-     * @return the JSON object in String format.
-     */
-    private JsonObject assembleJsonContent(final PlatformCredential pc,
-                                           final ArrayList<ArrayList<String>> parsedComponents,
-                                           final String company,
-                                           final String contractNumber) {
-        JsonObject systemData = new JsonObject();
-        String deviceName = deviceRepository.findById((pc)
-                .getDeviceId()).get().getName();
-
-        systemData.addProperty("Company", company);
-        systemData.addProperty("Contract number", contractNumber);
-        systemData.addProperty("Verified Manufacturer", pc.getManufacturer());
-        systemData.addProperty("Model", pc.getModel());
-        systemData.addProperty("SN", pc.getPlatformSerial());
-        systemData.addProperty("Verification Date", LocalDateTime.now().toString());
-        systemData.addProperty("Device Status", deviceRepository.findByName(deviceName)
-                .getSupplyChainValidationStatus().toString());
-
-        JsonArray components = new JsonArray();
-        final int componentDataPosition4 = 3;
-        final int componentDataPosition5 = 4;
-        final int componentDataPosition6 = 5;
-        for (ArrayList<String> componentData : parsedComponents) {
-            JsonObject component = new JsonObject();
-            component.addProperty("Component name", componentData.get(0));
-            component.addProperty("Component manufacturer", componentData.get(1));
-            component.addProperty("Component model", componentData.get(2));
-            component.addProperty("Component SN", componentData.get(componentDataPosition4));
-            component.addProperty("Issuer", componentData.get(componentDataPosition5));
-            component.addProperty("Component status", componentData.get(componentDataPosition6));
-            components.add(component);
-        }
-        systemData.add("Components", components);
-
-        return systemData;
-    }
-
-    /**
-     * This method parses the following ComponentIdentifier fields into an ArrayList of ArrayLists.
+     * This method parses the provided platform credential's list of ComponentIdentifiers into an ArrayList
+     * of ArrayLists.
      * - ComponentClass
      * - Manufacturer
      * - Model
      * - Serial number
      * - Pass/fail status (based on componentFailures string)
-     * todo issue 922
      *
      * @param pc the platform credential.
      * @return the ArrayList of ArrayLists containing the parsed component data.
@@ -370,13 +312,14 @@ public class ValidationSummaryReportsService {
         ArrayList<ArrayList<Object>> chainComponents = new ArrayList<>();
 
         // get all the certificates associated with the platform serial
-        List<PlatformCredential> chainCertificates =
+        final List<PlatformCredential> chainCertificates =
                 certificateRepository.byBoardSerialNumber(pc.getPlatformSerial());
 
         StringBuilder componentFailureString = new StringBuilder();
         componentFailureString.append(pc.getComponentFailures());
-        log.info("Component failures: {}", componentFailureString);
+        log.debug("Component failures: {}", componentFailureString);
 
+        // if the platform credential's has a list of version 1 component identifiers
         if (pc.getPlatformConfigurationV1() != null && pc.getComponentIdentifiers() != null) {
             List<ComponentIdentifier> componentIdentifiers = pc.getComponentIdentifiers();
 
@@ -406,24 +349,13 @@ public class ValidationSummaryReportsService {
                 String issuer = (String) issuerAndComponent.get(0);
                 issuer = issuer.replaceAll(",", " ");
                 ComponentIdentifier ci = (ComponentIdentifier) issuerAndComponent.get(1);
-                if (ci instanceof ComponentIdentifierV2) {
-                    String componentClass =
-                            ((ComponentIdentifierV2) ci).getComponentClass().toString();
-                    String[] splitStrings = componentClass.split("\r\n|\n|\r");
-                    StringBuilder sb = new StringBuilder();
-                    for (String s : splitStrings) {
-                        sb.append(s);
-                        sb.append(" ");
-                    }
-                    sb = sb.deleteCharAt(sb.length() - 1);
-                    componentData.add(sb.toString());
-                } else {
-                    componentData.add("Platform Component");
-                }
+
+                componentData.add("Platform Component");
                 componentData.add(ci.getComponentManufacturer().getString());
                 componentData.add(ci.getComponentModel().getString());
                 componentData.add(ci.getComponentSerial().getString());
                 componentData.add(issuer);
+
                 //Failing components are identified by hashcode
                 if (componentFailureString.toString().contains(String.valueOf(ci.hashCode()))) {
                     componentData.add("Fail");
@@ -431,10 +363,14 @@ public class ValidationSummaryReportsService {
                     componentData.add("Pass");
                 }
                 parsedComponents.add(componentData);
-                log.info(String.join(",", componentData));
+                log.debug("Parsed Component Identifiers V1: {}",
+                        String.join(",", componentData));
             }
 
-        } else if (pc.getPlatformConfigurationV2() != null && pc.getComponentIdentifiersV2() != null) {
+        }
+
+        // if the platform credential's has a list of version 2 component identifiers
+        else if (pc.getPlatformConfigurationV2() != null && pc.getComponentIdentifiersV2() != null) {
             List<ComponentIdentifierV2> componentIdentifiersV2 = pc.getComponentIdentifiersV2();
 
             // combine all components in each certificate
@@ -463,33 +399,25 @@ public class ValidationSummaryReportsService {
                 ArrayList<String> componentData = new ArrayList<>();
                 String issuer = (String) issuerAndComponent.get(0);
                 issuer = issuer.replaceAll(",", " ");
-                ComponentIdentifier ci = (ComponentIdentifier) issuerAndComponent.get(1);
-                if (ci instanceof ComponentIdentifierV2) {
-                    String componentClass =
-                            ((ComponentIdentifierV2) ci).getComponentClass().toString();
-                    String[] splitStrings = componentClass.split("\r\n|\n|\r");
-                    StringBuilder sb = new StringBuilder();
-                    for (String s : splitStrings) {
-                        sb.append(s);
-                        sb.append(" ");
-                    }
-                    sb = sb.deleteCharAt(sb.length() - 1);
-                    componentData.add(sb.toString());
-                } else {
-                    componentData.add("Platform Component");
-                }
-                componentData.add(ci.getComponentManufacturer().getString());
-                componentData.add(ci.getComponentModel().getString());
-                componentData.add(ci.getComponentSerial().getString());
+                ComponentIdentifierV2 ci2 = (ComponentIdentifierV2) issuerAndComponent.get(1);
+
+                String componentClass = ci2.getComponentClass().toString();
+                String[] splitStrings = componentClass.split("\r\n|\n|\r");
+
+                componentData.add(String.join(" ", splitStrings));
+                componentData.add(ci2.getComponentManufacturer().getString());
+                componentData.add(ci2.getComponentModel().getString());
+                componentData.add(ci2.getComponentSerial().getString());
                 componentData.add(issuer);
                 //Failing components are identified by hashcode
-                if (componentFailureString.toString().contains(String.valueOf(ci.hashCode()))) {
+                if (componentFailureString.toString().contains(String.valueOf(ci2.hashCode()))) {
                     componentData.add("Fail");
                 } else {
                     componentData.add("Pass");
                 }
                 parsedComponents.add(componentData);
-                log.info(String.join(",", componentData));
+                log.debug("Parsed Component Identifiers V2: {}",
+                        String.join(",", componentData));
             }
         }
 
