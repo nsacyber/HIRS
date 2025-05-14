@@ -20,8 +20,8 @@ ospackageVersion = "11.2.0"
 pciVersion = "0.3"
 protobufJavaVersion = "4.28.3"
 snakeYamlVersion = "2.0"
-springBootVersion = "3.4.1"
-springFrameworkVersion = "6.2.1"
+springBootVersion = "3.4.4"
+springFrameworkVersion = "6.2.5"
 springRetryVersion = "2.0.10"
 tomcatVersion = "10.1.34"
 
@@ -56,6 +56,7 @@ snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "snakeYamlVersion" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "springBootVersion" }
 spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2", version.ref = "springBootVersion" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "springBootVersion" }
+spring-boot-starter-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf", version.ref = "springBootVersion" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBootVersion" }
 spring-framework-expression = { module = "org.springframework:spring-expression", version.ref = "springFrameworkVersion" }
 spring-framework-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "springFrameworkVersion" }

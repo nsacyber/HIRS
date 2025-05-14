@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- TITLE/ICONS -->
+    <title th:text="${page.title}">Title</title>
+    <link rel="icon" th:href="@{${baseURL}/hirs.ico}" type="image/x-icon">
+    <link rel="shortcut icon" th:href="@{${baseURL}/hirs.ico}" type="image/x-icon">
+
+    <!-- STYLE -->
+    <link type="text/css" rel="stylesheet" th:href="@{${common}/common.css}" />
+    <link type="text/css" rel="stylesheet" th:href="@{${common}/sidebar.css}" />
+    <link type="text/css" rel="stylesheet" th:href="@{${lib}/bootstrap-3.3.7/css/bootstrap.min.css}" />
+    <link type="text/css" rel="stylesheet" th:href="@{${lib}/jquery.dataTables-2.2.2/media/css/datatables.min.css}" />
+
+    <!-- page-specific style -->
+    <th:block th:replace="${style}"></th:block>
+
+    <!-- SCRIPTS -->
+    <script type="text/javascript" th:src="@{${lib}/jquery/jquery-3.7.1.min.js}"></script>
+    <script type="text/javascript" th:src="@{${lib}/jquery.dataTables-2.2.2/media/js/datatables.min.js}"></script>
+    <script type="text/javascript" th:src="@{${lib}/bootstrap-3.3.7/js/bootstrap.min.js}"></script>
+    <script type="text/javascript" th:src="@{${lib}/moment.min.js}"></script>
+    <script type="text/javascript" th:src="@{${common}/date.js}"></script>
+    <script type="text/javascript" th:src="@{${common}/common.js}"></script>
+
+    <script th:inline="javascript">
+        // Set global variables
+        let portal = /*[[${portal}]]*/ '';
+        let pagePath = /*[[${pagePath}]]*/ '';
+        let icons = /*[[${icons}]]*/ '';
+    </script>
+
+    <!-- page-specific script -->
+    <th:block th:replace="${script}"></th:block>
+
+    <!-- Set banner variables -->
+    <th:replace="my::banner" />
+</head>
+<body>
+
+</body>
+</html>

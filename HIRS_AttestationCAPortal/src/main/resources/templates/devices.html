@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Device Listing</title>
+</head>
+<body>
+
+<!-- Assuming icons and texts are variables set in the controller -->
+<img alt="Pass Icon" th:src="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"/>
+<img alt="Fail Icon" th:src="${icons}/ic_error_red_24dp.png"/>
+<img alt="Error Icon" th:src="${icons}/ic_error_black_24dp.png"/>
+<img alt="Unknown Icon" th:src="${icons}/ic_questionmark_circle_orange_24dp.png"/>
+
+<p th:text="${passText}">Validation Passed</p>
+<p th:text="${failText}">Validation Failed</p>
+<p th:text="${errorText}">Validation Error</p>
+<p th:text="${unknownText}">Unknown Validation Status</p>
+
+<div class="aca-data-table">
+    <table class="display" id="deviceTable">
+        <thead>
+        <tr>
+            <th rowspan="2">Validation Status</th>
+            <th rowspan="2">Hostname</th>
+            <th colspan="3">Credentials</th>
+        </tr>
+        <tr>
+            <th>Issued Attestation</th>
+            <th>Platform</th>
+            <th>Endorsement</th>
+        </tr>
+        </thead>
+    </table>
+</div>
+
+</body>
+</html>
