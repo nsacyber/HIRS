@@ -14,26 +14,31 @@ public enum Page {
      */
     INDEX("HIRS Attestation CA", "Version: " + VersionHelper.getVersion(),
             null, false, false, null, null),
+
     /**
      * Page to import and manage trust chains.
      */
     TRUST_CHAIN("Trust Chain Management", "ic_store",
             null, "certificate-request/"),
+
     /**
      * Page to display and manage endorsement key credentials.
      */
     ENDORSEMENT_KEY_CREDENTIALS("Endorsement Key Certificates", "ic_vpn_key",
             "first", "certificate-request/"),
+
     /**
      * Page to display and manage platform credentials.
      */
     PLATFORM_CREDENTIALS("Platform Certificates", "ic_important_devices",
             null, "certificate-request/"),
+
     /**
      * Page to display and manage IDevID certificates.
      */
     IDEVID_CERTIFICATES("IDevID Certificates", "ic_important_devices",
             null, "certificate-request/"),
+
     /**
      * Page to display issued certificates.
      */
@@ -43,36 +48,49 @@ public enum Page {
      * Page to display certificate validation reports.
      */
     VALIDATION_REPORTS("Validation Reports", "ic_assignment", "first"),
+
     /**
      * Non-menu page to display certificate.  Reachable from all certificate pages.
      */
     CERTIFICATE_DETAILS("Certificate Details", "", null, true, false, null, null),
+
     /**
      * Page to display registered devices.
      */
     DEVICES("Devices", "ic_devices", "first"),
+
     /**
      * Page to display RIMs.
      */
     REFERENCE_MANIFESTS("Reference Integrity Manifests",
             "ic_important_devices", "first"),
+
     /**
      * Non-menu page to display rims.
      */
     RIM_DETAILS("Reference Integrity Manifest Details",
             "", null, true, false, null, null),
+
     /**
      * Page to display RIM event digest table.
      */
     RIM_DATABASE("RIM Database", "ic_important_devices", "first"),
+
     /**
      * Page that manages Attestation CA Policy.
      */
     POLICY("Policy", "ic_subtitles"),
+
+    /**
+     * Page that displays the HIRS_Application log
+     */
+    HIRS_LOG("HIRS Application Log", "ic_assignment"),
+
     /**
      * Help page.
      */
     HELP("Help", "ic_live_help");
+
 
     private final String title;
 
