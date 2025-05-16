@@ -1,6 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%> <%-- JSP TAGS --%>
-<%@taglib prefix="c" uri="jakarta.tags.core" %> <%@taglib prefix="my"
-tagdir="/WEB-INF/tags"%> <%-- CONTENT --%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<%-- JSP TAGS --%>
+<%@taglib prefix="c" uri="jakarta.tags.core" %>
+<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
+
+<%-- CONTENT --%>
 <my:page>
   <jsp:attribute name="pageHeaderTitle"
     >Welcome to the HIRS Attestation CA</jsp:attribute

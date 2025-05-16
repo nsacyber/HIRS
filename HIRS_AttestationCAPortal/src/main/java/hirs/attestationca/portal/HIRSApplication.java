@@ -6,8 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SuppressWarnings("checkstyle:hideutilityclassconstructor")
 @SpringBootApplication
-//@EnableAutoConfiguration
-//@EnableAdminServer
 @Log4j2
 public class HIRSApplication {
     /**
@@ -16,10 +14,6 @@ public class HIRSApplication {
      * @param args main method arguments
      */
     public static void main(final String[] args) {
-//        SpringApplication springApplication = new SpringApplication(HIRSApplication.class);
-//        springApplication.setDefaultProperties(Collections.singletonMap("server.servlet.context-path",
-//        "/portal"));
-//        springApplication.run(args);
         SpringApplication.run(HIRSApplication.class, args);
     }
 }
