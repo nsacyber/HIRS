@@ -93,12 +93,12 @@ tagdir="/WEB-INF/tags"%> <%-- CONTENT --%>
           </h3>
           <h4>View a list of Reference Integrity Measurements</h4>
           <h3>
-            <a href="">
-              <img src="${icons}/ic_assignment_black_24dp.png" /> HIRS Application
-              Log
+            <a href="${portal}/hirs-log">
+              <img src="${icons}/ic_assignment_black_24dp.png" /> HIRS
+              Application Log
             </a>
           </h3>
-          <h4>View and manage the HIRS Application Log File.</h4>
+          <h4>View and manage the HIRS Attestation Log File.</h4>
         </div>
       </div>
     </div>
