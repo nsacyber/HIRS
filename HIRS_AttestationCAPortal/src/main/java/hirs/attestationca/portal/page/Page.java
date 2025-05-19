@@ -82,11 +82,6 @@ public enum Page {
     POLICY("Policy", "ic_subtitles"),
 
     /**
-     * Page that displays the HIRS_Application log.
-     */
-    HIRS_LOG("HIRS Attestation Log", "ic_assignment"),
-
-    /**
      * Help page.
      */
     HELP("Help", "ic_live_help");

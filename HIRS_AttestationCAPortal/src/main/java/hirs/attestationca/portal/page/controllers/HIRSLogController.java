@@ -1,19 +1,15 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
-import hirs.attestationca.portal.page.params.NoPageParams;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,32 +17,15 @@ import java.io.IOException;
 /**
  * Controller for the HIRS Attestation Log page.
  */
-@Controller
+@RestController
 @RequestMapping("/HIRS_AttestationCAPortal/portal/hirs-log")
 @Log4j2
-public class HIRSLogController extends PageController<NoPageParams> {
+public class HIRSLogController {
+    @Value("${logging.file.path}")
+    private String logFilePath;
 
-    private static final String LOG_FILE_PATH = "/var/log/hirs/HIRS_AttestationCA_Portal.log";
-
-    /**
-     * Constructor for the HIRS Attestation Log page.
-     */
-    public HIRSLogController() {
-        super(Page.HIRS_LOG);
-    }
-
-    /**
-     * Returns the path for the view and the data model for the HIRS log page.
-     *
-     * @param params The object to map url parameters into.
-     * @param model  The data model for the request. Can contain data from
-     *               redirect.
-     * @return model and view of the HIRS log page
-     */
-    @Override
-    public ModelAndView initPage(final NoPageParams params, final Model model) {
-        return getBaseModelAndView(Page.HIRS_LOG);
-    }
+    @Value("${logging.file.name}")
+    private String logFileName;
 
     /**
      * Processes the request to download the HIRS application's log file.
@@ -59,7 +38,7 @@ public class HIRSLogController extends PageController<NoPageParams> {
 
         try {
             log.info("Received request to download the HIRS Attestation application's log file");
-            final File logFile = new File(LOG_FILE_PATH);
+            final File logFile = new File(logFilePath + "/" + logFileName);
 
             if (!logFile.exists()) {
                 log.error("The log file cannot be downloaded because it does not exist");
