@@ -2,6 +2,7 @@
 
 <%-- JSP TAGS --%>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 
 <%-- CONTENT --%>
 
@@ -15,17 +16,17 @@
         <img src="${icons}/ic_file_download_black_24dp.png" title="Download HIRS Log">
       </a>
     </div>
-    <!-- todo-->
-    <div class="filter-section">
-        <label for="log-level">Log Level: </label>
-        <select id="log-level">
-          <option value="ALL">All</option>
-          <option value="INFO">INFO</option>
-          <option value="DEBUG">DEBUG</option>
-          <option value="ERROR">ERROR</option>
-          <option value="WARN">WARN</option>
+    <form:form method="POST" action="${portal}/hirs-log/setLogLevel">
+        <label for="logLevelSelector">Select Logging Level:</label>
+        <select name="logLevel" id="logLevelSelector">
+            <option value="ERROR">ERROR</option>
+            <option value="WARN">WARN</option>
+            <option value="INFO">INFO</option>
+            <option value="DEBUG">DEBUG</option>
+            <option value="TRACE">TRACE</option>
         </select>
-    </div>
+        <input type="submit" value = "Submit" />
+    </form:form>
     <div>
       <h3 class="content-subhead" id="alerttype">Documentation</h3>
       <p>
