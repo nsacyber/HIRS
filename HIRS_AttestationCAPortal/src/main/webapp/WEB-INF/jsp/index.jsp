@@ -1,10 +1,6 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-
-<%-- JSP TAGS --%>
-<%@taglib prefix="c" uri="jakarta.tags.core" %>
-<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
-
-<%-- CONTENT --%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%> <%-- JSP TAGS --%>
+<%@taglib prefix="c" uri="jakarta.tags.core" %> <%@taglib prefix="my"
+tagdir="/WEB-INF/tags"%> <%-- CONTENT --%>
 <my:page>
   <jsp:attribute name="pageHeaderTitle"
     >Welcome to the HIRS Attestation CA</jsp:attribute
@@ -96,6 +92,15 @@
             >
           </h3>
           <h4>View a list of Reference Integrity Measurements</h4>
+          <h3>
+            <a href="${portal}/help"
+              ><img src="${icons}/ic_live_help_black_24dp.png" /> Help</a
+            >
+          </h3>
+          <h4>
+            Access the HIRS documentation in the code repository and manage/
+            view the HIRS application log levels.
+          </h4>
         </div>
       </div>
     </div>
