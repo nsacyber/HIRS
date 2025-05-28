@@ -10,6 +10,7 @@ import hirs.utils.xjc.ResourceCollection;
 import hirs.utils.xjc.SoftwareIdentity;
 import hirs.utils.xjc.SoftwareMeta;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
@@ -73,6 +74,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -204,31 +206,8 @@ public class SwidTagGateway {
             swidtag = convertToDocument(objectFactory.createSoftwareIdentity(softwareIdentity));
             Element rootElement = swidtag.getDocumentElement();
 
-            //File
-            hirs.utils.xjc.File file = createFile(
-                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
-                            .getJsonObject(SwidTagConstants.DIRECTORY)
-                            .getJsonObject(SwidTagConstants.FILE));
-            JAXBElement<FilesystemItem> jaxbFile = objectFactory.createDirectoryFile(file);
-            Document fileDoc = convertToDocument(jaxbFile);
-            //Directory
-            Directory directory = createDirectory(
-                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
-                            .getJsonObject(SwidTagConstants.DIRECTORY));
-            JAXBElement<FilesystemItem> jaxbDirectory = objectFactory.createPayloadDirectory(directory);
-            Document dirDoc = convertToDocument(jaxbDirectory);
-            Node fileNode = dirDoc.importNode(fileDoc.getDocumentElement(), true);
-            dirDoc.getDocumentElement().appendChild(fileNode);
-            //Payload
-            ResourceCollection payload = createPayload(
-                    configProperties.getJsonObject(SwidTagConstants.PAYLOAD));
-            JAXBElement<ResourceCollection> jaxbPayload =
-                    objectFactory.createSoftwareIdentityPayload(payload);
-            Document payloadDoc = convertToDocument(jaxbPayload);
-            Node dirNode = payloadDoc.importNode(dirDoc.getDocumentElement(), true);
-            payloadDoc.getDocumentElement().appendChild(dirNode);
-
-            Node payloadNode = swidtag.importNode(payloadDoc.getDocumentElement(), true);
+            Node payloadNode = swidtag.importNode(
+                    assembleCompositePayload(configProperties).getDocumentElement(), true);
             rootElement.appendChild(payloadNode);
 
             //Signature
@@ -250,6 +229,38 @@ public class SwidTagGateway {
             System.out.println(e.getMessage());
             System.exit(1);
         }
+    }
+
+    private Document assembleCompositePayload(JsonObject configProperties) throws Exception{
+        //Directory
+        Directory directory = createDirectory(
+                configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
+                        .getJsonObject(SwidTagConstants.DIRECTORY));
+        JAXBElement<FilesystemItem> jaxbDirectory = objectFactory.createPayloadDirectory(directory);
+        Document dirDoc = convertToDocument(jaxbDirectory);
+
+        //File(s)
+        JsonArray files = configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
+                .getJsonObject(SwidTagConstants.DIRECTORY).getJsonArray(SwidTagConstants.FILE);
+        Iterator itr = files.iterator();
+        while (itr.hasNext()) {
+            hirs.utils.xjc.File file = createFile((JsonObject) itr.next());
+            JAXBElement<FilesystemItem> jaxbFile = objectFactory.createDirectoryFile(file);
+            Document fileDoc = convertToDocument(jaxbFile);
+            Node fileNode = dirDoc.importNode(fileDoc.getDocumentElement(), true);
+            dirDoc.getDocumentElement().appendChild(fileNode);
+        }
+
+        //Payload
+        ResourceCollection payload = createPayload(
+                configProperties.getJsonObject(SwidTagConstants.PAYLOAD));
+        JAXBElement<ResourceCollection> jaxbPayload =
+                objectFactory.createSoftwareIdentityPayload(payload);
+        Document payloadDoc = convertToDocument(jaxbPayload);
+        Node dirNode = payloadDoc.importNode(dirDoc.getDocumentElement(), true);
+        payloadDoc.getDocumentElement().appendChild(dirNode);
+
+        return payloadDoc;
     }
 
     /**
@@ -491,7 +502,10 @@ public class SwidTagGateway {
     private hirs.utils.xjc.File createFile(JsonObject jsonObject) throws Exception {
         hirs.utils.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
+        file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
         Map<QName, String> attributes = file.getOtherAttributes();
+        addNonNullAttribute(attributes, SwidTagConstants._SHA256_HASH,
+                jsonObject.getString(SwidTagConstants.HASH), true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
                 SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
         if (!supportRimFormat.equals(SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING)) {
@@ -506,11 +520,6 @@ public class SwidTagGateway {
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         addNonNullAttribute(attributes, SwidTagConstants._SUPPORT_RIM_URI_GLOBAL,
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
-        File rimEventLogFile = new File(rimEventLog);
-        file.setSize(new BigInteger(Long.toString(rimEventLogFile.length())));
-        addNonNullAttribute(attributes, SwidTagConstants._SHA256_HASH,
-                jsonObject.getString(SwidTagConstants.HASH,
-                        HashSwid.get256Hash(rimEventLog)), true);
 
         return file;
     }
