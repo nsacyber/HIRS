@@ -107,7 +107,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(EndorsementCredential.class,
+                ControllerPagesUtils.findSearchableColumnsNamesWithClass(EndorsementCredential.class,
                         input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();

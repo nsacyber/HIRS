@@ -1,10 +1,10 @@
-<!-- <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%-- JSP TAGS --%>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 
-<%-- CONTENT --%> -->
+<%-- CONTENT --%>
 
 <my:page>
   <jsp:attribute name="pageHeaderTitle">Help</jsp:attribute>
@@ -33,7 +33,6 @@
             <th>Reset</th>
           </tr>
         </thead>
-        <tbody></tbody>
       </table>
     </div>
 
@@ -62,10 +61,29 @@
   $(document).ready(function () {
     const levels = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE", "ALL"];
 
-    let url = pagePath + "/list";
-    let columns = [{},{},{}];
+    let url = pagePath + "/hirs-log/loggers-list";
+    let columns = [
+      {
+        name: "loggerName",
+        data: "loggerName",
+        orderable: true,
+        searchable: true,
+      },
+      {
+        name: "logLevel",
+        data: "logLevel",
+        orderable: true,
+        searchable: true,
+      },
+      {
+        name: "reset",
+        data: "reset",
+        orderable: false,
+        searchable: false,
+      },
+    ];
 
     //Set data tables
-    setDataTables("#loggersTable", url, columns);
+    let dataTable = setDataTables("#loggersTable", url, columns);
   });
 </script>

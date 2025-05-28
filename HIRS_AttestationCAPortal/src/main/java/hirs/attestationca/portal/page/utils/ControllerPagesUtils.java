@@ -12,6 +12,7 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -55,6 +56,17 @@ public final class ControllerPagesUtils {
     }
 
     /**
+     * @param columns table columns
+     * @return set of searchable column names
+     */
+    public static Set<String> findSearchableColumnsNames(final List<Column> columns) {
+        return columns.stream()
+                .filter(Column::isSearchable)
+                .map(Column::getName)
+                .collect(Collectors.toSet());
+    }
+
+    /**
      * Helper method that attempts to return a list of searchable column names that
      * matches the names of the provided class' non-static declared fields.
      *
@@ -62,7 +74,7 @@ public final class ControllerPagesUtils {
      * @param columns             table columns
      * @return set of searchable column names
      */
-    public static Set<String> findSearchableColumnsNames(
+    public static Set<String> findSearchableColumnsNamesWithClass(
             final Class<?> pageControllerClass,
             final List<Column> columns) {
 

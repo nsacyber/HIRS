@@ -90,7 +90,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(SupplyChainValidationSummary.class,
+                ControllerPagesUtils.findSearchableColumnsNamesWithClass(SupplyChainValidationSummary.class,
                         input.getColumns());
 
         FilteredRecordsList<SupplyChainValidationSummary> reportsFilteredRecordsList =

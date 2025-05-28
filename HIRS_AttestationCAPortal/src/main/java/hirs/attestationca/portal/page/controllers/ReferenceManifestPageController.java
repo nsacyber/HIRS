@@ -130,7 +130,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(ReferenceManifest.class, input.getColumns());
+                ControllerPagesUtils.findSearchableColumnsNamesWithClass(ReferenceManifest.class,
+                        input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));

@@ -105,7 +105,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(IssuedAttestationCertificate.class,
+                ControllerPagesUtils.findSearchableColumnsNamesWithClass(IssuedAttestationCertificate.class,
                         input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();

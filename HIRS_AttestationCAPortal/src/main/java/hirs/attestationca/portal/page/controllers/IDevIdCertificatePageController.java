@@ -106,7 +106,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(IDevIDCertificate.class, input.getColumns());
+                ControllerPagesUtils.findSearchableColumnsNamesWithClass(IDevIDCertificate.class,
+                        input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));

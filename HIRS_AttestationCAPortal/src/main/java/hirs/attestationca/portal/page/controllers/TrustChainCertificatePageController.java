@@ -151,7 +151,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(CertificateAuthorityCredential.class,
+                ControllerPagesUtils.findSearchableColumnsNamesWithClass(CertificateAuthorityCredential.class,
                         input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();

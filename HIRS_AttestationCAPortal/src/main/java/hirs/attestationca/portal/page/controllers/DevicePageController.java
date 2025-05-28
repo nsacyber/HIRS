@@ -83,7 +83,7 @@ public class DevicePageController extends PageController<NoPageParams> {
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(Device.class, input.getColumns());
+                ControllerPagesUtils.findSearchableColumnsNamesWithClass(Device.class, input.getColumns());
 
         // get all the devices
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
