@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.portal.datatables.Column;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Pageable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -145,4 +146,17 @@ public final class ControllerPagesUtils {
         }
         return trustChainPEM.toString();
     }
+
+    /**
+     * @param list
+     * @param pageable
+     * @param <T>
+     * @return
+     */
+    public static <T> List<T> paginate(List<T> list, Pageable pageable) {
+        final int fromIndex = (int) pageable.getOffset();
+        final int toIndex = Math.min(fromIndex + pageable.getPageSize(), list.size());
+        return list.subList(fromIndex, toIndex);
+    }
+
 }

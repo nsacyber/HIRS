@@ -1,9 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%-- JSP TAGS --%>
-<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
+<%@taglib prefix="c" uri="jakarta.tags.core" %>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
-
+<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 <%-- CONTENT --%>
 
 <my:page>
@@ -30,23 +31,10 @@
           <tr>
             <th>Logger Name</th>
             <th>Configured Level</th>
-            <th>Reset</th>
           </tr>
         </thead>
       </table>
     </div>
-
-    <!-- <form:form method="POST" action="${portal}/help/hirs-log/setLogLevel">
-      <label for="logLevelSelector">Select Logging Level:</label>
-      <select name="logLevel" id="logLevelSelector">
-        <option value="ERROR">ERROR</option>
-        <option value="WARN">WARN</option>
-        <option value="INFO">INFO</option>
-        <option value="DEBUG">DEBUG</option>
-        <option value="TRACE">TRACE</option>
-      </select>
-      <input type="submit" value="Submit" />
-    </form:form> -->
     <div>
       <h3 class="content-subhead" id="alerttype">Documentation</h3>
       <p>
@@ -59,7 +47,7 @@
 
 <script>
   $(document).ready(function () {
-    const levels = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE", "ALL"];
+    const levels = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
 
     let url = pagePath + "/hirs-log/loggers-list";
     let columns = [
@@ -67,20 +55,14 @@
         name: "loggerName",
         data: "loggerName",
         orderable: true,
-        searchable: true,
+        searchable: true
       },
       {
         name: "logLevel",
         data: "logLevel",
         orderable: true,
-        searchable: true,
-      },
-      {
-        name: "reset",
-        data: "reset",
-        orderable: false,
-        searchable: false,
-      },
+        searchable: true
+      }
     ];
 
     //Set data tables
