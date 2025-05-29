@@ -2,6 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.HIRSLogger;
+import hirs.attestationca.persist.service.HelpService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -14,8 +15,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.logging.LoggersEndpoint;
-import org.springframework.boot.logging.LogLevel;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageImpl;
@@ -36,11 +35,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Controller for the Help page.
@@ -50,9 +45,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/help")
 public class HelpPageController extends PageController<NoPageParams> {
 
-    private static final String ROOT_PACKAGE = "hirs";
 
-    private final LoggersEndpoint loggersEndpoint;
+    private final HelpService helpService;
 
     private String fullLogFilePath;
 
@@ -65,12 +59,12 @@ public class HelpPageController extends PageController<NoPageParams> {
     /**
      * Constructor providing the Help Page's display and routing specification.
      *
-     * @param loggersEndpoint loggers endpoint
+     * @param helpService help service
      */
     @Autowired
-    public HelpPageController(final LoggersEndpoint loggersEndpoint) {
+    public HelpPageController(final HelpService helpService) {
         super(Page.HELP);
-        this.loggersEndpoint = loggersEndpoint;
+        this.helpService = helpService;
     }
 
     /**
@@ -146,8 +140,6 @@ public class HelpPageController extends PageController<NoPageParams> {
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(input.getColumns());
 
         FilteredRecordsList<HIRSLogger> hirsLoggerFilteredRecordsList =
                 new FilteredRecordsList<>();
@@ -156,15 +148,17 @@ public class HelpPageController extends PageController<NoPageParams> {
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<HIRSLogger> pagedResult;
 
-        List<HIRSLogger> allHIRSLoggers = getAllHIRSLoggers();
+        List<HIRSLogger> allHIRSLoggers = this.helpService.getAllHIRSLoggers();
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = new PageImpl<>(ControllerPagesUtils.paginate(allHIRSLoggers, pageable), pageable,
+            pagedResult = new PageImpl<>(ControllerPagesUtils.getPaginatedSubList(allHIRSLoggers, pageable),
+                    pageable,
                     allHIRSLoggers.size());
         } else {
-            List<HIRSLogger> filteredHIRSLoggers = getLoggersThatMatchSearchTerm(searchTerm);
+            List<HIRSLogger> filteredHIRSLoggers =
+                    this.helpService.getHIRSLoggersThatMatchSearchTerm(searchTerm);
             pagedResult =
-                    new PageImpl<>(ControllerPagesUtils.paginate(filteredHIRSLoggers, pageable),
+                    new PageImpl<>(ControllerPagesUtils.getPaginatedSubList(filteredHIRSLoggers, pageable),
                             pageable, filteredHIRSLoggers.size());
         }
 
@@ -201,12 +195,7 @@ public class HelpPageController extends PageController<NoPageParams> {
             log.info("Received a request to set the log level {} for the provided logger file {}"
                     , logLevel, logName);
 
-            // Convert the string log level to Log4j2 Level
-            final LogLevel level = LogLevel.valueOf(logLevel);
-
-            loggersEndpoint.configureLogLevel(logName, level);
-
-            log.info("The log file {}'s level has been changed to {}", logName, level);
+            this.helpService.setLoggerLevel(logName, logLevel);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to set the logging level for the"
                     + " HIRS Application log file", exception);
@@ -219,51 +208,5 @@ public class HelpPageController extends PageController<NoPageParams> {
         final String helpPageUrl = "/HIRS_AttestationCAPortal/portal/help";
 
         return new RedirectView(helpPageUrl);
-    }
-
-    /**
-     * Helper method that retrieves all the HIRS application's loggers.
-     *
-     * @return Spring boot loggers in the form of a map
-     */
-    private List<HIRSLogger> getAllHIRSLoggers() {
-        // retrieve all the applications' loggers
-        Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allLoggers =
-                loggersEndpoint.loggers().getLoggers();
-
-        // retrieve all the loggers whose logger name starts with the root package's name (hirs)
-        Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allHIRSLoggers = allLoggers.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(ROOT_PACKAGE))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        List<HIRSLogger> hirsLoggersList = new ArrayList<>();
-
-        // Loop through the map, create a new object for each entry
-        // that holds the log name and level, and add it to the list.
-        allHIRSLoggers.forEach((loggerName, logDescriptor) -> {
-            LogLevel logLevel = LogLevel.valueOf("INFO"); //todo
-
-            hirsLoggersList.add(
-                    new HIRSLogger(loggerName, logLevel));
-        });
-
-        return hirsLoggersList;
-    }
-
-    /**
-     * @param searchTerm
-     * @return
-     */
-    private List<HIRSLogger> getLoggersThatMatchSearchTerm(
-            String searchTerm) {
-        // grab all the hirs loggers
-        List<HIRSLogger> hirsLoggers = getAllHIRSLoggers();
-
-        // grab only the loggers whose names match the provided search term
-        return hirsLoggers.stream()
-                .filter(eachLogger -> eachLogger.getLoggerName().toLowerCase()
-                        .contains(searchTerm.toLowerCase()))
-                .collect(
-                        Collectors.toList());
     }
 }

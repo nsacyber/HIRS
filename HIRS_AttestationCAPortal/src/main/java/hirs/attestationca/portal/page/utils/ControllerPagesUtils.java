@@ -13,7 +13,6 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -57,17 +56,6 @@ public final class ControllerPagesUtils {
     }
 
     /**
-     * @param columns table columns
-     * @return set of searchable column names
-     */
-    public static Set<String> findSearchableColumnsNames(final List<Column> columns) {
-        return columns.stream()
-                .filter(Column::isSearchable)
-                .map(Column::getName)
-                .collect(Collectors.toSet());
-    }
-
-    /**
      * Helper method that attempts to return a list of searchable column names that
      * matches the names of the provided class' non-static declared fields.
      *
@@ -75,7 +63,7 @@ public final class ControllerPagesUtils {
      * @param columns             table columns
      * @return set of searchable column names
      */
-    public static Set<String> findSearchableColumnsNamesWithClass(
+    public static Set<String> findSearchableColumnsNames(
             final Class<?> pageControllerClass,
             final List<Column> columns) {
 
@@ -148,12 +136,15 @@ public final class ControllerPagesUtils {
     }
 
     /**
-     * @param list
-     * @param pageable
-     * @param <T>
-     * @return
+     * Helper method that manually paginates a generic list when
+     * working outside the database or repository layer.
+     *
+     * @param list     generic list
+     * @param pageable pageable
+     * @param <T>      generic class
+     * @return paginated sublist
      */
-    public static <T> List<T> paginate(List<T> list, Pageable pageable) {
+    public static <T> List<T> getPaginatedSubList(final List<T> list, final Pageable pageable) {
         final int fromIndex = (int) pageable.getOffset();
         final int toIndex = Math.min(fromIndex + pageable.getPageSize(), list.size());
         return list.subList(fromIndex, toIndex);

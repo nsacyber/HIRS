@@ -15,6 +15,5 @@ import org.springframework.boot.logging.LogLevel;
 @AllArgsConstructor
 public class HIRSLogger {
     private String loggerName;
-
     private LogLevel logLevel;
 }

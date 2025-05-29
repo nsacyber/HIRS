@@ -113,7 +113,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         final String searchTerm = input.getSearch().getValue();
 
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNamesWithClass(PlatformCredential.class,
+                ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class,
                         input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();

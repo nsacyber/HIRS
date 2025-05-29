@@ -103,7 +103,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNamesWithClass(ReferenceDigestValue.class,
+                ControllerPagesUtils.findSearchableColumnsNames(ReferenceDigestValue.class,
                         input.getColumns());
 
         FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
