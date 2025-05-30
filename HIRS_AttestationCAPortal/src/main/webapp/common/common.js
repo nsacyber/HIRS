@@ -63,7 +63,7 @@ function handleLogLevelChange(loggerName, newLogLevel) {
     // Construct the URL with the query parameters
     const url =
       pagePath +
-      "/setLogLevel?logName=" +
+      "/setLogLevel?loggerName=" +
       encodeURIComponent(loggerName) +
       "&logLevel=" +
       encodeURIComponent(newLogLevel);
