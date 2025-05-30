@@ -34,12 +34,12 @@
 			"name": "iotBase",
 			"File": [
 				{
-					"name": "TpmLog.bin",
+					"name": "src/test/resources/TpmLog.bin",
 					"hash": "4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848"
 				},
 				{
-					"name": "TPMLog_Altered.bin",
-					"hash": "4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c540000"
+					"name": "src/test/resources/TPMLog_Altered.bin",
+					"hash": "cb886efd83fbf04102d4905dc17cfa29f805910e34f44e7a58163345168c376e"
 				}
 			]
 		}

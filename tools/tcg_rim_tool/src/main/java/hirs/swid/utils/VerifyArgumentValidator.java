@@ -13,7 +13,7 @@ import java.util.Map;
  */
 @Log4j2
 public class VerifyArgumentValidator implements IParametersValidator {
-    String[] requiredArgs = {"--rimel", "--publicCertificate", "--truststore"};
+    String[] requiredArgs = {"--publicCertificate", "--truststore"};
     String errorMessage = "";
 
     /**
