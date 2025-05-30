@@ -39,7 +39,7 @@
           <tr>
             <th>Logger Name</th>
             <th>Configured Level</th>
-            <th>Actions</th>
+            <th>Change Log Level</th>
           </tr>
         </thead>
       </table>
@@ -74,7 +74,7 @@
         searchable: true,
       },
       {
-        name: "actions",
+        name: "changeLogLevel",
         data: null,
         render: function (data, type, row) {
           // Start the btn-group div to wrap all the buttons
