@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -136,7 +137,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         idevidFilteredRecordsList.setRecordsTotal(findIDevIdCertificateRepositoryCount());
 
         log.info("Returning the size of the list of IDEVID certificates: "
-                + "{}", idevidFilteredRecordsList.size());
+                + "{}", idevidFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(idevidFilteredRecordsList, input);
     }
 
@@ -178,8 +179,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                     + ".cer\"";
 
             // Set filename for download.
-            response.setHeader("Content-Disposition", "attachment;" + fileName);
-            response.setContentType("application/octet-stream");
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
             // write idevid certificate to output stream
             response.getOutputStream().write(certificate.getRawBytes());
@@ -209,7 +210,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         final String singleFileName = "IDevID_Certificates";
 
         // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {

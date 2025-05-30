@@ -33,7 +33,6 @@ public final class ControllerPagesUtils {
      * @return set of non-static declared field names
      */
     public static Set<String> getNonStaticFieldNames(final Class<?> specifiedClass) {
-
         Set<String> fieldNames = new HashSet<>();
         Class<?> currentClass = specifiedClass;
 
@@ -66,7 +65,6 @@ public final class ControllerPagesUtils {
     public static Set<String> findSearchableColumnsNames(
             final Class<?> pageControllerClass,
             final List<Column> columns) {
-
         // grab all the provided class' non-static declared fields
         Set<String> nonStaticFields = getNonStaticFieldNames(pageControllerClass);
 

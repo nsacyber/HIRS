@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @Service
 public class HelpService {
-    private static final String ROOT_PACKAGE = "hirs";
+    private static final String HIRS_ATTESTATIONCA = "hirs.attestationca";
 
     private final LoggersEndpoint loggersEndpoint;
 
@@ -35,37 +34,31 @@ public class HelpService {
     /**
      * Retrieves all the HIRS application's loggers.
      *
-     * @return Spring boot loggers in the form of a map
+     * @return list of hirs loggers
      */
     public List<HIRSLogger> getAllHIRSLoggers() {
         // retrieve all the applications' loggers
         Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allLoggers =
                 loggersEndpoint.loggers().getLoggers();
 
-
-        // retrieve all the loggers whose logger name starts with the root package's name (hirs)
+        // retrieve all the loggers whose logger name starts with the root package's name (hirs.attestationca)
         Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allHIRSLoggers = allLoggers.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(ROOT_PACKAGE))
+                .filter(entry -> entry.getKey().startsWith(HIRS_ATTESTATIONCA))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
+        
         List<HIRSLogger> hirsLoggersList = new ArrayList<>();
 
-        AtomicInteger i = new AtomicInteger();
         // Loop through the map, create a new object for each entry
         // that holds the log name and level, and add it to the list.
         allHIRSLoggers.forEach((loggerName, logDescriptor) -> {
             LogLevel logLevel;
-
-            if (i.get() % 2 == 0) {
-                logLevel = LogLevel.valueOf("INFO");
+            if (logDescriptor.getConfiguredLevel() != null) {
+                logLevel = LogLevel.valueOf(logDescriptor.getConfiguredLevel());
             } else {
-                logLevel = LogLevel.ERROR; //todo
+                logLevel = LogLevel.INFO;
             }
-
             hirsLoggersList.add(
                     new HIRSLogger(loggerName, logLevel));
-
-            i.getAndIncrement();
         });
 
         return hirsLoggersList;
@@ -78,7 +71,7 @@ public class HelpService {
      * @return list of hirs loggers that match the provided search term
      */
     public List<HIRSLogger> getHIRSLoggersThatMatchSearchTerm(
-            String searchTerm) {
+            final String searchTerm) {
         // grab all the hirs loggers
         List<HIRSLogger> hirsLoggers = getAllHIRSLoggers();
 
@@ -86,7 +79,7 @@ public class HelpService {
         return hirsLoggers.stream()
                 .filter(eachLogger -> eachLogger.getLoggerName().toLowerCase()
                         .contains(searchTerm.toLowerCase())
-                        || eachLogger.getLogLevel().toString()
+                        || eachLogger.getLogLevel().toString().toLowerCase()
                         .contains(searchTerm.toLowerCase()))
                 .collect(Collectors.toList());
     }

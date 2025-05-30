@@ -123,7 +123,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         reportsFilteredRecordsList.setRecordsTotal(this.supplyChainValidatorSummaryRepository.count());
 
         log.info("Returning the size of the list of validation reports: "
-                + "{}", reportsFilteredRecordsList.size());
+                + "{}", reportsFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(reportsFilteredRecordsList, input);
     }
 

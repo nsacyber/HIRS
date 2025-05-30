@@ -44,8 +44,6 @@ import java.util.List;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/help")
 public class HelpPageController extends PageController<NoPageParams> {
-
-
     private final HelpService helpService;
 
     private String fullLogFilePath;
@@ -94,7 +92,7 @@ public class HelpPageController extends PageController<NoPageParams> {
      * @param response response that will be sent out after processing download request
      * @throws IOException when writing to response output stream
      */
-    @GetMapping("/hirs-log/download")
+    @GetMapping("/hirs-log-download")
     public void downloadHIRSLog(final HttpServletResponse response) throws IOException {
 
         try {
@@ -126,8 +124,15 @@ public class HelpPageController extends PageController<NoPageParams> {
         }
     }
 
+    /**
+     * Processes the request to retrieve a list of hirs loggers for display
+     * on the help page.
+     *
+     * @param input data table input received from the front-end
+     * @return data table of hirs loggers
+     */
     @ResponseBody
-    @GetMapping(value = "/hirs-log/loggers-list",
+    @GetMapping(value = "/loggers-list",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<HIRSLogger> getLoggersTable(final DataTableInput input) {
 
@@ -169,9 +174,8 @@ public class HelpPageController extends PageController<NoPageParams> {
         hirsLoggerFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         hirsLoggerFilteredRecordsList.setRecordsTotal(allHIRSLoggers.size());
 
-
         log.info("Returning the size of the list of hirs loggers: "
-                + "{}", hirsLoggerFilteredRecordsList.size());
+                + "{}", hirsLoggerFilteredRecordsList.getRecordsFiltered());
 
         return new DataTableResponse<>(hirsLoggerFilteredRecordsList, input);
     }
@@ -181,21 +185,22 @@ public class HelpPageController extends PageController<NoPageParams> {
      * Processes the request that sets the log level of the HIRS application log file
      * based on the provided user input.
      *
-     * @param response response that will be sent out after processing download request
-     * @param logLevel logging level
+     * @param response   response that will be sent out after processing download request
+     * @param loggerName logger name
+     * @param logLevel   logging level
      * @return the redirection view
      * @throws IOException when writing to response output stream
      */
-    @PostMapping("/hirs-log/setLogLevel")
+    @PostMapping("/setLogLevel")
     public RedirectView setLogLevel(final HttpServletResponse response,
-                                    @RequestParam final String logName,
+                                    @RequestParam final String loggerName,
                                     @RequestParam final String logLevel)
             throws IOException {
         try {
-            log.info("Received a request to set the log level {} for the provided logger file {}"
-                    , logLevel, logName);
+            log.info("Received a request to set the log level {} for the provided logger {}", logLevel,
+                    loggerName);
 
-            this.helpService.setLoggerLevel(logName, logLevel);
+            this.helpService.setLoggerLevel(loggerName, logLevel);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to set the logging level for the"
                     + " HIRS Application log file", exception);

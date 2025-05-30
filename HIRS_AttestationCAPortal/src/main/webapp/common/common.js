@@ -49,6 +49,45 @@ function handleDeleteRequest(id) {
 }
 
 /**
+ * Sends a POST request to the backend every time the user decides to change the
+ * selected logger's log level to a different log level.
+ * @param loggerName logger name
+ * @param logLevel new log level
+ */
+function handleLogLevelChange(loggerName, newLogLevel) {
+  if (
+    confirm(
+      `Are you sure you want to change the log level for ${loggerName} to ${newLogLevel}?`
+    )
+  ) {
+    // Construct the URL with the query parameters
+    const url =
+      pagePath +
+      "/setLogLevel?logName=" +
+      encodeURIComponent(loggerName) +
+      "&logLevel=" +
+      encodeURIComponent(newLogLevel);
+
+    // Make the POST request to change the log level
+    $.ajax({
+      url: url, // Use the constructed URL with query parameters
+      type: "POST", // POST request
+      success: function (response) {
+        // Handle success (you may reload the DataTable or show a success message)
+        alert(
+          `Logger ${loggerName}'s level changed to ${newLogLevel} successfully!`
+        );
+        $("#loggersTable").DataTable().ajax.reload(); // Reload DataTable to reflect the change
+      },
+      error: function (xhr, status, error) {
+        // Handle error (show an error message if something goes wrong)
+        alert("Error changing log level: " + error);
+      },
+    });
+  }
+}
+
+/**
  * Handles user request to delete a cert. Prompts user to confirm.
  * Upon confirmation, submits the delete form which is required to make
  * a POST call to delete the reference integrity manifest.
@@ -68,17 +107,18 @@ function handleRimDeleteRequest(id) {
  *
  */
 function setDataTables(id, url, columns) {
-   return new DataTable(id,{
+  return new DataTable(id, {
     processing: true,
     serverSide: true,
+    columnDefs: [{ className: "dt-head-center", targets: "_all" }],
     ajax: {
       url: url,
       dataSrc: function (json) {
         formatElementDates(".date");
         return json.data;
-      }
+      },
     },
-    columns: columns
+    columns: columns,
   });
 }
 
