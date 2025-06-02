@@ -11,6 +11,7 @@ import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.structs.converters.StructConverter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +39,7 @@ import java.security.cert.X509Certificate;
         @PropertySource(value = "file:C:/ProgramData/hirs/aca/application.win.properties",
                 ignoreResourceNotFound = true)
 })
+@Log4j2
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
 public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority
@@ -100,6 +102,10 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
     @PostMapping(value = "/identity-claim-tpm2/process",
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processIdentityClaimTpm2(@RequestBody final byte[] identityClaim) {
+        log.info(
+                "Received a POST request to process the provided byte array representation "
+                        + "of the identity claim");
+        log.debug("The provided byte array representation of the identity claim: {}", identityClaim);
         return super.processIdentityClaimTpm2(identityClaim);
     }
 
@@ -117,6 +123,11 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
     @PostMapping(value = "/request-certificate-tpm2",
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest) {
+        log.info(
+                "Received a POST request to process the provided byte array representation "
+                        + "of the certificate request");
+        log.debug("The provided byte array representation of the certificate request: {}",
+                certificateRequest);
         return super.processCertificateRequest(certificateRequest);
     }
 
@@ -131,6 +142,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
     @ResponseBody
     @GetMapping("/public-key")
     public byte[] getPublicKey() {
+        log.info("Received a GET request for the public key");
         return super.getPublicKey();
     }
 }

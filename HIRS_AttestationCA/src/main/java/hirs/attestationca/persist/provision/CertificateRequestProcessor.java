@@ -74,7 +74,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
      * @return a certificateResponse containing the signed certificate
      */
     public byte[] processCertificateRequest(final byte[] certificateRequest) {
-        log.info("Certificate Request received...");
+        log.info("Certificate Request has been received and is ready to be processed");
 
         if (ArrayUtils.isEmpty(certificateRequest)) {
             throw new IllegalArgumentException("The CertificateRequest sent by the client"
@@ -184,6 +184,10 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     }
                     ProvisionerTpm2.CertificateResponse response = builder.build();
 
+                    log.debug("Byte array representation of the certificate request response "
+                            + "after a successful validation and if the LDevID "
+                            + "public key exists : {}", response.toByteArray());
+
                     return response.toByteArray();
                 } else {
                     byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
@@ -205,21 +209,29 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     }
                     ProvisionerTpm2.CertificateResponse response = builder.build();
 
+                    log.debug("Byte array representation of the certificate request response "
+                            + "after a successful validation and if the LDevID "
+                            + "public key does not exist : {}", response.toByteArray());
+
                     return response.toByteArray();
                 }
             } else {
-                log.error("Supply chain validation did not succeed. "
-                        + "Firmware Quote Validation failed. Result is: "
-                        + validationResult);
+                log.error("Supply chain validation did not succeed. Firmware Quote Validation failed."
+                                + " Result is: {}",
+                        validationResult);
                 ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
                         .newBuilder()
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                         .build();
+
+                log.debug("Byte array representation of the certificate request response "
+                        + "after a failed validation: {}", response.toByteArray());
+
                 return response.toByteArray();
             }
         } else {
-            log.error("Could not process credential request. Invalid nonce provided: "
-                    + request.getNonce());
+            log.error("Could not process credential request."
+                    + " Invalid nonce provided: {}", request.getNonce());
             throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
     }

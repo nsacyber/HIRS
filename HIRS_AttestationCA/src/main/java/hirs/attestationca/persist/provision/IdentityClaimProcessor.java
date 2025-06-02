@@ -131,7 +131,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * @return an identity claim response for the specified request containing a wrapped blob
      */
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-        log.info("Identity Claim received...");
+        log.info("Identity Claim has been received and is ready to be processed");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
             log.error("Identity claim empty throwing exception.");
@@ -183,6 +183,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
 
+            log.debug("Byte array representation of the identity claim response "
+                            + "after a successful validation: {}",
+                    response.toByteArray());
             return response.toByteArray();
         } else {
             log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
@@ -192,6 +195,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setCredentialBlob(blobStr)
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
+
+            log.debug("Byte array representation of the identity claim response after "
+                            + "a failed validation: {}",
+                    response.toByteArray());
             return response.toByteArray();
         }
     }
