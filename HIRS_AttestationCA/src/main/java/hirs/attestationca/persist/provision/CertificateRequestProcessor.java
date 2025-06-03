@@ -85,6 +85,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
         ProvisionerTpm2.CertificateRequest request;
         try {
             request = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequest);
+            log.debug("Certificate request object: {}", request);
         } catch (InvalidProtocolBufferException ipbe) {
             throw new CertificateProcessingException(
                     "Could not deserialize Protobuf Certificate Request object.", ipbe);
@@ -174,21 +175,29 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                             saveAttestationCertificate(certificateRepository, derEncodedLdevidCertificate,
                                     endorsementCredential, platformCredentials, device, true);
 
-                    ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
-                            newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+                    ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
+                            ProvisionerTpm2.CertificateResponse.
+                                    newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
                     if (generateAtt) {
-                        builder = builder.setCertificate(pemEncodedAttestationCertificate);
+                        certificateResponseBuilder =
+                                certificateResponseBuilder.setCertificate(pemEncodedAttestationCertificate);
                     }
                     if (generateLDevID) {
-                        builder = builder.setLdevidCertificate(pemEncodedLdevidCertificate);
+                        certificateResponseBuilder =
+                                certificateResponseBuilder.setLdevidCertificate(pemEncodedLdevidCertificate);
                     }
-                    ProvisionerTpm2.CertificateResponse response = builder.build();
+                    ProvisionerTpm2.CertificateResponse certificateResponse =
+                            certificateResponseBuilder.build();
 
-                    log.debug("Byte array representation of the certificate request response "
+                    log.debug("Certificate Request Response "
+                            + "object after a successful validation and if the LDevID "
+                            + "public key exists : {}", certificateResponse);
+
+                    log.debug("Byte array representation of the Certificate Request Response "
                             + "after a successful validation and if the LDevID "
-                            + "public key exists : {}", response.toByteArray());
+                            + "public key exists : {}", certificateResponse.toByteArray());
 
-                    return response.toByteArray();
+                    return certificateResponse.toByteArray();
                 } else {
                     byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
                             attestationCertificate);
@@ -198,36 +207,45 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     // We validated the nonce and made use of the identity claim so state can be deleted
                     tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
 
-                    ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
-                            newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+                    ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
+                            ProvisionerTpm2.CertificateResponse.
+                                    newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
 
                     boolean generateAtt = saveAttestationCertificate(certificateRepository,
                             derEncodedAttestationCertificate,
                             endorsementCredential, platformCredentials, device, false);
                     if (generateAtt) {
-                        builder = builder.setCertificate(pemEncodedAttestationCertificate);
+                        certificateResponseBuilder =
+                                certificateResponseBuilder.setCertificate(pemEncodedAttestationCertificate);
                     }
-                    ProvisionerTpm2.CertificateResponse response = builder.build();
+                    ProvisionerTpm2.CertificateResponse certificateResponse =
+                            certificateResponseBuilder.build();
 
-                    log.debug("Byte array representation of the certificate request response "
+                    log.debug("Certificate Request Response "
+                            + "object after a successful validation and if the LDevID "
+                            + "public key does not exist : {}", certificateResponse);
+
+                    log.debug("Byte array representation of the Certificate Request Response "
                             + "after a successful validation and if the LDevID "
-                            + "public key does not exist : {}", response.toByteArray());
+                            + "public key does not exist : {}", certificateResponse.toByteArray());
 
-                    return response.toByteArray();
+                    return certificateResponse.toByteArray();
                 }
             } else {
                 log.error("Supply chain validation did not succeed. Firmware Quote Validation failed."
-                                + " Result is: {}",
-                        validationResult);
-                ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
+                        + " Result is: {}", validationResult);
+                ProvisionerTpm2.CertificateResponse certificateResponse = ProvisionerTpm2.CertificateResponse
                         .newBuilder()
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                         .build();
 
-                log.debug("Byte array representation of the certificate request response "
-                        + "after a failed validation: {}", response.toByteArray());
+                log.debug("Certificate Request Response "
+                        + "object after a failed validation: {}", certificateResponse);
 
-                return response.toByteArray();
+                log.debug("Byte array representation of the Certificate Request Response "
+                        + "after a failed validation: {}", certificateResponse.toByteArray());
+
+                return certificateResponse.toByteArray();
             }
         } else {
             log.error("Could not process credential request."
