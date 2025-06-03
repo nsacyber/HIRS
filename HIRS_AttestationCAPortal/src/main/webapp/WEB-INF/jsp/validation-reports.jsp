@@ -173,7 +173,7 @@
         $("#reportTable tr")
           .not("thead tr")
           .each(function () {
-            createTimes += $(this).find("td").eq(1).html() + ",";
+            createTimes += $(this).find("td").eq(1).html() + ";";
             deviceNames += $(this).find("td").eq(2).html() + ",";
           });
         createTimes = createTimes.substring(0, createTimes.length - 1);
