@@ -27,7 +27,7 @@
     </div>
     <hr />
     <div class="aca-data-table">
-      <h2>Logger Management</h2>
+      <h2>Main HIRS Logger Management</h2>
       <div class="download-header">
         <h3>Download HIRS Attestation Log File</h3>
         <a href="${portal}/help/hirs-log-download">
@@ -38,7 +38,7 @@
         <thead>
           <tr>
             <th>Logger Name</th>
-            <th>Configured Level</th>
+            <th>Current Log Level</th>
             <th>Change Log Level</th>
           </tr>
         </thead>
@@ -50,6 +50,9 @@
 <script>
   $(document).ready(function () {
     const levels = ["ERROR", "WARN", "INFO", "DEBUG"];
+
+    const mainLoggerName = "hirs.attestationca";
+    const mainLoggerPath = "var/log/hirs/HIRS_AttestationCA_Portal.log";
 
     // Mapping log levels to button colors
     const logLevelColors = {
@@ -66,6 +69,16 @@
         data: "loggerName",
         orderable: true,
         searchable: true,
+        render: function (data, type, row) {
+          // if the row's logger name is the same as the main logger name
+          if (row.loggerName.toLowerCase() === mainLoggerName.toLowerCase()) {
+            // display the main logger's path
+            return mainLoggerPath;
+          }
+
+          // otherwise just return the row's logger name as is
+          return row.loggerName;
+        },
       },
       {
         name: "logLevel",
