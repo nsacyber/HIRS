@@ -71,16 +71,15 @@ function handleLogLevelChange(loggerName, newLogLevel) {
     // Make the POST request to change the log level
     $.ajax({
       url: url, // Use the constructed URL with query parameters
-      type: "POST", // POST request
+      type: "POST",
       success: function (response) {
-        // Handle success (you may reload the DataTable or show a success message)
+        // show a success message
         alert(
           `Logger ${loggerName}'s level changed to ${newLogLevel} successfully!`
         );
         $("#loggersTable").DataTable().ajax.reload(); // Reload DataTable to reflect the change
       },
       error: function (xhr, status, error) {
-        // Handle error (show an error message if something goes wrong)
         alert("Error changing log level: " + error);
       },
     });

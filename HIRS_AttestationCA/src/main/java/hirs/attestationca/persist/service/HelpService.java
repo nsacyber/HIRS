@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @Service
 public class HelpService {
-    private static final String HIRS_ATTESTATIONCA = "hirs.attestationca";
+    private static final String MAIN_HIRS_LOGGER_NAME = "hirs.attestationca";
 
     private final LoggersEndpoint loggersEndpoint;
 
@@ -32,18 +32,18 @@ public class HelpService {
     }
 
     /**
-     * Retrieves all the HIRS application's loggers.
+     * Retrieves the list of main HIRS application's loggers.
      *
-     * @return list of hirs loggers
+     * @return list of main HIRS loggers
      */
-    public List<HIRSLogger> getAllHIRSLoggers() {
+    public List<HIRSLogger> getMainHIRSLoggers() {
         // retrieve all the applications' loggers
         Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allLoggers =
                 loggersEndpoint.loggers().getLoggers();
 
-        // retrieve all the loggers whose logger name starts with hirs.attestationca)
+        // retrieve just the main logger
         Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allHIRSLoggers = allLoggers.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(HIRS_ATTESTATIONCA))
+                .filter(entry -> entry.getKey().equalsIgnoreCase(MAIN_HIRS_LOGGER_NAME))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         List<HIRSLogger> hirsLoggersList = new ArrayList<>();
@@ -65,17 +65,17 @@ public class HelpService {
     }
 
     /**
-     * Retrieves the HIRS loggers that match the user provided search term.
+     * Retrieves the main HIRS loggers that match the user provided search term.
      *
      * @param searchTerm search term
-     * @return list of hirs loggers that match the provided search term
+     * @return list of main hirs loggers that match the provided search term
      */
-    public List<HIRSLogger> getHIRSLoggersThatMatchSearchTerm(
+    public List<HIRSLogger> getMainHIRSLoggersThatMatchSearchTerm(
             final String searchTerm) {
-        // grab all the hirs loggers
-        List<HIRSLogger> hirsLoggers = getAllHIRSLoggers();
+        // grab all the main hirs loggers
+        List<HIRSLogger> hirsLoggers = getMainHIRSLoggers();
 
-        // grab only the loggers whose names or log level match the provided search term
+        // grab only the main loggers whose names or log level match the provided search term
         return hirsLoggers.stream()
                 .filter(eachLogger -> eachLogger.getLoggerName().toLowerCase()
                         .contains(searchTerm.toLowerCase())
@@ -85,17 +85,16 @@ public class HelpService {
     }
 
     /**
-     * Sets the logger to the level that's been set by the user.
+     * Sets the selected main HIRS logger to the user provided log level.
      *
-     * @param loggerName name of the logger
+     * @param loggerName name of the main HIRS logger
      * @param logLevel   log level
      */
-    public void setLoggerLevel(final String loggerName, final String logLevel) {
-        // Convert the string log level to Log4j2 Level
+    public void setMainHIRSLoggerLevel(final String loggerName, final String logLevel) {
         final LogLevel newLogLevel = LogLevel.valueOf(logLevel);
 
         loggersEndpoint.configureLogLevel(loggerName, newLogLevel);
 
-        log.info("The logger [{}]'s level has been changed to [{}]", loggerName, newLogLevel);
+        log.info("The main HIRS logger [{}]'s level has been changed to [{}]", loggerName, newLogLevel);
     }
 }
