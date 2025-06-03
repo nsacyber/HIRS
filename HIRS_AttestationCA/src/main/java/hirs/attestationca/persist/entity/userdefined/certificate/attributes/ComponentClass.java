@@ -74,6 +74,8 @@ ComponentClass {
 
     private String componentStr;
 
+    private final String registryOid;
+
     /**
      * Default class constructor.
      */
@@ -122,6 +124,8 @@ ComponentClass {
         } else {
             this.componentIdentifier = verifyComponentValue(componentIdentifier);
         }
+
+        this.registryOid = registryOid;
 
         this.registryType = switch (registryOid) {
             case TCG_COMPONENT_REGISTRY -> "TCG";

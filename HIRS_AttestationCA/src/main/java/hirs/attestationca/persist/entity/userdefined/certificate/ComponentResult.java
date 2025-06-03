@@ -67,6 +67,8 @@ public class ComponentResult extends ArchivableEntity {
     @Setter
     private String componentClassValue;
 
+    private String componentClassRegistry;
+
     private String componentClassStr;
 
     private String componentClassType;
@@ -152,6 +154,7 @@ public class ComponentResult extends ArchivableEntity {
         componentAddress = sb.toString();
 
         this.componentClassValue = componentIdentifierV2.getComponentClass().getComponentIdentifier();
+        this.componentClassRegistry = componentIdentifierV2.getComponentClass().getRegistryOid();
         this.componentClassStr = componentIdentifierV2.getComponentClass().toString();
         this.componentClassType = componentIdentifierV2.getComponentClass().getRegistryType();
         this.attributeStatus = componentIdentifierV2.getAttributeStatus();
@@ -193,7 +196,7 @@ public class ComponentResult extends ArchivableEntity {
      */
     public int hashCommonElements() {
         return Objects.hash(manufacturer,
-                model, serialNumber, revisionNumber, componentClassValue);
+                model, serialNumber, revisionNumber, componentClassValue, componentClassRegistry);
     }
 
     /**
@@ -204,6 +207,6 @@ public class ComponentResult extends ArchivableEntity {
     public String toString() {
         return String.format("ComponentResult: certificateSerialNumber=[%s] "
                         + "manufacturer=[%s] model=[%s] componentClass=[%s]",
-                boardSerialNumber, manufacturer, model, componentClassValue);
+                boardSerialNumber, manufacturer, model, componentClassValue, componentClassRegistry);
     }
 }
