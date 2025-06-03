@@ -41,15 +41,15 @@ public class HelpService {
         Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allLoggers =
                 loggersEndpoint.loggers().getLoggers();
 
-        // retrieve all the loggers whose logger name starts with the root package's name (hirs.attestationca)
+        // retrieve all the loggers whose logger name starts with hirs.attestationca)
         Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allHIRSLoggers = allLoggers.entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith(HIRS_ATTESTATIONCA))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        
+
         List<HIRSLogger> hirsLoggersList = new ArrayList<>();
 
         // Loop through the map, create a new object for each entry
-        // that holds the log name and level, and add it to the list.
+        // that holds the log name and log level, and add it to the list.
         allHIRSLoggers.forEach((loggerName, logDescriptor) -> {
             LogLevel logLevel;
             if (logDescriptor.getConfiguredLevel() != null) {
@@ -92,10 +92,10 @@ public class HelpService {
      */
     public void setLoggerLevel(final String loggerName, final String logLevel) {
         // Convert the string log level to Log4j2 Level
-        final LogLevel level = LogLevel.valueOf(logLevel);
+        final LogLevel newLogLevel = LogLevel.valueOf(logLevel);
 
-        loggersEndpoint.configureLogLevel(loggerName, level);
+        loggersEndpoint.configureLogLevel(loggerName, newLogLevel);
 
-        log.info("The log file {}'s level has been changed to {}", loggerName, level);
+        log.info("The logger [{}]'s level has been changed to [{}]", loggerName, newLogLevel);
     }
 }

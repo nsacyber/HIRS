@@ -182,7 +182,7 @@ public class HelpPageController extends PageController<NoPageParams> {
 
 
     /**
-     * Processes the request that sets the log level of the HIRS application log file
+     * Processes the request that sets the log level of the HIRS application logger
      * based on the provided user input.
      *
      * @param response   response that will be sent out after processing download request
@@ -197,16 +197,15 @@ public class HelpPageController extends PageController<NoPageParams> {
                                     @RequestParam final String logLevel)
             throws IOException {
         try {
-            log.info("Received a request to set the log level {} for the provided logger {}", logLevel,
+            log.info("Received a request to set the log level [{}] for the provided logger [{}]", logLevel,
                     loggerName);
 
             this.helpService.setLoggerLevel(loggerName, logLevel);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to set the logging level for the"
-                    + " HIRS Application log file", exception);
+                    + " HIRS Application logger", exception);
 
-            // send a 404 error when an exception is thrown while attempting to download the
-            // HIRS log file
+            // send a 404 error when an exception is thrown while attempting to set the logger's log level
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
 
