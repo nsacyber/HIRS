@@ -8,19 +8,13 @@ import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -35,7 +29,6 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Controller for the Help page.
@@ -125,54 +118,28 @@ public class HelpPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Processes the request to retrieve a list of main HIRS loggers for display
+     * Processes the request to retrieve the main HIRS logger for display
      * on the help page.
      *
      * @param input data table input received from the front-end
-     * @return data table of main HIRS loggers
+     * @return data table of just the main HIRS logger
      */
     @ResponseBody
-    @GetMapping(value = "/loggers-list",
+    @GetMapping(value = "/list-main-logger",
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<HIRSLogger> getLoggersTable(final DataTableInput input) {
+    public DataTableResponse<HIRSLogger> getMainHIRSLogger(final DataTableInput input) {
 
-        log.info("Received request to display list of main HIRS loggers");
-        log.debug("Request received a datatable input object for listing main HIRS loggers: "
+        log.info("Received request to display the main HIRS logger");
+        log.debug("Request received a datatable input object for listing the main HIRS logger: "
                 + "{}", input);
-
-        String orderColumnName = input.getOrderColumnName();
-
-        log.debug("Ordering on column: {}", orderColumnName);
-
-        final String searchTerm = input.getSearch().getValue();
 
         FilteredRecordsList<HIRSLogger> mainHIRSLoggersFilteredRecordsList =
                 new FilteredRecordsList<>();
 
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
-        org.springframework.data.domain.Page<HIRSLogger> pagedResult;
-
-        List<HIRSLogger> mainHIRSLoggers = this.helpService.getMainHIRSLoggers();
-
-        if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = new PageImpl<>(ControllerPagesUtils.getPaginatedSubList(mainHIRSLoggers, pageable),
-                    pageable,
-                    mainHIRSLoggers.size());
-        } else {
-            List<HIRSLogger> filteredHIRSLoggers =
-                    this.helpService.getMainHIRSLoggersThatMatchSearchTerm(searchTerm);
-            pagedResult =
-                    new PageImpl<>(ControllerPagesUtils.getPaginatedSubList(filteredHIRSLoggers, pageable),
-                            pageable, filteredHIRSLoggers.size());
-        }
-
-        if (pagedResult.hasContent()) {
-            mainHIRSLoggersFilteredRecordsList.addAll(pagedResult.getContent());
-        }
-
-        mainHIRSLoggersFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        mainHIRSLoggersFilteredRecordsList.setRecordsTotal(mainHIRSLoggers.size());
+        final HIRSLogger mainHIRSLogger = this.helpService.getMainHIRSLogger();
+        mainHIRSLoggersFilteredRecordsList.add(mainHIRSLogger);
+        mainHIRSLoggersFilteredRecordsList.setRecordsTotal(1);
+        mainHIRSLoggersFilteredRecordsList.setRecordsFiltered(1);
 
         log.info("Returning the size of the list of main HIRS loggers: "
                 + "{}", mainHIRSLoggersFilteredRecordsList.getRecordsFiltered());
@@ -182,7 +149,7 @@ public class HelpPageController extends PageController<NoPageParams> {
 
 
     /**
-     * Processes the request that sets the log level of the selected main HIRS logger.
+     * Processes the request that sets the log level of the selected logger.
      *
      * @param response   response that will be sent out after processing download request
      * @param loggerName logger name
@@ -199,10 +166,10 @@ public class HelpPageController extends PageController<NoPageParams> {
             log.info("Received a request to set the log level [{}] for the provided logger [{}]", logLevel,
                     loggerName);
 
-            this.helpService.setMainHIRSLoggerLevel(loggerName, logLevel);
+            this.helpService.setLoggerLevel(loggerName, logLevel);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to set the logging level for the"
-                    + " HIRS Application logger", exception);
+                    + " selected logger", exception);
 
             // send a 404 error when an exception is thrown while attempting to set the logger's log level
             response.sendError(HttpServletResponse.SC_NOT_FOUND);

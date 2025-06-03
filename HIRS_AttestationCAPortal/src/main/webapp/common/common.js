@@ -98,15 +98,16 @@ function handleRimDeleteRequest(id) {
 }
 
 /**
- * Set the data tables using the columns definition, the ajax URL and
- * the ID of the table.
- * @param id of the data table
- * @param url for the AJAX call
- * @param columns definition of the table to render
- *
+ * Set the data tables using the columns definition, the ajax URL,
+ * the table ID
+ * @param id data table ID
+ * @param url url for the AJAX call
+ * @param columns table columns definition
+ * @param options if configured will override the default configs set by datatable (options include the ability to disable the global search bar, the
+ * global paginator, the ordering ability, etc.)
  */
-function setDataTables(id, url, columns) {
-  return new DataTable(id, {
+function setDataTables(id, url, columns, options = {}) {
+  let defaultConfig = {
     processing: true,
     serverSide: true,
     columnDefs: [{ className: "dt-head-center", targets: "_all" }],
@@ -118,7 +119,12 @@ function setDataTables(id, url, columns) {
       },
     },
     columns: columns,
-  });
+  };
+
+  // Merge user options over default config
+  const config = { ...defaultConfig, ...options };
+
+  return new DataTable(id, config);
 }
 
 /**

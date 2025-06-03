@@ -62,13 +62,11 @@
       DEBUG: "btn-primary", // Blue for DEBUG
     };
 
-    let url = pagePath + "/loggers-list";
+    let url = pagePath + "/list-main-logger";
     let columns = [
       {
         name: "loggerName",
         data: "loggerName",
-        orderable: true,
-        searchable: true,
         render: function (data, type, row) {
           // if the row's logger name is the same as the main logger name
           if (row.loggerName.toLowerCase() === mainLoggerName.toLowerCase()) {
@@ -83,8 +81,6 @@
       {
         name: "logLevel",
         data: "logLevel",
-        orderable: true,
-        searchable: true,
       },
       {
         name: "changeLogLevel",
@@ -114,13 +110,11 @@
           buttonsHtml += "</div>";
 
           return buttonsHtml;
-        },
-        orderable: false,
-        searchable: false,
+        }
       },
     ];
 
     //Set data tables
-    let dataTable = setDataTables("#loggersTable", url, columns);
+    let dataTable = setDataTables("#loggersTable", url, columns, { searching: false, ordering : false, paging: false, info: false });
   });
 </script>
