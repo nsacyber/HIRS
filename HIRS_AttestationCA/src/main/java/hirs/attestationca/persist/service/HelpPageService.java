@@ -63,8 +63,8 @@ public class HelpPageService {
             if (loggerLevelsDescriptor.getConfiguredLevel() != null) {
                 logLevel = LogLevel.valueOf(loggerLevelsDescriptor.getConfiguredLevel());
             } else {
-                // if the log level has not been configured (current configured log level is null), set the log
-                // level to info
+                // if the log level has not been configured (current configured log level is null),
+                // set the log level to info
                 logLevel = LogLevel.INFO;
             }
 
