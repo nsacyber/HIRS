@@ -15,17 +15,17 @@ import java.util.Optional;
  */
 @Log4j2
 @Service
-public class HelpService {
+public class HelpPageService {
     private static final String MAIN_HIRS_LOGGER_NAME = "hirs.attestationca";
 
     private final LoggersEndpoint loggersEndpoint;
 
     /**
-     * Constructor for Help service.
+     * Constructor for Help Page service.
      *
      * @param loggersEndpoint loggers endpoint
      */
-    public HelpService(final LoggersEndpoint loggersEndpoint) {
+    public HelpPageService(final LoggersEndpoint loggersEndpoint) {
         this.loggersEndpoint = loggersEndpoint;
     }
 
