@@ -2,7 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.HIRSLogger;
-import hirs.attestationca.persist.service.HelpService;
+import hirs.attestationca.persist.service.HelpPageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -37,7 +37,7 @@ import java.io.IOException;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/help")
 public class HelpPageController extends PageController<NoPageParams> {
-    private final HelpService helpService;
+    private final HelpPageService helpPageService;
 
     private String fullLogFilePath;
 
@@ -50,12 +50,12 @@ public class HelpPageController extends PageController<NoPageParams> {
     /**
      * Constructor providing the Help Page's display and routing specification.
      *
-     * @param helpService help service
+     * @param helpPageService help service
      */
     @Autowired
-    public HelpPageController(final HelpService helpService) {
+    public HelpPageController(final HelpPageService helpPageService) {
         super(Page.HELP);
-        this.helpService = helpService;
+        this.helpPageService = helpPageService;
     }
 
     /**
@@ -136,7 +136,7 @@ public class HelpPageController extends PageController<NoPageParams> {
         FilteredRecordsList<HIRSLogger> mainHIRSLoggersFilteredRecordsList =
                 new FilteredRecordsList<>();
 
-        final HIRSLogger mainHIRSLogger = this.helpService.getMainHIRSLogger();
+        final HIRSLogger mainHIRSLogger = this.helpPageService.getMainHIRSLogger();
         mainHIRSLoggersFilteredRecordsList.add(mainHIRSLogger);
         mainHIRSLoggersFilteredRecordsList.setRecordsTotal(1);
         mainHIRSLoggersFilteredRecordsList.setRecordsFiltered(1);
@@ -166,7 +166,7 @@ public class HelpPageController extends PageController<NoPageParams> {
             log.info("Received a request to set the log level [{}] for the provided logger [{}]", logLevel,
                     loggerName);
 
-            this.helpService.setLoggerLevel(loggerName, logLevel);
+            this.helpPageService.setLoggerLevel(loggerName, logLevel);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to set the logging level for the"
                     + " selected logger", exception);

@@ -4,7 +4,6 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.portal.datatables.Column;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.data.domain.Pageable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -132,20 +131,4 @@ public final class ControllerPagesUtils {
         }
         return trustChainPEM.toString();
     }
-
-    /**
-     * Helper method that manually paginates a generic list when
-     * working outside the database or repository layer.
-     *
-     * @param list     generic list
-     * @param pageable pageable
-     * @param <T>      generic class
-     * @return paginated sublist
-     */
-    public static <T> List<T> getPaginatedSubList(final List<T> list, final Pageable pageable) {
-        final int fromIndex = (int) pageable.getOffset();
-        final int toIndex = Math.min(fromIndex + pageable.getPageSize(), list.size());
-        return list.subList(fromIndex, toIndex);
-    }
-
 }
