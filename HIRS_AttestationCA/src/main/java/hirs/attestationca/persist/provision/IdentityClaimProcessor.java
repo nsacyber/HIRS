@@ -142,7 +142,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         // attempt to deserialize Protobuf IdentityClaim
         ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
 
-        log.debug("Identity Claim object: {}", claim);
+        log.info("Identity Claim object: {}", claim);
 
         // parse the EK Public key from the IdentityClaim once for use in supply chain validation
         // and later tpm20MakeCredential function
@@ -185,12 +185,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
 
-            log.debug("Identity Claim Response object after a "
+            log.info("Identity Claim Response object after a "
                     + "successful validation: {}", identityClaimResponse);
 
-            log.debug("Byte array representation of the Identity Claim Response object "
-                            + "after a successful validation: {}",
-                    identityClaimResponse.toByteArray());
             return identityClaimResponse.toByteArray();
         } else {
             log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
@@ -204,9 +201,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             log.debug("Identity Claim Response object after a "
                     + "failed validation: {}", identityClaimResponse);
 
-            log.debug("Byte array representation of the Identity Claim Response object after "
-                            + "a failed validation: {}",
-                    identityClaimResponse.toByteArray());
             return identityClaimResponse.toByteArray();
         }
     }

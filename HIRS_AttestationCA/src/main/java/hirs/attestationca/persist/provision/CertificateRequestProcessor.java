@@ -85,7 +85,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
         ProvisionerTpm2.CertificateRequest request;
         try {
             request = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequest);
-            log.debug("Certificate request object: {}", request);
+            log.info("Certificate request object: {}", request);
         } catch (InvalidProtocolBufferException ipbe) {
             throw new CertificateProcessingException(
                     "Could not deserialize Protobuf Certificate Request object.", ipbe);
@@ -189,13 +189,9 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    log.debug("Certificate Request Response "
+                    log.info("Certificate Request Response "
                             + "object after a successful validation and if the LDevID "
                             + "public key exists : {}", certificateResponse);
-
-                    log.debug("Byte array representation of the Certificate Request Response "
-                            + "after a successful validation and if the LDevID "
-                            + "public key exists : {}", certificateResponse.toByteArray());
 
                     return certificateResponse.toByteArray();
                 } else {
@@ -221,13 +217,9 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    log.debug("Certificate Request Response "
+                    log.info("Certificate Request Response "
                             + "object after a successful validation and if the LDevID "
                             + "public key does not exist : {}", certificateResponse);
-
-                    log.debug("Byte array representation of the Certificate Request Response "
-                            + "after a successful validation and if the LDevID "
-                            + "public key does not exist : {}", certificateResponse.toByteArray());
 
                     return certificateResponse.toByteArray();
                 }
@@ -239,11 +231,8 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                         .build();
 
-                log.debug("Certificate Request Response "
+                log.info("Certificate Request Response "
                         + "object after a failed validation: {}", certificateResponse);
-
-                log.debug("Byte array representation of the Certificate Request Response "
-                        + "after a failed validation: {}", certificateResponse.toByteArray());
 
                 return certificateResponse.toByteArray();
             }
