@@ -23,7 +23,7 @@ public final class DataTableResponse<T> {
 
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
-    private final List<T> data = new LinkedList<T>();
+    private final List<T> data = new LinkedList<>();
 
     private int draw;
 

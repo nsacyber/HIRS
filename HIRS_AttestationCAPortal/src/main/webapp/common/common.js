@@ -49,6 +49,44 @@ function handleDeleteRequest(id) {
 }
 
 /**
+ * Sends a POST request to the backend every time the user decides to change the
+ * selected logger's log level to a different log level.
+ * @param loggerName logger name
+ * @param logLevel new log level
+ */
+function handleLogLevelChange(loggerName, newLogLevel) {
+  if (
+    confirm(
+      `Are you sure you want to change the log level for ${loggerName} to ${newLogLevel}?`
+    )
+  ) {
+    // Construct the URL with the query parameters
+    const url =
+      pagePath +
+      "/setLogLevel?loggerName=" +
+      encodeURIComponent(loggerName) +
+      "&logLevel=" +
+      encodeURIComponent(newLogLevel);
+
+    // Make the POST request to change the log level
+    $.ajax({
+      url: url, // Use the constructed URL with query parameters
+      type: "POST",
+      success: function (response) {
+        // show a success message
+        alert(
+          `Logger ${loggerName}'s level changed to ${newLogLevel} successfully!`
+        );
+        $("#loggersTable").DataTable().ajax.reload(); // Reload DataTable to reflect the change
+      },
+      error: function (xhr, status, error) {
+        alert("Error changing log level: " + error);
+      },
+    });
+  }
+}
+
+/**
  * Handles user request to delete a cert. Prompts user to confirm.
  * Upon confirmation, submits the delete form which is required to make
  * a POST call to delete the reference integrity manifest.
@@ -60,26 +98,33 @@ function handleRimDeleteRequest(id) {
 }
 
 /**
- * Set the data tables using the columns definition, the ajax URL and
- * the ID of the table.
- * @param id of the data table
- * @param url for the AJAX call
- * @param columns definition of the table to render
- *
+ * Set the data tables using the columns definition, the ajax URL,
+ * the table ID
+ * @param id data table ID
+ * @param url url for the AJAX call
+ * @param columns table columns definition
+ * @param options if configured will override the default configs set by datatable (options include the ability to disable the global search bar, the
+ * global paginator, the ordering ability, etc.)
  */
-function setDataTables(id, url, columns) {
-   return new DataTable(id,{
+function setDataTables(id, url, columns, options = {}) {
+  let defaultConfig = {
     processing: true,
     serverSide: true,
+    columnDefs: [{ className: "dt-head-center", targets: "_all" }],
     ajax: {
       url: url,
       dataSrc: function (json) {
         formatElementDates(".date");
         return json.data;
-      }
+      },
     },
-    columns: columns
-  });
+    columns: columns,
+  };
+
+  // Merge user options over default config
+  const config = { ...defaultConfig, ...options };
+
+  return new DataTable(id, config);
 }
 
 /**

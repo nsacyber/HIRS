@@ -33,6 +33,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -130,7 +131,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(ReferenceManifest.class, input.getColumns());
+                ControllerPagesUtils.findSearchableColumnsNames(ReferenceManifest.class,
+                        input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -153,7 +155,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         rimFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         rimFilteredRecordsList.setRecordsTotal(findRIMRepoCount());
 
-        log.info("Returning the size of the list of reference manifests: {}", rimFilteredRecordsList.size());
+        log.info("Returning the size of the list of reference manifests: {}",
+                rimFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(rimFilteredRecordsList, input);
     }
 
@@ -254,10 +257,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             }
 
             // Set filename for download.
-            response.setHeader("Content-Disposition",
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment;" + "filename=\"" + referenceManifest.getFileName()
             );
-            response.setContentType("application/octet-stream");
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
             // write cert to output stream
             response.getOutputStream().write(referenceManifest.getRimBytes());
@@ -287,7 +290,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
 
         // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
         // write cert to output stream

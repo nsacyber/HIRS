@@ -106,7 +106,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                 ControllerPagesUtils.findSearchableColumnsNames(ReferenceDigestValue.class,
                         input.getColumns());
 
-        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
+        FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = new FilteredRecordsList<>();
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -123,15 +123,15 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         }
 
         if (pagedResult.hasContent()) {
-            referenceDigestValues.addAll(pagedResult.getContent());
+            rdvFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        referenceDigestValues.setRecordsFiltered(pagedResult.getTotalElements());
-        referenceDigestValues.setRecordsTotal(referenceDigestValueRepository.count());
+        rdvFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        rdvFilteredRecordsList.setRecordsTotal(referenceDigestValueRepository.count());
 
         // might be able to get rid of this, maybe right a query that looks for not updated
         SupportReferenceManifest support;
-        for (ReferenceDigestValue rdv : referenceDigestValues) {
+        for (ReferenceDigestValue rdv : rdvFilteredRecordsList) {
             // We are updating the base rim ID field if necessary and
             if (rdv.getBaseRimId() == null && referenceManifestRepository.existsById(rdv.getSupportRimId())) {
                 support = (SupportReferenceManifest) referenceManifestRepository.getReferenceById(
@@ -146,8 +146,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         }
 
         log.info("Returning the size of the list of reference digest values: "
-                + "{}", pagedResult.getTotalElements());
-        return new DataTableResponse<>(referenceDigestValues, input);
+                + "{}", rdvFilteredRecordsList.getRecordsFiltered());
+        return new DataTableResponse<>(rdvFilteredRecordsList, input);
     }
 
     /**
