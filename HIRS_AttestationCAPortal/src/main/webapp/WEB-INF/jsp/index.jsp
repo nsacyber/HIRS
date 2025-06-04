@@ -2,7 +2,7 @@
 
 <%-- JSP TAGS --%>
 <%@taglib prefix="c" uri="jakarta.tags.core" %>
-<%@taglib prefix="my"tagdir="/WEB-INF/tags"%>
+<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
 <%-- CONTENT --%>
 <my:page>
   <jsp:attribute name="pageHeaderTitle"
