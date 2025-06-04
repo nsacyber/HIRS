@@ -35,18 +35,18 @@ import java.util.Set;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-database")
 public class RimDatabasePageController extends PageController<NoPageParams> {
-    private final ReferenceDigestValuePageService referenceDigestValueService;
+    private final ReferenceDigestValuePageService referenceDigestValuePageService;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceDigestValueService reference digest value service
+     * @param referenceDigestValuePageService reference digest value service
      */
     @Autowired
     public RimDatabasePageController(
-            final ReferenceDigestValuePageService referenceDigestValueService) {
+            final ReferenceDigestValuePageService referenceDigestValuePageService) {
         super(Page.RIM_DATABASE);
-        this.referenceDigestValueService = referenceDigestValueService;
+        this.referenceDigestValuePageService = referenceDigestValuePageService;
     }
 
     /**
@@ -87,7 +87,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                 ControllerPagesUtils.findSearchableColumnsNames(ReferenceDigestValue.class,
                         input.getColumns());
 
-        FilteredRecordsList<ReferenceDigestValue> referenceDigestValues = new FilteredRecordsList<>();
+        FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = new FilteredRecordsList<>();
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -95,33 +95,33 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
-                    this.referenceDigestValueService.findAllReferenceDigestValues(pageable);
+                    this.referenceDigestValuePageService.findAllReferenceDigestValues(pageable);
         } else {
             pagedResult =
-                    this.referenceDigestValueService.findReferenceDigestValuesBySearchableColumns(
+                    this.referenceDigestValuePageService.findReferenceDigestValuesBySearchableColumns(
                             searchableColumns,
                             searchTerm, pageable);
         }
 
         if (pagedResult.hasContent()) {
-            referenceDigestValues.addAll(pagedResult.getContent());
+            rdvFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        referenceDigestValues.setRecordsFiltered(pagedResult.getTotalElements());
-        referenceDigestValues.setRecordsTotal(
-                this.referenceDigestValueService.findReferenceDigestValueRepositoryCount());
+        rdvFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        rdvFilteredRecordsList.setRecordsTotal(
+                this.referenceDigestValuePageService.findReferenceDigestValueRepositoryCount());
 
         // might be able to get rid of this, maybe write a query that looks for not updated
         SupportReferenceManifest support;
-        for (ReferenceDigestValue rdv : referenceDigestValues) {
+        for (ReferenceDigestValue rdv : rdvFilteredRecordsList) {
             // We are updating the base rim ID field if necessary and
             if (rdv.getBaseRimId() == null &&
-                    this.referenceDigestValueService.doesRIMExist(rdv.getSupportRimId())) {
-                support = (SupportReferenceManifest) this.referenceDigestValueService.findRIMById(
+                    this.referenceDigestValuePageService.doesRIMExist(rdv.getSupportRimId())) {
+                support = (SupportReferenceManifest) this.referenceDigestValuePageService.findRIMById(
                         rdv.getSupportRimId());
                 rdv.setBaseRimId(support.getAssociatedRim());
                 try {
-                    referenceDigestValueService.saveReferenceDigestValue(rdv);
+                    referenceDigestValuePageService.saveReferenceDigestValue(rdv);
                 } catch (DBManagerException dbMEx) {
                     log.error("Failed to update TPM Event with Base RIM ID");
                 }
@@ -129,7 +129,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         }
 
         log.info("Returning the size of the list of reference digest values: "
-                + "{}", pagedResult.getTotalElements());
-        return new DataTableResponse<>(referenceDigestValues, input);
+                + "{}", rdvFilteredRecordsList.getRecordsFiltered());
+        return new DataTableResponse<>(rdvFilteredRecordsList, input);
     }
 }

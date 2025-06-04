@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -107,7 +108,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         final String searchTerm = input.getSearch().getValue();
 
         final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class, input.getColumns());
+                ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class,
+                        input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -197,8 +199,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                     + ".cer\"";
 
             // Set filename for download.
-            response.setHeader("Content-Disposition", "attachment;" + fileName);
-            response.setContentType("application/octet-stream");
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
             // write platform credential to output stream
             response.getOutputStream().write(certificate.getRawBytes());
@@ -229,7 +231,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         final String singleFileName = "Platform_Certificate";
 
         // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {

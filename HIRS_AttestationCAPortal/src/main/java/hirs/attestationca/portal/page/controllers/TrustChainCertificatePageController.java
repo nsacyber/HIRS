@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -228,8 +229,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                     + ".cer\"";
 
             // Set filename for download.
-            response.setHeader("Content-Disposition", "attachment;" + fileName);
-            response.setContentType("application/octet-stream");
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
             // write trust chain certificate to output stream
             response.getOutputStream().write(certificate.getRawBytes());
@@ -271,7 +272,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
             // Set the response headers for file download
             response.setContentType("application/x-pem-file");  // MIME type for PEM files
-            response.setHeader("Content-Disposition", "attachment; filename=" + pemFileName);
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pemFileName);
             response.setContentLength(fullChainPEM.length());
 
             // Write the PEM string to the output stream
@@ -303,7 +304,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         final String singleFileName = "ca-certificates";
 
         // Set filename for download.
-        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
