@@ -2,7 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.Device;
-import hirs.attestationca.persist.service.DeviceService;
+import hirs.attestationca.persist.service.DevicePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -34,18 +34,18 @@ import java.util.Set;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/devices")
 public class DevicePageController extends PageController<NoPageParams> {
 
-    private final DeviceService deviceService;
+    private final DevicePageService devicePageService;
 
     /**
      * Device Page Controller constructor.
      *
-     * @param deviceService device service
+     * @param devicePageService device page service
      */
     @Autowired
     public DevicePageController(
-            final DeviceService deviceService) {
+            final DevicePageService devicePageService) {
         super(Page.DEVICES);
-        this.deviceService = deviceService;
+        this.devicePageService = devicePageService;
     }
 
     /**
@@ -93,10 +93,11 @@ public class DevicePageController extends PageController<NoPageParams> {
         org.springframework.data.domain.Page<Device> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.deviceService.findAllDevices(pageable);
+            pagedResult = this.devicePageService.findAllDevices(pageable);
         } else {
-            pagedResult = this.deviceService.findAllDevicesBySearchableColumns(searchableColumns, searchTerm,
-                    pageable);
+            pagedResult =
+                    this.devicePageService.findAllDevicesBySearchableColumns(searchableColumns, searchTerm,
+                            pageable);
         }
 
         if (pagedResult.hasContent()) {
@@ -104,10 +105,10 @@ public class DevicePageController extends PageController<NoPageParams> {
         }
 
         deviceList.setRecordsFiltered(pagedResult.getTotalElements());
-        deviceList.setRecordsTotal(this.deviceService.findDeviceRepositoryCount());
+        deviceList.setRecordsTotal(this.devicePageService.findDeviceRepositoryCount());
 
         FilteredRecordsList<HashMap<String, Object>> devicesAndAssociatedCertificates
-                = this.deviceService.retrieveDevicesAndAssociatedCertificates(deviceList);
+                = this.devicePageService.retrieveDevicesAndAssociatedCertificates(deviceList);
 
         log.info("Returning the size of the list of devices: {}", devicesAndAssociatedCertificates.size());
         return new DataTableResponse<>(devicesAndAssociatedCertificates, input);

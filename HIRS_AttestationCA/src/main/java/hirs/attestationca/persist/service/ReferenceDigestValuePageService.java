@@ -25,11 +25,11 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- *
+ * A service layer class responsible for encapsulating all business logic related to the RIM Database Page.
  */
 @Log4j2
 @Service
-public class ReferenceDigestValueService {
+public class ReferenceDigestValuePageService {
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final EntityManager entityManager;
@@ -39,9 +39,9 @@ public class ReferenceDigestValueService {
      * @param referenceDigestValueRepository reference digest value repository
      */
     @Autowired
-    public ReferenceDigestValueService(ReferenceManifestRepository referenceManifestRepository,
-                                       ReferenceDigestValueRepository referenceDigestValueRepository,
-                                       EntityManager entityManager) {
+    public ReferenceDigestValuePageService(ReferenceManifestRepository referenceManifestRepository,
+                                           ReferenceDigestValueRepository referenceDigestValueRepository,
+                                           EntityManager entityManager) {
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.entityManager = entityManager;

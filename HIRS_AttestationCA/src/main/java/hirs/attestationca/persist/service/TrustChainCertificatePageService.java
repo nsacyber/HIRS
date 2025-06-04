@@ -22,11 +22,12 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- *
+ * A service layer class responsible for encapsulating all business logic related to the Trust Chain
+ * Certificates Management Page.
  */
 @Log4j2
 @Service
-public class TrustChainCertificateService {
+public class TrustChainCertificatePageService {
 
     private final CACredentialRepository caCredentialRepository;
     private final CertificateService certificateService;
@@ -35,8 +36,8 @@ public class TrustChainCertificateService {
      * @param caCredentialRepository certificate authority credential repository
      */
     @Autowired
-    public TrustChainCertificateService(final CACredentialRepository caCredentialRepository,
-                                        CertificateService certificateService) {
+    public TrustChainCertificatePageService(final CACredentialRepository caCredentialRepository,
+                                            final CertificateService certificateService) {
         this.caCredentialRepository = caCredentialRepository;
         this.certificateService = certificateService;
     }
@@ -48,6 +49,16 @@ public class TrustChainCertificateService {
      */
     public long findTrustChainCertificateRepoCount() {
         return this.caCredentialRepository.findByArchiveFlag(false).size();
+    }
+
+    /**
+     * @param archiveFlag archive flag
+     * @param pageable    pageable
+     * @return page of certificate authority credentials
+     */
+    public Page<CertificateAuthorityCredential> findByArchiveFlag(final boolean archiveFlag,
+                                                                  final Pageable pageable) {
+        return this.caCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
     /**
@@ -133,14 +144,5 @@ public class TrustChainCertificateService {
             errorMessages.add(failMessage + isEx.getMessage());
             return null;
         }
-    }
-
-    /**
-     * @param archiveFlag
-     * @param pageable
-     * @return
-     */
-    public Page<CertificateAuthorityCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable) {
-        return this.caCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 }

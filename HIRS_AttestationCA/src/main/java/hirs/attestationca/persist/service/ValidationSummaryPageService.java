@@ -45,11 +45,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Service layer class that handles the storage and retrieval of validation reports.
+ * A service layer class responsible for encapsulating all business logic related to the Validation Summary
+ * Page.
  */
 @Service
 @Log4j2
-public class ValidationSummaryReportsService {
+public class ValidationSummaryPageService {
 
     private static final String DEFAULT_COMPANY = "AllDevices";
     private static final String UNDEFINED = "undefined";
@@ -70,10 +71,10 @@ public class ValidationSummaryReportsService {
      * @param entityManager                 entity manager
      */
     @Autowired
-    public ValidationSummaryReportsService(final PlatformCertificateRepository platformCertificateRepository,
-                                           final CertificateRepository certificateRepository,
-                                           final DeviceRepository deviceRepository,
-                                           final EntityManager entityManager) {
+    public ValidationSummaryPageService(final PlatformCertificateRepository platformCertificateRepository,
+                                        final CertificateRepository certificateRepository,
+                                        final DeviceRepository deviceRepository,
+                                        final EntityManager entityManager) {
         this.platformCertificateRepository = platformCertificateRepository;
         this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;

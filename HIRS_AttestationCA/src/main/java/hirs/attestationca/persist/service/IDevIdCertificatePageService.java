@@ -14,28 +14,29 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- *
+ * A service layer class responsible for encapsulating all business logic related to the IDevId Certificate
+ * Page.
  */
 @Log4j2
 @Service
-public class IDevIdCertificateService {
+public class IDevIdCertificatePageService {
 
     private final IDevIDCertificateRepository iDevIDCertificateRepository;
 
     /**
-     * @param iDevIDCertificateRepository
+     * @param iDevIDCertificateRepository idevid certificate repository
      */
     @Autowired
-    public IDevIdCertificateService(IDevIDCertificateRepository iDevIDCertificateRepository) {
+    public IDevIdCertificatePageService(final IDevIDCertificateRepository iDevIDCertificateRepository) {
         this.iDevIDCertificateRepository = iDevIDCertificateRepository;
     }
 
     /**
      * @param archiveFlag archive flag
      * @param pageable    pageable
-     * @return
+     * @return page of idevid certificates
      */
-    public Page<IDevIDCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable) {
+    public Page<IDevIDCertificate> findByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
         return this.iDevIDCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 

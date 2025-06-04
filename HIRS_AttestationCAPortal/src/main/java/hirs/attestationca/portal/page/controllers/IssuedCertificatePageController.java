@@ -5,7 +5,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.persist.service.IssuedAttestationCertificateService;
+import hirs.attestationca.persist.service.IssuedAttestationCertificatePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -50,7 +50,7 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
-    private final IssuedAttestationCertificateService issuedAttestationCertificateService;
+    private final IssuedAttestationCertificatePageService issuedAttestationCertificateService;
     private final CertificateService certificateService;
 
     /**
@@ -61,7 +61,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      */
     @Autowired
     public IssuedCertificatePageController(
-            final IssuedAttestationCertificateService issuedAttestationCertificateService,
+            final IssuedAttestationCertificatePageService issuedAttestationCertificateService,
             final CertificateService certificateService) {
         super(Page.ISSUED_CERTIFICATES);
         this.issuedAttestationCertificateService = issuedAttestationCertificateService;
@@ -136,7 +136,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
                 this.issuedAttestationCertificateService.findIssuedCertificateRepoCount());
 
         log.info("Returning the size of the list of issued certificates: "
-                + "{}", issuedCertificateFilteredRecordsList.size());
+                + "{}", issuedCertificateFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(issuedCertificateFilteredRecordsList, input);
     }
 

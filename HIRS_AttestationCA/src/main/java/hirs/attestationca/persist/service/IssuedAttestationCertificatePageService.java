@@ -9,11 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- *
+ * A service layer class responsible for encapsulating all business logic related to the Issued Attestation
+ * Certificate Page.
  */
 @Log4j2
 @Service
-public class IssuedAttestationCertificateService {
+public class IssuedAttestationCertificatePageService {
 
     private final IssuedCertificateRepository issuedCertificateRepository;
 
@@ -21,17 +22,20 @@ public class IssuedAttestationCertificateService {
      * @param issuedCertificateRepository issued certificate repository
      */
     @Autowired
-    public IssuedAttestationCertificateService(
+    public IssuedAttestationCertificatePageService(
             final IssuedCertificateRepository issuedCertificateRepository) {
         this.issuedCertificateRepository = issuedCertificateRepository;
     }
 
     /**
+     * Retrieves a page of issued attestation certificates using the provided archive flag and pageable value.
+     *
      * @param archiveFlag archive flag
      * @param pageable    pageable
-     * @return
+     * @return page of issued attestation certificates
      */
-    public Page<IssuedAttestationCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable) {
+    public Page<IssuedAttestationCertificate> findByArchiveFlag(final boolean archiveFlag,
+                                                                final Pageable pageable) {
         return this.issuedCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 

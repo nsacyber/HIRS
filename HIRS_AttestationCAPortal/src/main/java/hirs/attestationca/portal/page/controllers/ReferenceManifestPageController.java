@@ -153,7 +153,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         rimFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         rimFilteredRecordsList.setRecordsTotal(findRIMRepoCount());
 
-        log.info("Returning the size of the list of reference manifests: {}", rimFilteredRecordsList.size());
+        log.info("Returning the size of the list of reference manifests: {}",
+                rimFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(rimFilteredRecordsList, input);
     }
 

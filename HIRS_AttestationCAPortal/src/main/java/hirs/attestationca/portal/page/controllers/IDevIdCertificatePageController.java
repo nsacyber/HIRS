@@ -5,7 +5,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.persist.service.IDevIdCertificateService;
+import hirs.attestationca.persist.service.IDevIdCertificatePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -52,21 +52,21 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates")
 public class IDevIdCertificatePageController extends PageController<NoPageParams> {
     private final CertificateService certificateService;
-    private final IDevIdCertificateService iDevIdCertificateService;
+    private final IDevIdCertificatePageService iDevIdCertificatePageService;
 
     /**
      * Constructor for the IDevID Certificate page.
      *
-     * @param certificateService       certificate service
-     * @param iDevIdCertificateService iDevId certificate service
+     * @param certificateService           certificate service
+     * @param iDevIdCertificatePageService iDevId certificate page service
      */
     @Autowired
     public IDevIdCertificatePageController(
             final CertificateService certificateService,
-            final IDevIdCertificateService iDevIdCertificateService) {
+            final IDevIdCertificatePageService iDevIdCertificatePageService) {
         super(Page.IDEVID_CERTIFICATES);
         this.certificateService = certificateService;
-        this.iDevIdCertificateService = iDevIdCertificateService;
+        this.iDevIdCertificatePageService = iDevIdCertificatePageService;
     }
 
     /**
@@ -117,7 +117,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
-                    this.iDevIdCertificateService.findByArchiveFlag(false, pageable);
+                    this.iDevIdCertificatePageService.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
@@ -133,10 +133,10 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         idevidFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         idevidFilteredRecordsList.setRecordsTotal(
-                this.iDevIdCertificateService.findIDevIdCertificateRepositoryCount());
+                this.iDevIdCertificatePageService.findIDevIdCertificateRepositoryCount());
 
         log.info("Returning the size of the list of IDEVID certificates: "
-                + "{}", idevidFilteredRecordsList.size());
+                + "{}", idevidFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(idevidFilteredRecordsList, input);
     }
 
@@ -250,7 +250,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
             //Parse IDevId Certificate
             IDevIDCertificate parsedIDevIDCertificate =
-                    this.iDevIdCertificateService.parseIDevIDCertificate(file, errorMessages);
+                    this.iDevIdCertificatePageService.parseIDevIDCertificate(file, errorMessages);
 
             //Store only if it was parsed
             if (parsedIDevIDCertificate != null) {

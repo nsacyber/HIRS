@@ -17,11 +17,12 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- *
+ * A service layer class responsible for encapsulating all business logic related to the Platform Credential
+ * Page.
  */
 @Log4j2
 @Service
-public class PlatformCredentialService {
+public class PlatformCredentialPageService {
 
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
@@ -31,8 +32,10 @@ public class PlatformCredentialService {
      * @param endorsementCredentialRepository endorsement credential repository
      */
     @Autowired
-    public PlatformCredentialService(final PlatformCertificateRepository platformCertificateRepository,
-                                     final EndorsementCredentialRepository endorsementCredentialRepository) {
+    public PlatformCredentialPageService(final PlatformCertificateRepository
+                                                 platformCertificateRepository,
+                                         final EndorsementCredentialRepository
+                                                 endorsementCredentialRepository) {
         this.platformCertificateRepository = platformCertificateRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
     }
@@ -44,7 +47,7 @@ public class PlatformCredentialService {
      * @param pageable    pageable
      * @return page of platform credentials
      */
-    public Page<PlatformCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable) {
+    public Page<PlatformCredential> findByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
         return this.platformCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
@@ -54,7 +57,7 @@ public class PlatformCredentialService {
      * @param holderSerialNumber big integer representation of the holder serial number
      * @return endorsement credential
      */
-    public EndorsementCredential findECBySerialNumber(BigInteger holderSerialNumber) {
+    public EndorsementCredential findECBySerialNumber(final BigInteger holderSerialNumber) {
         return this.endorsementCredentialRepository.findBySerialNumber(holderSerialNumber);
     }
 

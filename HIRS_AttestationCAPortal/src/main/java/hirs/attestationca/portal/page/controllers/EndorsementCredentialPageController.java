@@ -6,7 +6,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.persist.service.EndorsementCredentialService;
+import hirs.attestationca.persist.service.EndorsementCredentialPageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -52,22 +52,22 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
 public class EndorsementCredentialPageController extends PageController<NoPageParams> {
-    private final EndorsementCredentialService endorsementCredentialService;
+    private final EndorsementCredentialPageService endorsementCredentialPageService;
     private final CertificateService certificateService;
 
     /**
      * Constructor for the Endorsement Credential page.
      *
-     * @param endorsementCredentialService endorsement credential service
-     * @param certificateService           certificate service
+     * @param endorsementCredentialPageService endorsement credential page service
+     * @param certificateService               certificate service
      */
     @Autowired
     public EndorsementCredentialPageController(
             final EndorsementCredentialRepository endorsementCredentialRepository,
-            final EndorsementCredentialService endorsementCredentialService,
+            final EndorsementCredentialPageService endorsementCredentialPageService,
             final CertificateService certificateService) {
         super(Page.ENDORSEMENT_KEY_CREDENTIALS);
-        this.endorsementCredentialService = endorsementCredentialService;
+        this.endorsementCredentialPageService = endorsementCredentialPageService;
         this.certificateService = certificateService;
     }
 
@@ -120,7 +120,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.endorsementCredentialService.findByArchiveFlag(false, pageable);
+            pagedResult = this.endorsementCredentialPageService.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
@@ -137,10 +137,10 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         ekFilteredRecordsList.setRecordsFiltered(
                 pagedResult.getTotalElements());
         ekFilteredRecordsList.setRecordsTotal(
-                this.endorsementCredentialService.findEndorsementCredentialRepositoryCount());
+                this.endorsementCredentialPageService.findEndorsementCredentialRepositoryCount());
 
         log.info("Returning the size of the list of endorsement credentials: {}",
-                ekFilteredRecordsList.size());
+                ekFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(ekFilteredRecordsList, input);
     }
 
@@ -254,7 +254,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
             //Parse endorsement credential
             EndorsementCredential parsedEndorsementCredential =
-                    this.endorsementCredentialService.parseEndorsementCredential(file, errorMessages);
+                    this.endorsementCredentialPageService.parseEndorsementCredential(file, errorMessages);
 
             //Store only if it was parsed
             if (parsedEndorsementCredential != null) {

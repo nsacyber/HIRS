@@ -7,7 +7,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.persist.service.TrustChainCertificateService;
+import hirs.attestationca.persist.service.TrustChainCertificatePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -68,28 +68,30 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     private final CACredentialRepository caCredentialRepository;
     private final CertificateService certificateService;
     private final List<CertificateAuthorityCredential> certificateAuthorityCredentials;
-    private final TrustChainCertificateService trustChainCertificateService;
+    private final TrustChainCertificatePageService trustChainCertificatePageService;
 
     /**
      * Constructor for the Trust Chain Certificate page.
      *
-     * @param certificateRepository     certificate repository
-     * @param caCredentialRepository    caCredential repository
-     * @param certificateService        certificate service
-     * @param acaTrustChainCertificates ACA Trust Chain certificates
+     * @param certificateRepository            certificate repository
+     * @param caCredentialRepository           caCredential repository
+     * @param certificateService               certificate service
+     * @param trustChainCertificatePageService trust chain certificate page service
+     * @param acaTrustChainCertificates        ACA Trust Chain certificates
      */
     @Autowired
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
                                                final CertificateService certificateService,
-                                               final TrustChainCertificateService trustChainCertificateService,
+                                               final TrustChainCertificatePageService
+                                                       trustChainCertificatePageService,
                                                @Qualifier("acaTrustChainCerts")
                                                final X509Certificate[] acaTrustChainCertificates) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;
         this.certificateService = certificateService;
-        this.trustChainCertificateService = trustChainCertificateService;
+        this.trustChainCertificatePageService = trustChainCertificatePageService;
         this.certificateAuthorityCredentials = new ArrayList<>();
 
         try {
@@ -162,7 +164,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
-                    this.trustChainCertificateService.findByArchiveFlag(false, pageable);
+                    this.trustChainCertificatePageService.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
                     this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
@@ -178,10 +180,10 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         caFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         caFilteredRecordsList.setRecordsTotal(
-                this.trustChainCertificateService.findTrustChainCertificateRepoCount());
+                this.trustChainCertificatePageService.findTrustChainCertificateRepoCount());
 
         log.info("Returning the size of the list of trust chain certificates: "
-                + " {}", caFilteredRecordsList.size());
+                + " {}", caFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(caFilteredRecordsList, input);
     }
 
@@ -342,7 +344,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
             //Parse trust chain certificate
             CertificateAuthorityCredential parsedTrustChainCertificate =
-                    this.trustChainCertificateService.parseTrustChainCertificate(file, successMessages,
+                    this.trustChainCertificatePageService.parseTrustChainCertificate(file, successMessages,
                             errorMessages);
 
             //Store only if it was parsed

@@ -4,7 +4,7 @@ import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.ReferenceDigestValueService;
+import hirs.attestationca.persist.service.ReferenceDigestValuePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -35,7 +35,7 @@ import java.util.Set;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-database")
 public class RimDatabasePageController extends PageController<NoPageParams> {
-    private final ReferenceDigestValueService referenceDigestValueService;
+    private final ReferenceDigestValuePageService referenceDigestValueService;
 
     /**
      * Constructor providing the Page's display and routing specification.
@@ -44,7 +44,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
      */
     @Autowired
     public RimDatabasePageController(
-            final ReferenceDigestValueService referenceDigestValueService) {
+            final ReferenceDigestValuePageService referenceDigestValueService) {
         super(Page.RIM_DATABASE);
         this.referenceDigestValueService = referenceDigestValueService;
     }

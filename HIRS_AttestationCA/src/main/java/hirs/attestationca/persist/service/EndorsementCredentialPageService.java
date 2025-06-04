@@ -14,11 +14,12 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- *
+ * A service layer class responsible for encapsulating all business logic related to the Endorsement
+ * Credentials Page.
  */
 @Log4j2
 @Service
-public class EndorsementCredentialService {
+public class EndorsementCredentialPageService {
 
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
@@ -26,18 +27,20 @@ public class EndorsementCredentialService {
      * @param endorsementCredentialRepository endorsement credential repository
      */
     @Autowired
-    public EndorsementCredentialService(
+    public EndorsementCredentialPageService(
             final EndorsementCredentialRepository endorsementCredentialRepository) {
         this.endorsementCredentialRepository = endorsementCredentialRepository;
     }
 
 
     /**
+     * Retrieves a page of endorsement credentials using the provided archive flag and pageable value.
+     *
      * @param archiveFlag archive flag
      * @param pageable    pageable
-     * @return
+     * @return page of endorsement credentials
      */
-    public Page<EndorsementCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable) {
+    public Page<EndorsementCredential> findByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
         return this.endorsementCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 

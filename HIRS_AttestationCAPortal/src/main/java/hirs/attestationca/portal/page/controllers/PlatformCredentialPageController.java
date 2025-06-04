@@ -6,7 +6,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.persist.service.PlatformCredentialService;
+import hirs.attestationca.persist.service.PlatformCredentialPageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -53,7 +53,7 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials")
 public class PlatformCredentialPageController extends PageController<NoPageParams> {
     private final CertificateService certificateService;
-    private final PlatformCredentialService platformCredentialService;
+    private final PlatformCredentialPageService platformCredentialService;
 
     /**
      * Constructor for the Platform Credential page.
@@ -64,7 +64,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     @Autowired
     public PlatformCredentialPageController(
             final CertificateService certificateService,
-            final PlatformCredentialService platformCredentialService) {
+            final PlatformCredentialPageService platformCredentialService) {
         super(Page.PLATFORM_CREDENTIALS);
         this.certificateService = certificateService;
         this.platformCredentialService = platformCredentialService;
@@ -154,7 +154,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             }
         }
 
-        log.info("Returning the size of the list of platform credentials: {}", pcFilteredRecordsList.size());
+        log.info("Returning the size of the list of platform credentials: {}",
+                pcFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(pcFilteredRecordsList, input);
     }
 
@@ -279,7 +280,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedPlatformCredential);
             }
-            
+
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         }
