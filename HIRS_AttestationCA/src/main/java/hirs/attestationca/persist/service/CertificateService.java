@@ -33,7 +33,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Service layer class that handles the storage and retrieval of all types of certificates.
+ * A service layer class responsible for encapsulating all business logic related to all the Certificate
+ * pages.
  */
 @Log4j2
 @Service
