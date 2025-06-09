@@ -119,7 +119,7 @@ jobs:
 
   windows-compat-image: # This job uses a different runner and build arg than the other windows job.
     needs: setup
-    runs-on: windows-2019
+    runs-on: windows-2022
     env:
       TAG: ${{ needs.setup.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
     steps:
