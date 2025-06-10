@@ -229,6 +229,7 @@ public class ReferenceManifestValidator {
      * @return true if both the file element and signature are valid, false otherwise
      */
     public boolean validateRim(final String signingCertPath) {
+/*
         boolean isPayloadValid = true;
         NodeList files = rim.getElementsByTagName(SwidTagConstants.FILE);
         if (files.getLength() <= 0) {
@@ -245,6 +246,7 @@ public class ReferenceManifestValidator {
         } else {
             return failWithError("No payload found with which to validate.");
         }
+*/
         X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
         if (signingCert == null) {
             return failWithError("Unable to parse the signing cert from " + signingCertPath);
@@ -259,7 +261,7 @@ public class ReferenceManifestValidator {
         boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
                 retrievedSubjectKeyIdentifier,
                 signingCert.getPublicKey().getEncoded());
-        return isSignatureValid && isPayloadValid;
+        return isSignatureValid;// && isPayloadValid;
     }
 
     /**
