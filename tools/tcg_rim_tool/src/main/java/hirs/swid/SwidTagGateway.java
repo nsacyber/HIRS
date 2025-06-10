@@ -505,9 +505,13 @@ public class SwidTagGateway {
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
         Map<QName, String> attributes = file.getOtherAttributes();
-        addNonNullAttribute(attributes, SwidTagConstants._SHA256_HASH,
-                jsonObject.getString(SwidTagConstants.HASH,
-                        HashSwid.get256Hash(rimEventLog)), true);
+        String fileHash;
+        if (rimEventLog.isEmpty()) {
+            fileHash = jsonObject.getString(SwidTagConstants.HASH);
+        } else {
+            fileHash = jsonObject.getString(SwidTagConstants.HASH, HashSwid.get256Hash(rimEventLog));
+        }
+        addNonNullAttribute(attributes, SwidTagConstants._SHA256_HASH, fileHash, true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
                 SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
         if (!supportRimFormat.equals(SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING)) {
