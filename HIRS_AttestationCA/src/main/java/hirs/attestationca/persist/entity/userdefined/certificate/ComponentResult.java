@@ -138,10 +138,10 @@ public class ComponentResult extends ArchivableEntity {
         this.boardSerialNumber = boardSerialNumber;
         this.certificateSerialNumber = certificateSerialNumber;
         this.certificateType = certificateType;
-        this.manufacturer = componentIdentifierV2.getComponentManufacturer().toString();
-        this.model = componentIdentifierV2.getComponentModel().toString();
-        this.serialNumber = componentIdentifierV2.getComponentSerial().toString();
-        this.revisionNumber = componentIdentifierV2.getComponentRevision().toString();
+        this.manufacturer = componentIdentifierV2.getComponentManufacturer().toString().trim();
+        this.model = componentIdentifierV2.getComponentModel().toString().trim();
+        this.serialNumber = componentIdentifierV2.getComponentSerial().toString().trim();
+        this.revisionNumber = componentIdentifierV2.getComponentRevision().toString().trim();
         if (componentIdentifierV2.getFieldReplaceable() != null) {
             this.fieldReplaceable = componentIdentifierV2.getFieldReplaceable().isTrue();
         }
