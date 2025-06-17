@@ -68,16 +68,14 @@ public class PolicyPageController extends PageController<NoPageParams> {
     @Override
     @RequestMapping
     public ModelAndView initPage(final NoPageParams params, final Model model) {
-        // get the basic information to render the page
         ModelAndView mav = getBaseModelAndView();
 
         PolicySettings policySettings = this.policyPageService.getDefaultPolicy();
-        log.debug(policySettings);
+        log.debug("Policy Page Settings: {}", policySettings);
+
         PolicyPageModel pageModel = new PolicyPageModel(policySettings);
         mav.addObject(INITIAL_DATA, pageModel);
-
-        log.debug(pageModel);
-
+        log.debug("Policy Page Model: {}", pageModel);
         return mav;
     }
 
@@ -113,13 +111,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
 
             // if the pc validation policy update was successful
-            if (isPcValidationOptionEnabled) {
-                messages.addSuccessMessage("Platform certificate validation enabled");
-            } else {
-                messages.addSuccessMessage("Platform certificate validation disabled");
-            }
+            messages.addSuccessMessage("Platform certificate validation "
+                    + (isPcValidationOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
-
         } catch (Exception exception) {
             final String errorMessage =
                     "An exception was thrown while updating ACA platform validation Policy";
@@ -165,11 +159,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
 
             // if the pc attribute validation policy update was successful
-            if (pcAttributeValidationOptionEnabled) {
-                messages.addSuccessMessage("Platform certificate attribute validation enabled");
-            } else {
-                messages.addSuccessMessage("Platform certificate attribute validation disabled");
-            }
+            messages.addSuccessMessage("Platform Certificate Attribute validation "
+                    + (pcAttributeValidationOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -179,6 +170,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
         }
+
         return redirectToSelf(new NoPageParams(), model, attr);
     }
 
@@ -196,7 +188,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
     public RedirectView updateIgnoreRevisionAttribute(@ModelAttribute final PolicyPageModel ppModel,
                                                       final RedirectAttributes attr)
             throws URISyntaxException {
-        // set the data received to be populated back into the form
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
@@ -215,12 +206,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
 
-            // set the policy option and create success message
-            if (isIgnoreRevisionAttributeOptionEnabled) {
-                messages.addSuccessMessage("Ignore Component Revision enabled");
-            } else {
-                messages.addSuccessMessage("Ignore Component Revision disabled");
-            }
+            // if the ignore revision policy update was successful
+            messages.addSuccessMessage("Ignore Component Revision "
+                    + (isIgnoreRevisionAttributeOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -230,7 +218,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
             model.put(MESSAGES_ATTRIBUTE, messages);
         }
 
-        // return the redirect
         return redirectToSelf(new NoPageParams(), model, attr);
     }
 
@@ -247,7 +234,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
     public RedirectView updateAttestationValidationPolicy(@ModelAttribute final PolicyPageModel ppModel,
                                                           final RedirectAttributes attr)
             throws URISyntaxException {
-        // set the data received to be populated back into the form
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
@@ -257,11 +243,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
             this.policyPageService.updateAttestationValidationPolicy(isIssuedAttestationOptionEnabled);
 
-            if (isIssuedAttestationOptionEnabled) {
-                messages.addSuccessMessage("Attestation Certificate generation enabled.");
-            } else {
-                messages.addSuccessMessage("Attestation Certificate generation disabled.");
-            }
+            messages.addSuccessMessage("Attestation Certificate generation "
+                    + (isIssuedAttestationOptionEnabled ? "enabled." : "disabled."));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -272,7 +255,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
             model.put(MESSAGES_ATTRIBUTE, messages);
         }
 
-        // return the redirect
         return redirectToSelf(new NoPageParams(), model, attr);
     }
 
@@ -289,7 +271,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
     public RedirectView updateDevIdVal(@ModelAttribute final PolicyPageModel ppModel,
                                        final RedirectAttributes attr)
             throws URISyntaxException {
-        // set the data received to be populated back into the form
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         try {
@@ -299,11 +280,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
             this.policyPageService.updateDevIdValidationPolicy(isIssuedDevIdOptionEnabled);
 
-            if (isIssuedDevIdOptionEnabled) {
-                messages.addSuccessMessage("DevID Certificate generation enabled.");
-            } else {
-                messages.addSuccessMessage("DevID Certificate generation disabled.");
-            }
+            // if the devid certificate generation policy update was successful
+            messages.addSuccessMessage("DevID Certificate generation "
+                    + (isIssuedDevIdOptionEnabled ? "enabled." : "disabled."));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -314,45 +293,42 @@ public class PolicyPageController extends PageController<NoPageParams> {
             model.put(MESSAGES_ATTRIBUTE, messages);
         }
 
-        // return the redirect
         return redirectToSelf(new NoPageParams(), model, attr);
     }
 
-//    /**
-//     * Updates the state of the policy setting that indicates that the generation
-//     * will occur in a set time frame and redirects
-//     * back to the original page.
-//     *
-//     * @param ppModel The data posted by the form mapped into an object.
-//     * @param attr    RedirectAttributes used to forward data back to the original page.
-//     * @return View containing the url and parameters
-//     * @throws URISyntaxException if malformed URI
-//     */
-//    @PostMapping("update-expire-on")
-//    public RedirectView updateExpireOnVal(@ModelAttribute final PolicyPageModel ppModel,
-//                                          final RedirectAttributes attr)
-//            throws URISyntaxException {
-//
-//        // set the data received to be populated back into the form
-//        Map<String, Object> model = new HashMap<>();
-//        PageMessages messages = new PageMessages();
-//        String successMessage;
-//        String numOfDays;
-//
-//        boolean generateCertificateEnabled = false;
-//        // because this is just one option, there is not 'unchecked' value, so it is either
-//        // 'checked' or null
-//        if (ppModel.getGenerationExpirationOn() != null) {
-//            generateCertificateEnabled
-//                    = ppModel.getGenerationExpirationOn()
-//                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-//        }
-//
-//        try {
-//            boolean issuedAttestationOptionEnabled
+    /**
+     * Updates the state of the policy setting that indicates that the generation
+     * will occur in a set time frame and redirects
+     * back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr    RedirectAttributes used to forward data back to the original page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-expire-on")
+    public RedirectView updateExpireOnVal(@ModelAttribute final PolicyPageModel ppModel,
+                                          final RedirectAttributes attr)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String numOfDays;
+
+        boolean generateCertificateEnabled = false;
+        // because this is just one option, there is not 'unchecked' value, so it is either
+        // 'checked' or null
+        if (ppModel.getGenerationExpirationOn() != null) {
+            generateCertificateEnabled
+                    = ppModel.getGenerationExpirationOn()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+        }
+
+        try {
+            //todo
+//            boolean isIssuedAttestationOptionEnabled
 //                    = policySettings.isIssueAttestationCertificate();
 //
-//            if (issuedAttestationOptionEnabled) {
+//            if (isIssuedAttestationOptionEnabled) {
 //                if (generateCertificateEnabled) {
 //                    successMessage = "Attestation Certificate generation expiration time enabled.";
 //                } else {
@@ -372,20 +348,22 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //            } else {
 //                generateCertificateEnabled = false;
 //                successMessage = "Attestation Certificate generation is disabled, "
-//                        + "can not set time expiration";
+//                        + "cannot set time expiration";
 //            }
 //
 //            policySettings.setGenerateOnExpiration(generateCertificateEnabled);
-//            
-//        } catch (PolicyManagerException pmEx) {
-//            handlePolicyManagerUpdateError(model, messages, pmEx,
-//                    "Error changing ACA Attestation Certificate generation policy",
-//                    "Error updating policy. \n" + pmEx.getMessage());
-//        }
-//
-//        // return the redirect
-//        return redirectToSelf(new NoPageParams(), model, attr);
-//    }
+
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while updating"
+                    + " ACA Attestation Certificate generation policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
 //
 //    /**
 //     * Updates the state of the policy setting that indicates that the generation
@@ -402,7 +380,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //                                               final RedirectAttributes attr)
 //            throws URISyntaxException {
 //
-//        // set the data received to be populated back into the form
+//        
 //        Map<String, Object> model = new HashMap<>();
 //        PageMessages messages = new PageMessages();
 //        String successMessage;
@@ -442,7 +420,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //            } else {
 //                generateDevIdCertificateEnabled = false;
 //                successMessage = "DevID Certificate generation is disabled, "
-//                        + "can not set time expiration";
+//                        + "cannot set time expiration";
 //            }
 //
 //            policySettings.setDevIdExpirationFlag(generateDevIdCertificateEnabled);
@@ -453,7 +431,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //                    "Error updating policy. \n" + pmEx.getMessage());
 //        }
 //
-//        // return the redirect
 //        return redirectToSelf(new NoPageParams(), model, attr);
 //    }
 //
@@ -472,7 +449,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //                                           final RedirectAttributes attr)
 //            throws URISyntaxException {
 //
-//        // set the data received to be populated back into the form
+//        
 //        Map<String, Object> model = new HashMap<>();
 //        PageMessages messages = new PageMessages();
 //        String successMessage;
@@ -513,7 +490,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //            } else {
 //                generateCertificateEnabled = false;
 //                successMessage = "Attestation Certificate generation is disabled, "
-//                        + "can not set time expiration";
+//                        + "cannot set time expiration";
 //            }
 //
 //            policy.setGenerateOnExpiration(generateCertificateEnabled);
@@ -542,7 +519,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //    public RedirectView updateDevIdThresholdVal(@ModelAttribute final PolicyPageModel ppModel,
 //                                                final RedirectAttributes attr)
 //            throws URISyntaxException {
-//        // set the data received to be populated back into the form
+//        
 //        Map<String, Object> model = new HashMap<>();
 //        PageMessages messages = new PageMessages();
 //        String successMessage;
@@ -558,7 +535,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //        }
 //
 //        try {
-//
 //            boolean issuedDevIdOptionEnabled
 //                    = policy.isIssueDevIdCertificate();
 //
@@ -583,7 +559,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //            } else {
 //                generateDevIdCertificateEnabled = false;
 //                successMessage = "DevID Certificate generation is disabled, "
-//                        + "can not set time expiration";
+//                        + "cannot set time expiration";
 //            }
 //
 //            policy.setDevIdExpirationFlag(generateDevIdCertificateEnabled);
@@ -594,10 +570,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //                    "Error updating policy. \n" + pmEx.getMessage());
 //        }
 //
-//        // return the redirect
 //        return redirectToSelf(new NoPageParams(), model, attr);
 //    }
-//
 
     /**
      * Updates the Endorsement Credential Validation policy setting and
@@ -612,19 +586,15 @@ public class PolicyPageController extends PageController<NoPageParams> {
     @PostMapping("update-ec-validation")
     public RedirectView updateEcVal(@ModelAttribute final PolicyPageModel ppModel,
                                     final RedirectAttributes attr) throws URISyntaxException {
-        // set the data received to be populated back into the form
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
         try {
-            final boolean ecValidationOptionEnabled
+            final boolean isECValidationOptionEnabled
                     = ppModel.getEcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
             final boolean isECValPolicyUpdateSuccessful =
-                    this.policyPageService.updateECValidationPolicy(ecValidationOptionEnabled);
-
-//            !isPolicyValid(ecValidationOptionEnabled, policy.isPcValidationEnabled(),
-//                    policy.isPcAttributeValidationEnabled())
+                    this.policyPageService.updateECValidationPolicy(isECValidationOptionEnabled);
 
             //If PC Validation is enabled without EC Validation, disallow change
             if (!isECValPolicyUpdateSuccessful) {
@@ -634,14 +604,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, attr);
             }
-            // set the policy option and create success message
-            if (ecValidationOptionEnabled) {
-                //policy.setEcValidationEnabled(true); todo
-                messages.addSuccessMessage("Endorsement credential validation enabled");
-            } else {
-                //policy.setEcValidationEnabled(false); todo
-                messages.addSuccessMessage("Endorsement credential validation disabled");
-            }
+
+            // if the EC validation policy update was successful
+            messages.addSuccessMessage("Endorsement credential validation "
+                    + (isECValidationOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -651,220 +617,190 @@ public class PolicyPageController extends PageController<NoPageParams> {
             model.put(MESSAGES_ATTRIBUTE, messages);
         }
 
-        // return the redirect
         return redirectToSelf(new NoPageParams(), model, attr);
     }
 
-//    /**
-//     * Updates the Firmware Validation policy setting and
-//     * redirects back to the original page.
-//     *
-//     * @param ppModel The data posted by the form mapped into an object.
-//     * @param attr    RedirectAttributes used to forward data back to the original
-//     *                page.
-//     * @return View containing the url and parameters
-//     * @throws URISyntaxException if malformed URI
-//     */
-//    @PostMapping("update-firmware-validation")
-//    public RedirectView updateFirmwareVal(@ModelAttribute final PolicyPageModel ppModel,
-//                                          final RedirectAttributes attr) throws URISyntaxException {
-//
-//        // set the data received to be populated back into the form
-//        Map<String, Object> model = new HashMap<>();
-//        PageMessages messages = new PageMessages();
-//        String successMessage;
-//        boolean firmwareValidationOptionEnabled = ppModel.getFmValidate()
-//                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-//
-//        try {
-//
-//
-//            //If firmware is enabled without PC attributes, disallow change
-//            if (firmwareValidationOptionEnabled && !policy.isPcAttributeValidationEnabled()) {
-//                handleUserError(model, messages,
-//                        "Firmware validation can not be "
-//                                + "enabled without PC Attributes policy enabled.");
-//                return redirectToSelf(new NoPageParams(), model, attr);
-//            }
-//
-//            // set the policy option and create success message
-//            if (firmwareValidationOptionEnabled) {
-//                policy.setFirmwareValidationEnabled(true);
-//                policy.setIgnoreGptEnabled(true);
-//                successMessage = "Firmware validation enabled";
-//            } else {
-//                policy.setFirmwareValidationEnabled(false);
-//                policy.setIgnoreImaEnabled(false);
-//                policy.setIgnoretBootEnabled(false);
-//                policy.setIgnoreOsEvtEnabled(false);
-//                successMessage = "Firmware validation disabled";
-//            }
-//
-//            
-//        } catch (PolicyManagerException pmEx) {
-//            handlePolicyManagerUpdateError(model, messages, pmEx,
-//                    "Error changing ACA firmware validation policy",
-//                    "Error updating policy. \n" + pmEx.getMessage());
-//
-//        }
-//
-//        // return the redirect
-//        return redirectToSelf(new NoPageParams(), model, attr);
-//    }
-//
-//    /**
-//     * Updates the ignore IMA policy setting and
-//     * redirects back to the original page.
-//     *
-//     * @param ppModel The data posted by the form mapped into an object.
-//     * @param attr    RedirectAttributes used to forward data back to the original
-//     *                page.
-//     * @return View containing the url and parameters
-//     * @throws URISyntaxException if malformed URI
-//     */
-//    @PostMapping("update-ima-ignore")
-//    public RedirectView updateIgnoreIma(@ModelAttribute final PolicyPageModel ppModel,
-//                                        final RedirectAttributes attr) throws URISyntaxException {
-//        // set the data received to be populated back into the form
-//        Map<String, Object> model = new HashMap<>();
-//        PageMessages messages = new PageMessages();
-//        String successMessage;
-//        boolean ignoreImaOptionEnabled = ppModel.getIgnoreIma()
-//                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-//
-//        try {
-//
-//
-//            //If Ignore IMA is enabled without firmware, disallow change
-//            if (ignoreImaOptionEnabled && !policy.isFirmwareValidationEnabled()) {
-//                handleUserError(model, messages,
-//                        "Ignore IMA can not be "
-//                                + "enabled without Firmware Validation policy enabled.");
-//                return redirectToSelf(new NoPageParams(), model, attr);
-//            }
-//
-//            // set the policy option and create success message
-//            if (ignoreImaOptionEnabled) {
-//                policy.setIgnoreImaEnabled(true);
-//                successMessage = "Ignore IMA enabled";
-//            } else {
-//                policy.setIgnoreImaEnabled(false);
-//                successMessage = "Ignore IMA disabled";
-//            }
-//
-//            
-//        } catch (PolicyManagerException pmEx) {
-//            handlePolicyManagerUpdateError(model, messages, pmEx,
-//                    "Error changing ACA IMA ignore policy",
-//                    "Error updating policy. \n" + pmEx.getMessage());
-//        }
-//
-//        // return the redirect
-//        return redirectToSelf(new NoPageParams(), model, attr);
-//    }
-//
-//    /**
-//     * Updates the ignore TBoot policy setting and
-//     * redirects back to the original page.
-//     *
-//     * @param ppModel The data posted by the form mapped into an object.
-//     * @param attr    RedirectAttributes used to forward data back to the original
-//     *                page.
-//     * @return View containing the url and parameters
-//     * @throws URISyntaxException if malformed URI
-//     */
-//    @PostMapping("update-tboot-ignore")
-//    public RedirectView updateIgnoreTboot(@ModelAttribute final PolicyPageModel ppModel,
-//                                          final RedirectAttributes attr) throws URISyntaxException {
-//        // set the data received to be populated back into the form
-//        Map<String, Object> model = new HashMap<>();
-//        PageMessages messages = new PageMessages();
-//        String successMessage;
-//        boolean ignoreTbootOptionEnabled = ppModel.getIgnoretBoot()
-//                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-//
-//        try {
-//
-//
-//            //If Ignore TBoot is enabled without firmware, disallow change
-//            if (ignoreTbootOptionEnabled && !policy.isFirmwareValidationEnabled()) {
-//                handleUserError(model, messages,
-//                        "Ignore TBoot can not be "
-//                                + "enabled without Firmware Validation policy enabled.");
-//                return redirectToSelf(new NoPageParams(), model, attr);
-//            }
-//
-//            // set the policy option and create success message
-//            if (ignoreTbootOptionEnabled) {
-//                policy.setIgnoretBootEnabled(true);
-//                successMessage = "Ignore TBoot enabled";
-//            } else {
-//                policy.setIgnoretBootEnabled(false);
-//                successMessage = "Ignore TBoot disabled";
-//            }
-//
-//            
-//        } catch (PolicyManagerException pmEx) {
-//            handlePolicyManagerUpdateError(model, messages, pmEx,
-//                    "Error changing ACA TBoot ignore policy",
-//                    "Error updating policy. \n" + pmEx.getMessage());
-//        }
-//
-//        // return the redirect
-//        return redirectToSelf(new NoPageParams(), model, attr);
-//    }
-//
-//    /**
-//     * Updates the ignore GPT policy setting and
-//     * redirects back to the original page.
-//     *
-//     * @param ppModel The data posted by the form mapped into an object.
-//     * @param attr    RedirectAttributes used to forward data back to the original
-//     *                page.
-//     * @return View containing the url and parameters
-//     * @throws URISyntaxException if malformed URI
-//     */
-//    @PostMapping("update-gpt-ignore")
-//    public RedirectView updateIgnoreGptEvents(@ModelAttribute final PolicyPageModel ppModel,
-//                                              final RedirectAttributes attr) throws URISyntaxException {
-//        // set the data received to be populated back into the form
-//        Map<String, Object> model = new HashMap<>();
-//        PageMessages messages = new PageMessages();
-//        String successMessage;
-//        boolean ignoreGptOptionEnabled = ppModel.getIgnoreGpt()
-//                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-//
-//        try {
-//
-//
-//            //If Ignore TBoot is enabled without firmware, disallow change
-//            if (ignoreGptOptionEnabled && !policy.isFirmwareValidationEnabled()) {
-//                handleUserError(model, messages,
-//                        "Ignore GPT Events can not be "
-//                                + "enabled without Firmware Validation policy enabled.");
-//                return redirectToSelf(new NoPageParams(), model, attr);
-//            }
-//
-//            // set the policy option and create success message
-//            if (ignoreGptOptionEnabled) {
-//                policy.setIgnoreGptEnabled(true);
-//                successMessage = "Ignore GPT enabled";
-//            } else {
-//                policy.setIgnoreGptEnabled(false);
-//                successMessage = "Ignore GPT disabled";
-//            }
-//
-//            
-//        } catch (PolicyManagerException pmEx) {
-//            handlePolicyManagerUpdateError(model, messages, pmEx,
-//                    "Error changing ACA GPT ignore policy",
-//                    "Error updating policy. \n" + pmEx.getMessage());
-//        }
-//
-//        // return the redirect
-//        return redirectToSelf(new NoPageParams(), model, attr);
-//    }
-//
+    /**
+     * Updates the Firmware Validation policy setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-firmware-validation")
+    public RedirectView updateFirmwareVal(@ModelAttribute final PolicyPageModel ppModel,
+                                          final RedirectAttributes attr) throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        try {
+            final boolean isFirmwareValidationOptionEnabled = ppModel.getFmValidate()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+            final boolean isFirmwareValPolicyUpdateSuccessful =
+                    this.policyPageService.updateFirmwareValidationPolicy(isFirmwareValidationOptionEnabled);
+
+            if (!isFirmwareValPolicyUpdateSuccessful) {
+                messages.addErrorMessage("Firmware validation cannot be "
+                        + "enabled without PC Attributes policy enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // if the firmware validation policy update was successful
+            messages.addSuccessMessage(
+                    "Firmware validation " + (isFirmwareValidationOptionEnabled ? "enabled" : "disabled"));
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while updating"
+                    + " ACA firmware validation policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the ignore IMA policy setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-ima-ignore")
+    public RedirectView updateIgnoreIma(@ModelAttribute final PolicyPageModel ppModel,
+                                        final RedirectAttributes attr) throws URISyntaxException {
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        try {
+            final boolean ignoreImaOptionEnabled = ppModel.getIgnoreIma()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+            final boolean isIgnoreImaPolicyUpdateSuccessful =
+                    this.policyPageService.updateIgnoreImaPolicy(ignoreImaOptionEnabled);
+
+            //If Ignore IMA is enabled without firmware, disallow change
+            if (!isIgnoreImaPolicyUpdateSuccessful) {
+                messages.addErrorMessage(
+                        "Ignore IMA cannot be enabled without Firmware Validation policy enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // if the ignore IMA policy update was successful
+            messages.addSuccessMessage("Ignore IMA " + (ignoreImaOptionEnabled ? "enabled" : "disabled"));
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA IMA ignore policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the ignore TBoot policy setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-tboot-ignore")
+    public RedirectView updateIgnoreTboot(@ModelAttribute final PolicyPageModel ppModel,
+                                          final RedirectAttributes attr) throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        try {
+            final boolean ignoreTbootOptionEnabled = ppModel.getIgnoretBoot()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+            final boolean isIgnoreTbootPolicyUpdateSuccessful =
+                    this.policyPageService.updateIgnoreTBootPolicy(ignoreTbootOptionEnabled);
+
+            //If Ignore TBoot is enabled without firmware, disallow change
+            if (!isIgnoreTbootPolicyUpdateSuccessful) {
+                messages.addErrorMessage(
+                        "Ignore TBoot cannot be enabled without Firmware Validation policy enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // if the ignore TBoot policy update was successful
+            messages.addSuccessMessage("Ignore TBoot " + (ignoreTbootOptionEnabled ? "enabled" : "disabled"));
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA TBoot Ignore policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Updates the ignore GPT policy setting and
+     * redirects back to the original page.
+     *
+     * @param ppModel The data posted by the form mapped into an object.
+     * @param attr    RedirectAttributes used to forward data back to the original
+     *                page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-gpt-ignore")
+    public RedirectView updateIgnoreGptEvents(@ModelAttribute final PolicyPageModel ppModel,
+                                              final RedirectAttributes attr) throws URISyntaxException {
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        try {
+            final boolean ignoreGptOptionEnabled = ppModel.getIgnoreGpt()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+            final boolean isIgnoreGptOptionPolicyUpdateSuccessful =
+                    this.policyPageService.updateIgnoreGptPolicy(ignoreGptOptionEnabled);
+
+            //If Ignore TBoot is enabled without firmware, disallow change
+            if (!isIgnoreGptOptionPolicyUpdateSuccessful) {
+                messages.addErrorMessage("Ignore GPT Events cannot be "
+                        + "enabled without Firmware Validation policy enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, attr);
+            }
+
+            // if the ignore GPT events policy update was successful
+            messages.addSuccessMessage("Ignore GPT " + (ignoreGptOptionEnabled ? "enabled" : "disabled"));
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while updating ACA GPT ignore policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, attr);
+    }
+
 //    /**
 //     * Updates the ignore Os Events policy setting and
 //     * redirects back to the original page.
@@ -880,7 +816,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //            @ModelAttribute final PolicyPageModel ppModel,
 //            final RedirectAttributes attr)
 //            throws URISyntaxException {
-//        // set the data received to be populated back into the form
+//        
 //        Map<String, Object> model = new HashMap<>();
 //        PageMessages messages = new PageMessages();
 //        String successMessage;
@@ -888,12 +824,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //                .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 //
 //        try {
-//
-//
 //            //If Ignore TBoot is enabled without firmware, disallow change
 //            if (ignoreOsEvtOptionEnabled && !policy.isFirmwareValidationEnabled()) {
 //                handleUserError(model, messages,
-//                        "Ignore Os Events can not be "
+//                        "Ignore Os Events cannot be "
 //                                + "enabled without Firmware Validation policy enabled.");
 //                return redirectToSelf(new NoPageParams(), model, attr);
 //            }
@@ -907,15 +841,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
 //                policy.setIgnoreOsEvtEnabled(false);
 //                successMessage = "Ignore OS Events disabled";
 //            }
-//
-//            
 //        } catch (PolicyManagerException pmEx) {
 //            handlePolicyManagerUpdateError(model, messages, pmEx,
 //                    "Error changing ACA OS Events ignore policy",
 //                    "Error updating policy. \n" + pmEx.getMessage());
 //        }
 //
-//        // return the redirect
 //        return redirectToSelf(new NoPageParams(), model, attr);
 //    }
 }

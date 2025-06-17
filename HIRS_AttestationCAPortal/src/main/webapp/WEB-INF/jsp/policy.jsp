@@ -231,6 +231,21 @@
                     </ul>
                 </li>
             </div>
+
+            <%-- Save ProtoBuf Data To ACA Log--%>
+            <div class="aca-input-box">
+                <form:form method="POST" modelAttribute="initialData" action="">
+                    <li>Save Protobuf Data To ACA Log: ${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}
+                        <my:editor id="saveProtoBufDataPolicyEditor" label="Edit Settings">
+                            <!-- <div class="radio">
+                                <label><input id="devIdTop" type="radio" name="devIdCertificateIssued" ${initialData.issueDevIdCertificate ? '' : 'checked'} value="unchecked"/> Never generate a DevID Certificate</label>
+                            </div>
+                            <div class="radio">
+                                <label><input id="devIdMid" type="radio" name="devIdCertificateIssued" ${initialData.issueDevIdCertificate ? 'checked' : ''} value="checked"/> Conditionally generate an DevID Certificate before 'Not After' expiration date</label>
+                            </div> -->
+                        </my:editor>
+                </form:form>
+            </div>
         </ul>
     </jsp:body>
 </my:page>
