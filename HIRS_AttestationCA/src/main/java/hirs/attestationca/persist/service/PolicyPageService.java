@@ -31,11 +31,10 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the Platform Certificate Validation policy option according to user input.
+     * Updates the Platform Certificate Validation policy according to user input.
      *
-     * @param isPcValidationOptionEnabled boolean value representation of the current
-     *                                    pc validation policy option's state
-     * @return true if the policy option was updated successfully; otherwise, false.
+     * @param isPcValidationOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updatePCValidationPolicy(final boolean isPcValidationOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
@@ -65,11 +64,10 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the Platform Certificate Attribute Validation policy option according to user input.
+     * Updates the Platform Certificate Attribute Validation policy according to user input.
      *
-     * @param isPcAttributeValidationOptionEnabled boolean value representation of the current
-     *                                             pc attribute validation policy option's state
-     * @return true if the policy option was updated successfully; otherwise, false.
+     * @param isPcAttributeValidationOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updatePCAttributeValidationPolicy(final boolean isPcAttributeValidationOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
@@ -87,20 +85,19 @@ public class PolicyPageService {
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the platform credential "
+        log.debug("Current ACA Policy after updating the platform credential "
                 + "attribute credential validation policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the Ignore Revision Attribute policy option according to user input.
+     * Updates the Ignore Revision Attribute policy according to user input.
      *
-     * @param isIgnoreRevisionAttributeOptionEnabled boolean value representation of the current ignore
-     *                                               revision attribute policy option's state
-     * @return true if the policy option was updated successfully; otherwise, false.
+     * @param isIgnoreRevisionAttributeOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateIgnoreRevisionAttributePolicy(boolean isIgnoreRevisionAttributeOptionEnabled) {
+    public boolean updateIgnoreRevisionAttributePolicy(final boolean isIgnoreRevisionAttributeOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (isIgnoreRevisionAttributeOptionEnabled && !policySettings.isPcAttributeValidationEnabled()) {
@@ -114,19 +111,18 @@ public class PolicyPageService {
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the ignore revision attribute"
+        log.debug("Current ACA Policy after updating the ignore revision attribute"
                 + " option policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the Issued Attestation Certificate policy option according to user input.
+     * Updates the Issued Attestation Certificate policy according to user input.
      *
-     * @param isIssuedAttestationOptionEnabled boolean value representation of the current Issued
-     *                                         Attestation policy option's state
+     * @param isIssuedAttestationOptionEnabled boolean value representation of the current policy option's state
      */
-    public void updateAttestationValidationPolicy(boolean isIssuedAttestationOptionEnabled) {
+    public void updateAttestationValidationPolicy(final boolean isIssuedAttestationOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (!isIssuedAttestationOptionEnabled) {
@@ -138,17 +134,16 @@ public class PolicyPageService {
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the issued attestation validation "
+        log.debug("Current ACA Policy after updating the issued attestation validation "
                 + " policy: {}", policySettings);
     }
 
     /**
-     * Updates the DevId validation policy option according to user input.
+     * Updates the DevId validation policy according to user input.
      *
-     * @param isDevIdOptionEnabled boolean value representation of the current DevIds Validation
-     *                             policy option's state
+     * @param isDevIdOptionEnabled boolean value representation of the current policy option's state
      */
-    public void updateDevIdValidationPolicy(boolean isDevIdOptionEnabled) {
+    public void updateDevIdValidationPolicy(final boolean isDevIdOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (!isDevIdOptionEnabled) {
@@ -160,18 +155,17 @@ public class PolicyPageService {
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the dev id validation "
+        log.debug("Current ACA Policy after updating the devid validation "
                 + " policy: {}", policySettings);
     }
 
     /**
-     * Updates the Endorsement Credential validation policy option according to user input.
+     * Updates the Endorsement Credential validation policy according to user input.
      *
-     * @param isEcValidationOptionEnabled boolean value representation of the current EC Validation
-     *                                    policy option's state
-     * @return true if the policy option was updated successfully; otherwise, false.
+     * @param isEcValidationOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateECValidationPolicy(boolean isEcValidationOptionEnabled) {
+    public boolean updateECValidationPolicy(final boolean isEcValidationOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (!isPolicyValid(isEcValidationOptionEnabled, policySettings.isPcValidationEnabled(),
@@ -186,20 +180,19 @@ public class PolicyPageService {
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the endorsement credential "
+        log.debug("Current ACA Policy after updating the endorsement credential "
                 + "validation policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the firmware validation policy option according to user input.
+     * Updates the firmware validation policy according to user input.
      *
-     * @param isFirmwareValidationOptionEnabled boolean value representation of the current firmware
-     *                                          validation policy option's state
-     * @return true if the policy option was updated successfully; otherwise, false.
+     * @param isFirmwareValidationOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateFirmwareValidationPolicy(boolean isFirmwareValidationOptionEnabled) {
+    public boolean updateFirmwareValidationPolicy(final boolean isFirmwareValidationOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         //If firmware is enabled without PC attributes, disallow change
@@ -221,112 +214,187 @@ public class PolicyPageService {
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the firmware validation "
+        log.debug("Current ACA Policy after updating the firmware validation "
                 + " policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the ignore IMA policy option according to user input.
+     * Updates the ignore IMA policy according to user input.
      *
-     * @param ignoreImaOptionEnabled boolean value representation of the current IMA policy option's state
-     * @return true if the policy option was updated successfully; otherwise, false.
+     * @param isIgnoreImaOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateIgnoreImaPolicy(boolean ignoreImaOptionEnabled) {
+    public boolean updateIgnoreImaPolicy(final boolean isIgnoreImaOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         //If Ignore IMA is enabled without firmware, disallow change
-        if (ignoreImaOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
+        if (isIgnoreImaOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore IMA cannot be enabled without Firmware Validation policy enabled.");
             return false;
         }
 
-        policySettings.setIgnoreImaEnabled(ignoreImaOptionEnabled);
+        policySettings.setIgnoreImaEnabled(isIgnoreImaOptionEnabled);
 
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the ignore IMA policy:"
+        log.debug("Current ACA Policy after updating the ignore IMA policy:"
                 + " {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the ignore TBoot policy option according to user input.
+     * Updates the ignore TBoot policy according to user input.
      *
-     * @param ignoreTbootOptionEnabled boolean value representation of the current TBoot
-     *                                 policy option's state
-     * @return true if the policy option was updated successfully; otherwise, false.
+     * @param isIgnoreTbootOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateIgnoreTBootPolicy(boolean ignoreTbootOptionEnabled) {
+    public boolean updateIgnoreTBootPolicy(final boolean isIgnoreTbootOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         //If Ignore TBoot is enabled without firmware, disallow change
-        if (ignoreTbootOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
+        if (isIgnoreTbootOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore TBoot cannot be enabled without Firmware Validation policy enabled.");
             return false;
         }
 
-        policySettings.setIgnoretBootEnabled(ignoreTbootOptionEnabled);
+        policySettings.setIgnoretBootEnabled(isIgnoreTbootOptionEnabled);
 
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the ignore TBoot policy:"
+        log.debug("Current ACA Policy after updating the ignore TBoot policy:"
                 + " {}", policySettings);
 
         return true;
     }
 
     /**
-     * @param ignoreGptOptionEnabled
-     * @return
+     * Updates the ignore GPT events policy according to user input.
+     *
+     * @param isIgnoreGptOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateIgnoreGptPolicy(boolean ignoreGptOptionEnabled) {
+    public boolean updateIgnoreGptEventsPolicy(final boolean isIgnoreGptOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         //If Ignore TBoot is enabled without firmware, disallow change
-        if (ignoreGptOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
+        if (isIgnoreGptOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore GPT Events cannot be enabled without Firmware Validation policy enabled.");
             return false;
         }
 
-        policySettings.setIgnoreGptEnabled(ignoreGptOptionEnabled);
+        policySettings.setIgnoreGptEnabled(isIgnoreGptOptionEnabled);
 
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the ignore GPT events policy:"
+        log.debug("Current ACA Policy after updating the ignore GPT events policy:"
                 + " {}", policySettings);
 
         return true;
     }
 
     /**
-     * @param ignoreOSOptionEnabled
-     * @return
+     * Updates the ignore OS events policy according to user input.
+     *
+     * @param isIgnoreOSEvtOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateIgnoreOSEventsPolicy(boolean ignoreOSOptionEnabled) {
+    public boolean updateIgnoreOSEventsPolicy(final boolean isIgnoreOSEvtOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //todo
-//        //If Ignore TBoot is enabled without firmware, disallow change
-//        if (ignoreGptOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
-//            log.error("Ignore GPT Events cannot be enabled without Firmware Validation policy enabled.");
-//            return false;
-//        }
+        //If Ignore OS events is enabled without firmware, disallow change
+        if (isIgnoreOSEvtOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
+            log.error("Ignore Os Events cannot be enabled without Firmware Validation policy enabled.");
+            return false;
+        }
 
-        policySettings.setIgnoreOsEvtEnabled(ignoreOSOptionEnabled);
+        if (isIgnoreOSEvtOptionEnabled) {
+            policySettings.setIgnoreGptEnabled(true);
+        }
+
+        policySettings.setIgnoreOsEvtEnabled(isIgnoreOSEvtOptionEnabled);
 
         // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after attempt to update the ignore OS events policy:"
+        log.debug("Current ACA Policy after updating the ignore OS events policy:"
                 + " {}", policySettings);
 
         return true;
+    }
+
+    /**
+     * @param generateCertificateEnabled
+     * @return string message that describes the result of this policy update
+     */
+    public String updateExpireOnValidationPolicy(final String expirationValue,
+                                                 boolean generateCertificateEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        String successMessage;
+
+        if (policySettings.isIssueAttestationCertificate()) {
+            String numOfDays;
+            if (generateCertificateEnabled) {
+                successMessage = "Attestation Certificate generation expiration time enabled.";
+                numOfDays = (expirationValue != null) ? expirationValue : PolicySettings.TEN_YEARS;
+            } else {
+                successMessage = "Attestation Certificate generation expiration time disabled.";
+                numOfDays = policySettings.getValidityDays();
+            }
+            policySettings.setValidityDays(numOfDays);
+        } else {
+            generateCertificateEnabled = false;
+            successMessage = "Attestation Certificate generation is disabled, cannot set time expiration";
+        }
+
+        policySettings.setGenerateOnExpiration(generateCertificateEnabled);
+
+        // save the policy to the DB
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the ignore OS events policy:"
+                + " {}", policySettings);
+
+        return successMessage;
+    }
+
+    /**
+     * @return
+     */
+    public String updateDevIdExpireOnValPolicy(final String devIdExpirationValue,
+                                               boolean generateDevIdCertificateEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        String successMessage;
+
+        if (policySettings.isIssueDevIdCertificate()) {
+            String numOfDays;
+            if (generateDevIdCertificateEnabled) {
+                successMessage = "DevID Certificate generation expiration time enabled.";
+                numOfDays = (devIdExpirationValue != null) ? devIdExpirationValue : PolicySettings.TEN_YEARS;
+            } else {
+                successMessage = "DevID Certificate generation expiration time disabled.";
+                numOfDays = policySettings.getDevIdValidityDays();
+            }
+            policySettings.setDevIdValidityDays(numOfDays);
+        } else {
+            generateDevIdCertificateEnabled = false;
+            successMessage = "DevID Certificate generation is disabled, "
+                    + "cannot set time expiration";
+        }
+
+        policySettings.setDevIdExpirationFlag(generateDevIdCertificateEnabled);
+
+        log.debug("Current ACA Policy after updating the ignore OS events policy:"
+                + " {}", policySettings);
+
+        return successMessage;
     }
 
     public boolean updateSaveProtobufDataPolicy() {

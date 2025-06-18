@@ -97,7 +97,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
      * @throws Exception if test fails
      */
     @Test
-    public void testUpdateEcValEnable() throws Exception {
+    public void testUpdateEndorsementCredentialValidationPolicyEnable() throws Exception {
 
         ResultActions actions;
 
@@ -128,7 +128,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
      * @throws Exception if test fails
      */
     @Test
-    public void testUpdateEcValDisable() throws Exception {
+    public void testUpdateEndorsementCredentialValidationPolicyDisable() throws Exception {
 
         ResultActions actions;
 
