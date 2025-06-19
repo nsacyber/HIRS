@@ -47,14 +47,12 @@ public class PolicyPageService {
             return false;
         }
 
-        if (isPcValidationOptionEnabled) {
-            policySettings.setPcValidationEnabled(true);
-        } else {
-            policySettings.setPcValidationEnabled(false);
+        policySettings.setPcValidationEnabled(isPcValidationOptionEnabled);
+
+        if (!isPcValidationOptionEnabled) {
             policySettings.setPcAttributeValidationEnabled(false);
         }
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("ACA Policy has been set to the following after user has attempted to" +
@@ -82,7 +80,6 @@ public class PolicyPageService {
 
         policySettings.setPcAttributeValidationEnabled(isPcAttributeValidationOptionEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the platform credential "
@@ -108,7 +105,6 @@ public class PolicyPageService {
 
         policySettings.setIgnoreRevisionEnabled(isIgnoreRevisionAttributeOptionEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the ignore revision attribute"
@@ -131,7 +127,6 @@ public class PolicyPageService {
 
         policySettings.setIssueAttestationCertificate(isIssuedAttestationOptionEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the issued attestation validation "
@@ -152,7 +147,6 @@ public class PolicyPageService {
 
         policySettings.setIssueDevIdCertificate(isDevIdOptionEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the devid validation "
@@ -177,7 +171,6 @@ public class PolicyPageService {
 
         policySettings.setEcValidationEnabled(isEcValidationOptionEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the endorsement credential "
@@ -201,17 +194,15 @@ public class PolicyPageService {
             return false;
         }
 
-        if (isFirmwareValidationOptionEnabled) {
-            policySettings.setFirmwareValidationEnabled(true);
-            policySettings.setIgnoreGptEnabled(true);
-        } else {
-            policySettings.setFirmwareValidationEnabled(false);
+        policySettings.setFirmwareValidationEnabled(isFirmwareValidationOptionEnabled);
+        policySettings.setIgnoreGptEnabled(isFirmwareValidationOptionEnabled);
+
+        if (!isFirmwareValidationOptionEnabled) {
             policySettings.setIgnoreImaEnabled(false);
             policySettings.setIgnoretBootEnabled(false);
             policySettings.setIgnoreOsEvtEnabled(false);
         }
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the firmware validation "
@@ -237,7 +228,6 @@ public class PolicyPageService {
 
         policySettings.setIgnoreImaEnabled(isIgnoreImaOptionEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the ignore IMA policy:"
@@ -263,7 +253,6 @@ public class PolicyPageService {
 
         policySettings.setIgnoretBootEnabled(isIgnoreTbootOptionEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the ignore TBoot policy:"
@@ -289,7 +278,6 @@ public class PolicyPageService {
 
         policySettings.setIgnoreGptEnabled(isIgnoreGptOptionEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the ignore GPT events policy:"
@@ -319,7 +307,6 @@ public class PolicyPageService {
 
         policySettings.setIgnoreOsEvtEnabled(isIgnoreOSEvtOptionEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the ignore OS events policy:"
@@ -329,18 +316,19 @@ public class PolicyPageService {
     }
 
     /**
-     * @param generateCertificateEnabled
+     * @param expirationValue
+     * @param isGenerateCertificateEnabled
      * @return string message that describes the result of this policy update
      */
     public String updateExpireOnValidationPolicy(final String expirationValue,
-                                                 boolean generateCertificateEnabled) {
+                                                 boolean isGenerateCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         String successMessage;
 
         if (policySettings.isIssueAttestationCertificate()) {
             String numOfDays;
-            if (generateCertificateEnabled) {
+            if (isGenerateCertificateEnabled) {
                 successMessage = "Attestation Certificate generation expiration time enabled.";
                 numOfDays = (expirationValue != null) ? expirationValue : PolicySettings.TEN_YEARS;
             } else {
@@ -349,13 +337,12 @@ public class PolicyPageService {
             }
             policySettings.setValidityDays(numOfDays);
         } else {
-            generateCertificateEnabled = false;
+            isGenerateCertificateEnabled = false;
             successMessage = "Attestation Certificate generation is disabled, cannot set time expiration";
         }
 
-        policySettings.setGenerateOnExpiration(generateCertificateEnabled);
+        policySettings.setGenerateOnExpiration(isGenerateCertificateEnabled);
 
-        // save the policy to the DB
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the ignore OS events policy:"
@@ -365,17 +352,19 @@ public class PolicyPageService {
     }
 
     /**
+     * @param devIdExpirationValue
+     * @param isGenerateDevIdCertificateEnabled
      * @return
      */
     public String updateDevIdExpireOnValPolicy(final String devIdExpirationValue,
-                                               boolean generateDevIdCertificateEnabled) {
+                                               boolean isGenerateDevIdCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         String successMessage;
 
         if (policySettings.isIssueDevIdCertificate()) {
             String numOfDays;
-            if (generateDevIdCertificateEnabled) {
+            if (isGenerateDevIdCertificateEnabled) {
                 successMessage = "DevID Certificate generation expiration time enabled.";
                 numOfDays = (devIdExpirationValue != null) ? devIdExpirationValue : PolicySettings.TEN_YEARS;
             } else {
@@ -384,12 +373,14 @@ public class PolicyPageService {
             }
             policySettings.setDevIdValidityDays(numOfDays);
         } else {
-            generateDevIdCertificateEnabled = false;
+            isGenerateDevIdCertificateEnabled = false;
             successMessage = "DevID Certificate generation is disabled, "
                     + "cannot set time expiration";
         }
 
-        policySettings.setDevIdExpirationFlag(generateDevIdCertificateEnabled);
+        policySettings.setDevIdExpirationFlag(isGenerateDevIdCertificateEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the ignore OS events policy:"
                 + " {}", policySettings);
@@ -397,7 +388,89 @@ public class PolicyPageService {
         return successMessage;
     }
 
-    public boolean updateSaveProtobufDataPolicy() {
+    /**
+     * @param thresholdValue
+     * @param reissueThresholdValue
+     * @param isGenerateCertificateEnabled
+     * @return
+     */
+    public String updateThresholdValidationPolicy(final String thresholdValue,
+                                                  final String reissueThresholdValue,
+                                                  boolean isGenerateCertificateEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        String successMessage;
+
+        if (policySettings.isIssueAttestationCertificate()) {
+            String threshold = isGenerateCertificateEnabled ? thresholdValue : reissueThresholdValue;
+            successMessage = isGenerateCertificateEnabled
+                    ? "Attestation Certificate generation threshold time enabled."
+                    : "Attestation Certificate generation threshold time disabled.";
+
+            if (threshold == null || threshold.isEmpty()) {
+                threshold = PolicySettings.YEAR;
+            }
+
+            policySettings.setReissueThreshold(threshold);
+        } else {
+            isGenerateCertificateEnabled = false;
+            successMessage = "Attestation Certificate generation is disabled, "
+                    + "cannot set time expiration";
+        }
+
+        policySettings.setGenerateOnExpiration(isGenerateCertificateEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the ignore OS events policy:"
+                + " {}", policySettings);
+
+        return successMessage;
+    }
+
+    /**
+     * @param devIdThresholdValue
+     * @param devIdReissueThresholdValue
+     * @param isGenerateDevIdCertificateEnabled
+     * @return
+     */
+    public String updateDevIdThresholdPolicy(final String devIdThresholdValue,
+                                             final String devIdReissueThresholdValue,
+                                             boolean isGenerateDevIdCertificateEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        String successMessage;
+
+        if (policySettings.isIssueDevIdCertificate()) {
+            String threshold = isGenerateDevIdCertificateEnabled
+                    ? devIdThresholdValue
+                    : devIdReissueThresholdValue;
+
+            successMessage = isGenerateDevIdCertificateEnabled
+                    ? "DevID Certificate generation threshold time enabled."
+                    : "DevID Certificate generation threshold time disabled.";
+
+            if (threshold == null || threshold.isEmpty()) {
+                threshold = PolicySettings.YEAR;
+            }
+
+            policySettings.setDevIdReissueThreshold(threshold);
+        } else {
+            isGenerateDevIdCertificateEnabled = false;
+            successMessage = "DevID Certificate generation is disabled, cannot set time expiration";
+        }
+
+        policySettings.setDevIdExpirationFlag(isGenerateDevIdCertificateEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the ignore OS events policy:"
+                + " {}", policySettings);
+
+        return successMessage;
+    }
+
+    public boolean updateSaveProtobufDataToLogPolicy() {
 
 
         return true;
