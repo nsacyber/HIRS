@@ -95,6 +95,9 @@ public class PolicySettings extends UserDefinedEntity {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean ignoreOsEvtEnabled = false;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean saveProtobufDataToLogEnabled = true;
+
     /**
      * Default constructor necessary for Hibernate.
      */

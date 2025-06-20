@@ -145,7 +145,7 @@
 
             <%-- Generate Attestation Certificate--%>
             <div class="aca-input-box">
-                <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-issued-attestation-generation">
                     <li>Generate Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
                             <div class="radio">
@@ -157,7 +157,7 @@
                         </my:editor>
                 </form:form>
                     <ul>
-                        <form:form method="POST" modelAttribute="initialData" action="policy/update-expire-on">
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-attestation-certificate-expiration">
                             <li>Attestation Certificate Validity period: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedCertificatePolicyExpirationEditor" label="Edit Settings">
                                     <div class="radio">
@@ -170,7 +170,7 @@
                                 </my:editor>
                             </li>
                         </form:form>
-                        <form:form method="POST" modelAttribute="initialData" action="policy/update-threshold">
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-issued-cert-threshold">
                             <li>Attestation Certificate Renewal period: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedCertificatePolicyGenerateEditor" label="Edit Settings">
                                     <div class="radio">
@@ -190,7 +190,7 @@
 
             <%-- Generate LDevID Certificate--%>
             <div class="aca-input-box">
-                <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-devid">
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-issued-ldevid-generation">
                     <li>Generate LDevID Certificate: ${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedDevIdCertificatePolicyEditor" label="Edit Settings">
                             <div class="radio">
@@ -202,7 +202,7 @@
                         </my:editor>
                 </form:form>
                     <ul>
-                        <form:form method="POST" modelAttribute="initialData" action="policy/update-devid-expire-on">
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-certificate-expiration">
                             <li>LDevID Certificate Validity period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedDevIdCertificatePolicyExpirationEditor" label="Edit Settings">
                                     <div class="radio">
@@ -215,7 +215,7 @@
                                 </my:editor>
                             </li>
                         </form:form>
-                        <form:form method="POST" modelAttribute="initialData" action="policy/update-devid-threshold">
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-threshold">
                             <li>LDevID Certificate Renewal period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedDevIdCertificatePolicyGenerateEditor" label="Edit Settings">
                                     <div class="radio">
@@ -231,20 +231,50 @@
                     </ul>
                 </li>
             </div>
+            <br />
 
-            <%-- Save ProtoBuf Data To ACA Log--%>
+            <%-- Save ProtoBuf Data To ACA Log After Validation --%>
             <div class="aca-input-box">
-                <form:form method="POST" modelAttribute="initialData" action="">
-                    <li>Save Protobuf Data To ACA Log: ${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-to-log">
+                    <li>Save Protobuf Data To ACA Log: ${initialData.enableSaveProtobufToLog ? 'Enabled' : 'Disabled'}
                         <my:editor id="saveProtoBufDataPolicyEditor" label="Edit Settings">
-                            <!-- <div class="radio">
-                                <label><input id="devIdTop" type="radio" name="devIdCertificateIssued" ${initialData.issueDevIdCertificate ? '' : 'checked'} value="unchecked"/> Never generate a DevID Certificate</label>
+                            <div class="radio">
+                                <label><input id="protoTop" type="radio" name="ecValidate" ${initialData.enableSaveProtobufToLog ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Validation </label>
                             </div>
                             <div class="radio">
-                                <label><input id="devIdMid" type="radio" name="devIdCertificateIssued" ${initialData.issueDevIdCertificate ? 'checked' : ''} value="checked"/> Conditionally generate an DevID Certificate before 'Not After' expiration date</label>
-                            </div> -->
-                        </my:editor>
+                                <label><input id="protoBot" type="radio" name="ecValidate" ${initialData.enableSaveProtobufToLog ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Validation</label>
+                            </div>
+                            </my:editor>
                 </form:form>
+                <ul>
+                    <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-certificate-expiration">
+                        <li>LDevID Certificate Validity period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
+                            <my:editor id="issuedDevIdCertificatePolicyExpirationEditor" label="Edit Settings">
+                                <div class="radio">
+                                    <label>
+                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.devIdExpirationFlag ? 'checked' : ''} value="checked" />
+                                    LDevID Certificate validity period (Default 3651 days)<br />
+                                    Select period in days: <input id="devIdExpirationValue" type="text" name="devIdExpirationValue" value="${initialData.devIdExpirationValue}" />
+                                    </label>
+                                </div>
+                            </my:editor>
+                        </li>
+                    </form:form>
+                    <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-threshold">
+                        <li>LDevID Certificate Renewal period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
+                            <my:editor id="issuedDevIdCertificatePolicyGenerateEditor" label="Edit Settings">
+                                <div class="radio">
+                                    <label>
+                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.devIdExpirationFlag ? 'checked' : ''} value="checked" />
+                                    Renew 'n' days before LDevID Certificate's  'Not After' Validity date (Default 365 days)<br />
+                                    Select 'n' period in days: <input id="devIdThresholdValue" type="text" name="devIdThresholdValue" value="${initialData.devIdThresholdValue}" />
+                                    </label>
+                                </div>
+                            </my:editor>
+                        </li>
+                    </form:form> -->
+
+                </ul>
             </div>
         </ul>
     </jsp:body>

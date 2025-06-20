@@ -29,6 +29,7 @@ public class PolicyPageModel {
     private boolean enableIgnoreTboot;
     private boolean enableIgnoreGpt;
     private boolean enableIgnoreOsEvt;
+    private boolean enableSaveProtobufToLog;
 
     // Variables to get policy settings from page
     private String pcValidate;
@@ -51,33 +52,35 @@ public class PolicyPageModel {
     private String devIdExpirationValue;
     private String thresholdValue;
     private String devIdThresholdValue;
+    private String saveProtobufToLogValue;
 
     /**
      * Constructor. Sets fields from policy.
      *
-     * @param policy The supply chain policy
+     * @param policySettings The supply chain policy
      */
-    public PolicyPageModel(final PolicySettings policy) {
-        this.enableEcValidation = policy.isEcValidationEnabled();
-        this.enablePcCertificateValidation = policy.isPcValidationEnabled();
-        this.enablePcCertificateAttributeValidation = policy.isPcAttributeValidationEnabled();
-        this.enableIgnoreRevisionAttribute = policy.isIgnoreRevisionEnabled();
-        this.enableFirmwareValidation = policy.isFirmwareValidationEnabled();
-        this.issueAttestationCertificate = policy.isIssueAttestationCertificate();
-        this.issueDevIdCertificate = policy.isIssueDevIdCertificate();
-        this.generateOnExpiration = policy.isGenerateOnExpiration();
-        this.devIdExpirationFlag = policy.isDevIdExpirationFlag();
-        this.numOfValidDays = policy.getValidityDays();
-        this.reissueThreshold = policy.getReissueThreshold();
-        this.expirationValue = policy.getValidityDays();
-        this.thresholdValue = policy.getReissueThreshold();
-        this.devIdExpirationValue = policy.getDevIdValidityDays();
-        this.devIdReissueThreshold = policy.getDevIdReissueThreshold();
-        this.devIdThresholdValue = policy.getDevIdReissueThreshold();
+    public PolicyPageModel(final PolicySettings policySettings) {
+        this.enableEcValidation = policySettings.isEcValidationEnabled();
+        this.enablePcCertificateValidation = policySettings.isPcValidationEnabled();
+        this.enablePcCertificateAttributeValidation = policySettings.isPcAttributeValidationEnabled();
+        this.enableIgnoreRevisionAttribute = policySettings.isIgnoreRevisionEnabled();
+        this.enableFirmwareValidation = policySettings.isFirmwareValidationEnabled();
+        this.issueAttestationCertificate = policySettings.isIssueAttestationCertificate();
+        this.issueDevIdCertificate = policySettings.isIssueDevIdCertificate();
+        this.generateOnExpiration = policySettings.isGenerateOnExpiration();
+        this.devIdExpirationFlag = policySettings.isDevIdExpirationFlag();
+        this.numOfValidDays = policySettings.getValidityDays();
+        this.reissueThreshold = policySettings.getReissueThreshold();
+        this.expirationValue = policySettings.getValidityDays();
+        this.thresholdValue = policySettings.getReissueThreshold();
+        this.devIdExpirationValue = policySettings.getDevIdValidityDays();
+        this.devIdReissueThreshold = policySettings.getDevIdReissueThreshold();
+        this.devIdThresholdValue = policySettings.getDevIdReissueThreshold();
+        this.enableSaveProtobufToLog = policySettings.isSaveProtobufDataToLogEnabled();
         // pcrPolicy
-        this.enableIgnoreIma = policy.isIgnoreImaEnabled();
-        this.enableIgnoreTboot = policy.isIgnoretBootEnabled();
-        this.enableIgnoreGpt = policy.isIgnoreGptEnabled();
-        this.enableIgnoreOsEvt = policy.isIgnoreOsEvtEnabled();
+        this.enableIgnoreIma = policySettings.isIgnoreImaEnabled();
+        this.enableIgnoreTboot = policySettings.isIgnoretBootEnabled();
+        this.enableIgnoreGpt = policySettings.isIgnoreGptEnabled();
+        this.enableIgnoreOsEvt = policySettings.isIgnoreOsEvtEnabled();
     }
 }

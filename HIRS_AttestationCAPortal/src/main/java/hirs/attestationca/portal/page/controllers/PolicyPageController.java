@@ -57,7 +57,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Returns the path for the view and the data model for the Policy Setting page.
+     * Returns the path for the view and the data model for the Policy Settings page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
@@ -103,8 +103,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
                     this.policyPageService.updatePCValidationPolicy(isPcValidationOptionEnabled);
 
             if (!isPCValidationPolicyUpdateSuccessful) {
-                messages.addErrorMessage("Unable to updating ACA Platform Validation setting,"
-                        + "  invalid policy configuration.");
+                messages.addErrorMessage("Unable to update ACA Platform Validation setting due to the current"
+                        + "  policy configuration.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
@@ -134,8 +134,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-pc-attribute-validation")
-    public RedirectView updatePCAttributeValidationPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                          final RedirectAttributes redirectAttributes)
+    public RedirectView updatePCAttributeValPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                   final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -227,9 +227,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-issue-attestation")
-    public RedirectView updateAttestationValidationPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                          final RedirectAttributes redirectAttributes)
+    @PostMapping("update-issued-attestation-generation")
+    public RedirectView updateAttestationCertGenerationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                              final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -238,7 +238,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             final boolean isIssuedAttestationOptionEnabled = ppModel.getAttestationCertificateIssued()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
-            this.policyPageService.updateAttestationValidationPolicy(isIssuedAttestationOptionEnabled);
+            this.policyPageService.updateIssuedAttestationGenerationPolicy(isIssuedAttestationOptionEnabled);
 
             messages.addSuccessMessage("Attestation Certificate generation "
                     + (isIssuedAttestationOptionEnabled ? "enabled." : "disabled."));
@@ -264,25 +264,25 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-issue-devid")
-    public RedirectView updateDevIdValidationPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                    final RedirectAttributes redirectAttributes)
+    @PostMapping("update-issued-ldevid-generation")
+    public RedirectView updateLDevIdGenerationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                     final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         try {
-            final boolean isIssuedDevIdOptionEnabled = ppModel.getDevIdCertificateIssued()
+            final boolean isIssuedLDevIdOptionEnabled = ppModel.getDevIdCertificateIssued()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
-            this.policyPageService.updateDevIdValidationPolicy(isIssuedDevIdOptionEnabled);
+            this.policyPageService.updateLDevIdGenerationPolicy(isIssuedLDevIdOptionEnabled);
 
             // if the devid certificate generation policy update was successful
-            messages.addSuccessMessage("DevID Certificate generation "
-                    + (isIssuedDevIdOptionEnabled ? "enabled." : "disabled."));
+            messages.addSuccessMessage("LDevID Certificate generation "
+                    + (isIssuedLDevIdOptionEnabled ? "enabled." : "disabled."));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
-                    "An exception was thrown while updating ACA DevID Certificate generation policy";
+                    "An exception was thrown while updating ACA LDevID Certificate generation policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
@@ -301,9 +301,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-expire-on")
-    public RedirectView updateExpireOnVal(@ModelAttribute final PolicyPageModel ppModel,
-                                          final RedirectAttributes redirectAttributes)
+    @PostMapping("update-attestation-certificate-expiration")
+    public RedirectView updateAttestationCertExpirationPolicy(
+            @ModelAttribute final PolicyPageModel ppModel,
+            final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -318,7 +319,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
 
             final String successMessage =
-                    this.policyPageService.updateExpireOnValidationPolicy(ppModel.getExpirationValue(),
+                    this.policyPageService.updateAttestationCertExpirationPolicy(
+                            ppModel.getExpirationValue(),
                             isGenerateCertificateEnabled);
             messages.addSuccessMessage(successMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
@@ -343,31 +345,31 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-devid-expire-on")
-    public RedirectView updateDevIdExpireOnVal(@ModelAttribute final PolicyPageModel ppModel,
-                                               final RedirectAttributes redirectAttributes)
+    @PostMapping("update-ldevid-certificate-expiration")
+    public RedirectView updateLDevIdCertExpirationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                         final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
         try {
-            boolean generateDevIdCertificateEnabled = false;
+            boolean isGenerateDevIdCertificateEnabled = false;
             // because this is just one option, there is not 'unchecked' value, so it is either
             // 'checked' or null
             if (ppModel.getDevIdExpirationChecked() != null) {
-                generateDevIdCertificateEnabled
+                isGenerateDevIdCertificateEnabled
                         = ppModel.getDevIdExpirationChecked()
                         .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
             }
 
             final String successMessage =
-                    this.policyPageService.updateDevIdExpireOnValPolicy(ppModel.getDevIdExpirationValue(),
-                            generateDevIdCertificateEnabled);
+                    this.policyPageService.updateLDevIdExpirationPolicy(ppModel.getDevIdExpirationValue(),
+                            isGenerateDevIdCertificateEnabled);
             messages.addSuccessMessage(successMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
-                    "An exception was thrown while updating ACA DevID Certificate generation policy";
+                    "An exception was thrown while updating ACA LDevID Certificate expiration policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
@@ -386,9 +388,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-threshold")
-    public RedirectView updateThresholdVal(@ModelAttribute final PolicyPageModel ppModel,
-                                           final RedirectAttributes redirectAttributes)
+    @PostMapping("update-issued-cert-threshold")
+    public RedirectView updateAttestationCertThresholdPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                             final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -404,14 +406,14 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
 
             final String successMessage =
-                    this.policyPageService.updateThresholdValidationPolicy(ppModel.getThresholdValue(),
+                    this.policyPageService.updateAttestationCertThresholdPolicy(ppModel.getThresholdValue(),
                             ppModel.getReissueThreshold(),
                             generateCertificateEnabled);
             messages.addSuccessMessage(successMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
-                    "An exception was thrown while updating ACA Attestation Certificate generation policy";
+                    "An exception was thrown while updating ACA Attestation Certificate threshold value";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
@@ -430,7 +432,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-devid-threshold")
+    @PostMapping("update-ldevid-threshold")
     public RedirectView updateDevIdThresholdVal(@ModelAttribute final PolicyPageModel ppModel,
                                                 final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
@@ -475,7 +477,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-ec-validation")
-    public RedirectView updateEndorsementCredentialValidationPolicy(
+    public RedirectView updateECValidationPolicy(
             @ModelAttribute final PolicyPageModel ppModel,
             final RedirectAttributes redirectAttributes) throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
@@ -752,15 +754,28 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
 
         try {
+            final boolean isSaveProtobufToLogOptionEnabled = ppModel.getSaveProtobufToLogValue()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
             final boolean isSaveProtoDataToLogPolicyUpdateSuccessful =
-                    this.policyPageService.updateSaveProtobufDataToLogPolicy();
+                    this.policyPageService.updateSaveProtobufDataToLogPolicy(
+                            isSaveProtobufToLogOptionEnabled);
 
             if (!isSaveProtoDataToLogPolicyUpdateSuccessful) {
-
+                //todo
+                messages.addErrorMessage(
+                        "Saving Protobuf To Log cannot be enabled if ...");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
+            // if the ignore OS events policy update was successful
+            messages.addSuccessMessage(
+                    isSaveProtobufToLogOptionEnabled ? "Save Protobuf Data To ACA Log enabled" :
+                            "Save Protobuf Data To ACA Log disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
-            final String errorMessage = "An exception was thrown while updating ACA";
+            final String errorMessage = "An exception was thrown while updating ACA save of protobuf data to "
+                    + "ACA log ";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);

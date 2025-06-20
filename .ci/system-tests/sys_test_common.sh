@@ -27,28 +27,28 @@ fi
 # clear all policy settings
 setPolicyNone() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=0, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
-           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
+           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, saveProtobufDataToLogEnabled=1;"
 }
 
 # Policy Settings for tests ...
 setPolicyEkOnly() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
-           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
+           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, saveProtobufDataToLogEnabled=1;"
 }
 
 setPolicyEkPc_noAttCheck() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=1,
-           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
+           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, saveProtobufDataToLogEnabled=1;"
 }
 
 setPolicyEkPc() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
-           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0;"
+           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, saveProtobufDataToLogEnabled=1;"
 }
 
 setPolicyEkPcFw() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
-           utcValidationEnabled=0, firmwareValidationEnabled=1, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=1, ignoretBootEnabled=0;"
+           utcValidationEnabled=0, firmwareValidationEnabled=1, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=1, ignoretBootEnabled=0, saveProtobufDataToLogEnabled=1;"
 }
 
 # Clear all ACA DB items excluding policy
