@@ -103,24 +103,24 @@ public class ComponentInfo extends ArchivableEntity {
             log.error("Component Info's manufacturer cannot be null.");
             this.componentManufacturer = "";
         } else {
-            this.componentManufacturer = componentManufacturer.trim();
+            this.componentManufacturer = componentManufacturer;
         }
 
         if (componentModel == null) {
             log.error("Component Info's model cannot be null.");
             this.componentModel = "";
         } else {
-            this.componentModel = componentModel.trim();
+            this.componentModel = componentModel;
         }
 
         if (componentSerial != null) {
-            this.componentSerial = componentSerial.trim();
+            this.componentSerial = componentSerial;
         } else {
             this.componentSerial = ComponentIdentifier.NOT_SPECIFIED_COMPONENT;
         }
 
         if (componentRevision != null) {
-            this.componentRevision = componentRevision.trim();
+            this.componentRevision = componentRevision;
         } else {
             this.componentRevision = ComponentIdentifier.NOT_SPECIFIED_COMPONENT;
         }
