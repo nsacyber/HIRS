@@ -158,14 +158,16 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             }
         }
 
+        final PolicyRepository policyRepository = this.getPolicyRepository();
+        final PolicySettings policySettings = policyRepository.findByName("Default");
+
         ByteString blobStr = ByteString.copyFrom(new byte[] {});
 
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
             blobStr = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
-            PolicyRepository scp = this.getPolicyRepository();
-            PolicySettings policySettings = scp.findByName("Default");
+
             String pcrQuoteMask = PCR_QUOTE_MASK;
 
             String strNonce = HexUtils.byteArrayToHexString(nonce);
@@ -185,8 +187,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
 
-            log.info("Identity Claim Response object after a "
-                    + "successful validation: {}", identityClaimResponse);
+            if (policySettings != null && policySettings.isSaveProtobufDataToLogEnabled()) {
+                log.info("Identity Claim Response object after a "
+                        + "successful validation: {}", identityClaimResponse);
+            }
 
             return identityClaimResponse.toByteArray();
         } else {
@@ -198,8 +202,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
 
-            log.debug("Identity Claim Response object after a "
-                    + "failed validation: {}", identityClaimResponse);
+            if (policySettings != null && policySettings.isSaveProtobufDataToLogEnabled()) {
+                log.info("Identity Claim Response object after a "
+                        + "failed validation: {}", identityClaimResponse);
+            }
 
             return identityClaimResponse.toByteArray();
         }

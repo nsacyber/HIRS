@@ -63,7 +63,8 @@ public class PolicyPageService {
     /**
      * Updates the Platform Certificate Attribute Validation policy according to user input.
      *
-     * @param isPcAttributeValidationOptionEnabled boolean value representation of the current policy option's state
+     * @param isPcAttributeValidationOptionEnabled boolean value representation of the current policy
+     *                                             option's state
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updatePCAttributeValidationPolicy(final boolean isPcAttributeValidationOptionEnabled) {
@@ -90,7 +91,8 @@ public class PolicyPageService {
     /**
      * Updates the Ignore Revision Attribute policy according to user input.
      *
-     * @param isIgnoreRevisionAttributeOptionEnabled boolean value representation of the current policy option's state
+     * @param isIgnoreRevisionAttributeOptionEnabled boolean value representation of the current policy
+     *                                               option's state
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updateIgnoreRevisionAttributePolicy(final boolean isIgnoreRevisionAttributeOptionEnabled) {
@@ -182,7 +184,8 @@ public class PolicyPageService {
     /**
      * Updates the firmware validation policy according to user input.
      *
-     * @param isFirmwareValidationOptionEnabled boolean value representation of the current policy option's state
+     * @param isFirmwareValidationOptionEnabled boolean value representation of the current policy
+     *                                          option's state
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updateFirmwareValidationPolicy(final boolean isFirmwareValidationOptionEnabled) {
@@ -318,19 +321,22 @@ public class PolicyPageService {
     /**
      * Updates the Attestation Certificate generation expiration date using the provided user input.
      *
-     * @param expirationValue              expiration value
-     * @param isGenerateCertificateEnabled boolean value representation of the current policy option's state
+     * @param expirationValue                    expiration value
+     * @param isGenerateIssuedCertificateEnabled boolean value representation of the current policy
+     *                                           option's state
      * @return string message that describes the result of this policy update
      */
     public String updateAttestationCertExpirationPolicy(final String expirationValue,
-                                                        boolean isGenerateCertificateEnabled) {
+                                                        final boolean isGenerateIssuedCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         String successMessage;
 
+        boolean canGenerateIssuedCertificateEnabled = isGenerateIssuedCertificateEnabled;
+
         if (policySettings.isIssueAttestationCertificate()) {
             String numOfDays;
-            if (isGenerateCertificateEnabled) {
+            if (canGenerateIssuedCertificateEnabled) {
                 successMessage = "Attestation Certificate generation expiration time enabled.";
                 numOfDays = (expirationValue != null) ? expirationValue : PolicySettings.TEN_YEARS;
             } else {
@@ -339,11 +345,11 @@ public class PolicyPageService {
             }
             policySettings.setValidityDays(numOfDays);
         } else {
-            isGenerateCertificateEnabled = false;
+            canGenerateIssuedCertificateEnabled = false;
             successMessage = "Attestation Certificate generation is disabled, cannot set time expiration";
         }
 
-        policySettings.setGenerateOnExpiration(isGenerateCertificateEnabled);
+        policySettings.setGenerateOnExpiration(canGenerateIssuedCertificateEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
@@ -362,14 +368,16 @@ public class PolicyPageService {
      * @return string message that describes the result of this policy update
      */
     public String updateLDevIdExpirationPolicy(final String ldevIdExpirationValue,
-                                               boolean isGenerateLDevIdCertificateEnabled) {
+                                               final boolean isGenerateLDevIdCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
+
+        boolean canGenerateLDevIdCertificateEnabled = isGenerateLDevIdCertificateEnabled;
 
         String successMessage;
 
         if (policySettings.isIssueDevIdCertificate()) {
             String numOfDays;
-            if (isGenerateLDevIdCertificateEnabled) {
+            if (canGenerateLDevIdCertificateEnabled) {
                 successMessage = "DevID Certificate generation expiration time enabled.";
                 numOfDays =
                         (ldevIdExpirationValue != null) ? ldevIdExpirationValue : PolicySettings.TEN_YEARS;
@@ -379,17 +387,17 @@ public class PolicyPageService {
             }
             policySettings.setDevIdValidityDays(numOfDays);
         } else {
-            isGenerateLDevIdCertificateEnabled = false;
+            canGenerateLDevIdCertificateEnabled = false;
             successMessage = "DevID Certificate generation is disabled, "
                     + "cannot set time expiration";
         }
 
-        policySettings.setDevIdExpirationFlag(isGenerateLDevIdCertificateEnabled);
+        policySettings.setDevIdExpirationFlag(canGenerateLDevIdCertificateEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the devid certificate generation expiration " +
-                "value policy: {}", policySettings);
+        log.debug("Current ACA Policy after updating the devid certificate generation expiration "
+                + "value policy: {}", policySettings);
 
         return successMessage;
     }
@@ -397,21 +405,24 @@ public class PolicyPageService {
     /**
      * Updates the Attestation Certificate generation threshold value using the provided user input.
      *
-     * @param thresholdValue               threshold value
-     * @param reissueThresholdValue        reissue threshold value
-     * @param isGenerateCertificateEnabled boolean value representation of the current policy option's state
+     * @param thresholdValue                     threshold value
+     * @param reissueThresholdValue              reissue threshold value
+     * @param isGenerateIssuedCertificateEnabled boolean value representation of the current
+     *                                           policy option's state
      * @return string message that describes the result of this policy update
      */
     public String updateAttestationCertThresholdPolicy(final String thresholdValue,
                                                        final String reissueThresholdValue,
-                                                       boolean isGenerateCertificateEnabled) {
+                                                       final boolean isGenerateIssuedCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
+
+        boolean canGenerateIssuedCertificateEnabled = isGenerateIssuedCertificateEnabled;
 
         String successMessage;
 
         if (policySettings.isIssueAttestationCertificate()) {
-            String threshold = isGenerateCertificateEnabled ? thresholdValue : reissueThresholdValue;
-            successMessage = isGenerateCertificateEnabled
+            String threshold = canGenerateIssuedCertificateEnabled ? thresholdValue : reissueThresholdValue;
+            successMessage = canGenerateIssuedCertificateEnabled
                     ? "Attestation Certificate generation threshold time enabled."
                     : "Attestation Certificate generation threshold time disabled.";
 
@@ -421,17 +432,17 @@ public class PolicyPageService {
 
             policySettings.setReissueThreshold(threshold);
         } else {
-            isGenerateCertificateEnabled = false;
+            canGenerateIssuedCertificateEnabled = false;
             successMessage = "Attestation Certificate generation is disabled, "
                     + "cannot set time expiration";
         }
 
-        policySettings.setGenerateOnExpiration(isGenerateCertificateEnabled);
+        policySettings.setGenerateOnExpiration(canGenerateIssuedCertificateEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the aca attestation certificate generation " +
-                "threshold policy: {}", policySettings);
+        log.debug("Current ACA Policy after updating the aca attestation certificate generation "
+                + "threshold policy: {}", policySettings);
 
         return successMessage;
     }
@@ -447,17 +458,19 @@ public class PolicyPageService {
      */
     public String updateDevIdThresholdPolicy(final String ldevIdThresholdValue,
                                              final String ldevIdReissueThresholdValue,
-                                             boolean isGenerateLDevIdCertificateEnabled) {
+                                             final boolean isGenerateLDevIdCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
+
+        boolean canGenerateLDevIdCertificateEnabled = isGenerateLDevIdCertificateEnabled;
 
         String successMessage;
 
         if (policySettings.isIssueDevIdCertificate()) {
-            String threshold = isGenerateLDevIdCertificateEnabled
+            String threshold = canGenerateLDevIdCertificateEnabled
                     ? ldevIdThresholdValue
                     : ldevIdReissueThresholdValue;
 
-            successMessage = isGenerateLDevIdCertificateEnabled
+            successMessage = canGenerateLDevIdCertificateEnabled
                     ? "DevID Certificate generation threshold time enabled."
                     : "DevID Certificate generation threshold time disabled.";
 
@@ -467,11 +480,11 @@ public class PolicyPageService {
 
             policySettings.setDevIdReissueThreshold(threshold);
         } else {
-            isGenerateLDevIdCertificateEnabled = false;
+            canGenerateLDevIdCertificateEnabled = false;
             successMessage = "DevID Certificate generation is disabled, cannot set threshold time";
         }
 
-        policySettings.setDevIdExpirationFlag(isGenerateLDevIdCertificateEnabled);
+        policySettings.setDevIdExpirationFlag(canGenerateLDevIdCertificateEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
@@ -486,15 +499,15 @@ public class PolicyPageService {
      *                                         state
      * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateSaveProtobufDataToLogPolicy(boolean isSaveProtobufToLogOptionEnabled) {
+    public boolean updateSaveProtobufDataToLogPolicy(final boolean isSaveProtobufToLogOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         policySettings.setSaveProtobufDataToLogEnabled(isSaveProtobufToLogOptionEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the save protobuf data to ACA log " +
-                " policy: {}", policySettings);
+        log.debug("Current ACA Policy after updating the save protobuf data to ACA log "
+                + " policy: {}", policySettings);
 
         return true;
     }

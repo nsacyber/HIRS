@@ -30,6 +30,8 @@ public class PolicyPageModel {
     private boolean enableIgnoreGpt;
     private boolean enableIgnoreOsEvt;
     private boolean enableSaveProtobufToLog;
+    private boolean enableSaveSuccessProtobufToLog;
+    private boolean enableSaveFailedProtobufToLog;
 
     // Variables to get policy settings from page
     private String pcValidate;

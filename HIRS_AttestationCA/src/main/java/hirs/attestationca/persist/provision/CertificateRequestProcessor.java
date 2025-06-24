@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
 import hirs.attestationca.persist.entity.userdefined.Device;
+import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -148,6 +149,9 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                 device = this.deviceRepository.save(device);
             }
 
+            final PolicyRepository policyRepository = this.getPolicyRepository();
+            final PolicySettings policySettings = policyRepository.findByName("Default");
+
             AppraisalStatus.Status validationResult = doQuoteValidation(device);
             if (validationResult == AppraisalStatus.Status.PASS) {
                 // Create signed, attestation certificate
@@ -189,9 +193,11 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    log.info("Certificate Request Response "
-                            + "object after a successful validation and if the LDevID "
-                            + "public key exists : {}", certificateResponse);
+                    if (policySettings.isSaveProtobufDataToLogEnabled()) {
+                        log.info("Certificate Request Response "
+                                + "object after a successful validation and if the LDevID "
+                                + "public key exists : {}", certificateResponse);
+                    }
 
                     return certificateResponse.toByteArray();
                 } else {
@@ -217,10 +223,11 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    log.info("Certificate Request Response "
-                            + "object after a successful validation and if the LDevID "
-                            + "public key does not exist : {}", certificateResponse);
-
+                    if (policySettings.isSaveProtobufDataToLogEnabled()) {
+                        log.info("Certificate Request Response "
+                                + "object after a successful validation and if the LDevID "
+                                + "public key does not exist : {}", certificateResponse);
+                    }
                     return certificateResponse.toByteArray();
                 }
             } else {
@@ -231,8 +238,10 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                         .build();
 
-                log.info("Certificate Request Response "
-                        + "object after a failed validation: {}", certificateResponse);
+                if (policySettings.isSaveProtobufDataToLogEnabled()) {
+                    log.info("Certificate Request Response "
+                            + "object after a failed validation: {}", certificateResponse);
+                }
 
                 return certificateResponse.toByteArray();
             }

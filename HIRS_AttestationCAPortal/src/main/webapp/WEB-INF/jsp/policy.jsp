@@ -239,20 +239,20 @@
                     <li>Save Protobuf Data To ACA Log: ${initialData.enableSaveProtobufToLog ? 'Enabled' : 'Disabled'}
                         <my:editor id="saveProtoBufDataPolicyEditor" label="Edit Settings">
                             <div class="radio">
-                                <label><input id="protoTop" type="radio" name="ecValidate" ${initialData.enableSaveProtobufToLog ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Validation </label>
+                                <label><input id="protoTop" type="radio" name="saveProtobufToLogValue" ${initialData.enableSaveProtobufToLog ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Validation </label>
                             </div>
                             <div class="radio">
-                                <label><input id="protoBot" type="radio" name="ecValidate" ${initialData.enableSaveProtobufToLog ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Validation</label>
+                                <label><input id="protoBot" type="radio" name="saveProtobufToLogValue" ${initialData.enableSaveProtobufToLog ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Validation</label>
                             </div>
                             </my:editor>
                 </form:form>
                 <ul>
-                    <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-certificate-expiration">
+                    <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-certificate-expiration">
                         <li>LDevID Certificate Validity period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
                             <my:editor id="issuedDevIdCertificatePolicyExpirationEditor" label="Edit Settings">
                                 <div class="radio">
                                     <label>
-                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.devIdExpirationFlag ? 'checked' : ''} value="checked" />
+                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.enableSaveSuccessProtobufToLog ? 'checked' : ''} value="checked" />
                                     LDevID Certificate validity period (Default 3651 days)<br />
                                     Select period in days: <input id="devIdExpirationValue" type="text" name="devIdExpirationValue" value="${initialData.devIdExpirationValue}" />
                                     </label>
@@ -261,18 +261,18 @@
                         </li>
                     </form:form>
                     <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-threshold">
-                        <li>LDevID Certificate Renewal period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
+                        <li>Save Protobuf Data To ACA Log AfLDevID Certificate Renewal period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
                             <my:editor id="issuedDevIdCertificatePolicyGenerateEditor" label="Edit Settings">
                                 <div class="radio">
                                     <label>
-                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.devIdExpirationFlag ? 'checked' : ''} value="checked" />
+                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.enableSaveFailedProtobufToLog ? 'checked' : ''} value="checked" />
                                     Renew 'n' days before LDevID Certificate's  'Not After' Validity date (Default 365 days)<br />
                                     Select 'n' period in days: <input id="devIdThresholdValue" type="text" name="devIdThresholdValue" value="${initialData.devIdThresholdValue}" />
                                     </label>
                                 </div>
                             </my:editor>
                         </li>
-                    </form:form> -->
+                    </form:form>
 
                 </ul>
             </div>

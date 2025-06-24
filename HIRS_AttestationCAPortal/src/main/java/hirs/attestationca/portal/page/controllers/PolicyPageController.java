@@ -245,8 +245,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
-                    "An exception was thrown while updating ACA Attestation Certificate" +
-                            " generation policy";
+                    "An exception was thrown while updating ACA Attestation Certificate"
+                            + " generation policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
@@ -770,12 +770,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
             // if the ignore OS events policy update was successful
             messages.addSuccessMessage(
-                    isSaveProtobufToLogOptionEnabled ? "Save Protobuf Data To ACA Log enabled" :
-                            "Save Protobuf Data To ACA Log disabled");
+                    isSaveProtobufToLogOptionEnabled ? "Save Protobuf Data To ACA Log enabled"
+                            : "Save Protobuf Data To ACA Log disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while updating ACA save of protobuf data to "
-                    + "ACA log ";
+                    + "ACA log policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
