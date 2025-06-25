@@ -110,6 +110,8 @@ public class ReferenceManifestValidator {
 
     @Getter
     private boolean supportRimValid;
+    @Getter
+    private String validationErrorMessage;
 
     /**
      * This default constructor creates the Schema object from SCHEMA_URL immediately to save
@@ -182,10 +184,12 @@ public class ReferenceManifestValidator {
                                         final String subjectKeyIdString,
                                         final byte[] encodedPublicKey) {
         DOMValidateContext context = null;
+        validationErrorMessage = "Unable to verify RIM signature: ";
         try {
             NodeList nodes = rim.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
             if (nodes.getLength() == 0) {
-                log.error("Cannot validate RIM, signature element not found!");
+                validationErrorMessage += "invalid XML, signature element not found.";
+                log.error(validationErrorMessage);
                 return false;
             }
             if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
@@ -199,16 +203,23 @@ public class ReferenceManifestValidator {
                     if (isCertChainValid(embeddedCert)) {
                         context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
                         subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
+                    } else {
+                        validationErrorMessage += "embedded cert chain invalid.";
                     }
+                } else {
+                    validationErrorMessage += "embedded cert is null.";
                 }
             } else {
                 subjectKeyIdentifier = getKeyName(rim);
                 if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
                     context = new DOMValidateContext(publicKey,
                             nodes.item(0));
+                } else {
+                    validationErrorMessage += "issuer cert not found";
                 }
             }
             if (context != null) {
+                validationErrorMessage = "";
                 this.publicKey = publicKey;
                 signatureValid = validateSignedXMLDocument(context);
                 return signatureValid;
