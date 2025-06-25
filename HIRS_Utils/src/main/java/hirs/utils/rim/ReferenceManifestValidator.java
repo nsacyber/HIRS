@@ -206,12 +206,16 @@ public class ReferenceManifestValidator {
                 if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
                     context = new DOMValidateContext(publicKey,
                             nodes.item(0));
+                } else {
+                    log.info("Certificate skid {} did not match", subjectKeyIdString);
                 }
             }
             if (context != null) {
                 this.publicKey = publicKey;
                 signatureValid = validateSignedXMLDocument(context);
                 return signatureValid;
+            } else {
+                log.warn("Unable to create validation context.");
             }
         } catch (IOException e) {
             log.warn("Error while parsing certificate data: {}", e.getMessage());
