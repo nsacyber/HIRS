@@ -495,6 +495,8 @@ public class PolicyPageService {
     }
 
     /**
+     * Updates save protobuf data to the ACA log policy using the provided user input.
+     *
      * @param isSaveProtobufToLogOptionEnabled boolean value representation of the current policy option's
      *                                         state
      * @return true if the policy was updated successfully; otherwise, false.
@@ -502,12 +504,55 @@ public class PolicyPageService {
     public boolean updateSaveProtobufDataToLogPolicy(final boolean isSaveProtobufToLogOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
+        if (!isSaveProtobufToLogOptionEnabled && policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+            log.error("Cannot disable saving protobuf data to ACA log policy option if the option "
+                    + "to save protobuf data to log on failed validation is still enabled.");
+            return false;
+        }
+
         policySettings.setSaveProtobufDataToLogEnabled(isSaveProtobufToLogOptionEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the save protobuf data to ACA log "
                 + " policy: {}", policySettings);
+
+        return true;
+    }
+
+    /**
+     * Updates save protobuf data to the ACA log policy using the provided user input on either failed or
+     * successful validations using the provided user input.
+     *
+     * @param isSaveProtobufToLogOnSuccessOptionEnabled boolean value representation of the current policy
+     *                                                  option's state (option permits the application to log
+     *                                                  protobuf data even after successful validation)
+     * @param isSaveProtobufToLogOnFailOptionEnabled    boolean value representation of the current policy
+     *                                                  option's state (option permits the application to log
+     *                                                  protobuf data even after failed validation)
+     * @return true if the policy was updated successfully; otherwise, false.
+     */
+    public boolean updateSaveProtobufDataToLogOnSuccessOrFailPolicy(
+            final boolean isSaveProtobufToLogOnSuccessOptionEnabled,
+            final boolean isSaveProtobufToLogOnFailOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        if (!policySettings.isSaveProtobufDataToLogEnabled()) {
+            log.error("");
+            return false;
+        }
+
+        if (!isSaveProtobufToLogOnFailOptionEnabled && !isSaveProtobufToLogOnSuccessOptionEnabled) {
+            policySettings.setSaveProtobufDataToLogEnabled(false);
+        }
+
+        policySettings.setSaveProtobufToLogOnSuccessValEnabled(isSaveProtobufToLogOnSuccessOptionEnabled);
+        policySettings.setSaveProtobufToLogOnFailedValEnabled(isSaveProtobufToLogOnFailOptionEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the save protobuf data to ACA log "
+                + " on either successful or failed validations policy: {}", policySettings);
 
         return true;
     }

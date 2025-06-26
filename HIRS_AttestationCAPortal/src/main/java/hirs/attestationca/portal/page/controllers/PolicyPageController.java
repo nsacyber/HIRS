@@ -693,8 +693,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the ignore Os Events policy setting and
-     * redirects back to the original page.
+     * Updates the ignore Os Events policy setting and redirects back to the original page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -739,6 +738,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Updates the save protobuf data to ACA log policy setting and redirects back to the original page.
+     *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
@@ -756,10 +757,65 @@ public class PolicyPageController extends PageController<NoPageParams> {
         try {
             final boolean isSaveProtobufToLogOptionEnabled = ppModel.getSaveProtobufToLogValue()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-
+            
             final boolean isSaveProtoDataToLogPolicyUpdateSuccessful =
                     this.policyPageService.updateSaveProtobufDataToLogPolicy(
                             isSaveProtobufToLogOptionEnabled);
+
+            if (!isSaveProtoDataToLogPolicyUpdateSuccessful) {
+                messages.addErrorMessage(
+                        "Cannot disable saving protobuf data to ACA log policy option if the option "
+                                + "to save protobuf data to log on failed validation is still enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+            }
+            // if the save protobuf data to log policy update was successful
+            messages.addSuccessMessage(
+                    isSaveProtobufToLogOptionEnabled ? "Save Protobuf Data To ACA Log enabled"
+                            : "Save Protobuf Data To ACA Log disabled");
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while updating ACA save of protobuf data to "
+                    + "ACA log policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Updates the save protobuf data to ACA log policy setting on successful and/or
+     * failed validations and redirects back to the original page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-save-protobuf-data-on-success-failure")
+    public RedirectView updateSaveProtobufDataToLogOnSuccessOrFailPolicy(
+            @ModelAttribute final PolicyPageModel ppModel,
+            final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        try {
+            final boolean isSaveProtobufToLogOptionOnSuccessEnabled =
+                    ppModel.getSaveSuccessProtobufToLogValue()
+                            .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+            final boolean isSaveProtobufToLogOnFailOptionEnabled = ppModel.getSaveFailedProtobufToLogValue()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+            final boolean isSaveProtoDataToLogPolicyUpdateSuccessful =
+                    this.policyPageService.updateSaveProtobufDataToLogOnSuccessOrFailPolicy(
+                            isSaveProtobufToLogOptionOnSuccessEnabled,
+                            isSaveProtobufToLogOnFailOptionEnabled);
 
             if (!isSaveProtoDataToLogPolicyUpdateSuccessful) {
                 //todo
@@ -770,12 +826,12 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
             // if the ignore OS events policy update was successful
             messages.addSuccessMessage(
-                    isSaveProtobufToLogOptionEnabled ? "Save Protobuf Data To ACA Log enabled"
+                    isSaveProtobufToLogOptionOnSuccessEnabled ? "Save Protobuf Data To ACA Log enabled"
                             : "Save Protobuf Data To ACA Log disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while updating ACA save of protobuf data to "
-                    + "ACA log policy";
+                    + "ACA log policy during successful and/or failed validation";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);

@@ -247,33 +247,30 @@
                             </my:editor>
                 </form:form>
                 <ul>
-                    <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-certificate-expiration">
-                        <li>LDevID Certificate Validity period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
-                            <my:editor id="issuedDevIdCertificatePolicyExpirationEditor" label="Edit Settings">
+                    <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-on-success-failure">
+                        <li>Save Protobuf data to ACA log on failed validations: ${initialData.enableSaveProtobufToLogOnFailedVal ? 'Enabled' : 'Disabled'}
+                                <my:editor id="saveProtoBufDataOnFailedValPolicyEditor" label="Edit Settings">
+                                    <div class="radio">
+                                        <label><input id="protoFailValTop" type="radio" name="saveFailedProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnFailedVal ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Failed Validations </label>
+                                    </div>
+                                    <div class="radio">
+                                        <label><input id="protoFailValBot" type="radio" name="saveFailedProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnFailedVal ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Failed Validations</label>
+                                    </div>
+                            </my:editor>
+                        </li>
+                    </form:form>
+                    <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-on-success-failure">
+                        <li>Save Protobuf data to ACA log on successful validations: ${initialData.enableSaveProtobufToLogOnSuccessVal ? 'Enabled' : 'Disabled'}
+                            <my:editor id="saveProtoBufDataOnSuccessfulValPolicyEditor" label="Edit Settings">
                                 <div class="radio">
-                                    <label>
-                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.enableSaveSuccessProtobufToLog ? 'checked' : ''} value="checked" />
-                                    LDevID Certificate validity period (Default 3651 days)<br />
-                                    Select period in days: <input id="devIdExpirationValue" type="text" name="devIdExpirationValue" value="${initialData.devIdExpirationValue}" />
-                                    </label>
+                                    <label><input id="protoSuccessValTop" type="radio" name="saveSuccessProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnSuccessVal ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Successful Validations </label>
+                                </div>
+                                <div class="radio">
+                                    <label><input id="protoSuccessValBot" type="radio" name="saveSuccessProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnSuccessVal ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Successful Validations</label>
                                 </div>
                             </my:editor>
                         </li>
                     </form:form>
-                    <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-threshold">
-                        <li>Save Protobuf Data To ACA Log AfLDevID Certificate Renewal period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
-                            <my:editor id="issuedDevIdCertificatePolicyGenerateEditor" label="Edit Settings">
-                                <div class="radio">
-                                    <label>
-                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked" ${initialData.enableSaveFailedProtobufToLog ? 'checked' : ''} value="checked" />
-                                    Renew 'n' days before LDevID Certificate's  'Not After' Validity date (Default 365 days)<br />
-                                    Select 'n' period in days: <input id="devIdThresholdValue" type="text" name="devIdThresholdValue" value="${initialData.devIdThresholdValue}" />
-                                    </label>
-                                </div>
-                            </my:editor>
-                        </li>
-                    </form:form>
-
                 </ul>
             </div>
         </ul>
