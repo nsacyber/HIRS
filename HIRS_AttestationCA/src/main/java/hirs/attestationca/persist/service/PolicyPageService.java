@@ -504,10 +504,15 @@ public class PolicyPageService {
     public boolean updateSaveProtobufDataToLogPolicy(final boolean isSaveProtobufToLogOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        if (!isSaveProtobufToLogOptionEnabled && policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
-            log.error("Cannot disable saving protobuf data to ACA log policy option if the option "
-                    + "to save protobuf data to log on failed validation is still enabled.");
+        if (!isSaveProtobufToLogOptionEnabled && policySettings.isSaveProtobufToLogOnFailedValEnabled()
+                || policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
+            log.error("Cannot disable saving protobuf data to ACA log policy option if the options "
+                    + "to save protobuf data to log on failed/successful validation are still enabled.");
             return false;
+        }
+
+        if (isSaveProtobufToLogOptionEnabled) {
+            policySettings.setSaveProtobufToLogOnFailedValEnabled(true);
         }
 
         policySettings.setSaveProtobufDataToLogEnabled(isSaveProtobufToLogOptionEnabled);
@@ -537,11 +542,15 @@ public class PolicyPageService {
             final boolean isSaveProtobufToLogOnFailOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        if (!policySettings.isSaveProtobufDataToLogEnabled()) {
-            log.error("");
-            return false;
+        // if the save data to aca log is disabled and at least one of the two sub options is enabled,
+        // enable the save data to aca log option
+        if (!policySettings.isSaveProtobufDataToLogEnabled() &&
+                (isSaveProtobufToLogOnSuccessOptionEnabled || isSaveProtobufToLogOnFailOptionEnabled)) {
+            policySettings.setSaveProtobufDataToLogEnabled(true);
         }
 
+        // disable the save data to aca log option if both options (save data on both failed and successful
+        // validations) are disabled
         if (!isSaveProtobufToLogOnFailOptionEnabled && !isSaveProtobufToLogOnSuccessOptionEnabled) {
             policySettings.setSaveProtobufDataToLogEnabled(false);
         }

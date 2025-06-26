@@ -104,13 +104,13 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
             if (!isPCValidationPolicyUpdateSuccessful) {
                 messages.addErrorMessage("Unable to update ACA Platform Validation setting due to the current"
-                        + "  policy configuration.");
+                        + " policy configuration.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
             // if the pc validation policy update was successful
-            messages.addSuccessMessage("Platform certificate validation "
+            messages.addSuccessMessage("Platform Certificate Validation "
                     + (isPcValidationOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
@@ -240,7 +240,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
             this.policyPageService.updateIssuedAttestationGenerationPolicy(isIssuedAttestationOptionEnabled);
 
-            messages.addSuccessMessage("Attestation Certificate generation "
+            messages.addSuccessMessage("Attestation Certificate Generation "
                     + (isIssuedAttestationOptionEnabled ? "enabled." : "disabled."));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
@@ -277,7 +277,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             this.policyPageService.updateLDevIdGenerationPolicy(isIssuedLDevIdOptionEnabled);
 
             // if the devid certificate generation policy update was successful
-            messages.addSuccessMessage("LDevID Certificate generation "
+            messages.addSuccessMessage("LDevID Certificate Generation "
                     + (isIssuedLDevIdOptionEnabled ? "enabled." : "disabled."));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
@@ -499,7 +499,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
 
             // if the EC validation policy update was successful
-            messages.addSuccessMessage("Endorsement credential validation "
+            messages.addSuccessMessage("Endorsement Credential Validation "
                     + (isECValidationOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
@@ -546,7 +546,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
             // if the firmware validation policy update was successful
             messages.addSuccessMessage(
-                    "Firmware validation " + (isFirmwareValidationOptionEnabled ? "enabled" : "disabled"));
+                    "Firmware Validation " + (isFirmwareValidationOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -757,7 +757,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         try {
             final boolean isSaveProtobufToLogOptionEnabled = ppModel.getSaveProtobufToLogValue()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-            
+
             final boolean isSaveProtoDataToLogPolicyUpdateSuccessful =
                     this.policyPageService.updateSaveProtobufDataToLogPolicy(
                             isSaveProtobufToLogOptionEnabled);
@@ -765,7 +765,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             if (!isSaveProtoDataToLogPolicyUpdateSuccessful) {
                 messages.addErrorMessage(
                         "Cannot disable saving protobuf data to ACA log policy option if the option "
-                                + "to save protobuf data to log on failed validation is still enabled.");
+                                + "to save data to log on failed validations is still enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
