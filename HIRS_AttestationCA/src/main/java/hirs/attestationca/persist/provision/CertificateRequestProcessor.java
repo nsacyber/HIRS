@@ -193,8 +193,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    if (policySettings != null && policySettings.isSaveProtobufDataToLogEnabled()
-                            && policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
+                    if (policySettings != null && policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
                         log.info("Certificate Request Response "
                                 + "object after a successful validation and if the LDevID "
                                 + "public key exists : {}", certificateResponse);
@@ -224,8 +223,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    if (policySettings != null && policySettings.isSaveProtobufDataToLogEnabled()
-                            && policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
+                    if (policySettings != null && policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
                         log.info("Certificate Request Response "
                                 + "object after a successful validation and if the LDevID "
                                 + "public key does not exist : {}", certificateResponse);
@@ -240,8 +238,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                         .build();
 
-                if (policySettings != null && policySettings.isSaveProtobufDataToLogEnabled()
-                        && policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+                if (policySettings != null && policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
                     log.info("Certificate Request Response "
                             + "object after a failed validation: {}", certificateResponse);
                 }

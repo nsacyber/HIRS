@@ -235,44 +235,34 @@
 
             <%-- Save ProtoBuf Data To ACA Log After Validation --%>
             <div class="aca-input-box">
-                <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-to-log">
-                    <li>Save Protobuf Data To ACA Log: ${initialData.enableSaveProtobufToLog ? 'Enabled' : 'Disabled'}
-                        <my:editor id="saveProtoBufDataPolicyEditor" label="Edit Settings">
-                            <div class="radio">
-                                <label><input id="protoTop" type="radio" name="saveProtobufToLogValue" ${initialData.enableSaveProtobufToLog ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Validation </label>
-                            </div>
-                            <div class="radio">
-                                <label><input id="protoBot" type="radio" name="saveProtobufToLogValue" ${initialData.enableSaveProtobufToLog ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Validation</label>
-                            </div>
-                            </my:editor>
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-on-failed-val">
+                    <li>Save Protobuf data to ACA log after failed validation: ${initialData.enableSaveProtobufToLogOnFailedVal ? 'Enabled' : 'Disabled'}
+                            <my:editor id="saveProtoBufDataOnFailedValPolicyEditor" label="Edit Settings">
+                                <div class="radio">
+                                    <label><input id="protoFailValTop" type="radio" name="saveFailedProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnFailedVal ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Failed Validation</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input id="protoFailValBot" type="radio" name="saveFailedProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnFailedVal ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Failed Validation</label>
+                                </div>
+                        </my:editor>
+                    </li>
                 </form:form>
-                <ul>
-                    <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-on-success-failure">
-                        <li>Save Protobuf data to ACA log on failed validations: ${initialData.enableSaveProtobufToLogOnFailedVal ? 'Enabled' : 'Disabled'}
-                                <my:editor id="saveProtoBufDataOnFailedValPolicyEditor" label="Edit Settings">
-                                    <div class="radio">
-                                        <label><input id="protoFailValTop" type="radio" name="saveFailedProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnFailedVal ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Failed Validations </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label><input id="protoFailValBot" type="radio" name="saveFailedProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnFailedVal ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Failed Validations</label>
-                                    </div>
-                            </my:editor>
-                        </li>
-                    </form:form>
-                    <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-on-success-failure">
-                        <li>Save Protobuf data to ACA log on successful validations: ${initialData.enableSaveProtobufToLogOnSuccessVal ? 'Enabled' : 'Disabled'}
+                </div>
+                <div class="aca-input-box">
+                    <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-on-successful-val">
+                        <li>Save Protobuf data to ACA log after successful validation: ${initialData.enableSaveProtobufToLogOnSuccessVal ? 'Enabled' : 'Disabled'}
                             <my:editor id="saveProtoBufDataOnSuccessfulValPolicyEditor" label="Edit Settings">
                                 <div class="radio">
-                                    <label><input id="protoSuccessValTop" type="radio" name="saveSuccessProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnSuccessVal ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Successful Validations </label>
+                                    <label><input id="protoSuccessValTop" type="radio" name="saveSuccessProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnSuccessVal ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Successful Validation</label>
                                 </div>
                                 <div class="radio">
-                                    <label><input id="protoSuccessValBot" type="radio" name="saveSuccessProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnSuccessVal ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Successful Validations</label>
+                                    <label><input id="protoSuccessValBot" type="radio" name="saveSuccessProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnSuccessVal ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Successful Validation</label>
                                 </div>
                             </my:editor>
                         </li>
                     </form:form>
-                </ul>
-            </div>
+                    </div>
+            <br/>
         </ul>
     </jsp:body>
 </my:page>

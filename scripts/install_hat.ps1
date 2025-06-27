@@ -109,7 +109,7 @@ docker exec aca mysql -u hirs_db -D hirs_db --password=$Prop -e `
 "Update policysettings set ecValidationEnabled=1, pcValidationEnabled=1, `
 pcAttributeValidationEnabled=1, utcValidationEnabled=0, firmwareValidationEnabled=0, `
  expiredCertificateValidationEnabled=0, ignoreGptEnabled=1, `
-ignoreImaEnabled=0, ignoretBootEnabled=0, ignoreOsEvtEnabled=1, saveProtobufDataToLogEnabled=1,
+ignoreImaEnabled=0, ignoretBootEnabled=0, ignoreOsEvtEnabled=1,
 saveProtobufToLogOnFailedValEnabled=1, saveProtobufToLogOnSuccessValEnabled=0;"
 
 # Done

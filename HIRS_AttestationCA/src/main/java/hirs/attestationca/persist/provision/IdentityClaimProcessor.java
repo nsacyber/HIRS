@@ -187,8 +187,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
 
-            if (policySettings != null && policySettings.isSaveProtobufDataToLogEnabled()
-                    && policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
+            if (policySettings != null && policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
                 log.info("Identity Claim Response object after a "
                         + "successful validation: {}", identityClaimResponse);
             }
@@ -203,8 +202,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
 
-            if (policySettings != null && policySettings.isSaveProtobufDataToLogEnabled()
-                    && policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+            if (policySettings != null && policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
                 log.info("Identity Claim Response object after a "
                         + "failed validation: {}", identityClaimResponse);
             }

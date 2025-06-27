@@ -29,7 +29,6 @@ public class PolicyPageModel {
     private boolean enableIgnoreTboot;
     private boolean enableIgnoreGpt;
     private boolean enableIgnoreOsEvt;
-    private boolean enableSaveProtobufToLog;
     private boolean enableSaveProtobufToLogOnSuccessVal;
     private boolean enableSaveProtobufToLogOnFailedVal;
 
@@ -54,7 +53,6 @@ public class PolicyPageModel {
     private String devIdExpirationValue;
     private String thresholdValue;
     private String devIdThresholdValue;
-    private String saveProtobufToLogValue;
     private String saveSuccessProtobufToLogValue;
     private String saveFailedProtobufToLogValue;
 
@@ -80,7 +78,6 @@ public class PolicyPageModel {
         this.devIdExpirationValue = policySettings.getDevIdValidityDays();
         this.devIdReissueThreshold = policySettings.getDevIdReissueThreshold();
         this.devIdThresholdValue = policySettings.getDevIdReissueThreshold();
-        this.enableSaveProtobufToLog = policySettings.isSaveProtobufDataToLogEnabled();
         this.enableSaveProtobufToLogOnSuccessVal = policySettings.isSaveProtobufToLogOnSuccessValEnabled();
         this.enableSaveProtobufToLogOnFailedVal = policySettings.isSaveProtobufToLogOnFailedValEnabled();
         // pcrPolicy

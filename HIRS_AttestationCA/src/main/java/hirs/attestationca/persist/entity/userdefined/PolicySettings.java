@@ -96,9 +96,6 @@ public class PolicySettings extends UserDefinedEntity {
     private boolean ignoreOsEvtEnabled = false;
 
     @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean saveProtobufDataToLogEnabled = true;
-
-    @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean saveProtobufToLogOnFailedValEnabled = true;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
