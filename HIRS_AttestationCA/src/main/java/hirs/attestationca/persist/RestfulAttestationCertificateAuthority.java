@@ -11,6 +11,7 @@ import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.structs.converters.StructConverter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +39,7 @@ import java.security.cert.X509Certificate;
         @PropertySource(value = "file:C:/ProgramData/hirs/aca/application.win.properties",
                 ignoreResourceNotFound = true)
 })
+@Log4j2
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
 public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority

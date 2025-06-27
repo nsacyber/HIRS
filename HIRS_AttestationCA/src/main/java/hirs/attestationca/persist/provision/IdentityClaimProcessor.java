@@ -131,7 +131,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * @return an identity claim response for the specified request containing a wrapped blob
      */
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-        log.info("Identity Claim received...");
+        log.info("Identity Claim has been received and is ready to be processed");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
             log.error("Identity claim empty throwing exception.");
@@ -141,6 +141,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
         // attempt to deserialize Protobuf IdentityClaim
         ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
+
+        log.info("Identity Claim object: {}", claim);
 
         // parse the EK Public key from the IdentityClaim once for use in supply chain validation
         // and later tpm20MakeCredential function
@@ -177,22 +179,29 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             }
 
             // Package response
-            ProvisionerTpm2.IdentityClaimResponse response
+            ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
 
-            return response.toByteArray();
+            log.info("Identity Claim Response object after a "
+                    + "successful validation: {}", identityClaimResponse);
+
+            return identityClaimResponse.toByteArray();
         } else {
             log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
             // empty response
-            ProvisionerTpm2.IdentityClaimResponse response
+            ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr)
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
-            return response.toByteArray();
+
+            log.debug("Identity Claim Response object after a "
+                    + "failed validation: {}", identityClaimResponse);
+
+            return identityClaimResponse.toByteArray();
         }
     }
 
