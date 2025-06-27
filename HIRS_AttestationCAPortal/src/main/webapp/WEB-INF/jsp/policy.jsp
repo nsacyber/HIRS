@@ -145,7 +145,7 @@
 
             <%-- Generate Attestation Certificate--%>
             <div class="aca-input-box">
-                <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-attestation">
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-issued-attestation-generation">
                     <li>Generate Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
                             <div class="radio">
@@ -157,7 +157,7 @@
                         </my:editor>
                 </form:form>
                     <ul>
-                        <form:form method="POST" modelAttribute="initialData" action="policy/update-expire-on">
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-attestation-certificate-expiration">
                             <li>Attestation Certificate Validity period: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedCertificatePolicyExpirationEditor" label="Edit Settings">
                                     <div class="radio">
@@ -170,7 +170,7 @@
                                 </my:editor>
                             </li>
                         </form:form>
-                        <form:form method="POST" modelAttribute="initialData" action="policy/update-threshold">
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-issued-cert-threshold">
                             <li>Attestation Certificate Renewal period: ${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedCertificatePolicyGenerateEditor" label="Edit Settings">
                                     <div class="radio">
@@ -190,7 +190,7 @@
 
             <%-- Generate LDevID Certificate--%>
             <div class="aca-input-box">
-                <form:form method="POST" modelAttribute="initialData" action="policy/update-issue-devid">
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-issued-ldevid-generation">
                     <li>Generate LDevID Certificate: ${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}
                         <my:editor id="issuedDevIdCertificatePolicyEditor" label="Edit Settings">
                             <div class="radio">
@@ -202,7 +202,7 @@
                         </my:editor>
                 </form:form>
                     <ul>
-                        <form:form method="POST" modelAttribute="initialData" action="policy/update-devid-expire-on">
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-certificate-expiration">
                             <li>LDevID Certificate Validity period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedDevIdCertificatePolicyExpirationEditor" label="Edit Settings">
                                     <div class="radio">
@@ -215,7 +215,7 @@
                                 </my:editor>
                             </li>
                         </form:form>
-                        <form:form method="POST" modelAttribute="initialData" action="policy/update-devid-threshold">
+                        <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-threshold">
                             <li>LDevID Certificate Renewal period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
                                 <my:editor id="issuedDevIdCertificatePolicyGenerateEditor" label="Edit Settings">
                                     <div class="radio">
@@ -231,6 +231,38 @@
                     </ul>
                 </li>
             </div>
+            <br />
+
+            <%-- Save ProtoBuf Data To ACA Log After Validation --%>
+            <div class="aca-input-box">
+                <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-on-failed-val">
+                    <li>Save Protobuf data to ACA log after failed validation: ${initialData.enableSaveProtobufToLogOnFailedVal ? 'Enabled' : 'Disabled'}
+                            <my:editor id="saveProtoBufDataOnFailedValPolicyEditor" label="Edit Settings">
+                                <div class="radio">
+                                    <label><input id="protoFailValTop" type="radio" name="saveFailedProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnFailedVal ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Failed Validation</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input id="protoFailValBot" type="radio" name="saveFailedProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnFailedVal ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Failed Validation</label>
+                                </div>
+                        </my:editor>
+                    </li>
+                </form:form>
+                </div>
+                <div class="aca-input-box">
+                    <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-on-successful-val">
+                        <li>Save Protobuf data to ACA log after successful validation: ${initialData.enableSaveProtobufToLogOnSuccessVal ? 'Enabled' : 'Disabled'}
+                            <my:editor id="saveProtoBufDataOnSuccessfulValPolicyEditor" label="Edit Settings">
+                                <div class="radio">
+                                    <label><input id="protoSuccessValTop" type="radio" name="saveSuccessProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnSuccessVal ? 'checked' : ''}  value="checked"/> ProtoBuf Data Will Be Saved To The ACA Log After Successful Validation</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input id="protoSuccessValBot" type="radio" name="saveSuccessProtobufToLogValue" ${initialData.enableSaveProtobufToLogOnSuccessVal ? '' : 'checked'} value="unchecked"/> ProtoBuf Data Will Not Be Saved To The ACA Log After Successful Validation</label>
+                                </div>
+                            </my:editor>
+                        </li>
+                    </form:form>
+                    </div>
+            <br/>
         </ul>
     </jsp:body>
 </my:page>
