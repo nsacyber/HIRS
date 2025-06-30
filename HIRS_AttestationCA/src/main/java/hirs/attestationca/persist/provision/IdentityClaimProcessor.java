@@ -133,14 +133,14 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
         log.info("Identity Claim has been received and is ready to be processed");
 
-        final PolicyRepository policyRepository = this.getPolicyRepository();
-        final PolicySettings policySettings = policyRepository.findByName("Default");
-
         if (ArrayUtils.isEmpty(identityClaim)) {
             log.error("Identity claim empty throwing exception.");
             throw new IllegalArgumentException("The IdentityClaim sent by the client"
                     + " cannot be null or empty.");
         }
+
+        final PolicyRepository policyRepository = this.getPolicyRepository();
+        final PolicySettings policySettings = policyRepository.findByName("Default");
 
         // attempt to deserialize Protobuf IdentityClaim
         ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
