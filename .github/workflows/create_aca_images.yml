@@ -1,4 +1,4 @@
-# Updated: 02/11/2025
+# Updated: 06/29/2025
 name: Create ACA Docker Image
 on:
   release:
@@ -14,7 +14,6 @@ env:
   DOCKERFILE_WINDOWS: aca-windows
   IMAGE_NAME_ROCKY: ghcr.io/nsacyber/hirs/aca-rocky
   IMAGE_NAME_WINDOWS: ghcr.io/nsacyber/hirs/aca-windows
-  IMAGE_NAME_WINDOWS_COMPAT: ghcr.io/nsacyber/hirs/aca-windows-1809
   PUBLIC_IMAGE_NAME: ghcr.io/nsacyber/hirs/aca
   PUBLIC_IMAGE_TAG_LATEST: ghcr.io/nsacyber/hirs/aca:latest
   TAG_LATEST: ${{ github.event_name == 'release' || inputs.also_tag_latest }} # The public docker image will be tagged 'latest' for releases, or if this option is manually selected.
@@ -25,7 +24,6 @@ jobs:
       IMAGE_TAG: ${{ steps.setenv.outputs.IMAGE_TAG }}
       ROCKY_IMAGE_TAG: ${{ steps.setenv.outputs.ROCKY_IMAGE_TAG }}
       WINDOWS_IMAGE_TAG: ${{ steps.setenv.outputs.WINDOWS_IMAGE_TAG }}
-      WINDOWS_COMPAT_IMAGE_TAG: ${{ steps.setenv.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
       PUBLIC_IMAGE_TAG: ${{ steps.setenv.outputs.PUBLIC_IMAGE_TAG }}
     steps:
       - name: Set env
@@ -48,7 +46,6 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
           echo "ROCKY_IMAGE_TAG=$IMAGE_NAME_ROCKY:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
           echo "WINDOWS_IMAGE_TAG=$IMAGE_NAME_WINDOWS:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
-          echo "WINDOWS_COMPAT_IMAGE_TAG=$IMAGE_NAME_WINDOWS_COMPAT:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
           echo "PUBLIC_IMAGE_TAG=$PUBLIC_IMAGE_NAME:$IMAGE_TAG_VAR" >> "$GITHUB_OUTPUT"
       - name: Print env
         run: |
@@ -57,14 +54,12 @@ jobs:
           echo DOCKERFILE_WINDOWS=$DOCKERFILE_WINDOWS
           echo IMAGE_NAME_ROCKY=$IMAGE_NAME_ROCKY
           echo IMAGE_NAME_WINDOWS=$IMAGE_NAME_WINDOWS
-          echo IMAGE_NAME_WINDOWS_COMPAT=$IMAGE_NAME_WINDOWS_COMPAT
           echo PUBLIC_IMAGE_NAME=$PUBLIC_IMAGE_NAME
           echo PUBLIC_IMAGE_TAG_LATEST=$PUBLIC_IMAGE_TAG_LATEST
           echo TAG_LATEST=$TAG_LATEST
           echo IMAGE_TAG=${{ steps.setenv.outputs.IMAGE_TAG }}
           echo ROCKY_IMAGE_TAG=${{ steps.setenv.outputs.ROCKY_IMAGE_TAG }}
           echo WINDOWS_IMAGE_TAG=${{ steps.setenv.outputs.WINDOWS_IMAGE_TAG }}
-          echo WINDOWS_COMPAT_IMAGE_TAG=${{ steps.setenv.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
           echo PUBLIC_IMAGE_TAG=${{ steps.setenv.outputs.PUBLIC_IMAGE_TAG }}
   
   rocky-image:
@@ -92,9 +87,9 @@ jobs:
           tags: ${{env.TAG}}
           push: true
 
-  windows-11-image:
+  windows-image:
     needs: setup
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       TAG: ${{ needs.setup.outputs.WINDOWS_IMAGE_TAG }}
     steps:
@@ -117,46 +112,18 @@ jobs:
         run: |
           docker push ${{env.TAG}}
 
-  windows-compat-image: # This job uses a different runner and build arg than the other windows job.
-    needs: setup
-    runs-on: windows-2022
-    env:
-      TAG: ${{ needs.setup.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
-    steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build the docker image for ${{ github.repository }}
-        run: |
-          cd ./.ci/docker
-          docker build --build-arg REF=${{ github.ref_name }} -f ./Dockerfile.${{env.DOCKERFILE_WINDOWS}} -t ${{env.TAG}} --build-arg BASE_IMAGE_TAG=lts-windowsservercore-1809 .
-
-      - name: Push the docker image
-        run: |
-          docker push ${{env.TAG}}
-  
-
   manifest:
-    needs: [ setup, rocky-image, windows-11-image, windows-compat-image ]
+    needs: [ setup, rocky-image, windows-image ]
     runs-on: ubuntu-latest
     env:
       IMAGE1: ${{ needs.setup.outputs.ROCKY_IMAGE_TAG }}
       IMAGE2: ${{ needs.setup.outputs.WINDOWS_IMAGE_TAG }}
-      IMAGE3: ${{ needs.setup.outputs.WINDOWS_COMPAT_IMAGE_TAG }}
       PUB: ${{ needs.setup.outputs.PUBLIC_IMAGE_TAG }}
     steps:
       - name: Print env
         run: |
           echo IMAGE1=${{env.IMAGE1}}
           echo IMAGE2=${{env.IMAGE2}}
-          echo IMAGE3=${{env.IMAGE3}}
           echo PUB=${{env.PUB}}
 
       - name: Checkout main
@@ -171,7 +138,7 @@ jobs:
 
       - name: Create a new manifest
         run: |
-          docker manifest create ${{env.PUB}} --amend ${{env.IMAGE1}} --amend ${{env.IMAGE2}} --amend ${{env.IMAGE3}}
+          docker manifest create ${{env.PUB}} --amend ${{env.IMAGE1}} --amend ${{env.IMAGE2}}
 
       - name: Push the new manifest
         run: |
@@ -180,6 +147,6 @@ jobs:
       - name: Create and push manifest latest if selected
         if: env.TAG_LATEST != 'false'
         run: |
-          docker manifest create $PUBLIC_IMAGE_TAG_LATEST --amend $IMAGE1 --amend $IMAGE2 --amend $IMAGE3
+          docker manifest create $PUBLIC_IMAGE_TAG_LATEST --amend $IMAGE1 --amend $IMAGE2
           docker manifest push $PUBLIC_IMAGE_TAG_LATEST
  
