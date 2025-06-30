@@ -133,6 +133,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
         log.info("Identity Claim has been received and is ready to be processed");
 
+        final PolicyRepository policyRepository = this.getPolicyRepository();
+        final PolicySettings policySettings = policyRepository.findByName("Default");
+
         if (ArrayUtils.isEmpty(identityClaim)) {
             log.error("Identity claim empty throwing exception.");
             throw new IllegalArgumentException("The IdentityClaim sent by the client"
@@ -141,8 +144,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
         // attempt to deserialize Protobuf IdentityClaim
         ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
-
-        log.info("Identity Claim object: {}", claim);
 
         // parse the EK Public key from the IdentityClaim once for use in supply chain validation
         // and later tpm20MakeCredential function
@@ -158,8 +159,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             }
         }
 
-        final PolicyRepository policyRepository = this.getPolicyRepository();
-        final PolicySettings policySettings = policyRepository.findByName("Default");
+        if (policySettings.isSaveProtobufToLogOnSuccessValEnabled()
+                || policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+            log.info("Identity Claim object received: {}", claim);
+        }
 
         ByteString blobStr = ByteString.copyFrom(new byte[] {});
 
@@ -176,7 +179,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             tpm2ProvisionerStateRepository.save(new TPM2ProvisionerState(nonce, identityClaim));
 
-            if (policySettings != null && policySettings.isIgnoreImaEnabled()) {
+            if (policySettings.isIgnoreImaEnabled()) {
                 pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");
             }
 
@@ -187,7 +190,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
 
-            if (policySettings != null && policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
+            if (policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
                 log.info("Identity Claim Response object after a "
                         + "successful validation: {}", identityClaimResponse);
             }
@@ -202,7 +205,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
 
-            if (policySettings != null && policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+            if (policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
                 log.info("Identity Claim Response object after a "
                         + "failed validation: {}", identityClaimResponse);
             }

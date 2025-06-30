@@ -82,11 +82,17 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     + " cannot be null or empty.");
         }
 
+        final PolicyRepository policyRepository = this.getPolicyRepository();
+        final PolicySettings policySettings = policyRepository.findByName("Default");
+
         // attempt to deserialize Protobuf CertificateRequest
         ProvisionerTpm2.CertificateRequest request;
         try {
             request = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequest);
-            log.info("Certificate request object: {}", request);
+            if (policySettings.isSaveProtobufToLogOnSuccessValEnabled()
+                    || policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+                log.info("Certificate request object received: {}", request);
+            }
         } catch (InvalidProtocolBufferException ipbe) {
             throw new CertificateProcessingException(
                     "Could not deserialize Protobuf Certificate Request object.", ipbe);
@@ -149,9 +155,6 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                 device = this.deviceRepository.save(device);
             }
 
-            final PolicyRepository policyRepository = this.getPolicyRepository();
-            final PolicySettings policySettings = policyRepository.findByName("Default");
-
             AppraisalStatus.Status validationResult = doQuoteValidation(device);
             if (validationResult == AppraisalStatus.Status.PASS) {
                 // Create signed, attestation certificate
@@ -193,7 +196,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    if (policySettings != null && policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
+                    if (policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
                         log.info("Certificate Request Response "
                                 + "object after a successful validation and if the LDevID "
                                 + "public key exists : {}", certificateResponse);
@@ -223,7 +226,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    if (policySettings != null && policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
+                    if (policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
                         log.info("Certificate Request Response "
                                 + "object after a successful validation and if the LDevID "
                                 + "public key does not exist : {}", certificateResponse);
@@ -238,7 +241,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                         .build();
 
-                if (policySettings != null && policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+                if (policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
                     log.info("Certificate Request Response "
                             + "object after a failed validation: {}", certificateResponse);
                 }
@@ -246,8 +249,10 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                 return certificateResponse.toByteArray();
             }
         } else {
-            log.error("Could not process credential request."
-                    + " Invalid nonce provided: {}", request.getNonce());
+            if (policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+                log.error("Could not process credential request."
+                        + " Invalid nonce provided: {}", request.getNonce());
+            }
             throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
     }
