@@ -37,11 +37,14 @@ public class ReferenceDigestValuePageService {
     /**
      * @param referenceManifestRepository    reference manifest repository
      * @param referenceDigestValueRepository reference digest value repository
+     * @param entityManager                  entity manager
      */
     @Autowired
-    public ReferenceDigestValuePageService(ReferenceManifestRepository referenceManifestRepository,
-                                           ReferenceDigestValueRepository referenceDigestValueRepository,
-                                           EntityManager entityManager) {
+    public ReferenceDigestValuePageService(final ReferenceManifestRepository
+                                                   referenceManifestRepository,
+                                           final ReferenceDigestValueRepository
+                                                   referenceDigestValueRepository,
+                                           final EntityManager entityManager) {
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.entityManager = entityManager;
@@ -114,14 +117,14 @@ public class ReferenceDigestValuePageService {
      * @param pageable pageable
      * @return page full of reference digest values
      */
-    public Page<ReferenceDigestValue> findAllReferenceDigestValues(Pageable pageable) {
+    public Page<ReferenceDigestValue> findAllReferenceDigestValues(final Pageable pageable) {
         return this.referenceDigestValueRepository.findAll(pageable);
     }
 
     /**
      * @param referenceDigestValue reference digest value
      */
-    public void saveReferenceDigestValue(ReferenceDigestValue referenceDigestValue) {
+    public void saveReferenceDigestValue(final ReferenceDigestValue referenceDigestValue) {
         this.referenceDigestValueRepository.save(referenceDigestValue);
     }
 
@@ -138,7 +141,7 @@ public class ReferenceDigestValuePageService {
      * @param uuid
      * @return
      */
-    public boolean doesRIMExist(UUID uuid) {
+    public boolean doesRIMExist(final UUID uuid) {
         return this.referenceManifestRepository.existsById(uuid);
     }
 
@@ -146,7 +149,7 @@ public class ReferenceDigestValuePageService {
      * @param uuid
      * @return
      */
-    public ReferenceManifest findRIMById(UUID uuid) {
+    public ReferenceManifest findRIMById(final UUID uuid) {
         return this.referenceManifestRepository.getReferenceById(uuid);
     }
 }

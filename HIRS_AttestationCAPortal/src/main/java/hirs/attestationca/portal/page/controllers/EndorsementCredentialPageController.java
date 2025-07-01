@@ -1,7 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.service.CertificateService;
@@ -64,7 +63,6 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      */
     @Autowired
     public EndorsementCredentialPageController(
-            final EndorsementCredentialRepository endorsementCredentialRepository,
             final EndorsementCredentialPageService endorsementCredentialPageService,
             final CertificateService certificateService) {
         super(Page.ENDORSEMENT_KEY_CREDENTIALS);

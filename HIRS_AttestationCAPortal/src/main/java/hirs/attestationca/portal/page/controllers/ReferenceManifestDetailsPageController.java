@@ -30,6 +30,8 @@ public class ReferenceManifestDetailsPageController
 
     /**
      * Constructor providing the Page's display and routing specification.
+     *
+     * @param referenceManifestService reference manifest service
      */
     @Autowired
     public ReferenceManifestDetailsPageController(

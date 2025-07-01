@@ -115,8 +115,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         SupportReferenceManifest support;
         for (ReferenceDigestValue rdv : rdvFilteredRecordsList) {
             // We are updating the base rim ID field if necessary and
-            if (rdv.getBaseRimId() == null &&
-                    this.referenceDigestValuePageService.doesRIMExist(rdv.getSupportRimId())) {
+            if (rdv.getBaseRimId() == null
+                    && this.referenceDigestValuePageService.doesRIMExist(rdv.getSupportRimId())) {
                 support = (SupportReferenceManifest) this.referenceDigestValuePageService.findRIMById(
                         rdv.getSupportRimId());
                 rdv.setBaseRimId(support.getAssociatedRim());

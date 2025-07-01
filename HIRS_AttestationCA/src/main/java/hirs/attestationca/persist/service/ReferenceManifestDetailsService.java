@@ -57,8 +57,10 @@ public class ReferenceManifestDetailsService {
      * @param caCertificateRepository        certificate authority credential repository
      */
     @Autowired
-    public ReferenceManifestDetailsService(final ReferenceManifestRepository referenceManifestRepository,
-                                           final ReferenceDigestValueRepository referenceDigestValueRepository,
+    public ReferenceManifestDetailsService(final ReferenceManifestRepository
+                                                   referenceManifestRepository,
+                                           final ReferenceDigestValueRepository
+                                                   referenceDigestValueRepository,
                                            final CertificateRepository certificateRepository,
                                            final CACredentialRepository caCertificateRepository) {
         this.referenceManifestRepository = referenceManifestRepository;
