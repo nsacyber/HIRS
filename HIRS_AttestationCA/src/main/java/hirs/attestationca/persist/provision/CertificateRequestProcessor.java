@@ -89,10 +89,6 @@ public class CertificateRequestProcessor extends AbstractProcessor {
         ProvisionerTpm2.CertificateRequest request;
         try {
             request = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequest);
-            if (policySettings.isSaveProtobufToLogOnSuccessValEnabled()
-                    || policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
-                log.info("Certificate request object received: {}", request);
-            }
         } catch (InvalidProtocolBufferException ipbe) {
             throw new CertificateProcessingException(
                     "Could not deserialize Protobuf Certificate Request object.", ipbe);
@@ -234,8 +230,13 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     return certificateResponse.toByteArray();
                 }
             } else {
+                if (policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+                    log.info("Certificate request object received: {}", request);
+                }
+
                 log.error("Supply chain validation did not succeed. Firmware Quote Validation failed."
                         + " Result is: {}", validationResult);
+
                 ProvisionerTpm2.CertificateResponse certificateResponse = ProvisionerTpm2.CertificateResponse
                         .newBuilder()
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)

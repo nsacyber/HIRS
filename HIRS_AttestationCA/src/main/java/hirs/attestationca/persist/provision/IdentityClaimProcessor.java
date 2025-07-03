@@ -159,11 +159,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             }
         }
 
-        if (policySettings.isSaveProtobufToLogOnSuccessValEnabled()
-                || policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
-            log.info("Identity Claim object received: {}", claim);
-        }
-
         ByteString blobStr = ByteString.copyFrom(new byte[] {});
 
         if (validationResult == AppraisalStatus.Status.PASS) {
@@ -197,6 +192,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             return identityClaimResponse.toByteArray();
         } else {
+            if (policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+                log.info("Identity Claim object received: {}", claim);
+            }
+
             log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
             // empty response
             ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
