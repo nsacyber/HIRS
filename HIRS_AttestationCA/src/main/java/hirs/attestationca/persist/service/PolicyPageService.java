@@ -89,6 +89,31 @@ public class PolicyPageService {
     }
 
     /**
+     * Updates the ignore pcie vpd policy under the platform credential attribute validation policy setting
+     * according to user input.
+     *
+     * @param isIgnorePcieVpdOptionEnabled boolean value representation of the current policy
+     *                                     option's state
+     * @return true if the policy was updated successfully; otherwise, false.
+     */
+    public boolean updateIgnorePCIEVpdPolicy(boolean isIgnorePcieVpdOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        if (isIgnorePcieVpdOptionEnabled && !policySettings.isPcAttributeValidationEnabled()) {
+            log.error("Ignore PCIE VPD cannot be "
+                    + "enabled without PC Attribute validation policy enabled.");
+            return false;
+        }
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the ignore "
+                + "pcie vpd policy: {}", policySettings);
+
+        return true;
+    }
+
+    /**
      * Updates the Ignore Revision Attribute policy according to user input.
      *
      * @param isIgnoreRevisionAttributeOptionEnabled boolean value representation of the current policy

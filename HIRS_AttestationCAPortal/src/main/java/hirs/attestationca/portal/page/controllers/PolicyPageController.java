@@ -176,6 +176,54 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Updates ignore pcie vpd policy setting and redirects back to the original page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-pcie-vpd-ignore")
+    public RedirectView updateIgnorePCIEVpdPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                  final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the ignore pcie vpd policy under "
+                + " the platform credential attribute validation policy setting");
+
+        try {
+            final boolean isIgnorePcieVpdOptionEnabled = ppModel.getIgnorePcieVpd()
+                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+
+            final boolean isIgnorePcieVpdPolicyUpdateSuccessful =
+                    this.policyPageService.updateIgnorePCIEVpdPolicy(
+                            isIgnorePcieVpdOptionEnabled);
+
+            if (!isIgnorePcieVpdPolicyUpdateSuccessful) {
+                messages.addErrorMessage("Ignore PCIE VPD Policy cannot be "
+                        + "enabled without PC Attribute validation policy enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+            }
+
+            // if the ignore revision policy update was successful
+            messages.addSuccessMessage("IgnorePCIE VPD  "
+                    + (isIgnorePcieVpdOptionEnabled ? "enabled" : "disabled"));
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while updating ACA Ignore PCIE VPD policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
      * Updates the ignore component revision attribute setting and
      * redirects back to the original page.
      *

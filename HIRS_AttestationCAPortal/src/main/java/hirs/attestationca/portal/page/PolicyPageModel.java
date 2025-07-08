@@ -29,6 +29,7 @@ public class PolicyPageModel {
     private boolean enableIgnoreTboot;
     private boolean enableIgnoreGpt;
     private boolean enableIgnoreOsEvt;
+    private boolean enableIgnorePcieVpd;
     private boolean logProtobufOnFailedVal;
     private boolean logProtobufNever;
     private boolean logProtobufAlways;
@@ -50,6 +51,7 @@ public class PolicyPageModel {
     private String ignoretBoot;
     private String ignoreGpt;
     private String ignoreOsEvt;
+    private String ignorePcieVpd;
     private String expirationValue;
     private String devIdExpirationValue;
     private String thresholdValue;
@@ -81,6 +83,7 @@ public class PolicyPageModel {
         this.logProtobufOnFailedVal = policySettings.isSaveProtobufToLogOnFailedValEnabled();
         this.logProtobufAlways = policySettings.isSaveProtobufToLogAlwaysEnabled();
         this.logProtobufNever = policySettings.isSaveProtobufToLogNeverEnabled();
+        this.enableIgnorePcieVpd = policySettings.isIgnorePcieVpdEnabled();
         // pcrPolicy
         this.enableIgnoreIma = policySettings.isIgnoreImaEnabled();
         this.enableIgnoreTboot = policySettings.isIgnoretBootEnabled();
