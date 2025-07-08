@@ -110,7 +110,7 @@ docker exec aca mysql -u hirs_db -D hirs_db --password=$Prop -e `
 pcAttributeValidationEnabled=1, utcValidationEnabled=0, firmwareValidationEnabled=0, `
  expiredCertificateValidationEnabled=0, ignoreGptEnabled=1, `
 ignoreImaEnabled=0, ignoretBootEnabled=0, ignoreOsEvtEnabled=1,
-saveProtobufToLogOnFailedValEnabled=1, saveProtobufToLogOnSuccessValEnabled=0;"
+saveProtobufToLogOnFailedValEnabled=1, saveProtobufToLogAlwaysEnabled=0, saveProtobufToLogNeverEnabled=0;"
 
 # Done
 Write-Host "HIRS Acceptance Test Installation complete."

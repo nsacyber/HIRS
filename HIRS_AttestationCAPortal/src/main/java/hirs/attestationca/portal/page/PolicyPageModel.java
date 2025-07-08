@@ -29,8 +29,9 @@ public class PolicyPageModel {
     private boolean enableIgnoreTboot;
     private boolean enableIgnoreGpt;
     private boolean enableIgnoreOsEvt;
-    private boolean enableSaveProtobufToLogOnSuccessVal;
-    private boolean enableSaveProtobufToLogOnFailedVal;
+    private boolean logProtobufOnFailedVal;
+    private boolean logProtobufNever;
+    private boolean logProtobufAlways;
 
     // Variables to get policy settings from page
     private String pcValidate;
@@ -53,8 +54,7 @@ public class PolicyPageModel {
     private String devIdExpirationValue;
     private String thresholdValue;
     private String devIdThresholdValue;
-    private String saveSuccessProtobufToLogValue;
-    private String saveFailedProtobufToLogValue;
+    private String saveProtobufToLogOption;
 
     /**
      * Constructor. Sets fields from policy.
@@ -78,8 +78,9 @@ public class PolicyPageModel {
         this.devIdExpirationValue = policySettings.getDevIdValidityDays();
         this.devIdReissueThreshold = policySettings.getDevIdReissueThreshold();
         this.devIdThresholdValue = policySettings.getDevIdReissueThreshold();
-        this.enableSaveProtobufToLogOnSuccessVal = policySettings.isSaveProtobufToLogOnSuccessValEnabled();
-        this.enableSaveProtobufToLogOnFailedVal = policySettings.isSaveProtobufToLogOnFailedValEnabled();
+        this.logProtobufOnFailedVal = policySettings.isSaveProtobufToLogOnFailedValEnabled();
+        this.logProtobufAlways = policySettings.isSaveProtobufToLogAlwaysEnabled();
+        this.logProtobufNever = policySettings.isSaveProtobufToLogNeverEnabled();
         // pcrPolicy
         this.enableIgnoreIma = policySettings.isIgnoreImaEnabled();
         this.enableIgnoreTboot = policySettings.isIgnoretBootEnabled();

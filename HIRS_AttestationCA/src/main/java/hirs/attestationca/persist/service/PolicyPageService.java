@@ -495,41 +495,39 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates save protobuf data to the ACA log policy using the provided user input on
-     * successful validations using the provided user input.
+     * Updates save protobuf data to the ACA log policy using the provided user input.
      *
-     * @param isSaveProtobufToLogOnSuccessOptionEnabled boolean value representation of the current policy
-     *                                                  option's state (option permits the application to log
-     *                                                  protobuf data even after successful validation)
+     * @param saveProtobufToLogOption string value representation of the current policy
+     *                                option's state
      */
-    public void updateSaveProtobufDataToLogOnSuccessfulValPolicy(
-            final boolean isSaveProtobufToLogOnSuccessOptionEnabled) {
+    public void updateSaveProtobufDataToLogPolicy(
+            final String saveProtobufToLogOption) {
         PolicySettings policySettings = getDefaultPolicy();
-        policySettings.setSaveProtobufToLogOnSuccessValEnabled(isSaveProtobufToLogOnSuccessOptionEnabled);
+
+        switch (saveProtobufToLogOption) {
+            case "always-log-protobuf" -> {
+                policySettings.setSaveProtobufToLogAlwaysEnabled(true);
+                policySettings.setSaveProtobufToLogNeverEnabled(false);
+                policySettings.setSaveProtobufToLogOnFailedValEnabled(false);
+            }
+            case "log-protobuf-on-fail-val" -> {
+                policySettings.setSaveProtobufToLogOnFailedValEnabled(true);
+                policySettings.setSaveProtobufToLogNeverEnabled(false);
+                policySettings.setSaveProtobufToLogAlwaysEnabled(false);
+            }
+            case "never-log-protobuf" -> {
+                policySettings.setSaveProtobufToLogNeverEnabled(true);
+                policySettings.setSaveProtobufToLogAlwaysEnabled(false);
+                policySettings.setSaveProtobufToLogOnFailedValEnabled(false);
+            }
+            default -> throw new IllegalArgumentException("There must be exactly three valid options for "
+                    + "setting the policy to save protobuf data to the ACA log.");
+        }
 
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the save protobuf data to ACA log "
-                + " on successful validations policy: {}", policySettings);
-    }
-
-    /**
-     * Updates save protobuf data to the ACA log policy using the provided user input on either failed
-     * validations using the provided user input.
-     *
-     * @param isSaveProtobufToLogOnFailOptionEnabled boolean value representation of the current policy
-     *                                               option's state (option permits the application to log
-     *                                               protobuf data even after failed validation)
-     */
-    public void updateSaveProtobufDataToLogOnFailedValPolicy(
-            final boolean isSaveProtobufToLogOnFailOptionEnabled) {
-        PolicySettings policySettings = getDefaultPolicy();
-        policySettings.setSaveProtobufToLogOnFailedValEnabled(isSaveProtobufToLogOnFailOptionEnabled);
-
-        policyRepository.saveAndFlush(policySettings);
-
-        log.debug("Current ACA Policy after updating the save protobuf data to ACA log "
-                + " on either successful or failed validations policy: {}", policySettings);
+                + "policy: {}", policySettings);
     }
 
     /**

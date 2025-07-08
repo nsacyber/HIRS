@@ -99,7 +99,10 @@ public class PolicySettings extends UserDefinedEntity {
     private boolean saveProtobufToLogOnFailedValEnabled = true;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean saveProtobufToLogOnSuccessValEnabled = false;
+    private boolean saveProtobufToLogAlwaysEnabled = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean saveProtobufToLogNeverEnabled = false;
 
     /**
      * Default constructor necessary for Hibernate.

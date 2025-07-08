@@ -185,17 +185,16 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
 
-            if (policySettings.isSaveProtobufToLogOnSuccessValEnabled()) {
+            if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                    && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
+                log.info("Identity Claim object received after a"
+                        + "successful validation: {}", claim);
                 log.info("Identity Claim Response object after a "
                         + "successful validation: {}", identityClaimResponse);
             }
 
             return identityClaimResponse.toByteArray();
         } else {
-            if (policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
-                log.info("Identity Claim object received: {}", claim);
-            }
-
             log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
             // empty response
             ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
@@ -204,7 +203,11 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
 
-            if (policySettings.isSaveProtobufToLogOnFailedValEnabled()) {
+            if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                    && (policySettings.isSaveProtobufToLogAlwaysEnabled()
+                    || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
+                log.info("Identity Claim object received after a "
+                        + "failed validation: {}", claim);
                 log.info("Identity Claim Response object after a "
                         + "failed validation: {}", identityClaimResponse);
             }

@@ -738,8 +738,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the save protobuf data to ACA log policy setting on successful
-     * validations and redirects back to the original page.
+     * Updates the save protobuf data to ACA log policy setting  and redirects back to the original page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -747,8 +746,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-save-protobuf-data-on-successful-val")
-    public RedirectView updateSaveProtobufDataToLogOnSuccessValPolicy(
+    @PostMapping("update-save-protobuf-data-to-log")
+    public RedirectView updateSaveProtobufDataToLogPolicy(
             @ModelAttribute final PolicyPageModel ppModel,
             final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
@@ -756,62 +755,26 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PageMessages messages = new PageMessages();
 
         try {
-            final boolean isSaveProtobufToLogOptionOnSuccessEnabled =
-                    ppModel.getSaveSuccessProtobufToLogValue()
-                            .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final String saveProtobufToLogVal = ppModel.getSaveProtobufToLogOption();
 
-            this.policyPageService.updateSaveProtobufDataToLogOnSuccessfulValPolicy(
-                    isSaveProtobufToLogOptionOnSuccessEnabled);
+            this.policyPageService.updateSaveProtobufDataToLogPolicy(saveProtobufToLogVal);
 
-            messages.addSuccessMessage(
-                    isSaveProtobufToLogOptionOnSuccessEnabled
-                            ? "Save Protobuf Data To ACA Log after successful validation policy enabled"
-                            : "Save Protobuf Data To ACA Log after successful validation policy disabled");
+            switch (saveProtobufToLogVal) {
+                case "always-log-protobuf" ->
+                        messages.addSuccessMessage("Save Protobuf Data To ACA Log always has been enabled");
+                case "log-protobuf-on-fail-val" ->
+                        messages.addSuccessMessage("Save Protobuf Data To ACA Log only on failed validation"
+                                + " has been enabled");
+                case "never-log-protobuf" ->
+                        messages.addSuccessMessage("Save Protobuf Data To ACA Log never has been enabled");
+                default -> throw new IllegalArgumentException("There must be exactly three valid options for "
+                        + "setting the policy to save protobuf data to the ACA log.");
+            }
+
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while updating ACA save of protobuf data to "
-                    + "ACA log policy after successful validation";
-            log.error(errorMessage, exception);
-            messages.addErrorMessage(errorMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        }
-
-        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
-    }
-
-    /**
-     * Updates the save protobuf data to ACA log policy setting on failed validations
-     * and redirects back to the original page.
-     *
-     * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the original
-     *                           page.
-     * @return View containing the url and parameters
-     * @throws URISyntaxException if malformed URI
-     */
-    @PostMapping("update-save-protobuf-data-on-failed-val")
-    public RedirectView updateSaveProtobufDataToLogOnFailedValidationPolicy(
-            @ModelAttribute final PolicyPageModel ppModel,
-            final RedirectAttributes redirectAttributes)
-            throws URISyntaxException {
-        Map<String, Object> model = new HashMap<>();
-        PageMessages messages = new PageMessages();
-
-        try {
-            final boolean isSaveProtobufToLogOnFailOptionEnabled = ppModel.getSaveFailedProtobufToLogValue()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-
-            this.policyPageService.updateSaveProtobufDataToLogOnFailedValPolicy(
-                    isSaveProtobufToLogOnFailOptionEnabled);
-
-            messages.addSuccessMessage(
-                    isSaveProtobufToLogOnFailOptionEnabled
-                            ? "Save Protobuf Data To ACA Log after failed validation policy enabled"
-                            : "Save Protobuf Data To ACA Log after failed validation policy disabled");
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        } catch (Exception exception) {
-            final String errorMessage = "An exception was thrown while updating ACA save of protobuf data to "
-                    + "ACA log policy after failed validation";
+                    + "ACA log policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
