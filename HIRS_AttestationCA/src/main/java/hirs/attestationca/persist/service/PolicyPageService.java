@@ -495,6 +495,42 @@ public class PolicyPageService {
     }
 
     /**
+     * Updates save protobuf data to the ACA log policy using the provided user input.
+     *
+     * @param saveProtobufToLogOption string value representation of the current policy
+     *                                option's state
+     */
+    public void updateSaveProtobufDataToLogPolicy(
+            final String saveProtobufToLogOption) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        switch (saveProtobufToLogOption) {
+            case "always-log-protobuf" -> {
+                policySettings.setSaveProtobufToLogAlwaysEnabled(true);
+                policySettings.setSaveProtobufToLogNeverEnabled(false);
+                policySettings.setSaveProtobufToLogOnFailedValEnabled(false);
+            }
+            case "log-protobuf-on-fail-val" -> {
+                policySettings.setSaveProtobufToLogOnFailedValEnabled(true);
+                policySettings.setSaveProtobufToLogNeverEnabled(false);
+                policySettings.setSaveProtobufToLogAlwaysEnabled(false);
+            }
+            case "never-log-protobuf" -> {
+                policySettings.setSaveProtobufToLogNeverEnabled(true);
+                policySettings.setSaveProtobufToLogAlwaysEnabled(false);
+                policySettings.setSaveProtobufToLogOnFailedValEnabled(false);
+            }
+            default -> throw new IllegalArgumentException("There must be exactly three valid options for "
+                    + "setting the policy to save protobuf data to the ACA log.");
+        }
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the save protobuf data to ACA log "
+                + "policy: {}", policySettings);
+    }
+
+    /**
      * Retrieves a fresh load of the default policy from the DB.
      *
      * @return The default Supply Chain Policy

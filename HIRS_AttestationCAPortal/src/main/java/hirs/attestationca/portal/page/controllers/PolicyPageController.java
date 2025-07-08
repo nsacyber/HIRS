@@ -95,6 +95,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        log.info("Received request to update the platform credential validation policy setting");
+
         try {
             final boolean isPcValidationOptionEnabled
                     = ppModel.getPcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
@@ -139,6 +141,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the platform credential attribute validation policy setting");
 
         try {
             final boolean isPCAttributeValidationOptionEnabled = ppModel.getPcAttributeValidate()
@@ -188,6 +192,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        log.info("Received request to update the ignore component revision attribute policy under "
+                + " the platform credential attribute validation policy setting");
+
         try {
             final boolean isIgnoreRevisionAttributeOptionEnabled = ppModel.getIgnoreRevisionAttribute()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
@@ -234,6 +241,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        log.info("Received request to update the issue attestation certificate generation policy setting");
+
         try {
             final boolean isIssuedAttestationOptionEnabled = ppModel.getAttestationCertificateIssued()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
@@ -270,6 +279,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the ldevid certificate generation policy setting");
+
         try {
             final boolean isIssuedLDevIdOptionEnabled = ppModel.getDevIdCertificateIssued()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
@@ -308,6 +320,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the attestation certificate expiration policy under the"
+                + "generate attestation certificate policy setting");
 
         try {
             boolean isGenerateCertificateEnabled = false;
@@ -352,6 +367,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        log.info("Received request to update the ldevid certificate expiration policy under "
+                + "the ldevid certificate generation policy setting");
+
         try {
             boolean isGenerateDevIdCertificateEnabled = false;
             // because this is just one option, there is not 'unchecked' value, so it is either
@@ -394,6 +412,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the attestation certificate threshold policy under "
+                + "the attestation certificate generation policy setting");
 
         try {
             boolean generateCertificateEnabled = false;
@@ -439,6 +460,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        log.info("Received request to update the ldevid certificate threshold policy under "
+                + "the ldevid certificate generation policy setting");
+
         try {
             boolean generateDevIdCertificateEnabled = false;
             // because this is just one option, there is not 'unchecked' value, so it is either
@@ -482,6 +506,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
             final RedirectAttributes redirectAttributes) throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the endorsement credential validation policy setting");
 
         try {
             final boolean isECValidationOptionEnabled
@@ -530,6 +556,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        log.info("Received request to update the firmware validation policy setting");
+
         try {
             final boolean isFirmwareValidationOptionEnabled = ppModel.getFmValidate()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
@@ -576,6 +604,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        log.info("Received request to update the ignore IMA policy under the firmware"
+                + " validation policy setting");
+
         try {
             final boolean isIgnoreImaOptionEnabled = ppModel.getIgnoreIma()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
@@ -619,6 +650,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the ignore TBoot policy under the firmware"
+                + " validation policy setting");
 
         try {
             final boolean ignoreTbootOptionEnabled = ppModel.getIgnoretBoot()
@@ -665,6 +699,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        log.info("Received request to update the ignore GPT events policy under the firmware"
+                + " validation policy setting");
+
         try {
             final boolean isIgnoreGptOptionEnabled =
                     ppModel.getIgnoreGpt().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
@@ -709,6 +746,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
+        log.info("Received request to update the ignore OS events policy under the firmware"
+                + " validation policy setting");
+
         try {
             final boolean isIgnoreOsEvtOptionEnabled = ppModel.getIgnoreOsEvt()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
@@ -729,6 +769,54 @@ public class PolicyPageController extends PageController<NoPageParams> {
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while updating ACA OS Events ignore policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Updates the save protobuf data to ACA log policy setting  and redirects back to the original page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-save-protobuf-data-to-log")
+    public RedirectView updateSaveProtobufDataToLogPolicy(
+            @ModelAttribute final PolicyPageModel ppModel,
+            final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the save protobuf data to the ACA log policy setting");
+
+        try {
+            final String saveProtobufToLogVal = ppModel.getSaveProtobufToLogOption();
+
+            this.policyPageService.updateSaveProtobufDataToLogPolicy(saveProtobufToLogVal);
+
+            switch (saveProtobufToLogVal) {
+                case "always-log-protobuf" ->
+                        messages.addSuccessMessage("Save Protobuf Data To ACA Log always has been enabled");
+                case "log-protobuf-on-fail-val" ->
+                        messages.addSuccessMessage("Save Protobuf Data To ACA Log only on failed validation"
+                                + " has been enabled");
+                case "never-log-protobuf" ->
+                        messages.addSuccessMessage("Save Protobuf Data To ACA Log never has been enabled");
+                default -> throw new IllegalArgumentException("There must be exactly three valid options for "
+                        + "setting the policy to save protobuf data to the ACA log.");
+            }
+
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while updating ACA save of protobuf data to "
+                    + "ACA log policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
