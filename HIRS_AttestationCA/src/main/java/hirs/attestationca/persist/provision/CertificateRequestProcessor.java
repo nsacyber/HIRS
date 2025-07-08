@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
 import hirs.attestationca.persist.entity.userdefined.Device;
+import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -81,11 +82,13 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     + " cannot be null or empty.");
         }
 
+        final PolicyRepository policyRepository = this.getPolicyRepository();
+        final PolicySettings policySettings = policyRepository.findByName("Default");
+
         // attempt to deserialize Protobuf CertificateRequest
         ProvisionerTpm2.CertificateRequest request;
         try {
             request = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequest);
-            log.info("Certificate request object: {}", request);
         } catch (InvalidProtocolBufferException ipbe) {
             throw new CertificateProcessingException(
                     "Could not deserialize Protobuf Certificate Request object.", ipbe);
@@ -189,9 +192,14 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    log.info("Certificate Request Response "
-                            + "object after a successful validation and if the LDevID "
-                            + "public key exists : {}", certificateResponse);
+                    if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                            && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
+                        log.info("Certificate request object received after a successful validation "
+                                + " and if the LDevID public key exists {}", request);
+                        log.info("Certificate Request Response "
+                                + "object after a successful validation and if the LDevID "
+                                + "public key exists : {}", certificateResponse);
+                    }
 
                     return certificateResponse.toByteArray();
                 } else {
@@ -217,28 +225,43 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
-                    log.info("Certificate Request Response "
-                            + "object after a successful validation and if the LDevID "
-                            + "public key does not exist : {}", certificateResponse);
-
+                    if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                            && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
+                        log.info("Certificate request object received after a successful validation "
+                                + " and if the LDevID public key does not exist {}", request);
+                        log.info("Certificate Request Response "
+                                + "object after a successful validation and if the LDevID "
+                                + "public key does not exist : {}", certificateResponse);
+                    }
                     return certificateResponse.toByteArray();
                 }
             } else {
                 log.error("Supply chain validation did not succeed. Firmware Quote Validation failed."
                         + " Result is: {}", validationResult);
+
                 ProvisionerTpm2.CertificateResponse certificateResponse = ProvisionerTpm2.CertificateResponse
                         .newBuilder()
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                         .build();
 
-                log.info("Certificate Request Response "
-                        + "object after a failed validation: {}", certificateResponse);
+                if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                        && (policySettings.isSaveProtobufToLogAlwaysEnabled()
+                        || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
+                    log.info("Certificate request object received after a failed validation:"
+                            + " {}", request);
+                    log.info("Certificate Request Response "
+                            + "object after a failed validation: {}", certificateResponse);
+                }
 
                 return certificateResponse.toByteArray();
             }
         } else {
-            log.error("Could not process credential request."
-                    + " Invalid nonce provided: {}", request.getNonce());
+            if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                    && (policySettings.isSaveProtobufToLogAlwaysEnabled()
+                    || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
+                log.error("Could not process credential request."
+                        + " Invalid nonce provided: {}", request);
+            }
             throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
     }
