@@ -86,8 +86,8 @@ public class PolicySettings extends UserDefinedEntity {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean ignoretBootEnabled = false;
 
-    @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean ignorePcieVpdEnabled = true;
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean ignorePcieVpdEnabled = false;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean linuxOs = false;

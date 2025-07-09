@@ -111,7 +111,8 @@ public class SupplyChainValidationService {
                                                             final Device device,
                                                             final List<ComponentInfo> componentInfos)
             throws IOException {
-        boolean acceptExpiredCerts = getPolicySettings().isExpiredCertificateValidationEnabled();
+        final PolicySettings policySettings = getPolicySettings();
+        boolean acceptExpiredCerts = policySettings.isExpiredCertificateValidationEnabled();
         provisionSessionId = UUID.randomUUID();
         PlatformCredential baseCredential = null;
         SupplyChainValidation platformScv = null;
@@ -120,16 +121,14 @@ public class SupplyChainValidationService {
         String pcErrorMessage = "";
         List<SupplyChainValidation> validations = new LinkedList<>();
         Map<PlatformCredential, SupplyChainValidation> deltaMapping = new HashMap<>();
-        SupplyChainValidation.ValidationType platformType = SupplyChainValidation
-                .ValidationType.PLATFORM_CREDENTIAL;
+
         log.info("Beginning Supply Chain Validation...");
 
         // Validate the Endorsement Credential
-        if (getPolicySettings().isEcValidationEnabled()) {
+        if (policySettings.isEcValidationEnabled()) {
             log.info("Beginning Endorsement Credential Validation...");
-            validations.add(ValidationService
-                    .evaluateEndorsementCredentialStatus(ec,
-                            this.caCredentialRepository, acceptExpiredCerts));
+            validations.add(ValidationService.evaluateEndorsementCredentialStatus(ec,
+                    this.caCredentialRepository, acceptExpiredCerts));
             // store the device with the credential
             if (ec != null) {
                 ec.setDeviceId(device.getId());
@@ -139,7 +138,7 @@ public class SupplyChainValidationService {
         }
 
         // Validate Platform Credential signatures
-        if (getPolicySettings().isPcValidationEnabled()) {
+        if (policySettings.isPcValidationEnabled()) {
             log.info("Beginning Platform Credential Validation...");
             // Ensure there are platform credentials to validate
             if (pcs == null || pcs.isEmpty()) {
@@ -193,38 +192,36 @@ public class SupplyChainValidationService {
             if (pcErrorMessage.isEmpty()) {
                 validations.add(platformScv);
             } else {
-                if (pcs == null) {
-                    validations.add(new SupplyChainValidation(platformType,
-                            AppraisalStatus.Status.FAIL, new ArrayList<>(), pcErrorMessage));
-                } else {
-                    validations.add(new SupplyChainValidation(platformType,
-                            AppraisalStatus.Status.FAIL, new ArrayList<>(pcs), pcErrorMessage));
-                }
+                List<ArchivableEntity> pcsList = (pcs == null) ? new ArrayList<>() : new ArrayList<>(pcs);
+                validations.add(
+                        new SupplyChainValidation(SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                                AppraisalStatus.Status.FAIL,
+                                pcsList,
+                                pcErrorMessage));
             }
         }
 
         // Validate Platform Credential attributes
-        if (getPolicySettings().isPcAttributeValidationEnabled()
-                && pcErrorMessage.isEmpty()) {
+        if (policySettings.isPcAttributeValidationEnabled() && pcErrorMessage.isEmpty()) {
             log.info("Beginning Platform Attributes Validation...");
+
             // Ensure there are platform credentials to validate
             SupplyChainValidation attributeScv = null;
             String attrErrorMessage = "";
-            List<ArchivableEntity> aes = new ArrayList<>();
+            List<ArchivableEntity> archivableEntities = new ArrayList<>();
             // need to check if there are deltas, if not then just verify
             // components of the base
             if (baseCredential == null) {
                 validations.add(ValidationService.buildValidationRecord(
                         SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                         AppraisalStatus.Status.FAIL,
-                        "Base Platform credential missing."
-                                + " Cannot validate attributes",
+                        "Base Platform credential missing. Cannot validate attributes",
                         null, Level.ERROR));
             } else {
                 if (chkDeltas) {
                     // There are delta certificates, so the code need to build a new list of
                     // certificate components to then compare against the device component list
-                    aes.addAll(basePlatformScv.getCertificatesUsed());
+                    archivableEntities.addAll(basePlatformScv.getCertificatesUsed());
 
                     attributeScv = ValidationService.evaluateDeltaAttributesStatus(
                             device.getDeviceInfo(),
@@ -232,24 +229,24 @@ public class SupplyChainValidationService {
                             componentResultRepository,
                             componentAttributeRepository,
                             componentInfos, provisionSessionId,
-                            getPolicySettings().isIgnoreRevisionEnabled());
+                            policySettings.isIgnoreRevisionEnabled());
                     if (attributeScv.getValidationResult() == AppraisalStatus.Status.FAIL) {
                         attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
                                 attributeScv.getMessage());
                     }
                 } else {
                     // validate attributes for a single base platform certificate
-                    aes.add(baseCredential);
+                    archivableEntities.add(baseCredential);
                     validations.remove(platformScv);
                     // if there are no deltas, just check base credential
                     platformScv = ValidationService.evaluatePCAttributesStatus(
                             baseCredential, device.getDeviceInfo(), ec,
                             certificateRepository, componentResultRepository,
                             componentAttributeRepository, componentInfos, provisionSessionId,
-                            getPolicySettings().isIgnoreRevisionEnabled());
+                            policySettings.isIgnoreRevisionEnabled());
                     validations.add(new SupplyChainValidation(
                             SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                            platformScv.getValidationResult(), aes, platformScv.getMessage()));
+                            platformScv.getValidationResult(), archivableEntities, platformScv.getMessage()));
                 }
 
                 updateComponentStatus(componentResultRepository
@@ -257,28 +254,29 @@ public class SupplyChainValidationService {
                                 baseCredential.getSerialNumber().toString(),
                                 baseCredential.getPlatformSerial()));
             }
+
             if (!attrErrorMessage.isEmpty()) {
                 //combine platform and platform attributes
                 validations.remove(platformScv);
                 validations.add(new SupplyChainValidation(
                         SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                        attributeScv.getValidationResult(), aes, attributeScv.getMessage()));
+                        attributeScv.getValidationResult(), archivableEntities, attributeScv.getMessage()));
             }
         }
 
-        if (getPolicySettings().isFirmwareValidationEnabled()) {
+        if (policySettings.isFirmwareValidationEnabled()) {
             log.info("Beginning Firmware Validation...");
             // may need to associated with device to pull the correct info
             // compare tpm quote with what is pulled from RIM associated file
-            validations.add(ValidationService.evaluateFirmwareStatus(device, getPolicySettings(),
+            validations.add(ValidationService.evaluateFirmwareStatus(device, policySettings,
                     referenceManifestRepository, referenceDigestValueRepository,
                     caCredentialRepository));
         }
 
         log.info("The validation finished, summarizing...");
         // Generate validation summary, save it, and return it.
-        SupplyChainValidationSummary summary
-                = new SupplyChainValidationSummary(device, validations, provisionSessionId);
+        SupplyChainValidationSummary summary =
+                new SupplyChainValidationSummary(device, validations, provisionSessionId);
         try {
             supplyChainValidationSummaryRepository.save(summary);
         } catch (DBManagerException dbMEx) {
@@ -303,11 +301,12 @@ public class SupplyChainValidationService {
         SupportReferenceManifest sRim = null;
         EventLogMeasurements eventLog = null;
 
+        final PolicySettings policySettings = getPolicySettings();
+
         // check if the policy is enabled
-        if (getPolicySettings().isFirmwareValidationEnabled()) {
+        if (policySettings.isFirmwareValidationEnabled()) {
             String deviceName = device.getDeviceInfo()
                     .getNetworkInfo().getHostname();
-
             try {
                 List<SupportReferenceManifest> supportRims = referenceManifestRepository
                         .getSupportByManufacturerModel(
@@ -344,7 +343,7 @@ public class SupplyChainValidationService {
                     PcrValidator pcrValidator = new PcrValidator(sRim.getExpectedPCRList());
                     // grab the quote
                     byte[] hash = device.getDeviceInfo().getTpmInfo().getTpmQuoteHash();
-                    if (pcrValidator.validateQuote(hash, storedPcrs, getPolicySettings())) {
+                    if (pcrValidator.validateQuote(hash, storedPcrs, policySettings)) {
                         level = Level.INFO;
                         fwStatus = new AppraisalStatus(PASS,
                                 SupplyChainCredentialValidator.FIRMWARE_VALID);

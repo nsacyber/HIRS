@@ -79,8 +79,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Platform Cert Validation policy setting and redirects back to
-     * the original page.
+     * Updates the Platform Cert Validation policy setting and redirects the user back to
+     * the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -126,8 +126,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Platform Cert Attribute Validation policy setting and
-     * redirects back to the original page.
+     * Updates the Platform Cert Attribute Validation policy setting and redirects the user back to the
+     * Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -176,7 +176,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates ignore pcie vpd policy setting and redirects back to the original page.
+     * Updates ignore PCIE VPD policy under the Platform Cert Attribute Validation policy setting and
+     * redirects the user back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -199,18 +200,17 @@ public class PolicyPageController extends PageController<NoPageParams> {
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
             final boolean isIgnorePcieVpdPolicyUpdateSuccessful =
-                    this.policyPageService.updateIgnorePCIEVpdPolicy(
-                            isIgnorePcieVpdOptionEnabled);
+                    this.policyPageService.updateIgnorePCIEVpdPolicy(isIgnorePcieVpdOptionEnabled);
 
             if (!isIgnorePcieVpdPolicyUpdateSuccessful) {
-                messages.addErrorMessage("Ignore PCIE VPD Policy cannot be "
-                        + "enabled without PC Attribute validation policy enabled.");
+                messages.addErrorMessage("Ignore PCIE VPD Policy cannot be enabled without PC Attribute"
+                        + " validation policy enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
-            // if the ignore revision policy update was successful
-            messages.addSuccessMessage("IgnorePCIE VPD  "
+            // if the ignore pcie vpd update was successful
+            messages.addSuccessMessage("Ignore PCIE VPD  "
                     + (isIgnorePcieVpdOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
@@ -224,8 +224,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the ignore component revision attribute setting and
-     * redirects back to the original page.
+     * Updates the Ignore Component Revision Attribute Policy under Platform Cert Attribute Validation policy
+     * setting and redirects the user back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -274,11 +274,11 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Attestation Certificate generation policy setting and redirects
-     * back to the original page.
+     * Updates the Attestation Certificate generation policy setting and redirects the user
+     * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -313,11 +313,11 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the DevID Certificate generation policy setting and redirects
-     * back to the original page.
+     * Updates the DevID Certificate generation policy setting and redirects the user
+     * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -336,7 +336,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
             this.policyPageService.updateLDevIdGenerationPolicy(isIssuedLDevIdOptionEnabled);
 
-            // if the devid certificate generation policy update was successful
+            // if the ldevid certificate generation policy update was successful
             messages.addSuccessMessage("LDevID Certificate Generation "
                     + (isIssuedLDevIdOptionEnabled ? "enabled." : "disabled."));
             model.put(MESSAGES_ATTRIBUTE, messages);
@@ -352,19 +352,17 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the state of the policy setting that indicates that the generation
-     * will occur in a set time frame and redirects
-     * back to the original page.
+     * Updates the attestation certificate generation expiration policy setting and redirects the user
+     * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-attestation-certificate-expiration")
-    public RedirectView updateAttestationCertExpirationPolicy(
-            @ModelAttribute final PolicyPageModel ppModel,
-            final RedirectAttributes redirectAttributes)
+    public RedirectView updateAttestationCertExpirationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                              final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -399,12 +397,11 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the state of the policy setting that indicates that the generation
-     * will occur in a set time frame and redirects
-     * back to the original page.
+     * Updates the ldevid certification generation expiration policy setting and redirects the user
+     * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -445,12 +442,11 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the state of the policy setting that indicates that the generation
-     * will occur in a set time frame from the end validity date and redirects
-     * back to the original page.
+     * Updates the attestation certificate generation threshold policy setting and redirects the user
+     * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
@@ -492,18 +488,17 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the state of the policy setting that indicates that the generation
-     * will occur in a set time frame from the end validity date and redirects
-     * back to the original page.
+     * Updates the ldevid certificate generation threshold policy setting and redirects the user
+     * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-ldevid-threshold")
-    public RedirectView updateDevIdThresholdVal(@ModelAttribute final PolicyPageModel ppModel,
-                                                final RedirectAttributes redirectAttributes)
+    public RedirectView updateLDevIdThresholdValPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                       final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -522,7 +517,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
 
             final String successMessage =
-                    this.policyPageService.updateDevIdThresholdPolicy(ppModel.getDevIdThresholdValue(),
+                    this.policyPageService.updateLDevIdThresholdPolicy(ppModel.getDevIdThresholdValue(),
                             ppModel.getDevIdReissueThreshold(),
                             generateDevIdCertificateEnabled);
             messages.addSuccessMessage(successMessage);
@@ -539,8 +534,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Endorsement Credential Validation policy setting and
-     * redirects back to the original page.
+     * Updates the Endorsement Credential Validation policy setting and redirects the user back to
+     * the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -549,9 +544,9 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-ec-validation")
-    public RedirectView updateECValidationPolicy(
-            @ModelAttribute final PolicyPageModel ppModel,
-            final RedirectAttributes redirectAttributes) throws URISyntaxException {
+    public RedirectView updateECValidationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                 final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
@@ -588,8 +583,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Firmware Validation policy setting and
-     * redirects back to the original page.
+     * Updates the Firmware Validation policy setting and redirects the user back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -636,8 +630,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the ignore IMA policy setting and
-     * redirects back to the original page.
+     * Updates the Ignore IMA policy under the firmware validation policy setting and redirects the
+     * user back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -683,8 +677,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the ignore TBoot policy setting and
-     * redirects back to the original page.
+     * Updates the Ignore TBoot policy under the firmware validation policy setting and redirects the user
+     * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -731,8 +725,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the ignore GPT policy setting and
-     * redirects back to the original page.
+     * Updates the Ignore GPT Events policy under the firmware validation policy setting and redirects the
+     * user back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -778,7 +772,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the ignore Os Events policy setting and redirects back to the original page.
+     * Updates the Ignore Os Events policy under the firmware validation policy setting and redirects the user
+     * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -787,9 +782,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-os-evt-ignore")
-    public RedirectView updateIgnoreOsEventsPolicy(
-            @ModelAttribute final PolicyPageModel ppModel,
-            final RedirectAttributes redirectAttributes)
+    public RedirectView updateIgnoreOsEventsPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                   final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -826,7 +820,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the save protobuf data to ACA log policy setting  and redirects back to the original page.
+     * Updates the save protobuf data to ACA log policy setting and redirects the user back to the
+     * Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -835,9 +830,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-save-protobuf-data-to-log")
-    public RedirectView updateSaveProtobufDataToLogPolicy(
-            @ModelAttribute final PolicyPageModel ppModel,
-            final RedirectAttributes redirectAttributes)
+    public RedirectView updateSaveProtobufDataToLogPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                          final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
