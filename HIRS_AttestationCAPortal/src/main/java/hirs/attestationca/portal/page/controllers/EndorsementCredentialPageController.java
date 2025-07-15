@@ -1,11 +1,11 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.EndorsementCredentialPageService;
+import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -13,7 +13,6 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -97,8 +96,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     public DataTableResponse<EndorsementCredential> getEndorsementCredentialsTableData(
             final DataTableInput input) {
         log.info("Received request to display list of endorsement credentials");
-        log.debug("Request received a datatable input object for the endorsement credentials page: {}",
-                input);
+        log.debug("Request received a datatable input object for the endorsement "
+                + "credentials page: {}", input);
 
         // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
@@ -113,28 +112,25 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
 
-        FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList =
-                new FilteredRecordsList<>();
+        FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList = new FilteredRecordsList<>();
 
         org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult = this.endorsementCredentialPageService.findByArchiveFlag(false, pageable);
         } else {
-            pagedResult =
-                    this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
-                            EndorsementCredential.class,
-                            searchableColumns,
-                            searchTerm,
-                            false, pageable);
+            pagedResult = this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    EndorsementCredential.class,
+                    searchableColumns,
+                    searchTerm,
+                    false, pageable);
         }
 
         if (pagedResult.hasContent()) {
             ekFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        ekFilteredRecordsList.setRecordsFiltered(
-                pagedResult.getTotalElements());
+        ekFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         ekFilteredRecordsList.setRecordsTotal(
                 this.endorsementCredentialPageService.findEndorsementCredentialRepositoryCount());
 
@@ -159,40 +155,16 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         log.info("Received request to download endorsement credential id {}", id);
 
         try {
-            final UUID uuid = UUID.fromString(id);
-            Certificate certificate = this.certificateService.findCertificate(uuid);
-
-            if (certificate == null) {
-                final String errorMessage = "Unable to locate endorsement credential record with ID " + uuid;
-                log.warn(errorMessage);
-                throw new EntityNotFoundException(errorMessage);
-            } else if (!(certificate instanceof EndorsementCredential)) {
-                final String errorMessage =
-                        "Unable to cast the found certificate to a endorsement credential object";
-                log.warn(errorMessage);
-                throw new ClassCastException(errorMessage);
-            }
-
-            final EndorsementCredential endorsementCredential = (EndorsementCredential) certificate;
-
-            final String fileName = "filename=\"" + EndorsementCredential.class.getSimpleName()
-                    + "_"
-                    + endorsementCredential.getSerialNumber()
-                    + ".cer\"";
-
-            // Set filename for download.
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
+            final DownloadFile downloadFile =
+                    this.certificateService.downloadCertificate(EndorsementCredential.class,
+                            UUID.fromString(id));
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
+                    + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-            // write endorsement credential to output stream
-            response.getOutputStream().write(certificate.getRawBytes());
-
+            response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
                     + " specified endorsement credential", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified endorsement credential
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -212,20 +184,15 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         final String fileName = "endorsement_certificates.zip";
         final String singleFileName = "Endorsement_Certificates";
 
-        // Set filename for download.
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            //  write endorsement credentials to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "endorsement credentials", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // endorsement credentials
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -267,9 +234,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             messages.addErrorMessages(errorMessages);
         }
 
-        //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
-
         return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, attr);
     }
 
@@ -283,9 +248,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteEndorsementCredential(
-            @RequestParam final String id,
-            final RedirectAttributes attr) throws URISyntaxException {
+    public RedirectView deleteEndorsementCredential(@RequestParam final String id,
+                                                    final RedirectAttributes attr) throws URISyntaxException {
         log.info("Received request to delete endorsement credential id {}", id);
 
         Map<String, Object> model = new HashMap<>();
@@ -294,9 +258,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         List<String> successMessages = new ArrayList<>();
         List<String> errorMessages = new ArrayList<>();
         try {
-            final UUID uuid = UUID.fromString(id);
-
-            this.certificateService.deleteCertificate(uuid, CertificateType.ENDORSEMENT_CREDENTIALS,
+            this.certificateService.deleteCertificate(UUID.fromString(id),
+                    CertificateType.ENDORSEMENT_CREDENTIALS,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);

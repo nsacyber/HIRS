@@ -3,11 +3,11 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.TrustChainCertificatePageService;
+import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -16,7 +16,6 @@ import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.CertificateStringMapBuilder;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -204,43 +203,16 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         log.info("Received request to download trust chain certificate {}", id);
 
         try {
-            final UUID uuid = UUID.fromString(id);
-            Certificate certificate = this.certificateService.findCertificate(uuid);
-
-            if (certificate == null) {
-                final String errorMessage =
-                        "Unable to locate trust chain certificate record with ID " + uuid;
-                log.warn(errorMessage);
-                throw new EntityNotFoundException(errorMessage);
-            } else if (!(certificate instanceof CertificateAuthorityCredential)) {
-                final String errorMessage =
-                        "Unable to cast the found certificate to a trust chain certificate "
-                                + "object";
-                log.warn(errorMessage);
-                throw new ClassCastException(errorMessage);
-            }
-
-            final CertificateAuthorityCredential trustChainCertificate =
-                    (CertificateAuthorityCredential) certificate;
-
-            final String fileName = "filename=\"" + CertificateAuthorityCredential.class.getSimpleName()
-                    + "_"
-                    + trustChainCertificate.getSerialNumber()
-                    + ".cer\"";
-
-            // Set filename for download.
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
+            final DownloadFile downloadFile =
+                    this.certificateService.downloadCertificate(CertificateAuthorityCredential.class,
+                            UUID.fromString(id));
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
+                    + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-            // write trust chain certificate to output stream
-            response.getOutputStream().write(certificate.getRawBytes());
-
+            response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
                     + " specified trust chain certificate", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified trust chain certificate
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -278,13 +250,9 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             // Write the PEM string to the output stream
             outputStream.write(fullChainPEM.getBytes(StandardCharsets.UTF_8));
             outputStream.flush();  // Ensure all data is written
-
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
                     + "aca trust chain", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // aca certificates
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -303,20 +271,15 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         final String fileName = "trust-chain.zip";
         final String singleFileName = "ca-certificates";
 
-        // Set filename for download.
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            //  write trust chain certificates to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "trust chain certificates", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // trust chain certificates
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -388,9 +351,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            final UUID uuid = UUID.fromString(id);
-
-            this.certificateService.deleteCertificate(uuid, CertificateType.TRUST_CHAIN,
+            this.certificateService.deleteCertificate(UUID.fromString(id), CertificateType.TRUST_CHAIN,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);

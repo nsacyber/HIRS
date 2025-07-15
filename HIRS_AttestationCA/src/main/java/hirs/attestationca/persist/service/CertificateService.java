@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.attestationca.persist.util.DownloadFile;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
@@ -131,23 +132,18 @@ public class CertificateService {
      * @param errorMessages   contains any error messages that will be displayed on the page
      * @param certificate     the certificate to store
      */
-    public void storeCertificate(
-            final CertificateType certificateType,
-            final String fileName,
-            final List<String> successMessages,
-            final List<String> errorMessages,
-            final Certificate certificate) {
-
+    public void storeCertificate(final CertificateType certificateType, final String fileName,
+                                 final List<String> successMessages, final List<String> errorMessages,
+                                 final Certificate certificate) {
         Certificate existingCertificate;
 
         // look for an identical certificate in the database
         try {
-            existingCertificate = getCertificateByHash(
-                    certificateType,
-                    certificate.getCertificateHash());
+            existingCertificate =
+                    this.certificateRepository.findByCertificateHashAndDType(certificate.getCertificateHash(),
+                            certificateType.getCertificateTypeName());
         } catch (Exception exception) {
-            final String failMessage = "Querying for existing certificate failed ("
-                    + fileName + "): ";
+            final String failMessage = "Querying for existing certificate failed (" + fileName + "): ";
             errorMessages.add(failMessage + exception.getMessage());
             log.error(failMessage, exception);
             return;
@@ -233,8 +229,7 @@ public class CertificateService {
         }
 
         // if an identical certificate is already unarchived, do nothing and show a fail message
-        final String failMessage
-                = String.format("Storing certificate failed: an identical"
+        final String failMessage = String.format("Storing certificate failed: an identical"
                 + " certificate already exists (%s): ", fileName);
         errorMessages.add(failMessage);
         log.error(failMessage);
@@ -248,10 +243,8 @@ public class CertificateService {
      * @param successMessages contains any success messages that will be displayed on the page
      * @param errorMessages   contains any error messages that will be displayed on the page
      */
-    public void deleteCertificate(final UUID uuid,
-                                  final CertificateType certificateType,
-                                  final List<String> successMessages,
-                                  final List<String> errorMessages) {
+    public void deleteCertificate(final UUID uuid, final CertificateType certificateType,
+                                  final List<String> successMessages, final List<String> errorMessages) {
 
         Certificate certificate = findCertificate(uuid);
 
@@ -261,32 +254,32 @@ public class CertificateService {
             errorMessages.add(notFoundMessage);
             log.warn(notFoundMessage);
             throw new EntityNotFoundException(notFoundMessage);
-        } else {
-            if (certificateType.equals(CertificateType.PLATFORM_CREDENTIALS)) {
-                PlatformCredential platformCertificate = (PlatformCredential) certificate;
-                if (platformCertificate.isPlatformBase()) {
-                    // only do this if the base is being deleted.
-                    List<PlatformCredential> sharedCertificates = getPlatformCertificateByBoardSN(
-                            platformCertificate.getPlatformSerial());
+        }
 
-                    for (PlatformCredential pc : sharedCertificates) {
-                        if (!pc.isPlatformBase()) {
-                            pc.archive("User requested deletion via UI of the base certificate");
-                            certificateRepository.save(pc);
-                            deleteComponentResults(pc.getPlatformSerial());
-                        }
+        if (certificateType.equals(CertificateType.PLATFORM_CREDENTIALS)) {
+            PlatformCredential platformCertificate = (PlatformCredential) certificate;
+            if (platformCertificate.isPlatformBase()) {
+                // only do this if the base is being deleted.
+                List<PlatformCredential> sharedCertificates = getPlatformCertificateByBoardSN(
+                        platformCertificate.getPlatformSerial());
+
+                for (PlatformCredential pc : sharedCertificates) {
+                    if (!pc.isPlatformBase()) {
+                        pc.archive("User requested deletion via UI of the base certificate");
+                        certificateRepository.save(pc);
+                        deleteComponentResults(pc.getPlatformSerial());
                     }
                 }
-                deleteComponentResults(platformCertificate.getPlatformSerial());
             }
-
-            certificate.archive("User requested deletion via UI");
-            certificateRepository.save(certificate);
-
-            String deleteCompletedMessage = "Certificate successfully deleted";
-            successMessages.add(deleteCompletedMessage);
-            log.info(deleteCompletedMessage);
+            deleteComponentResults(platformCertificate.getPlatformSerial());
         }
+
+        certificate.archive("User requested deletion via UI");
+        certificateRepository.save(certificate);
+
+        String deleteCompletedMessage = "Certificate successfully deleted";
+        successMessages.add(deleteCompletedMessage);
+        log.info(deleteCompletedMessage);
     }
 
     /**
@@ -301,18 +294,17 @@ public class CertificateService {
                                          final CertificateType certificateType,
                                          final String singleFileName) throws IOException {
         String zipFileName;
-        final List<Certificate> certificates = findCertificatesByType(certificateType);
 
-        // get all files
+        final List<Certificate> certificates =
+                this.certificateRepository.findByType(certificateType.getCertificateTypeName());
+
         for (Certificate certificate : certificates) {
             zipFileName = String.format("%s[%s].cer", singleFileName,
                     Integer.toHexString(certificate.getCertificateHash()));
-            // configure the zip entry, the properties of the 'file'
             ZipEntry zipEntry = new ZipEntry(zipFileName);
             zipEntry.setSize((long) certificate.getRawBytes().length * Byte.SIZE);
             zipEntry.setTime(System.currentTimeMillis());
             zipOut.putNextEntry(zipEntry);
-            // the content of the resource
             StreamUtils.copy(certificate.getRawBytes(), zipOut);
             zipOut.closeEntry();
         }
@@ -320,57 +312,38 @@ public class CertificateService {
     }
 
     /**
-     * Retrieves the list of certificates based on the certificate type.
+     * Retrieves a certificate from the database and prepares its contents for download.
      *
-     * @param certificateType certificate type
-     * @return list of certificates
+     * @param certificateClass generic certificate class
+     * @param uuid             certificate uuid
+     * @param <T>              certificate type
+     * @return download file
      */
-    private List<Certificate> findCertificatesByType(final CertificateType certificateType) {
-        return switch (certificateType) {
-            case PLATFORM_CREDENTIALS -> this.certificateRepository
-                    .findByType(
-                            "PlatformCredential");
-            case ENDORSEMENT_CREDENTIALS -> this.certificateRepository
-                    .findByType(
-                            "EndorsementCredential");
-            case TRUST_CHAIN -> this.certificateRepository
-                    .findByType(
-                            "CertificateAuthorityCredential");
-            case IDEVID_CERTIFICATES -> this.certificateRepository
-                    .findByType(
-                            "IDevIDCertificate");
-            case ISSUED_CERTIFICATES -> this.certificateRepository.
-                    findByType("IssuedAttestationCertificate");
-        };
-    }
+    public <T extends Certificate> DownloadFile downloadCertificate(final Class<T> certificateClass,
+                                                                    final UUID uuid) {
+        Certificate certificate = this.findCertificate(uuid);
 
-    /**
-     * Retrieves the certificate by the hash code of its bytes. Looks for both
-     * archived and unarchived certificates.
-     *
-     * @param certificateType String containing the certificate type
-     * @param certificateHash the hash of the certificate's bytes
-     * @return the certificate or null if none is found
-     */
-    private Certificate getCertificateByHash(
-            final CertificateType certificateType,
-            final int certificateHash) {
-        return switch (certificateType) {
-            case PLATFORM_CREDENTIALS -> this.certificateRepository
-                    .findByCertificateHash(certificateHash,
-                            "PlatformCredential");
-            case ENDORSEMENT_CREDENTIALS -> this.certificateRepository
-                    .findByCertificateHash(certificateHash,
-                            "EndorsementCredential");
-            case TRUST_CHAIN -> this.certificateRepository
-                    .findByCertificateHash(certificateHash,
-                            "CertificateAuthorityCredential");
-            case IDEVID_CERTIFICATES -> this.certificateRepository
-                    .findByCertificateHash(certificateHash,
-                            "IDevIDCertificate");
-            default -> throw new IllegalArgumentException("The provided certificate type {"
-                    + certificateType + "} does not exist");
-        };
+        if (certificate == null) {
+            final String errorMessage =
+                    "Unable to locate " + certificateClass.getSimpleName() + " record with ID " + uuid;
+            log.warn(errorMessage);
+            throw new EntityNotFoundException(errorMessage);
+        } else if (!certificateClass.isInstance(certificate)) {
+            final String errorMessage =
+                    "Unable to cast the found certificate to a(n) " + certificateClass.getSimpleName() +
+                            " object";
+            log.warn(errorMessage);
+            throw new ClassCastException(errorMessage);
+        }
+
+        final T typeCertificate = certificateClass.cast(certificate);
+
+        final String fileName = "filename=\"" + certificateClass.getSimpleName()
+                + "_"
+                + typeCertificate.getSerialNumber()
+                + ".cer\"";
+
+        return new DownloadFile(fileName, typeCertificate.getRawBytes());
     }
 
     /**

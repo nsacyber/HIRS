@@ -32,7 +32,6 @@ public class EndorsementCredentialPageService {
         this.endorsementCredentialRepository = endorsementCredentialRepository;
     }
 
-
     /**
      * Retrieves a page of endorsement credentials using the provided archive flag and pageable value.
      *

@@ -1,12 +1,12 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.CertificateService;
 import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.PlatformCredentialPageService;
+import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -14,7 +14,6 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -177,40 +176,16 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.info("Received request to download platform credential id {}", id);
 
         try {
-            final UUID uuid = UUID.fromString(id);
-            Certificate certificate = this.certificateService.findCertificate(uuid);
-
-            if (certificate == null) {
-                final String errorMessage = "Unable to locate platform credential record with ID " + uuid;
-                log.warn(errorMessage);
-                throw new EntityNotFoundException(errorMessage);
-            } else if (!(certificate instanceof PlatformCredential)) {
-                final String errorMessage =
-                        "Unable to cast the found certificate to a platform credential object";
-                log.warn(errorMessage);
-                throw new ClassCastException(errorMessage);
-            }
-
-            final PlatformCredential platformCredential = (PlatformCredential) certificate;
-
-            final String fileName = "filename=\"" + PlatformCredential.class.getSimpleName()
-                    + "_"
-                    + platformCredential.getSerialNumber()
-                    + ".cer\"";
-
-            // Set filename for download.
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
+            final DownloadFile downloadFile =
+                    this.certificateService.downloadCertificate(PlatformCredential.class,
+                            UUID.fromString(id));
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
+                    + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-            // write platform credential to output stream
-            response.getOutputStream().write(certificate.getRawBytes());
-
+            response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
                     + " specified platform credential", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified platform credential
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -230,20 +205,15 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         final String fileName = "platform_certificates.zip";
         final String singleFileName = "Platform_Certificate";
 
-        // Set filename for download.
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            //  write platform credentials to output stream and bulk download them
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "platform credentials", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            //platform credentials
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -287,9 +257,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             messages.addErrorMessages(errorMessages);
         }
 
-        //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
-
         return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, attr);
     }
 
@@ -315,9 +283,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            final UUID uuid = UUID.fromString(id);
-
-            this.certificateService.deleteCertificate(uuid, CertificateType.PLATFORM_CREDENTIALS,
+            this.certificateService.deleteCertificate(UUID.fromString(id),
+                    CertificateType.PLATFORM_CREDENTIALS,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);
