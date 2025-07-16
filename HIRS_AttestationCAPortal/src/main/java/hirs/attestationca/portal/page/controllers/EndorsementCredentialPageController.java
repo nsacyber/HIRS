@@ -99,9 +99,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         log.debug("Request received a datatable input object for the endorsement "
                 + "credentials page: {}", input);
 
-        // attempt to get the column property based on the order index.
-        String orderColumnName = input.getOrderColumnName();
-
+        final String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
@@ -218,11 +216,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
 
-            //Parse endorsement credential
             EndorsementCredential parsedEndorsementCredential =
                     this.endorsementCredentialPageService.parseEndorsementCredential(file, errorMessages);
 
-            //Store only if it was parsed
             if (parsedEndorsementCredential != null) {
                 certificateService.storeCertificate(
                         CertificateType.ENDORSEMENT_CREDENTIALS,
@@ -259,7 +255,6 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
         try {
             this.certificateService.deleteCertificate(UUID.fromString(id),
-                    CertificateType.ENDORSEMENT_CREDENTIALS,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);

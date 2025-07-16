@@ -62,8 +62,7 @@ public class IDevIdCertificatePageService {
 
         byte[] fileBytes;
         String fileName = file.getOriginalFilename();
-
-        // attempt to retrieve file bytes from the provided file
+        
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
@@ -74,7 +73,6 @@ public class IDevIdCertificatePageService {
             return null;
         }
 
-        // attempt to build the IDevId certificate from the uploaded bytes
         try {
             return new IDevIDCertificate(fileBytes);
         } catch (IOException ioEx) {

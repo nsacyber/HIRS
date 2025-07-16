@@ -23,7 +23,6 @@ import java.util.List;
 @Log4j2
 @Service
 public class PlatformCredentialPageService {
-
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
@@ -83,9 +82,8 @@ public class PlatformCredentialPageService {
         log.info("Received platform credential file of size: {}", file.getSize());
 
         byte[] fileBytes;
-        String fileName = file.getOriginalFilename();
+        final String fileName = file.getOriginalFilename();
 
-        // attempt to retrieve file bytes from the provided file
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
@@ -96,7 +94,6 @@ public class PlatformCredentialPageService {
             return null;
         }
 
-        // attempt to build the platform credential from the uploaded bytes
         try {
             return new PlatformCredential(fileBytes);
         } catch (IOException ioEx) {

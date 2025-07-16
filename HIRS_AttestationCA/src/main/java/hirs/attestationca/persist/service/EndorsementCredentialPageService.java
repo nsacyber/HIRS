@@ -64,9 +64,8 @@ public class EndorsementCredentialPageService {
         log.info("Received endorsement credential file of size: {}", file.getSize());
 
         byte[] fileBytes;
-        String fileName = file.getOriginalFilename();
+        final String fileName = file.getOriginalFilename();
 
-        // attempt to retrieve file bytes from the provided file
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
@@ -77,7 +76,6 @@ public class EndorsementCredentialPageService {
             return null;
         }
 
-        // attempt to build the endorsement credential from the uploaded bytes
         try {
             return new EndorsementCredential(fileBytes);
         } catch (IOException ioEx) {

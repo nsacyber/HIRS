@@ -95,10 +95,10 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(
             final DataTableInput input) {
         log.info("Received request to display list of issued attestation certificates");
-        log.debug("Request received a datatable input object for the issued attestation certificate page: "
-                + "{}", input);
+        log.debug("Request received a datatable input object for the issued attestation"
+                + " certificate page: {}", input);
 
-        // attempt to get the column property based on the order index.
+
         String orderColumnName = input.getOrderColumnName();
 
         log.debug("Ordering on column: {}", orderColumnName);
@@ -221,7 +221,6 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         try {
             this.certificateService.deleteCertificate(UUID.fromString(id),
-                    CertificateType.ISSUED_CERTIFICATES,
                     successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);

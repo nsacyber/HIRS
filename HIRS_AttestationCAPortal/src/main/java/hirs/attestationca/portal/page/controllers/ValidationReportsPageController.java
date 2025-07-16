@@ -84,7 +84,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         log.info("Received request to display list of validation reports");
         log.debug("Request received a datatable input object for the validation reports page: {}", input);
 
-        // attempt to get the column property based on the order index.
+
         String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 

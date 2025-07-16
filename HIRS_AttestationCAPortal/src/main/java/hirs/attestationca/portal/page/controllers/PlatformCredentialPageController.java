@@ -99,7 +99,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.info("Received request to display list of platform credentials");
         log.debug("Request received a datatable input object for the platform credentials page: {}", input);
 
-        // attempt to get the column property based on the order index.
+
         String orderColumnName = input.getOrderColumnName();
 
         log.debug("Ordering on column: {}", orderColumnName);
@@ -239,13 +239,11 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         for (MultipartFile file : files) {
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
-
-            //Parse platform credential
+            
             PlatformCredential parsedPlatformCredential =
                     this.platformCredentialService.parsePlatformCredential(file,
                             errorMessages);
 
-            //Store only if it was parsed
             if (parsedPlatformCredential != null) {
                 certificateService.storeCertificate(
                         CertificateType.PLATFORM_CREDENTIALS,
@@ -284,7 +282,6 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         try {
             this.certificateService.deleteCertificate(UUID.fromString(id),
-                    CertificateType.PLATFORM_CREDENTIALS,
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);

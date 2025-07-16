@@ -74,9 +74,8 @@ public class TrustChainCertificatePageService {
         log.info("Received trust chain certificate file of size: {}", file.getSize());
 
         byte[] fileBytes;
-        String fileName = file.getOriginalFilename();
+        final String fileName = file.getOriginalFilename();
 
-        // attempt to retrieve file bytes from the provided file
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
@@ -92,8 +91,7 @@ public class TrustChainCertificatePageService {
             if (CredentialHelper.isMultiPEM(new String(fileBytes, StandardCharsets.UTF_8))) {
                 try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(fileBytes)) {
                     CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                    Collection<? extends Certificate> c =
-                            cf.generateCertificates(certInputStream);
+                    Collection<? extends Certificate> c = cf.generateCertificates(certInputStream);
 
                     for (java.security.cert.Certificate certificate : c) {
                         List<String> moreSuccessMessages = new ArrayList<>();

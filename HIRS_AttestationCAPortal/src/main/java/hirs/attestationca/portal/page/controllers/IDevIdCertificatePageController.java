@@ -100,9 +100,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         log.debug("Request received a datatable input object for the idevid"
                 + " certificates page: {}", input);
 
-        // attempt to get the column property based on the order index.
-        String orderColumnName = input.getOrderColumnName();
-
+        final String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
@@ -212,7 +210,6 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     protected RedirectView uploadIDevIdCertificate(
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
-
         log.info("Received request to upload one or more idevid certificates");
 
         Map<String, Object> model = new HashMap<>();
@@ -222,11 +219,9 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
 
-            //Parse IDevId Certificate
             IDevIDCertificate parsedIDevIDCertificate =
                     this.iDevIdCertificatePageService.parseIDevIDCertificate(file, errorMessages);
 
-            //Store only if it was parsed
             if (parsedIDevIDCertificate != null) {
                 certificateService.storeCertificate(
                         CertificateType.IDEVID_CERTIFICATES,
@@ -265,9 +260,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         try {
             this.certificateService.deleteCertificate(UUID.fromString(id),
-                    CertificateType.IDEVID_CERTIFICATES,
                     successMessages, errorMessages);
-
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {

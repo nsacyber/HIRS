@@ -144,9 +144,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         log.debug("Request received a datatable input object for the trust chain certificates page: {}",
                 input);
 
-        // attempt to get the column property based on the order index.
-        String orderColumnName = input.getOrderColumnName();
-
+        final String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
@@ -228,7 +226,6 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     @GetMapping("/download-aca-cert-chain")
     public void downloadACATrustChain(final HttpServletResponse response)
             throws IOException {
-
         log.info("Received request to download the ACA server trust chain certificates");
 
         // Get the output stream of the response
@@ -242,14 +239,12 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
             final String pemFileName = "hirs-aca-trust_chain.pem ";
 
-            // Set the response headers for file download
             response.setContentType("application/x-pem-file");  // MIME type for PEM files
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pemFileName);
             response.setContentLength(fullChainPEM.length());
 
-            // Write the PEM string to the output stream
             outputStream.write(fullChainPEM.getBytes(StandardCharsets.UTF_8));
-            outputStream.flush();  // Ensure all data is written
+            outputStream.flush();
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
                     + "aca trust chain", exception);
@@ -306,12 +301,10 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
 
-            //Parse trust chain certificate
             CertificateAuthorityCredential parsedTrustChainCertificate =
                     this.trustChainCertificatePageService.parseTrustChainCertificate(file, successMessages,
                             errorMessages);
 
-            //Store only if it was parsed
             if (parsedTrustChainCertificate != null) {
                 certificateService.storeCertificate(
                         CertificateType.TRUST_CHAIN,
@@ -323,9 +316,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             messages.addErrorMessages(errorMessages);
         }
 
-        //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
-
         return redirectTo(Page.TRUST_CHAIN, new NoPageParams(), model, attr);
     }
 
@@ -351,9 +342,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificateService.deleteCertificate(UUID.fromString(id), CertificateType.TRUST_CHAIN,
+            this.certificateService.deleteCertificate(UUID.fromString(id),
                     successMessages, errorMessages);
-
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
