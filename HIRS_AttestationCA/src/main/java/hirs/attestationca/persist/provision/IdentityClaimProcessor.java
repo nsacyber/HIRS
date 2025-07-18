@@ -671,9 +671,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                 .findByManufacturerAndModel(manufacturer, model);
 
         Map<String, ReferenceDigestValue> digestValueMap = new HashMap<>();
-        expectedValues.forEach((rdv) -> {
-            digestValueMap.put(rdv.getDigestValue(), rdv);
-        });
+        expectedValues.forEach((rdv) -> digestValueMap.put(rdv.getDigestValue(), rdv));
 
         for (SupportReferenceManifest dbSupport : dbSupportRims) {
             if (dbSupport.isSwidPatch()) {
@@ -813,9 +811,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             // check the DB for like component infos
             List<ComponentInfo> dbComponentInfos = this.componentInfoRepository.findByDeviceName(hostName);
-            dbComponentInfos.forEach((infos) -> {
-                componentInfoMap.put(infos.hashCode(), infos);
-            });
+            dbComponentInfos.forEach((infos) -> componentInfoMap.put(infos.hashCode(), infos));
 
             for (ComponentInfo componentInfo : dbComponentInfos) {
                 if (componentInfoMap.containsKey(componentInfo.hashCode())) {

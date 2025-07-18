@@ -80,6 +80,11 @@ public class PolicyPageService {
 
         policySettings.setPcAttributeValidationEnabled(isPcAttributeValidationOptionEnabled);
 
+        if (!isPcAttributeValidationOptionEnabled) {
+            policySettings.setIgnorePcieVpdEnabled(false);
+            policySettings.setIgnoreRevisionEnabled(false);
+        }
+
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the platform credential "
@@ -100,8 +105,7 @@ public class PolicyPageService {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (isIgnorePcieVpdOptionEnabled && !policySettings.isPcAttributeValidationEnabled()) {
-            log.error("Ignore PCIE VPD cannot be "
-                    + "enabled without PC Attribute validation policy enabled.");
+            log.error("Ignore PCIE VPD cannot be enabled without PC Attribute validation policy enabled.");
             return false;
         }
 
