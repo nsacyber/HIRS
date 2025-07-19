@@ -140,7 +140,9 @@ public final class ValidationService {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) throws IOException {
+            final UUID provisionSessionId,
+            final boolean ignoreRevisionAttribute,
+            final boolean ignorePcieVpdAttribute) throws IOException {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
@@ -157,7 +159,7 @@ public final class ValidationService {
                 validatePlatformCredentialAttributes(platformCredential, deviceInfoReport,
                         endorsementCredential,
                         componentResultRepository, componentAttributeRepository,
-                        componentInfos, provisionSessionId, ignoreRevisionAttribute);
+                        componentInfos, provisionSessionId, ignoreRevisionAttribute, ignorePcieVpdAttribute);
 
         return switch (result.getAppStatus()) {
             case PASS -> buildValidationRecord(validationType, AppraisalStatus.Status.PASS,

@@ -243,7 +243,8 @@ public class SupplyChainValidationService {
                             baseCredential, device.getDeviceInfo(), ec,
                             certificateRepository, componentResultRepository,
                             componentAttributeRepository, componentInfos, provisionSessionId,
-                            policySettings.isIgnoreRevisionEnabled());
+                            policySettings.isIgnoreRevisionEnabled(),
+                            policySettings.isIgnorePcieVpdEnabled());
                     validations.add(new SupplyChainValidation(
                             SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
                             platformScv.getValidationResult(), archivableEntities, platformScv.getMessage()));

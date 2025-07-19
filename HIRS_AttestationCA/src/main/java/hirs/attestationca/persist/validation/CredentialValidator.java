@@ -123,7 +123,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             return new AppraisalStatus(FAIL, message);
         }
 
-        X509AttributeCertificateHolder attributeCert = null;
+        X509AttributeCertificateHolder attributeCert;
         try {
             attributeCert = pc.getX509AttributeCertificateHolder();
         } catch (IOException e) {
@@ -183,7 +183,9 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) throws IOException {
+            final UUID provisionSessionId,
+            final boolean ignoreRevisionAttribute,
+            final boolean ignorePcieVpdAttribute) throws IOException {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
         if (platformCredential == null) {
@@ -219,7 +221,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV2p0(
                     platformCredential, deviceInfoReport, componentResultRepository,
                     componentAttributeRepository, componentInfos, provisionSessionId,
-                    ignoreRevisionAttribute);
+                    ignoreRevisionAttribute, ignorePcieVpdAttribute);
         }
         return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV1p2(
                 platformCredential, deviceInfoReport);
