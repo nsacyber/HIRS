@@ -61,7 +61,6 @@ public class PolicyPageControllerTest extends PageControllerTest {
      */
     @Test
     public void verifySpringInitialized() {
-
         assertNotNull(policyRepository);
         assertNotNull(policy);
     }
@@ -98,7 +97,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
      * @throws Exception if test fails
      */
     @Test
-    public void testUpdateEcValEnable() throws Exception {
+    public void testUpdateEndorsementCredentialValidationPolicyEnable() throws Exception {
 
         ResultActions actions;
 
@@ -116,8 +115,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("success",
-                                hasItem("Endorsement credential validation enabled"))));
+                        hasProperty("successMessages",
+                                hasItem("Endorsement Credential Validation enabled"))));
 
         policy = policyRepository.findByName("Default");
         assertTrue(policy.isEcValidationEnabled());
@@ -129,7 +128,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
      * @throws Exception if test fails
      */
     @Test
-    public void testUpdateEcValDisable() throws Exception {
+    public void testUpdateEndorsementCredentialValidationPolicyDisable() throws Exception {
 
         ResultActions actions;
 
@@ -148,8 +147,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("success",
-                                hasItem("Endorsement credential validation disabled"))));
+                        hasProperty("successMessages",
+                                hasItem("Endorsement Credential Validation disabled"))));
 
         policy = policyRepository.findByName("Default");
         assertFalse(policy.isEcValidationEnabled());
@@ -169,7 +168,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("error",
+                        hasProperty("errorMessages",
                                 hasItem("To disable Endorsement Credential Validation, Platform Validation"
                                         + " must also be disabled."))));
 
@@ -203,8 +202,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("success",
-                                hasItem("Platform certificate validation enabled"))));
+                        hasProperty("successMessages",
+                                hasItem("Platform Certificate Validation enabled"))));
 
         policy = policyRepository.findByName("Default");
         assertTrue(policy.isPcValidationEnabled());
@@ -224,9 +223,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("error",
-                                hasItem("Unable to change Platform Validation setting,"
-                                        + "  invalid policy configuration."))));
+                        hasProperty("errorMessages",
+                                hasItem("Unable to update ACA Platform Validation setting due to the current "
+                                        + "policy configuration."))));
 
         policy = policyRepository.findByName("Default");
         assertFalse(policy.isPcValidationEnabled());
@@ -258,8 +257,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("success",
-                                hasItem("Platform certificate validation disabled"))));
+                        hasProperty("successMessages",
+                                hasItem("Platform Certificate Validation disabled"))));
 
         policy = policyRepository.findByName("Default");
         assertFalse(policy.isPcValidationEnabled());
@@ -279,9 +278,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("error",
-                                hasItem("Unable to change Platform Validation setting,"
-                                        + "  invalid policy configuration."))));
+                        hasProperty("errorMessages",
+                                hasItem("Unable to update ACA Platform Validation setting due to the current"
+                                        + " policy configuration."))));
 
         policy = policyRepository.findByName("Default");
         assertTrue(policy.isPcValidationEnabled());
@@ -313,8 +312,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("success",
-                                hasItem("Platform certificate attribute validation enabled"))));
+                        hasProperty("successMessages",
+                                hasItem("Platform Certificate Attribute validation enabled"))));
 
         policy = policyRepository.findByName("Default");
         assertTrue(policy.isPcAttributeValidationEnabled());
@@ -334,7 +333,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("error",
+                        hasProperty("errorMessages",
                                 hasItem("To enable Platform Attribute Validation,"
                                         + " Platform Credential Validation must also be enabled."))));
 
@@ -367,8 +366,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 .andExpect(status().is3xxRedirection())
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
-                        hasProperty("success",
-                                hasItem("Platform certificate attribute validation disabled"))));
+                        hasProperty("successMessages",
+                                hasItem("Platform Certificate Attribute validation disabled"))));
 
         policy = policyRepository.findByName("Default");
         assertFalse(policy.isPcAttributeValidationEnabled());

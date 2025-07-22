@@ -40,6 +40,8 @@ dependencies {
 
     implementation libs.pci
 
+    implementation libs.commons.io
+
     // explicitly include the patched version of the apache http client dependency
     implementation libs.apacheHttpClient
 

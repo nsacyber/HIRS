@@ -58,9 +58,15 @@ public final class CredentialHelper {
     public static byte[] stripPemHeaderFooter(final String pemFile) {
         String strippedFile;
         strippedFile = pemFile.replace(CertificateVariables.PEM_HEADER, "");
-        strippedFile = strippedFile.replace(CertificateVariables.PEM_FOOTER, "");
+        int keyFooterPos = strippedFile.indexOf(CertificateVariables.PEM_FOOTER);
+        if (keyFooterPos >= 0) {
+            strippedFile = strippedFile.substring(0, keyFooterPos);
+        }
         strippedFile = strippedFile.replace(CertificateVariables.PEM_ATTRIBUTE_HEADER, "");
-        strippedFile = strippedFile.replace(CertificateVariables.PEM_ATTRIBUTE_FOOTER, "");
+        int attrFooterPos = strippedFile.indexOf(CertificateVariables.PEM_ATTRIBUTE_FOOTER);
+        if (attrFooterPos >= 0) {
+            strippedFile = strippedFile.substring(0, attrFooterPos);
+        }
         return Base64.decode(strippedFile);
     }
 

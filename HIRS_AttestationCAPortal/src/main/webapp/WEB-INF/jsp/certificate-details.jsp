@@ -405,10 +405,10 @@
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
                         <div id="holder" class="col col-md-8">
                             <c:if test="${not empty initialData.holderIssuer}">
-                                <div>Holder Certificate:&nbsp;<span>${initialData.holderIssuer}</span></div>
+                                <div>Holder Certificate Issuer:&nbsp;<span>${initialData.holderIssuer}</span></div>
                             </c:if>
                             <div id="certificateid">
-                                <div>Holder Identifier:&nbsp;
+                                <div>Holder Certificate Serial Number:&nbsp;
                                     <c:choose>
                                         <c:when test="${not empty initialData.holderId}">
                                             <span>
@@ -959,15 +959,15 @@
         </div>
         <script>
             $(document).ready(function () {
-                var type = "${param.type}";
-                var signature = ${initialData.signature};
-                var serialNumber = '${initialData.serialNumber}';
-                var authorityKeyIdentifier = '${initialData.authKeyId}';
-                var authoritySerialNumber = '${initialData.authSerialNumber}';
+                let type = "${param.type}";
+                let signature = ${initialData.signature};
+                let serialNumber = '${initialData.serialNumber}';
+                let authorityKeyIdentifier = '${initialData.authKeyId}';
+                let authoritySerialNumber = '${initialData.authSerialNumber}';
 
                 //Format validity time
                 $("#validity span").each(function () {
-                    var dateText = $(this).text();
+                    let dateText = $(this).text();
                     return $(this).text(formatCertificateDate(dateText));
                 });
 
@@ -993,13 +993,13 @@
             </c:if>
             <c:choose>
                 <c:when test="${not empty initialData.publicKeyValue}">
-                var publicKey = '${initialData.publicKeyValue}';
+                let publicKey = '${initialData.publicKeyValue}';
                 $("#encodedPublicKey").html(parseHexString(publicKey));
                 </c:when>
                 <c:otherwise>
                     <c:if test="${not empty initialData.encodedPublicKey}">
                 //Change public key byte to hex
-                var encPublicKey = ${initialData.encodedPublicKey};
+                let encPublicKey = ${initialData.encodedPublicKey};
                 $("#encodedPublicKey").html(byteToHexString(encPublicKey));
                     </c:if>
                 </c:otherwise>
@@ -1008,19 +1008,19 @@
             <c:if test="${not empty initialData.subjectKeyIdentifier}">
                 //Change subject byte to hex only for CACertificate
                 if (type === "certificateauthority") {
-                    var subjectKeyIdentifier = ${initialData.subjectKeyIdentifier};
+                    let subjectKeyIdentifier = ${initialData.subjectKeyIdentifier};
                     $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
                 }
             </c:if>
 
                 <c:if test="${not empty initialData.hwSerialNumHex}">
-                    var hwSerialNum = '${initialData.hwSerialNum}';
+                    let hwSerialNum = '${initialData.hwSerialNum}';
                     $("#hwSerialNum").html(parseHexString(hwSerialNum));
                 </c:if>
 
                 <c:if test="${not empty initialData.tcgTpmManufacturer}">
-                    var ekAKI = '${initialData.ekAuthorityKeyIdentifier};'
-                    var ekCSN = '${initialData.ekCertificateSerialNumber};'
+                    let ekAKI = '${initialData.ekAuthorityKeyIdentifier};'
+                    let ekCSN = '${initialData.ekCertificateSerialNumber};'
 
                     $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAKI));
                     $("#ekCertificateSerialNumber").html(parseHexString(ekCSN));
@@ -1038,9 +1038,9 @@
 
                 //Change link width
                 $("#headingOne, #headingTwo, #headingThree").each(function (e) {
-                    var width = $(this).width();
+                    let width = $(this).width();
                     //Get link width
-                    var linkWidth = $(this).find('a').width();
+                    let linkWidth = $(this).find('a').width();
 
                     //Change width for the link
                     $(this).find('a').css({

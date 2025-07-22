@@ -6,7 +6,7 @@
 
     <div id="page-messages-container">
         <ul id="page-messages" class="noPaddingOrMargin">
-            <c:forEach var="error" items="${messages.error}">
+            <c:forEach var="error" items="${messages.errorMessages}">
                 <li id="page-errorMessage" class="page-message">
                     <span class="page-messageIcon">
                         <img src="${icons}/ic_priority_high_white_24dp.png"/>
@@ -15,7 +15,7 @@
                 </li>
             </c:forEach>
 
-            <c:forEach var="success" items="${messages.success}">
+            <c:forEach var="success" items="${messages.successMessages}">
                 <li id="page-successMessage" class="page-message">
                     <span class="page-messageIcon">
                         <img src="${icons}/ic_done_white_24dp.png"/>
@@ -24,7 +24,7 @@
                 </li>
             </c:forEach>
 
-            <c:forEach var="info" items="${messages.info}">
+            <c:forEach var="info" items="${messages.infoMessages}">
                 <li id="page-infoMessage" class="page-message">
                     <span class="page-messageIcon">
                         <img src="${icons}/ic_priority_high_white_24dp.png"/>

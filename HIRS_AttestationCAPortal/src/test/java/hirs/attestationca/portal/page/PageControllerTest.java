@@ -46,12 +46,15 @@ public abstract class PageControllerTest {
     // Pre-prefix path for all the Controllers.
     // There's an option in Page to add prefix path used for some Controllers.
     private static final String PRE_PREFIX_PATH = "/HIRS_AttestationCAPortal/portal/";
+
     // Represents the Page for the Controller under test.
     private final Page page;
+
     // Contains server-side support for testing Spring MVC applications
     // via WebTestClient with MockMvc for server request handling.
     @Autowired
     private WebApplicationContext webApplicationContext;
+
     // Used to set up mocked servlet environment to test the HTTP controller
     // endpoints without the need to launch the embedded servlet container.
     private MockMvc mockMvc;
@@ -70,7 +73,7 @@ public abstract class PageControllerTest {
      *
      * @return a blank model for initPage tests.
      */
-    protected static final Model getBlankModel() {
+    protected static Model getBlankModel() {
         return new ExtendedModelMap();
     }
 
@@ -86,7 +89,7 @@ public abstract class PageControllerTest {
      * @param err         the AssertionError to indicate if the error is a redirected URL error
      * @throws AssertionError with added information if a redirected URL error or the original error
      */
-    protected static final void enhanceRedirectedUrlError(
+    protected static void enhanceRedirectedUrlError(
             final String expectedURL,
             final ResultActions actions,
             final AssertionError err) throws AssertionError {
@@ -162,21 +165,16 @@ public abstract class PageControllerTest {
             throw new IOException("Could not resolve path URI", e);
         }
 
-        switch (certificateClass.getSimpleName()) {
-            case "EndorsementCredential":
-                return new EndorsementCredential(fPath);
-            case "PlatformCredential":
-                return new PlatformCredential(fPath);
-            case "CertificateAuthorityCredential":
-                return new CertificateAuthorityCredential(fPath);
-            case "IssuedAttestationCertificate":
-                return new IssuedAttestationCertificate(fPath,
-                        endorsementCredential, platformCredentials, false);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown certificate class %s", certificateClass.getName())
-                );
-        }
+        return switch (certificateClass.getSimpleName()) {
+            case "EndorsementCredential" -> new EndorsementCredential(fPath);
+            case "PlatformCredential" -> new PlatformCredential(fPath);
+            case "CertificateAuthorityCredential" -> new CertificateAuthorityCredential(fPath);
+            case "IssuedAttestationCertificate" -> new IssuedAttestationCertificate(fPath,
+                    endorsementCredential, platformCredentials, false);
+            default -> throw new IllegalArgumentException(
+                    String.format("Unknown certificate class %s", certificateClass.getName())
+            );
+        };
     }
 
     /**

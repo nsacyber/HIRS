@@ -233,3 +233,9 @@ body {
     font-weight: bold;
     margin: auto 0;
 }
+
+/*Help page styling*/
+.download-header {
+    display: flex;
+    align-items: center;
+}

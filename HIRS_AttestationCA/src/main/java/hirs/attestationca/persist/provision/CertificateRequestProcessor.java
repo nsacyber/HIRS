@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
 import hirs.attestationca.persist.entity.userdefined.Device;
+import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -74,12 +75,15 @@ public class CertificateRequestProcessor extends AbstractProcessor {
      * @return a certificateResponse containing the signed certificate
      */
     public byte[] processCertificateRequest(final byte[] certificateRequest) {
-        log.info("Certificate Request received...");
+        log.info("Certificate Request has been received and is ready to be processed");
 
         if (ArrayUtils.isEmpty(certificateRequest)) {
             throw new IllegalArgumentException("The CertificateRequest sent by the client"
                     + " cannot be null or empty.");
         }
+
+        final PolicyRepository policyRepository = this.getPolicyRepository();
+        final PolicySettings policySettings = policyRepository.findByName("Default");
 
         // attempt to deserialize Protobuf CertificateRequest
         ProvisionerTpm2.CertificateRequest request;
@@ -174,17 +178,30 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                             saveAttestationCertificate(certificateRepository, derEncodedLdevidCertificate,
                                     endorsementCredential, platformCredentials, device, true);
 
-                    ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
-                            newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+                    ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
+                            ProvisionerTpm2.CertificateResponse.
+                                    newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
                     if (generateAtt) {
-                        builder = builder.setCertificate(pemEncodedAttestationCertificate);
+                        certificateResponseBuilder =
+                                certificateResponseBuilder.setCertificate(pemEncodedAttestationCertificate);
                     }
                     if (generateLDevID) {
-                        builder = builder.setLdevidCertificate(pemEncodedLdevidCertificate);
+                        certificateResponseBuilder =
+                                certificateResponseBuilder.setLdevidCertificate(pemEncodedLdevidCertificate);
                     }
-                    ProvisionerTpm2.CertificateResponse response = builder.build();
+                    ProvisionerTpm2.CertificateResponse certificateResponse =
+                            certificateResponseBuilder.build();
 
-                    return response.toByteArray();
+                    if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                            && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
+                        log.info("Certificate request object received after a successful validation "
+                                + " and if the LDevID public key exists {}", request);
+                        log.info("Certificate Request Response "
+                                + "object after a successful validation and if the LDevID "
+                                + "public key exists : {}", certificateResponse);
+                    }
+
+                    return certificateResponse.toByteArray();
                 } else {
                     byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
                             attestationCertificate);
@@ -194,32 +211,57 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     // We validated the nonce and made use of the identity claim so state can be deleted
                     tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
 
-                    ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.
-                            newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+                    ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
+                            ProvisionerTpm2.CertificateResponse.
+                                    newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
 
                     boolean generateAtt = saveAttestationCertificate(certificateRepository,
                             derEncodedAttestationCertificate,
                             endorsementCredential, platformCredentials, device, false);
                     if (generateAtt) {
-                        builder = builder.setCertificate(pemEncodedAttestationCertificate);
+                        certificateResponseBuilder =
+                                certificateResponseBuilder.setCertificate(pemEncodedAttestationCertificate);
                     }
-                    ProvisionerTpm2.CertificateResponse response = builder.build();
+                    ProvisionerTpm2.CertificateResponse certificateResponse =
+                            certificateResponseBuilder.build();
 
-                    return response.toByteArray();
+                    if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                            && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
+                        log.info("Certificate request object received after a successful validation "
+                                + " and if the LDevID public key does not exist {}", request);
+                        log.info("Certificate Request Response "
+                                + "object after a successful validation and if the LDevID "
+                                + "public key does not exist : {}", certificateResponse);
+                    }
+                    return certificateResponse.toByteArray();
                 }
             } else {
-                log.error("Supply chain validation did not succeed. "
-                        + "Firmware Quote Validation failed. Result is: "
-                        + validationResult);
-                ProvisionerTpm2.CertificateResponse response = ProvisionerTpm2.CertificateResponse
+                log.error("Supply chain validation did not succeed. Firmware Quote Validation failed."
+                        + " Result is: {}", validationResult);
+
+                ProvisionerTpm2.CertificateResponse certificateResponse = ProvisionerTpm2.CertificateResponse
                         .newBuilder()
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                         .build();
-                return response.toByteArray();
+
+                if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                        && (policySettings.isSaveProtobufToLogAlwaysEnabled()
+                        || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
+                    log.info("Certificate request object received after a failed validation:"
+                            + " {}", request);
+                    log.info("Certificate Request Response "
+                            + "object after a failed validation: {}", certificateResponse);
+                }
+
+                return certificateResponse.toByteArray();
             }
         } else {
-            log.error("Could not process credential request. Invalid nonce provided: "
-                    + request.getNonce());
+            if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                    && (policySettings.isSaveProtobufToLogAlwaysEnabled()
+                    || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
+                log.error("Could not process credential request."
+                        + " Invalid nonce provided: {}", request);
+            }
             throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
     }

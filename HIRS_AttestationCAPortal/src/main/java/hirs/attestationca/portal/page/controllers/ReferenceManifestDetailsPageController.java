@@ -595,7 +595,7 @@ public class ReferenceManifestDetailsPageController
         // Check if parameters were set
         if (params.getId() == null) {
             String typeError = "ID was not provided";
-            messages.addError(typeError);
+            messages.addErrorMessage(typeError);
             log.debug(typeError);
             mav.addObject(MESSAGES_ATTRIBUTE, messages);
         } else {
@@ -606,7 +606,7 @@ public class ReferenceManifestDetailsPageController
                         caCertificateRepository));
             } catch (IllegalArgumentException iaEx) {
                 String uuidError = "Failed to parse ID from: " + params.getId();
-                messages.addError(uuidError);
+                messages.addErrorMessage(uuidError);
                 log.error(uuidError, iaEx);
             } catch (CertificateException cEx) {
                 log.error(cEx);
@@ -620,7 +620,7 @@ public class ReferenceManifestDetailsPageController
 
             if (data.isEmpty()) {
                 String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
-                messages.addError(notFoundMessage);
+                messages.addErrorMessage(notFoundMessage);
                 log.warn(notFoundMessage);
                 mav.addObject(MESSAGES_ATTRIBUTE, messages);
             } else {

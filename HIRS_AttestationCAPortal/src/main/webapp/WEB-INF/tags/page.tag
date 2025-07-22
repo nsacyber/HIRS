@@ -41,14 +41,14 @@
         <link type="text/css" rel="stylesheet" href="${common}/sidebar.css"/>
 
         <link type="text/css" rel="stylesheet" href="${lib}/bootstrap-3.3.7/css/bootstrap.min.css" />
-        <link type="text/css" rel="stylesheet" href="${lib}/jquery.dataTables-1.10.13/media/css/jquery.dataTables.min.css" />
+        <link type="text/css" rel="stylesheet" href="${lib}/jquery.dataTables-2.2.2/media/css/datatables.min.css" />
 
         <%-- page-specific style --%>
         <jsp:invoke fragment="style"/>
 
         <%-- SCRIPTS --%>
-        <script type="text/javascript" src="${lib}/jquery/jquery-3.6.2.min.js"></script>
-        <script type="text/javascript" src="${lib}/jquery.dataTables-1.10.13/media/js/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="${lib}/jquery/jquery-3.7.1.min.js"></script>
+        <script type="text/javascript" src="${lib}/jquery.dataTables-2.2.2/media/js/datatables.min.js"></script>
         <script type="text/javascript" src="${lib}/bootstrap-3.3.7/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="${lib}/moment.min.js"></script>
         <script type="text/javascript" src="${common}/date.js"></script>
@@ -56,9 +56,9 @@
 
         <script>
             //Set global variables
-            var portal = '${portal}';
-            var pagePath = '${pagePath}';
-            var icons = '${icons}';
+            let portal = '${portal}';
+            let pagePath = '${pagePath}';
+            let icons = '${icons}';
         </script>
 
         <%-- page-specific script --%>

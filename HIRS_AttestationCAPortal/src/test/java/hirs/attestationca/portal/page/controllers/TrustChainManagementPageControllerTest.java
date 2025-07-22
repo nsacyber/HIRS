@@ -7,6 +7,7 @@ import hirs.attestationca.portal.page.PageMessages;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
@@ -43,8 +44,12 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     // Repository manager to handle data access between certificate entity and data storage in db
     @Autowired
     private CertificateRepository certificateRepository;
+
     @Autowired
-    private X509Certificate acaCert;
+    @Qualifier("acaTrustChainCerts")
+    private X509Certificate[] acaTrustChain;
+
+
     // A file that contains a cert that is not an UTC Cert. Should be parsable as a general
     // cert, but should (eventually) not be stored as an UTC because it isn't one.
     private MockMultipartFile nonCaCertFile;
@@ -91,32 +96,14 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath))
                 .andExpect(status().isOk())
-                .andExpect(model().attributeExists(CertificatePageController.ACA_CERT_DATA))
+                .andExpect(model().attributeExists(TrustChainCertificatePageController.ACA_CERT_DATA))
                 .andExpect(model().attribute(
-                        CertificatePageController.ACA_CERT_DATA,
+                        TrustChainCertificatePageController.ACA_CERT_DATA,
                         hasEntry("issuer", "CN=Fake Root CA"))
                 );
     }
 
-    /**
-     * Tests downloading the aca cert.
-     *
-     * @throws Exception when getting raw report
-     */
-    @Test
-    @Rollback
-    public void testDownloadAcaCert() throws Exception {
-
-        // verify cert file attachment and content
-        getMockMvc()
-                .perform(MockMvcRequestBuilders.get(
-                        pagePath + "/download-aca-cert"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/octet-stream"))
-                .andExpect(header().string("Content-Disposition",
-                        "attachment; filename=\"hirs-aca-cert.cer\""))
-                .andExpect(content().bytes(acaCert.getEncoded()));
-    }
+    //todo write download aca-trust-chain cert method
 
     /**
      * Tests downloading the certificate.
@@ -183,9 +170,9 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
         assertEquals("New certificate successfully uploaded (" + pathTokens[1] + "): ",
-                pageMessages.getSuccess()
+                pageMessages.getSuccessMessages()
                         .get(0));
-        assertEquals(0, pageMessages.getError().size());
+        assertEquals(0, pageMessages.getErrorMessages().size());
 
         // verify the cert was actually stored
         List<Certificate> records =
@@ -244,10 +231,10 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         // verify redirection messages
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
-        assertEquals(1, pageMessages.getSuccess().size());
-        assertEquals(0, pageMessages.getError().size());
+        assertEquals(1, pageMessages.getSuccessMessages().size());
+        assertEquals(0, pageMessages.getErrorMessages().size());
         assertEquals("Pre-existing certificate found and unarchived (" + pathTokens[1] + "): ",
-                pageMessages.getSuccess().get(0));
+                pageMessages.getSuccessMessages().get(0));
 
         // verify the cert can be retrieved and that there is only 1 cert in db
         List<Certificate> records = certificateRepository.findAll();
@@ -279,8 +266,8 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         // verify redirection messages
         FlashMap flashMap = result.getFlashMap();
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
-        assertEquals(1, pageMessages.getError().size());
-        assertEquals(0, pageMessages.getSuccess().size());
+        assertEquals(1, pageMessages.getErrorMessages().size());
+        assertEquals(0, pageMessages.getSuccessMessages().size());
 
         // verify the cert was not actually stored
         List<Certificate> records = certificateRepository.findAll();

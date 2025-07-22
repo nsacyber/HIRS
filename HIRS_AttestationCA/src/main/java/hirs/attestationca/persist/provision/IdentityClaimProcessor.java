@@ -131,13 +131,16 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * @return an identity claim response for the specified request containing a wrapped blob
      */
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-        log.info("Identity Claim received...");
+        log.info("Identity Claim has been received and is ready to be processed");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
             log.error("Identity claim empty throwing exception.");
             throw new IllegalArgumentException("The IdentityClaim sent by the client"
                     + " cannot be null or empty.");
         }
+
+        final PolicyRepository policyRepository = this.getPolicyRepository();
+        final PolicySettings policySettings = policyRepository.findByName("Default");
 
         // attempt to deserialize Protobuf IdentityClaim
         ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
@@ -162,8 +165,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
             blobStr = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
-            PolicyRepository scp = this.getPolicyRepository();
-            PolicySettings policySettings = scp.findByName("Default");
+
             String pcrQuoteMask = PCR_QUOTE_MASK;
 
             String strNonce = HexUtils.byteArrayToHexString(nonce);
@@ -172,27 +174,45 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             tpm2ProvisionerStateRepository.save(new TPM2ProvisionerState(nonce, identityClaim));
 
-            if (policySettings != null && policySettings.isIgnoreImaEnabled()) {
+            if (policySettings.isIgnoreImaEnabled()) {
                 pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");
             }
 
             // Package response
-            ProvisionerTpm2.IdentityClaimResponse response
+            ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
 
-            return response.toByteArray();
+            if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                    && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
+                log.info("Identity Claim object received after a"
+                        + "successful validation: {}", claim);
+                log.info("Identity Claim Response object after a "
+                        + "successful validation: {}", identityClaimResponse);
+            }
+
+            return identityClaimResponse.toByteArray();
         } else {
             log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
             // empty response
-            ProvisionerTpm2.IdentityClaimResponse response
+            ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
                     .setCredentialBlob(blobStr)
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
-            return response.toByteArray();
+
+            if (!policySettings.isSaveProtobufToLogNeverEnabled()
+                    && (policySettings.isSaveProtobufToLogAlwaysEnabled()
+                    || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
+                log.info("Identity Claim object received after a "
+                        + "failed validation: {}", claim);
+                log.info("Identity Claim Response object after a "
+                        + "failed validation: {}", identityClaimResponse);
+            }
+
+            return identityClaimResponse.toByteArray();
         }
     }
 
