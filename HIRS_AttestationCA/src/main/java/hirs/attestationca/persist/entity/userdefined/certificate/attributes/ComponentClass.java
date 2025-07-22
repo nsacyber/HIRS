@@ -3,10 +3,12 @@ package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonObject.Member;
 import hirs.utils.JsonUtils;
+import hirs.utils.PciIds;
 import lombok.Getter;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * <p>
@@ -215,9 +217,16 @@ ComponentClass {
      * will be used only for the PCIE registry types.
      */
     private void findStringValuesForPCIE() {
+
+        if (PciIds.DB.isReady()) {
+            String classCode = this.component.substring(2);
+            List<String> translatedDeviceClass = PciIds.translateDeviceClass(classCode);
+
+        }
+
         //TODO placeholders
-        this.categoryStr = NONE_STRING;
-        this.componentStr = UNKNOWN_STRING;
+//        this.categoryStr = NONE_STRING;
+//        this.componentStr = UNKNOWN_STRING;
     }
 
     /**
