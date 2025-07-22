@@ -229,7 +229,8 @@ public class SupplyChainValidationService {
                             componentResultRepository,
                             componentAttributeRepository,
                             componentInfos, provisionSessionId,
-                            policySettings.isIgnoreRevisionEnabled());
+                            policySettings.isIgnoreRevisionEnabled(),
+                            policySettings.isIgnorePcieVpdEnabled());
                     if (attributeScv.getValidationResult() == AppraisalStatus.Status.FAIL) {
                         attrErrorMessage = String.format("%s%s%n", attrErrorMessage,
                                 attributeScv.getMessage());

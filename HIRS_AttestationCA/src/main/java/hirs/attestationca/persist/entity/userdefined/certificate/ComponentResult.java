@@ -206,7 +206,7 @@ public class ComponentResult extends ArchivableEntity {
      */
     public String toString() {
         return String.format("ComponentResult: certificateSerialNumber=[%s] "
-                        + "manufacturer=[%s] model=[%s] componentClass=[%s]",
+                        + "manufacturer=[%s] model=[%s] componentClass=[%s] componentClassRegistry=[%s]",
                 boardSerialNumber, manufacturer, model, componentClassValue, componentClassRegistry);
     }
 }

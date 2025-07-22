@@ -151,6 +151,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @param componentInfos               list of device components
      * @param provisionSessionId           UUID associated with the SCV Summary
      * @param ignoreRevisionAttribute      policy flag to ignore the revision attribute
+     * @param ignorePcieVpdAttribute       policy flag to ignore the pcie vpd attribute
      * @return either PASS or FAIL
      */
     public static AppraisalStatus validatePlatformCredentialAttributesV2p0(
@@ -161,7 +162,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final List<ComponentInfo> componentInfos,
             final UUID provisionSessionId,
             final boolean ignoreRevisionAttribute,
-            final boolean ignorePcieVpd) throws IOException {
+            final boolean ignorePcieVpdAttribute) throws IOException {
         boolean passesValidation = true;
         StringBuilder resultMessage = new StringBuilder();
         HardwareInfo hardwareInfo = deviceInfoReport.getHardwareInfo();
@@ -284,7 +285,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     ComponentClass pcComponentClass = pcComponent.getComponentClass();
 
                     // Component Class Registry Type field
-
                     fieldValidation = !isRequiredStringFieldBlank("registryType",
                             pcComponentClass.getRegistryType());
 
@@ -295,7 +295,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     passesValidation &= fieldValidation;
 
                     // Component Class Component Identifier field
-
                     fieldValidation = !isRequiredStringFieldBlank("componentIdentifier",
                             pcComponentClass.getComponentIdentifier());
 
@@ -306,7 +305,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     passesValidation &= fieldValidation;
 
                     // Component Class category field
-
                     fieldValidation = !isRequiredStringFieldBlank("category",
                             pcComponentClass.getCategory());
 
@@ -317,7 +315,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     passesValidation &= fieldValidation;
 
                     // Component Class Category String field
-
                     fieldValidation = !isRequiredStringFieldBlank("categoryStr",
                             pcComponentClass.getCategoryStr());
 
@@ -328,7 +325,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     passesValidation &= fieldValidation;
 
                     // Component Class Component String field
-
                     fieldValidation = !isRequiredStringFieldBlank("componentStr",
                             pcComponentClass.getComponentStr());
 
@@ -339,7 +335,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     passesValidation &= fieldValidation;
 
                     // Component Class Component field
-
                     fieldValidation = !isRequiredStringFieldBlank("component",
                             pcComponentClass.getComponent());
 
@@ -366,7 +361,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         List<UUID> componentIdList = new ArrayList<>();
 
         // todo v3_issue_911
-        if (ignorePcieVpd) {
+        if (ignorePcieVpdAttribute) {
 
         }
 
@@ -423,6 +418,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @param componentAttributeRepository component attribute repository
      * @param provisionSessionId           uuid representation of the provision session id
      * @param ignoreRevisionAttribute      whether to ignore the revision attribute
+     * @param ignorePcieVpdAttribute       whether to ignore the pcie vpd attribute
      * @return Appraisal Status of delta being validated.
      */
 
@@ -433,7 +429,9 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final List<ComponentInfo> componentInfos,
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
-            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
+            final UUID provisionSessionId,
+            final boolean ignoreRevisionAttribute,
+            final boolean ignorePcieVpdAttribute) {
         boolean fieldValidation = true;
         StringBuilder resultMessage = new StringBuilder();
         List<PlatformCredential> deltaCertificates = new LinkedList<>(deltaMapping.keySet());
@@ -491,6 +489,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             boolean saveAttributeResult;
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
                 saveAttributeResult = true;
+                // todo v3_911
                 if (ignoreRevisionAttribute) {
                     saveAttributeResult = !componentAttributeResult.getAttribute()
                             .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION);
@@ -506,18 +505,15 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             }
         }
 
-        StringBuilder additionalInfo = new StringBuilder();
+        String additionalInfo = "";
         if (!remainingComponentResults.isEmpty()) {
             resultMessage.append(String.format("There are %d component(s) not matched%n "
                             + "with %d total attributes mismatched.",
                     componentIdList.stream().distinct().count(), numOfAttributes));
         }
 
-        if (fieldValidation) {
-            return new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID);
-        } else {
-            return new AppraisalStatus(FAIL, resultMessage.toString(), additionalInfo.toString());
-        }
+        return fieldValidation ? new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID)
+                : new AppraisalStatus(FAIL, resultMessage.toString(), additionalInfo);
     }
 
     /**

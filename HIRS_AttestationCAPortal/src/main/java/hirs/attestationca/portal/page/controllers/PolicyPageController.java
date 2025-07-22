@@ -176,7 +176,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates ignore PCIE VPD policy under the Platform Cert Attribute Validation policy setting and
+     * Updates Ignore PCIE VPD Attribute policy under the Platform Cert Attribute Validation policy setting and
      * redirects the user back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
@@ -186,35 +186,37 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-pcie-vpd-ignore")
-    public RedirectView updateIgnorePCIEVpdPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                  final RedirectAttributes redirectAttributes)
+    public RedirectView updateIgnorePCIEVpdAttributePolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                           final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
-        log.info("Received request to update the ignore pcie vpd policy under "
+        log.info("Received request to update the Ignore PCIE VPD Attribute policy under "
                 + " the platform credential attribute validation policy setting");
 
         try {
-            final boolean isIgnorePcieVpdOptionEnabled = ppModel.getIgnorePcieVpd()
+            final boolean isIgnorePcieVpdOptionEnabled = ppModel.getIgnorePcieVpdAttribute()
                     .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
 
             final boolean isIgnorePcieVpdPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnorePCIEVpdPolicy(isIgnorePcieVpdOptionEnabled);
 
             if (!isIgnorePcieVpdPolicyUpdateSuccessful) {
-                messages.addErrorMessage("Ignore PCIE VPD Policy cannot be enabled without PC Attribute"
-                        + " validation policy enabled.");
+                messages.addErrorMessage(
+                        "Ignore PCIE VPD Attribute Policy cannot be enabled without PC Attribute"
+                                + " validation policy enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
-            // if the ignore pcie vpd update was successful
-            messages.addSuccessMessage("Ignore PCIE VPD  "
+            // if the Ignore PCIE VPD Attribute update was successful
+            messages.addSuccessMessage("Ignore PCIE VPD Attribute  "
                     + (isIgnorePcieVpdOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
-            final String errorMessage = "An exception was thrown while updating ACA Ignore PCIE VPD policy";
+            final String errorMessage =
+                    "An exception was thrown while updating ACA Ignore PCIE VPD Attribute policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);

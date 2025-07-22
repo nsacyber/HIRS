@@ -174,6 +174,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      * @param componentInfos               list of device components
      * @param provisionSessionId           UUID associated with this run of the provision
      * @param ignoreRevisionAttribute      policy flag to ignore the revision attribute
+     * @param ignorePcieVpdAttribute       policy flag to ignore the pcie vpd attribute
      * @return The result of the validation.
      */
     public static AppraisalStatus validatePlatformCredentialAttributes(
@@ -241,6 +242,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      * @param componentAttributeRepository repository for the attribute status
      * @param provisionSessionId           the session id to share
      * @param ignoreRevisionAttribute      whether to ignore the revision attribute
+     * @param ignorePcieVpdAttribute       whether to ignore the pcie vpd attribute
      * @return the result of the validation.
      */
     public static AppraisalStatus validateDeltaPlatformCredentialAttributes(
@@ -251,7 +253,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final UUID provisionSessionId,
-            final boolean ignoreRevisionAttribute) {
+            final boolean ignoreRevisionAttribute,
+            final boolean ignorePcieVpdAttribute) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
 
@@ -290,7 +293,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
 
         return CertificateAttributeScvValidator.validateDeltaAttributesChainV2p0(
                 deviceInfoReport, deltaMapping, origPcComponents, componentInfos,
-                componentResultRepository,
-                componentAttributeRepository, provisionSessionId, ignoreRevisionAttribute);
+                componentResultRepository, componentAttributeRepository, provisionSessionId,
+                ignoreRevisionAttribute, ignorePcieVpdAttribute);
     }
 }
