@@ -240,12 +240,12 @@ public final class PciIds {
 
             final int startIndexOfDeviceClass = 0;
             final int endIndexOfDeviceClass = 2;
-            String deviceClass =
+            final String deviceClass =
                     refClassCode.substring(startIndexOfDeviceClass, endIndexOfDeviceClass).toLowerCase();
 
             final int startIndexOfDeviceSubclass = 2;
             final int endIndexOfDeviceSubclass = 4;
-            String deviceSubclass =
+            final String deviceSubclass =
                     refClassCode.substring(startIndexOfDeviceSubclass, endIndexOfDeviceSubclass)
                             .toLowerCase();
 
@@ -258,15 +258,20 @@ public final class PciIds {
             translatedClassCode.add(deviceClass);
             translatedClassCode.add(deviceSubclass);
             translatedClassCode.add(programInterface);
-            DeviceClass devC = DB.findDeviceClass(deviceClass);
-            DeviceSubclass devSc = DB.findDeviceSubclass(deviceClass, deviceSubclass);
-            ProgramInterface progI = DB.findProgramInterface(deviceClass, deviceSubclass, programInterface);
+
+            final DeviceClass devC = DB.findDeviceClass(deviceClass);
+            final DeviceSubclass devSc = DB.findDeviceSubclass(deviceClass, deviceSubclass);
+            final ProgramInterface progI =
+                    DB.findProgramInterface(deviceClass, deviceSubclass, programInterface);
+
             if (devC != null && !Strings.isNullOrEmpty(devC.getName())) {
                 translatedClassCode.set(0, devC.getName());
             }
+
             if (devSc != null && !Strings.isNullOrEmpty(devSc.getName())) {
                 translatedClassCode.set(1, devSc.getName());
             }
+            
             if (progI != null && !Strings.isNullOrEmpty(progI.getName())) {
                 translatedClassCode.set(2, progI.getName());
             }

@@ -67,16 +67,11 @@ ComponentClass {
     private final String registryType;
 
     private final String componentIdentifier;
-
-    private String category;
-
-    private String categoryStr;
-
-    private String component;
-
-    private String componentStr;
-
     private final String registryOid;
+    private String category;
+    private String categoryStr;
+    private String component;
+    private String componentStr;
 
     /**
      * Default class constructor.
@@ -156,13 +151,12 @@ ComponentClass {
                 this.category = this.componentIdentifier.substring(0, MID_INDEX) + this.category;
                 this.component = OTHER + this.componentIdentifier.substring(MID_INDEX);
 
-                // if the registry type is of type PCIE, attempt to use the included library to parse the string values
+                // if the registry type is of type PCIE, attempt to use the included library
+                // to parse the string values
                 if (this.registryType.equals("PCIE")) {
-                    findStringValuesForPCIE();
-                }
-                // for all other registry types, attempt to retrieve the string values using the component class json file
-                else {
-                    findStringValuesFromJSONObject(
+                    this.findComponentValuesForPCIERegistry();
+                } else {
+                    this.findComponentValuesForAllOtherRegistryTypes(
                             JsonUtils.getSpecificJsonObject(componentClassPath, registryType));
                 }
                 break;
@@ -213,29 +207,52 @@ ComponentClass {
     }
 
     /**
-     * Helper method that attempts to find and set the category and component string using the provided library. This method
-     * will be used only for the PCIE registry types.
+     * Helper method that attempts to find and set the category and component string using the PCI IDs
+     * library. This method will be used only for the PCIE registry types.
      */
-    private void findStringValuesForPCIE() {
+    private void findComponentValuesForPCIERegistry() {
 
         if (PciIds.DB.isReady()) {
             String classCode = this.component.substring(2);
-            List<String> translatedDeviceClass = PciIds.translateDeviceClass(classCode);
+            final List<String> translatedDeviceClass = PciIds.translateDeviceClass(classCode);
+            final String baseDeviceClass =
+                    translatedDeviceClass.get(0).matches("\\d+") ? null : translatedDeviceClass.get(0);
+            final String baseDeviceSubClass =
+                    translatedDeviceClass.get(1).matches("\\d+") ? null : translatedDeviceClass.get(1);
+            final String programingInterface =
+                    translatedDeviceClass.get(2).matches("\\d+") ? null : translatedDeviceClass.get(2);
 
+            String componentInfo = "";
+
+            if (baseDeviceClass != null) {
+                componentInfo += baseDeviceClass;
+            }
+
+            if (baseDeviceSubClass != null) {
+                componentInfo += baseDeviceSubClass;
+            }
+
+            if (programingInterface != null) {
+                componentInfo += programingInterface;
+            }
+
+            if (componentInfo.isEmpty()) {
+                this.categoryStr = NONE_STRING;
+                this.componentStr = UNKNOWN_STRING;
+            } else {
+                this.categoryStr = componentInfo;
+                this.componentStr = componentInfo;
+            }
         }
-
-        //TODO placeholders
-//        this.categoryStr = NONE_STRING;
-//        this.componentStr = UNKNOWN_STRING;
     }
 
     /**
-     * Helper method that attempts to find and set the category and component string using the provided JSON object. This
-     * method will typically be used for the SMBIOS and TCG registry types.
+     * Helper method that attempts to find and set the category and component string using the provided
+     * JSON object. This method will typically be used for the SMBIOS, STORAGE-BASED, and TCG registry types.
      *
      * @param categories a JSON object associated with mapped categories in file.
      */
-    private void findStringValuesFromJSONObject(final JsonObject categories) {
+    private void findComponentValuesForAllOtherRegistryTypes(final JsonObject categories) {
         String categoryID;
         String componentMask;
         boolean found = false;
@@ -246,8 +263,7 @@ ComponentClass {
                         .asObject().get("ID").asString());
                 componentMask = componentIdentifier.substring(MID_INDEX);
                 // check for the correct flag
-                if (categoryMatch(componentIdentifier.substring(0, MID_INDEX),
-                        categoryID.substring(0, MID_INDEX))) {
+                if (componentIdentifier.substring(0, MID_INDEX).equals(categoryID.substring(0, MID_INDEX))) {
                     found = true;
                     JsonObject componentTypes = categories.get(name)
                             .asObject().get("Types").asObject();
@@ -268,17 +284,6 @@ ComponentClass {
             this.categoryStr = NONE_STRING;
             this.componentStr = UNKNOWN_STRING;
         }
-    }
-
-    /**
-     * Returns the value of the comparison between a category and the what's in the id.
-     *
-     * @param category    the category to compare
-     * @param componentId the id value to compare
-     * @return true if they match
-     */
-    public boolean categoryMatch(final String category, final String componentId) {
-        return category.equals(componentId);
     }
 
     /**
