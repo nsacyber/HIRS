@@ -177,12 +177,10 @@ ComponentClass {
             try {
                 if (component.contains("x")) {
                     componentValue = component.substring(component.indexOf("x") + 1);
+                } else if (component.contains("#")) {
+                    componentValue = component.replace("#", "");
                 } else {
-                    if (component.contains("#")) {
-                        componentValue = component.replace("#", "");
-                    } else {
-                        return component;
-                    }
+                    return component;
                 }
             } catch (NumberFormatException nfEx) {
                 //invalid entry
@@ -211,38 +209,28 @@ ComponentClass {
      * library. This method will be used only for the PCIE registry types.
      */
     private void findComponentValuesForPCIERegistry() {
-
         if (PciIds.DB.isReady()) {
-            String classCode = this.component.substring(2);
+            // remove the first two digits from the component value
+            final String classCode = this.component.substring(2);
             final List<String> translatedDeviceClass = PciIds.translateDeviceClass(classCode);
-            final String baseDeviceClass =
-                    translatedDeviceClass.get(0).matches("\\d+") ? null : translatedDeviceClass.get(0);
-            final String baseDeviceSubClass =
-                    translatedDeviceClass.get(1).matches("\\d+") ? null : translatedDeviceClass.get(1);
-            final String programingInterface =
-                    translatedDeviceClass.get(2).matches("\\d+") ? null : translatedDeviceClass.get(2);
 
-            String componentInfo = "";
+            // grab the component's device class from the first element
+            // and if the PCI Ids DB did not return a number, set the component string to the
+            // translated device class
+            this.componentStr = translatedDeviceClass.get(0).matches("\\d+")
+                    ? UNKNOWN_STRING : translatedDeviceClass.get(0);
 
-            if (baseDeviceClass != null) {
-                componentInfo += baseDeviceClass;
-            }
+            // grab the component's device subclass from the second element
+            // and if the PCI Ids DB did not return a number, set the category string to the
+            // translated device subclass
+            this.categoryStr = translatedDeviceClass.get(1).matches("\\d+")
+                    ? NONE_STRING : translatedDeviceClass.get(1);
 
-            if (baseDeviceSubClass != null) {
-                componentInfo += baseDeviceSubClass;
-            }
-
-            if (programingInterface != null) {
-                componentInfo += programingInterface;
-            }
-
-            if (componentInfo.isEmpty()) {
-                this.categoryStr = NONE_STRING;
-                this.componentStr = UNKNOWN_STRING;
-            } else {
-                this.categoryStr = componentInfo;
-                this.componentStr = componentInfo;
-            }
+            // grab the component's programming interface from the third element
+            // and if the PCI Ids DB did not return a number, add the programming interface to the
+            // category string
+            this.categoryStr += translatedDeviceClass.get(2).matches("\\d+")
+                    ? "" : translatedDeviceClass.get(2);
         }
     }
 
