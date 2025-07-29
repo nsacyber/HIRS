@@ -773,8 +773,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             ComponentResult componentResult;
 
             if (platformCredential.getPlatformConfigurationV1() != null) {
-                for (ComponentIdentifier componentIdentifier : platformCredential
-                        .getComponentIdentifiers()) {
+                List<ComponentIdentifier> componentIdentifiers = platformCredential
+                        .getComponentIdentifiers();
+
+                for (ComponentIdentifier componentIdentifier : componentIdentifiers) {
                     componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
                             platformCredential.getSerialNumber().toString(),
                             platformCredential.getPlatformChainType(),
@@ -784,8 +786,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     componentResultRepository.save(componentResult);
                 }
             } else if (platformCredential.getPlatformConfigurationV2() != null) {
-                for (ComponentIdentifierV2 componentIdentifierV2 : platformCredential
-                        .getComponentIdentifiersV2()) {
+                List<ComponentIdentifierV2> componentIdentifiersV2 = platformCredential
+                        .getComponentIdentifiersV2();
+
+                for (ComponentIdentifierV2 componentIdentifierV2 : componentIdentifiersV2) {
                     componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
                             platformCredential.getSerialNumber().toString(),
                             platformCredential.getPlatformChainType(),
