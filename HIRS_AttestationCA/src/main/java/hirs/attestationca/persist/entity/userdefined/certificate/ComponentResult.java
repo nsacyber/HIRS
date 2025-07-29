@@ -71,6 +71,8 @@ public class ComponentResult extends ArchivableEntity {
 
     private String componentClassStr;
 
+    private String componentClassToolTipStr;
+
     private String componentClassType;
 
     private AttributeStatus attributeStatus;
@@ -156,6 +158,7 @@ public class ComponentResult extends ArchivableEntity {
         this.componentClassValue = componentIdentifierV2.getComponentClass().getComponentIdentifier();
         this.componentClassRegistry = componentIdentifierV2.getComponentClass().getRegistryOid();
         this.componentClassStr = componentIdentifierV2.getComponentClass().toString();
+        this.componentClassToolTipStr = componentIdentifierV2.getComponentClass().getComponentToolTipStr();
         this.componentClassType = componentIdentifierV2.getComponentClass().getRegistryType();
         this.attributeStatus = componentIdentifierV2.getAttributeStatus();
         this.version2 = true;
