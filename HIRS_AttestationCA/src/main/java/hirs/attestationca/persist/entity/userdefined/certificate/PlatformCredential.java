@@ -477,8 +477,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         if (subjectAlternativeNameExtension != null) {
             GeneralNames gnames = GeneralNames.getInstance(
                     subjectAlternativeNameExtension.getParsedValue());
-            GeneralName[] allGnames = gnames.getNames();
-            for (GeneralName gname : allGnames) {
+            for (GeneralName gname : gnames.getNames()) {
                 // Check if it's a directoryName [4] Name type
                 if (gname.getTagNo() == GeneralName.directoryName) {
                     X500Name name = X500Name.getInstance(gname.getName());

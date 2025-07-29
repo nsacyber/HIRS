@@ -211,7 +211,7 @@ ComponentClass {
     private void findComponentValuesForPCIERegistry() {
         if (PciIds.DB.isReady()) {
             // remove the first two digits from the component value
-            final String classCode = this.component.substring(2);
+            final String classCode = this.componentIdentifier.substring(2);
             final List<String> translatedDeviceClass = PciIds.translateDeviceClass(classCode);
 
             // grab the component's device class from the first element
@@ -224,7 +224,7 @@ ComponentClass {
             // and if the PCI Ids DB did not return a number, set the category string to the
             // translated device subclass
             this.categoryStr = translatedDeviceClass.get(1).matches("\\d+")
-                    ? NONE_STRING : translatedDeviceClass.get(1);
+                    ? NONE_STRING + " " : translatedDeviceClass.get(1) + " ";
 
             // grab the component's programming interface from the third element
             // and if the PCI Ids DB did not return a number, add the programming interface to the
