@@ -74,6 +74,13 @@ ComponentClass {
     private String componentStr;
 
     /**
+     * This field will contain the component class complete information that will be displayed as
+     * a tooltip for each component. At the moment it will be used to display each PCIE component's
+     * complete information.
+     */
+    private String componentToolTipStr;
+
+    /**
      * Default class constructor.
      */
     public ComponentClass() {
@@ -212,25 +219,28 @@ ComponentClass {
         if (PciIds.DB.isReady()) {
             // remove the first two digits from the component value
             final String classCode = this.componentIdentifier.substring(2);
-            final List<String> translatedDeviceClass = PciIds.translateDeviceClass(classCode);
+            final List<String> translateClassCode = PciIds.translateDeviceClass(classCode);
 
             // grab the component's device class from the first element
             // and if the PCI Ids DB did not return a number, set the component string to the
             // translated device class
-            this.componentStr = translatedDeviceClass.get(0).matches("\\d+")
-                    ? UNKNOWN_STRING : translatedDeviceClass.get(0);
+            this.categoryStr = translateClassCode.get(0).matches("\\d+")
+                    ? UNKNOWN_STRING : translateClassCode.get(0);
 
             // grab the component's device subclass from the second element
             // and if the PCI Ids DB did not return a number, set the category string to the
             // translated device subclass
-            this.categoryStr = translatedDeviceClass.get(1).matches("\\d+")
-                    ? NONE_STRING + " " : translatedDeviceClass.get(1) + " ";
+            this.componentStr = translateClassCode.get(1).matches("\\d+")
+                    ? NONE_STRING : translateClassCode.get(1);
 
             // grab the component's programming interface from the third element
-            // and if the PCI Ids DB did not return a number, add the programming interface to the
-            // category string
-            this.categoryStr += translatedDeviceClass.get(2).matches("\\d+")
-                    ? "" : translatedDeviceClass.get(2);
+            // and if the PCI Ids DB did not return a number, return an empty string
+            final String programmingInterface =
+                    translateClassCode.get(2).matches("\\d+") ? "" : translateClassCode.get(2);
+
+            this.componentToolTipStr = "Class: " + this.categoryStr + " | "
+                    + "\nSubclass: " + this.componentStr + " | "
+                    + "\nProgramming Interface: " + programmingInterface;
         }
     }
 
