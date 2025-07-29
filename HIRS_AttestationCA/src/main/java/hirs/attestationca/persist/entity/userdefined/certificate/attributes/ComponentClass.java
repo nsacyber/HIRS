@@ -222,13 +222,13 @@ ComponentClass {
             final List<String> translateClassCode = PciIds.translateDeviceClass(classCode);
 
             // grab the component's device class from the first element
-            // and if the PCI Ids DB did not return a number, set the component string to the
+            // and if the PCI Ids DB did not return a number, set the category string to the
             // translated device class
             this.categoryStr = translateClassCode.get(0).matches("\\d+")
                     ? UNKNOWN_STRING : translateClassCode.get(0);
 
             // grab the component's device subclass from the second element
-            // and if the PCI Ids DB did not return a number, set the category string to the
+            // and if the PCI Ids DB did not return a number, set the component string to the
             // translated device subclass
             this.componentStr = translateClassCode.get(1).matches("\\d+")
                     ? NONE_STRING : translateClassCode.get(1);
@@ -238,6 +238,8 @@ ComponentClass {
             final String programmingInterface =
                     translateClassCode.get(2).matches("\\d+") ? "" : translateClassCode.get(2);
 
+            // create a string that represents the component's complete information that can be
+            // displayed as tooltip (currently this is being used for just PCIE components)
             this.componentToolTipStr = "Class: " + this.categoryStr + " | "
                     + "\nSubclass: " + this.componentStr + " | "
                     + "\nProgramming Interface: " + programmingInterface;
