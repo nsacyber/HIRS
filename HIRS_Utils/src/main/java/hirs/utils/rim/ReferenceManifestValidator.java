@@ -183,7 +183,7 @@ public class ReferenceManifestValidator {
                                         final byte[] encodedPublicKey) {
         DOMValidateContext context = null;
         try {
-            NodeList nodes = rim.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+            NodeList nodes = getXmlElement(XMLSignature.XMLNS, "Signature") ;
             if (nodes.getLength() == 0) {
                 log.error("Cannot validate RIM, signature element not found!");
                 return false;
@@ -191,7 +191,7 @@ public class ReferenceManifestValidator {
             if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
                 trustStore = parseCertificatesFromPem(trustStoreFile);
             }
-            NodeList certElement = rim.getElementsByTagName("X509Certificate");
+            NodeList certElement = getXmlElement(XMLSignature.XMLNS, "X509Certificate");
             if (certElement.getLength() > 0) {
                 X509Certificate embeddedCert = parseCertFromPEMString(
                         certElement.item(0).getTextContent());
@@ -202,7 +202,7 @@ public class ReferenceManifestValidator {
                     }
                 }
             } else {
-                subjectKeyIdentifier = getKeyName(rim);
+                subjectKeyIdentifier = getKeyName();
                 if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
                     context = new DOMValidateContext(publicKey,
                             nodes.item(0));
@@ -229,8 +229,6 @@ public class ReferenceManifestValidator {
      * @return true if both the file element and signature are valid, false otherwise
      */
     public boolean validateRim(final String signingCertPath) {
-        Element fileElement = (Element) rim.getElementsByTagNameNS(
-                SwidTagConstants.SWIDTAG_NAMESPACE, "File").item(0);
         X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
         if (signingCert == null) {
             return failWithError("Unable to parse the signing cert from " + signingCertPath);
@@ -245,7 +243,9 @@ public class ReferenceManifestValidator {
         boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
                 retrievedSubjectKeyIdentifier,
                 signingCert.getPublicKey().getEncoded());
-        return isSignatureValid && validateFile(fileElement);
+
+        NodeList fileElement = getXmlElement(SwidTagConstants.SWIDTAG_NAMESPACE, "File");
+        return isSignatureValid && validateFile((Element) fileElement.item(0));
     }
 
     /**
@@ -293,7 +293,7 @@ public class ReferenceManifestValidator {
      * @return X509Certificate signing cert
      */
     private X509Certificate getCertFromTruststore() throws IOException {
-        String retrievedSubjectKeyIdentifier = getKeyName(rim);
+        String retrievedSubjectKeyIdentifier = getKeyName();
         for (X509Certificate trustedCert : trustStore) {
             String trustedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(trustedCert);
             if (retrievedSubjectKeyIdentifier.equals(trustedSubjectKeyIdentifier)) {
@@ -630,16 +630,32 @@ public class ReferenceManifestValidator {
     /**
      * This method parses the subject key identifier from the KeyName element of a signature.
      *
-     * @param doc document
      * @return SKID if found, or an empty string.
      */
-    private String getKeyName(final Document doc) {
-        NodeList keyName = doc.getElementsByTagName("KeyName");
+    private String getKeyName() {
+        NodeList keyName = getXmlElement(XMLSignature.XMLNS, "KeyName");
         if (keyName.getLength() > 0) {
             return keyName.item(0).getTextContent();
         } else {
             return null;
         }
+    }
+
+    /**
+     * This method parses an XML element from the rim document, checking for a namespace
+     * prefix if necessary.
+     *
+     * @param namespace the element's namespace
+     * @param tagName the element's name
+     * @return a NodeList containing the element
+     */
+    private NodeList getXmlElement(String namespace, String tagName) {
+        NodeList xmlElement = rim.getElementsByTagName(tagName);
+        if (xmlElement.getLength() == 0) {
+            xmlElement = rim.getElementsByTagNameNS(namespace, tagName);
+        }
+
+        return xmlElement;
     }
 
     /**
