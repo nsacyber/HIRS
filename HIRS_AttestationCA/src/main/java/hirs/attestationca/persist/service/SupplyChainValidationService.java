@@ -352,6 +352,7 @@ public class SupplyChainValidationService {
                     } else {
                         fwStatus.setMessage("Firmware validation of TPM Quote failed."
                                 + "\nPCR hash and Quote hash do not match.");
+                        log.debug(pcrValidator.validatePcrs(storedPcrs, getPolicySettings()));
                     }
                     eventLog.setOverallValidationResult(fwStatus.getAppStatus());
                     this.referenceManifestRepository.save(eventLog);

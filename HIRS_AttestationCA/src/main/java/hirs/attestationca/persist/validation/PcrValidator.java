@@ -149,7 +149,7 @@ public class PcrValidator {
                 }
 
                 if (!baselinePcrs[i].equals(storedPcrs[i])) {
-                    log.error(String.format("%s =/= %s", baselinePcrs[i], storedPcrs[i]));
+                    log.debug(String.format("PCR[%d]: %s =/= %s", i, baselinePcrs[i], storedPcrs[i]));
                     sb.append(String.format(failureMsg, i));
                 }
             }
