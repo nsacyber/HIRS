@@ -123,12 +123,12 @@ if ([System.IO.Directory]::Exists("$ACTOR_ALT/$CERT_FOLDER")) {
 # Intialize sub folders
 Write-Output "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..." | WriteAndLog
 
-mkdir -F -p "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" 2>&1 > $null
-mkdir -F -p "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER" 2>&1 > $null
-mkdir -F -p "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\certs" 2>&1 > $null
+New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR -Force | Out-Null
+New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER" -Force | Out-Null
+New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\certs" -Force | Out-Null
 cp "$global:HIRS_DATA_CERTIFICATES_DIR\ca.conf" "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\" | WriteAndLog
-touch "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"
-touch "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf"
+New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"
+New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf"
 if (![System.IO.File]::Exists("$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt")) {
      Write-Output "01" > "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt" | WriteAndLog
 }

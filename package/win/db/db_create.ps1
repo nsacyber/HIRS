@@ -27,18 +27,18 @@ read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
 
 # Parameter check
 if ($LOG_FILE) {
-	touch $LOG_FILE
+	New-Item -ItemType File -Path $LOG_FILE 
 	$global:LOG_FILE=$LOG_FILE
 } else {
 	set_up_log
 }
 
-touch $global:HIRS_DATA_ACA_PROPERTIES_FILE
-touch $global:DB_CONF
+New-Item -ItemType File -Path $global:HIRS_DATA_ACA_PROPERTIES_FILE
+New-Item -ItemType File -Path $global:DB_CONF
 
 # Make sure required paths exist
-mkdir -F -p $global:HIRS_CONF_DIR 2>&1 > $null
-mkdir -F -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
+New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
+New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
 
 Function check_mysql_root_pwd () {
     # Check if DB root password needs to be obtainedS

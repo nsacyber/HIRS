@@ -186,10 +186,15 @@ Function create_random () {
 
 Function set_up_log () {
     if (![System.IO.Directory]::Exists($global:HIRS_DATA_LOG_DIR)) {
-        mkdir -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
+        New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
     }
     $global:LOG_FILE=$global:HIRS_DATA_INSTALL_LOG_NAME
-    touch $global:LOG_FILE
+    
+    if (-not (Test-Path $global:LOG_FILE)) {
+      New-Item -ItemType File -Path $global:LOG_FILE
+    } else {
+      Write-Output "File already exists: $global:LOG_FILE"
+    }
 }
 
 Function print_all_variables () {

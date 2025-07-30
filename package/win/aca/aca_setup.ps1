@@ -7,8 +7,10 @@ param (
 
 $APP_HOME=(Split-Path -parent $PSCommandPath)
 $ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
-$COMP_JSON=(Join-Path $APP_HOME '..' '..' '..' 'HIRS_AttestationCA' 'src' 'main' 'resources' 'component-class.json')
-$VENDOR_TABLE=(Join-Path $APP_HOME '..' '..' '..' 'HIRS_Utils' 'src' 'main' 'resources' 'vendor-table.json')
+$COMP_JSON = (Resolve-Path ([System.IO.Path]::Combine(
+    $APP_HOME, '..', '..', '..', 'HIRS_AttestationCA', 'src', 'main', 'resources', 'component-class.json'))).Path
+$VENDOR_TABLE=(Resolve-Path ([System.IO.Path]::Combine(
+    $APP_HOME, '..', '..', '..', 'HIRS_Utils', 'src', 'main', 'resources', 'vendor-table.json'))).Path
 
 # Load other scripts
 . $ACA_COMMON_SCRIPT
@@ -20,16 +22,30 @@ Write-Output "ACA setup log file is $global:LOG_FILE" | WriteAndLog
 Write-Output ("Running with these arguments: "+($PSBoundParameters | Out-String)) | WriteAndLog
 
 # Read aca.properties
-mkdir -F -p $global:HIRS_CONF_DIR 2>&1 > $null
-mkdir -F -p $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR 2>&1 > $null
-mkdir -F -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
-Copy-Item $COMP_JSON $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
-Copy-Item $VENDOR_TABLE $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
-touch $global:HIRS_DATA_ACA_PROPERTIES_FILE  # create it, if it doesn't exist
+New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR | Out-Null
+New-Item -ItemType Directory -Path $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR -Force | Out-Null
+New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
+Copy-Item "$COMP_JSON" "$global:HIRS_CONF_DEFAULT_PROPERTIES_DIR"
+Copy-Item "$VENDOR_TABLE" "$global:HIRS_CONF_DEFAULT_PROPERTIES_DIR"
+
+# create it, if it doesn't exist
+if (-not (Test-Path $global:HIRS_DATA_ACA_PROPERTIES_FILE)) {
+    New-Item -ItemType File -Path $global:HIRS_DATA_ACA_PROPERTIES_FILE
+} else {
+    Write-Output "File already exists: $global:HIRS_DATA_ACA_PROPERTIES_FILE"
+}  
+
 read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 
 # Read spring application.properties
-touch $global:HIRS_DATA_SPRING_PROP_FILE  # create it, if it doesn't exist
+
+# create it, if it doesn't exist
+if (-not (Test-Path $global:HIRS_DATA_SPRING_PROP_FILE)) {
+    New-Item -ItemType File -Path $global:HIRS_DATA_SPRING_PROP_FILE
+} else {
+    Write-Output "File already exists: $global:HIRS_DATA_SPRING_PROP_FILE"
+}
+  
 read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
 
 # Parameter Consolidation

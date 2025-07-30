@@ -41,7 +41,7 @@ if (!$PKI_PASS) {
 	}
 }
 
-mkdir -p $global:HIRS_CONF_DIR 2>&1 > $null
+New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
 Write-Output "APP_HOME is $APP_HOME" | WriteAndLog
 
 # Check for sudo or root user 
@@ -61,9 +61,9 @@ if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_DIR)) {
 	}
 	Write-Output "PKI_SETUP_DIR is $PKI_SETUP_DIR" | WriteAndLog
 
-    mkdir -F -p $global:HIRS_DATA_CERTIFICATES_DIR 2>&1 > $null
+    New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_DIR -Force | Out-Null
 
-    cp $PKI_SETUP_DIR/ca.conf $global:HIRS_DATA_CERTIFICATES_DIR
+    Copy-Item "$PKI_SETUP_DIR\ca.conf" "$global:HIRS_DATA_CERTIFICATES_DIR"
 	pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$global:LOG_FILE"
     pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$global:LOG_FILE"
 
