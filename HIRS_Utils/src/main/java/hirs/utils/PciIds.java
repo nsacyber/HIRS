@@ -271,7 +271,7 @@ public final class PciIds {
             if (devSc != null && !Strings.isNullOrEmpty(devSc.getName())) {
                 translatedClassCode.set(1, devSc.getName());
             }
-            
+
             if (progI != null && !Strings.isNullOrEmpty(progI.getName())) {
                 translatedClassCode.set(2, progI.getName());
             }

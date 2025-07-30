@@ -16,6 +16,7 @@ jcommanderVersion = "2.0"
 lombokVersion = "1.18.36"
 mariadbVersion = "3.5.1"
 minimalJsonVersion = "0.9.5"
+nimbusJwtVersion = "10.0.1"
 ospackageVersion = "11.2.0"
 pciVersion = "0.3"
 protobufJavaVersion = "4.28.3"
@@ -50,6 +51,7 @@ jcommander = { module = "org.jcommander:jcommander", version.ref = "jcommanderVe
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
 mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadbVersion" }
 minimal-json = { module = "com.eclipsesource.minimal-json:minimal-json", version.ref = "minimalJsonVersion" }
+nimbus-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbusJwtVersion" }
 pci = { module = "com.github.marandus:pci-ids", version.ref = "pciVersion" }
 protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufJavaVersion" }
 snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "snakeYamlVersion" }
