@@ -15,16 +15,16 @@ $VENDOR_TABLE=(Join-Path $APP_HOME '..' '..' '..' 'HIRS_Utils' 'src' 'main' 'res
 
 # Set up log
 set_up_log
-echo "-----------------------------------------------------------" | WriteAndLog
-echo "ACA setup log file is $global:LOG_FILE" | WriteAndLog
-echo ("Running with these arguments: "+($PSBoundParameters | Out-String)) | WriteAndLog
+Write-Output "-----------------------------------------------------------" | WriteAndLog
+Write-Output "ACA setup log file is $global:LOG_FILE" | WriteAndLog
+Write-Output ("Running with these arguments: "+($PSBoundParameters | Out-String)) | WriteAndLog
 
 # Read aca.properties
 mkdir -F -p $global:HIRS_CONF_DIR 2>&1 > $null
 mkdir -F -p $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR 2>&1 > $null
 mkdir -F -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
-cp $COMP_JSON $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
-cp $VENDOR_TABLE $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
+Copy-Item $COMP_JSON $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
+Copy-Item $VENDOR_TABLE $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
 touch $global:HIRS_DATA_ACA_PROPERTIES_FILE  # create it, if it doesn't exist
 read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 
@@ -39,59 +39,59 @@ $unattended=$u -or $unattended
 $help = $h -or $help
 
 if ($help) {
-    echo "  Setup script for the HIRS ACA"
-    echo "  Syntax: sh aca_setup.sh [-u|h|sd|sp|--skip-db|--skip-pki]"
-    echo "  options:"
-    echo "     -u  | --unattended   Run unattended"
-    echo "     -h  | --help   Print this Help."
-    echo "     -sp | --skip-pki run the setup without pki setup."
-    echo "     -sb | --skip-db run the setup without database setup."
+    Write-Output "  Setup script for the HIRS ACA"
+    Write-Output "  Syntax: sh aca_setup.sh [-u|h|sd|sp|--skip-db|--skip-pki]"
+    Write-Output "  options:"
+    Write-Output "     -u  | --unattended   Run unattended"
+    Write-Output "     -h  | --help   Print this Help."
+    Write-Output "     -sp | --skip-pki run the setup without pki setup."
+    Write-Output "     -sb | --skip-db run the setup without database setup."
 	exit 1
 }
 
 if(!(New-Object Security.Principal.WindowsPrincipal(
 		[Security.Principal.WindowsIdentity]::GetCurrent())
 	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	echo "This script requires root.  Please run as root" 
+	Write-Output "This script requires root.  Please run as root" 
 	exit 1
 }
 
 
 
-echo "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" | WriteAndLog
+Write-Output "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" | WriteAndLog
 
 if (!$skippki) {
 	if (!$Env:HIRS_PKI_PWD) {
 		$HIRS_PKI_PWD=(create_random)
 		# NOTE: Writing to the environment variable did not work within the container
 		# This password will be stored in the ACA properties file.
-		echo "Using randomly generated password for the PKI key password" | WriteAndLog
+		Write-Output "Using randomly generated password for the PKI key password" | WriteAndLog
 		Write-Host "NOT LOGGED: Using pki password=$HIRS_PKI_PWD"
 	} else {
 		$HIRS_PKI_PWD=$Env:HIRS_PKI_PWD
-		echo "Using system supplied password for the PKI key password" | WriteAndLog
+		Write-Output "Using system supplied password for the PKI key password" | WriteAndLog
 	}
 	pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_PKI_SETUP -LOG_FILE:"$global:LOG_FILE" -PKI_PASS:"$HIRS_PKI_PWD" -UNATTENDED:"$unattended"
     if ($LastExitCode -eq 0) { 
-        echo "ACA PKI  setup complete" | WriteAndLog
+        Write-Output "ACA PKI  setup complete" | WriteAndLog
     } else {
-        echo "Error setting up ACA PKI" | WriteAndLog
+        Write-Output "Error setting up ACA PKI" | WriteAndLog
         exit 1
     }
 } else {
-    echo ("ACA PKI setup not run due to presence of command line argument: "+($PSBoundParameters.Keys | grep -E "skip-pki|sp")) | WriteAndLog
+    Write-Output ("ACA PKI setup not run due to presence of command line argument: "+($PSBoundParameters.Keys | grep -E "skip-pki|sp")) | WriteAndLog
 }
 
 if (!$skipdb) {
 	pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_DB_CREATE -LOG_FILE:"$global:LOG_FILE" -UNATTENDED:"$unattended"
     if ($LastExitCode -eq 0) { 
-        echo "ACA database setup complete" | WriteAndLog
+        Write-Output "ACA database setup complete" | WriteAndLog
     } else {
-        echo "Error setting up ACA DB" | WriteAndLog
+        Write-Output "Error setting up ACA DB" | WriteAndLog
         exit 1
     }
 } else {
-    echo ("ACA Database setup not run due to command line argument: "+($PSBoundParameters.Keys | grep -E "skip-db|sd")) | WriteAndLog
+    Write-Output ("ACA Database setup not run due to command line argument: "+($PSBoundParameters.Keys | grep -E "skip-db|sd")) | WriteAndLog
 }
 
-echo "ACA setup complete" | WriteAndLog
+Write-Output "ACA setup complete" | WriteAndLog

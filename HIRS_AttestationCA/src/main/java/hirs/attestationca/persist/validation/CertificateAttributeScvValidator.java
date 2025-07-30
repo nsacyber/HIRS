@@ -165,7 +165,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             final boolean ignorePcieVpdAttribute) throws IOException {
         boolean passesValidation = true;
         StringBuilder resultMessage = new StringBuilder();
-        HardwareInfo hardwareInfo = deviceInfoReport.getHardwareInfo();
+        final HardwareInfo hardwareInfo = deviceInfoReport.getHardwareInfo();
 
         boolean fieldValidation;
         fieldValidation = requiredPlatformCredentialFieldIsNonEmptyAndMatches(
@@ -244,6 +244,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
                 passesValidation &= fieldValidation;
 
+
                 fieldValidation = !isRequiredASN1StringFieldBlank("componentModel",
                         pcComponent.getComponentModel());
 
@@ -259,6 +260,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             List<ComponentIdentifierV2> allV2PcComponents
                     = new ArrayList<>(platformCredential.getComponentIdentifiersV2());
 
+            //todo esacost v3_911
             // All V2 components listed in the Platform Credential must have a manufacturer and model
             for (ComponentIdentifierV2 pcComponent : allV2PcComponents) {
                 fieldValidation = !isRequiredASN1StringFieldBlank("componentManufacturer",

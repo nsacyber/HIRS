@@ -208,7 +208,7 @@ public class SupplyChainValidationService {
             // Ensure there are platform credentials to validate
             SupplyChainValidation attributeScv = null;
             String attrErrorMessage = "";
-            List<ArchivableEntity> archivableEntities = new ArrayList<>();
+            List<ArchivableEntity> achievableEntities = new ArrayList<>();
             // need to check if there are deltas, if not then just verify
             // components of the base
             if (baseCredential == null) {
@@ -221,7 +221,7 @@ public class SupplyChainValidationService {
                 if (chkDeltas) {
                     // There are delta certificates, so the code need to build a new list of
                     // certificate components to then compare against the device component list
-                    archivableEntities.addAll(basePlatformScv.getCertificatesUsed());
+                    achievableEntities.addAll(basePlatformScv.getCertificatesUsed());
 
                     attributeScv = ValidationService.evaluateDeltaAttributesStatus(
                             device.getDeviceInfo(),
@@ -237,7 +237,7 @@ public class SupplyChainValidationService {
                     }
                 } else {
                     // validate attributes for a single base platform certificate
-                    archivableEntities.add(baseCredential);
+                    achievableEntities.add(baseCredential);
                     validations.remove(platformScv);
                     // if there are no deltas, just check base credential
                     platformScv = ValidationService.evaluatePCAttributesStatus(
@@ -248,7 +248,7 @@ public class SupplyChainValidationService {
                             policySettings.isIgnorePcieVpdEnabled());
                     validations.add(new SupplyChainValidation(
                             SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                            platformScv.getValidationResult(), archivableEntities, platformScv.getMessage()));
+                            platformScv.getValidationResult(), achievableEntities, platformScv.getMessage()));
                 }
 
                 updateComponentStatus(componentResultRepository
@@ -262,7 +262,7 @@ public class SupplyChainValidationService {
                 validations.remove(platformScv);
                 validations.add(new SupplyChainValidation(
                         SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
-                        attributeScv.getValidationResult(), archivableEntities, attributeScv.getMessage()));
+                        attributeScv.getValidationResult(), achievableEntities, attributeScv.getMessage()));
             }
         }
 

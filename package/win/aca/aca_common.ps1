@@ -109,7 +109,7 @@ Function read_aca_properties () {
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
         $msg="Warning: ACA properties file not found. The path provided was: $file"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
@@ -124,12 +124,12 @@ Function add_new_aca_property () {
     if ($global:ACA_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
         $msg="Writing KeyValue pair to $file"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
         Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-        echo "$newKeyAndValue" >> $file
+        Write-Output "$newKeyAndValue" >> $file
         $global:ACA_PROPERTIES=$null
         read_aca_properties $file
     }
@@ -154,7 +154,7 @@ Function read_spring_properties () {
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
         $msg="Warning: Spring properties file not found. The path provided was: $file"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
@@ -169,12 +169,12 @@ Function add_new_spring_property () {
     if ($global:SPRING_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
         $msg="Writing KeyValue pair to $file"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
         Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-        echo "$newKeyAndValue" >> $file
+        Write-Output "$newKeyAndValue" >> $file
         $global:SPRING_PROPERTIES=$null
         read_spring_properties $file
     }
@@ -213,7 +213,7 @@ Function ChangeBackslashToForwardSlash () {
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position=0)]
         [string]$msg
     )
-    echo ($msg -replace "\\","/")
+    Write-Output ($msg -replace "\\","/")
 }
 
 Function ChangeFileBackslashToForwardSlash () {
