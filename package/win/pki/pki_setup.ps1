@@ -26,7 +26,7 @@ read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
 
 # Parameter check
 if ($LOG_FILE) {
-	touch $LOG_FILE
+	New-Item -ItemType File -Path $LOG_FILE
 	$global:LOG_FILE=$LOG_FILE
 } else {
 	set_up_log

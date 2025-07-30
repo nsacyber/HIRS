@@ -22,7 +22,7 @@ Write-Output "ACA setup log file is $global:LOG_FILE" | WriteAndLog
 Write-Output ("Running with these arguments: "+($PSBoundParameters | Out-String)) | WriteAndLog
 
 # Read aca.properties
-New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR | Out-Null
+New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
 Copy-Item "$COMP_JSON" "$global:HIRS_CONF_DEFAULT_PROPERTIES_DIR"
