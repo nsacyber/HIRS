@@ -152,7 +152,7 @@ Function add_to_stores () {
     keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH.pem"  -noprompt -alias "$ALIAS" 2>&1 | WriteAndLog
     # Remove the temp p1 file.
     Write-Output "Cleaning up after storing $ALIAS" | WriteAndLog 
-	rm "tmpkey.p12"
+	Remove-Item "tmpkey.p12"
 } 
 
 # Function to create an Intermediate Key, CSR, and Certificate
@@ -198,9 +198,9 @@ Function create_cert () {
 	}
 
 	Write-Output "Sending CSR to the CA." | WriteAndLog
-	pushd "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
+	Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
 	openssl ca -config ca.conf -keyfile "$ISSUER_KEY" -md $HASH_ALG -cert "$ISSUER_CERT" -extensions "$EXTENSION" -out "$CERT_PATH.pem" -in "$CERT_PATH.csr" -passin "pass:$PASS" -batch -notext 2>&1 | WriteAndLog       
-	popd | WriteAndLog
+	Pop-Location | WriteAndLog
     # Increment the cert serial number
     $SERIAL=(Get-Content "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt")
     Write-Output "Cert Serial Number = $SERIAL" | WriteAndLog
@@ -215,8 +215,8 @@ Function create_cert () {
 	keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH.pem"  -noprompt -alias "$ALIAS" 2>&1 | WriteAndLog 
     Write-Output "Cleaning up after storing $ALIAS" | WriteAndLog 
 	# Remove the temp p12 file.
-    rm "tmpkey.p12"# remove csr file
-    rm "$CERT_PATH.csr"
+    Remove-Item "tmpkey.p12"# remove csr file
+    Remove-Item "$CERT_PATH.csr"
 }
 
 Function create_cert_chain () {
@@ -247,7 +247,7 @@ Function create_cert_chain () {
 
     Write-Output "Creating concatenated PEM file." | WriteAndLog
 	# Create Cert trust store by adding the Intermediate and root certs 
-	cat "$PKI_CA1.pem", "$PKI_CA2.pem", "$PKI_CA3.pem", "$PKI_INT.pem", "$PKI_ROOT.pem" >  "$TRUST_STORE_FILE"
+	Get-Content "$PKI_CA1.pem", "$PKI_CA2.pem", "$PKI_CA3.pem", "$PKI_INT.pem", "$PKI_ROOT.pem" | Set-Content "$TRUST_STORE_FILE"
 
     Write-Output "Verifying the concatenated PEM file works." | WriteAndLog
 	# Checking signer cert using trust store...
@@ -267,9 +267,9 @@ if ("$ASYM_ALG" -eq "rsa") {
 	openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -aes256 --pass "pass:$PASS" -out "$PKI_ROOT.key" 2>&1 | WriteAndLog
 
 	# Create a self signed CA certificate
-	pushd "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
+	Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
 	openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT.key" -subj "$ROOT_DN" -extensions ca_extensions -out "$PKI_ROOT.pem" -passin "pass:$PASS" 2>&1 | WriteAndLog
-	popd | WriteAndLog
+	Pop-Location | WriteAndLog
 	# Add the CA root cert to the Trust and Key stores
 	add_to_stores "$PKI_ROOT"
 	# Create an intermediate CA, 2 Leaf CAs, and Signer Certs 
@@ -282,9 +282,9 @@ if ("$ASYM_ALG" -eq "ecc") {
 	openssl genpkey -algorithm "EC" -pkeyopt ec_paramgen_curve:P-521 -aes256 --pass "pass:$PASS" -out "$PKI_ROOT.key" 2>&1 | WriteAndLog
 
 	# Create a self signed CA certificate
-	pushd "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
+	Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
 	openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT.key" -subj "$ROOT_DN" -extensions ca_extensions -out "$PKI_ROOT.pem" -passin "pass:$PASS" 2>&1 | WriteAndLog
-	popd | WriteAndLog
+	Pop-Location | WriteAndLog
 	# Add the CA root cert to the Trust and Key stores
 	add_to_stores "$PKI_ROOT"
 	# Create an intermediate CA, 2 Leaf CAs, and Signer Certs 

@@ -72,8 +72,6 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 	exit 1
 }
 
-
-
 Write-Output "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" | WriteAndLog
 
 if (!$skippki) {
