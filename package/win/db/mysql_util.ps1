@@ -28,7 +28,7 @@ Function check_mariadb_install () {
 	} else {
 	    $global:MYSQL_INSTALLED=$false
 		if ($PRINT_STATUS) {
-            Write-Output "mysql is NOT been installed, aborting install" | WriteAndLog
+            Write-Output "mysql has NOT been installed, aborting install" | WriteAndLog
 		}
         exit 1;
 	}

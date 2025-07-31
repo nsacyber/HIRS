@@ -25,7 +25,7 @@ read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
 
 # Parameter check
-if ($LOG_FILE) {
+if (-not (Test-Path -Path $LOG_FILE)) {
 	New-Item -ItemType File -Path $LOG_FILE
 	$global:LOG_FILE=$LOG_FILE
 } else {

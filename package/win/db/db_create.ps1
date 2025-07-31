@@ -26,15 +26,25 @@ read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
 
 # Parameter check
-if ($LOG_FILE) {
+if (-not (Test-Path -Path $LOG_FILE)) {
 	New-Item -ItemType File -Path $LOG_FILE 
 	$global:LOG_FILE=$LOG_FILE
 } else {
 	set_up_log
 }
 
-New-Item -ItemType File -Path $global:HIRS_DATA_ACA_PROPERTIES_FILE
-New-Item -ItemType File -Path $global:DB_CONF
+if (-not (Test-Path -Path $global:HIRS_DATA_ACA_PROPERTIES_FILE)) {
+    New-Item -ItemType File -Path $global:HIRS_DATA_ACA_PROPERTIES_FILE
+} else {
+    Write-Output "File already exists: $global:HIRS_DATA_ACA_PROPERTIES_FILE"
+}
+
+if (-not (Test-Path -Path $global:DB_CONF)) {
+    New-Item -ItemType File -Path $global:DB_CONF
+} else {
+    Write-Output "File already exists: $global:DB_CONF"
+}
+
 
 # Make sure required paths exist
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null

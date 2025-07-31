@@ -127,8 +127,19 @@ New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR -Forc
 New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER" -Force | Out-Null
 New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\certs" -Force | Out-Null
 Copy-Item "$global:HIRS_DATA_CERTIFICATES_DIR\ca.conf" "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
-New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"
-New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf"
+
+if (-not (Test-Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db")) {
+    New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"
+} else {
+    Write-Output "File already exists: $global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"
+}
+
+if (-not (Test-Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf")) {
+    New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf"
+} else {
+    Write-Output "File already exists: $global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf"
+}
+
 if (![System.IO.File]::Exists("$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt")) {
      Write-Output "01" > "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt" | WriteAndLog
 }

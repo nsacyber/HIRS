@@ -72,7 +72,7 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 	exit 1
 }
 
-Write-Output "HIRS ACA Setup initiated on $(date +%Y-%m-%d)" | WriteAndLog
+Write-Output "HIRS ACA Setup initiated on $(Get-Date -Format 'yyyy-MM-dd')" | WriteAndLog
 
 if (!$skippki) {
 	if (!$Env:HIRS_PKI_PWD) {
@@ -87,7 +87,7 @@ if (!$skippki) {
 	}
 	pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_PKI_SETUP -LOG_FILE:"$global:LOG_FILE" -PKI_PASS:"$HIRS_PKI_PWD" -UNATTENDED:"$unattended"
     if ($LastExitCode -eq 0) { 
-        Write-Output "ACA PKI  setup complete" | WriteAndLog
+        Write-Output "ACA PKI setup complete" | WriteAndLog
     } else {
         Write-Output "Error setting up ACA PKI" | WriteAndLog
         exit 1
