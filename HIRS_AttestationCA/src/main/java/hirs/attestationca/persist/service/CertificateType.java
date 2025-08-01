@@ -12,32 +12,41 @@ public enum CertificateType {
     /**
      * Represents the request mapping path for the endpoints inside the Platform Credentials Page controller.
      */
-    PLATFORM_CREDENTIALS("platform-credentials"),
+    PLATFORM_CREDENTIALS("platform-credentials", "PlatformCredential"),
 
     /**
-     * Represents the request mapping path for the endpoints inside the
+     * Holds the request mapping path and certificate type for the endpoints inside the
      * Endorsement Key Credentials Page controller.
      */
-    ENDORSEMENT_CREDENTIALS("endorsement-key-credentials"),
+    ENDORSEMENT_CREDENTIALS("endorsement-key-credentials", "EndorsementCredential"),
 
     /**
-     * Represents the request mapping path for the endpoints inside the IdevId Page controller.
+     * Holds the request mapping path and certificate type for the endpoints inside the IdevId Page controller.
      */
-    IDEVID_CERTIFICATES("idevid-certificates"),
+    IDEVID_CERTIFICATES("idevid-certificates", "IDevIDCertificate"),
 
     /**
-     * Represents the request mapping path for the endpoints inside the Issued Certificates Page controller.
+     * Holds the request mapping path and certificate type for the endpoints inside the Issued Certificates Page controller.
      */
-    ISSUED_CERTIFICATES("issued-certificates"),
+    ISSUED_CERTIFICATES("issued-certificates", "IssuedAttestationCertificate"),
 
     /**
-     * Represents the request mapping path for the endpoints inside the Trust Chains Page controller.
+     * Holds the request mapping path and certificate type for the endpoints inside the Trust Chains Page controller.
      */
-    TRUST_CHAIN("trust-chain");
+    TRUST_CHAIN("trust-chain", "CertificateAuthorityCredential");
 
+    /**
+     * The path that is used for that specific certificate's controller.
+     */
     private final String certificateRequestPath;
 
-    CertificateType(final String certificateRequestPath) {
+    /**
+     * The certificate type that is used in the database.
+     */
+    private final String certificateTypeName;
+
+    CertificateType(final String certificateRequestPath, final String certificateTypeName) {
         this.certificateRequestPath = certificateRequestPath;
+        this.certificateTypeName = certificateTypeName;
     }
 }

@@ -64,7 +64,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -142,9 +141,8 @@ public class ReferenceManifestValidator {
      */
     public void setRim(final byte[] rimBytes) {
         try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
+            this.rim = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
                     new ByteArrayInputStream(rimBytes))));
-            this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
         }
@@ -159,8 +157,7 @@ public class ReferenceManifestValidator {
     public void setRim(final String path) {
         File swidtagFile = new File(path);
         try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
-            this.rim = doc;
+            this.rim = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
         }
@@ -313,11 +310,8 @@ public class ReferenceManifestValidator {
      */
     private String getHashValue(final String filepath, final String sha) {
         try {
-            MessageDigest md = MessageDigest.getInstance(sha);
             byte[] bytes = Files.readAllBytes(Paths.get(filepath));
             return getHashValue(bytes, sha);
-        } catch (NoSuchAlgorithmException e) {
-            log.warn(e.getMessage());
         } catch (IOException e) {
             log.warn("Error reading {} for hashing: {}", filepath, e.getMessage());
         }
@@ -339,8 +333,8 @@ public class ReferenceManifestValidator {
             byte[] bytes = md.digest(input);
             StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < bytes.length; i++) {
-                sb.append(Integer.toString((bytes[i] & EIGHT_BIT_MASK)
+            for (byte aByte : bytes) {
+                sb.append(Integer.toString((aByte & EIGHT_BIT_MASK)
                         + LEFT_SHIFT, RADIX).substring(1));
             }
             resultString = sb.toString();
@@ -387,9 +381,10 @@ public class ReferenceManifestValidator {
         } else {
             log.error("Signature value is invalid!");
         }
-        Iterator itr = signature.getSignedInfo().getReferences().iterator();
-        while (itr.hasNext()) {
-            Reference reference = (Reference) itr.next();
+
+        List<Reference> references = signature.getSignedInfo().getReferences();
+
+        for (Reference reference : references) {
             boolean refValidity = reference.validate(context);
             String refUri = reference.getURI();
             if (refUri.isEmpty()) {
@@ -737,13 +732,13 @@ public class ReferenceManifestValidator {
                                         final AlgorithmMethod algorithm,
                                         final XMLCryptoContext context)
                 throws KeySelectorException {
-            Iterator keyinfoItr = keyinfo.getContent().iterator();
-            while (keyinfoItr.hasNext()) {
-                XMLStructure element = (XMLStructure) keyinfoItr.next();
+
+            List<XMLStructure> xmlStructures = keyinfo.getContent();
+
+            for (XMLStructure element : xmlStructures) {
                 if (element instanceof X509Data data) {
-                    Iterator dataItr = data.getContent().iterator();
-                    while (dataItr.hasNext()) {
-                        Object object = dataItr.next();
+                    List<?> dataContent = data.getContent();
+                    for (Object object : dataContent) {
                         if (object instanceof X509Certificate embeddedCert) {
                             try {
                                 if (isCertChainValid(embeddedCert)) {
@@ -777,8 +772,7 @@ public class ReferenceManifestValidator {
                 }
                 if (publicKey != null) {
                     if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
-                        return new ReferenceManifestValidator.X509KeySelector
-                                .RIMKeySelectorResult(publicKey);
+                        return new RIMKeySelectorResult(publicKey);
                     }
                 }
             }
