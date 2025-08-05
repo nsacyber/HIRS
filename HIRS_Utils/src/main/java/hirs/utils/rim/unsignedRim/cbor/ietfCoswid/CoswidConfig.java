@@ -12,7 +12,6 @@ import java.util.Map;
 /**
  * Class to read in a HIRS specific json based RIM Configuration file.
  */
-@SuppressWarnings("VisibilityModifier")
 public class CoswidConfig extends Coswid {
     protected JsonNode rootNode = null;
     /**

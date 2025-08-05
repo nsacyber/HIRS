@@ -7,7 +7,6 @@ import lombok.Setter;
  * Class that contains definitions found in the SWID specification  ISO/IEC 19770-2:2015.
  * Used by Coswid (Rfc 9393) which is based upon SWID specification.
  */
-@SuppressWarnings({"VisibilityModifier", "JavadocVariable"})
 public class Swid {
     // Order of variables follows the order listed in the table in section 8.5.1 of the SWID spec
 

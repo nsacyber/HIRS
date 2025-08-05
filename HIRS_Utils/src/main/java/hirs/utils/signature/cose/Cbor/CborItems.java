@@ -8,7 +8,7 @@ package hirs.utils.signature.cose.Cbor;
 public class CborItems {
 
     /** Array of item names.*/
-    private static final String[][] INDEX_NAMES = null;
+    private static final String[][] INDEX_NAMES = new String[0][0];
     /** Default item name. */
     public static final String UNKNOWN_STR = "Unknown";
     /** Default item id. */

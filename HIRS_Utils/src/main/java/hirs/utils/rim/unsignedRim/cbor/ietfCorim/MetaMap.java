@@ -43,7 +43,6 @@ public class MetaMap {
      * Process corim-signer-map. Defined in section 4.2.2.1 of the IETF Corim spec.
      * @param mapData a CBOR-encoded byte array representing a {@code corim-meta-map}
      */
-    @SuppressWarnings("MagicNumber")
     public MetaMap(final byte[] mapData) {
         ObjectMapper mapper = new ObjectMapper(new CBORFactory());
         Format format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");

@@ -14,7 +14,6 @@ import lombok.Setter;
  * Endorsements and Reference Values. CoRims are defined by IETF:
  * https://datatracker.ietf.org/doc/draft-ietf-rats-corim/
  */
-@SuppressWarnings({"VisibilityModifier", "JavadocVariable"})
 @JsonTypeName("corim-map") @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.WRAPPER_OBJECT)
 public class CoRim {

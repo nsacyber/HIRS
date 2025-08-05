@@ -11,7 +11,6 @@ import java.util.Map;
  * @see <a href="https://www.iana.org/assignments/named-information/named-information.xhtml">
  *     IANA Hash Algorithm Registry</a>
  */
-@SuppressWarnings("JavadocVariable")
 @Getter
 public enum IanaHashAlg {
     RESERVED(0, "reserved", "n/a"),

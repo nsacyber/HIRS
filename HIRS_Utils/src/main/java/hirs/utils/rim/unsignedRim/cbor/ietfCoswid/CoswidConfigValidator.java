@@ -12,7 +12,6 @@ import java.util.Map;
 /**
  * Validation Class for the json encoded Coswid Configuration/Attribute file.
  */
-@SuppressWarnings("VisibilityModifier")
 public class  CoswidConfigValidator {
     protected JsonNode configRootNode = null;
     protected Coswid coswidRef = new Coswid();

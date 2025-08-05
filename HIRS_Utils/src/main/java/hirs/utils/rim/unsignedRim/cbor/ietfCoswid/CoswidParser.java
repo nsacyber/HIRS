@@ -25,7 +25,6 @@ import static hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidItems.FS_NAME_INT
  * Uses the indexes to convert the integer key into the text values published in rfc 9393
  * Section 2.3 "The concise-swid-tag Map".
  */
-@SuppressWarnings("VisibilityModifier")
 public class CoswidParser   {
     protected Map<String, Object> parsedData = null;
     protected JsonNode rootNode = null;
@@ -200,7 +199,6 @@ public class CoswidParser   {
      * @param index The index value defined in RFC-9393 for roles
      * @return String holding the human-readable role
      */
-    @SuppressWarnings("checkstyle:magicnumber")
     private String roleLookup(final int index) {
         String role = "";
         switch (index) {

@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +14,6 @@ import java.util.Map;
  * Class to hold COSE header components common to both Protected and Unprotected headers,
  * specified in rfc rfc8152 (https://datatracker.ietf.org/doc/html/rfc8152#section-3.1).
  */
-@SuppressWarnings("VisibilityModifier")
 public class CoseHeader {
 
     @Setter
@@ -24,11 +25,7 @@ public class CoseHeader {
     @Setter
     @Getter
     protected String contentType = "";
-    @Setter
-    @Getter
     protected Map<Object, Object> parameters = null;
-    @Setter
-    @Getter
     protected List<X509Certificate> x5chain = null;
 
     /**
@@ -55,5 +52,41 @@ public class CoseHeader {
         }
 
         return returnString;
+    }
+
+    /**
+     * Returns a defensive copy of the parameters map.
+     *
+     * @return a copy of the parameters map
+     */
+    public Map<Object, Object> getParameters() {
+        return new HashMap<>(parameters);
+    }
+
+    /**
+     * Sets the parameters map with a defensive copy.
+     *
+     * @param parameters the map to set
+     */
+    public void setParameters(final Map<Object, Object> parameters) {
+        this.parameters = new HashMap<>(parameters);
+    }
+
+    /**
+     * Returns a defensive copy of the X.509 certificate chain.
+     *
+     * @return a copy of the certificate chain list
+     */
+    public List<X509Certificate> getX5chain() {
+        return new ArrayList<>(x5chain);
+    }
+
+    /**
+     * Sets the X.509 certificate chain with a defensive copy.
+     *
+     * @param x5chain the certificate chain to set
+     */
+    public void setX5chain(final List<X509Certificate> x5chain) {
+        this.x5chain = new ArrayList<>(x5chain);
     }
 }

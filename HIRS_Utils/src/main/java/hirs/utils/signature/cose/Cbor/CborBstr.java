@@ -1,7 +1,5 @@
 package hirs.utils.signature.cose.Cbor;
 
-import lombok.Getter;
-
 import java.nio.ByteBuffer;
 
 /**
@@ -10,7 +8,6 @@ import java.nio.ByteBuffer;
  * Note: use getContent() to retrieve the data with the byteSting encoding stripped off.
  */
 public class CborBstr {
-    @Getter
     private byte[] contents = null;
     private static int typeMask = 0xE0;
     private static int infoMask = 0x1F;
@@ -25,7 +22,6 @@ public class CborBstr {
     public CborBstr(final byte[] data) {
 
         byte type = data[0];
-        byte info = (byte) (type & infoMask);
         // Check if byte 0 is of major type 0x02 (Byte String)
         byte cborType = (byte) ((type & typeMask) >> shiftOffset);
         if (cborType != byteStringType) {
@@ -42,7 +38,6 @@ public class CborBstr {
      */
     public static boolean isByteString(final byte[] data) {
         byte type = data[0];
-        byte info = (byte) (type & infoMask);
         // Check if byte 0 is of major type 0x02 (Byte String)
         byte cborType = (byte) ((type & typeMask) >> shiftOffset);
         if (cborType == byteStringType) {
@@ -55,13 +50,12 @@ public class CborBstr {
      * @param data  byte array to check.
      * @return true of the byte array is empty.
      */
-    @SuppressWarnings("MagicNumber")
     public static boolean isEmptyByteString(final byte[] data) {
         if (!isByteString(data)) {
             return false;
         }
         // per the cose spec 0xa0 is equivalent to {}
-        if (data[3] == coseNilByte) {
+        if ((data[3] & 0xFF) == coseNilByte) {
             return true;
         }
         return false;
@@ -71,20 +65,19 @@ public class CborBstr {
      * @param data
      * @return length of the byte string in bytes
      */
-    @SuppressWarnings("checkstyle:magicnumber")
     public static int getByteStringLength(final byte[] data) {
         int length = 0;
         byte type = data[0];
         byte tagInfo = (byte) (type & infoMask);
-        if (tagInfo < CborTagProcessor.cborOneByteUnsignedInt) {
+        if (tagInfo < CborTagProcessor.CBOR_ONE_BYTE_UNSIGNED_INT) {
             length = tagInfo; // values 0 to 0x17
-        } else if (tagInfo == CborTagProcessor.cborOneByteUnsignedInt) {
+        } else if (tagInfo == CborTagProcessor.CBOR_ONE_BYTE_UNSIGNED_INT) {
             length = (int) data[1];
-        } else if (tagInfo == CborTagProcessor.cborTwoByteUnsignedInt) {
+        } else if (tagInfo == CborTagProcessor.CBOR_TWO_BYTE_UNSIGNED_INT) {
             byte[] tmpArray = {0, 0, data[1], data[2] };
             ByteBuffer buf = ByteBuffer.wrap(tmpArray);
             length = buf.getInt();
-        } else if (tagInfo == CborTagProcessor.cborFourByteUnsignedInt) {
+        } else if (tagInfo == CborTagProcessor.CBOR_FOUR_BYTE_UNSIGNED_INT) {
             byte[] tmpArray = {data[1], data[2], data[3], data[4]};
             ByteBuffer buf = ByteBuffer.wrap(tmpArray);
             length = buf.getInt();
@@ -96,18 +89,17 @@ public class CborBstr {
      * @param data byte array holding cbor data
      * @return length of the byte string tag in bytes
      */
-    @SuppressWarnings("checkstyle:magicnumber")
     public static int getByteStringTagLength(final byte[] data) {
         int length = 0;
         byte type = data[0];
         byte tagInfo = (byte) (type & infoMask);
-        if (tagInfo <  CborTagProcessor.cborOneByteUnsignedInt) {
+        if (tagInfo <  CborTagProcessor.CBOR_ONE_BYTE_UNSIGNED_INT) {
             length = 1; // values 0 to 0x17
-        } else if (tagInfo == CborTagProcessor.cborOneByteUnsignedInt) {
+        } else if (tagInfo == CborTagProcessor.CBOR_ONE_BYTE_UNSIGNED_INT) {
             length = 2;
-        } else if (tagInfo == CborTagProcessor.cborTwoByteUnsignedInt) {
+        } else if (tagInfo == CborTagProcessor.CBOR_TWO_BYTE_UNSIGNED_INT) {
             length = 3;
-        } else if (tagInfo == CborTagProcessor.cborFourByteUnsignedInt) {
+        } else if (tagInfo == CborTagProcessor.CBOR_FOUR_BYTE_UNSIGNED_INT) {
             length = 4;
         }
         return length;
@@ -118,7 +110,6 @@ public class CborBstr {
      * @return new byte array with the byte string stripped off.
      */
     public static byte[] removeByteStringIfPresent(final byte[] data) {
-        byte type = data[0];
         if (!isByteString(data)) {
             return data;
         }
@@ -126,5 +117,14 @@ public class CborBstr {
         byte[] contents = new byte[data.length - length];
         System.arraycopy(data, length, contents, 0, data.length - length);
         return contents;
+    }
+
+    /**
+     * Returns a defensive copy of the contents byte array.
+     *
+     * @return a copy of the contents array
+     */
+    public byte[] getContents() {
+        return contents.clone();
     }
 }

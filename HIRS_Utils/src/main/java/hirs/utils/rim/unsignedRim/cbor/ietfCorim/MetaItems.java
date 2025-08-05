@@ -13,12 +13,22 @@ import hirs.utils.signature.cose.Cbor.CborItems;
  * }
  * </pre>
  */
-@SuppressWarnings("JavaDocVariable")
 public class MetaItems extends CborItems {
+    /**
+     * Integer key for the signer entry in the CoRIM meta-map.
+     */
     public static final int SIGNER_INT = 0;
+    /**
+     * Integer key for the signature validity entry in the CoRIM meta-map.
+     */
     public static final int SIGNATURE_VALIDITY_INT = 1;
-
+    /**
+     * String key representing the signer URI ("href") in the CoRIM meta-map.
+     */
     public static final String SIGNER_STR = "href";
+    /**
+     * String key representing the signature validity thumbprint in the CoRIM meta-map.
+     */
     public static final String SIGNATURE_VALIDITY_STR = "thumbprint";
 
     private static final String[][] INDEX_NAMES = {

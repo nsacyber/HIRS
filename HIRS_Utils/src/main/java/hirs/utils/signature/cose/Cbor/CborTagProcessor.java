@@ -23,7 +23,6 @@ import java.util.UUID;
  * Support is limited to tags associated with a supported RIM type.
  */
 @Getter
-@SuppressWarnings("VisibilityModifier")
 public class CborTagProcessor {
     private byte[] content = null;
     private boolean isTagged = false;
@@ -67,11 +66,11 @@ public class CborTagProcessor {
     /** Tag define in rfc 8949 table 7. */
     private static int cborNegInt = 0x20; // (32 dec) Corim defined Regid URI
     /** rfc 8049 table 7 defined value. */
-    public static int cborOneByteUnsignedInt = 0x18; // (24 dec) Cbor defined single byte int
+    public static final int CBOR_ONE_BYTE_UNSIGNED_INT = 0x18; // (24 dec) Cbor defined single byte int
     /** rfc 8049 table 7 defined value. */
-    public static int cborFourByteUnsignedInt = 0x1a; // (26 dec) Cbor defined two byte int
+    public static final int CBOR_FOUR_BYTE_UNSIGNED_INT = 0x1a; // (26 dec) Cbor defined two byte int
     /** rfc 8049 table 7 defined value. */
-    public static int cborTwoByteUnsignedInt = 0x19; //corim (25 dec) Cbor defined 4 byte int
+    public static final int CBOR_TWO_BYTE_UNSIGNED_INT = 0x19; //corim (25 dec) Cbor defined 4 byte int
 
     /**
      * Default constructor fot the CborTagProcessor.
@@ -93,7 +92,6 @@ public class CborTagProcessor {
      *
      * @param taggedData byte[]  Coswid data
      */
-    @SuppressWarnings("checkstyle:magicnumber")
     public CborTagProcessor(final byte[] taggedData) {
         byte[] tagData = new byte[coswidTagLength];
         byte tagByte = taggedData[cborTypeStart];
@@ -104,15 +102,15 @@ public class CborTagProcessor {
             return;
         }
         // process per table 7 of rfc 8489 for integers only (gets to expansive for rarely used options)
-        if (tagInfo < cborOneByteUnsignedInt) {
+        if (tagInfo < CBOR_ONE_BYTE_UNSIGNED_INT) {
             tagId = tagInfo; // values 0 to 0x17
-        } else if (tagInfo == cborOneByteUnsignedInt) {
+        } else if (tagInfo == CBOR_ONE_BYTE_UNSIGNED_INT) {
             tagId = (int) taggedData[1];
-        } else if (tagInfo == cborTwoByteUnsignedInt) {
+        } else if (tagInfo == CBOR_TWO_BYTE_UNSIGNED_INT) {
             byte[] tmpArray = {0, 0, taggedData[1], taggedData[2]};
             ByteBuffer buf = ByteBuffer.wrap(tmpArray);
             tagId = buf.getInt();
-        } else if (tagInfo == cborFourByteUnsignedInt) {
+        } else if (tagInfo == CBOR_FOUR_BYTE_UNSIGNED_INT) {
             byte[] tmpArray = {taggedData[1], taggedData[2], taggedData[3], taggedData[4]};
             ByteBuffer buf = ByteBuffer.wrap(tmpArray);
             tagId = buf.getInt();
@@ -146,6 +144,7 @@ public class CborTagProcessor {
                 return;
             } else if (tagId == berOidTag) {
                 int contentLength = taggedData.length - 3;
+                content = new byte[contentLength];
                 isOid = true;
                 System.arraycopy(taggedData, 3, content, 0, contentLength);
                 CborBstr oidStr = new CborBstr(content);
@@ -180,7 +179,7 @@ public class CborTagProcessor {
                 CborBstr ctag = new CborBstr(byteArrayData);
                 content = ctag.getContents();
             } else {
-                content = taggedData;
+                content = taggedData.clone();
             }
         }  else {
             isTagged = false;
@@ -212,7 +211,7 @@ public class CborTagProcessor {
      * @return An {@link Optional} associated with the tagged input item, populated if matching tag found.
      */
     public static Optional<Object> process(final CBORTaggedItem taggedItem) {
-        if (taggedItem.getTagNumber().intValue() == cborNegInt) { // Reg id : URI
+        if (taggedItem.getTagNumber().equals(cborNegInt)) { // Reg id : URI
             String uriString = (String) taggedItem.getTagContent().parse();
             URI uri;
             try {
@@ -221,11 +220,11 @@ public class CborTagProcessor {
                 throw new RuntimeException(e);
             }
             return Optional.of(uri);
-        } else if (taggedItem.getTagNumber().intValue() == corimUuidTpe) { // UUID
+        } else if (taggedItem.getTagNumber().equals(corimUuidTpe)) { // UUID
             // Note: per section 7.4 in the IETF CoRIM specification, UUID is an array of 16 bytes
             UUID uuid = bytesToUUID((byte[]) taggedItem.getTagContent().parse());
             return Optional.of(uuid);
-        } else if (taggedItem.getTagNumber().intValue() == corimOidType) { // OID
+        } else if (taggedItem.getTagNumber().equals(corimOidType)) { // OID
             // Note: per section 7.6 in the IETF CoRIM specification, OID is a BER-encoded array of bytes
             try {
                 var oid = new Oid((byte[]) taggedItem.getTagContent().parse());
@@ -233,20 +232,20 @@ public class CborTagProcessor {
             } catch (GSSException e) {
                 throw new RuntimeException(e);
             }
-        } else if (taggedItem.getTagNumber().intValue() == corimSvnEq) { // tagged-svn
+        } else if (taggedItem.getTagNumber().equals(corimSvnEq)) { // tagged-svn
             // See section 5.1.4.1.4.4 in the IETF CoRIM specification
-            var comidSvn = new ComidSvn((int) taggedItem.getTagContent().parse());
+            var comidSvn = new ComidSvn((Integer) taggedItem.getTagContent().parse());
             return Optional.of(comidSvn);
-        } else if (taggedItem.getTagNumber().intValue() == corimSvnGt) { // tagged-min-svn
+        } else if (taggedItem.getTagNumber().equals(corimSvnGt)) { // tagged-min-svn
             // See section 5.1.4.1.4.4 in the IETF CoRIM specification
-            var comidMinSvn = new ComidSvn((int) taggedItem.getTagContent().parse());
+            var comidMinSvn = new ComidSvn((Integer) taggedItem.getTagContent().parse());
             comidMinSvn.setMinSvn(true);
             return Optional.of(comidMinSvn);
-        } else if (taggedItem.getTagNumber().intValue() == corimTagByteType) { // tagged-bytes
+        } else if (taggedItem.getTagNumber().equals(corimTagByteType)) { // tagged-bytes
             // See section 7.8 in the IETF CoRIM specification
             var taggedBytes = (byte[]) taggedItem.getTagContent().parse();
             return Optional.ofNullable(taggedBytes);
-        } else if (taggedItem.getTagNumber().intValue() == corimMaskedRawValue) { // tagged-masked-raw-value
+        } else if (taggedItem.getTagNumber().equals(corimMaskedRawValue)) { // tagged-masked-raw-value
             // See section 5.1.4.1.4.6 in the IETF CoRIM specification
             var maskedRawValue = new RawValue();
             var maskedRVItems = ((CBORItemList) taggedItem.getTagContent()).getItems();
@@ -254,15 +253,24 @@ public class CborTagProcessor {
             maskedRawValue.setValue((byte[]) maskIter.next().parse()); // value
             maskedRawValue.setMask((byte[]) maskIter.next().parse()); // mask
             return Optional.of(maskedRawValue);
-        } else if (taggedItem.getTagNumber().intValue() == armImpIdType) { // tagged-implementation-id-type
+        } else if (taggedItem.getTagNumber().equals(armImpIdType)) { // tagged-implementation-id-type
             // See section 3.1.2 in the IETF draft-ydb-rats-cca-endorsements specification
             var implementationIdType = (byte[]) taggedItem.getTagContent().parse();
             return Optional.of(implementationIdType);
-        } else if (taggedItem.getTagNumber().intValue() == armSeCompId) { // arm-swcomp-id
+        } else if (taggedItem.getTagNumber().equals(armSeCompId)) { // arm-swcomp-id
             // See section 3.1.3.1 in the IETF draft-ydb-rats-cca-endorsements specification
             var armSwcompId = new ArmSwcompId(taggedItem);
             return Optional.of(armSwcompId);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Returns a defensive copy of the content byte array.
+     *
+     * @return a copy of the content array
+     */
+    public byte[] getContent() {
+        return content.clone();
     }
 }

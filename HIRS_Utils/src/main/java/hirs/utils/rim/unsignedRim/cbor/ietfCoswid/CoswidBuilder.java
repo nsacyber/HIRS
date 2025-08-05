@@ -22,7 +22,6 @@ import java.util.HexFormat;
  * Uses the indexes to convert the integer key into the text values published in rfc 9393 Section 2.3
  * "The concise-swid-tag Map".
  */
-@SuppressWarnings({"VisibilityModifier", "MagicNumber"})
 public class CoswidBuilder extends Coswid {
     protected CBORGenerator cborGen = null;
     protected CoswidConfig config = null;

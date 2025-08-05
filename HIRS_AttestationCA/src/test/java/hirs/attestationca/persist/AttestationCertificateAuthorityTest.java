@@ -223,7 +223,6 @@ public class AttestationCertificateAuthorityTest {
      *
      * @throws Exception during aca processing
      */
-    @Disabled
     @Test
     public void testDecryptSymmetricBlob() throws Exception {
         // test encryption transformation
@@ -282,7 +281,6 @@ public class AttestationCertificateAuthorityTest {
      *
      * @throws Exception during aca processing
      */
-    @Disabled
     @Test
     public void testGenerateAsymmetricContents() throws Exception {
 

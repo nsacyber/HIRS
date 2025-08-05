@@ -15,9 +15,7 @@ import com.authlete.cbor.CBORByteArray;
 import com.authlete.cbor.CBORInteger;
 import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORItemList;
-import com.authlete.cbor.tag.CBORTagProcessor;
 import com.authlete.cbor.CBORDecoder;
-import com.authlete.cbor.CBORDecoderOptions;
 import com.authlete.cbor.CBORTaggedItem;
 import com.authlete.cbor.CBORNull;
 import com.authlete.cose.COSESign1;
@@ -57,27 +55,16 @@ import hirs.utils.signature.cose.Cbor.CborTagProcessor;
  *        This is the "signature" field of the COSE_Signature or COSE_Sign1 structure.
  */
 public class CoseSignature implements SignatureFormat {
-    @Setter
-    @Getter
-    private byte[] toBeSigned = null;
-    @Setter
-    @Getter
-    private byte[] payload = null;
-    @Setter
-    @Getter
-    private byte[] signature = null;
     // COSE Generic Header
     @Setter
     @Getter
     private int algId = 0;
-    @Setter
-    @Getter
+    private byte[] toBeSigned = null;
+    private byte[] payload = null;
+    private byte[] signature = null;
     private byte[] keyId = null;
-    @Setter
-    @Getter
     private byte[] protectedHeaders = null;
     private COSESign1Builder coseBuilder = null;
-    private SigStructure signatureData = null;
 
     /**
      * Default CoseSignature constructor for a COSE (rfc 9052) object.
@@ -155,8 +142,8 @@ public class CoseSignature implements SignatureFormat {
      * @return toBeVerified data
      */
     public byte[] getToBeVerified(final byte[] coseData) throws IOException {
-        COSEProtectedHeader pheader = processCose(coseData, true);
-        return toBeSigned;
+        // COSEProtectedHeader pheader = processCose(coseData, true);
+        return toBeSigned.clone();
     }
 
     /**
@@ -190,10 +177,8 @@ public class CoseSignature implements SignatureFormat {
             coseBuilder = new COSESign1Builder();
         }
         COSESign1 sign1 = null;
-        String process = "Processing toBeSigned for verification: ";
+        // String process = "Processing toBeSigned for verification: ";
         String status = "Parsing Cose Tag, expecting tag 18 (cose-sign1):";
-        CBORDecoderOptions options = cborDecoder.getOptions();
-        CBORTagProcessor tag = options.getTagProcessor(CoseType.COSE_SIGN_1);
         CborTagProcessor ctp = new CborTagProcessor(coseData);
         int coseTag = ctp.getTagId();
         if (coseTag != CoseType.COSE_SIGN_1) {
@@ -282,7 +267,7 @@ public class CoseSignature implements SignatureFormat {
      */
     @Override
     public void addSignature(final byte[] signatureBytes) throws IOException {
-        signature = signatureBytes;
+        signature = signatureBytes.clone();
         coseBuilder.signature(signatureBytes);
     }
 
@@ -294,10 +279,10 @@ public class CoseSignature implements SignatureFormat {
     public byte[] getSignedData() throws IOException {
         COSESign1 sigData = coseBuilder.build();
         // Set local variables for future use
-        byte[] rawSignature = sigData.getSignature().getValue();
+        // byte[] rawSignature = sigData.getSignature().getValue();
         protectedHeaders = sigData.getProtectedHeader().getValue();
         CBORTaggedItem taggedCose = new CBORTaggedItem(CoseType.COSE_SIGN_1, sigData);
-        return taggedCose.encode();
+        return taggedCose.encode().clone();
     }
 
     /**
@@ -392,5 +377,95 @@ public class CoseSignature implements SignatureFormat {
             return cert;
         }
         return null;
+    }
+
+    /**
+     * Returns a copy of the toBeSigned byte array.
+     *
+     * @return a defensive copy of toBeSigned
+     */
+    public byte[] getToBeSigned() {
+        return toBeSigned.clone();
+    }
+
+    /**
+     * Sets the toBeSigned byte array using a defensive copy.
+     *
+     * @param toBeSigned the byte array to set
+     */
+    public void setToBeSigned(final byte[] toBeSigned) {
+        this.toBeSigned = toBeSigned.clone();
+    }
+
+    /**
+     * Returns a copy of the payload byte array.
+     *
+     * @return a defensive copy of payload
+     */
+    public byte[] getPayload() {
+        return payload.clone();
+    }
+
+    /**
+     * Sets the payload byte array using a defensive copy.
+     *
+     * @param payload the byte array to set
+     */
+    public void setPayload(final byte[] payload) {
+        this.payload = payload.clone();
+    }
+
+    /**
+     * Returns a copy of the signature byte array.
+     *
+     * @return a defensive copy of signature
+     */
+    public byte[] getSignature() {
+        return signature.clone();
+    }
+
+    /**
+     * Sets the signature byte array using a defensive copy.
+     *
+     * @param signature the byte array to set
+     */
+    public void setSignature(final byte[] signature) {
+        this.signature = signature.clone();
+    }
+
+    /**
+     * Returns a copy of the keyId byte array.
+     *
+     * @return a defensive copy of keyId
+     */
+    public byte[] getKeyId() {
+        return keyId.clone();
+    }
+
+    /**
+     * Sets the keyId byte array using a defensive copy.
+     *
+     * @param keyId the byte array to set
+     */
+    public void setKeyId(final byte[] keyId) {
+        this.keyId = keyId.clone();
+    }
+
+    /**
+     * Returns a copy of the protectedHeaders byte array.
+     *
+     * @return a defensive copy of protectedHeaders
+     */
+    public byte[] getProtectedHeaders() {
+        return protectedHeaders.clone();
+    }
+
+    /**
+     * Sets the protectedHeaders byte array using a defensive copy.
+     *
+     * @param protectedHeaders the byte array to set
+     */
+    public void setProtectedHeaders(final byte[] protectedHeaders) {
+        this.protectedHeaders = protectedHeaders.clone();
     }
 }

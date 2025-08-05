@@ -15,7 +15,7 @@ import java.util.List;
  * Class that holds CoSWID (rfc 9393) Defined attributes, attribute names, and assigned indexes.
  * All variable names match those defined in rfc 9393.
  */
-@SuppressWarnings("VisibilityModifier") @Setter @Getter
+@Setter @Getter
 public class Coswid extends Swid implements GenericRim {
     /** Reference to the primary CoSWID JsonNode object. */
     protected JsonNode rootNode = null;
@@ -87,7 +87,6 @@ public class Coswid extends Swid implements GenericRim {
     // List of hash measurements in this CoSWID and their associated data
     protected List<Measurement> measurements = new ArrayList<>();
 
-    // @SuppressWarnings("checkstyle:JavadocVariable")
     // @Setter(AccessLevel.NONE)
 
     /** IANA CBOR registry define Coswid Tag.*/
