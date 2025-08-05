@@ -30,6 +30,7 @@ public class PcrValidator {
 
     private static final int NUM_TO_SKIP = 1;
     private static final int NUM_OF_TBOOT_PCR = 3;
+    private static final int BOOT_DRIVER_PCR = 4;
     // PCR 5-16
     private static final int PXE_PCR_START = 5;
     private static final int PXE_PCR_END = 16;
@@ -191,6 +192,9 @@ public class PcrValidator {
                         tpe.getEventTypeStr().contains(EVT_EFI_CFG)
                                 && tpe.getEventContentStr().contains("SecureBoot"))) {
                     log.info(String.format("OS Evt Config Ignored -> %s", tpe));
+                } else if (policySettings.isIgnoreOsEvtEnabled() &&
+                        tpe.getPcrIndex() == BOOT_DRIVER_PCR) {
+                    log.debug(String.format("PCR[4]: %s", tpe.getEventTypeString()));
                 } else {
                     if (!eventLogRecords.containsKey(tpe.getEventDigestStr())) {
                         tpmPcrEvents.add(tpe);
