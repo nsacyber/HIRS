@@ -183,7 +183,6 @@ public class CoswidBuilder extends Coswid {
             cborGen.writeFieldId(fieldItem); // index
             cborGen.writeString(attribute);  // value
         } catch (IOException e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -199,7 +198,6 @@ public class CoswidBuilder extends Coswid {
             cborGen.writeFieldId(fieldItem); // index
             cborGen.writeNumber(attribute);  // value
         } catch (IOException e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -426,7 +424,6 @@ public class CoswidBuilder extends Coswid {
         CBORByteArray coswidData = new CBORByteArray(untaggedCoswid.toByteArray());
         CBORTaggedItem taggedCbor = new CBORTaggedItem(Coswid.coswidTag, coswidData);
         taggedCbor.encode(taggedCoswid);
-        //System.out.println(taggedCoswid.prettify());
         return taggedCoswid;
     }
 }

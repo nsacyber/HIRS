@@ -9,6 +9,9 @@ import hirs.utils.rim.unsignedRim.common.measurement.MeasurementType;
 import hirs.utils.signature.cose.Cbor.CborTagProcessor;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,6 +45,7 @@ public class CoswidParser   {
     private List<String> path = new ArrayList<>();
     private static int coswidMap = 0;
     private static int entityMap =  CoswidItems.ENTITY_INT;
+    private static final Logger LOGGER = LogManager.getLogger(CoswidParser.class);
 
     /**
      * CBOR parser that decodes rfc 9393 based object https://datatracker.ietf.org/doc/rfc9393/.
@@ -66,7 +70,7 @@ public class CoswidParser   {
         }
         ObjectMapper mapper = new ObjectMapper(new CBORFactory());
         parsedData = mapper.readValue(new ByteArrayInputStream(untaggedCbor), Map.class);
-        System.out.println(parsedData);
+        LOGGER.info("CoswidParser's parsed data: {}", parsedData);
         rootNode = mapper.readTree(untaggedCbor);
         initParser(untaggedCbor);
     }

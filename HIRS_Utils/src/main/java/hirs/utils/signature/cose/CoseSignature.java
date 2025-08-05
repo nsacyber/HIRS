@@ -31,6 +31,8 @@ import hirs.utils.signature.SignatureFormat;
 import hirs.utils.signature.SignatureHelper;
 import hirs.utils.signature.cose.Cbor.CborContentTypes;
 import hirs.utils.signature.cose.Cbor.CborTagProcessor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -65,6 +67,7 @@ public class CoseSignature implements SignatureFormat {
     private byte[] keyId = null;
     private byte[] protectedHeaders = null;
     private COSESign1Builder coseBuilder = null;
+    private static final Logger LOGGER = LogManager.getLogger(CoseSignature.class);
 
     /**
      * Default CoseSignature constructor for a COSE (rfc 9052) object.
@@ -188,7 +191,6 @@ public class CoseSignature implements SignatureFormat {
         try {
             status = "Decoding COSE object";
             CBORItem coseObject = cborDecoder.next();
-            //System.out.println( coseObject.prettify());
             ArrayList<Object> parsedata = (ArrayList) coseObject.parse();
             COSESign1 signOne = COSESign1.build(parsedata);
             status = "Decoding COSE Protected Header";
@@ -217,8 +219,7 @@ public class CoseSignature implements SignatureFormat {
             } else if (uheader.getKid() != null) {
                 keyId = uheader.getKid();
             } else {
-                // throw new RuntimeException("Key ID required but not found in COSE header");
-                System.out.println("Warning: Key ID not found in COSE header");
+                LOGGER.warn("Key ID not found in COSE header");
             }
             status = "retrieving signature from COSE object";
             signature = signOne.getSignature().getValue();
@@ -339,7 +340,7 @@ public class CoseSignature implements SignatureFormat {
                     validated = true;
                 }
             } catch (Exception e) {
-                System.out.println("Warning: Embedded thumbprint failed to validate");
+                LOGGER.warn("Embedded thumbprint failed to validate");
             }
         }
         return validated;

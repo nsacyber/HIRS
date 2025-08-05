@@ -28,7 +28,6 @@ public class CoswidConfig extends Coswid {
             File jsonFile = new File(filename);
             byte[] data = Files.readAllBytes(jsonFile.toPath());
             Map<String, Object> parsedData = mapper.readValue(new ByteArrayInputStream(data), Map.class);
-            //System.out.println(parsedData);
             rootNode = mapper.readTree(data);
             CoswidConfigValidator configValidator = new CoswidConfigValidator();
             if (!configValidator.isValid(rootNode)) {
@@ -39,7 +38,6 @@ public class CoswidConfig extends Coswid {
             }
             init(rootNode);
         } catch (IOException e) {
-            // e.printStackTrace();
             throw new RuntimeException("Error processing Coswid RIM configuration file named "
                     + filename + ": " + e.getMessage(), e);
         }
