@@ -15,7 +15,7 @@
 #             json
 #             log
 #     Other files needed:
-#         C:/MariaDB 11.1/data/my.ini
+#         C:/MariaDB 11.8/data/my.ini
 #             If mysql is installed somewhere else, update DB_CONF below.
 $global:HIRS_SYS_HOME=(Join-Path $Env:ProgramFiles "hirs")
 $global:HIRS_INSTALL_SCRIPTS_DIR=(Join-Path $Env:ProgramFiles "scripts")
@@ -31,16 +31,20 @@ $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH=(Join-Path $HIRS_DATA_CERTIFICATES_
 $global:HIRS_DATA_LOG_DIR=(Join-Path $global:HIRS_DATA_DIR "log")
 $global:HIRS_DATA_INSTALL_LOG_NAME=(Join-Path $global:HIRS_DATA_LOG_DIR ("hirs_aca_install_"+(Get-Date -Format "yyyy-MM-dd")+'.log'))
 $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR=(Join-Path $global:HIRS_CONF_DIR "default-properties")
+
 #         Db Configuration files
-$global:DB_CONF=(Join-Path $Env:ProgramFiles 'MariaDB 11.1' 'data' 'my.ini')
+$global:DB_CONF = (Resolve-Path ([System.IO.Path]::Combine($Env:ProgramFiles, 'MariaDB 11.8', 'data', 'my.ini'))).Path
+
 #         Default Server Side Certificates
 $global:SSL_DB_SRV_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
 $global:SSL_DB_SRV_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_srv_rsa_3k_sha384.pem')
 $global:SSL_DB_SRV_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_srv_rsa_3k_sha384.key')
+
 #         Default Client Side Certificates
 $global:SSL_DB_CLIENT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
 $global:SSL_DB_CLIENT_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.pem')
 $global:SSL_DB_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.key')
+
 #     HIRS Relative directories assumed structure
 #         package
 #           linux
@@ -109,7 +113,7 @@ Function read_aca_properties () {
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
         $msg="Warning: ACA properties file not found. The path provided was: $file"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
@@ -124,12 +128,12 @@ Function add_new_aca_property () {
     if ($global:ACA_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
         $msg="Writing KeyValue pair to $file"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
         Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-        echo "$newKeyAndValue" >> $file
+        Write-Output "$newKeyAndValue" >> $file
         $global:ACA_PROPERTIES=$null
         read_aca_properties $file
     }
@@ -154,7 +158,7 @@ Function read_spring_properties () {
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
         $msg="Warning: Spring properties file not found. The path provided was: $file"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
@@ -169,27 +173,45 @@ Function add_new_spring_property () {
     if ($global:SPRING_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
         $msg="Writing KeyValue pair to $file"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
         Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-        echo "$newKeyAndValue" >> $file
+        Write-Output "$newKeyAndValue" >> $file
         $global:SPRING_PROPERTIES=$null
         read_spring_properties $file
     }
 }
 
 Function create_random () {
-    return (1..100 | % { Get-Random } | sha512sum | tr -dc 'a-zA-Z0-9')
+     # Step 1: Generate a string of 100 random numbers concatenated together
+    $randomData = -join (1..100 | ForEach-Object { Get-Random })
+
+    # Step 2: Create a SHA512 hashing object
+    $sha512 = [System.Security.Cryptography.SHA512]::Create()
+
+    # Step 3: Convert the random string into a byte array using UTF8 encoding
+    $bytes = [Text.Encoding]::UTF8.GetBytes($randomData)
+
+    # Step 4: Compute the SHA512 hash of the byte array, producing a byte array hash
+    $hashBytes = $sha512.ComputeHash($bytes)
+
+    # Step 5: Convert each byte in the hash to a two-digit hexadecimal string and join them all into one string
+    return -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
 }
 
 Function set_up_log () {
     if (![System.IO.Directory]::Exists($global:HIRS_DATA_LOG_DIR)) {
-        mkdir -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
+        New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
     }
     $global:LOG_FILE=$global:HIRS_DATA_INSTALL_LOG_NAME
-    touch $global:LOG_FILE
+    
+    if (-not (Test-Path $global:LOG_FILE)) {
+      New-Item -ItemType File -Path $global:LOG_FILE
+    } else {
+      Write-Output "File already exists: $global:LOG_FILE"
+    }
 }
 
 Function print_all_variables () {
@@ -213,7 +235,7 @@ Function ChangeBackslashToForwardSlash () {
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position=0)]
         [string]$msg
     )
-    echo ($msg -replace "\\","/")
+    Write-Output ($msg -replace "\\","/")
 }
 
 Function ChangeFileBackslashToForwardSlash () {

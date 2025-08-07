@@ -25,8 +25,8 @@ read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
 
 # Parameter check
-if ($LOG_FILE) {
-	touch $LOG_FILE
+if (-not (Test-Path -Path $LOG_FILE)) {
+	New-Item -ItemType File -Path $LOG_FILE
 	$global:LOG_FILE=$LOG_FILE
 } else {
 	set_up_log
@@ -37,18 +37,18 @@ if (!$PKI_PASS) {
 		$PKI_PASS=$Env:HIRS_PKI_PWD
 	} else {
 		$PKI_PASS=(create_random)
-		echo "Using randomly generated password for the PKI key password" | WriteAndLog
+		Write-Output "Using randomly generated password for the PKI key password" | WriteAndLog
 	}
 }
 
-mkdir -p $global:HIRS_CONF_DIR 2>&1 > $null
-echo "APP_HOME is $APP_HOME" | WriteAndLog
+New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
+Write-Output "APP_HOME is $APP_HOME" | WriteAndLog
 
 # Check for sudo or root user 
 if(!(New-Object Security.Principal.WindowsPrincipal(
 		[Security.Principal.WindowsIdentity]::GetCurrent())
 	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	echo "This script requires root.  Please run as root" | WriteAndLog
+	Write-Output "This script requires root.  Please run as root" | WriteAndLog
 	exit 1
 }
 
@@ -59,11 +59,11 @@ if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_DIR)) {
 	} else {
         $PKI_SETUP_DIR=$APP_HOME
 	}
-	echo "PKI_SETUP_DIR is $PKI_SETUP_DIR" | WriteAndLog
+	Write-Output "PKI_SETUP_DIR is $PKI_SETUP_DIR" | WriteAndLog
 
-    mkdir -F -p $global:HIRS_DATA_CERTIFICATES_DIR 2>&1 > $null
+    New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_DIR -Force | Out-Null
 
-    cp $PKI_SETUP_DIR/ca.conf $global:HIRS_DATA_CERTIFICATES_DIR
+    Copy-Item "$PKI_SETUP_DIR\ca.conf" "$global:HIRS_DATA_CERTIFICATES_DIR"
 	pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$global:LOG_FILE"
     pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$global:LOG_FILE"
 
@@ -74,5 +74,5 @@ if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_DIR)) {
     add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"server.ssl.key-store-password=$PKI_PASS"
     add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"server.ssl.trust-store-password=$PKI_PASS"
 } else {
-    echo "$global:HIRS_DATA_CERTIFICATES_DIR exists, skipping" | WriteAndLog
+    Write-Output "$global:HIRS_DATA_CERTIFICATES_DIR exists, skipping" | WriteAndLog
 }
