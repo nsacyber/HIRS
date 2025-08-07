@@ -35,7 +35,18 @@ public class EvNoAction {
     /**
      * True of the event is a SpecIDEvent.
      */
-    private boolean bSpecIDEvent = false;
+    @Getter
+    private boolean isSpecIdEvent = false;
+    /**
+     * True if the event is a StartupLocality event.
+     */
+    @Getter
+    private boolean isStartupLocality = false;
+    /**
+     * StartupLocality aa defined in the PC Client Platform Firmware Profile.
+     */
+    @Getter
+    private int startupLocality = 0;
     /**
      * TCG Event Log spec version.
      */
@@ -77,7 +88,7 @@ public class EvNoAction {
         if (signature.contains("Spec ID Event03")) {      // implies CryptAgileFormat
             EvEfiSpecIdEvent specIDEvent = new EvEfiSpecIdEvent(eventData);
             noActionInfo += specIDEventToString(specIDEvent);
-            bSpecIDEvent = true;
+            isSpecIdEvent = true;
             specVersion = String.format("%s.%s",
                     specIDEvent.getVersionMajor(),
                     specIDEvent.getVersionMinor());
@@ -85,6 +96,8 @@ public class EvNoAction {
         } else if (signature.contains("StartupLocality")) {
             noActionInfo += "   Signature = StartupLocality";
             noActionInfo += "\n   StartupLocality = " + getLocality(eventData);
+            isStartupLocality = true;
+            getLocality(eventData); // set startupLocality variable;
         } else if (signature.contains("NvIndexInstance")) {
             NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
             noActionInfo += nvIndexInstanceEvent.toString();
@@ -97,15 +110,6 @@ public class EvNoAction {
                     + "\" encountered but support for processing it has not been"
                     + " added to this application.\n";
         }
-    }
-
-    /**
-     * Determines if this event is a SpecIDEvent.
-     *
-     * @return true of the event is a SpecIDEvent.
-     */
-    public boolean isSpecIDEvent() {
-        return bSpecIDEvent;
     }
 
     /**
@@ -136,17 +140,17 @@ public class EvNoAction {
      * @param eventData byte array holding the event from which to grab locality
      * @return a description of the locality.
      */
-    private String getLocality(final byte[] eventData) {
+    public String getLocality(final byte[] eventData) {
         final int eventDataSrcIndex = 16;
-        byte[] localityBytes = new byte[1];
-        System.arraycopy(eventData, eventDataSrcIndex, localityBytes, 0, 1);
-        final int locality = HexUtils.leReverseInt(localityBytes);
-
         final int locality0 = 0;
         final int locality3 = 3;
         final int locality4 = 4;
 
-        return switch (locality) {
+        byte[] localityBytes = new byte[1];
+        System.arraycopy(eventData, eventDataSrcIndex, localityBytes, 0, 1);
+        startupLocality = HexUtils.leReverseInt(localityBytes);
+
+        return switch (startupLocality) {
             case locality0 -> "Locality 0 without an H-CRTM sequence";
             case locality3 -> "Locality 3 without an H-CRTM sequence";
             case locality4 -> "Locality 4 with an H-CRTM sequence initialized";

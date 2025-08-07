@@ -3,6 +3,7 @@ package hirs.utils.tpm.eventlog;
 import hirs.utils.HexUtils;
 import hirs.utils.digest.AbstractDigest;
 import hirs.utils.tpm.eventlog.events.EvConstants;
+import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 import org.apache.commons.codec.DecoderException;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -68,6 +70,24 @@ public final class TCGEventLog {
      */
     public static final int PCR_LOCALITY4_MAX = 23;
     /**
+     * Start up locality defined in the TCG PFP section 10.4.5.3.
+     */
+    public static final int LOCALITY3 = 0x03;
+    /**
+     * Initial value for PCR0 or SHA56 with locality 3.
+     */
+    public static final String LOCALITY3_SHA256_INIT_VAL = "00000000000000000000000000"
+            + "00000000000000000000000000000000000003";
+    /**
+     * Start up locality defined in the TCG PFP section 10.4.5.3.
+     */
+    public static final int LOCALITY4 = 0x04;
+    /**
+     * Initial value for PCR0 or SHA56 with locality 3.
+     */
+    public static final String LOCALITY4_SHA256_INIT_VAL = "00000000000000000000000000"
+            + "00000000000000000000000000000000000004";
+    /**
      * Logger.
      */
     private static final Logger LOGGER = LogManager.getLogger(TCGEventLog.class);
@@ -85,7 +105,7 @@ public final class TCGEventLog {
     @Getter
     private String eventLogHashAlgorithm = "TPM_ALG_SHA256";
     /**
-     * 2 dimensional array holding the PCR values.
+     * 2-dimensional array holding the PCR values.
      */
     private final byte[][] pcrList;
     /**
@@ -147,7 +167,7 @@ public final class TCGEventLog {
     /**
      * Default blank object constructor.
      */
-    public TCGEventLog() {
+    public TCGEventLog() throws UnsupportedEncodingException {
         this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
         initValue = INIT_SHA1_LIST;
         initLocalityFourValue = LOCALITY4_SHA1_LIST;
@@ -241,11 +261,15 @@ public final class TCGEventLog {
     }
 
     /**
-     * This method puts blank values in the pcrList.
+     * This method initializes the pcrList.
      */
-    private void initPcrList() {
+    private void initPcrList() throws UnsupportedEncodingException {
         try {
-            for (int i = 0; i < PCR_COUNT; i++) {
+        String pcrInit = getPcr0InitValue();
+        System.arraycopy(Hex.decodeHex(pcrInit.toCharArray()),
+                0, pcrList[0], 0, pcrLength);
+
+            for (int i = 1; i < PCR_COUNT; i++) {
                 System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
                         0, pcrList[i], 0, pcrLength);
             }
@@ -258,39 +282,38 @@ public final class TCGEventLog {
         }
     }
 
-//    /**
-//     * Creates a TPM baseline using the expected PCR Values.
-//     * Expected PCR Values were Calculated from the EventLog (RIM Support file).
-//     *
-//     * @param name name to call the TPM Baseline
-//     * @return whitelist baseline
-//     */
-//    public TpmWhiteListBaseline createTPMBaseline(final String name) {
-//        TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
-//        TPMMeasurementRecord record;
-//        String pcrValue;
-//        for (int i = 0; i < PCR_COUNT; i++) {
-//            if (eventLogHashAlgorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
-//                pcrValue = getExpectedPCRValue(i);
-//                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-//                final Digest hash = new Digest(DigestAlgorithm.SHA1, hexValue);
-//                record = new TPMMeasurementRecord(i, hash);
-//            } else {  // Log was Crypto Agile, currently assumes SHA256
-//                pcrValue = getExpectedPCRValue(i);
-//                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-//                final Digest hash = new Digest(DigestAlgorithm.SHA256, hexValue);
-//                record = new TPMMeasurementRecord(i, hash);
-//            }
-//            baseline.addToBaseline(record);
-//        }
-//        return baseline;
-//    }
+    /**
+     * Search for the startup locality in the event log and set the
+     * initial value of PCRO in accordance with the TCG PFP spec.
+     * @return string representing the initial value for PCR0
+     */
+     private String getPcr0InitValue() throws UnsupportedEncodingException {
+         for (TpmPcrEvent currentEvent : eventList.values()) {
+             if (currentEvent.getEventType() == NO_ACTION_EVENT) {
+                 EvNoAction event = new EvNoAction(currentEvent.getEventContent());
+                 if (event.isStartupLocality()) {
+                     int locality = event.getStartupLocality();
+                     if (locality == LOCALITY3) {
+                         return  LOCALITY3_SHA256_INIT_VAL;
+                     } else if (locality == LOCALITY4) {
+                         LOGGER.error("Error Processing TGC Event Log: "
+                               + "Event of type EV_NO_ACTION with a Startup Locality 4 with an H-CRTM "
+                               + "encountered ,  but no support is currently provided by this application");
+                         return LOCALITY4_SHA256_INIT_VAL;
+                     } else {
+                         return INIT_SHA256_LIST;
+                     }
+                 }
+             }
+         }
+         return INIT_SHA256_LIST;
+     }
 
     /**
      * Calculates the "Expected Values for TPM PCRs based upon Event digests in the Event Log.
      * Uses the algorithm and eventList passed into the constructor,
      */
-    private void calculatePcrValues() {
+    private void calculatePcrValues() throws UnsupportedEncodingException {
         byte[] extendedPCR;
         initPcrList();
         for (TpmPcrEvent currentEvent : eventList.values()) {
