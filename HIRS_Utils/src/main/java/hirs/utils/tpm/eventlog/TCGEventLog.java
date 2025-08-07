@@ -33,18 +33,18 @@ public final class TCGEventLog {
     public static final String INIT_SHA256_LIST = "00000000000000000000000000"
             + "00000000000000000000000000000000000000";
     /**
-     * Initial value for SHA 256 values.
+     * Initial value for SHA 256 values if Locality is 4.
      */
-    public static final String LOCALITY4_SHA256_LIST = "ffffffffffffffffffffffffff"
+    public static final String INIT_SHA256_LIST_LOCALITY4 = "ffffffffffffffffffffffffff"
             + "ffffffffffffffffffffffffffffffffffffff";
     /**
      * Initial value for SHA 1 values.
      */
     public static final String INIT_SHA1_LIST = "0000000000000000000000000000000000000000";
     /**
-     * Initial value for SHA 1 values.
+     * Initial value for SHA 1 values if Locality is 4.
      */
-    public static final String LOCALITY4_SHA1_LIST = "ffffffffffffffffffffffffffffffffffffffff";
+    public static final String INIT_SHA1_LIST_LOCALITY4 = "ffffffffffffffffffffffffffffffffffffffff";
     /**
      * PFP defined EV_NO_ACTION identifier.
      */
@@ -70,20 +70,20 @@ public final class TCGEventLog {
      */
     public static final int PCR_LOCALITY4_MAX = 23;
     /**
-     * Start up locality defined in the TCG PFP section 10.4.5.3.
+     * Startup locality 3 defined in the TCG PFP section 10.4.5.3.
      */
     public static final int LOCALITY3 = 0x03;
     /**
-     * Initial value for PCR0 or SHA56 with locality 3.
+     * Initial value for PCR0 SHA256 with locality 3.
      */
     public static final String LOCALITY3_SHA256_INIT_VAL = "00000000000000000000000000"
             + "00000000000000000000000000000000000003";
     /**
-     * Start up locality defined in the TCG PFP section 10.4.5.3.
+     * Startup locality 4 defined in the TCG PFP section 10.4.5.3.
      */
     public static final int LOCALITY4 = 0x04;
     /**
-     * Initial value for PCR0 or SHA56 with locality 3.
+     * Initial value for PCR0 SHA256 with locality 4.
      */
     public static final String LOCALITY4_SHA256_INIT_VAL = "00000000000000000000000000"
             + "00000000000000000000000000000000000004";
@@ -125,7 +125,7 @@ public final class TCGEventLog {
      */
     private final String initValue;
     /**
-     * Initial PcR Value to use for locality 4.
+     * Initial PCR Value to use for locality 4.
      */
     private final String initLocalityFourValue;
     /**
@@ -170,7 +170,7 @@ public final class TCGEventLog {
     public TCGEventLog() throws UnsupportedEncodingException {
         this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
         initValue = INIT_SHA1_LIST;
-        initLocalityFourValue = LOCALITY4_SHA1_LIST;
+        initLocalityFourValue = INIT_SHA1_LIST_LOCALITY4;
         pcrLength = EvConstants.SHA1_LENGTH;
         hashType = HASH_STRING;
         eventLogHashAlgorithm = "TPM_ALG_SHA1";
@@ -208,13 +208,13 @@ public final class TCGEventLog {
         bCryptoAgile = isLogCrytoAgile(rawlog);
         if (bCryptoAgile) {
             initValue = INIT_SHA256_LIST;
-            initLocalityFourValue = LOCALITY4_SHA256_LIST;
+            initLocalityFourValue = INIT_SHA256_LIST_LOCALITY4;
             eventLogHashAlgorithm = "TPM_ALG_SHA256";
             hashType = HASH256_STRING;
             pcrLength = EvConstants.SHA256_LENGTH;
         } else {
             initValue = INIT_SHA1_LIST;
-            initLocalityFourValue = LOCALITY4_SHA1_LIST;
+            initLocalityFourValue = INIT_SHA1_LIST_LOCALITY4;
             hashType = HASH_STRING;
             eventLogHashAlgorithm = "TPM_ALG_SHA1";
             pcrLength = EvConstants.SHA1_LENGTH;
@@ -298,7 +298,7 @@ public final class TCGEventLog {
                      } else if (locality == LOCALITY4) {
                          LOGGER.error("Error Processing TGC Event Log: "
                                + "Event of type EV_NO_ACTION with a Startup Locality 4 with an H-CRTM "
-                               + "encountered ,  but no support is currently provided by this application");
+                               + "encountered, but no support is currently provided by this application");
                          return LOCALITY4_SHA256_INIT_VAL;
                      } else {
                          return INIT_SHA256_LIST;
