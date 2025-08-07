@@ -25,7 +25,10 @@
     <suppress files="MetaMap.java" checks="MagicNumber"/>
     <suppress files="CoswidBuilder.java" checks="MagicNumber"/>
     <suppress files="CoswidParser.java" checks="MagicNumber"/>
+    <suppress files="CoRimBuilder.java" checks="MagicNumber"/>
+    <suppress files="CoRimConfig.java" checks="MagicNumber"/>
     <suppress files="CoRimParser.java" checks="MagicNumber"/>
+    <suppress files="CoRimValidity.java" checks="MagicNumber"/>
     <suppress files="CborTagProcessor.java" checks="MagicNumber"/>
     <suppress files="HexByteArrayDeserializer.java" checks="MagicNumber"/>
     <!-- This ignores checking all protected variables -->
