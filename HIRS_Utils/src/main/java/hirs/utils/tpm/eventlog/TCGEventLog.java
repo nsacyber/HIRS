@@ -35,25 +35,27 @@ public final class TCGEventLog {
     //    Locality 3: Auxiliary components. Use of this is optional and, if used, is implementation dependent.
     //    Locality 4: Usually associated with the CPU executing microcode. Used to establish the Dynamic RTM.
     //
-    // Global System Power States /Sleeping States
+    // Global System Power States /Sleeping States, described in TCG PFP 2.2.14
+    //    (Transitions described in TCG PFP 8.3)
     //    G0 = S0: On
     //    G1: Sleeping State
-    //      S1
-    //      S2
-    //      S3: Suspend to RAM  --> PCR0 will be initialized differently
-    //      S4: Hibernate       --> PCR0 will be initialized differently
+    //      S1: Stand-by with low wakeup latency
+    //      S2: Stand-by with CPU context lost
+    //      S3: Suspend to RAM                   --> PCR0 will be initialized differently
+    //      S4: Hibernate (OS Initiated)         --> PCR0 will be initialized differently
+    //      S4: Hibernate (BIOS Initiated)       --> PCR0 will be initialized differently
     //    G2 = S5: Soft Off State
     //    G3: Mechanical Off State
     //
     // Boot Startup Locality event - This event records the (power state) locality from which the
-    //                              TPM2_Startup command was sent.
+    //                               TPM2_Startup command was sent.
     //    (In this code StartupLocality is referred to as 'startup locality')
     //    (In this code Locality is referred to as 'locality', and essentially corresponds
     //    to S0-S5 State Transitions)
     //    The TCG PFP section 10.4.5.3 mentions Startup Locality:
     //       StartupLocality 0: is Locality 0 without an H-CRTM sequence
-    //       StartupLocality 3: is Locality 3 without an H-CRTM sequence
-    //       StartupLocality 4: is Locality 4 with an H-CRTM sequence initialized.
+    //       StartupLocality 3: is Locality 3 without an H-CRTM sequence (S3 -> S0)
+    //       StartupLocality 4: is Locality 4 with an H-CRTM sequence initialized (S4 -> S0)
     //
     // 1) TPM Reset -- Tpm2Startup(CLEAR) after Tpm2Shutdown(CLEAR)
     //    PCRs with default initialization state go back to their default initialization state.
@@ -63,7 +65,7 @@ public final class TCGEventLog {
     //    Preserves the previous state of the TPM.
     //
     // Ex. An EV_NO_ACTION Boot Event with StartupLocality 3 refers to Locality 3, which refers to a
-    //     state transition S3 to S0, corresponding to TPM Restart.
+    //     state transition S3 to S0, corresponding to TPM Restart. Requires PCR0 to be initialized to 3.
 
     /**
      * String value of SHA1 hash.
