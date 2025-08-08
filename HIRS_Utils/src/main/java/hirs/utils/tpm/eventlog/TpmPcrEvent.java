@@ -385,7 +385,7 @@ public class TpmPcrEvent {
                 try {
                     noAction = new EvNoAction(eventContent);
                     sb.append(noAction);
-                    if (noAction.isSpecIDEvent()) {
+                    if (noAction.isSpecIdEvent()) {
                         specVersion = noAction.getSpecVersion();
                         specErrataVersion = noAction.getSpecErrataVersion();
                     }
@@ -538,7 +538,7 @@ public class TpmPcrEvent {
             case EvConstants.EV_NO_ACTION:
                 EvNoAction noAction = new EvNoAction(content);
                 description += "Event Content:\n" + noAction;
-                if (noAction.isSpecIDEvent()) {
+                if (noAction.isSpecIdEvent()) {
                     specVersion = noAction.getSpecVersion();
                     specErrataVersion = noAction.getSpecErrataVersion();
                 }
