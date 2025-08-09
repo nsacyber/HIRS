@@ -23,12 +23,12 @@ Function check_mariadb_install () {
     if (Get-Command "mysql.exe" -ErrorAction SilentlyContinue) {
 		$global:MYSQL_INSTALLED=$true
 		if ($PRINT_STATUS) {
-		    echo "mysql is installed" | WriteAndLog
+		    Write-Output "mysql is installed" | WriteAndLog
 		}
 	} else {
 	    $global:MYSQL_INSTALLED=$false
 		if ($PRINT_STATUS) {
-            echo "mysql is NOT been installed, aborting install" | WriteAndLog
+            Write-Output "mysql has NOT been installed, aborting install" | WriteAndLog
 		}
         exit 1;
 	}
@@ -46,11 +46,11 @@ Function start_mysqlsd () {
 	# Check if mysql is already running, if not initialize
 	if(!$DB_STATUS -or ($DB_STATUS -and $DB_STATUS.HasExited)) {
 		if ($PRINT_STATUS) {
-			echo "Running the mariadb db installer..." | WriteAndLog
+			Write-Output "Running the mariadb db installer..." | WriteAndLog
 		}
 		& mariadb-install-db.exe 2>&1 | WriteAndLog
 		if ($PRINT_STATUS) {
-			echo "Attempting to start mysql..." | WriteAndLog
+			Write-Output "Attempting to start mysql..." | WriteAndLog
 		}
 		if($service -and ($service.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Stopped)) {
 			$service.Start() 2>&1 | WriteAndLog
@@ -79,16 +79,16 @@ Function check_mysql () {
 Function check_db_cleared () {
 	mysql -u root -e 'quit' &> $null
 	if ($LastExitCode -eq 0) {
-        echo "  Empty root password verified" | WriteAndLog
+        Write-Output "  Empty root password verified" | WriteAndLog
     } else {
-        echo "  Mysql Root password is not empty" | WriteAndLog
+        Write-Output "  Mysql Root password is not empty" | WriteAndLog
     }
 	
     $HIRS_DB_USER_EXISTS=(mysql -uroot -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db')")
     if ($HIRS_DB_USER_EXISTS -eq 1) {
-        echo "  hirs_db user exists" | WriteAndLog
+        Write-Output "  hirs_db user exists" | WriteAndLog
     } else {
-        echo "  hirs_db user does not exist" | WriteAndLog
+        Write-Output "  hirs_db user does not exist" | WriteAndLog
     }
 }
 
@@ -98,7 +98,7 @@ Function mysqld_reboot () {
     )
 	$PRINT_STATUS = $p -or $PRINT_STATUS;
     if ($PRINT_STATUS) {
-		echo "Attempting to restart mysql..." | WriteAndLog
+		Write-Output "Attempting to restart mysql..." | WriteAndLog
 	}
 	if($service) {
 		$service.Stop() 2>&1 >> "$global:LOG_FILE"
