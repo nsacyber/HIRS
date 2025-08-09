@@ -126,7 +126,7 @@ Write-Output "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..
 New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER" -Force | Out-Null
 New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\certs" -Force | Out-Null
-Copy-Item "$global:HIRS_DATA_CERTIFICATES_DIR\ca.conf" "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
+Copy-Item $global:HIRS_DATA_CERTIFICATES_DIR\ca.conf $global:HIRS_DATA_CERTIFICATES_HIRS_DIR | WriteAndLog
 
 if (-not (Test-Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db")) {
     New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"

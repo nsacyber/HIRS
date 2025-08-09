@@ -11,6 +11,8 @@ $COMP_JSON = (Resolve-Path ([System.IO.Path]::Combine(
     $APP_HOME, '..', '..', '..', 'HIRS_AttestationCA', 'src', 'main', 'resources', 'component-class.json'))).Path
 $VENDOR_TABLE=(Resolve-Path ([System.IO.Path]::Combine(
     $APP_HOME, '..', '..', '..', 'HIRS_Utils', 'src', 'main', 'resources', 'vendor-table.json'))).Path
+$SPRING_PROPERTIES_FILE=(Resolve-Path ([System.IO.Path]::Combine(
+    $APP_HOME, '..', '..', '..', 'HIRS_AttestationCAPortal', 'src', 'main', 'resources', 'application.win.properties'))).Path
 
 # Load other scripts
 . $ACA_COMMON_SCRIPT
@@ -25,8 +27,9 @@ Write-Output ("Running with these arguments: "+($PSBoundParameters | Out-String)
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
-Copy-Item "$COMP_JSON" "$global:HIRS_CONF_DEFAULT_PROPERTIES_DIR"
-Copy-Item "$VENDOR_TABLE" "$global:HIRS_CONF_DEFAULT_PROPERTIES_DIR"
+Copy-Item $COMP_JSON $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
+Copy-Item $VENDOR_TABLE $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR
+Copy-Item $SPRING_PROPERTIES_FILE $global:HIRS_DATA_SPRING_PROP_FILE
 
 # create it, if it doesn't exist
 if (-not (Test-Path $global:HIRS_DATA_ACA_PROPERTIES_FILE)) {
@@ -93,7 +96,7 @@ if (!$skippki) {
         exit 1
     }
 } else {
-    Write-Output ("ACA PKI setup not run due to presence of command line argument: "+($PSBoundParameters.Keys | grep -E "skip-pki|sp")) | WriteAndLog
+    Write-Output ("ACA PKI setup not run due to presence of command line argument: "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-pki|sp' } )) | WriteAndLog
 }
 
 if (!$skipdb) {
@@ -105,7 +108,7 @@ if (!$skipdb) {
         exit 1
     }
 } else {
-    Write-Output ("ACA Database setup not run due to command line argument: "+($PSBoundParameters.Keys | grep -E "skip-db|sd")) | WriteAndLog
+    Write-Output ("ACA Database setup not run due to command line argument: "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-db|sd'})) | WriteAndLog
 }
 
 Write-Output "ACA setup complete" | WriteAndLog

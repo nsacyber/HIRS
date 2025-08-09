@@ -67,7 +67,7 @@ if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_HIRS_DIR)) {
 }
 
 if (!$DEPLOYED_WAR) {
-    if (![System.IO.File]::Exists($GRADLE_WRAPPER)) {
+    if (-not (Test-Path -Path $GRADLE_WRAPPER -PathType Leaf)) {
         Write-Output 'This script is expected to be run from the HIRS top level project directory. Exiting.'
         exit 1;   	
     }
@@ -91,5 +91,4 @@ if ($w -or $war) {
     } else {
 	    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES"
     }
-	
 }

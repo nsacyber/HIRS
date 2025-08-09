@@ -15,7 +15,7 @@
 #             json
 #             log
 #     Other files needed:
-#         C:/MariaDB 11.8/data/my.ini
+#         C:/MariaDB 11.4/data/my.ini
 #             If mysql is installed somewhere else, update DB_CONF below.
 $global:HIRS_SYS_HOME=(Join-Path $Env:ProgramFiles "hirs")
 $global:HIRS_INSTALL_SCRIPTS_DIR=(Join-Path $Env:ProgramFiles "scripts")
@@ -33,7 +33,7 @@ $global:HIRS_DATA_INSTALL_LOG_NAME=(Join-Path $global:HIRS_DATA_LOG_DIR ("hirs_a
 $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR=(Join-Path $global:HIRS_CONF_DIR "default-properties")
 
 #         Db Configuration files
-$global:DB_CONF = (Resolve-Path ([System.IO.Path]::Combine($Env:ProgramFiles, 'MariaDB 11.8', 'data', 'my.ini'))).Path
+$global:DB_CONF = (Resolve-Path ([System.IO.Path]::Combine($Env:ProgramFiles, 'MariaDB 11.4', 'data', 'my.ini'))).Path
 
 #         Default Server Side Certificates
 $global:SSL_DB_SRV_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')

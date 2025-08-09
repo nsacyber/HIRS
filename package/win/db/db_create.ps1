@@ -51,14 +51,14 @@ New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
 
 Function check_mysql_root_pwd () {
-    # Check if DB root password needs to be obtainedS
+    # Check if DB root password needs to be obtained
     $DB_ADMIN_PWD=""
     if (!$Env:HIRS_MYSQL_ROOT_PWD) {
         # Create a 32 character random password
 	    Write-Output "Using randomly generated password for the DB admin" | WriteAndLog
 	    $DB_ADMIN_PWD=(create_random)
-	    Write-Host "NOT LOGGED: DB Admin will be set to $DB_ADMIN_PWD, please make note for next mysql use."
-        # Check unattended flag set m if not then prompt user for permission ot store mysql root password
+	    Write-Host "NOT LOGGED: DB Admin pwd will be set to $DB_ADMIN_PWD, please make note for next mysql use."
+        # Check if unattended flag is set if not then prompt user for permission to store mysql root password
 	    if (!$unattended) {
 			$confirm=Read-Host 'Do you wish to save this password to the aca.properties file?'
 			if (($confirm -eq "y") -or ($confirm -eq "yes")) { # case-insensitive
@@ -78,7 +78,7 @@ Function check_mysql_root_pwd () {
 	}
     # Make sure root password is correct
 
-    mysql -u root -p"$DB_ADMIN_PWD" -e 'quit' 2>&1 | WriteAndLog 
+    mysql -u root -p"$DB_ADMIN_PWD"  -e 'quit' 2>&1 | WriteAndLog 
 	if ($LastExitCode -eq 0) {
         Write-Output "Mysql root password verified"  | WriteAndLog
     } else {
@@ -92,7 +92,7 @@ Function check_mysql_root_pwd () {
 
 Function set_mysql_tls () {
     # Check DB server setup. If ssl params dont exist then we need to add them.
-	if (!(Get-Content $global:DB_CONF | grep "ssl")) {
+	if (!(Get-Content $global:DB_CONF | Select-String "ssl")) {
 		# Add TLS files to my.ini- Assumes [client] section at the end, and no [server] section
 		Write-Output "Updating $global:DB_CONF with ssl parameters..." | WriteAndLog
         Write-Output "ssl_ca=$SSL_DB_CLIENT_CHAIN" >> $global:DB_CONF
@@ -154,7 +154,8 @@ Function create_hirs_db_with_tls () {
 	}
 	
     # Check if hirs_db not created and create it if it wasn't
-    mysqlshow -u root -p"$DB_ADMIN_PWD" | grep "hirs_db" 2>&1 > $null
+    mysqlshow -u root -p"$DB_ADMIN_PWD" 2>&1 | Select-String "hirs_db" | Out-Null
+
 	if ($LastExitCode -eq 0) {
         Write-Output "hirs_db exists, skipping hirs_db create" | WriteAndLog
 	} else {
