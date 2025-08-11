@@ -101,11 +101,11 @@ public final class TCGEventLog {
     /**
      * Locality 4 starts at PCR 17.
      */
-    public static final int PCR_LOCALITY4_MIN = 17;
+    public static final int PCR_ENVLOCALITY4_MIN = 17;
     /**
      * Locality 4 ends at PCR 23.
      */
-    public static final int PCR_LOCALITY4_MAX = 23;
+    public static final int PCR_ENVLOCALITY4_MAX = 23;
     /**
      * PFP defined EV_NO_ACTION identifier.
      */
@@ -316,7 +316,7 @@ public final class TCGEventLog {
                 System.arraycopy(Hex.decodeHex(initPcrValue.toCharArray()),
                         0, pcrList[i], 0, pcrLength);
             }
-            for (int i = PCR_LOCALITY4_MIN; i < PCR_LOCALITY4_MAX; i++) {
+            for (int i = PCR_ENVLOCALITY4_MIN; i < PCR_ENVLOCALITY4_MAX; i++) {
                 System.arraycopy(Hex.decodeHex(initPcrValueLocality4.toCharArray()),
                         0, pcrList[i], 0, pcrLength);
             }
