@@ -87,8 +87,6 @@ public class Coswid extends Swid implements GenericRim {
     // List of hash measurements in this CoSWID and their associated data
     protected List<Measurement> measurements = new ArrayList<>();
 
-    // @Setter(AccessLevel.NONE)
-
     /** IANA CBOR registry define Coswid Tag.*/
     @Setter
     public static int coswidTag = 1398229316;

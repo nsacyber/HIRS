@@ -8,6 +8,7 @@ import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
 import hirs.utils.rim.unsignedRim.common.measurement.MeasurementType;
 import hirs.utils.signature.cose.Cbor.CborTagProcessor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,7 +28,11 @@ import static hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidItems.FS_NAME_INT
  * Class that is used to parse a CoSWID file based upon values previously retrieved from a config file.
  * Uses the indexes to convert the integer key into the text values published in rfc 9393
  * Section 2.3 "The concise-swid-tag Map".
+ * <p>
+ * Based on: https://datatracker.ietf.org/doc/rfc9393/
+ * </p>
  */
+@NoArgsConstructor
 public class CoswidParser   {
     protected Map<String, Object> parsedData = null;
     protected JsonNode rootNode = null;
@@ -46,12 +51,6 @@ public class CoswidParser   {
     private static int coswidMap = 0;
     private static int entityMap =  CoswidItems.ENTITY_INT;
     private static final Logger LOGGER = LogManager.getLogger(CoswidParser.class);
-
-    /**
-     * CBOR parser that decodes rfc 9393 based object https://datatracker.ietf.org/doc/rfc9393/.
-     */
-    public CoswidParser() {
-    }
 
     /**
      * Constructor for a CoSWID parser that takes a byte array of CBOR-encoded CoSWID object

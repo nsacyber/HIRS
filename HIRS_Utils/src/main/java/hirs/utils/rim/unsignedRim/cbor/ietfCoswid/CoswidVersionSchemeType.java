@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCoswid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -20,7 +21,7 @@ import static java.util.stream.Collectors.toMap;
  * $version-scheme /= &(semver: 16384)
  * $version-scheme /= int / text}</pre>
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum CoswidVersionSchemeType {
     /** Numbers separated by dots, where the numbers are interpreted as decimal integers. */
     MULTIPARTNUMERIC(1, "multipartnumeric"),
@@ -35,16 +36,6 @@ public enum CoswidVersionSchemeType {
 
     private final int index;
     private final String key;
-
-    /**
-     * Sets the index and key.
-     * @param index
-     * @param key
-     */
-    CoswidVersionSchemeType(final int index, final String key) {
-        this.index = index;
-        this.key = key;
-    }
 
     /**
      * A lookup map that associates each integer index with its corresponding enum constant.

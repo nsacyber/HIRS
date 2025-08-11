@@ -1,11 +1,12 @@
 package hirs.utils.rim.unsignedRim.common.measurement;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
  * An enum that stores the list of measurement types.
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum MeasurementType {
     /**
      * Measurement type is unknown.
@@ -25,11 +26,4 @@ public enum MeasurementType {
      */
     private final String type;
 
-    /**
-     * Constructor for MeasurementType; set type.
-     * @param type  type of measurement to set
-     */
-    MeasurementType(final String type) {
-        this.type = type;
-    }
 }

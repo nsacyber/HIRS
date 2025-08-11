@@ -276,17 +276,15 @@ public class CoswidBuilder extends Coswid {
      * @return role index
      */
     protected int roleLookup(final String role) {
-        int roleValue = 0;
-        switch (role) {
-            case "tag-creator":  roleValue = 1; break;
-            case "software-creator": roleValue = 2; break;
-            case "aggregator": roleValue = 3; break;
-            case "distributor": roleValue = 4; break;
-            case "licensor": roleValue = 5; break;
-            case "maintainer": roleValue = 6; break;
-            default: roleValue = 0xff;
-        }
-        return roleValue;
+        return switch (role) {
+            case "tag-creator"      -> 1;
+            case "software-creator" -> 2;
+            case "aggregator"       -> 3;
+            case "distributor"      -> 4;
+            case "licensor"         -> 5;
+            case "maintainer"       -> 6;
+            default                 -> 0xff;
+        };
     }
     /**
      * Builds a Coswid payload based upon the Json based config file.

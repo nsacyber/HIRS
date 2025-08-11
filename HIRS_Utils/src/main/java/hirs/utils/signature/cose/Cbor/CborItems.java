@@ -26,7 +26,6 @@ public class CborItems {
      * @return id of the item.
      */
     public static int getIndex(final String itemName) {
-        int algId = 0;
         for (int i = 0; i < INDEX_NAMES.length; i++) {
             if (itemName.compareToIgnoreCase(INDEX_NAMES[i][1]) == 0) {
                 return i;
@@ -40,7 +39,6 @@ public class CborItems {
      * @return String item name associated with the index
      */
     public static String getItemName(final int index) {
-        int algId = 0;
         for (int i = 0; i < INDEX_NAMES.length; i++) {
             if (index == Integer.parseInt(INDEX_NAMES[i][0])) {
                 return INDEX_NAMES[i][1];

@@ -9,6 +9,7 @@ import hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid.RawValue;
 import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.Coswid;
 import hirs.utils.signature.cose.CoseType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
 
@@ -19,10 +20,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Class to support processing of RIM specific CBor Tags.
- * Support is limited to tags associated with a supported RIM type.
+ * Class to support processing of RIM-specific CBOR tags.
+ * Support is limited to tags associated with supported RIM types.
+ * <p>
+ * Relevant registry:
+ * <a href="https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml">
+ * IANA CBOR Tag Registry</a>.
+ * </p>
  */
-@Getter
+@Getter @NoArgsConstructor
 public class CborTagProcessor {
     private byte[] content = null;
     private boolean isTagged = false;
@@ -71,16 +77,6 @@ public class CborTagProcessor {
     public static final int CBOR_FOUR_BYTE_UNSIGNED_INT = 0x1a; // (26 dec) Cbor defined two byte int
     /** rfc 8049 table 7 defined value. */
     public static final int CBOR_TWO_BYTE_UNSIGNED_INT = 0x19; //corim (25 dec) Cbor defined 4 byte int
-
-    /**
-     * Default constructor fot the CborTagProcessor.
-     * Cbor Tags are defined in the IANA CBOR Registry.
-     * https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml
-     * This class contains a support for a specific subset of CBOR tags related to RIMS.
-     */
-    public CborTagProcessor() {
-
-    }
 
     /**
      * This constructor checks for a Cbor Coswid tag and strips it off if found.

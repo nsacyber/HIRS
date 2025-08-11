@@ -1,6 +1,7 @@
 package hirs.utils.signature.cose;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,6 +57,7 @@ import org.apache.logging.log4j.Logger;
  *    5.  Place the resulting signature value in the correct location.
  *        This is the "signature" field of the COSE_Signature or COSE_Sign1 structure.
  */
+@NoArgsConstructor
 public class CoseSignature implements SignatureFormat {
     // COSE Generic Header
     @Setter
@@ -68,12 +70,6 @@ public class CoseSignature implements SignatureFormat {
     private byte[] protectedHeaders = null;
     private COSESign1Builder coseBuilder = null;
     private static final Logger LOGGER = LogManager.getLogger(CoseSignature.class);
-
-    /**
-     * Default CoseSignature constructor for a COSE (rfc 9052) object.
-     */
-    public CoseSignature() {
-    }
 
     /**
      * Create toBeSigned using supplied kid and algorithm for testing only.
