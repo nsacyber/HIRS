@@ -50,19 +50,37 @@ if (-not (Test-Path -Path $global:DB_CONF)) {
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
 
+# Check if MariaDB is installed
+check_mariadb_install -p
+
+# Check if the the ACA is running inside a Docker container
+check_for_container -p
+
+
 Function check_mysql_root_pwd () {
-    # Check if DB root password needs to be obtained
     $DB_ADMIN_PWD=""
+
+    # Check if DB root password needs to be retrieved from the system environment variables
     if (!$Env:HIRS_MYSQL_ROOT_PWD) {
-        # Create a 32 character random password
-	    Write-Output "Using randomly generated password for the DB admin" | WriteAndLog
+        Write-Output "Using randomly generated password for the DB admin" | WriteAndLog
+
+		# Create a 32 character random password
 	    $DB_ADMIN_PWD=(create_random)
-	    Write-Host "NOT LOGGED: DB Admin pwd will be set to $DB_ADMIN_PWD, please make note for next mysql use."
+	    
+		Write-Host "NOT LOGGED: DB Admin pwd will be set to $DB_ADMIN_PWD, please make note for next mysql use."
+
         # Check if unattended flag is set if not then prompt user for permission to store mysql root password
 	    if (!$unattended) {
 			$confirm=Read-Host 'Do you wish to save this password to the aca.properties file?'
 			if (($confirm -eq "y") -or ($confirm -eq "yes")) { # case-insensitive
-			    add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"mysql_admin_password=$DB_ADMIN_PWD"
+				# if(check_if_aca_property_exists -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key:"mysql_admin_password")
+				# {
+				# 	edit_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key:"mysql_admin_password" -newValue:"$DB_ADMIN_PWD"
+				# }
+				# else {
+					# 	add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"mysql_admin_password=$DB_ADMIN_PWD"
+				# }
+				add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"mysql_admin_password=$DB_ADMIN_PWD"
 	            Write-Output "Mysql root password saved locally" | WriteAndLog
 			} else {
 	            Write-Output "Mysql root password not saved locally" | WriteAndLog
@@ -71,20 +89,19 @@ Function check_mysql_root_pwd () {
 	        add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"mysql_admin_password=$DB_ADMIN_PWD"
 	        Write-Output "Mysql root password has been saved locally." | WriteAndLog
 		}
-	    mysqladmin --user=root password "$DB_ADMIN_PWD"
+	    #mysqladmin --user=root password "$DB_ADMIN_PWD"
 	} else {
         $DB_ADMIN_PWD=$Env:HIRS_MYSQL_ROOT_PWD
         Write-Output "Using system variable supplied password" | WriteAndLog
 	}
-    # Make sure root password is correct
 
-    mysql -u root -p"$DB_ADMIN_PWD"  -e 'quit' 2>&1 | WriteAndLog 
+    # Make sure root password is correct
+    #mysql -u root -p"$DB_ADMIN_PWD" -e 'quit' 2>&1 | WriteAndLog 
 	if ($LastExitCode -eq 0) {
-        Write-Output "Mysql root password verified"  | WriteAndLog
+        Write-Output "The new MYSQL root password has been verified"  | WriteAndLog
     } else {
-        Write-Output "MYSQL root password was not the default, not supplied,  or was incorrect" | WriteAndLog
-        Write-Output "      please set the HIRS_MYSQL_ROOT_PWD system variable and retry." | WriteAndLog
-        Write-Output "      ********** ACA Mysql setup aborted ********" | WriteAndLog
+        Write-Output "The supplied MYSQL password was incorrect" | WriteAndLog
+        Write-Output "********** ACA Mysql setup aborted ********" | WriteAndLog
         exit 1
 	}
 	return $DB_ADMIN_PWD
@@ -174,26 +191,35 @@ Function create_hibernate_url () {
     if ($ALG -eq "RSA") {
        $CERT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
        $CLIENT_DB_P12=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.p12')
-       $ALIAS="hirs_aca_tls_rsa_3k_sha384"
     } elseif ($ALG -eq "ECC") {
        $CERT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_ecc_512_sha384_Cert_Chain.pem')
        $CLIENT_DB_P12=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_db_client_ecc_512_sha384.p12')
-       $ALIAS="hirs_aca_tls_ecc_512_sha384"
     }
     
     $CONNECTOR_URL="hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&user="+$global:ACA_PROPERTIES.'hirs_db_username'+"&password="+$global:ACA_PROPERTIES.'hirs_db_password'+"&sslMode=VERIFY_CA&serverSslCert=$CERT_CHAIN&keyStoreType=PKCS12&keyStorePassword="+$global:ACA_PROPERTIES.'hirs_pki_password'+"&keyStore=$CLIENT_DB_P12" | ChangeBackslashToForwardSlash
     
-    # Save connector information to the application properties file.
+    # Save connector information to the application win properties file
     add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$CONNECTOR_URL"
 }
 
-# HIRS ACA Mysqld processing ...
-check_mariadb_install -p
-check_for_container -p
+# Setup the ssl settings in the my.ini settings file that's in the MariaDB/data directory
 set_mysql_tls
+
+# Start the MariaDB service
 start_mysqlsd -p
+
+# Check for the MariaDB ADMIN password
 $DB_ADMIN_PWD=check_mysql_root_pwd
-$HIRS_PASS=set_hirs_db_pwd -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
-create_hirs_db_with_tls -DB_ADMIN_PWD:"$DB_ADMIN_PWD" -HIRS_PASS:"$HIRS_PASS"
-create_hibernate_url -ALG:"RSA"
-mysqld_reboot -p
+
+# todo
+# Set the MariaDB password for the root user
+# $HIRS_PASS=set_hirs_db_pwd -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
+
+#
+# create_hirs_db_with_tls -DB_ADMIN_PWD:"$DB_ADMIN_PWD" -HIRS_PASS:"$HIRS_PASS"
+
+# Create the hibernate url using the RSA algorithmn and set the url in the aca.properties file
+# create_hibernate_url -ALG:"RSA"
+
+#
+# mysqld_reboot -p

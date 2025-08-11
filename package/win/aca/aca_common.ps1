@@ -79,7 +79,7 @@ $global:HIRS_REL_SCRIPTS_PKI_CA_CONF=(Join-Path -Resolve $global:HIRS_REL_SCRIPT
 $global:HIRS_REL_WIN_ACA_BOOTRUN=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_bootRun.ps1')
 $global:HIRS_REL_WIN_ACA_COMMON=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_common.ps1')
 $global:HIRS_REL_WIN_ACA_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_setup.ps1')
-$global:HIRS_REL_WIN_ACA_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_win_config.ps1')
+$global:HIRS_REL_WIN_ACA_CONFIG=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_win_config.ps1')
 $global:HIRS_REL_WIN_DB_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME 'db')
 $global:HIRS_REL_WIN_DB_CREATE=(Join-Path -Resolve $global:HIRS_REL_WIN_DB_HOME 'db_create.ps1')
 $global:HIRS_REL_WIN_DB_MYSQL_UTIL=(Join-Path -Resolve $global:HIRS_REL_WIN_DB_HOME 'mysql_util.ps1')
@@ -120,11 +120,32 @@ Function read_aca_properties () {
     }
 }
 
+#todo
+Function check_if_aca_property_exists() {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string] $file,
+        [Parameter(Mandatory=$true)]
+        [string] $key
+    )
+    if ($global:ACA_PROPERTIES -and $file -and $key -and [System.IO.File]::Exists($file)) {
+         if($global:ACA_PROPERTIES.ContainsKey($key))
+         {
+            Write-Host "NOT LOGGED: The following property $key already exists in the aca.properties file" 
+            return $true;
+         }
+    }
+
+     Write-Host "NOT LOGGED: The following property $key does not exist in the aca.properties file"
+    return $false
+}
+
 Function add_new_aca_property () {
     param (
         [string]$file = $null,
         [string]$newKeyAndValue = $null
     )
+
     if ($global:ACA_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
         $msg="Writing KeyValue pair to $file"
         if ($global:LOG_FILE) {
@@ -137,6 +158,42 @@ Function add_new_aca_property () {
         $global:ACA_PROPERTIES=$null
         read_aca_properties $file
     }
+}
+
+#todo
+Function edit_aca_property(){
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$file,
+        [Parameter(Mandatory=$true)]
+        [string]$key,
+        [Parameter(Mandatory=$true)]
+        [string]$newValue
+    )
+
+     if ($file -and $key -and $newValue -and [System.IO.File]::Exists($file)) {
+        # Read all lines from the file
+        $lines = Get-Content $file
+
+        $found = $false
+
+        # Loop through and update the matching line
+        $updatedLines = $lines | ForEach-Object {
+            if ($_ -match "^$key=") {
+                $found = $true
+                "$key=$newValue"
+            } else {
+                $_
+            }
+        }
+
+        # Write the updated lines back to the file
+        $updatedLines | Set-Content $file -Encoding UTF8
+
+        # Reset the global property store and reload
+        $global:ACA_PROPERTIES = $null
+        read_aca_properties $file
+     }
 }
 
 Function read_spring_properties () {

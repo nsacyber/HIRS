@@ -77,6 +77,7 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 
 Write-Output "HIRS ACA Setup initiated on $(Get-Date -Format 'yyyy-MM-dd')" | WriteAndLog
 
+# Runs the pki_setup script (along with the other scripts under the PKI folder)
 if (!$skippki) {
 	if (!$Env:HIRS_PKI_PWD) {
 		$HIRS_PKI_PWD=(create_random)
@@ -96,9 +97,10 @@ if (!$skippki) {
         exit 1
     }
 } else {
-    Write-Output ("ACA PKI setup not run due to presence of command line argument: "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-pki|sp' } )) | WriteAndLog
+    Write-Output ("ACA PKI setup cannot be run because there are command line argument(s): "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-pki|sp' } )) | WriteAndLog
 }
 
+# Runs the create_dbp script (along with the other scripts under the DB folder)
 if (!$skipdb) {
 	pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_DB_CREATE -LOG_FILE:"$global:LOG_FILE" -UNATTENDED:"$unattended"
     if ($LastExitCode -eq 0) { 
@@ -108,7 +110,7 @@ if (!$skipdb) {
         exit 1
     }
 } else {
-    Write-Output ("ACA Database setup not run due to command line argument: "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-db|sd'})) | WriteAndLog
+    Write-Output ("ACA Database setup cannot be run because there are command line argument(s): "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-db|sd'})) | WriteAndLog
 }
 
 Write-Output "ACA setup complete" | WriteAndLog

@@ -6,11 +6,14 @@ Function check_for_container () {
 	
 	if((Get-ItemProperty -path HKLM:System\CurrentControlSet\Control).ContainerType) {
 		$global:DOCKER_CONTAINER=$true
+		if($PRINT_STATUS){
+          Write-Output "This is running in a Docker container" | WriteAndLog
+		}
 	} else {
 		$global:DOCKER_CONTAINER=$false
-	}
-	if ($PRINT_STATUS) {
-	    ("This {0} running in a container." -f ('is not', 'is')[$global:DOCKER_CONTAINER])
+		if($PRINT_STATUS) {
+          Write-Output "This is not running in a Docker container" | WriteAndLog
+		}
 	}
 }
 
@@ -43,6 +46,7 @@ Function start_mysqlsd () {
 	$DB_STATUS=(check_mysql $PRINT_STATUS)
 	
 	$service=(Get-Service MariaDB -ErrorAction SilentlyContinue)
+	
 	# Check if mysql is already running, if not initialize
 	if(!$DB_STATUS -or ($DB_STATUS -and $DB_STATUS.HasExited)) {
 		if ($PRINT_STATUS) {
