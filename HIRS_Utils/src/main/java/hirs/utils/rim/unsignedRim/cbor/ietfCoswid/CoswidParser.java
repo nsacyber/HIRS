@@ -203,17 +203,15 @@ public class CoswidParser   {
      * @return String holding the human-readable role
      */
     private String roleLookup(final int index) {
-        String role = "";
-        switch (index) {
-            case 1: role = "tag-creator"; break;
-            case 2: role = "software-creator"; break;
-            case 3: role = "aggregator"; break;
-            case 4: role = "distributor"; break;
-            case 5: role = "licensor"; break;
-            case 6: role = "maintainer"; break;
-            default: role = "unknown role";
-        }
-        return role;
+        return switch (index) {
+            case 1 -> "tag-creator";
+            case 2 -> "software-creator";
+            case 3 -> "aggregator";
+            case 4 -> "distributor";
+            case 5 -> "licensor";
+            case 6 -> "maintainer";
+            default -> "unknown role";
+        };
     }
 
     /**
