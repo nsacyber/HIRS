@@ -83,7 +83,7 @@ public final class TCGEventLog {
     /**
      * Initial PCR value for SHA 1 if environment Locality is 4 (PCRs 17-23).
      */
-    public static final String INIT_SHA1_LIST_LOCALITY4 = "ffffffffffffffffffffffffffffffffffffffff";
+    public static final String INIT_SHA1_LIST_ENVLOCALITY4 = "ffffffffffffffffffffffffffffffffffffffff";
     /**
      * Initial PCR value for SHA 256 if environment Locality is 0-3 (PCRs 0-16).
      */
@@ -92,7 +92,7 @@ public final class TCGEventLog {
     /**
      * Initial PCR value for SHA 256 if environment Locality is 4 (PCRs 17-23).
      */
-    public static final String INIT_SHA256_LIST_LOCALITY4 = "ffffffffffffffffffffffffff"
+    public static final String INIT_SHA256_LIST_ENVLOCALITY4 = "ffffffffffffffffffffffffff"
             + "ffffffffffffffffffffffffffffffffffffff";
     /**
      * Each PCR bank holds 24 registers.
@@ -213,7 +213,7 @@ public final class TCGEventLog {
     public TCGEventLog() throws UnsupportedEncodingException {
         this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
         initPcrValue = INIT_SHA1_LIST;
-        initPcrValueLocality4 = INIT_SHA1_LIST_LOCALITY4;
+        initPcrValueLocality4 = INIT_SHA1_LIST_ENVLOCALITY4;
         pcrLength = EvConstants.SHA1_LENGTH;
         hashType = HASH_STRING;
         eventLogHashAlgorithm = "TPM_ALG_SHA1";
@@ -251,13 +251,13 @@ public final class TCGEventLog {
         bCryptoAgile = isLogCrytoAgile(rawlog);
         if (bCryptoAgile) {
             initPcrValue = INIT_SHA256_LIST;
-            initPcrValueLocality4 = INIT_SHA256_LIST_LOCALITY4;
+            initPcrValueLocality4 = INIT_SHA256_LIST_ENVLOCALITY4;
             eventLogHashAlgorithm = "TPM_ALG_SHA256";
             hashType = HASH256_STRING;
             pcrLength = EvConstants.SHA256_LENGTH;
         } else {
             initPcrValue = INIT_SHA1_LIST;
-            initPcrValueLocality4 = INIT_SHA1_LIST_LOCALITY4;
+            initPcrValueLocality4 = INIT_SHA1_LIST_ENVLOCALITY4;
             hashType = HASH_STRING;
             eventLogHashAlgorithm = "TPM_ALG_SHA1";
             pcrLength = EvConstants.SHA1_LENGTH;
