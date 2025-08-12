@@ -111,3 +111,59 @@ Function mysqld_reboot () {
 		Start-Process mysqld.exe -WindowStyle Hidden 2>&1 | WriteAndLog
 	}
 }
+
+Function check_hirs_db() {
+	param(
+		[Parameter(Mandatory=$true)]
+		[string]$DB_ADMIN_PWD
+	)
+
+	if (!$DB_ADMIN_PWD) {
+		Write-Output "Exiting script since this function cannot check if the hirs_db exists without supplying the database admin password" | WriteAndLog
+		exit 1
+	}
+
+	$dbName = "hirs_db"
+ 	
+	# Run the MySQL command to show databases and capture output
+	$output = mysql -u root --password=$DB_ADMIN_PWD -e "SHOW DATABASES;" 2>&1
+
+	# Check if output contains the database name
+	$HIRS_DB_EXISTS = $output | Where-Object { $_ -match $dbName }
+  
+    if($HIRS_DB_EXISTS -and $HIRS_DB_EXISTS -eq $dbName){
+		Write-Output "hirs_db database exists" | WriteAndLog
+		return $true
+	}
+	
+    Write-Output "hirs_db database does not exist" | WriteAndLog
+	return $false
+}
+
+Function check_hirs_db_user() {
+	param(
+		[Parameter(Mandatory=$true)]
+		[string]$DB_ADMIN_PWD
+	)
+
+	if (!$DB_ADMIN_PWD) {
+		Write-Output "Exiting script since this function cannot check if the hirs_db user exists without the database admin password" | WriteAndLog
+		exit 1
+	}
+
+	# Build the query
+	$query = "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'hirs_db');"
+
+	# Run the mysql command, capturing the output
+	$HIRS_DB_USER_EXISTS = mysql -u root --password=$DB_ADMIN_PWD -sse $query 2>&1
+
+	Write-Output $HIRS_DB_USER_EXISTS
+  
+    if($HIRS_DB_USER_EXISTS -and $HIRS_DB_USER_EXISTS -eq 1){
+		Write-Output "hirs_db user exists" | WriteAndLog
+		return $true
+	}
+
+    Write-Output "hirs_db user does not exist" | WriteAndLog
+	return $false
+}

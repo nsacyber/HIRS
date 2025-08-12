@@ -103,8 +103,6 @@ Function read_aca_properties () {
     if (!$global:ACA_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
         $file_content=(Get-Content $file -Raw)
         if ($file_content) { # File is not empty
-            # $file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
-            # $global:ACA_PROPERTIES=(ConvertFrom-StringData($file_content))
             $global:ACA_PROPERTIES=(Get-Content -Path $file -Raw | ConvertFrom-StringData)
         } else { # File is empty
             # Initialize empty hash table
@@ -120,93 +118,78 @@ Function read_aca_properties () {
     }
 }
 
-#todo
-Function check_if_aca_property_exists() {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string] $file,
-        [Parameter(Mandatory=$true)]
-        [string] $key
-    )
-    if ($global:ACA_PROPERTIES -and $file -and $key -and [System.IO.File]::Exists($file)) {
-         if($global:ACA_PROPERTIES.ContainsKey($key))
-         {
-            Write-Host "NOT LOGGED: The following property $key already exists in the aca.properties file" 
-            return $true;
-         }
-    }
-
-     Write-Host "NOT LOGGED: The following property $key does not exist in the aca.properties file"
-    return $false
-}
-
 Function add_new_aca_property () {
-    param (
-        [string]$file = $null,
-        [string]$newKeyAndValue = $null
-    )
-
-    if ($global:ACA_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
-        $msg="Writing KeyValue pair to $file"
-        if ($global:LOG_FILE) {
-            Write-Output "$msg" | WriteAndLog
-        } else {
-            Write-Host "$msg"
-        }
-        Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-        Write-Output "$newKeyAndValue" >> $file
-        $global:ACA_PROPERTIES=$null
-        read_aca_properties $file
-    }
-}
-
-#todo
-Function edit_aca_property(){
     param (
         [Parameter(Mandatory=$true)]
         [string]$file,
         [Parameter(Mandatory=$true)]
-        [string]$key,
-        [Parameter(Mandatory=$true)]
-        [string]$newValue
+        [string]$newKeyAndValue
     )
 
-     if ($file -and $key -and $newValue -and [System.IO.File]::Exists($file)) {
-        # Read all lines from the file
-        $lines = Get-Content $file
+    if (-not $file -or -not $newKeyAndValue -or -not (Test-Path $file)) {
+        Write-Output "Exiting script while attempting to add a new ACA property
+        since the provided file [$file] does not exist and/or the provided key-value pair have not been supplied" | WriteAndLog
+        exit 1
+    }
 
-        $found = $false
+    $msg="Writing KeyValue pair to $file"
+    if ($global:LOG_FILE) {
+        Write-Output "$msg" | WriteAndLog
+    } else {
+        Write-Host "$msg"
+    }
 
-        # Loop through and update the matching line
-        $updatedLines = $lines | ForEach-Object {
-            if ($_ -match "^$key=") {
-                $found = $true
-                "$key=$newValue"
-            } else {
-                $_
-            }
-        }
+    Write-Host "NOT LOGGED: KeyValue pair [$newKeyAndValue] has been added to file [$file]"
+    Write-Output "$newKeyAndValue" >> $file
+    $global:ACA_PROPERTIES=$null
+    read_aca_properties $file
+}
 
-        # Write the updated lines back to the file
-        $updatedLines | Set-Content $file -Encoding UTF8
+Function find_property_value(){
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$file,
+        [Parameter(Mandatory=$true)]
+        [string]$key
+    )
 
+    # Check file exists and parameters are not empty/null
+    if (-not $file -or -not $key -or -not (Test-Path $file)) {
+        Write-Output "Exiting script while attempting to find an ACA property's value
+        since the provided file [$file] does not exist and/or the provided key have not been supplied" | WriteAndLog
+        exit 1
+    }
+
+    # Read all lines and check if any line starts with key=
+    $match = Get-Content $file | Where-Object { $_ -match "^$key=" } | Select-Object -First 1
+
+    # Extract the part after the '=' sign (for the first match only)
+    $value = $match -replace "^$key=", ""
+
+    # If the script was able to find the value that's associated with the provided key
+    if($value) {
+        Write-Host "NOT LOGGED: The value [$value] has been found to be associated with the key [$key]"  
         # Reset the global property store and reload
         $global:ACA_PROPERTIES = $null
         read_aca_properties $file
-     }
+    }
+    else {
+        Write-Host "NOT LOGGED: There are no values associated with the provided key [$key]"
+    }
+    
+    return $value
 }
 
 Function read_spring_properties () {
     # This converts the application properties file into a hash table
     # Values are accessed by key like this: $propertyValue=$global:SPRING_PROPERTIES.'example.property.key'
     param (
-        [string]$file = $null
+        [Parameter(Mandatory=$true)]
+        [string]$file
     )
     if (!$global:SPRING_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
         $file_content=(Get-Content $file -Raw)
         if ($file_content) { # File is not empty
-            #$file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
-            #$global:SPRING_PROPERTIES=(ConvertFrom-StringData($file_content))
             $global:SPRING_PROPERTIES=(Get-Content -Path $file -Raw | ConvertFrom-StringData)
         } else { # File is empty
             # Initialize empty hash table
@@ -224,21 +207,29 @@ Function read_spring_properties () {
 
 Function add_new_spring_property () {
     param (
-        [string]$file = $null,
-        [string]$newKeyAndValue = $null
+        [Parameter(Mandatory=$true)]
+        [string]$file,
+        [Parameter(Mandatory=$true)]
+        [string]$newKeyAndValue
     )
-    if ($global:SPRING_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
-        $msg="Writing KeyValue pair to $file"
-        if ($global:LOG_FILE) {
-            Write-Output "$msg" | WriteAndLog
-        } else {
-            Write-Host "$msg"
-        }
-        Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-        Write-Output "$newKeyAndValue" >> $file
-        $global:SPRING_PROPERTIES=$null
-        read_spring_properties $file
+
+    if (-not $file -or -not $newKeyAndValue -or -not (Test-Path $file)) {
+        Write-Output "Exiting script while attempting to add a new Spring property
+        since the provided file [$file] does not exist and/or the provided key-value pair have not been supplied" | WriteAndLog
+        exit 1
     }
+
+    $msg="Writing KeyValue pair to $file"
+    if ($global:LOG_FILE) {
+        Write-Output "$msg" | WriteAndLog
+    } else {
+        Write-Host "$msg"
+    }
+
+    Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
+    Write-Output "$newKeyAndValue" >> $file
+    $global:SPRING_PROPERTIES=$null
+    read_spring_properties $file
 }
 
 Function create_random () {
