@@ -765,18 +765,24 @@ public class ReferenceManifestValidator {
                                         final XMLCryptoContext context)
                 throws KeySelectorException {
             Iterator keyinfoItr = keyinfo.getContent().iterator();
+            String subjectName = null;
             while (keyinfoItr.hasNext()) {
                 XMLStructure element = (XMLStructure) keyinfoItr.next();
                 if (element instanceof X509Data data) {
                     Iterator dataItr = data.getContent().iterator();
                     while (dataItr.hasNext()) {
                         Object object = dataItr.next();
+                        if (object instanceof String subjName) { // Subject name
+                            subjectName = subjName;
+                        }
                         if (object instanceof X509Certificate embeddedCert) {
                             try {
-                                if (isCertChainValid(embeddedCert)) {
+                                if (embeddedCert.getSubjectX500Principal().getName().equals(subjectName)
+                                        || isCertChainValid(embeddedCert)) {
                                     publicKey = embeddedCert.getPublicKey();
                                     signingCert = embeddedCert;
                                     log.info("Certificate chain valid.");
+                                    break;
                                 }
                             } catch (Exception e) {
                                 log.error("Certificate chain invalid: {}", e.getMessage());
