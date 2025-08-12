@@ -765,7 +765,7 @@ public class ReferenceManifestValidator {
                                         final XMLCryptoContext context)
                 throws KeySelectorException {
             Iterator keyinfoItr = keyinfo.getContent().iterator();
-            String subjectName = null;
+            String subjectName = "";
             while (keyinfoItr.hasNext()) {
                 XMLStructure element = (XMLStructure) keyinfoItr.next();
                 if (element instanceof X509Data data) {
