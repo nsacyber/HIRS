@@ -43,7 +43,7 @@ public class EvNoAction {
     @Getter
     private boolean isStartupLocality = false;
     /**
-     * StartupLocality aa defined in the PC Client Platform Firmware Profile.
+     * StartupLocality as defined in the PC Client Platform Firmware Profile.
      */
     @Getter
     private int startupLocality = 0;
@@ -97,7 +97,7 @@ public class EvNoAction {
             noActionInfo += "   Signature = StartupLocality";
             noActionInfo += "\n   StartupLocality = " + getLocality(eventData);
             isStartupLocality = true;
-            getLocality(eventData); // set startupLocality variable;
+            getLocality(eventData); // set startupLocality variable
         } else if (signature.contains("NvIndexInstance")) {
             NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
             noActionInfo += nvIndexInstanceEvent.toString();
