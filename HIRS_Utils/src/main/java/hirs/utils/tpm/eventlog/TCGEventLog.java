@@ -178,11 +178,11 @@ public final class TCGEventLog {
     /**
      * Initial PCR Value to use.
      */
-    private final String initValue;
+    private final String initPcrValue;
     /**
      * Initial PcR Value to use for locality 4.
      */
-    private final String initLocalityFourValue;
+    private final String initPcrValueLocality4;
     /**
      * Content Output Flag use.
      */
@@ -224,8 +224,8 @@ public final class TCGEventLog {
      */
     public TCGEventLog() throws UnsupportedEncodingException {
         this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
-        initValue = INIT_SHA1_LIST;
-        initLocalityFourValue = INIT_SHA1_LIST_ENVLOCALITY4;
+        initPcrValue = INIT_SHA1_LIST;
+        initPcrValueLocality4 = INIT_SHA1_LIST_ENVLOCALITY4;
         pcrLength = EvConstants.SHA1_LENGTH;
         hashType = HASH_SHA1_STRING;
         eventLogHashAlgorithm = "TPM_ALG_SHA1";
@@ -263,14 +263,14 @@ public final class TCGEventLog {
 
         bCryptoAgile = isLogCrytoAgile(rawlog);
         if (bCryptoAgile) {
-            initValue = INIT_SHA256_LIST;
-            initLocalityFourValue = INIT_SHA256_LIST_ENVLOCALITY4;
+            initPcrValue = INIT_SHA256_LIST;
+            initPcrValueLocality4 = INIT_SHA256_LIST_ENVLOCALITY4;
             eventLogHashAlgorithm = "TPM_ALG_SHA256";
             hashType = HASH_SHA256_STRING;
             pcrLength = EvConstants.SHA256_LENGTH;
         } else {
-            initValue = INIT_SHA1_LIST;
-            initLocalityFourValue = INIT_SHA1_LIST_ENVLOCALITY4;
+            initPcrValue = INIT_SHA1_LIST;
+            initPcrValueLocality4 = INIT_SHA1_LIST_ENVLOCALITY4;
             hashType = HASH_SHA1_STRING;
             eventLogHashAlgorithm = "TPM_ALG_SHA1";
             pcrLength = EvConstants.SHA1_LENGTH;
@@ -326,11 +326,11 @@ public final class TCGEventLog {
                 0, pcrList[0], 0, pcrLength);
 
             for (int i = 1; i < PCR_COUNT; i++) {
-                System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
+                System.arraycopy(Hex.decodeHex(initPcrValue.toCharArray()),
                         0, pcrList[i], 0, pcrLength);
             }
             for (int i = PCR_ENVLOCALITY4_MIN; i <= PCR_ENVLOCALITY4_MAX; i++) {
-                System.arraycopy(Hex.decodeHex(initLocalityFourValue.toCharArray()),
+                System.arraycopy(Hex.decodeHex(initPcrValueLocality4.toCharArray()),
                         0, pcrList[i], 0, pcrLength);
             }
         } catch (DecoderException deEx) {
@@ -367,7 +367,7 @@ public final class TCGEventLog {
                      } else if (locality == STARTUP_LOCALITY4) {
                          LOGGER.error("Error Processing TGC Event Log: "
                                + "Event of type EV_NO_ACTION with a Startup Locality 4 with an H-CRTM "
-                               + "encountered ,  but no support is currently provided by this application");
+                               + "encountered, but no support is currently provided by this application");
                          return INIT_SHA256_PCR0_STARTUP_LOCALITY4;
                      } else {
                          return INIT_SHA256_LIST;
