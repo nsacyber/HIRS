@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import hirs.utils.signature.cose.Cbor.CborBstr;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,25 +19,15 @@ import java.util.Map;
 /**
  * Class pertaining to a {@code corim-meta-map}. Defined in Section 4.2.2 of the IETF CoRIM specification.
  */
+@Setter @Getter
 public class MetaMap {
+    @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
     private JsonNode rootNode = null;
-    @Setter
-    @Getter
     private String signerName = "";
-    @Setter
-    @Getter
     private String signerUri = "";
-    @Setter
-    @Getter
     private long notBefore = 0;
-    @Setter
-    @Getter
     private String notBeforeStr = "";
-    @Setter
-    @Getter
     private long notAfter = 0;
-    @Setter
-    @Getter
     private String notAfterStr = "";
 
     /**

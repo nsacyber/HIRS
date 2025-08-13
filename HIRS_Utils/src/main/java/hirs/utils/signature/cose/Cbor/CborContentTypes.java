@@ -1,6 +1,7 @@
 package hirs.utils.signature.cose.Cbor;
 
 import hirs.utils.rim.unsignedRim.GenericRim;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -10,7 +11,7 @@ import java.util.Map;
  * Implements multipart content-format CoAP types as specified in  RFC 7252, which are used for building
  * CBOR protected headers. These are defined in the IANA CoAP Content-Formats registry.
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum CborContentTypes {
     /** Cose sign1 type. */
     COSE_SIGN1(18, "application/cose; cose-type=\"cose-sign1\""),
@@ -27,15 +28,7 @@ public enum CborContentTypes {
             ID_MAP.put(cType.getContentId(), cType);
         }
     }
-    /**
-     * Sets the cbor contents types.
-     * @param contentId
-     * @param contentType
-     */
-    CborContentTypes(final int contentId, final String contentType) {
-        this.contentId = contentId;
-        this.contentType = contentType;
-    }
+
     /**
      * Searches the content-type array for a match to a content-type value.
      *
@@ -52,16 +45,10 @@ public enum CborContentTypes {
      * @return the corresponding content-type from the IANA reference page
      */
     public static CborContentTypes getContentTypeFromRimType(final String rimType) {
-        switch (rimType) {
-            case GenericRim.RIMTYPE_COSWID, GenericRim.RIMTYPE_COMP_COSWID -> {
-                return SWID_CBOR;
-            }
-            case GenericRim.RIMTYPE_CORIM_COMID, GenericRim.RIMTYPE_CORIM_COSWID -> {
-                return RIM_CBOR;
-            }
-            default -> {
-                return COSE_SIGN1;
-            }
-        }
+        return switch (rimType) {
+            case GenericRim.RIMTYPE_COSWID, GenericRim.RIMTYPE_COMP_COSWID -> SWID_CBOR;
+            case GenericRim.RIMTYPE_CORIM_COMID, GenericRim.RIMTYPE_CORIM_COSWID -> RIM_CBOR;
+            default -> COSE_SIGN1;
+        };
     }
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,7 @@ import lombok.Setter;
  */
 @JsonTypeName("corim-map") @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.WRAPPER_OBJECT)
+@Setter @Getter
 public class CoRim {
     public static final int TAGGED_CORIM = 500; // CoRim notes as Reserved for
     // backward compatibility
@@ -49,31 +51,21 @@ public class CoRim {
     public static final int CORIM_EARMARKED_LOWER_BOUND = 500;
     public static final int CORIM_EARMARKED_UPPER_BOUND = 599;
     // CoRIM defined attributes found in the IETF CoRIM Specification
-    @Setter @Getter
     protected String id = "";
-    @Setter @Getter
     protected int corimTag = 0;
     /**
      * Hold a set of "dependent rims" with a URI and URI digest for each entry.
      */
+    @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
     protected HashMap<String, byte[]> dependentRims = new HashMap<>();
-    @Setter @Getter
     protected String profile = "";
-    @Setter @Getter
     protected String entities = "";
-    @Setter @Getter
     protected long notBefore = 0;
-    @Setter @Getter
     protected String notBeforeStr = "";
-    @Setter @Getter
     protected long notAfter = 0;
-    @Setter @Getter
     protected String notAfterStr = "";
-    @Setter @Getter
     protected String entityName = "";
-    @Setter @Getter
     protected String entityRegId = "";
-    @Setter @Getter
     protected String entityRole = "";
 
     /**
@@ -99,10 +91,7 @@ public class CoRim {
      * @return true if the tag is defined by CoRim
      */
     public static boolean isCoRimTag(final int tag) {
-        if ((tag >= CORIM_EARMARKED_LOWER_BOUND) & (tag <= CORIM_EARMARKED_UPPER_BOUND)) {
-            return true;
-        }
-        return false;
+        return (tag >= CORIM_EARMARKED_LOWER_BOUND) & (tag <= CORIM_EARMARKED_UPPER_BOUND);
     }
 
     /**
@@ -113,10 +102,7 @@ public class CoRim {
      * @return true if the tag is defined by CoRim
      */
     public static boolean isCoMidTag(final int tag) {
-        if (tag == TAGGED_CONCISE_MID_TAG) {
-            return true;
-        }
-        return false;
+        return tag == TAGGED_CONCISE_MID_TAG;
     }
 
     /**
@@ -127,10 +113,7 @@ public class CoRim {
      * @return true if the tag is defined by CoRim
      */
     public static boolean isCoSwidTag(final int tag) {
-        if (tag == TAGGED_CONCISE_SWID_TAG) {
-            return true;
-        }
-        return false;
+        return tag == TAGGED_CONCISE_SWID_TAG;
     }
 
     /**
@@ -141,10 +124,7 @@ public class CoRim {
      * @return true if the tag is defined by CoRim
      */
     public static boolean isTlTag(final int tag) {
-        if (tag == TAGGED_CONCISE_TL_TAG) {
-            return true;
-        }
-        return false;
+        return tag == TAGGED_CONCISE_TL_TAG;
     }
 
     /**
@@ -154,19 +134,14 @@ public class CoRim {
      * @return a human-readable label describing the tag
      */
     public static String getTagLabel(final int coRimTag) {
-        switch (coRimTag) {
-            case TAGGED_CONCISE_SWID_TAG:
-                return TAGGED_CONCISE_SWID_TAG_STR;
-            case TAGGED_CONCISE_MID_TAG:
-                return TAGGED_CONCISE_MID_TAG_STR;
-            case TAGGED_CONCISE_TL_TAG:
-                return TAGGED_CONCISE_TL_TAG_STR;
-            default:
-                if (coRimTag >= TAGGED_CORIM && coRimTag <= TAGGED_MASK_RAW_VALUE) {
-                    return "tag reserved for CoRim (" + coRimTag + ")";
-                }
-                return "unknown corim tag (" + coRimTag + ")";
-        }
+        return switch (coRimTag) {
+            case TAGGED_CONCISE_SWID_TAG -> TAGGED_CONCISE_SWID_TAG_STR;
+            case TAGGED_CONCISE_MID_TAG -> TAGGED_CONCISE_MID_TAG_STR;
+            case TAGGED_CONCISE_TL_TAG -> TAGGED_CONCISE_TL_TAG_STR;
+            default -> (coRimTag >= TAGGED_CORIM && coRimTag <= TAGGED_MASK_RAW_VALUE)
+                    ? "tag reserved for CoRim (" + coRimTag + ")"
+                    : "unknown corim tag (" + coRimTag + ")";
+        };
     }
 
     /**

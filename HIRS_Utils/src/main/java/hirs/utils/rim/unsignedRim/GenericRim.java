@@ -71,18 +71,15 @@ public interface GenericRim {
      * @return the signature type
      */
     static String getSigType(String rimType) {
-        switch (rimType) {
-            case GenericRim.RIMTYPE_COSWID:
-            case GenericRim.RIMTYPE_COMP_COSWID:
-            case GenericRim.RIMTYPE_CORIM_COMID:
-            case GenericRim.RIMTYPE_CORIM_COSWID:
-                return GenericRim.SIGTYPE_COSE;
-            case GenericRim.RIMTYPE_PCRIM:
-            case GenericRim.RIMTYPE_COMP_SWID:
-                return GenericRim.SIGTYPE_DSIG;
-            default:
-                return "";
-        }
+        return switch (rimType) {
+            case GenericRim.RIMTYPE_COSWID,
+                 GenericRim.RIMTYPE_COMP_COSWID,
+                 GenericRim.RIMTYPE_CORIM_COMID,
+                 GenericRim.RIMTYPE_CORIM_COSWID -> GenericRim.SIGTYPE_COSE;
+            case GenericRim.RIMTYPE_PCRIM,
+                 GenericRim.RIMTYPE_COMP_SWID -> GenericRim.SIGTYPE_DSIG;
+            default -> "";
+        };
     }
 
     /**

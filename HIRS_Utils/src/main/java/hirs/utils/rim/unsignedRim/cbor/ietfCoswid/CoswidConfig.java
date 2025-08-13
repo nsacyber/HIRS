@@ -2,6 +2,7 @@ package hirs.utils.rim.unsignedRim.cbor.ietfCoswid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NoArgsConstructor;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -12,6 +13,7 @@ import java.util.Map;
 /**
  * Class to read in a HIRS specific json based RIM Configuration file.
  */
+@NoArgsConstructor
 public class CoswidConfig extends Coswid {
     protected JsonNode rootNode = null;
     /**
@@ -42,11 +44,7 @@ public class CoswidConfig extends Coswid {
                     + filename + ": " + e.getMessage(), e);
         }
     }
-    /**
-     * Empty constructor used by inherited classes.
-     */
-    public CoswidConfig() {
-    }
+
     /**
      * Initializes Class variables based upon a JsonNode object.
      * Used by inherited classes to fill in Coswid variables from a json node
