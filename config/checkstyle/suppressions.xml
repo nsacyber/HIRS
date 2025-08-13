@@ -13,6 +13,7 @@
     <!-- This ignores checking all public variable for a javadoc -->
     <suppress files="SwidTagConstants.java" checks="LineLength"/>
     <suppress files="SwidTagConstants.java" checks="JavadocVariable"/>
+    <suppress files="DefaultCrypto.java" checks="MagicNumber"/>
 
     <!-- This ignores checking for public constructors in utility classes in certain files -->
     <suppress files="HIRSApplication.java" checks="HideUtilityClassConstructor"/>
