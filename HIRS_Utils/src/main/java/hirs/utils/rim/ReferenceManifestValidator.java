@@ -186,7 +186,7 @@ public class ReferenceManifestValidator {
         DOMValidateContext context = null;
         validationErrorMessage = "Unable to verify RIM signature: ";
         try {
-            NodeList nodes = getXmlElement(XMLSignature.XMLNS, "Signature") ;
+            NodeList nodes = getXmlElement(XMLSignature.XMLNS, "Signature");
             if (nodes.getLength() == 0) {
                 validationErrorMessage += "invalid XML, signature element not found.";
                 log.error(validationErrorMessage);
@@ -660,7 +660,7 @@ public class ReferenceManifestValidator {
      * @param tagName the element's name
      * @return a NodeList containing the element
      */
-    private NodeList getXmlElement(String namespace, String tagName) {
+    private NodeList getXmlElement(final String namespace, final String tagName) {
         NodeList xmlElement = rim.getElementsByTagName(tagName);
         if (xmlElement.getLength() == 0) {
             xmlElement = rim.getElementsByTagNameNS(namespace, tagName);
