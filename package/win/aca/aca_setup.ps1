@@ -5,6 +5,34 @@ param (
 	[switch]$h, [switch]$help = $false
 )
 
+# Parameter Consolidation
+$skipdb=$sd -or ${skip-db}
+$skippki=$sp -or ${skip-pki}
+$unattended=$u -or $unattended
+$help = $h -or $help
+
+Write-Host $skipdb
+
+if ($help) {
+    Write-Host "  Setup script for the HIRS ACA on Windows"
+    Write-Host "  Syntax: .\aca_setup.ps1 [-u|-h|-sd|-sp|-skip-db|-skip-pki|-unattended|-help]"
+    Write-Host "  Flag options:"
+    Write-Host "     [-u  | -unattended] Runs the script unattended."
+    Write-Host "     [-h  | -help]   Prints this help message."
+    Write-Host "     [-sp | -skip-pki] Skips the pki setup of the setup script."
+    Write-Host "     [-sb | -skip-db] Skips the database setup of the setup script."
+	exit 1
+}
+
+if(!(New-Object Security.Principal.WindowsPrincipal(
+		[Security.Principal.WindowsIdentity]::GetCurrent())
+	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+	Write-Host "This script requires root.  Please run as root" 
+	exit 1
+}
+
+Write-Output "HIRS ACA Setup initiated on $(Get-Date -Format 'yyyy-MM-dd')" | WriteAndLog
+
 $APP_HOME=(Split-Path -parent $PSCommandPath)
 $ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
 $COMP_JSON = (Resolve-Path ([System.IO.Path]::Combine(
@@ -35,7 +63,7 @@ Copy-Item $SPRING_PROPERTIES_FILE $global:HIRS_DATA_SPRING_PROP_FILE
 if (-not (Test-Path $global:HIRS_DATA_ACA_PROPERTIES_FILE)) {
     New-Item -ItemType File -Path $global:HIRS_DATA_ACA_PROPERTIES_FILE
 } else {
-    Write-Output "File already exists: $global:HIRS_DATA_ACA_PROPERTIES_FILE"
+    Write-Output "File already exists: $global:HIRS_DATA_ACA_PROPERTIES_FILE" | WriteAndLog
 }  
 
 read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
@@ -46,36 +74,10 @@ read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 if (-not (Test-Path $global:HIRS_DATA_SPRING_PROP_FILE)) {
     New-Item -ItemType File -Path $global:HIRS_DATA_SPRING_PROP_FILE
 } else {
-    Write-Output "File already exists: $global:HIRS_DATA_SPRING_PROP_FILE"
+    Write-Output "File already exists: $global:HIRS_DATA_SPRING_PROP_FILE" | WriteAndLog
 }
   
 read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
-
-# Parameter Consolidation
-$skipdb=$sd -or ${skip-db}
-$skippki=$sp -or ${skip-pki}
-$unattended=$u -or $unattended
-$help = $h -or $help
-
-if ($help) {
-    Write-Output "  Setup script for the HIRS ACA"
-    Write-Output "  Syntax: sh aca_setup.sh [-u|h|sd|sp|--skip-db|--skip-pki]"
-    Write-Output "  options:"
-    Write-Output "     -u  | --unattended   Run unattended"
-    Write-Output "     -h  | --help   Print this Help."
-    Write-Output "     -sp | --skip-pki run the setup without pki setup."
-    Write-Output "     -sb | --skip-db run the setup without database setup."
-	exit 1
-}
-
-if(!(New-Object Security.Principal.WindowsPrincipal(
-		[Security.Principal.WindowsIdentity]::GetCurrent())
-	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	Write-Output "This script requires root.  Please run as root" 
-	exit 1
-}
-
-Write-Output "HIRS ACA Setup initiated on $(Get-Date -Format 'yyyy-MM-dd')" | WriteAndLog
 
 # Runs the pki_setup script (along with the other scripts under the PKI folder)
 if (!$skippki) {

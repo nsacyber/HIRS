@@ -7,8 +7,10 @@
 ############################################################################################
 
 param (
-    [string]$LOG_FILE = $null,
-	[string]$PKI_PASS = $null,
+	[Parameter(Mandatory=$true)]
+    [string]$LOG_FILE,
+	[Parameter(Mandatory=$true)]
+	[string]$PKI_PASS,
 	[switch]$UNATTENDED = $false
 )
 

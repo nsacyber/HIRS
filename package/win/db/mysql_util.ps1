@@ -53,14 +53,17 @@ Function start_mysqlsd () {
 			Write-Output "Running the mariadb db installer..." | WriteAndLog
 		}
 		& mariadb-install-db.exe 2>&1 | WriteAndLog
+
 		if ($PRINT_STATUS) {
 			Write-Output "Attempting to start mysql..." | WriteAndLog
 		}
-		if($service -and ($service.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Stopped)) {
+
+		if($service -and ($service.Status -eq 'Stopped')) {
 			$service.Start() 2>&1 | WriteAndLog
 		} else {
 			Start-Process mysqld.exe -WindowStyle Hidden 2>&1 | WriteAndLog
 		}
+		
 		$DB_STATUS=(check_mysql $PRINT_STATUS)
 	}
 }
@@ -77,8 +80,6 @@ Function check_mysql () {
 	}
 	return $DB_STATUS;
 }
-
-# Removed check_mysql_root: Looked redundant to db_create:check_mysql_root_pwd
 
 Function check_db_cleared () {
 	mysql -u root -e 'quit' &> $null

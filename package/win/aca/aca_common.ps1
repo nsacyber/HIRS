@@ -170,11 +170,18 @@ Function find_property_value(){
     # If the script was able to find the value that's associated with the provided key
     if($value) {
         Write-Host "NOT LOGGED: The value [$value] has been found to be associated with the key [$key]"  
-        # Reset the global property store and reload
-        $global:ACA_PROPERTIES = $null
-        read_aca_properties $file
-    }
-    else {
+        if($file -eq $global:HIRS_DATA_ACA_PROPERTIES_FILE ) {
+          # Reset the global aca property hashmap and reload
+          $global:ACA_PROPERTIES = $null
+          Write-Output "Resetting and reloading the aca properties table" | WriteAndLog
+          read_aca_properties $file
+        } elseif($file -eq $global:HIRS_DATA_SPRING_PROP_FILE){
+          # Reset the global spring property hashmap and reload
+          $global:SPRING_PROPERTIES = $null
+          Write-Output "Resetting and reloading the spring properties table" | WriteAndLog
+          read_aca_properties $file
+        }
+    } else {
         Write-Host "NOT LOGGED: There are no values associated with the provided key [$key]"
     }
     
@@ -289,7 +296,8 @@ Function ChangeBackslashToForwardSlash () {
 
 Function ChangeFileBackslashToForwardSlash () {
     param(
-        [string]$file = $null
+        [Parameter(Mandatory=$true)]
+        [string]$file
     )
     (Get-Content $file) -replace "\\","/" | Set-Content $file
 }

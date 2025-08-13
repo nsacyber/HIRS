@@ -8,7 +8,8 @@
 ################################################################################
 
 param (
-    [string]$LOG_FILE = $null,
+	[Parameter(Mandatory=$true)]
+    [string]$LOG_FILE,
 	[switch]$unattended = $false
 )
 
@@ -67,8 +68,7 @@ Function check_mysql_root_pwd () {
 		$DB_ADMIN_PWD=find_property_value -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key "mysql_admin_password"
 
 		# if the value associated with the mysql_admin_password key is empty
-		if(!$DB_ADMIN_PWD)
-		{
+		if(!$DB_ADMIN_PWD) {
 			Write-Output "No DB Admin password has been found in the properties file [$global:HIRS_DATA_ACA_PROPERTIES_FILE]. The script will now create and set the password for the root user." | WriteAndLog
 
 			# Create a 32 character random password
@@ -246,7 +246,8 @@ set_hirs_db_pwd -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
 # Create the hirs_db and hirs_db user with the values that were set in the aca properties file
 create_hirs_db_with_tls -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
 
-# Create the hibernate url using the RSA algorithmn and set the url in the aca.properties file
+# Create the hibernate url using the RSA algorithm and set the url in the aca.properties file
 create_hibernate_url -ALG:"RSA"
 
+# Reboot mariadb service
 mysqld_reboot -p
