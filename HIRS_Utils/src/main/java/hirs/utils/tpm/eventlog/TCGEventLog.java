@@ -3,6 +3,7 @@ package hirs.utils.tpm.eventlog;
 import hirs.utils.HexUtils;
 import hirs.utils.digest.AbstractDigest;
 import hirs.utils.tpm.eventlog.events.EvConstants;
+import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
@@ -21,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Class for handling different formats of TCG Event logs.
@@ -41,6 +43,10 @@ public final class TCGEventLog {
      * Initial value for SHA 1 values.
      */
     public static final String INIT_SHA1_LIST = "0000000000000000000000000000000000000000";
+    /**
+     *
+     */
+    public static final String LOCALITY3_SHA1_INIT_VAL = "0000000000000000000000000000000000000003";
     /**
      * Initial value for SHA 1 values.
      */
@@ -95,6 +101,13 @@ public final class TCGEventLog {
      * Parsed event log array.
      */
     private static final int SIG_OFFSET = 32;
+    /**
+     * Parsed event log array.
+     */
+    private static final int EVENT_ID_OFFSET = 4;
+    private static final int ALG_COUNT_OFFSET = 56;
+    private static final int ALG_ONE_OFFSET = 60;
+    private static final int ALG_TWO_OFFSET = 64;
     /**
      * TEV_NO_ACTION signature size.
      */
@@ -205,6 +218,7 @@ public final class TCGEventLog {
                        final boolean bContentFlag, final boolean bHexEventFlag)
             throws CertificateException, NoSuchAlgorithmException, IOException {
 
+
         bCryptoAgile = isLogCrytoAgile(rawlog);
         if (bCryptoAgile) {
             initValue = INIT_SHA256_LIST;
@@ -291,10 +305,23 @@ public final class TCGEventLog {
          for (TpmPcrEvent currentEvent : eventList.values()) {
              if (currentEvent.getEventType() == NO_ACTION_EVENT) {
                  EvNoAction event = new EvNoAction(currentEvent.getEventContent());
+                 if (event.isSpecIdEvent()) {
+                     EvEfiSpecIdEvent specEvent = new EvEfiSpecIdEvent(currentEvent.getEventContent());
+                     List<String> algList = specEvent.getAlgList();
+                     int algCount = algList.size();
+                 }
                  if (event.isStartupLocality()) {
                      int locality = event.getStartupLocality();
                      if (locality == LOCALITY3) {
-                         return  LOCALITY3_SHA256_INIT_VAL;
+                         if (eventLogHashAlgorithm.compareToIgnoreCase("TPM_ALG_SHA256") == 0) {
+                             return  LOCALITY3_SHA256_INIT_VAL;
+                         } else if (eventLogHashAlgorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) {
+                             return  LOCALITY3_SHA1_INIT_VAL;
+                         } else {
+                             LOGGER.error("Error Processing TGC Event Log: "
+                                     + "Event of type EV_NO_ACTION with StartupLocality and non supported Hash algorithm.");
+                             return LOCALITY4_SHA256_INIT_VAL;
+                         }
                      } else if (locality == LOCALITY4) {
                          LOGGER.error("Error Processing TGC Event Log: "
                                + "Event of type EV_NO_ACTION with a Startup Locality 4 with an H-CRTM "
@@ -449,10 +476,13 @@ public final class TCGEventLog {
      * @return true if EfiSpecIDEvent is found and indicates that the format is crypto agile
      */
     private boolean isLogCrytoAgile(final byte[] log) {
+        /*
         byte[] eType = new byte[UefiConstants.SIZE_4];
         System.arraycopy(log, UefiConstants.SIZE_4, eType, 0, UefiConstants.SIZE_4);
         byte[] eventType = HexUtils.leReverseByte(eType);
         int eventID = new BigInteger(eventType).intValue();
+        */
+        int eventID = getLogInt(log, EVENT_ID_OFFSET, UefiConstants.SIZE_4);
         if (eventID != TCGEventLog.NO_ACTION_EVENT) {
             return false;
         }  // Event Type should be EV_NO_ACTION
@@ -463,5 +493,13 @@ public final class TCGEventLog {
         String sig = new String(signature, StandardCharsets.UTF_8).substring(0, SIG_SIZE - 1);
 
         return sig.equals("Spec ID Event03");
+    }
+
+    private int getLogInt(byte[] log, int offset, int length) {
+        byte[] data = new byte [length];
+        System.arraycopy(log,offset, data, 0, length);
+        byte[] revData = HexUtils.leReverseByte(data);
+        int logInt = new BigInteger(revData).intValue();
+        return logInt;
     }
 }

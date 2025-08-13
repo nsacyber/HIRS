@@ -87,6 +87,7 @@ public class EvEfiSpecIdEvent {
     /**
      * Algorithm list.
      */
+    @Getter
     private List<String> algList;
 
     /**

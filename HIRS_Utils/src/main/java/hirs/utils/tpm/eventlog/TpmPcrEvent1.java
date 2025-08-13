@@ -3,6 +3,7 @@ package hirs.utils.tpm.eventlog;
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -80,6 +81,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
             setEventData(event);
             //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
             this.processEvent(event, eventContent, eventNumber, hashName);
+            description +=  "\n digest (SHA-1): " + Hex.encodeHexString(eventDigest);;
         }
     }
 }

@@ -107,7 +107,7 @@ public class TpmPcrEvent {
     /**
      * Description for toString support.
      */
-    private String description = "";
+    protected String description = "";
 
     /**
      * Length (in bytes) of a pcr.
@@ -268,7 +268,8 @@ public class TpmPcrEvent {
      */
     public byte[] getEventDigest() {
         byte[] digestCopy = new byte[digestLength];
-        System.arraycopy(digest, 0, digestCopy, 0, this.digestLength);
+//        System.arraycopy(digest, 0, digestCopy, 0, this.digestLength);
+        System.arraycopy(digest, 0, digestCopy, 0, this.digest.length);
         return digestCopy;
     }
 
@@ -496,7 +497,9 @@ public class TpmPcrEvent {
         description += "Event# " + eventPosition + ": ";
         description += "Index PCR[" + getPcrIndex() + "]\n";
         description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
+        /**
         description += "\n";
+
         if (hashName.compareToIgnoreCase("TPM_ALG_SHA1") == 0) {   // Digest
             description += "digest (SHA-1): " + Hex.encodeHexString(this.digest);
         } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA256") == 0) {   // Digest
@@ -508,6 +511,7 @@ public class TpmPcrEvent {
         } else {
             description += "Unsupported Hash Algorithm encountered";
         }
+         */
         if (eventID != UefiConstants.SIZE_4) {
             description += "\n";
         }
@@ -677,7 +681,7 @@ public class TpmPcrEvent {
      * @return Description of the log.
      */
     public String toString() {
-        return description + "\n";
+        return description;
     }
 
     /**
@@ -703,9 +707,9 @@ public class TpmPcrEvent {
         }
         if (bContent) {
             byte[] evContent = getEventContent();
-            if (bEvent) {
-                sb.append("\n");
-            }
+           // if (bEvent) {
+           //     sb.append("\n");
+           // }
             sb.append("Event content (Hex) (" + evContent.length + " bytes): "
                     + Hex.encodeHexString(evContent));
         }
