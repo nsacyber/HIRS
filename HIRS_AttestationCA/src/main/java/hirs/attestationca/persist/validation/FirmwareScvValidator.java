@@ -231,7 +231,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             if (!validationErrorMessage.isEmpty()) {
                 rimSignatureStatus = new AppraisalStatus(FAIL, validationErrorMessage);
             } else {
-                rimSignatureStatus = new AppraisalStatus(FAIL,"Base RIM signature invalid.");
+                rimSignatureStatus = new AppraisalStatus(FAIL, "Base RIM signature invalid.");
             }
         }
 
