@@ -124,7 +124,7 @@ Function set_mysql_tls () {
 		Write-Output "ssl_key=$global:SSL_DB_SRV_KEY" >> $global:DB_CONF
 		ChangeFileBackslashToForwardSlash $global:DB_CONF
 	} else {
-        Write-Output "$global:DB_CONF contains existing entry for ssl, skipping..." | WriteAndLog
+        Write-Output "$global:DB_CONF contains existing entry for ssl. Skipping this step ..." | WriteAndLog
 	}
 }
 
@@ -196,7 +196,6 @@ Function create_hirs_db_with_tls () {
 	if($HIRS_DB_EXISTS -eq 1){
       Write-Output "hirs_db already exists. Skipping this step" | WriteAndLog
 	} else { #othewrise create the hirs_db
-	
 	  $HIRS_PASS=find_property_value -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key:"hirs_db_password"
 
 	  if(!$HIRS_PASS){
@@ -208,7 +207,7 @@ Function create_hirs_db_with_tls () {
       mysql -u root -p"$DB_ADMIN_PWD" -e "source $global:HIRS_REL_SCRIPTS_DB_CREATE_SQL"
       mysql -u root -p"$DB_ADMIN_PWD" -e "source $global:HIRS_REL_SCRIPTS_DB_SECURE_MYSQL_SQL"
       mysql -u root -p"$DB_ADMIN_PWD" -e "ALTER USER 'hirs_db'@'localhost' IDENTIFIED BY '$HIRS_PASS'; FLUSH PRIVILEGES;"
-	  Write-Output "Finished creating the hirs_db database and setting the hirs_db pwd to what's in the file [$global:HIRS_DATA_ACA_PROPERTIES_FILE]"
+	  Write-Output "Finished creating the hirs_db database and setting the hirs_db pwd using the contents of the file [$global:HIRS_DATA_ACA_PROPERTIES_FILE]"
 	}
 }
 

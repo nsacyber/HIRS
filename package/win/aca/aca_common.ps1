@@ -98,7 +98,8 @@ Function read_aca_properties () {
     # This converts the ACA properties file into a hash table
     # Values are accessed by key like this: $propertyValue=$global:ACA_PROPERTIES.'example.property.key'
     param (
-        [string]$file = $null
+        [Parameter(Mandatory=$true)]
+        [string]$file
     )
     if (!$global:ACA_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
         $file_content=(Get-Content $file -Raw)
@@ -109,7 +110,7 @@ Function read_aca_properties () {
             $global:ACA_PROPERTIES=@{}
         }
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
-        $msg="Warning: ACA properties file not found. The path provided was: $file"
+        $msg="Warning: ACA properties file not found. The path provided was: [$file]"
         if ($global:LOG_FILE) {
             Write-Output "$msg" | WriteAndLog
         } else {
@@ -196,7 +197,7 @@ Function read_spring_properties () {
             $global:SPRING_PROPERTIES=@{}
         }
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
-        $msg="Warning: Spring properties file not found. The path provided was: $file"
+        $msg="Warning: Spring properties file not found. The path provided was: [$file]"
         if ($global:LOG_FILE) {
             Write-Output "$msg" | WriteAndLog
         } else {

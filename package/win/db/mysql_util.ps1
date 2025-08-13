@@ -104,12 +104,39 @@ Function mysqld_reboot () {
     if ($PRINT_STATUS) {
 		Write-Output "Attempting to restart mysql..." | WriteAndLog
 	}
+
+	$service=(Get-Service MariaDB -ErrorAction SilentlyContinue)
+
+	# if the mariadb service does exist
 	if($service) {
-		$service.Stop() 2>&1 >> "$global:LOG_FILE"
-		$service.Start() 2>&1 >> "$global:LOG_FILE"
-	} else {
+		Write-Output "Stopping MariaDB service..." | WriteAndLog
+
+		if ($service.Status -ne 'Stopped') {
+        	$service.Stop() 2>&1 >> "$global:LOG_FILE"
+        	$service.WaitForStatus('Stopped', '00:00:05')
+    	} else {
+          Write-Output "MariaDB service is already stopped." | WriteAndLog
+		}
+
+    	Write-Output "Starting MariaDB service..." | WriteAndLog
+
+    	if ($service.Status -eq 'Stopped') {
+            $service.Start() 2>&1 >> "$global:LOG_FILE"
+       		$service.WaitForStatus('Running', '00:00:05')
+
+        	if ($service.Status -eq 'Running') {
+          	  Write-Output "MariaDB service started successfully." | WriteAndLog
+       		} else {
+            Write-Output "MariaDB failed to start within timeout." | WriteAndLog
+        	}	
+   	 	} else {
+        	Write-Output "MariaDB service was not in a stopped state. Skipping start." | WriteAndLog
+    	}
+    } else {
+		Write-Output "MariaDB service not found. Attempting to run mysqld.exe manually..." | WriteAndLog
 		Start-Process mysqld.exe -WindowStyle Hidden 2>&1 | WriteAndLog
 	}
+	
 }
 
 Function check_hirs_db() {
