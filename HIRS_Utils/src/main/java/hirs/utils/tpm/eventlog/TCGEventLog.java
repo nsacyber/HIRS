@@ -29,69 +29,111 @@ import java.util.List;
  */
 public final class TCGEventLog {
 
+    // The TCG PC Client Platform TPM Profile Specification for TPM 2.0 defines 5 localities
+    //    (In this code these localities are referred to as 'environment localities')
+    //    Locality 0: The Static RTM, its chain of trust and its environment.
+    //    Locality 1: An environment for use by the Dynamic OS.
+    //    Locality 2: Dynamically Launched OS (Dynamic OS) “runtime” environment.
+    //    Locality 3: Auxiliary components. Use of this is optional and, if used, is implementation dependent.
+    //    Locality 4: Usually associated with the CPU executing microcode. Used to establish the Dynamic RTM.
+    //
+    // Global System Power States /Sleeping States, described in TCG PFP 2.2.14
+    //    (Transitions described in TCG PFP 8.3)
+    //    G0 = S0: On
+    //    G1: Sleeping State
+    //      S1: Stand-by with low wakeup latency
+    //      S2: Stand-by with CPU context lost
+    //      S3: Suspend to RAM                   --> PCR0 will be initialized differently
+    //      S4: Hibernate (OS Initiated)         --> PCR0 will be initialized differently
+    //      S4: Hibernate (BIOS Initiated)       --> PCR0 will be initialized differently
+    //    G2 = S5: Soft Off State
+    //    G3: Mechanical Off State
+    //
+    // Boot Startup Locality event - This event records the (power state) locality from which the
+    //                               TPM2_Startup command was sent.
+    //    (In this code StartupLocality is referred to as 'startup locality')
+    //    (In this code Locality is referred to as 'locality', and essentially corresponds
+    //    to S0-S5 State Transitions)
+    //    The TCG PFP section 10.4.5.3 mentions Startup Locality:
+    //       StartupLocality 0: is Locality 0 without an H-CRTM sequence
+    //       StartupLocality 3: is Locality 3 without an H-CRTM sequence (S3 -> S0)
+    //       StartupLocality 4: is Locality 4 with an H-CRTM sequence initialized (S4 -> S0)
+    //
+    // 1) TPM Reset -- Tpm2Startup(CLEAR) after Tpm2Shutdown(CLEAR)
+    //    PCRs with default initialization state go back to their default initialization state.
+    // 2) TPM Restart -- Tpm2Startup(CLEAR) after Tpm2Shutdown(STATE)
+    //    Preserves much of the previous state of the TPM, with some exceptions.
+    // 3) TPM Resume -- Tpm2Startup(STATE) after Tpm2Shutdown(STATE).
+    //    Preserves the previous state of the TPM.
+    //
+    // Ex. An EV_NO_ACTION Boot Event with StartupLocality 3 refers to Locality 3, which refers to a
+    //     state transition S3 to S0, corresponding to TPM Restart. Requires PCR0 to be initialized to 3.
+
     /**
-     * Initial value for SHA 256 values.
+     * String value of SHA1 hash.
+     */
+    public static final String HASH_SHA1_STRING = "SHA1";
+    /**
+     * String value of SHA256 hash.
+     */
+    public static final String HASH_SHA256_STRING = "SHA-256";
+    /**
+     * Initial PCR value for SHA 1 if environment Locality is 0-3 (PCRs 0-16).
+     */
+    public static final String INIT_SHA1_LIST = "0000000000000000000000000000000000000000";
+    /**
+     * Initial PCR value for SHA 1 if environment Locality is 4 (PCRs 17-22).
+     */
+    public static final String INIT_SHA1_LIST_ENVLOCALITY4 = "ffffffffffffffffffffffffffffffffffffffff";
+    /**
+     * Initial PCR value for SHA 256 if environment Locality is 0-3 (PCRs 0-16).
      */
     public static final String INIT_SHA256_LIST = "00000000000000000000000000"
             + "00000000000000000000000000000000000000";
     /**
-     * Initial value for SHA 256 values.
+     * Initial PCR value for SHA 256 if environment Locality is 4 (PCRs 17-22).
      */
-    public static final String LOCALITY4_SHA256_LIST = "ffffffffffffffffffffffffff"
+    public static final String INIT_SHA256_LIST_ENVLOCALITY4 = "ffffffffffffffffffffffffff"
             + "ffffffffffffffffffffffffffffffffffffff";
-    /**
-     * Initial value for SHA 1 values.
-     */
-    public static final String INIT_SHA1_LIST = "0000000000000000000000000000000000000000";
-    /**
-     *
-     */
-    public static final String LOCALITY3_SHA1_INIT_VAL = "0000000000000000000000000000000000000003";
-    /**
-     * Initial value for SHA 1 values.
-     */
-    public static final String LOCALITY4_SHA1_LIST = "ffffffffffffffffffffffffffffffffffffffff";
-    /**
-     * PFP defined EV_NO_ACTION identifier.
-     */
-    public static final int NO_ACTION_EVENT = 0x00000003;
-    /**
-     * String value of SHA1 hash.
-     */
-    public static final String HASH_STRING = "SHA1";
-    /**
-     * String value of SHA256 hash.
-     */
-    public static final String HASH256_STRING = "SHA-256";
     /**
      * Each PCR bank holds 24 registers.
      */
     public static final int PCR_COUNT = 24;
     /**
-     * Locality 4 starts at PCR 17.
+     * Environment Locality 4 starts at PCR 17.
      */
-    public static final int PCR_LOCALITY4_MIN = 17;
+    public static final int PCR_ENVLOCALITY4_MIN = 17;
     /**
-     * Locality 4 Ends at PCR 23.
+     * Environment Locality 4 ends at PCR 22.
      */
-    public static final int PCR_LOCALITY4_MAX = 23;
+    public static final int PCR_ENVLOCALITY4_MAX = 22;
     /**
-     * Start up locality defined in the TCG PFP section 10.4.5.3.
+     * PFP defined EV_NO_ACTION identifier.
      */
-    public static final int LOCALITY3 = 0x03;
+    public static final int NO_ACTION_EVENT = 0x00000003;
     /**
-     * Initial value for PCR0 or SHA56 with locality 3.
+     * Startup Locality 3 defined in the TCG PFP section 10.4.5.3.
+     * Used for NO_ACTION_EVENT with "StartupLocality" in the signature.
      */
-    public static final String LOCALITY3_SHA256_INIT_VAL = "00000000000000000000000000"
+    public static final int STARTUP_LOCALITY3 = 0x03;
+    /**
+     * Startup Locality 4 defined in the TCG PFP section 10.4.5.3.
+     * Used for NO_ACTION_EVENT with "StartupLocality" in the signature.
+     */
+    public static final int STARTUP_LOCALITY4 = 0x04;
+    /**
+     * Initial PCR0 value for SHA1 with Startup Locality 3.
+     */
+    public static final String INIT_SHA1_PCR0_STARTUP_LOCALITY3 = "0000000000000000000000000000000000000003";
+    /**
+     * Initial PCR0 value for SHA256 with Startup Locality 3.
+     */
+    public static final String INIT_SHA256_PCR0_STARTUP_LOCALITY3 = "00000000000000000000000000"
             + "00000000000000000000000000000000000003";
     /**
-     * Start up locality defined in the TCG PFP section 10.4.5.3.
+     * Initial PCR0 value for SHA256 with Startup Locality 4.
      */
-    public static final int LOCALITY4 = 0x04;
-    /**
-     * Initial value for PCR0 or SHA56 with locality 3.
-     */
-    public static final String LOCALITY4_SHA256_INIT_VAL = "00000000000000000000000000"
+    public static final String INIT_SHA256_PCR0_STARTUP_LOCALITY4 = "00000000000000000000000000"
             + "00000000000000000000000000000000000004";
     /**
      * Logger.
@@ -183,9 +225,9 @@ public final class TCGEventLog {
     public TCGEventLog() throws UnsupportedEncodingException {
         this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
         initValue = INIT_SHA1_LIST;
-        initLocalityFourValue = LOCALITY4_SHA1_LIST;
+        initLocalityFourValue = INIT_SHA1_LIST_ENVLOCALITY4;
         pcrLength = EvConstants.SHA1_LENGTH;
-        hashType = HASH_STRING;
+        hashType = HASH_SHA1_STRING;
         eventLogHashAlgorithm = "TPM_ALG_SHA1";
         initPcrList();
     }
@@ -222,14 +264,14 @@ public final class TCGEventLog {
         bCryptoAgile = isLogCrytoAgile(rawlog);
         if (bCryptoAgile) {
             initValue = INIT_SHA256_LIST;
-            initLocalityFourValue = LOCALITY4_SHA256_LIST;
+            initLocalityFourValue = INIT_SHA256_LIST_ENVLOCALITY4;
             eventLogHashAlgorithm = "TPM_ALG_SHA256";
-            hashType = HASH256_STRING;
+            hashType = HASH_SHA256_STRING;
             pcrLength = EvConstants.SHA256_LENGTH;
         } else {
             initValue = INIT_SHA1_LIST;
-            initLocalityFourValue = LOCALITY4_SHA1_LIST;
-            hashType = HASH_STRING;
+            initLocalityFourValue = INIT_SHA1_LIST_ENVLOCALITY4;
+            hashType = HASH_SHA1_STRING;
             eventLogHashAlgorithm = "TPM_ALG_SHA1";
             pcrLength = EvConstants.SHA1_LENGTH;
         }
@@ -287,7 +329,7 @@ public final class TCGEventLog {
                 System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
                         0, pcrList[i], 0, pcrLength);
             }
-            for (int i = PCR_LOCALITY4_MIN; i < PCR_LOCALITY4_MAX; i++) {
+            for (int i = PCR_ENVLOCALITY4_MIN; i <= PCR_ENVLOCALITY4_MAX; i++) {
                 System.arraycopy(Hex.decodeHex(initLocalityFourValue.toCharArray()),
                         0, pcrList[i], 0, pcrLength);
             }
@@ -312,21 +354,21 @@ public final class TCGEventLog {
                  }
                  if (event.isStartupLocality()) {
                      int locality = event.getStartupLocality();
-                     if (locality == LOCALITY3) {
+                     if (locality == STARTUP_LOCALITY3) {
                          if (eventLogHashAlgorithm.compareToIgnoreCase("TPM_ALG_SHA256") == 0) {
-                             return  LOCALITY3_SHA256_INIT_VAL;
+                             return INIT_SHA256_PCR0_STARTUP_LOCALITY3;
                          } else if (eventLogHashAlgorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) {
-                             return  LOCALITY3_SHA1_INIT_VAL;
+                             return INIT_SHA1_PCR0_STARTUP_LOCALITY3;
                          } else {
                              LOGGER.error("Error Processing TGC Event Log: "
                                      + "Event of type EV_NO_ACTION with StartupLocality and non supported Hash algorithm.");
-                             return LOCALITY4_SHA256_INIT_VAL;
+                             return INIT_SHA256_PCR0_STARTUP_LOCALITY4;
                          }
-                     } else if (locality == LOCALITY4) {
+                     } else if (locality == STARTUP_LOCALITY4) {
                          LOGGER.error("Error Processing TGC Event Log: "
                                + "Event of type EV_NO_ACTION with a Startup Locality 4 with an H-CRTM "
                                + "encountered ,  but no support is currently provided by this application");
-                         return LOCALITY4_SHA256_INIT_VAL;
+                         return INIT_SHA256_PCR0_STARTUP_LOCALITY4;
                      } else {
                          return INIT_SHA256_LIST;
                      }
