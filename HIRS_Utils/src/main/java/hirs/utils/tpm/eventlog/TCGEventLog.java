@@ -261,7 +261,7 @@ public final class TCGEventLog {
             throws CertificateException, NoSuchAlgorithmException, IOException {
 
 
-        bCryptoAgile = isLogCrytoAgile(rawlog);
+        bCryptoAgile = isLogCryptoAgile(rawlog);
         if (bCryptoAgile) {
             initPcrValue = INIT_SHA256_LIST;
             initPcrValueLocality4 = INIT_SHA256_LIST_ENVLOCALITY4;
@@ -517,7 +517,7 @@ public final class TCGEventLog {
      * @param log The Event Log
      * @return true if EfiSpecIDEvent is found and indicates that the format is crypto agile
      */
-    private boolean isLogCrytoAgile(final byte[] log) {
+    private boolean isLogCryptoAgile(final byte[] log) {
         /*
         byte[] eType = new byte[UefiConstants.SIZE_4];
         System.arraycopy(log, UefiConstants.SIZE_4, eType, 0, UefiConstants.SIZE_4);

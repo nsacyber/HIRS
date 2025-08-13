@@ -142,18 +142,33 @@ public class EvEfiSpecIdEvent {
     }
 
     /**
-     * Returns a human readable description of the data within this event.
+     * Returns a human-readable description of the data within this event.
      *
-     * @return a description of this event..
+     * @return a description of this event.
      */
     public String toString() {
         String specInfo = "";
-        if (signature.equals("Spec ID Event#")) {
-            specInfo += "Platform Profile Specification version = " + versionMajor + "." + versionMinor
-                    + " using errata version" + errata;
+
+        specInfo += "   Signature = Spec ID Event03 : ";
+        if (this.isCryptoAgile()) {
+            specInfo += "Log format is Crypto Agile\n";
         } else {
-            specInfo = "EV_NO_ACTION event named " + signature
-                    + " encountered but support for processing it has not been added to this application";
+            specInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
+        }
+        specInfo += "   Platform Profile Specification version = "
+                + this.getVersionMajor() + "." + this.getVersionMinor()
+                + " using errata version " + this.getErrata() + "\n";
+
+//        if (signature.equals("Spec ID Event#")) {
+//            specInfo += "Platform Profile Specification version = " + versionMajor + "." + versionMinor
+//                    + " using errata version" + errata + "\n";
+//        } else {
+//            specInfo = "EV_NO_ACTION event named " + signature + " encountered but support for processing"
+//                    + " it has not been added to this application" + "\n";
+//        }
+        specInfo += "   Algorithm list:";
+        for (int i = 0; i < numberOfAlg; i++) {
+            specInfo += "\n      " + i + ": " + algList.get(i);
         }
         return specInfo;
     }

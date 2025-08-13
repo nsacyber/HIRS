@@ -120,18 +120,19 @@ public class EvNoAction {
      */
     public String specIDEventToString(final EvEfiSpecIdEvent specIDEvent) {
 
-        String specIdInfo = "";
-        specIdInfo += "   Signature = Spec ID Event03 : ";
-        if (specIDEvent.isCryptoAgile()) {
-            specIdInfo += "Log format is Crypto Agile\n";
-        } else {
-            specIdInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
-        }
-        specIdInfo += "   Platform Profile Specification version = "
-                + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
-                + " using errata version " + specIDEvent.getErrata();
-
-        return specIdInfo;
+//        String specIdInfo = "";
+//        specIdInfo += "   Signature = Spec ID Event03 : ";
+//        if (specIDEvent.isCryptoAgile()) {
+//            specIdInfo += "Log format is Crypto Agile\n";
+//        } else {
+//            specIdInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
+//        }
+//        specIdInfo += "   Platform Profile Specification version = "
+//                + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
+//                + " using errata version " + specIDEvent.getErrata();
+//
+//        return specIdInfo;
+        return specIDEvent.toString();
     }
 
     /**
