@@ -13,7 +13,26 @@
     <!-- This ignores checking all public variable for a javadoc -->
     <suppress files="SwidTagConstants.java" checks="LineLength"/>
     <suppress files="SwidTagConstants.java" checks="JavadocVariable"/>
+    <suppress files="IanaHashAlg.java" checks="JavadocVariable"/>
+    <suppress files="Swid.java" checks="JavadocVariable"/>
+    <suppress files="CoRim.java" checks="JavadocVariable"/>
+    <!-- This ignores checking all magic numbers -->
     <suppress files="DefaultCrypto.java" checks="MagicNumber"/>
+    <suppress files="CborBstr.java" checks="MagicNumber"/>
+    <suppress files="MetaMap.java" checks="MagicNumber"/>
+    <suppress files="CoswidBuilder.java" checks="MagicNumber"/>
+    <suppress files="CoswidParser.java" checks="MagicNumber"/>
+    <suppress files="CborTagProcessor.java" checks="MagicNumber"/>
+    <!-- This ignores checking all protected variables -->
+    <suppress files="CoRim.java" checks="VisibilityModifier"/>
+    <suppress files="Coswid.java" checks="VisibilityModifier"/>
+    <suppress files="CoswidBuilder.java" checks="VisibilityModifier"/>
+    <suppress files="CoswidConfig.java" checks="VisibilityModifier"/>
+    <suppress files="CoswidConfigValidator.java" checks="VisibilityModifier"/>
+    <suppress files="CoswidParser.java" checks="VisibilityModifier"/>
+    <suppress files="Swid.java" checks="VisibilityModifier"/>
+    <suppress files="CborTagProcessor.java" checks="VisibilityModifier"/>
+    <suppress files="CoseHeader.java" checks="VisibilityModifier"/>
 
     <!-- This ignores checking for public constructors in utility classes in certain files -->
     <suppress files="HIRSApplication.java" checks="HideUtilityClassConstructor"/>

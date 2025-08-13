@@ -1,5 +1,6 @@
 [versions]
 apacheHttpClientVersion = "4.5.14"
+authleteCborVersion = "1.19"
 bouncyCastleVersion = "1.79"
 commonsCodecVersion = "1.17.1"
 commonsIoVersion = "2.18.0"
@@ -34,6 +35,7 @@ xmlunitCoreVersion = "2.10.0"
 
 [libraries]
 apacheHttpClient = { module = "org.apache.httpcomponents:httpclient", version.ref = "apacheHttpClientVersion" }
+authlete-cbor = { module = "com.authlete:cbor", version.ref = "authleteCborVersion" }
 bouncycastle = { module = "org.bouncycastle:bcmail-jdk18on", version.ref = "bouncyCastleVersion" }
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commonsCodecVersion" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commonsIoVersion" }
@@ -42,6 +44,7 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
 glassfish-jakarta-json = { module = "org.glassfish:jakarta.json", version.ref = "glassfishJakartaJsonVersion" }
 glassfish-jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "glassfishJaxbRuntimeVersion" }
 guava = { module = "com.google.guava:guava", version.ref = "guavaVersion" }
+jackson-cbor = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor", version.ref = "jacksonVersion" }
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jacksonVersion" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonVersion" }
 jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakartaPersistenceApiVersion" }

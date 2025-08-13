@@ -14,12 +14,14 @@ configurations {
 }
 
 dependencies {
+    implementation libs.authlete.cbor
     implementation libs.bouncycastle
     implementation libs.commons.codec
     implementation libs.commons.lang3
     implementation libs.commons.io
     implementation libs.glassfish.jaxb.runtime
     implementation libs.guava
+    implementation libs.jackson.cbor
     implementation libs.jackson.core
     implementation libs.jackson.databind
     implementation libs.jakarta.persistence.api
