@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -16,7 +17,7 @@ import static java.util.stream.Collectors.toMap;
  *   }
  * </pre>
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum LinkedTagMapItems {
     /** Corresponds to linked-tag-id. */
     LINKED_TAG_ID(0, "linked-tag-id"),
@@ -25,11 +26,6 @@ public enum LinkedTagMapItems {
 
     private final int index;
     private final String key;
-
-    LinkedTagMapItems(final int index, final String key) {
-        this.index = index;
-        this.key = key;
-    }
 
     private static final Map<Integer, LinkedTagMapItems> LOOKUP =
             stream(values())

@@ -3,6 +3,7 @@ package hirs.utils.rim.unsignedRim.cbor.tcgCompRimCoswid;
 import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.Coswid;
 import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidItems;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -13,6 +14,7 @@ import lombok.Setter;
  *     Missing componentManufacturerID in table 4<br>
  *     Missing bindingSpecVersion in table 4 but has value assigned in section<br>
  */
+@NoArgsConstructor
 public class TcgCompRimCoswid extends Coswid {
     /** Spec used to define this tag. */
     @Setter
@@ -100,13 +102,6 @@ public class TcgCompRimCoswid extends Coswid {
     protected String crimSpdmMeasurementRawData = null;
     protected static final String CRIM_SPDM_MEASUREMENT_RAW_DATA_STR = "spdm-measurement-raw-data";
     protected static final int CRIM_SPDM_MEASUREMENT_RAW_DATA_INT = 72;
-
-    /**
-     * Default constructor.
-     */
-    public TcgCompRimCoswid() {
-
-    }
 
     /**
      * Converts a TCG Component RIM or coswid defined index into its corresponding text name.

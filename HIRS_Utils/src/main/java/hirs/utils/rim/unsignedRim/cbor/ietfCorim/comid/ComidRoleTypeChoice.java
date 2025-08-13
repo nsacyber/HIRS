@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -10,7 +11,7 @@ import static java.util.stream.Collectors.toMap;
 /**
  * Defines a {@code $comid-role-type-choice} as described in Section 5.1.2 of the IETF CoRIM specification.
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum ComidRoleTypeChoice {
     /** Creator of the CoMID tag. */
     TAG_CREATOR(0),
@@ -24,10 +25,6 @@ public enum ComidRoleTypeChoice {
     private static final Map<Integer, ComidRoleTypeChoice> LOOKUP =
             stream(values())
                     .collect(toMap(ComidRoleTypeChoice::getIndex, x -> x));
-
-    ComidRoleTypeChoice(final int index) {
-        this.index = index;
-    }
 
     /**
      * Method to return an enum value from an integer index.

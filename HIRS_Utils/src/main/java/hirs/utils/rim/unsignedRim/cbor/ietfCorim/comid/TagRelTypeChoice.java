@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -11,7 +12,7 @@ import static java.util.stream.Collectors.toMap;
  * Represents a typed relationship between a source CoMID tag and a target CoMID tag.
  * See section 5.1.3 in the IETF CoRIM specification.
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum TagRelTypeChoice {
     /** The source tag provides additional information about the module described in the target tag. */
     SUPPLEMENTS(0),
@@ -19,10 +20,6 @@ public enum TagRelTypeChoice {
     REPLACES(1);
 
     private final int index;
-
-    TagRelTypeChoice(final int index) {
-        this.index = index;
-    }
 
     private static final Map<Integer, TagRelTypeChoice> LOOKUP =
             stream(values())

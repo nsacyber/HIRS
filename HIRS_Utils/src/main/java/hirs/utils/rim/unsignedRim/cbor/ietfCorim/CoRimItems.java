@@ -1,6 +1,7 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim;
 
 import hirs.utils.signature.cose.Cbor.CborItems;
+import lombok.NoArgsConstructor;
 
 /**
  * Class to store CoRIM map items.
@@ -18,6 +19,7 @@ import hirs.utils.signature.cose.Cbor.CborItems;
  * }
  * </pre>
  */
+@NoArgsConstructor
 public class CoRimItems extends CborItems {
 
     public static final int CORIM_ID_TYPE_CHOICE_INT = 0;
@@ -41,11 +43,5 @@ public class CoRimItems extends CborItems {
             {Integer.toString(PROFILE_TYPE_CHOICE_INT), PROFILE_TYPE_CHOICE_STR},
             {Integer.toString(VALIDITY_MAP_INT), VALIDITY_MAP_STR},
             {Integer.toString(CORIM_ENTITY_MAP_INT), CORIM_ENTITY_MAP_STR}};
-
-    /**
-     * Default Constructor.
-     */
-    public CoRimItems() {
-    }
 
 }
