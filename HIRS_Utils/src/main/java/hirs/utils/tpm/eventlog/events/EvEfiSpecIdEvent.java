@@ -87,8 +87,10 @@ public class EvEfiSpecIdEvent {
     /**
      * Algorithm list.
      */
-    @Getter
     private List<String> algList;
+    public  List<String> getAlgList() {
+        return new ArrayList<>(algList);
+    }
 
     /**
      * EvEfiSpecIdEvent Constructor.
