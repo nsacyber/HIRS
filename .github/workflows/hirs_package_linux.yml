@@ -5,7 +5,7 @@ on:
     branches:
       - '*v3*'
       - 'main'
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
@@ -53,7 +53,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: RPM_Files
-          path: HIRS_AttestationCAPortal/build/distributions/*.rpm
+          path: |
+            HIRS_AttestationCAPortal/build/distributions/*.rpm
+            tools/tcg_rim_tool/build/distributions/*.rpm
+            tools/tcg_eventlog_tool/build/distributions/*.rpm
           if-no-files-found: error
       - name: Archive DEB files
         uses: actions/upload-artifact@v4
