@@ -11,4 +11,3 @@ $StartInfo.Arguments = "-NoExit -Command
                Set-Location -Path $PWD;
                function prompt {'HIRS > '};" 
 [System.Diagnostics.Process]::Start($StartInfo)
-

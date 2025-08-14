@@ -7,8 +7,10 @@
 ############################################################################################
 
 param (
-    [string]$LOG_FILE = $null,
-	[string]$PKI_PASS = $null,
+	[Parameter(Mandatory=$true)]
+    [string]$LOG_FILE,
+	[Parameter(Mandatory=$true)]
+	[string]$PKI_PASS,
 	[switch]$UNATTENDED = $false
 )
 
@@ -63,7 +65,7 @@ if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_DIR)) {
 
     New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_DIR -Force | Out-Null
 
-    Copy-Item "$PKI_SETUP_DIR\ca.conf" "$global:HIRS_DATA_CERTIFICATES_DIR"
+    Copy-Item $PKI_SETUP_DIR\ca.conf $global:HIRS_DATA_CERTIFICATES_DIR
 	pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$global:LOG_FILE"
     pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$global:LOG_FILE"
 

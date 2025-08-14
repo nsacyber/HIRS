@@ -4,8 +4,8 @@
         <Console name="STDOUT" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%C.%M] %-5p : %m%n"/>
         </Console>
-        <RollingFile name="FILE" fileName="/var/log/hirs/HIRS_AttestationCA_Portal.log"
-                     filePattern="/var/log/hirs/HIRS_AttestationCA_Portal-%d{yyyy-MM-dd}-%i.log">
+        <RollingFile name="FILE" fileName="C:/ProgramData/hirs/log/HIRS_AttestationCA_Portal.log"
+                     filePattern="C:/ProgramData/hirs/log/HIRS_AttestationCA_Portal.log-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss} [%C.%M] %-5p : %m%n</pattern>
             </PatternLayout>
@@ -19,17 +19,17 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Root level="ERROR">
-            <AppenderRef ref="STDOUT" level="ERROR"/>
+        <Root level="WARN">
+            <AppenderRef ref="STDOUT" level="WARN"/>
             <AppenderRef ref="FILE"/>
         </Root>
         <SpringProfile name="!development, !production">
-            <Logger name="hirs.attestationca" level="info"/>
+            <Logger name="hirs.attestationca" level="trace"/>
         </SpringProfile>
-        <Logger name="org.hibernate" level="ERROR"/>
+        <Logger name="org.hibernate" level="DEBUG"/>
     </Loggers>
     <!-- prevents an out-of-memory exception caused by  the debug logging of very large inserts -->
     <category name="org.hibernate.event.def.AbstractFlushingEventListener">
-        <priority value="ERROR"/>
+        <priority value="INFO"/>
     </category>
 </Configuration>

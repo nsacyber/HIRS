@@ -15,12 +15,18 @@
 # A KeyStore and Trust Store are created for by Java Applications. Both will use the supplied password. 
 
 param (
-    [string]$ACTOR = $null,
-	[string]$ASYM_ALG = $null,
-	[string]$ASYM_SIZE = $null,
-	[string]$HASH_ALG = $null,
-	[string]$PASS = $null,
-	[string]$LOG_FILE = $null
+	[Parameter(Mandatory=$true)]
+    [string]$ACTOR,
+	[Parameter(Mandatory=$true)]
+	[string]$ASYM_ALG,
+	[Parameter(Mandatory=$true)]
+	[string]$ASYM_SIZE,
+	[Parameter(Mandatory=$true)]
+	[string]$HASH_ALG,
+	[Parameter(Mandatory=$true)]
+	[string]$PASS,
+	[Parameter(Mandatory=$true)]
+	[string]$LOG_FILE
 )
 
 $APP_HOME=(Split-Path -parent $PSCommandPath)
@@ -126,7 +132,7 @@ Write-Output "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..
 New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER" -Force | Out-Null
 New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\certs" -Force | Out-Null
-Copy-Item "$global:HIRS_DATA_CERTIFICATES_DIR\ca.conf" "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
+Copy-Item $global:HIRS_DATA_CERTIFICATES_DIR\ca.conf $global:HIRS_DATA_CERTIFICATES_HIRS_DIR | WriteAndLog
 
 if (-not (Test-Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db")) {
     New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"
@@ -147,7 +153,8 @@ if (![System.IO.File]::Exists("$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial
 # Function to add Cert to Truststore and key to Keystore
 Function add_to_stores () {
     param (
-        [string]$CERT_PATH = $null
+		[Parameter(Mandatory=$true)]
+        [string]$CERT_PATH
     )
 
     $ALIAS=[System.IO.Path]::GetFileName($CERT_PATH)    # Use filename without path as an alias
@@ -174,10 +181,14 @@ Function add_to_stores () {
 
 Function create_cert () {
     param (
-        [string]$CERT_PATH = $null,
-        [string]$ISSUER = $null,
-        [string]$SUBJ_DN = $null,
-        [string]$EXTENSION = $null
+		[Parameter(Mandatory=$true)]
+        [string]$CERT_PATH,
+		[Parameter(Mandatory=$true)]
+        [string]$ISSUER,
+		[Parameter(Mandatory=$true)]
+        [string]$SUBJ_DN,
+		[Parameter(Mandatory=$true)]
+        [string]$EXTENSION
     )
 	
 	$ISSUER_KEY="$ISSUER.key"
