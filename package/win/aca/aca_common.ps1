@@ -179,7 +179,7 @@ Function find_property_value(){
           # Reset the global spring property hashmap and reload
           $global:SPRING_PROPERTIES = $null
           Write-Output "Resetting and reloading the spring properties table" | WriteAndLog
-          read_aca_properties $file
+          read_spring_properties $file
         }
     } else {
         Write-Host "NOT LOGGED: There are no values associated with the provided key [$key]"
