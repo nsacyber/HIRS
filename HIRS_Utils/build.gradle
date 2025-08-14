@@ -19,6 +19,7 @@ dependencies {
     implementation libs.commons.codec
     implementation libs.commons.lang3
     implementation libs.commons.io
+    implementation libs.glassfish.jakarta.json
     implementation libs.glassfish.jaxb.runtime
     implementation libs.guava
     implementation libs.jackson.cbor
