@@ -110,31 +110,48 @@ Function mysqld_reboot () {
 
 	# if the mariadb service does exist
 	if($service) {
-		Write-Output "Stopping MariaDB service..." | WriteAndLog
-
-		if ($service.Status -ne 'Stopped') {
-        	$service.Stop() 2>&1 >> "$global:LOG_FILE"
-        	$service.WaitForStatus('Stopped', '00:00:05')
-    	} else {
-          Write-Output "MariaDB service is already stopped." | WriteAndLog
+		if ($PRINT_STATUS) {
+			Write-Output "Stopping MariaDB service..." | WriteAndLog
 		}
 
-    	Write-Output "Starting MariaDB service..." | WriteAndLog
+		# if the mariadb service has not stopped
+		if ($service.Status -ne 'Stopped') {
+        	$service.Stop()
+        	$service.WaitForStatus('Stopped', '00:00:05')
+    	} else { # if the mariadb service is already stopped
+			if ($PRINT_STATUS) {
+          		Write-Output "MariaDB service is already stopped." | WriteAndLog
+			}
+		}
 
+		if ($PRINT_STATUS) {
+    		Write-Output "Starting MariaDB service..." | WriteAndLog
+		}
+
+		# if the mariadb service is currently stopped
     	if ($service.Status -eq 'Stopped') {
-            $service.Start() 2>&1 >> "$global:LOG_FILE"
+            $service.Start()
        		$service.WaitForStatus('Running', '00:00:05')
 
+			# if the mariadb service is running
         	if ($service.Status -eq 'Running') {
-          	  Write-Output "MariaDB service started successfully." | WriteAndLog
-       		} else {
-            Write-Output "MariaDB failed to start within timeout." | WriteAndLog
+				if ($PRINT_STATUS) {
+          	 	 	Write-Output "MariaDB service started successfully." | WriteAndLog
+				}
+       		} else { # if the mariadb service failed to start within the first five seconds of the execution of the start command
+				if ($PRINT_STATUS) {
+           			Write-Output "MariaDB failed to start within timeout." | WriteAndLog
+				}
         	}	
-   	 	} else {
-        	Write-Output "MariaDB service was not in a stopped state. Skipping start." | WriteAndLog
+   	 	} else { # if the mariadb service is not in a stopped state
+			if ($PRINT_STATUS) {
+        		Write-Output "MariaDB service was not in a stopped state. Skipping start." | WriteAndLog
+			}
     	}
-    } else {
-		Write-Output "MariaDB service not found. Attempting to run mysqld.exe manually..." | WriteAndLog
+    } else { # if the script is unable to find the mariadb service
+		if ($PRINT_STATUS) {
+			Write-Output "MariaDB service not found. Attempting to run mysqld.exe manually..." | WriteAndLog
+		}
 		Start-Process mysqld.exe -WindowStyle Hidden 2>&1 | WriteAndLog
 	}
 	

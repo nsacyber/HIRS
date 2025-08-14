@@ -11,8 +11,6 @@ $skippki=$sp -or ${skip-pki}
 $unattended=$u -or $unattended
 $help = $h -or $help
 
-Write-Host $skipdb
-
 if ($help) {
     Write-Host "  Setup script for the HIRS ACA on Windows"
     Write-Host "  Syntax: .\aca_setup.ps1 [-u|-h|-sd|-sp|-skip-db|-skip-pki|-unattended|-help]"
@@ -31,8 +29,6 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 	exit 1
 }
 
-Write-Output "HIRS ACA Setup initiated on $(Get-Date -Format 'yyyy-MM-dd')" | WriteAndLog
-
 $APP_HOME=(Split-Path -parent $PSCommandPath)
 $ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
 $COMP_JSON = (Resolve-Path ([System.IO.Path]::Combine(
@@ -47,6 +43,9 @@ $SPRING_PROPERTIES_FILE=(Resolve-Path ([System.IO.Path]::Combine(
 
 # Set up log
 set_up_log
+
+Write-Output "HIRS ACA Setup initiated on $(Get-Date -Format 'yyyy-MM-dd')" | WriteAndLog
+
 Write-Output "-----------------------------------------------------------" | WriteAndLog
 Write-Output "ACA setup log file is $global:LOG_FILE" | WriteAndLog
 Write-Output ("Running with these arguments: "+($PSBoundParameters | Out-String)) | WriteAndLog

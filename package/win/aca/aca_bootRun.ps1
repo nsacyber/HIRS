@@ -5,6 +5,36 @@ param (
 	[switch]$h, [switch]$help = $false
 )
 
+# Parameter Consolidation
+if ($p -and $path -and ($p -ne $path)) {
+	"-p and -path were given different paths. Use only one." | WriteAndLog
+	$help=$true
+}
+if ($p) {
+	$path = $p
+}
+$war = $w -or $war
+$debug = $d -or $debug
+$help = $h -or $help
+
+if ($help) {
+  Write-Output "  Bootrun script for the HIRS ACA"
+  Write-Output "  Syntax: powershell -ExecutionPolicy Bypass aca_bootRun.ps1 [-h|-p|-d|-w|-path|-war|-debug|-help]"
+  Write-Output "  options:"
+  Write-Output "     [ -p  | -path]   Path to the HIRS_AttestationCAPortal.war file"
+  Write-Output "     [ -w  | -war ]   Use deployed war file"
+  Write-Output "     [ -d  | -debug ]  Launch the JVM with a debug port open"
+  Write-Output "     [ -h  | -help ]   Print this help"
+  exit 1
+}
+
+if(!(New-Object Security.Principal.WindowsPrincipal(
+		[Security.Principal.WindowsIdentity]::GetCurrent())
+	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+	Write-Output "This script requires root.  Please run as root" 
+	exit 1
+}
+
 $APP_HOME=(Split-Path -parent $PSCommandPath)
 $ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
 $ALG="RSA" # or "ECC"
@@ -27,42 +57,12 @@ read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
 Write-Output "-----------------------------------------------------------" | WriteAndLog
 Write-Output ("Running with these arguments: "+($PSBoundParameters | Out-String)) | WriteAndLog
 
-# Parameter Consolidation
-if ($p -and $path -and ($p -ne $path)) {
-	"-p and --path were given different paths. Use only one." | WriteAndLog
-	$help=$true
-}
-if ($p) {
-	$path = $p
-}
-$war = $w -or $war
-$debug = $d -or $debug
-$help = $h -or $help
-
-if(!(New-Object Security.Principal.WindowsPrincipal(
-		[Security.Principal.WindowsIdentity]::GetCurrent())
-	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	Write-Output "This script requires root.  Please run as root" 
-	exit 1
-}
-
-if ($help) {
-  Write-Output "  Setup script for the HIRS ACA"
-  Write-Output "  Syntax: powershell -ExecutionPolicy Bypass aca_bootRun.ps1 [-h|p|w|--path|--war]"
-  Write-Output "  options:"
-  Write-Output "     -p  | --path   Path to the HIRS_AttestationCAPortal.war file"
-  Write-Output "     -w  | --war    Use deployed war file"
-  Write-Output "     -d  | --debug  Launch the JVM with a debug port open"
-  Write-Output "     -h  | --help   Print this help"
-  exit 1
-}
-
 if ($path) {
     $DEPLOYED_WAR = $path
 }
 
 if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_HIRS_DIR)) {
-     Write-Output "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR directory does not exist. Please run aca_setup\.ps1 and try again."
+     Write-Output "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR directory does not exist. Please run .\aca_setup.ps1 and try again."
      exit 1;
 }
 
@@ -75,6 +75,7 @@ if (!$DEPLOYED_WAR) {
 }
 
 $SPRING_PROP_FILE_FORWARDSLASHES=($global:HIRS_DATA_SPRING_PROP_FILE | ChangeBackslashToForwardSlash)
+
 if ($w -or $war) {
 	Write-Output "Booting the ACA from a war file..." | WriteAndLog
     if ($d -or $debug) {

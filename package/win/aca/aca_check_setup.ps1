@@ -18,12 +18,12 @@ if ($help) {
 	exit 1
 }
 
-# if(!(New-Object Security.Principal.WindowsPrincipal(
-# 		[Security.Principal.WindowsIdentity]::GetCurrent())
-# 	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-# 	Write-Host "This script requires root.  Please run as root" 
-# 	exit 1
-# }
+if(!(New-Object Security.Principal.WindowsPrincipal(
+		[Security.Principal.WindowsIdentity]::GetCurrent())
+	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+	Write-Host "This script requires root.  Please run as root" 
+	exit 1
+}
 
 $APP_HOME=(Split-Path -parent $PSCommandPath)
 $MYSQL_UTIL_SCRIPT= (Resolve-Path ([System.IO.Path]::Combine($APP_HOME, '..',"db", 'mysql_util.ps1'))).Path
@@ -71,7 +71,7 @@ Write-Host "Checking HIRS ACA setup on this device..."
 
 Function populate_aca_properties_table{
     if(-not (Test-Path $global:ACA_PROPERTIES_PATH)){
-        Write-Host "The ACA property files [$global:CERT_PATH] does not exist. Have you run the aca_setup.ps1 script?"
+        Write-Host "The ACA property files does not exist. Have you run the aca_setup.ps1 script?"
         return
     }
 
@@ -249,6 +249,43 @@ Function check_mysql_setup() {
 Function check_db() {
     Write-Host "Checking DB server TLS configuration..."
 
+    $aca_prop_table = populate_aca_properties_table
+
+    if(-not $aca_prop_table){
+		Write-Host "Unable to create a hash table using the provided aca properties file."
+		$global:ALL_CHECKS_PASSED = $false
+        return
+	}
+
+	if($aca_prop_table.ContainsKey("mysql_admin_password") -and $aca_prop_table["mysql_admin_password"]){
+		$mysql_admin_password = $aca_prop_table["mysql_admin_password"]
+
+        # Check if MySQL server-side TLS is enabled
+        $sslResult = mysql -u root --password=$mysql_admin_password -e "SHOW VARIABLES LIKE '%have_ssl%'" | Select-String -Pattern "YES"
+
+        if ($sslResult) {
+            Write-Host "MySQL Server side TLS is enabled"
+        } else {
+            Write-Host "Error: MySQL Server side TLS is NOT enabled:"
+            $global:ALL_CHECKS_PASSED = $false
+        }
+    }
+
+    # todo unsure as to why this section is not working properly. The user and password exist in the mysql db
+
+    # if($aca_prop_table.ContainsKey("hirs_db_password") -and $aca_prop_table["hirs_db_password"]) {
+    #     $hirs_db_password = $aca_prop_table["hirs_db_password"]
+
+    #     # Check if the hirs_db is visible to the hirs_db user
+    #     $dbResult = mysqlshow --user="hirs_db" --password=$hirs_db_password hirs_db -h localhost | Select-String -Pattern "hirs_db"
+
+    #     if ($dbResult) {
+    #         Write-Host "The hirs_db database is visible by the hirs_db user"
+    #     } else {
+    #         Write-Host "Error: The hirs_db database is NOT visible by the hirs_db user"
+    #         $global:ALL_CHECKS_PASSED = $false
+    #     }
+	# }
 }
 
 Function check_fips() {
@@ -270,8 +307,6 @@ check_db
 
 # Check for fips
 check_fips
-
-
 
 if($global:ALL_CHECKS_PASSED -eq $true){
     Write-Host "ACA setup checks on Windows have passed!"
