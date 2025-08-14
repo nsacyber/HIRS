@@ -3,6 +3,7 @@ package hirs.utils.rim.unsignedRim.cbor.ietfCoswid;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,6 +13,7 @@ import java.util.Map;
 /**
  * Validation Class for the json encoded Coswid Configuration/Attribute file.
  */
+@NoArgsConstructor
 public class  CoswidConfigValidator {
     protected JsonNode configRootNode = null;
     protected Coswid coswidRef = new Coswid();
@@ -22,11 +24,6 @@ public class  CoswidConfigValidator {
     @Getter
     protected int invalidFieldCount = 0;
 
-    /**
-     * Default constructor for CoswidConfigValidator.
-     */
-    public CoswidConfigValidator() {
-    }
     /**
      * Checks the json data for valid rfc-9393 defined item names.
      * @param rootNode node containing the configuration data to check

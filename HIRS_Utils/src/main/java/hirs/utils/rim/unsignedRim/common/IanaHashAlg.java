@@ -1,6 +1,7 @@
 package hirs.utils.rim.unsignedRim.common;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -11,7 +12,7 @@ import java.util.Map;
  * @see <a href="https://www.iana.org/assignments/named-information/named-information.xhtml">
  *     IANA Hash Algorithm Registry</a>
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum IanaHashAlg {
     RESERVED(0, "reserved", "n/a"),
     SHA_256(1, "sha-256", "256"),
@@ -41,18 +42,6 @@ public enum IanaHashAlg {
         for (IanaHashAlg alg : values()) {
             ID_MAP.put(alg.getAlgId(), alg);
         }
-    }
-
-    /**
-     * Constructor to set parameters.
-     * @param algId int id of algorithm
-     * @param algName name of algorithm
-     * @param algLength length of algorithm
-     */
-    IanaHashAlg(final int algId, final String algName, final String algLength) {
-        this.algId = algId;
-        this.algName = algName;
-        this.algLength = algLength;
     }
 
     /**

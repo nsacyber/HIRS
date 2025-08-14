@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -17,7 +18,7 @@ import static java.util.stream.Collectors.toMap;
  * }
  * </pre>
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum ArmSwcompIdItems {
     /** The role of this software component. */
     MEASUREMENT_TYPE(1, "arm.measurement-type"),
@@ -32,11 +33,6 @@ public enum ArmSwcompIdItems {
     private static final Map<Integer, ArmSwcompIdItems> LOOKUP =
             stream(values())
                     .collect(toMap(ArmSwcompIdItems::getIndex, x -> x));
-
-    ArmSwcompIdItems(final int index, final String key) {
-        this.index = index;
-        this.key = key;
-    }
 
     /**
      * Method to return an enum value from an integer index.

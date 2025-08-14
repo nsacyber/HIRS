@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -16,7 +17,7 @@ import static java.util.stream.Collectors.toMap;
  *    }
  * </pre>
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum VersionMapItems {
     /** Corresponds to version. */
     VERSION(0, "version"),
@@ -26,10 +27,6 @@ public enum VersionMapItems {
     private final int index;
     private final String key;
 
-    VersionMapItems(final int index, final String key) {
-        this.index = index;
-        this.key = key;
-    }
     private static final Map<Integer, VersionMapItems> LOOKUP =
             stream(values())
                     .collect(toMap(VersionMapItems::getIndex, x -> x));
