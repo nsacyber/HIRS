@@ -33,7 +33,7 @@ public class EvNoAction {
      */
     private String signature = "";
     /**
-     * True of the event is a SpecIDEvent.
+     * True if the event is a SpecIDEvent.
      */
     @Getter
     private boolean isSpecIdEvent = false;

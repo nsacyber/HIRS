@@ -229,7 +229,7 @@ public final class AlgorithmsIds {
      * @throws NoSuchAlgorithmException if the original algorithm type is
      * invalid
      */
-    private static int findAlgId(final String algType, final int spec, final String alg)
+    public static int findAlgId(final String algType, final int spec, final String alg)
             throws NoSuchAlgorithmException {
 
         int index = -1;

@@ -105,6 +105,18 @@ public class TpmPcrEvent {
     private String specErrataVersion = "Unknown";
 
     /**
+     * True of the event is a EV_NO_ACTION SpecID event.
+     */
+    @Getter
+    private boolean isNoActionSpecIdEvent = false;
+
+    /**
+     * True of the event is a EV_NO_ACTION StartupLocality event.
+     */
+    @Getter
+    private boolean isStartupLocalityEvent = false;
+
+    /**
      * Description for toString support.
      */
     protected String description = "";
@@ -545,6 +557,10 @@ public class TpmPcrEvent {
                 if (noAction.isSpecIdEvent()) {
                     specVersion = noAction.getSpecVersion();
                     specErrataVersion = noAction.getSpecErrataVersion();
+                    isNoActionSpecIdEvent = true;
+                }
+                else if (noAction.isStartupLocality()) {
+                    isStartupLocalityEvent = true;
                 }
                 pciidsFileStatus = noAction.getPciidsFileStatus();
                 break;
