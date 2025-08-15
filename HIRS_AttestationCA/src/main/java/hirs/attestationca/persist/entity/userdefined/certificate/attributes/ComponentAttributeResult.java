@@ -63,6 +63,7 @@ public class ComponentAttributeResult extends ArchivableEntity {
                                     final String expectedValue,
                                     final String actualValue) {
         this.componentId = componentId;
+        this.provisionSessionId = provisionSessionId;
         this.expectedValue = expectedValue;
         this.actualValue = actualValue;
     }
@@ -83,10 +84,6 @@ public class ComponentAttributeResult extends ArchivableEntity {
      * @return the string value of the attribute name
      */
     public String getAttribute() {
-        if (attribute == null) {
-            attribute = "";
-        }
-
-        return attribute;
+        return attribute == null ? "" : attribute;
     }
 }

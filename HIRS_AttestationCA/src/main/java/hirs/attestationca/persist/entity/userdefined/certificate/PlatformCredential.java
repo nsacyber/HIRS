@@ -28,7 +28,6 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Attribute;
-import org.bouncycastle.asn1.x509.AttributeCertificate;
 import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
 import org.bouncycastle.asn1.x509.CertificatePolicies;
 import org.bouncycastle.asn1.x509.Extension;
@@ -37,8 +36,6 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
-import org.bouncycastle.operator.ContentVerifier;
-import org.bouncycastle.operator.ContentVerifierProvider;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -321,37 +318,6 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
         policyQualifiers.put("cpsURI", cpsURI);
 
         return policyQualifiers;
-    }
-
-    /**
-     * Validate the signature on the attribute certificate in this holder.
-     *
-     * @param verifierProvider a ContentVerifierProvider that can generate a
-     *                         verifier for the signature.
-     * @return true if the signature is valid, false otherwise.
-     * @throws IOException if the signature cannot be processed or is inappropriate.
-     */
-    public boolean isSignatureValid(final ContentVerifierProvider verifierProvider)
-            throws IOException {
-        AttributeCertificate attCert = getAttributeCertificate();
-        AttributeCertificateInfo acinfo = getAttributeCertificate().getAcinfo();
-
-        // Check if the algorithm identifier is the same
-        if (!isAlgIdEqual(acinfo.getSignature(), attCert.getSignatureAlgorithm())) {
-            throw new IOException("signature invalid - algorithm identifier mismatch");
-        }
-
-        ContentVerifier verifier;
-
-        try {
-            // Set ContentVerifier with the signature that will verify
-            verifier = verifierProvider.get((acinfo.getSignature()));
-
-        } catch (Exception e) {
-            throw new IOException("unable to process signature: " + e.getMessage(), e);
-        }
-
-        return verifier.verify(attCert.getSignatureValue().getOctets());
     }
 
     /**

@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@AllArgsConstructor
 public class AppraisalStatus {
     private Status appStatus;
     private String message;
@@ -21,21 +23,6 @@ public class AppraisalStatus {
      */
     public AppraisalStatus(final Status appStatus, final String message) {
         this(appStatus, message, "");
-    }
-
-    /**
-     * Default constructor. Set appraisal status and description.
-     *
-     * @param appStatus      status of appraisal
-     * @param message        description of result
-     * @param additionalInfo any additional information needed to
-     *                       be passed on
-     */
-    public AppraisalStatus(final Status appStatus, final String message,
-                           final String additionalInfo) {
-        this.appStatus = appStatus;
-        this.message = message;
-        this.additionalInfo = additionalInfo;
     }
 
     /**

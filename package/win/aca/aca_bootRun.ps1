@@ -88,7 +88,7 @@ if ($w -or $war) {
     Write-Output "Booting the ACA from local build..." | WriteAndLog
     if ($d -or $debug) {
         Write-Output "... in debug"
-        ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES" -Pdebug="$$DEBUG_OPTIONS"
+        ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES" -Pdebug="$DEBUG_OPTIONS"
     } else {
 	    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES"
     }
