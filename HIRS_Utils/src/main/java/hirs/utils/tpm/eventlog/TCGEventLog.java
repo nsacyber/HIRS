@@ -396,13 +396,6 @@ public final class TCGEventLog {
             } else {
                 TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
                 eventList.put(eventNumber, event1);
-
-                // ????
-                // can a TpmPcrEvent1 ever have a startup locality event?
-                if (event1.isStartupLocalityEvent()) {
-                    EvNoAction event = new EvNoAction(event1.getEventContent());
-                    startupLocality = event.getStartupLocality();
-                }
             }
 
             // first check if any previous event has not been able to access vendor-table.json,
