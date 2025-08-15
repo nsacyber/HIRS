@@ -402,8 +402,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         passesValidation &= fieldValidation;
 
-        return passesValidation ? new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID) :
-                new AppraisalStatus(FAIL, resultMessage.toString(), "");
+        return passesValidation ? new AppraisalStatus(PASS, PLATFORM_ATTRIBUTES_VALID)
+                : new AppraisalStatus(FAIL, resultMessage.toString(), "");
     }
 
     /**
@@ -444,8 +444,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 return 0;
             }
 
-            if (platformCredential1.getBeginValidity() == null ||
-                    platformCredential2.getBeginValidity() == null) {
+            if (platformCredential1.getBeginValidity() == null
+                    || platformCredential2.getBeginValidity() == null) {
                 return 0;
             }
 

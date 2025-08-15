@@ -291,7 +291,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
 
         assertEquals(
                 "https://trustedservices.intel.com/"
-                        + "content/TSC/certs/TSC_SS_RootCA_Certificate.cer\n",
+                        + "content/TSC/certs/TSC_SS_RootCA_Certificate.cer\r\n",
                 rootCert.getAuthorityInfoAccess());
         assertEquals(
                 "b56f72cdfd66ce839e1fdb40498f07291f5b99b7",
@@ -344,8 +344,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
         Certificate platformCert = getTestCertificate(
                 PlatformCredential.class, TEST_PLATFORM_CERT_6);
 
-        assertEquals("https://trustedservices.intel.com/"
-                        + "content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer\n",
+        assertEquals("https://trustedservices.intel.com/content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer\r\n",
                 platformCert.getAuthorityInfoAccess());
         assertEquals("a5ecc6c07da02c6af8764d4e5c16483610a0b040",
                 platformCert.getAuthorityKeyIdentifier());

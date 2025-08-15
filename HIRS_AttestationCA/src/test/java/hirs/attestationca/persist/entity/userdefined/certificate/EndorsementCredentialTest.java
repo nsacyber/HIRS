@@ -6,9 +6,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -36,32 +39,32 @@ public class EndorsementCredentialTest {
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
-    public void testParse() throws IOException {
-        String path = this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL).
-                getPath();
-        Path fPath = Paths.get(path);
-        EndorsementCredential ec = new EndorsementCredential(fPath);
+    public void testParse() throws IOException, URISyntaxException {
+        final URI path = Objects.requireNonNull(
+                this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL)).toURI();
+        final Path fPath = Paths.get(path);
+        final EndorsementCredential ec = new EndorsementCredential(fPath);
         assertNotNull(ec);
 
         //test the fields
-        assertEquals(ec.getManufacturer(), "id:53544D20");
-        assertEquals(ec.getModel(), "ST33ZP24PVSP");
-        assertEquals(ec.getVersion(), "id:0D0C");
+        assertEquals("id:53544D20", ec.getManufacturer());
+        assertEquals("ST33ZP24PVSP", ec.getModel());
+        assertEquals("id:0D0C", ec.getVersion());
 
-        TPMSpecification spec = ec.getTpmSpecification();
-        assertEquals(spec.getFamily(), "1.2");
+        final TPMSpecification spec = ec.getTpmSpecification();
+        assertEquals("1.2", spec.getFamily());
         assertEquals(spec.getLevel(), BigInteger.valueOf(2));
         assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
 
-        TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
-        assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
+        final TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
+        assertEquals(BigInteger.valueOf(0), asserts.getTpmSecAssertsVersion());
         assertTrue(asserts.isFieldUpgradeable());
-        assertEquals(asserts.getEkGenType(),
-                TPMSecurityAssertions.EkGenerationType.INJECTED);
-        assertEquals(asserts.getEkGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
-        assertEquals(asserts.getEkCertificateGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
+        assertEquals(TPMSecurityAssertions.EkGenerationType.INJECTED,
+                asserts.getEkGenType());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                asserts.getEkGenerationLocation());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                asserts.getEkCertificateGenerationLocation());
     }
 
     /**
@@ -70,32 +73,32 @@ public class EndorsementCredentialTest {
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
-    public void testParseNuc1() throws IOException {
-        String path = this.getClass().getResource(
-                TEST_ENDORSEMENT_CREDENTIAL_NUC1).getPath();
-        Path fPath = Paths.get(path);
-        EndorsementCredential ec = new EndorsementCredential(fPath);
+    public void testParseNuc1() throws IOException, URISyntaxException {
+        final URI path = Objects.requireNonNull(this.getClass().getResource(
+                TEST_ENDORSEMENT_CREDENTIAL_NUC1)).toURI();
+        final Path fPath = Paths.get(path);
+        final EndorsementCredential ec = new EndorsementCredential(fPath);
         assertNotNull(ec);
 
         //test the fields
-        assertEquals(ec.getManufacturer(), "id:53544D20");
-        assertEquals(ec.getModel(), "ST33ZP24PVSP");
-        assertEquals(ec.getVersion(), "id:0D0C");
+        assertEquals("id:53544D20", ec.getManufacturer());
+        assertEquals("ST33ZP24PVSP", ec.getModel());
+        assertEquals("id:0D0C", ec.getVersion());
 
-        TPMSpecification spec = ec.getTpmSpecification();
-        assertEquals(spec.getFamily(), "1.2");
-        assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
+        final TPMSpecification spec = ec.getTpmSpecification();
+        assertEquals("1.2", spec.getFamily());
+        assertEquals(BigInteger.valueOf(2), spec.getLevel());
+        assertEquals(BigInteger.valueOf(TPM_SPEC_REVISION_NUM), spec.getRevision());
 
-        TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
-        assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
+        final TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
+        assertEquals(BigInteger.valueOf(0), asserts.getTpmSecAssertsVersion());
         assertTrue(asserts.isFieldUpgradeable());
-        assertEquals(asserts.getEkGenType(),
-                TPMSecurityAssertions.EkGenerationType.INJECTED);
-        assertEquals(asserts.getEkGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
-        assertEquals(asserts.getEkCertificateGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
+        assertEquals(TPMSecurityAssertions.EkGenerationType.INJECTED,
+                asserts.getEkGenType());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                asserts.getEkGenerationLocation());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                asserts.getEkCertificateGenerationLocation());
     }
 
     /**
@@ -105,34 +108,34 @@ public class EndorsementCredentialTest {
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
-    public void testParseNuc1BuilderMethod() throws IOException {
-        String path = this.getClass().getResource(
-                TEST_ENDORSEMENT_CREDENTIAL_NUC1).getPath();
-        Path fPath = Paths.get(path);
+    public void testParseNuc1BuilderMethod() throws IOException, URISyntaxException {
+        final URI path = Objects.requireNonNull(this.getClass().getResource(
+                TEST_ENDORSEMENT_CREDENTIAL_NUC1)).toURI();
+        final Path fPath = Paths.get(path);
         byte[] ecBytes = Files.readAllBytes(fPath);
 
-        EndorsementCredential ec = EndorsementCredential.parseWithPossibleHeader(ecBytes);
+        final EndorsementCredential ec = EndorsementCredential.parseWithPossibleHeader(ecBytes);
         assertNotNull(ec);
 
         //test the fields
-        assertEquals(ec.getManufacturer(), "id:53544D20");
-        assertEquals(ec.getModel(), "ST33ZP24PVSP");
-        assertEquals(ec.getVersion(), "id:0D0C");
+        assertEquals("id:53544D20", ec.getManufacturer());
+        assertEquals("ST33ZP24PVSP", ec.getModel());
+        assertEquals("id:0D0C", ec.getVersion());
 
-        TPMSpecification spec = ec.getTpmSpecification();
-        assertEquals(spec.getFamily(), "1.2");
-        assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
+        final TPMSpecification spec = ec.getTpmSpecification();
+        assertEquals("1.2", spec.getFamily());
+        assertEquals(BigInteger.valueOf(2), spec.getLevel());
+        assertEquals(BigInteger.valueOf(TPM_SPEC_REVISION_NUM), spec.getRevision());
 
-        TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
-        assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
+        final TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
+        assertEquals(BigInteger.valueOf(0), asserts.getTpmSecAssertsVersion());
         assertTrue(asserts.isFieldUpgradeable());
-        assertEquals(asserts.getEkGenType(),
-                TPMSecurityAssertions.EkGenerationType.INJECTED);
-        assertEquals(asserts.getEkGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
-        assertEquals(asserts.getEkCertificateGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
+        assertEquals(TPMSecurityAssertions.EkGenerationType.INJECTED,
+                asserts.getEkGenType());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                asserts.getEkGenerationLocation());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                asserts.getEkCertificateGenerationLocation());
     }
 
     /**
@@ -141,32 +144,32 @@ public class EndorsementCredentialTest {
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
-    public void testParseNuc2() throws IOException {
-        String path = this.getClass().getResource(
-                TEST_ENDORSEMENT_CREDENTIAL_NUC2).getPath();
-        Path fPath = Paths.get(path);
-        EndorsementCredential ec = new EndorsementCredential(fPath);
+    public void testParseNuc2() throws IOException, URISyntaxException {
+        final URI path = Objects.requireNonNull(this.getClass().getResource(
+                TEST_ENDORSEMENT_CREDENTIAL_NUC2)).toURI();
+        final Path fPath = Paths.get(path);
+        final EndorsementCredential ec = new EndorsementCredential(fPath);
         assertNotNull(ec);
 
         //test the fields
-        assertEquals(ec.getManufacturer(), "id:53544D20");
-        assertEquals(ec.getModel(), "ST33ZP24PVSP");
-        assertEquals(ec.getVersion(), "id:0D0C");
+        assertEquals("id:53544D20", ec.getManufacturer());
+        assertEquals("ST33ZP24PVSP", ec.getModel());
+        assertEquals("id:0D0C", ec.getVersion());
 
-        TPMSpecification spec = ec.getTpmSpecification();
-        assertEquals(spec.getFamily(), "1.2");
-        assertEquals(spec.getLevel(), BigInteger.valueOf(2));
-        assertEquals(spec.getRevision(), BigInteger.valueOf(TPM_SPEC_REVISION_NUM));
+        final TPMSpecification spec = ec.getTpmSpecification();
+        assertEquals("1.2", spec.getFamily());
+        assertEquals(BigInteger.valueOf(2), spec.getLevel());
+        assertEquals(BigInteger.valueOf(TPM_SPEC_REVISION_NUM), spec.getRevision());
 
-        TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
-        assertEquals(asserts.getTpmSecAssertsVersion(), BigInteger.valueOf(0));
+        final TPMSecurityAssertions asserts = ec.getTpmSecurityAssertions();
+        assertEquals(BigInteger.valueOf(0), asserts.getTpmSecAssertsVersion());
         assertTrue(asserts.isFieldUpgradeable());
-        assertEquals(asserts.getEkGenType(),
-                TPMSecurityAssertions.EkGenerationType.INJECTED);
-        assertEquals(asserts.getEkGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
-        assertEquals(asserts.getEkCertificateGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
+        assertEquals(TPMSecurityAssertions.EkGenerationType.INJECTED,
+                asserts.getEkGenType());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                asserts.getEkGenerationLocation());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                asserts.getEkCertificateGenerationLocation());
     }
 
     /**
@@ -175,20 +178,20 @@ public class EndorsementCredentialTest {
      * @throws IOException test failed due to invalid certificate parsing
      */
     @Test
-    public void testCertsNotEqual() throws IOException {
-        String path = this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL).getPath();
+    public void testCertsNotEqual() throws IOException, URISyntaxException {
+        URI path = Objects.requireNonNull(this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL)).toURI();
         Path fPath = Paths.get(path);
-        EndorsementCredential ec1 = new EndorsementCredential(fPath);
+        final EndorsementCredential ec1 = new EndorsementCredential(fPath);
         assertNotNull(ec1);
 
-        path = this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL_NUC1).getPath();
+        path = Objects.requireNonNull(this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL_NUC1)).toURI();
         fPath = Paths.get(path);
-        EndorsementCredential ec2 = new EndorsementCredential(fPath);
+        final EndorsementCredential ec2 = new EndorsementCredential(fPath);
         assertNotNull(ec2);
 
-        path = this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL_NUC2).getPath();
+        path = Objects.requireNonNull(this.getClass().getResource(TEST_ENDORSEMENT_CREDENTIAL_NUC2)).toURI();
         fPath = Paths.get(path);
-        EndorsementCredential ec3 = new EndorsementCredential(fPath);
+        final EndorsementCredential ec3 = new EndorsementCredential(fPath);
         assertNotNull(ec3);
 
         assertNotEquals(ec1, ec2);
@@ -202,20 +205,19 @@ public class EndorsementCredentialTest {
      * @throws IOException if there is a problem reading the cert file at the given path
      */
     @Test
-    public void testTpmSecurityAssertionsParsing() throws IOException {
-        Path fPath = Paths.get(this.getClass()
-                .getResource(EK_CERT_WITH_SECURITY_ASSERTIONS).getPath());
-        EndorsementCredential ec = new EndorsementCredential(fPath);
+    public void testTpmSecurityAssertionsParsing() throws IOException, URISyntaxException {
+        final Path fPath = Paths.get(Objects.requireNonNull(this.getClass()
+                .getResource(EK_CERT_WITH_SECURITY_ASSERTIONS)).toURI());
+        final EndorsementCredential ec = new EndorsementCredential(fPath);
 
-        TPMSecurityAssertions securityAssertions = ec.getTpmSecurityAssertions();
-        assertEquals(securityAssertions.getTpmSecAssertsVersion(), BigInteger.ONE);
+        final TPMSecurityAssertions securityAssertions = ec.getTpmSecurityAssertions();
+        assertEquals(BigInteger.ONE, securityAssertions.getTpmSecAssertsVersion());
         assertTrue(securityAssertions.isFieldUpgradeable());
-        assertEquals(securityAssertions.getEkGenType(),
-                TPMSecurityAssertions.EkGenerationType.INJECTED);
-        assertEquals(securityAssertions.getEkGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
-        assertEquals(securityAssertions.getEkCertificateGenerationLocation(),
-                TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER);
+        assertEquals(TPMSecurityAssertions.EkGenerationType.INJECTED,
+                securityAssertions.getEkGenType());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                securityAssertions.getEkGenerationLocation());
+        assertEquals(TPMSecurityAssertions.EkGenerationLocation.TPM_MANUFACTURER,
+                securityAssertions.getEkCertificateGenerationLocation());
     }
-
 }

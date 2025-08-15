@@ -176,8 +176,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates Ignore PCIE VPD Attribute policy under the Platform Cert Attribute Validation policy setting and
-     * redirects the user back to the Policy Settings page.
+     * Updates Ignore PCIE VPD Attribute policy under the Platform Cert Attribute Validation policy setting
+     * and redirects the user back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
