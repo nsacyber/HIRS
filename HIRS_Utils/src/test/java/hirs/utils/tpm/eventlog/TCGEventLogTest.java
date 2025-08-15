@@ -90,7 +90,7 @@ public class TCGEventLogTest {
             assertThat("TPM_ALG_SHA256", equalTo(algStr));
 
             // Test 4 check the Algorithm # Identifier used in the log
-            int id = evlog.getEventLogHashAlgorithmID();
+            int id = evlog.getStrongestAlgID();
             assertThat(TcgTpmtHa.TPM_ALG_SHA256, equalTo(id));
 
             LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
@@ -141,7 +141,7 @@ public class TCGEventLogTest {
             assertThat("TPM_ALG_SHA1", equalTo(algStr));
 
             // Test 4 check the Algorithm # Identifier used in the log
-            int id = evlog.getEventLogHashAlgorithmID();
+            int id = evlog.getStrongestAlgID();
             assertThat(TcgTpmtHa.TPM_ALG_SHA1, equalTo(id));
 
             LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
