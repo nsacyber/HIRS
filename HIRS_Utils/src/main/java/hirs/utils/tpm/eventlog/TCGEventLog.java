@@ -131,27 +131,36 @@ public final class TCGEventLog {
      * Logger.
      */
     private static final Logger LOGGER = LogManager.getLogger(TCGEventLog.class);
-    /**
-     * Name of the hash algorithm used to process the Event Log, default is SHA256.
-     */
-    @Getter
-    private String eventLogHashAlgorithm = "TPM_ALG_SHA256";
-    /**
-     * 2-dimensional array holding the PCR values.
-     */
-    private byte[][] pcrList;
+
     /**
      * List of parsed events within the log.
      */
     private final LinkedHashMap<Integer, TpmPcrEvent> eventList = new LinkedHashMap<>();
+
+//    /**
+//     * Name of the hash algorithm used to process the Event Log, default is SHA256.
+//     */
+//    @Getter
+//    private String eventLogHashAlgorithm = "TPM_ALG_SHA256";
+    /**
+     * String value of strongest algorithm (if more than 1).
+     */
+    @Getter
+    private String strongestAlg = "";
     /**
      * Length of PCR. Indicates which hash algorithm is used.
+     *
      */
     private int pcrLength;
     /**
      * Name of hash algorithm.
      */
-    private String hashType;
+    private String hashName;
+    /**
+     * 2-dimensional array holding the PCR values.
+     * If more than one set of PCR banks exists in this log, store the one with the strongest algorithm.
+     */
+    private byte[][] pcrList;
     /**
      * Startup locality. If none, then value is -1.
      */
@@ -198,8 +207,8 @@ public final class TCGEventLog {
     public TCGEventLog() throws UnsupportedEncodingException {
         this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
         pcrLength = EvConstants.SHA1_LENGTH;
-        hashType = HASH_SHA1_STRING;
-        eventLogHashAlgorithm = "TPM_ALG_SHA1";
+        hashName = HASH_SHA1_STRING;
+        strongestAlg = "TPM_ALG_SHA1";
         initPcrList();
     }
 
@@ -246,7 +255,7 @@ public final class TCGEventLog {
         // put the remaining events into the event list
         while (is.available() > 0) {
             if (bCryptoAgile) {
-                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++);
+                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestAlg);
                 eventList.put(eventNumber, event2);
                 if (event2.isStartupLocalityEvent()) {
                     EvNoAction event = new EvNoAction(event2.getEventContent());
@@ -298,44 +307,46 @@ public final class TCGEventLog {
             EvEfiSpecIdEvent specEvent = new EvEfiSpecIdEvent(firstEvent.getEventContent());
             List<String> algList = specEvent.getAlgList();
 
-            String strongestAlg = algList.get(0);
-            int currentStrongestAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, strongestAlg);
+            String currentStrongestAlg = algList.get(0);
+            int currentStrongestAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, currentStrongestAlg);
             for (int i = 1; i < algList.size(); i++) {
                 String newAlg = algList.get(i);
                 int newAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, newAlg);
                 if (newAlgRow > currentStrongestAlgRow) {
-                    strongestAlg = newAlg;
+                    currentStrongestAlg = newAlg;
                 }
             }
+            strongestAlg = currentStrongestAlg;
 
             // if more than one set of PCR banks exists in this log, store the one with strongest algorithm
             switch (strongestAlg) {
                 case TPM_ALG_SHA256_STR:
-                    eventLogHashAlgorithm = "TPM_ALG_SHA256";
-                    hashType = HASH_SHA256_STRING;
+//                    eventLogHashAlgorithm = "TPM_ALG_SHA256";
+                    hashName = HASH_SHA256_STRING;
                     pcrLength = EvConstants.SHA256_LENGTH;
                     break;
                 case TPM_ALG_SHA384_STR:
-                    eventLogHashAlgorithm = "TPM_ALG_SHA384";
-                    hashType = HASH_SHA384_STRING;
+//                    eventLogHashAlgorithm = "TPM_ALG_SHA384";
+                    hashName = HASH_SHA384_STRING;
                     pcrLength = EvConstants.SHA384_LENGTH;
                     break;
                 case TPM_ALG_SHA512_STR:
-                    eventLogHashAlgorithm = "TPM_ALG_SHA512";
-                    hashType = HASH_SHA512_STRING;
+//                    eventLogHashAlgorithm = "TPM_ALG_SHA512";
+                    hashName = HASH_SHA512_STRING;
                     pcrLength = EvConstants.SHA512_LENGTH;
                     break;
                 default:
                     break;
             }
         } else {    // not crypto agile
-            hashType = HASH_SHA1_STRING;
-            eventLogHashAlgorithm = "TPM_ALG_SHA1";
+            strongestAlg = "TPM_ALG_SHA1";
+            hashName = HASH_SHA1_STRING;
+//            eventLogHashAlgorithm = "TPM_ALG_SHA1";
             pcrLength = EvConstants.SHA1_LENGTH;
         }
 
         // if more than one set of PCR banks exists in this log, store the one with the strongest algorithm
-        this.pcrList = new byte[PCR_COUNT][pcrLength];
+        pcrList = new byte[PCR_COUNT][pcrLength];
     }
 
     /**
@@ -376,9 +387,11 @@ public final class TCGEventLog {
                     if (currentEvent.getEventType() != NO_ACTION_EVENT) {
                         // Don't include EV_NO_ACTION event
                         extendedPCR = extendPCR(pcrList[currentEvent.getPcrIndex()],
-                                currentEvent.getEventDigest());
+                                currentEvent.getEventStrongestDigest());
+//                        System.arraycopy(extendedPCR, 0, pcrList[currentEvent.getPcrIndex()],
+//                                0, currentEvent.getDigestLength());
                         System.arraycopy(extendedPCR, 0, pcrList[currentEvent.getPcrIndex()],
-                                0, currentEvent.getDigestLength());
+                                0, pcrLength);
                     }
                 } catch (NoSuchAlgorithmException e) {
                     LOGGER.error(e);
@@ -397,7 +410,7 @@ public final class TCGEventLog {
      */
     private byte[] extendPCR(final byte[] currentValue, final byte[] newEvent)
             throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance(hashType);
+        MessageDigest md = MessageDigest.getInstance(hashName);
         StringBuilder sb = new StringBuilder(AbstractDigest.SHA512_DIGEST_LENGTH);
         sb.append(Hex.encodeHexString(currentValue).toCharArray());
         sb.append(Hex.encodeHexString(newEvent).toCharArray());
@@ -485,13 +498,23 @@ public final class TCGEventLog {
         return this.toString();
     }
 
+//    /**
+//     * Returns the TCG Algorithm Registry defined ID for the Digest Algorithm
+//     * used in the event log.
+//     *
+//     * @return TCG Defined Algorithm name
+//     */
+//    public int getEventLogHashAlgorithmID() {
+//        return TcgTpmtHa.tcgAlgStringToId(eventLogHashAlgorithm);
+//    }
+
     /**
-     * Returns the TCG Algorithm Registry defined ID for the Digest Algorithm
+     * Returns the TCG Algorithm Registry defined ID for the strongest Digest Algorithm
      * used in the event log.
      *
      * @return TCG Defined Algorithm name
      */
-    public int getEventLogHashAlgorithmID() {
-        return TcgTpmtHa.tcgAlgStringToId(eventLogHashAlgorithm);
+    public int getStrongestAlgID() {
+        return TcgTpmtHa.tcgAlgStringToId(strongestAlg);
     }
 }

@@ -358,7 +358,8 @@ final class Main {
         boolean matchFound = false;
         for (TpmPcrEvent event2 : eventLog) {
             if ((event.getPcrIndex() == event2.getPcrIndex())
-                    && (Arrays.equals(event.getEventDigest(), event2.getEventDigest()))) {
+//                    && (Arrays.equals(event.getEventDigest(), event2.getEventDigest()))) {
+                    && (Arrays.equals(event.getEventStrongestDigest(), event2.getEventStrongestDigest()))) {
                 matchFound = true;
             }
         }

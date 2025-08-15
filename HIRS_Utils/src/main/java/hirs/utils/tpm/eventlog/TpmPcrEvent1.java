@@ -41,25 +41,34 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
     public TpmPcrEvent1(final ByteArrayInputStream is, final int eventNumber)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         super(is);
-        setDigestLength(EvConstants.SHA1_LENGTH);
+//        setDigestLength(EvConstants.SHA1_LENGTH);
+
         setLogFormat(1);
         // Event data.
-        byte[] event = null;
+        byte[] event1;
         byte[] rawIndex = new byte[UefiConstants.SIZE_4];
         byte[] rawType = new byte[UefiConstants.SIZE_4];
         byte[] rawEventSize = new byte[UefiConstants.SIZE_4];
         byte[] eventDigest = new byte[EvConstants.SHA1_LENGTH];
-        byte[] eventContent = null;
+        byte[] eventContent;
+
+
         int digestSize = EvConstants.SHA1_LENGTH;
         int eventSize = 0;
-        String hashName = "TPM_ALG_SHA1";
+//        String hashName = "TPM_ALG_SHA1";
         if (is.available() > UefiConstants.SIZE_32) {
             is.read(rawIndex);
             setPcrIndex(rawIndex);
             is.read(rawType);
             setEventType(rawType);
             is.read(eventDigest);
-            setEventDigest(eventDigest, digestSize);
+
+            hashListFromEvent.add(new EventDigest("TPM_ALG_SHA1", eventDigest));
+
+
+//            setEventDigest(eventDigest, digestSize);
+            setEventStrongestDigest(eventDigest);
+
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
             eventContent = new byte[eventSize];
@@ -69,18 +78,20 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
             int eventLength = rawIndex.length + rawType.length + eventDigest.length
                     + rawEventSize.length;
             int offset = 0;
-            event = new byte[eventLength];
-            System.arraycopy(rawIndex, 0, event, offset, rawIndex.length);
+            event1 = new byte[eventLength];
+            System.arraycopy(rawIndex, 0, event1, offset, rawIndex.length);
             offset += rawIndex.length;
-            System.arraycopy(rawType, 0, event, offset, rawType.length);
+            System.arraycopy(rawType, 0, event1, offset, rawType.length);
             offset += rawType.length;
-            System.arraycopy(eventDigest, 0, event, offset, eventDigest.length);
+            System.arraycopy(eventDigest, 0, event1, offset, eventDigest.length);
             offset += eventDigest.length;
-            System.arraycopy(rawEventSize, 0, event, offset, rawEventSize.length);
+            System.arraycopy(rawEventSize, 0, event1, offset, rawEventSize.length);
             offset += rawEventSize.length;
-            setEventData(event);
+            setEventData(event1);
             //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
-            this.processEvent(event, eventContent, eventNumber, hashName);
+
+//            this.processEvent(event1, eventContent, eventNumber, hashName);
+            this.processEvent(event1, eventContent, eventNumber);
             description +=  "\ndigest (SHA-1): " + Hex.encodeHexString(eventDigest);;
         }
     }

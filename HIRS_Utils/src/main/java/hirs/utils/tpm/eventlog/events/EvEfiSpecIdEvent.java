@@ -9,6 +9,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import static hirs.utils.crypto.AlgorithmsIds.ALG_TYPE_HASH;
+import static hirs.utils.crypto.AlgorithmsIds.SPEC_TCG_ALG;
+import static hirs.utils.crypto.AlgorithmsIds.findAlgId;
+
 /**
  * Class to process the TCG_EfiSpecIDEvent.
  * The first 16 bytes of a Event Data MUST be String based identifier (Signature).
@@ -80,11 +84,6 @@ public class EvEfiSpecIdEvent {
     @Getter
     private int numberOfAlg = 0;
     /**
-     * True if event log uses Crypto Agile format.
-     */
-    @Getter
-    private boolean cryptoAgile = false;
-    /**
      * Algorithm list.
      */
     private List<String> algList;
@@ -134,11 +133,6 @@ public class EvEfiSpecIdEvent {
             String alg = TcgTpmtHa.tcgAlgIdToString(HexUtils.leReverseInt(algorithmIDBytes));
             algList.add(alg);
         }
-        if ((algList.size() == 1) && (algList.get(0).compareTo("SHA1") == 0)) {
-            cryptoAgile = false;
-        } else {
-            cryptoAgile = true;
-        }
     }
 
     /**
@@ -150,22 +144,10 @@ public class EvEfiSpecIdEvent {
         String specInfo = "";
 
         specInfo += "   Signature = Spec ID Event03 : ";
-        if (this.isCryptoAgile()) {
-            specInfo += "Log format is Crypto Agile\n";
-        } else {
-            specInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
-        }
+            specInfo += "   Log format is Crypto Agile\n";
         specInfo += "   Platform Profile Specification version = "
-                + this.getVersionMajor() + "." + this.getVersionMinor()
-                + " using errata version " + this.getErrata() + "\n";
-
-//        if (signature.equals("Spec ID Event#")) {
-//            specInfo += "Platform Profile Specification version = " + versionMajor + "." + versionMinor
-//                    + " using errata version" + errata + "\n";
-//        } else {
-//            specInfo = "EV_NO_ACTION event named " + signature + " encountered but support for processing"
-//                    + " it has not been added to this application" + "\n";
-//        }
+                + versionMajor + "." + versionMinor
+                + " using errata version " + errata + "\n";
         specInfo += "   Algorithm list:";
         for (int i = 0; i < numberOfAlg; i++) {
             specInfo += "\n      " + i + ": " + algList.get(i);

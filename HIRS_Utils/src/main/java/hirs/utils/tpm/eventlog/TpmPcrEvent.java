@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
@@ -53,10 +54,7 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYS
  */
 @Log4j2
 public class TpmPcrEvent {
-    /**
-     * Indent Offset.
-     */
-    private static final int INDENT_3 = 3;
+
     /**
      * Log format. SHA1=1, Crytpo agile=2.
      * this can be refactored out
@@ -78,9 +76,39 @@ public class TpmPcrEvent {
     private long eventType = 0;
 
     /**
-     * Event digest.
+     * Event digest algorithm.
+     * If there was a Spec Id event:
+     *    This log is crypto agile and this value is grabbed from the Spec Id event.
+     * If no Spec Id event the only option is SHA1.
      */
-    private byte[] digest = null;
+    /**
+     * Event digest. If more than one digest in the Event, use the strongest one.
+     */
+    private byte[] strongestDigest = null;
+    /**
+     * list of digests from the event log.
+     */
+    protected final ArrayList<EventDigest> hashListFromEvent = new ArrayList<>();
+    /**
+     * list of digests by calculating the hash of the event.
+     */
+    private final ArrayList<EventDigest> hashListCalculated = new ArrayList<>();
+
+    /**
+     * Event hash for SHA1 event logs.
+     */
+    private byte[] eventDataSha1hash;
+
+    /**
+     * Event hash for Crypto Agile events.
+     */
+    private byte[] eventDataSha256hash;
+//    /**
+//     * Length (in bytes) of a pcr.
+//     */
+//    @Getter
+//    @Setter
+//    private int strongestDigestLength = 0;
 
     /**
      * Event data (no content).
@@ -120,23 +148,6 @@ public class TpmPcrEvent {
      * Description for toString support.
      */
     protected String description = "";
-
-    /**
-     * Length (in bytes) of a pcr.
-     */
-    @Getter
-    @Setter
-    private int digestLength = 0;
-
-    /**
-     * Event hash for SHA1 event logs.
-     */
-    private byte[] eventDataSha1hash;
-
-    /**
-     * Event hash for Crypto Agile events.
-     */
-    private byte[] eventDataSha256hash;
 
     @Getter
     @Setter
@@ -265,11 +276,16 @@ public class TpmPcrEvent {
      * This can be SHA1 for older event structures or any algorithm for newer structure.
      *
      * @param data   cryptographic hash
-     * @param length length of the cryptographic hash
+//     * @param length length of the cryptographic hash
      */
-    protected void setEventDigest(final byte[] data, final int length) {
-        digest = new byte[length];
-        System.arraycopy(data, 0, digest, 0, length);
+//    protected void setEventDigest(final byte[] data, final int length) {
+//        strongestDigest = new byte[length];
+//        System.arraycopy(data, 0, strongestDigest, 0, length);
+//    }
+
+    protected void setEventStrongestDigest(final byte[] data) {
+        strongestDigest = new byte[data.length];
+        System.arraycopy(data, 0, strongestDigest, 0, data.length);
     }
 
     /**
@@ -278,10 +294,11 @@ public class TpmPcrEvent {
      *
      * @return the digest data for the event
      */
-    public byte[] getEventDigest() {
-        byte[] digestCopy = new byte[digestLength];
-//        System.arraycopy(digest, 0, digestCopy, 0, this.digestLength);
-        System.arraycopy(digest, 0, digestCopy, 0, this.digest.length);
+    public byte[] getEventStrongestDigest() {
+//   public byte[] getEventDigest() {
+        byte[] digestCopy = new byte[strongestDigest.length];
+//        System.arraycopy(digest, 0, digestCopy, 0, this.strongestDigestLength);
+        System.arraycopy(strongestDigest, 0, digestCopy, 0, strongestDigest.length);
         return digestCopy;
     }
 
@@ -291,7 +308,7 @@ public class TpmPcrEvent {
      * @return hex string
      */
     public String getEventDigestStr() {
-        return Hex.encodeHexString(this.digest);
+        return Hex.encodeHexString(strongestDigest);
     }
 
     /**
@@ -315,7 +332,7 @@ public class TpmPcrEvent {
     /**
      * Returns a formatted string of the type for the event.
      *
-     * @return a string formatted to be human readable
+     * @return a string formatted to be human-readable
      */
     public String getEventTypeStr() {
         return String.format("0x%s %s", Long.toHexString(eventType), eventString((int) eventType));
@@ -324,7 +341,7 @@ public class TpmPcrEvent {
     /**
      * Returns a formatted string of the type for the event minus the byte code.
      *
-     * @return a string formatted to be human readable
+     * @return a string formatted to be human-readable
      */
     public String getEventTypeString() {
         return eventString((int) eventType);
@@ -374,7 +391,7 @@ public class TpmPcrEvent {
      * A getter that parses the content based on the type and returns the proper string
      * value for the content.
      *
-     * @return an appended string of human readable data
+     * @return an appended string of human-readable data
      */
     public String getEventContentStr() {
         StringBuilder sb = new StringBuilder();
@@ -490,19 +507,21 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Parses the event content and creates a human readable description of each event.
+     * Parses the event content and creates a human-readable description of each event.
      *
      * @param eventData     the byte array holding the event data.
      * @param content       the byte array holding the event content.
      * @param eventPosition event position within the event log.
-     * @param hashName      name of the hash algorithm used by the event log
+//     * @param hashName      name of the hash algorithm used by the event log
      * @return String description of the event.
      * @throws CertificateException     if the event contains an event that cannot be processed.
      * @throws NoSuchAlgorithmException if an event contains an unsupported algorithm.
      * @throws java.io.IOException      if the event cannot be parsed.
      */
+//    public String processEvent(final byte[] eventData, final byte[] content,
+//                               final int eventPosition, final String hashName)
     public String processEvent(final byte[] eventData, final byte[] content,
-                               final int eventPosition, final String hashName)
+                               final int eventPosition)
             throws CertificateException, NoSuchAlgorithmException, IOException {
         int eventID = (int) eventType;
         this.eventNumber = eventPosition;
@@ -637,26 +656,26 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Human readable output of a check of input against the current event hash.
+     * Human-readable output of a check of input against the current event hash.
      *
-     * @return human readable string.
+     * @return human-readable string.
      */
     private String eventHashCheck() {
         String result = "";
         if (logFormat == 1) {
-            if (Arrays.equals(this.digest, eventDataSha1hash)) {
+            if (Arrays.equals(strongestDigest, eventDataSha1hash)) {
                 result
                         += "Event digest matched hash of the event data " + "\n";
             } else {
                 result += "Event digest DID NOT match the hash of the event data :"
-                        + Hex.encodeHexString(getEventDigest()) + "\n";
+                        + Hex.encodeHexString(getEventStrongestDigest()) + "\n";
             }
         } else {
-            if (Arrays.equals(this.digest, eventDataSha256hash)) {
+            if (Arrays.equals(strongestDigest, eventDataSha256hash)) {
                 result += "Event digest matched hash of the event data " + "\n";
             } else {
                 result += "Event digest DID NOT match the hash of the event data :"
-                        + Hex.encodeHexString(getEventDigest()) + "\n";
+                        + Hex.encodeHexString(getEventStrongestDigest()) + "\n";
             }
         }
         return result;
@@ -669,11 +688,11 @@ public class TpmPcrEvent {
      * @return true if the event # matches and the hash is correct.
      */
     public boolean eventCompare(final TpmPcrEvent tpmPcrEvent) {
-        if (tpmPcrEvent.getPcrIndex() != this.getPcrIndex()) {
+        if (tpmPcrEvent.getPcrIndex() != getPcrIndex()) {
             return false;
         }
 
-        return Arrays.equals(this.digest, tpmPcrEvent.getEventDigest());
+        return Arrays.equals(strongestDigest, tpmPcrEvent.getEventStrongestDigest());
     }
 
     /**
@@ -692,7 +711,7 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Human readable string representing the contents of the Event Log.
+     * Human-readable string representing the contents of the Event Log.
      *
      * @return Description of the log.
      */
@@ -701,7 +720,7 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Human readable string representing the contents of the Event Log.
+     * Human-readable string representing the contents of the Event Log.
      *
      * @param bEvent    event Flag.
      * @param bContent  content flag.

@@ -87,7 +87,7 @@ public class EvNoAction {
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
         if (signature.contains("Spec ID Event03")) {      // implies CryptAgileFormat
             EvEfiSpecIdEvent specIDEvent = new EvEfiSpecIdEvent(eventData);
-            noActionInfo += specIDEventToString(specIDEvent);
+            noActionInfo += specIDEvent.toString();
             isSpecIdEvent = true;
             specVersion = String.format("%s.%s",
                     specIDEvent.getVersionMajor(),
@@ -110,29 +110,6 @@ public class EvNoAction {
                     + "\" encountered but support for processing it has not been"
                     + " added to this application.\n";
         }
-    }
-
-    /**
-     * Returns a human-readable description of a SpecId event.
-     *
-     * @param specIDEvent byte array holding the event.
-     * @return a description of the event.
-     */
-    public String specIDEventToString(final EvEfiSpecIdEvent specIDEvent) {
-
-//        String specIdInfo = "";
-//        specIdInfo += "   Signature = Spec ID Event03 : ";
-//        if (specIDEvent.isCryptoAgile()) {
-//            specIdInfo += "Log format is Crypto Agile\n";
-//        } else {
-//            specIdInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
-//        }
-//        specIdInfo += "   Platform Profile Specification version = "
-//                + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
-//                + " using errata version " + specIDEvent.getErrata();
-//
-//        return specIdInfo;
-        return specIDEvent.toString();
     }
 
     /**
