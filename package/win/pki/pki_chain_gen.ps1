@@ -15,12 +15,18 @@
 # A KeyStore and Trust Store are created for by Java Applications. Both will use the supplied password. 
 
 param (
-    [string]$ACTOR = $null,
-	[string]$ASYM_ALG = $null,
-	[string]$ASYM_SIZE = $null,
-	[string]$HASH_ALG = $null,
-	[string]$PASS = $null,
-	[string]$LOG_FILE = $null
+	[Parameter(Mandatory=$true)]
+    [string]$ACTOR,
+	[Parameter(Mandatory=$true)]
+	[string]$ASYM_ALG,
+	[Parameter(Mandatory=$true)]
+	[string]$ASYM_SIZE,
+	[Parameter(Mandatory=$true)]
+	[string]$HASH_ALG,
+	[Parameter(Mandatory=$true)]
+	[string]$PASS,
+	[Parameter(Mandatory=$true)]
+	[string]$LOG_FILE
 )
 
 $APP_HOME=(Split-Path -parent $PSCommandPath)
@@ -34,7 +40,7 @@ read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 
 # Parameter check 
 if (!$ACTOR -or !$ASYM_ALG -or !$ASYM_SIZE -or !$HASH_ALG -or ($ACTOR -eq "-h") -or ($ACTOR -eq "--help")) {
-   echo "parameter missing to pki_chain_gen.sh, exiting pki setup" | WriteAndLog
+   Write-Output "parameter missing to pki_chain_gen.sh, exiting pki setup" | WriteAndLog
    exit 1;
 }
 if ($LOG_FILE) {
@@ -54,7 +60,7 @@ $TRUSTSTORE_P12="$global:HIRS_DATA_CERTIFICATES_DIR\$ACTOR_ALT\TrustStore.p12"
 $KEYSTORE="$global:HIRS_DATA_CERTIFICATES_DIR\$ACTOR_ALT\KeyStore.jks"
 
 if (($ASYM_ALG -ne "rsa") -and ($ASYM_ALG -ne "ecc")) {
-	echo "$ASYM_ALG is an unsupported assymetric algorithm, exiting pki setup" | WriteAndLog
+	Write-Output "$ASYM_ALG is an unsupported assymetric algorithm, exiting pki setup" | WriteAndLog
 	exit 1;
 }
 
@@ -87,7 +93,7 @@ switch ($ASYM_SIZE) {
 		Break
 	}
     Default {
-        echo "$ASYM_SIZE is an unsupported key size, exiting pki setup" | WriteAndLog
+        Write-Output "$ASYM_SIZE is an unsupported key size, exiting pki setup" | WriteAndLog
         exit 1
     } 
 }
@@ -116,43 +122,55 @@ $DB_CLIENT_DN="/C=US/ST=MD/L=Columbia/O=$ACTOR/CN=$NAME DB Client"
 
 # Add check for existing folder and halt if it exists
 if ([System.IO.Directory]::Exists("$ACTOR_ALT/$CERT_FOLDER")) {
-   echo "Folder for $CERT_FOLDER exists, exiting..." | WriteAndLog
+   Write-Output "Folder for $CERT_FOLDER exists, exiting..." | WriteAndLog
    exit 1
 }
 
 # Intialize sub folders
-echo "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..." | WriteAndLog
+Write-Output "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..." | WriteAndLog
 
-mkdir -F -p "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" 2>&1 > $null
-mkdir -F -p "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER" 2>&1 > $null
-mkdir -F -p "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\certs" 2>&1 > $null
-cp "$global:HIRS_DATA_CERTIFICATES_DIR\ca.conf" "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\" | WriteAndLog
-touch "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"
-touch "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf"
+New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR -Force | Out-Null
+New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER" -Force | Out-Null
+New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\certs" -Force | Out-Null
+Copy-Item $global:HIRS_DATA_CERTIFICATES_DIR\ca.conf $global:HIRS_DATA_CERTIFICATES_HIRS_DIR | WriteAndLog
+
+if (-not (Test-Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db")) {
+    New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"
+} else {
+    Write-Output "File already exists: $global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\db"
+}
+
+if (-not (Test-Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf")) {
+    New-Item -ItemType File -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf"
+} else {
+    Write-Output "File already exists: $global:HIRS_DATA_CERTIFICATES_HIRS_DIR\openssl-san.cnf"
+}
+
 if (![System.IO.File]::Exists("$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt")) {
-     echo "01" > "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt" | WriteAndLog
+     Write-Output "01" > "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt" | WriteAndLog
 }
 
 # Function to add Cert to Truststore and key to Keystore
 Function add_to_stores () {
     param (
-        [string]$CERT_PATH = $null
+		[Parameter(Mandatory=$true)]
+        [string]$CERT_PATH
     )
 
     $ALIAS=[System.IO.Path]::GetFileName($CERT_PATH)    # Use filename without path as an alias
-	echo "$CERT_PATH key objects will use the alias `"$ALIAS`" in trust stores." | WriteAndLog 
-    echo "Exporting key and certificate to PKCS12." | WriteAndLog 
+	Write-Output "$CERT_PATH key objects will use the alias `"$ALIAS`" in trust stores." | WriteAndLog 
+    Write-Output "Exporting key and certificate to PKCS12." | WriteAndLog 
     # Add the cert and key to the key store.. make a p12 file to import into te keystore
     openssl pkcs12 -export -in "$CERT_PATH.pem" -inkey "$CERT_PATH.key" -out "tmpkey.p12" -passin "pass:$PASS" -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC -passout "pass:$PASS"  2>&1 | WriteAndLog
-    echo "Adding $ALIAS to the $KEYSTORE" | WriteAndLog 
+    Write-Output "Adding $ALIAS to the $KEYSTORE" | WriteAndLog 
 	# Use the p12 file to import into a java keystore via keytool
     keytool -importkeystore -srckeystore "tmpkey.p12" -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$ALIAS"  2>&1 | WriteAndLog
-    echo "Adding $ALIAS to the $TRUSTSTORE" | WriteAndLog 
+    Write-Output "Adding $ALIAS to the $TRUSTSTORE" | WriteAndLog 
 	# Import the cert into a java trust store via keytool
     keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH.pem"  -noprompt -alias "$ALIAS" 2>&1 | WriteAndLog
     # Remove the temp p1 file.
-    echo "Cleaning up after storing $ALIAS" | WriteAndLog 
-	rm "tmpkey.p12"
+    Write-Output "Cleaning up after storing $ALIAS" | WriteAndLog 
+	Remove-Item "tmpkey.p12"
 } 
 
 # Function to create an Intermediate Key, CSR, and Certificate
@@ -163,24 +181,28 @@ Function add_to_stores () {
 
 Function create_cert () {
     param (
-        [string]$CERT_PATH = $null,
-        [string]$ISSUER = $null,
-        [string]$SUBJ_DN = $null,
-        [string]$EXTENSION = $null
+		[Parameter(Mandatory=$true)]
+        [string]$CERT_PATH,
+		[Parameter(Mandatory=$true)]
+        [string]$ISSUER,
+		[Parameter(Mandatory=$true)]
+        [string]$SUBJ_DN,
+		[Parameter(Mandatory=$true)]
+        [string]$EXTENSION
     )
 	
 	$ISSUER_KEY="$ISSUER.key"
 	$ISSUER_CERT="$ISSUER.pem"
 	$ALIAS=[System.IO.Path]::GetFileName($CERT_PATH)    # Use filename without path as an alias
-	echo "Creating key pair and CSR with DN=`"$SUBJ_DN`"." | WriteAndLog
-	echo "    Key pair will be saved at location $CERT_PATH\" | WriteAndLog
-	echo "    Key will use $ASYM_ALG $ASYM_SIZE and HASH Alg $HASH_ALG" | WriteAndLog 
-	echo "    Certificate will be issued by $ISSUER_CERT and its key $ISSUER_KEY." | WriteAndLog 
-	echo "    Key objects will use the alias `"$ALIAS`" in trust stores." | WriteAndLog 
+	Write-Output "Creating key pair and CSR with DN=`"$SUBJ_DN`"." | WriteAndLog
+	Write-Output "    Key pair will be saved at location $CERT_PATH\" | WriteAndLog
+	Write-Output "    Key will use $ASYM_ALG $ASYM_SIZE and HASH Alg $HASH_ALG" | WriteAndLog 
+	Write-Output "    Certificate will be issued by $ISSUER_CERT and its key $ISSUER_KEY." | WriteAndLog 
+	Write-Output "    Key objects will use the alias `"$ALIAS`" in trust stores." | WriteAndLog 
 
     # Database doesnt support encypted key so create DB without passwords 
 	if ("$SUBJ_DN" -match "DB") {
-		echo "This key is intended for use with the database." | WriteAndLog 
+		Write-Output "This key is intended for use with the database." | WriteAndLog 
 		if ("$ASYM_ALG" -eq "rsa") {
             openssl genrsa -out "$CERT_PATH.key" "$ASYM_SIZE" 2>&1 | WriteAndLog
             openssl req -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
@@ -197,26 +219,26 @@ Function create_cert () {
 		}
 	}
 
-	echo "Sending CSR to the CA." | WriteAndLog
-	pushd "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
+	Write-Output "Sending CSR to the CA." | WriteAndLog
+	Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
 	openssl ca -config ca.conf -keyfile "$ISSUER_KEY" -md $HASH_ALG -cert "$ISSUER_CERT" -extensions "$EXTENSION" -out "$CERT_PATH.pem" -in "$CERT_PATH.csr" -passin "pass:$PASS" -batch -notext 2>&1 | WriteAndLog       
-	popd | WriteAndLog
+	Pop-Location | WriteAndLog
     # Increment the cert serial number
     $SERIAL=(Get-Content "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt")
-    echo "Cert Serial Number = $SERIAL" | WriteAndLog
-    echo "Exporting key and certificate to PKCS12." | WriteAndLog 
+    Write-Output "Cert Serial Number = $SERIAL" | WriteAndLog
+    Write-Output "Exporting key and certificate to PKCS12." | WriteAndLog 
 	# Add the cert and key to the key store. make a p12 file to import into te keystore
     openssl pkcs12 -export -in "$CERT_PATH.pem" -inkey "$CERT_PATH.key" -out "tmpkey.p12" -passin "pass:$PASS" -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC -passout "pass:$PASS" 2>&1 | WriteAndLog 
-    echo "Adding $ALIAS to $KEYSTORE" | WriteAndLog 
+    Write-Output "Adding $ALIAS to $KEYSTORE" | WriteAndLog 
 	# Use the p12 file to import into a java keystore via keytool
     keytool -importkeystore -srckeystore "tmpkey.p12" -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$ALIAS" 2>&1 | WriteAndLog  
     # Import the cert into a java trust store via keytool
-    echo "Adding $ALIAS to $TRUSTSTORE" | WriteAndLog 
+    Write-Output "Adding $ALIAS to $TRUSTSTORE" | WriteAndLog 
 	keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH.pem"  -noprompt -alias "$ALIAS" 2>&1 | WriteAndLog 
-    echo "Cleaning up after storing $ALIAS" | WriteAndLog 
+    Write-Output "Cleaning up after storing $ALIAS" | WriteAndLog 
 	# Remove the temp p12 file.
-    rm "tmpkey.p12"# remove csr file
-    rm "$CERT_PATH.csr"
+    Remove-Item "tmpkey.p12"# remove csr file
+    Remove-Item "$CERT_PATH.csr"
 }
 
 Function create_cert_chain () {
@@ -245,31 +267,31 @@ Function create_cert_chain () {
 	# Create a ACA Sever Cert for TLS use
 	create_cert "$DB_CLIENT" "$PKI_CA3" "$DB_CLIENT_DN" "server_extensions"
 
-    echo "Creating concatenated PEM file." | WriteAndLog
+    Write-Output "Creating concatenated PEM file." | WriteAndLog
 	# Create Cert trust store by adding the Intermediate and root certs 
-	cat "$PKI_CA1.pem", "$PKI_CA2.pem", "$PKI_CA3.pem", "$PKI_INT.pem", "$PKI_ROOT.pem" >  "$TRUST_STORE_FILE"
+	Get-Content "$PKI_CA1.pem", "$PKI_CA2.pem", "$PKI_CA3.pem", "$PKI_INT.pem", "$PKI_ROOT.pem" | Set-Content "$TRUST_STORE_FILE"
 
-    echo "Verifying the concatenated PEM file works." | WriteAndLog
+    Write-Output "Verifying the concatenated PEM file works." | WriteAndLog
 	# Checking signer cert using trust store...
 	openssl verify -CAfile "$TRUST_STORE_FILE" "$RIM_SIGNER.pem" | WriteAndLog
 
-    echo "Creating a PKCS12 file for the database client." | WriteAndLog
+    Write-Output "Creating a PKCS12 file for the database client." | WriteAndLog
 	# Make JKS files for the mysql DB connector. P12 first then JKS...
 	openssl pkcs12 -export -in "$DB_CLIENT.pem" -inkey "$DB_CLIENT.key" -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC -passin "pass:$PASS" -passout "pass:$PASS" -name "mysqlclientkey" -out "$DB_CLIENT.p12" 2>&1 | WriteAndLog
 
-    echo "Converting the database client PKCS12 file to JKS." | WriteAndLog
+    Write-Output "Converting the database client PKCS12 file to JKS." | WriteAndLog
 	keytool -importkeystore -srckeystore "$DB_CLIENT.p12" -srcstoretype PKCS12 -srcstorepass $PASS -destkeystore "$DB_CLIENT.jks" -deststoretype jks -deststorepass $PASS 2>&1 | WriteAndLog
 }
 
 if ("$ASYM_ALG" -eq "rsa") {
 	# Create Root CA key pair and self signed cert
-	echo "Generating RSA Root CA ...." | WriteAndLog
+	Write-Output "Generating RSA Root CA ...." | WriteAndLog
 	openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -aes256 --pass "pass:$PASS" -out "$PKI_ROOT.key" 2>&1 | WriteAndLog
 
 	# Create a self signed CA certificate
-	pushd "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
+	Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
 	openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT.key" -subj "$ROOT_DN" -extensions ca_extensions -out "$PKI_ROOT.pem" -passin "pass:$PASS" 2>&1 | WriteAndLog
-	popd | WriteAndLog
+	Pop-Location | WriteAndLog
 	# Add the CA root cert to the Trust and Key stores
 	add_to_stores "$PKI_ROOT"
 	# Create an intermediate CA, 2 Leaf CAs, and Signer Certs 
@@ -278,13 +300,13 @@ if ("$ASYM_ALG" -eq "rsa") {
 
 if ("$ASYM_ALG" -eq "ecc") {
 	# Create Root CA key pair and self signed cert
-	echo "Generating Ecc Root CA ...." | WriteAndLog
+	Write-Output "Generating Ecc Root CA ...." | WriteAndLog
 	openssl genpkey -algorithm "EC" -pkeyopt ec_paramgen_curve:P-521 -aes256 --pass "pass:$PASS" -out "$PKI_ROOT.key" 2>&1 | WriteAndLog
 
 	# Create a self signed CA certificate
-	pushd "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
+	Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
 	openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT.key" -subj "$ROOT_DN" -extensions ca_extensions -out "$PKI_ROOT.pem" -passin "pass:$PASS" 2>&1 | WriteAndLog
-	popd | WriteAndLog
+	Pop-Location | WriteAndLog
 	# Add the CA root cert to the Trust and Key stores
 	add_to_stores "$PKI_ROOT"
 	# Create an intermediate CA, 2 Leaf CAs, and Signer Certs 
