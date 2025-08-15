@@ -298,7 +298,7 @@ public final class TCGEventLog {
      * @param firstEvent                                the first event in the log
      * @throws java.security.NoSuchAlgorithmException   if an unknown algorithm is encountered.
      */
-    private void useFirstEventToInitValues(TpmPcrEvent1 firstEvent) throws NoSuchAlgorithmException {
+    private void useFirstEventToInitValues(TpmPcrEvent1 firstEvent) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 
         // if first event is EV_NO_ACTION Spec Id Event, the log is crypto agile
         if (firstEvent.isNoActionSpecIdEvent()) {
@@ -343,6 +343,11 @@ public final class TCGEventLog {
             hashName = HASH_SHA1_STRING;
 //            eventLogHashAlgorithm = "TPM_ALG_SHA1";
             pcrLength = EvConstants.SHA1_LENGTH;
+
+            if (firstEvent.isStartupLocalityEvent()) {
+                EvNoAction event = new EvNoAction(firstEvent.getEventContent());
+                startupLocality = event.getStartupLocality();
+            }
         }
 
         // if more than one set of PCR banks exists in this log, store the one with the strongest algorithm
