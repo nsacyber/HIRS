@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
  *   <li>TCG (TCG Algorithm Registry):<br>
  *     <ul>
  *       <li>https://trustedcomputinggroup.org/resource/tcg-algorithm-registry/<br>
- *       Table 3 — Definition of (UINT16) TPM_ALG_ID Constants</li>
+ *       Table 3 - Definition of (UINT16) TPM_ALG_ID Constants</li>
  *     </ul>
  *   </li>
  *   <li>XML (XML Security Algorithm Cross-Reference):

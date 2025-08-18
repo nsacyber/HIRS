@@ -41,7 +41,7 @@ public final class TCGEventLog {
     //    (In this code these localities are referred to as 'environment localities')
     //    Locality 0: The Static RTM, its chain of trust and its environment.
     //    Locality 1: An environment for use by the Dynamic OS.
-    //    Locality 2: Dynamically Launched OS (Dynamic OS) “runtime” environment.
+    //    Locality 2: Dynamically Launched OS (Dynamic OS) "runtime" environment.
     //    Locality 3: Auxiliary components. Use of this is optional and, if used, is implementation dependent.
     //    Locality 4: Usually associated with the CPU executing microcode. Used to establish the Dynamic RTM.
     //
