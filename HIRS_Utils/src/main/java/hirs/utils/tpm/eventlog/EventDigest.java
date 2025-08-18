@@ -3,6 +3,9 @@ package hirs.utils.tpm.eventlog;
 import lombok.AccessLevel;
 import lombok.Getter;
 
+/**
+ * Class to store info for a hash - hash name and digest - to be used for lists of hashes.
+ */
 public class EventDigest {
 
     /**

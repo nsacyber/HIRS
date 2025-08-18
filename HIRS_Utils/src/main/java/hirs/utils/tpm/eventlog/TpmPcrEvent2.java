@@ -1,7 +1,6 @@
 package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import org.apache.commons.codec.binary.Hex;
 
@@ -75,11 +74,10 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
      */
     public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber, String strongestAlg)
             throws IOException, CertificateException, NoSuchAlgorithmException {
+
         super(is);
-//        setDigestLength(EvConstants.SHA256_LENGTH);
         setLogFormat(2);
         // Event data.
-        // int eventDigestLength = 0;
         String hashName = "";
         byte[] event2;
         byte[] rawIndex = new byte[UefiConstants.SIZE_4];
@@ -106,7 +104,6 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
                 eventDigest = new byte[hashAlg.getHashLength()];
                 hashList.add(hashAlg);
                 hashListFromEvent.add(new EventDigest(hashName, eventDigest));
-//                setEventDigest(hashAlg.getDigest(), hashAlg.getHashLength());
                 if (hashName.compareTo(strongestAlg) == 0) {
                     setEventStrongestDigest(hashAlg.getDigest());
                 }
@@ -116,8 +113,6 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             eventContent = new byte[eventSize];
             is.read(eventContent);
             setEventContent(eventContent);
-//            int eventLength = rawIndex.length + rawType.length + eventDigest.length
-//                    + rawEventSize.length;
             int eventLength = rawIndex.length + rawType.length
                     + rawEventSize.length;
             int offset = 0;
@@ -129,13 +124,6 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             offset += rawIndex.length;
             System.arraycopy(rawType, 0, event2, offset, rawType.length);
             offset += rawType.length;
-//            System.arraycopy(eventDigest, 0, event, offset, eventDigest.length);
-//            offset += eventDigest.length;
-
-
-
-// CHECK HERE - may have to use the strongest digest here for ACA to work
-// (plus will need to add the size back in above)
             System.arraycopy(rawEventSize, 0, event2, offset, rawEventSize.length);
             offset += rawEventSize.length;
 
@@ -143,21 +131,12 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
                 System.arraycopy(hash.getBuffer(), 0, event2, offset, hash.getBuffer().length);
                 offset += hash.getBuffer().length;
             }
-            //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
             setEventData(event2);
-            //setDigestLength(eventDigestLength);
 
-//            this.processEvent(event2, eventContent, eventNumber, hashName);
             this.processEvent(event2, eventContent, eventNumber);
             for (int i = 0; i < algCount; i++) {
                 description +=  "\ndigest (" + hashList.get(i).getHashName() + "): "
                         + Hex.encodeHexString(hashList.get(i).getDigest());
-//                if (hashList.get(i).getHashName().compareToIgnoreCase(TcgTpmtHa.TPM_ALG_SHA256_STR) == 0) {
-//                    description +=  "\ndigest (SHA256): " + Hex.encodeHexString(hashList.get(i).getDigest());
-//                }
-//                if (hashList.get(i).getHashName().compareToIgnoreCase(TcgTpmtHa.TPM_ALG_SHA1_STR) == 0) {
-//                    description +=  "\ndigest (SHA-1): " + Hex.encodeHexString(hashList.get(i).getDigest());
-//                }
             }
         }
     }

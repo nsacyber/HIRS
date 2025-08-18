@@ -9,10 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static hirs.utils.crypto.AlgorithmsIds.ALG_TYPE_HASH;
-import static hirs.utils.crypto.AlgorithmsIds.SPEC_TCG_ALG;
-import static hirs.utils.crypto.AlgorithmsIds.findAlgId;
-
 /**
  * Class to process the TCG_EfiSpecIDEvent.
  * The first 16 bytes of a Event Data MUST be String based identifier (Signature).

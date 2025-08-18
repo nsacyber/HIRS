@@ -41,9 +41,9 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
     public TpmPcrEvent1(final ByteArrayInputStream is, final int eventNumber)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         super(is);
-//        setDigestLength(EvConstants.SHA1_LENGTH);
 
         setLogFormat(1);
+
         // Event data.
         byte[] event1;
         byte[] rawIndex = new byte[UefiConstants.SIZE_4];
@@ -52,10 +52,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
         byte[] eventDigest = new byte[EvConstants.SHA1_LENGTH];
         byte[] eventContent;
 
-
-        int digestSize = EvConstants.SHA1_LENGTH;
         int eventSize = 0;
-//        String hashName = "TPM_ALG_SHA1";
         if (is.available() > UefiConstants.SIZE_32) {
             is.read(rawIndex);
             setPcrIndex(rawIndex);
@@ -65,8 +62,6 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
 
             hashListFromEvent.add(new EventDigest("TPM_ALG_SHA1", eventDigest));
 
-
-//            setEventDigest(eventDigest, digestSize);
             setEventStrongestDigest(eventDigest);
 
             is.read(rawEventSize);
@@ -90,7 +85,6 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
             setEventData(event1);
             //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
 
-//            this.processEvent(event1, eventContent, eventNumber, hashName);
             this.processEvent(event1, eventContent, eventNumber);
             description +=  "\ndigest (SHA-1): " + Hex.encodeHexString(eventDigest);;
         }

@@ -103,12 +103,6 @@ public class TpmPcrEvent {
      * Event hash for Crypto Agile events.
      */
     private byte[] eventDataSha256hash;
-//    /**
-//     * Length (in bytes) of a pcr.
-//     */
-//    @Getter
-//    @Setter
-//    private int strongestDigestLength = 0;
 
     /**
      * Event data (no content).
@@ -272,17 +266,12 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Sets the digest from a  TCG_PCR_EVENT digest field.
+     * Sets the digest from a TCG_PCR_EVENT digest field.
+     * In the case of multiple digests, set the strongest one.
      * This can be SHA1 for older event structures or any algorithm for newer structure.
      *
      * @param data   cryptographic hash
-//     * @param length length of the cryptographic hash
      */
-//    protected void setEventDigest(final byte[] data, final int length) {
-//        strongestDigest = new byte[length];
-//        System.arraycopy(data, 0, strongestDigest, 0, length);
-//    }
-
     protected void setEventStrongestDigest(final byte[] data) {
         strongestDigest = new byte[data.length];
         System.arraycopy(data, 0, strongestDigest, 0, data.length);
@@ -295,9 +284,7 @@ public class TpmPcrEvent {
      * @return the digest data for the event
      */
     public byte[] getEventStrongestDigest() {
-//   public byte[] getEventDigest() {
         byte[] digestCopy = new byte[strongestDigest.length];
-//        System.arraycopy(digest, 0, digestCopy, 0, this.strongestDigestLength);
         System.arraycopy(strongestDigest, 0, digestCopy, 0, strongestDigest.length);
         return digestCopy;
     }
@@ -512,14 +499,11 @@ public class TpmPcrEvent {
      * @param eventData     the byte array holding the event data.
      * @param content       the byte array holding the event content.
      * @param eventPosition event position within the event log.
-//     * @param hashName      name of the hash algorithm used by the event log
      * @return String description of the event.
      * @throws CertificateException     if the event contains an event that cannot be processed.
      * @throws NoSuchAlgorithmException if an event contains an unsupported algorithm.
      * @throws java.io.IOException      if the event cannot be parsed.
      */
-//    public String processEvent(final byte[] eventData, final byte[] content,
-//                               final int eventPosition, final String hashName)
     public String processEvent(final byte[] eventData, final byte[] content,
                                final int eventPosition)
             throws CertificateException, NoSuchAlgorithmException, IOException {
@@ -528,21 +512,7 @@ public class TpmPcrEvent {
         description += "Event# " + eventPosition + ": ";
         description += "Index PCR[" + getPcrIndex() + "]\n";
         description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
-        /**
-        description += "\n";
 
-        if (hashName.compareToIgnoreCase("TPM_ALG_SHA1") == 0) {   // Digest
-            description += "digest (SHA-1): " + Hex.encodeHexString(this.digest);
-        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA256") == 0) {   // Digest
-            description += "digest (SHA256): " + Hex.encodeHexString(this.digest);
-        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA384") == 0) {   // Digest
-            description += "digest (SHA384): " + Hex.encodeHexString(this.digest);
-        } else if (hashName.compareToIgnoreCase("TPM_ALG_SHA512") == 0) {   // Digest
-            description += "digest (SHA512): " + Hex.encodeHexString(this.digest);
-        } else {
-            description += "Unsupported Hash Algorithm encountered";
-        }
-         */
         if (eventID != UefiConstants.SIZE_4) {
             description += "\n";
         }
@@ -742,9 +712,6 @@ public class TpmPcrEvent {
         }
         if (bContent) {
             byte[] evContent = getEventContent();
-           // if (bEvent) {
-           //     sb.append("\n");
-           // }
             sb.append("Event content (Hex) (" + evContent.length + " bytes): "
                     + Hex.encodeHexString(evContent));
         }
