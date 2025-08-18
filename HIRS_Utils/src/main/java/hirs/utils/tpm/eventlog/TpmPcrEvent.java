@@ -76,19 +76,15 @@ public class TpmPcrEvent {
     private long eventType = 0;
 
     /**
-     * Event digest algorithm.
-     * If there was a Spec Id event:
-     *    This log is crypto agile and this value is grabbed from the Spec Id event.
-     * If no Spec Id event the only option is SHA1.
-     */
-    /**
      * Event digest. If more than one digest in the Event, use the strongest one.
      */
     private byte[] strongestDigest = null;
+
     /**
      * list of digests from the event log.
      */
     protected final ArrayList<EventDigest> hashListFromEvent = new ArrayList<>();
+
     /**
      * list of digests by calculating the hash of the event.
      */
@@ -547,8 +543,7 @@ public class TpmPcrEvent {
                     specVersion = noAction.getSpecVersion();
                     specErrataVersion = noAction.getSpecErrataVersion();
                     isNoActionSpecIdEvent = true;
-                }
-                else if (noAction.isStartupLocality()) {
+                } else if (noAction.isStartupLocality()) {
                     isStartupLocalityEvent = true;
                 }
                 pciidsFileStatus = noAction.getPciidsFileStatus();

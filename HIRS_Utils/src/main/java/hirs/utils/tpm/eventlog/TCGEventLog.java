@@ -77,22 +77,6 @@ public final class TCGEventLog {
     //     state transition S3 to S0, corresponding to TPM Restart. Requires PCR0 to be initialized to 3.
 
     /**
-     * String value of SHA1 hash.
-     */
-    public static final String HASH_SHA1_STRING = "SHA1";
-    /**
-     * String value of SHA256 hash.
-     */
-    public static final String HASH_SHA256_STRING = "SHA-256";
-    /**
-     * String value of SHA256 hash.
-     */
-    public static final String HASH_SHA384_STRING = "SHA-384";
-    /**
-     * String value of SHA256 hash.
-     */
-    public static final String HASH_SHA512_STRING = "SHA-512";
-    /**
      * Initial values for the PCR registers environment locality 0-3
      */
     byte PCR_INIT = (byte) 0x00;
@@ -135,7 +119,7 @@ public final class TCGEventLog {
      */
     private final LinkedHashMap<Integer, TpmPcrEvent> eventList = new LinkedHashMap<>();
     /**
-     * String value of strongest event log hash algorithm (if more than 1). TCG format.
+     * String name of strongest event log hash algorithm. TCG format.
      */
     @Getter
     private String strongestEvLogHashAlgName = "";
@@ -144,10 +128,6 @@ public final class TCGEventLog {
      *
      */
     private int pcrLength;
-    /**
-     * Name of hash algorithm.
-     */
-//    private String hashName;
     /**
      * 2-dimensional array holding the PCR values.
      * If more than one set of PCR banks exists in this log, store the one with the strongest algorithm.
@@ -199,7 +179,6 @@ public final class TCGEventLog {
     public TCGEventLog() {
         this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
         pcrLength = EvConstants.SHA1_LENGTH;
-//        hashName = HASH_SHA1_STRING;
         strongestEvLogHashAlgName = "TPM_ALG_SHA1";
         initPcrList();
     }
@@ -319,15 +298,12 @@ public final class TCGEventLog {
             // if more than one set of PCR banks exists in this log, store the one with strongest algorithm
             switch (strongestEvLogHashAlgName) {
                 case TPM_ALG_SHA256_STR:
-//                    hashName = HASH_SHA256_STRING;
                     pcrLength = EvConstants.SHA256_LENGTH;
                     break;
                 case TPM_ALG_SHA384_STR:
-//                    hashName = HASH_SHA384_STRING;
                     pcrLength = EvConstants.SHA384_LENGTH;
                     break;
                 case TPM_ALG_SHA512_STR:
-//                    hashName = HASH_SHA512_STRING;
                     pcrLength = EvConstants.SHA512_LENGTH;
                     break;
                 default:
@@ -335,9 +311,9 @@ public final class TCGEventLog {
             }
         } else {    // not crypto agile
             strongestEvLogHashAlgName = "TPM_ALG_SHA1";
-//            hashName = HASH_SHA1_STRING;
             pcrLength = EvConstants.SHA1_LENGTH;
 
+            // startup locality event could be the first event in a non-crypto-agile log
             if (firstEvent.isStartupLocalityEvent()) {
                 EvNoAction event = new EvNoAction(firstEvent.getEventContent());
                 startupLocality = event.getStartupLocality();

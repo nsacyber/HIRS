@@ -66,13 +66,14 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
     /**
      * Constructor.
      *
-     * @param is          ByteArrayInputStream holding the TCG Log event
-     * @param eventNumber event position within the event log.
+     * @param is            ByteArrayInputStream holding the TCG Log event
+     * @param eventNumber   event position within the event log.
+     * @param strongestAlg  name of strongest hash algorithm used in the log
      * @throws java.io.IOException                     if an error occurs in parsing the event
      * @throws java.security.NoSuchAlgorithmException  if an undefined algorithm is encountered.
      * @throws java.security.cert.CertificateException If a certificate within an event can't be processed.
      */
-    public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber, String strongestAlg)
+    public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber, final String strongestAlg)
             throws IOException, CertificateException, NoSuchAlgorithmException {
 
         super(is);
