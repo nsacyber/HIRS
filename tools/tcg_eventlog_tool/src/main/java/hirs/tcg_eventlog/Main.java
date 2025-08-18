@@ -137,8 +137,10 @@ final class Main {
                     }
                     if (evLog.getVendorTableFileStatus() == FILESTATUS_NOT_ACCESSIBLE) {
                         writeOut("*** WARNING: "
-                                + "The file vendor-table.json was not accessible from the filesystem or the code,\n"
-                                + "             so some event data shown in the output of this tool may be outdated\n"
+                                + "The file vendor-table.json was not accessible from the filesystem or "
+                                + "the code,\n"
+                                + "             so some event data shown in the output of this tool may be "
+                                + "outdated\n"
                                 + "             or omitted.\n\n");
                     } else if (evLog.getVendorTableFileStatus() == FILESTATUS_FROM_CODE) {
                         writeOut("*** NOTE:    "

@@ -83,6 +83,10 @@ public class EvEfiSpecIdEvent {
      * Algorithm list.
      */
     private List<String> algList;
+    /**
+     * Get algorithm list.
+     * @return list of algorithms used in this Event.
+     */
     public  List<String> getAlgList() {
         return new ArrayList<>(algList);
     }

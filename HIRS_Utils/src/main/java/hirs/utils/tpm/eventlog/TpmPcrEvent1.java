@@ -86,7 +86,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
             //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
 
             this.processEvent(event1, eventContent, eventNumber);
-            description +=  "\ndigest (SHA-1): " + Hex.encodeHexString(eventDigest);;
+            description +=  "\ndigest (SHA-1): " + Hex.encodeHexString(eventDigest);
         }
     }
 }

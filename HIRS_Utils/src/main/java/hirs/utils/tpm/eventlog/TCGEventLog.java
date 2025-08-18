@@ -77,13 +77,13 @@ public final class TCGEventLog {
     //     state transition S3 to S0, corresponding to TPM Restart. Requires PCR0 to be initialized to 3.
 
     /**
-     * Initial values for the PCR registers environment locality 0-3
+     * Initial values for the PCR registers environment locality 0-3.
      */
-    byte PCR_INIT = (byte) 0x00;
+    private static final byte PCR_INIT = (byte) 0x00;
     /**
-     * Initial values for the PCR registers environment locality 4
+     * Initial values for the PCR registers environment locality 4.
      */
-    byte PCR_INIT_ENVLOCALITY4 = (byte) 0xff;
+    private static final byte PCR_INIT_ENVLOCALITY4 = (byte) 0xff;
     /**
      * Each PCR bank holds 24 registers.
      */
@@ -91,25 +91,25 @@ public final class TCGEventLog {
     /**
      * Environment Locality 4 starts at PCR 17.
      */
-    public static final int PCR_ENVLOCALITY4_MIN = 17;
+    private static final int PCR_ENVLOCALITY4_MIN = 17;
     /**
      * Environment Locality 4 ends at PCR 22.
      */
-    public static final int PCR_ENVLOCALITY4_MAX = 22;
+    private static final int PCR_ENVLOCALITY4_MAX = 22;
     /**
      * PFP defined EV_NO_ACTION identifier.
      */
-    public static final int NO_ACTION_EVENT = 0x00000003;
+    private static final int NO_ACTION_EVENT = 0x00000003;
     /**
      * Startup locality 3 defined in the TCG PFP section 10.4.5.3.
      * Used for NO_ACTION_EVENT with "StartupLocality" in the signature.
      */
-    public static final int STARTUP_LOCALITY3 = 0x03;
+    private static final int STARTUP_LOCALITY3 = 0x03;
     /**
      * Startup locality 4 defined in the TCG PFP section 10.4.5.3.
      * Used for NO_ACTION_EVENT with "StartupLocality" in the signature.
      */
-    public static final int STARTUP_LOCALITY4 = 0x04;
+    private static final int STARTUP_LOCALITY4 = 0x04;
     /**
      * Logger.
      */
@@ -270,7 +270,7 @@ public final class TCGEventLog {
      * @throws java.security.NoSuchAlgorithmException   if an unknown algorithm is encountered.
      * @throws java.io.UnsupportedEncodingException     if EvNoAction input fails to parse.
      */
-    private void useFirstEventToInitValues(TpmPcrEvent1 firstEvent)
+    private void useFirstEventToInitValues(final TpmPcrEvent1 firstEvent)
             throws NoSuchAlgorithmException, UnsupportedEncodingException {
 
         // if first event is EV_NO_ACTION Spec Id Event, the log is crypto agile
@@ -332,17 +332,16 @@ public final class TCGEventLog {
         for (int i = 0; i < PCR_COUNT; i++) {
             byte[] initPcrValueB = new byte[pcrLength];
             Arrays.fill(initPcrValueB, PCR_INIT);
-            System.arraycopy(initPcrValueB,0, pcrList[i], 0, pcrLength);
+            System.arraycopy(initPcrValueB, 0, pcrList[i], 0, pcrLength);
         }
         for (int i = PCR_ENVLOCALITY4_MIN; i <= PCR_ENVLOCALITY4_MAX; i++) {
             byte[] initPcrValueB = new byte[pcrLength];
             Arrays.fill(initPcrValueB, PCR_INIT_ENVLOCALITY4);
-            System.arraycopy(initPcrValueB,0, pcrList[i], 0, pcrLength);
+            System.arraycopy(initPcrValueB, 0, pcrList[i], 0, pcrLength);
         }
         if (startupLocality == STARTUP_LOCALITY3) {
-            pcrList[0][pcrLength-1] = (byte) STARTUP_LOCALITY3;
-        }
-        else if (startupLocality == STARTUP_LOCALITY4) {
+            pcrList[0][pcrLength - 1] = (byte) STARTUP_LOCALITY3;
+        } else if (startupLocality == STARTUP_LOCALITY4) {
             LOGGER.error("Error Processing TGC Event Log: "
                     + "Event of type EV_NO_ACTION with a Startup Locality 4 with an H-CRTM "
                     + "encountered, but no support is currently provided by this application");
