@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -20,7 +21,7 @@ import static java.util.stream.Collectors.toMap;
  *    }&gt;
  * </pre>
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum ClassItems {
     /** Corresponds to a class-id. */
     CLASS_ID(0, "class-id"),
@@ -39,11 +40,6 @@ public enum ClassItems {
     private static final Map<Integer, ClassItems> LOOKUP =
             stream(values())
                     .collect(toMap(ClassItems::getIndex, x -> x));
-
-    ClassItems(final int index, final String key) {
-        this.index = index;
-        this.key = key;
-    }
 
     /**
      * Method to return an enum value from an integer index.

@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -32,7 +33,7 @@ import static java.util.stream.Collectors.toMap;
  *    }&lt;
  * </pre>
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum MeasurementValuesMapItems {
     /** Corresponds to a version-map. */
     VERSION_MAP(0, "version-map"),
@@ -65,11 +66,6 @@ public enum MeasurementValuesMapItems {
 
     private final int index;
     private final String key;
-
-    MeasurementValuesMapItems(final int index, final String key) {
-        this.index = index;
-        this.key = key;
-    }
 
     private static final Map<Integer, MeasurementValuesMapItems> LOOKUP =
             stream(values())

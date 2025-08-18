@@ -154,7 +154,6 @@ public class CoseParser {
      * @return a String defined in Table 1 that corresponds to the tag
      */
     public String coseTagLookup(final int tag) {
-        String coseType = "";
         final int coseSign = 98;
         final int coseSignOne = 18;
         final int coseEncrypt = 96;
@@ -163,15 +162,14 @@ public class CoseParser {
         final int coseMac0 = 17;
 
         switch (tag) {
-            case coseSign: coseType = "cose-sign"; break;
-            case coseSignOne: coseType = "cose-sign1"; break;
-            case coseEncrypt: coseType = "cose-encrypt"; break;
-            case coseEncrypt0: coseType = "cose-encrypt0"; break;
-            case coseMac: coseType = "cose-mac"; break;
-            case coseMac0: coseType = "cose-mac0"; break;
-            default: coseType = CoRim.getTagLabel(tag); break;
+            case coseSign: return "cose-sign";
+            case coseSignOne: return "cose-sign1";
+            case coseEncrypt: return "cose-encrypt";
+            case coseEncrypt0: return "cose-encrypt0";
+            case coseMac: return "cose-mac";
+            case coseMac0: return "cose-mac0";
+            default: return CoRim.getTagLabel(tag);
         }
-        return coseType;
     }
 
     /**

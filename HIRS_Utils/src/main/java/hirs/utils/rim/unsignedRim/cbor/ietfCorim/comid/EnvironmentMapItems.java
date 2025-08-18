@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Map;
@@ -17,7 +18,7 @@ import static java.util.stream.Collectors.toMap;
  *    }&gt;
  *  </pre>
  */
-@Getter
+@Getter @AllArgsConstructor
 public enum EnvironmentMapItems  {
     /** Corresponds to a class-map. */
     CLASS_MAP(0, "class-map"),
@@ -28,11 +29,6 @@ public enum EnvironmentMapItems  {
 
     private final int index;
     private final String key;
-
-    EnvironmentMapItems(final int index, final String key) {
-        this.index = index;
-        this.key = key;
-    }
 
     private static final Map<Integer, EnvironmentMapItems> LOOKUP =
             stream(values())
