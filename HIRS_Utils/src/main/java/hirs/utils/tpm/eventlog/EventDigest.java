@@ -1,5 +1,6 @@
 package hirs.utils.tpm.eventlog;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 
 public class EventDigest {
@@ -12,7 +13,7 @@ public class EventDigest {
     /**
      * Hash data.
      */
-    @Getter
+    @Getter(value = AccessLevel.PROTECTED)
     private final byte[] digest;
 
     /**
@@ -23,6 +24,7 @@ public class EventDigest {
      */
     public EventDigest(String hashNameIn, byte[] digestIn) {
         hashName = hashNameIn;
-        digest = digestIn;
+        digest = new byte[digestIn.length];
+        System.arraycopy(digestIn, 0, digest, 0, digestIn.length);
     }
 }
