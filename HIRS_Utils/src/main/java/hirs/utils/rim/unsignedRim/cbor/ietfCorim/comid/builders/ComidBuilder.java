@@ -22,8 +22,6 @@ public class ComidBuilder {
     private String language;
     @JsonProperty("tag-identity")
     private TagIdentityMapBuilder tagIdentityMap;
-    //List<ComidEntityMapBuilder> comidEntityMapList;
-    //List<LinkedTagMapBuilder> linkedTagMapList;
     @JsonProperty("triples")
     private TriplesMapBuilder triplesMapBuilder;
 

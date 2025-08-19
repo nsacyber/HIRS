@@ -15,46 +15,30 @@ import java.util.Map;
  * Class to read in a HIRS specific json based TCG Component RIM Configuration file.
  * This is intended to work specifically with the TcgComponentRim class
  */
+@Getter
 public class TcgCompRimCoswidConfig extends CoswidConfig {
-    //JsonNode rootNode = null;
-    // Attributes from the TCG Component RIM Binding foe SWID and COswid specification
-    //  Not found in the Coswid or Swid specifications
-    // Link attributes (rename of existing attributes)
-    @Getter
+    /*
+     * Attributes from the TCG Component RIM Binding for SWID and CoSWID specification.
+     * Not found in the CoSWID or SWID specifications.
+     * Link attributes (rename of existing attributes).
+     */
     private String bindingSpec = null;
-    @Getter
     private String bindingSpecVersion = null;
-    @Getter
     private String payloadType = null;
-    @Getter
     private String persistentId = null;
-    @Getter
     private String componentManufacturerStr = null;
-    @Getter
     private String componentManufacturerID = null;
-    @Getter
     private String componentLocator = null;
-    @Getter
     private String firmwareVersion = null;
-    @Getter
     private String supportRimType = null;
-    @Getter
     private String supportRimFormat = null;
-    @Getter
     private String supportRimUriGlobal = null;
-    @Getter
     private String spdmMeasurementBlock = null;
-    @Getter
     private String spdmVersion = null;
-    @Getter
     private String spdmMeasurementBlockIndex = null;
-    @Getter
     private String spdmMeasurementSpec = null;
-    @Getter
     private String spdmMeasurementValueType = null;
-    @Getter
     private String spdmMeasurementHash = null;
-    @Getter
     private String spdmMeasurementRawData = null;
 
     /**
@@ -70,9 +54,7 @@ public class TcgCompRimCoswidConfig extends CoswidConfig {
             // Read the JSON file
             File jsonFile = new File(filename);
             byte[] data = Files.readAllBytes(jsonFile.toPath());
-            //ObjectMapper mapper = mapper.readValue(new ByteArrayInputStream(data), Map.class);
             Map<String, Object> parsedData = mapper.readValue(new ByteArrayInputStream(data), Map.class);
-            //System.out.println(parsedData);
             // parse the data
             rootNode = mapper.readTree(data);
             // Check if config file is valid

@@ -18,6 +18,9 @@ import java.util.List;
 @Getter
 @Setter
 public class MeasurementValuesMapBuilder {
+    /* The following variables are commented out but kept here for reference as part of the
+     * measurement-values-map as described in Section 5.1.4.1.4.2 of the specification.
+     */
     //VersionMapBuilder version;
     //Integer svn;
     private List<CoRimDigest> digests;

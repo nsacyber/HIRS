@@ -15,10 +15,9 @@ import java.util.List;
 /**
  * The configuration object for the triples object, described in section 5.1.4.
  */
+@Getter @Setter
 public class TriplesMapBuilder {
     @JsonProperty("reference-triples")
-    @Getter
-    @Setter
     private List<ReferenceTripleRecordBuilder> referenceTripleRecordList;
 
     /**
