@@ -257,9 +257,9 @@ check_db () {
   
   RESULT=$(mysqlshow --user=hirs_db --password=$hirs_db_password hirs_db|  grep -o hirs_db)
   if [ "$RESULT" == "hirs_db" ]; then
-      echo "   The hirs_db database is visable by the hirs_db user"
+      echo "   The hirs_db database is visible by the hirs_db user"
     else
-      echo "   Error: The hirs_db database is NOT visable by the hirs_db user"
+      echo "   Error: The hirs_db database is NOT visible by the hirs_db user"
       ALL_CHECKS_PASSED=false
   fi
    if [ ! -z "${ARG_VERBOSE}" ]; then
@@ -270,7 +270,7 @@ check_db () {
     --ssl-key=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.key
     echo "Mysql TLS configuration"
     mysql -u root --password=$mysql_admin_password -e "SHOW VARIABLES LIKE '%ssl%'"
-    echo "TLS versions allowed on maraidb:"
+    echo "TLS versions allowed on mariadb:"
     mysql -u root --password=$mysql_admin_password -e "SHOW GLOBAL VARIABLES LIKE 'tls_version'";
     echo "hirs_db user database access:"
     mysql -u hirs_db --password=$hirs_db_password -e "SHOW DATABASES;";

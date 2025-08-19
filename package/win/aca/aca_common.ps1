@@ -31,16 +31,20 @@ $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH=(Join-Path $HIRS_DATA_CERTIFICATES_
 $global:HIRS_DATA_LOG_DIR=(Join-Path $global:HIRS_DATA_DIR "log")
 $global:HIRS_DATA_INSTALL_LOG_NAME=(Join-Path $global:HIRS_DATA_LOG_DIR ("hirs_aca_install_"+(Get-Date -Format "yyyy-MM-dd")+'.log'))
 $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR=(Join-Path $global:HIRS_CONF_DIR "default-properties")
+
 #         Db Configuration files
-$global:DB_CONF=(Join-Path $Env:ProgramFiles 'MariaDB 11.1' 'data' 'my.ini')
+$global:DB_CONF = (Resolve-Path ([System.IO.Path]::Combine($Env:ProgramFiles, 'MariaDB 11.1', 'data', 'my.ini'))).Path
+
 #         Default Server Side Certificates
 $global:SSL_DB_SRV_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
 $global:SSL_DB_SRV_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_srv_rsa_3k_sha384.pem')
 $global:SSL_DB_SRV_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_srv_rsa_3k_sha384.key')
+
 #         Default Client Side Certificates
 $global:SSL_DB_CLIENT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
 $global:SSL_DB_CLIENT_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.pem')
 $global:SSL_DB_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.key')
+
 #     HIRS Relative directories assumed structure
 #         package
 #           linux
@@ -75,7 +79,7 @@ $global:HIRS_REL_SCRIPTS_PKI_CA_CONF=(Join-Path -Resolve $global:HIRS_REL_SCRIPT
 $global:HIRS_REL_WIN_ACA_BOOTRUN=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_bootRun.ps1')
 $global:HIRS_REL_WIN_ACA_COMMON=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_common.ps1')
 $global:HIRS_REL_WIN_ACA_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_setup.ps1')
-$global:HIRS_REL_WIN_ACA_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_win_config.ps1')
+$global:HIRS_REL_WIN_ACA_CONFIG=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_win_config.ps1')
 $global:HIRS_REL_WIN_DB_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME 'db')
 $global:HIRS_REL_WIN_DB_CREATE=(Join-Path -Resolve $global:HIRS_REL_WIN_DB_HOME 'db_create.ps1')
 $global:HIRS_REL_WIN_DB_MYSQL_UTIL=(Join-Path -Resolve $global:HIRS_REL_WIN_DB_HOME 'mysql_util.ps1')
@@ -94,22 +98,21 @@ Function read_aca_properties () {
     # This converts the ACA properties file into a hash table
     # Values are accessed by key like this: $propertyValue=$global:ACA_PROPERTIES.'example.property.key'
     param (
-        [string]$file = $null
+        [Parameter(Mandatory=$true)]
+        [string]$file
     )
     if (!$global:ACA_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
         $file_content=(Get-Content $file -Raw)
         if ($file_content) { # File is not empty
-            # $file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
-            # $global:ACA_PROPERTIES=(ConvertFrom-StringData($file_content))
             $global:ACA_PROPERTIES=(Get-Content -Path $file -Raw | ConvertFrom-StringData)
         } else { # File is empty
             # Initialize empty hash table
             $global:ACA_PROPERTIES=@{}
         }
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
-        $msg="Warning: ACA properties file not found. The path provided was: $file"
+        $msg="Warning: ACA properties file not found. The path provided was: [$file]"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
@@ -118,43 +121,92 @@ Function read_aca_properties () {
 
 Function add_new_aca_property () {
     param (
-        [string]$file = $null,
-        [string]$newKeyAndValue = $null
+        [Parameter(Mandatory=$true)]
+        [string]$file,
+        [Parameter(Mandatory=$true)]
+        [string]$newKeyAndValue
     )
-    if ($global:ACA_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
-        $msg="Writing KeyValue pair to $file"
-        if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
-        } else {
-            Write-Host "$msg"
-        }
-        Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-        echo "$newKeyAndValue" >> $file
-        $global:ACA_PROPERTIES=$null
-        read_aca_properties $file
+
+    if (-not $file -or -not $newKeyAndValue -or -not (Test-Path $file)) {
+        Write-Output "Exiting script while attempting to add a new ACA property
+        since the provided file [$file] does not exist and/or the provided key-value pair have not been supplied" | WriteAndLog
+        exit 1
     }
+
+    $msg="Writing KeyValue pair to $file"
+    if ($global:LOG_FILE) {
+        Write-Output "$msg" | WriteAndLog
+    } else {
+        Write-Host "$msg"
+    }
+
+    Write-Host "NOT LOGGED: KeyValue pair [$newKeyAndValue] has been added to file [$file]"
+    Write-Output "$newKeyAndValue" >> $file
+    $global:ACA_PROPERTIES=$null
+    read_aca_properties $file
+}
+
+Function find_property_value(){
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$file,
+        [Parameter(Mandatory=$true)]
+        [string]$key
+    )
+
+    # Check file exists and parameters are not empty/null
+    if (-not $file -or -not $key -or -not (Test-Path $file)) {
+        Write-Output "Exiting script while attempting to find an ACA property's value
+        since the provided file [$file] does not exist and/or the provided key have not been supplied" | WriteAndLog
+        exit 1
+    }
+
+    # Read all lines and check if any line starts with key=
+    $match = Get-Content $file | Where-Object { $_ -match "^$key=" } | Select-Object -First 1
+
+    # Extract the part after the '=' sign (for the first match only)
+    $value = $match -replace "^$key=", ""
+
+    # If the script was able to find the value that's associated with the provided key
+    if($value) {
+        Write-Host "NOT LOGGED: The value [$value] has been found to be associated with the key [$key]"  
+        if($file -eq $global:HIRS_DATA_ACA_PROPERTIES_FILE ) {
+          # Reset the global aca property hashmap and reload
+          $global:ACA_PROPERTIES = $null
+          Write-Output "Resetting and reloading the aca properties table" | WriteAndLog
+          read_aca_properties $file
+        } elseif($file -eq $global:HIRS_DATA_SPRING_PROP_FILE){
+          # Reset the global spring property hashmap and reload
+          $global:SPRING_PROPERTIES = $null
+          Write-Output "Resetting and reloading the spring properties table" | WriteAndLog
+          read_spring_properties $file
+        }
+    } else {
+        Write-Host "NOT LOGGED: There are no values associated with the provided key [$key]"
+    }
+    
+    return $value
 }
 
 Function read_spring_properties () {
     # This converts the application properties file into a hash table
     # Values are accessed by key like this: $propertyValue=$global:SPRING_PROPERTIES.'example.property.key'
     param (
-        [string]$file = $null
+        [Parameter(Mandatory=$true)]
+        [string]$file
     )
     if (!$global:SPRING_PROPERTIES -and $file -and [System.IO.File]::Exists($file)) {
         $file_content=(Get-Content $file -Raw)
         if ($file_content) { # File is not empty
-            #$file_content=([Regex]::Escape($file_content) -replace "(\\r)?\\n",[Environment]::NewLine)
-            #$global:SPRING_PROPERTIES=(ConvertFrom-StringData($file_content))
             $global:SPRING_PROPERTIES=(Get-Content -Path $file -Raw | ConvertFrom-StringData)
         } else { # File is empty
             # Initialize empty hash table
             $global:SPRING_PROPERTIES=@{}
         }
     } elseif ($file -and ![System.IO.File]::Exists($file)) {
-        $msg="Warning: Spring properties file not found. The path provided was: $file"
+        $msg="Warning: Spring properties file not found. The path provided was: [$file]"
         if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
+            Write-Output "$msg" | WriteAndLog
         } else {
             Write-Host "$msg"
         }
@@ -163,33 +215,59 @@ Function read_spring_properties () {
 
 Function add_new_spring_property () {
     param (
-        [string]$file = $null,
-        [string]$newKeyAndValue = $null
+        [Parameter(Mandatory=$true)]
+        [string]$file,
+        [Parameter(Mandatory=$true)]
+        [string]$newKeyAndValue
     )
-    if ($global:SPRING_PROPERTIES -and $file -and $newKeyAndValue -and [System.IO.File]::Exists($file)) {
-        $msg="Writing KeyValue pair to $file"
-        if ($global:LOG_FILE) {
-            echo "$msg" | WriteAndLog
-        } else {
-            Write-Host "$msg"
-        }
-        Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
-        echo "$newKeyAndValue" >> $file
-        $global:SPRING_PROPERTIES=$null
-        read_spring_properties $file
+
+    if (-not $file -or -not $newKeyAndValue -or -not (Test-Path $file)) {
+        Write-Output "Exiting script while attempting to add a new Spring property
+        since the provided file [$file] does not exist and/or the provided key-value pair have not been supplied" | WriteAndLog
+        exit 1
     }
+
+    $msg="Writing KeyValue pair to $file"
+    if ($global:LOG_FILE) {
+        Write-Output "$msg" | WriteAndLog
+    } else {
+        Write-Host "$msg"
+    }
+
+    Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
+    Write-Output "$newKeyAndValue" >> $file
+    $global:SPRING_PROPERTIES=$null
+    read_spring_properties $file
 }
 
 Function create_random () {
-    return (1..100 | % { Get-Random } | sha512sum | tr -dc 'a-zA-Z0-9')
+     # Step 1: Generate a string of 100 random numbers concatenated together
+    $randomData = -join (1..100 | ForEach-Object { Get-Random })
+
+    # Step 2: Create a SHA512 hashing object
+    $sha512 = [System.Security.Cryptography.SHA512]::Create()
+
+    # Step 3: Convert the random string into a byte array using UTF8 encoding
+    $bytes = [Text.Encoding]::UTF8.GetBytes($randomData)
+
+    # Step 4: Compute the SHA512 hash of the byte array, producing a byte array hash
+    $hashBytes = $sha512.ComputeHash($bytes)
+
+    # Step 5: Convert each byte in the hash to a two-digit hexadecimal string and join them all into one string
+    return -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
 }
 
 Function set_up_log () {
     if (![System.IO.Directory]::Exists($global:HIRS_DATA_LOG_DIR)) {
-        mkdir -p $global:HIRS_DATA_LOG_DIR 2>&1 > $null
+        New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
     }
     $global:LOG_FILE=$global:HIRS_DATA_INSTALL_LOG_NAME
-    touch $global:LOG_FILE
+    
+    if (-not (Test-Path $global:LOG_FILE)) {
+      New-Item -ItemType File -Path $global:LOG_FILE
+    } else {
+      Write-Output "File already exists: $global:LOG_FILE"
+    }
 }
 
 Function print_all_variables () {
@@ -213,12 +291,13 @@ Function ChangeBackslashToForwardSlash () {
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position=0)]
         [string]$msg
     )
-    echo ($msg -replace "\\","/")
+    Write-Output ($msg -replace "\\","/")
 }
 
 Function ChangeFileBackslashToForwardSlash () {
     param(
-        [string]$file = $null
+        [Parameter(Mandatory=$true)]
+        [string]$file
     )
     (Get-Content $file) -replace "\\","/" | Set-Content $file
 }

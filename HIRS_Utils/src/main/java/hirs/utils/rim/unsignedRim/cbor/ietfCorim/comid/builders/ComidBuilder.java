@@ -19,6 +19,9 @@ import java.util.List;
 @Getter
 @Setter
 public class ComidBuilder {
+    /* Some of the following variables are commented out but kept here for reference as part of the
+     * CoMID specification.
+     */
     private String language;
     @JsonProperty("tag-identity")
     private TagIdentityMapBuilder tagIdentityMap;

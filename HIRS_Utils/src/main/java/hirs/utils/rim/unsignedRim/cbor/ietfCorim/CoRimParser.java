@@ -146,18 +146,10 @@ public class CoRimParser extends CoRim {
                     if (role.get(0) != null) {
                         final int roleVal = (int) role.get(0);
                         switch (roleVal) {
-                            case 0:
-                                setEntityRole("tag-creator");
-                                break;
-                            case 1:
-                                setEntityRole("manifest-creator");
-                                break;
-                            case 2:
-                                setEntityRole("manifest-signer");
-                                break;
-                            default:
-                                setEntityRole("unknown CoRim role");
-                                break;
+                            case 0 -> setEntityRole("tag-creator");
+                            case 1 -> setEntityRole("manifest-creator");
+                            case 2 -> setEntityRole("manifest-signer");
+                            default -> setEntityRole("unknown CoRim role");
                         }
                     } else {
                         setEntityRole("unspecified CoRim role");
