@@ -19,6 +19,7 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 
+import lombok.NoArgsConstructor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -36,6 +37,7 @@ import jakarta.xml.bind.Unmarshaller;
 /**
  * Class that holds a PC Client RIM.
  */
+@NoArgsConstructor
 public class PcClientRim extends SwidTagGateway implements GenericRim {
 
     private boolean isValid = false;
@@ -52,13 +54,6 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     private String digest = "";
     private UUID tagUuid = null; // private String tagId = "";
     private List<Measurement> measurements = new ArrayList<>();;
-
-    /**
-     * Default constructor.
-     */
-    public PcClientRim() {
-
-    }
 
     /**
      * Validate a PC Client RIM.
