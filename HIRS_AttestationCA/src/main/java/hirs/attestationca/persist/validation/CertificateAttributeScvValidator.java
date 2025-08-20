@@ -382,6 +382,18 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
             numOfAttributes = attributeResults.size();
 
+            if (numOfAttributes == 0) {
+                passesValidation = false;
+
+                resultMessage.append(String.format("There are %d component(s) not matched%n.",
+                        remainingComponentResults.size()));
+
+                for (ComponentResult componentResult : remainingComponentResults) {
+                    resultMessage.append("Component not found: ")
+                                    .append(componentResult.toString());
+                }
+            }
+
             boolean saveAttributeResult;
 
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
@@ -499,6 +511,20 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             List<ComponentAttributeResult> attributeResults = checkComponentClassMap(
                     componentInfos, remainingComponentResults);
             numOfAttributes = attributeResults.size();
+
+            if (numOfAttributes == 0) {
+                fieldValidation = false;
+
+                resultMessage.append(String.format("There are %d component(s) not matched%n.",
+                        remainingComponentResults.size()));
+
+                for (ComponentResult componentResult : remainingComponentResults) {
+                    resultMessage.append("Component not found: ")
+                            .append(componentResult.toString());
+                }
+            }
+
+
             boolean saveAttributeResult;
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
                 saveAttributeResult = true;

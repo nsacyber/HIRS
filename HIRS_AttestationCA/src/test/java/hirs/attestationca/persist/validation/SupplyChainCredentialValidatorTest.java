@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentClass;
@@ -23,6 +24,7 @@ import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.utils.enums.DeviceInfoEnums;
+import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -47,6 +49,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.BufferedReader;
@@ -218,9 +221,6 @@ public class SupplyChainCredentialValidatorTest {
     private static KeyStore emptyKeyStore;
 
     @Mock
-    private ComponentResultRepository componentResultRepository;
-
-    @Mock
     private ComponentAttributeRepository componentAttributeRepository;
 
     /**
@@ -387,6 +387,9 @@ public class SupplyChainCredentialValidatorTest {
 
         PlatformCredential pc = new PlatformCredential(certBytes);
 
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
+
         DeviceInfoReport deviceInfoReport = buildDeviceInfoReportUsingHardwareInfo(
                 new HardwareInfo(PLATFORM_MANUFACTURER, PLATFORM_MODEL,
                         PLATFORM_VERSION, TEST_BOARD_SERIAL_NUMBER,
@@ -427,6 +430,9 @@ public class SupplyChainCredentialValidatorTest {
 
         PlatformCredential pc = new PlatformCredential(certBytes);
 
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
+
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
@@ -459,6 +465,9 @@ public class SupplyChainCredentialValidatorTest {
                         INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
 
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
@@ -495,6 +504,9 @@ public class SupplyChainCredentialValidatorTest {
 
         PlatformCredential pc = new PlatformCredential(certBytes);
 
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
+
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
@@ -527,6 +539,9 @@ public class SupplyChainCredentialValidatorTest {
                         getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
 
         EndorsementCredential ec = new EndorsementCredential(
                 Files.readAllBytes(Paths.get(
@@ -562,6 +577,9 @@ public class SupplyChainCredentialValidatorTest {
 
         PlatformCredential pc = new PlatformCredential(certBytes);
 
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
+
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
@@ -594,6 +612,9 @@ public class SupplyChainCredentialValidatorTest {
                         getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
 
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
@@ -630,6 +651,9 @@ public class SupplyChainCredentialValidatorTest {
 
         PlatformCredential pc = new PlatformCredential(certBytes);
 
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
+
         EndorsementCredential ec = new EndorsementCredential(
                 Files.readAllBytes(Paths.get(
                         Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
@@ -658,13 +682,17 @@ public class SupplyChainCredentialValidatorTest {
 
         DeviceInfoReport deviceInfoReport = buildDeviceInfoReportUsingHardwareInfo(
                 new HardwareInfo(DeviceInfoEnums.NOT_SPECIFIED, DeviceInfoEnums.NOT_SPECIFIED,
-                        DeviceInfoEnums.NOT_SPECIFIED, "zzz", "aaa", "bbb"));
+                        DeviceInfoEnums.NOT_SPECIFIED, "zzz", "aaa",
+                        "bbb"));
 
         byte[] certBytes = Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(SupplyChainCredentialValidatorTest.class.
                         getResource(INTEL_PLATFORM_CERT_2)).toURI()));
 
         PlatformCredential pc = new PlatformCredential(certBytes);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
 
         EndorsementCredential ec = new EndorsementCredential(
                 Files.readAllBytes(Paths.get(
@@ -1050,6 +1078,9 @@ public class SupplyChainCredentialValidatorTest {
 
         PlatformCredential pc = new PlatformCredential(certBytes);
 
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV1p2(pc);
+
         EndorsementCredential ec = new EndorsementCredential(Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(getClass().getResource(TEST_EK_CERT)).toURI())));
 
@@ -1239,16 +1270,18 @@ public class SupplyChainCredentialValidatorTest {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReport();
 
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport,
                         componentResultRepository, componentAttributeRepository,
                         Collections.emptyList(), UUID.randomUUID(), false);
-        assertEquals(AppraisalStatus.Status.PASS,
+        assertEquals(AppraisalStatus.Status.FAIL,
                 appraisalStatus.getAppStatus());
-        assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
-                appraisalStatus.getMessage());
+        assertTrue(appraisalStatus.getMessage().contains("component(s) not matched"));
     }
 
     /**
@@ -1263,7 +1296,10 @@ public class SupplyChainCredentialValidatorTest {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
 
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
@@ -1274,6 +1310,63 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(AppraisalStatus.Status.PASS, appraisalStatus.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 appraisalStatus.getMessage());
+    }
+
+    /**
+     * Tests that TPM 2.0 Platform Credentials validate correctly with not specified, unknown, or empty combinations.
+     *
+     * @throws IOException if unable to set up DeviceInfoReport from resource file
+     */
+    @Test
+    public final void testValPCAttributesV2p0WithComponentsPassDefaultSerialRevision()
+            throws IOException {
+        DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
+
+        PlatformCredential platformCredential =
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
+
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
+
+        AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
+                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport,
+                        componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
+        assertEquals(AppraisalStatus.Status.PASS, appraisalStatus.getAppStatus());
+        assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
+                appraisalStatus.getMessage());
+
+        List<ComponentInfo> componentInfoList2 = List.of(
+                new ComponentInfo("the-device", "Dell Inc", "11",
+                        "9ZLUO9", "Unknown", "02000012",
+                        "2.23.133.18.3.1"),
+                new ComponentInfo("the-device", "9090", "AE12",
+                        null, null, "00070700",
+                        "2.23.133.18.3.4"),
+                new ComponentInfo("the-device", "Not Specified", "109 NVM",
+                        "1110_1100_2230_0000_8CE3_8E10_0164_9CC7.", "unknown",
+                        "00060001", "2.23.133.18.3.5"),
+                new ComponentInfo("the-device", "123456789", "D7E232JI-6 NO",
+                        "000000", "not specified",
+                        "00060001", "2.23.133.18.3.1"),
+                new ComponentInfo("the-device", "123456789", "D7E232JI-6 NO",
+                        "000000", "",
+                        "00060001", "2.23.133.18.3.1"),
+                new ComponentInfo("the-device", "Super Chip", "12234",
+                        "Unknown", "Super Chip 3.0 w/ 500 Hz",
+                        "00010002", "2.23.133.18.3.1"));
+
+
+
+        AppraisalStatus appraisalStatus2 = CertificateAttributeScvValidator
+                .validatePlatformCredentialAttributesV2p0(platformCredential, deviceInfoReport,
+                        componentResultRepository, componentAttributeRepository,
+                        componentInfoList, UUID.randomUUID(), false);
+        assertEquals(AppraisalStatus.Status.PASS, appraisalStatus2.getAppStatus());
+        assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
+                appraisalStatus2.getMessage());
     }
 
     /**
@@ -1289,7 +1382,10 @@ public class SupplyChainCredentialValidatorTest {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
 
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
@@ -1323,6 +1419,9 @@ public class SupplyChainCredentialValidatorTest {
                         Objects.requireNonNull(SupplyChainCredentialValidator.class.getResource(
                                 SAMPLE_TEST_PACCOR_CERT)).toURI())));
 
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
+
         List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
         AppraisalStatus appraisalStatus = CertificateAttributeScvValidator
@@ -1343,7 +1442,10 @@ public class SupplyChainCredentialValidatorTest {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
 
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
@@ -1358,6 +1460,8 @@ public class SupplyChainCredentialValidatorTest {
                 result.getMessage());
 
         when(platformCredential.getManufacturer()).thenReturn(null);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
+
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1365,7 +1469,8 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform manufacturer did not match\n", result.getMessage());
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1374,6 +1479,7 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
         when(platformCredential.getModel()).thenReturn(null);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1381,7 +1487,8 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(result.getAppStatus(), AppraisalStatus.Status.FAIL);
         assertEquals(result.getMessage(), "Platform model did not match\n");
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1390,12 +1497,14 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
         when(platformCredential.getPlatformSerial()).thenReturn(null);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
                         componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1404,6 +1513,7 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
         when(platformCredential.getVersion()).thenReturn(null);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1412,7 +1522,8 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1420,10 +1531,10 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
-        List<ComponentIdentifier> modifiedComponentIdentifiers
-                = platformCredential.getComponentIdentifiers();
+        List<ComponentIdentifierV2> modifiedComponentIdentifiers
+                = platformCredential.getComponentIdentifiersV2();
         modifiedComponentIdentifiers.get(0).setComponentManufacturer(null);
-        when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedComponentIdentifiers);
+        when(platformCredential.getComponentIdentifiersV2()).thenReturn(modifiedComponentIdentifiers);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1431,7 +1542,8 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Component manufacturer is empty\n", result.getMessage());
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1439,9 +1551,9 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
-        modifiedComponentIdentifiers = platformCredential.getComponentIdentifiers();
+        modifiedComponentIdentifiers = platformCredential.getComponentIdentifiersV2();
         modifiedComponentIdentifiers.get(0).setComponentModel(null);
-        when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedComponentIdentifiers);
+        when(platformCredential.getComponentIdentifiersV2()).thenReturn(modifiedComponentIdentifiers);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1463,7 +1575,10 @@ public class SupplyChainCredentialValidatorTest {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
 
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
@@ -1485,7 +1600,7 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform manufacturer did not match\n", result.getMessage());
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1503,7 +1618,7 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform model did not match\n", result.getMessage());
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1521,7 +1636,7 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform serial did not match\n", result.getMessage());
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1539,7 +1654,7 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
         assertEquals("Platform version did not match\n", result.getMessage());
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1549,10 +1664,10 @@ public class SupplyChainCredentialValidatorTest {
                 result.getMessage());
 
         // Part VI: Testing using an empty computer manufacturer string
-        List<ComponentIdentifier> modifiedComponentIdentifiers
-                = platformCredential.getComponentIdentifiers();
+        List<ComponentIdentifierV2> modifiedComponentIdentifiers
+                = platformCredential.getComponentIdentifiersV2();
         modifiedComponentIdentifiers.get(0).setComponentManufacturer(new DERUTF8String(""));
-        when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedComponentIdentifiers);
+        when(platformCredential.getComponentIdentifiersV2()).thenReturn(modifiedComponentIdentifiers);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1561,7 +1676,7 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals("Component manufacturer is empty\n",
                 result.getMessage());
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1571,9 +1686,9 @@ public class SupplyChainCredentialValidatorTest {
                 result.getMessage());
 
         // Part VII: Testing using an empty computer model string
-        modifiedComponentIdentifiers = platformCredential.getComponentIdentifiers();
+        modifiedComponentIdentifiers = platformCredential.getComponentIdentifiersV2();
         modifiedComponentIdentifiers.get(0).setComponentModel(new DERUTF8String(""));
-        when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedComponentIdentifiers);
+        when(platformCredential.getComponentIdentifiersV2()).thenReturn(modifiedComponentIdentifiers);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
@@ -1588,13 +1703,16 @@ public class SupplyChainCredentialValidatorTest {
      *
      * @throws IOException if unable to set up DeviceInfoReport from resource file
      */
-    //@Test
+    @Test
     public final void testValidatePlatformCredentialAttributesV2p0MissingComponentInDeviceInfo()
             throws IOException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
 
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
@@ -1606,30 +1724,34 @@ public class SupplyChainCredentialValidatorTest {
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
 
-        List<ComponentIdentifier> modifiedComponentIdentifiers
-                = platformCredential.getComponentIdentifiers();
-        modifiedComponentIdentifiers.add(new ComponentIdentifier(
+        List<ComponentIdentifierV2> modifiedComponentIdentifiers
+                = platformCredential.getComponentIdentifiersV2();
+        modifiedComponentIdentifiers.add(new ComponentIdentifierV2(
+                new ComponentClass("2.23.133.18.3.1", "00000000"),
                 new DERUTF8String("ACME"),
                 new DERUTF8String("TNT"),
                 new DERUTF8String("2"),
                 new DERUTF8String("1.1"),
                 null,
                 ASN1Boolean.FALSE,
-                Collections.emptyList()
+                Collections.emptyList(),
+                null,
+                null,
+                null
         ));
 
-        when(platformCredential.getComponentIdentifiers()).thenReturn(
+        when(platformCredential.getComponentIdentifiersV2()).thenReturn(
                 modifiedComponentIdentifiers
         );
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
-        assertEquals("There are unmatched components:\n"
-                        + "Manufacturer=ACME, Model=TNT, Serial=2, Revision=1.1;\n",
-                result.getMessage());
+        assertTrue(result.getMessage().contains("ACME"));
+        assertTrue(result.getMessage().contains("TNT"));
     }
 
     /**
@@ -1642,8 +1764,11 @@ public class SupplyChainCredentialValidatorTest {
     @Test
     public final void testValidatePlatformCredentialAttributesV2p0ExtraComponentInDeviceInfo()
             throws IOException {
-        PlatformCredential platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(
+        PlatformCredential platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(
                 setupDeviceInfoReportWithComponents(SAMPLE_PACCOR_OUTPUT_TXT));
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         // The device info report will contain one extra component.
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents(
@@ -1680,48 +1805,55 @@ public class SupplyChainCredentialValidatorTest {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
 
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
+
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
 
-        List<ComponentIdentifier> componentIdentifiers
-                = platformCredential.getComponentIdentifiers();
+        List<ComponentIdentifierV2> componentIdentifiers
+                = platformCredential.getComponentIdentifiersV2();
         componentIdentifiers.get(0).setComponentManufacturer(new DERUTF8String(""));
-        when(platformCredential.getComponentIdentifiers()).thenReturn(componentIdentifiers);
+        when(platformCredential.getComponentIdentifiersV2()).thenReturn(componentIdentifiers);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
-        assertEquals("Component manufacturer is empty\n",
-                result.getMessage());
+        assertTrue(result.getMessage().contains("Component manufacturer is empty"));
 
-        platformCredential = setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+        platformCredential = setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
 
-        componentIdentifiers = platformCredential.getComponentIdentifiers();
-        componentIdentifiers.get(0).setComponentModel(null);
-        when(platformCredential.getComponentIdentifiers()).thenReturn(componentIdentifiers);
+        componentIdentifiers = platformCredential.getComponentIdentifiersV2();
+        componentIdentifiers.get(0).setComponentModel(new DERUTF8String(""));
+        when(platformCredential.getComponentIdentifiersV2()).thenReturn(componentIdentifiers);
+        componentResultRepository = setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.FAIL, result.getAppStatus());
-        assertEquals("Component model is empty\n", result.getMessage());
+        assertTrue(result.getMessage().contains("Component model is empty"));
     }
 
     /**
@@ -1735,10 +1867,12 @@ public class SupplyChainCredentialValidatorTest {
             throws IOException {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
+
+        List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
         ArrayList<ComponentIdentifier> modifiedIdentifiers = new ArrayList<>();
-        for (ComponentIdentifier identifier : platformCredential.getComponentIdentifiers()) {
+        for (ComponentIdentifierV2 identifier : platformCredential.getComponentIdentifiersV2()) {
             if (identifier.getComponentSerial() != null
                     && identifier.getComponentSerial().toString().equals("23:94:17:ba:86:5e")) {
                 identifier.setComponentSerial(new DERUTF8String(""));
@@ -1747,11 +1881,13 @@ public class SupplyChainCredentialValidatorTest {
         }
 
         when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedIdentifiers);
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
                         deviceInfoReport, componentResultRepository, componentAttributeRepository,
-                        Collections.emptyList(), UUID.randomUUID(), false);
+                        componentInfoList, UUID.randomUUID(), false);
         assertEquals(AppraisalStatus.Status.PASS, result.getAppStatus());
         assertEquals(SupplyChainCredentialValidator.PLATFORM_ATTRIBUTES_VALID,
                 result.getMessage());
@@ -1769,7 +1905,7 @@ public class SupplyChainCredentialValidatorTest {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
 
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
 
         List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
@@ -1783,6 +1919,9 @@ public class SupplyChainCredentialValidatorTest {
         }
 
         when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedIdentifiers);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
@@ -1806,7 +1945,7 @@ public class SupplyChainCredentialValidatorTest {
         DeviceInfoReport deviceInfoReport = setupDeviceInfoReportWithComponents();
 
         PlatformCredential platformCredential =
-                setupMockPlatformCredentialWithPlatformConfigV1(deviceInfoReport);
+                setupMockPlatformCredentialWithPlatformConfigV2(deviceInfoReport);
 
         List<ComponentInfo> componentInfoList = retrieveListOfComponentInfos();
 
@@ -1821,6 +1960,9 @@ public class SupplyChainCredentialValidatorTest {
         }
 
         when(platformCredential.getComponentIdentifiers()).thenReturn(modifiedIdentifiers);
+
+        ComponentResultRepository componentResultRepository =
+                setupMockComponentResultRepositoryWithPlatformCertificateV2p0(platformCredential);
 
         AppraisalStatus result = CertificateAttributeScvValidator
                 .validatePlatformCredentialAttributesV2p0(platformCredential,
@@ -2037,14 +2179,23 @@ public class SupplyChainCredentialValidatorTest {
 
         return List.of(
                 new ComponentInfo("the-device", "Dell Inc", "11",
-                        "9ZLUO9", "Not Specified", "020000123",
+                        "9ZLUO9", "Not Specified", "02000012",
                         "2.23.133.18.3.1"),
                 new ComponentInfo("the-device", "9090", "AE12",
                         "Not Specified", "Not Specified", "00070700",
                         "2.23.133.18.3.4"),
                 new ComponentInfo("the-device", "Not Specified", "109 NVM",
                         "1110_1100_2230_0000_8CE3_8E10_0164_9CC7.", "Not Specified",
-                        "00060001", "2.23.133.18.3.5"));
+                        "00060001", "2.23.133.18.3.5"),
+                new ComponentInfo("the-device", "123456789", "D7E232JI-6 NO",
+                        "000000", "",
+                        "00060001", "2.23.133.18.3.1"),
+                new ComponentInfo("the-device", "123456789", "D7E232JI-6 NO",
+                        "000000", null,
+                        "00060001", "2.23.133.18.3.1"),
+                new ComponentInfo("the-device", "Super Chip", "12234",
+                        "", "Super Chip 3.0 w/ 500 Hz",
+                        "00010002", "2.23.133.18.3.1"));
     }
 
     /**
@@ -2167,7 +2318,7 @@ public class SupplyChainCredentialValidatorTest {
             DERUTF8String componentRevision = null;
 
             ComponentClass componentClass =
-                    new ComponentClass(deviceInfoComponent.getComponentClassValue(), "");
+                    new ComponentClass(deviceInfoComponent.getComponentClassRegistry(), deviceInfoComponent.getComponentClassValue());
 
             if (deviceInfoComponent.getComponentSerial() != null) {
                 componentSerial = new DERUTF8String(deviceInfoComponent.getComponentSerial());
@@ -2186,7 +2337,7 @@ public class SupplyChainCredentialValidatorTest {
                     null,
                     ASN1Boolean.TRUE,
                     Collections.emptyList(),
-                    new CertificateIdentifier(),
+                    null,
                     new URIReference(),
                     AttributeStatus.ADDED
             ));
@@ -2196,6 +2347,42 @@ public class SupplyChainCredentialValidatorTest {
         when(platformCredential.getComponentIdentifiersV2()).thenReturn(componentIdentifierV2List);
 
         return platformCredential;
+    }
+
+    private ComponentResultRepository setupMockComponentResultRepositoryWithPlatformCertificateV1p2(@NonNull PlatformCredential platformCredential) {
+        ComponentResultRepository componentResultRepository = mock(ComponentResultRepository.class);
+
+        final String boardSerial = platformCredential.getPlatformSerial() == null ? "" : platformCredential.getPlatformSerial();
+        final String certSerial = platformCredential.getSerialNumber() == null ? "" : platformCredential.getSerialNumber().toString();
+        final String certType = platformCredential.getPlatformChainType() == null ? "" : platformCredential.getPlatformChainType();
+        List<ComponentResult> componentResultList = new ArrayList<>();
+        platformCredential.getComponentIdentifiers().forEach(componentIdentifier -> {
+            componentResultList.add(new ComponentResult(boardSerial, certSerial, certType, componentIdentifier));
+        });
+
+        when(componentResultRepository.findByCertificateSerialNumberAndBoardSerialNumber(Mockito.any(String.class), Mockito.any(String.class))).thenReturn(
+                componentResultList
+        );
+
+        return componentResultRepository;
+    }
+
+    private ComponentResultRepository setupMockComponentResultRepositoryWithPlatformCertificateV2p0(@NonNull PlatformCredential platformCredential) {
+        ComponentResultRepository componentResultRepository = mock(ComponentResultRepository.class);
+
+        final String boardSerial = platformCredential.getPlatformSerial() == null ? "" : platformCredential.getPlatformSerial();
+        final String certSerial = platformCredential.getSerialNumber() == null ? "" : platformCredential.getSerialNumber().toString();
+        final String certType = platformCredential.getPlatformChainType() == null ? "" : platformCredential.getPlatformChainType();
+        List<ComponentResult> componentResultList = new ArrayList<>();
+        platformCredential.getComponentIdentifiersV2().forEach(componentIdentifierV2 -> {
+           componentResultList.add(new ComponentResult(boardSerial, certSerial, certType, componentIdentifierV2));
+        });
+
+        when(componentResultRepository.findByCertificateSerialNumberAndBoardSerialNumber(Mockito.any(String.class), Mockito.any(String.class))).thenReturn(
+                componentResultList
+        );
+
+        return componentResultRepository;
     }
 
     /**

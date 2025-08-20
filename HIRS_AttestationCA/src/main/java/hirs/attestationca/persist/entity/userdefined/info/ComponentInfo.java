@@ -2,6 +2,7 @@ package hirs.attestationca.persist.entity.userdefined.info;
 
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.validation.CertificateAttributeScvValidator;
 import hirs.utils.enums.DeviceInfoEnums;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -114,13 +115,19 @@ public class ComponentInfo extends ArchivableEntity {
         }
 
         if (componentSerial != null) {
-            this.componentSerial = componentSerial;
+            this.componentSerial =
+                    CertificateAttributeScvValidator.isNotSpecifiedOrUnknown(componentSerial.trim()) ?
+                            ComponentIdentifier.NOT_SPECIFIED_COMPONENT :
+                            componentSerial;
         } else {
             this.componentSerial = ComponentIdentifier.NOT_SPECIFIED_COMPONENT;
         }
 
         if (componentRevision != null) {
-            this.componentRevision = componentRevision;
+            this.componentRevision =
+                    CertificateAttributeScvValidator.isNotSpecifiedOrUnknown(componentRevision.trim()) ?
+                            ComponentIdentifier.NOT_SPECIFIED_COMPONENT :
+                            componentRevision;
         } else {
             this.componentRevision = ComponentIdentifier.NOT_SPECIFIED_COMPONENT;
         }
