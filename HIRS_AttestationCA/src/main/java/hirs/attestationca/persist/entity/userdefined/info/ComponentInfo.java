@@ -114,23 +114,15 @@ public class ComponentInfo extends ArchivableEntity {
             this.componentModel = componentModel;
         }
 
-        if (componentSerial != null) {
-            this.componentSerial =
-                    CertificateAttributeScvValidator.isNotSpecifiedOrUnknown(componentSerial.trim()) ?
-                            ComponentIdentifier.NOT_SPECIFIED_COMPONENT :
-                            componentSerial;
-        } else {
-            this.componentSerial = ComponentIdentifier.NOT_SPECIFIED_COMPONENT;
-        }
+        this.componentSerial =
+                    CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(componentSerial)
+                            ? ComponentIdentifier.NOT_SPECIFIED_COMPONENT
+                            : componentSerial;
 
-        if (componentRevision != null) {
-            this.componentRevision =
-                    CertificateAttributeScvValidator.isNotSpecifiedOrUnknown(componentRevision.trim()) ?
-                            ComponentIdentifier.NOT_SPECIFIED_COMPONENT :
-                            componentRevision;
-        } else {
-            this.componentRevision = ComponentIdentifier.NOT_SPECIFIED_COMPONENT;
-        }
+        this.componentRevision =
+                    CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(componentRevision)
+                            ? ComponentIdentifier.NOT_SPECIFIED_COMPONENT
+                            : componentRevision;
     }
 
     /**
