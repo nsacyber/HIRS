@@ -23,7 +23,7 @@ public final class CertificateVariables {
      */
     public static final String MALFORMED_CERT_MESSAGE = "Malformed certificate detected.";
     /**
-     *
+     * Maximum certificate length in bytes.
      */
     public static final int MAX_CERT_LENGTH_BYTES = 2048;
     /**
