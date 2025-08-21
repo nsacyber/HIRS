@@ -73,7 +73,7 @@ public class ComponentResult extends ArchivableEntity {
 
     private String componentClassToolTipStr;
 
-    private String componentClassType;
+    private String componentClassRegistryType;
 
     private AttributeStatus attributeStatus;
 
@@ -159,7 +159,7 @@ public class ComponentResult extends ArchivableEntity {
         this.componentClassRegistry = componentIdentifierV2.getComponentClass().getRegistryOid();
         this.componentClassStr = componentIdentifierV2.getComponentClass().toString();
         this.componentClassToolTipStr = componentIdentifierV2.getComponentClass().getComponentToolTipStr();
-        this.componentClassType = componentIdentifierV2.getComponentClass().getRegistryType();
+        this.componentClassRegistryType = componentIdentifierV2.getComponentClass().getRegistryType();
         this.attributeStatus = componentIdentifierV2.getAttributeStatus();
         this.version2 = true;
         if (componentIdentifierV2.getComponentPlatformCert() != null) {

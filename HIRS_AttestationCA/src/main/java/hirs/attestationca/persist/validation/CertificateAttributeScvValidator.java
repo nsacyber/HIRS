@@ -244,7 +244,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
                 passesValidation &= fieldValidation;
 
-
                 fieldValidation = !isRequiredASN1StringFieldBlank("componentModel",
                         pcComponent.getComponentModel());
 
@@ -260,7 +259,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             List<ComponentIdentifierV2> allV2PcComponents
                     = new ArrayList<>(platformCredential.getComponentIdentifiersV2());
 
-            //todo esacost v3_911
             // All V2 components listed in the Platform Credential must have a manufacturer and model
             for (ComponentIdentifierV2 pcComponent : allV2PcComponents) {
                 fieldValidation = !isRequiredASN1StringFieldBlank("componentManufacturer",
@@ -362,11 +360,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         //this is used to get a unique count
         List<UUID> componentIdList = new ArrayList<>();
 
-        // todo v3_issue_911
-        if (ignorePcieVpdAttribute) {
-
-        }
-
         int numOfAttributes = 0;
 
         if (!remainingComponentResults.isEmpty()) {
@@ -383,6 +376,21 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     saveAttributeResult = !componentAttributeResult.getAttribute()
                             .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION);
                 }
+
+                if (ignorePcieVpdAttribute) {
+                    // since the vpd string is attached to the pcie component's manufacturer, model and serial number,
+                    // the aca will not save the attribute results if there is a mismatch for any one of those
+                    // attributes.
+                    if(componentAttributeResult.getRegistryType().equalsIgnoreCase("PCIE")){
+                        saveAttributeResult = !(componentAttributeResult.getAttribute()
+                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_MANUFACTURER)
+                                || componentAttributeResult.getAttribute()
+                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_MODEL)
+                                || componentAttributeResult.getAttribute()
+                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_SERIAL));
+                    }
+                }
+
                 if (saveAttributeResult) {
                     componentAttributeResult.setProvisionSessionId(provisionSessionId);
                     componentAttributeRepository.save(componentAttributeResult);
@@ -488,14 +496,31 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             List<ComponentAttributeResult> attributeResults = checkComponentClassMap(
                     componentInfos, remainingComponentResults);
             numOfAttributes = attributeResults.size();
+
             boolean saveAttributeResult;
+
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
                 saveAttributeResult = true;
-                // todo v3_911
+
                 if (ignoreRevisionAttribute) {
                     saveAttributeResult = !componentAttributeResult.getAttribute()
                             .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION);
                 }
+
+                if (ignorePcieVpdAttribute) {
+                    // since the vpd string is attached to the pcie component's manufacturer, model and serial number,
+                    // the aca will not save the attribute results if there is a mismatch for any one of those
+                    // attributes.
+                    if(componentAttributeResult.getRegistryType().equalsIgnoreCase("PCIE")){
+                        saveAttributeResult = !(componentAttributeResult.getAttribute()
+                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_MANUFACTURER)
+                                || componentAttributeResult.getAttribute()
+                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_MODEL)
+                                || componentAttributeResult.getAttribute()
+                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_SERIAL));
+                    }
+                }
+
                 if (saveAttributeResult) {
                     componentAttributeResult.setProvisionSessionId(provisionSessionId);
                     componentAttributeRepository.save(componentAttributeResult);
@@ -853,7 +878,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         if (!componentInfo.getComponentManufacturer().equals(componentResult.getManufacturer())) {
             ComponentAttributeResult manufacturerAttribute = new ComponentAttributeResult(
                     componentResult.getId(), componentResult.getManufacturer(),
-                    componentInfo.getComponentManufacturer());
+                    componentInfo.getComponentManufacturer(), componentResult.getComponentClassRegistryType());
             manufacturerAttribute.setAttribute(ComponentResult.ATTRIBUTE_MANUFACTURER);
             attributeResults.add(manufacturerAttribute);
         }
@@ -861,7 +886,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         if (!componentInfo.getComponentModel().equals(componentResult.getModel())) {
             ComponentAttributeResult modelAttribute = new ComponentAttributeResult(
                     componentResult.getId(), componentResult.getModel(),
-                    componentInfo.getComponentModel());
+                    componentInfo.getComponentModel(), componentResult.getComponentClassRegistryType());
             modelAttribute.setAttribute(ComponentResult.ATTRIBUTE_MODEL);
             attributeResults.add(modelAttribute);
         }
@@ -869,7 +894,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         if (!componentInfo.getComponentSerial().equals(componentResult.getSerialNumber())) {
             ComponentAttributeResult serialAttribute = new ComponentAttributeResult(
                     componentResult.getId(), componentResult.getSerialNumber(),
-                    componentInfo.getComponentSerial());
+                    componentInfo.getComponentSerial(), componentResult.getComponentClassRegistryType());
             serialAttribute.setAttribute(ComponentResult.ATTRIBUTE_SERIAL);
             attributeResults.add(serialAttribute);
         }
@@ -877,7 +902,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         if (!componentInfo.getComponentRevision().equals(componentResult.getRevisionNumber())) {
             ComponentAttributeResult revisionAttribute = new ComponentAttributeResult(
                     componentResult.getId(), componentResult.getRevisionNumber(),
-                    componentInfo.getComponentRevision());
+                    componentInfo.getComponentRevision(), componentResult.getComponentClassRegistryType());
             // this could be a boolean, but then it is too specific to revision, this leaves it open
             // for future changes
             revisionAttribute.setAttribute(ComponentResult.ATTRIBUTE_REVISION);
@@ -902,9 +927,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         // this list only has those of the same class type
         Map<String, ComponentInfo> componentSerialMap = new HashMap<>();
-        componentClassInfo.forEach((componentInfo) -> {
-            componentSerialMap.put(componentInfo.getComponentSerial(), componentInfo);
-        });
+        componentClassInfo.forEach((componentInfo) -> componentSerialMap.put(componentInfo.getComponentSerial(), componentInfo));
 
         // see if the serial exists
         ComponentInfo componentInfo = componentSerialMap.get(componentResult.getSerialNumber());
@@ -973,7 +996,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     componentAttributeRepository.save(new ComponentAttributeResult(
                             deltaComponentResult.getId(),
                             provisionSessionId,
-                            deltaComponentResult.getSerialNumber(), "Delta Component with no Status"));
+                            deltaComponentResult.getSerialNumber(), "Delta Component with no Status"
+                            , deltaComponentResult.getComponentClassRegistryType()));
                 } else {
                     componentSerialNumber = deltaComponentResult.getSerialNumber();
                     componentEntry = componentSerialMap.get(componentSerialNumber);
@@ -984,7 +1008,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                         deltaComponentResult.getId(),
                                         provisionSessionId,
                                         componentSerialNumber, "Delta Component Addition while"
-                                        + " component is already present."));
+                                        + " component is already present."
+                                        , deltaComponentResult.getComponentClassRegistryType()));
                                 break;
                             case REMOVED:
                                 dbBaseComponents.remove(componentEntry);
@@ -1019,7 +1044,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                             provisionSessionId,
                                             deltaComponentResult.getComponentClassStr(),
                                             "Delta Component Addition while"
-                                                    + " component is already present."));
+                                                    + " component is already present."
+                                            , deltaComponentResult.getComponentClassRegistryType()));
                                 }
                             } else if (deltaComponentResult.getAttributeStatus()
                                     == AttributeStatus.REMOVED) {
@@ -1029,7 +1055,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                             deltaComponentResult.getId(),
                                             provisionSessionId,
                                             deltaComponentResult.getComponentClassStr(),
-                                            "Delta Component Removal on non-existent component."));
+                                            "Delta Component Removal on non-existent component."
+                                            , deltaComponentResult.getComponentClassRegistryType()));
                                 } else {
                                     // valid case
                                     dbBaseComponents.remove(componentResult);
@@ -1074,7 +1101,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                             deltaComponentResult.getId(),
                                             provisionSessionId,
                                             componentSerialNumber, "Delta Component Removal on"
-                                            + " non-existent component."));
+                                            + " non-existent component."
+                                            , deltaComponentResult.getComponentClassRegistryType()));
                                 } else if (deltaComponentResult.getAttributeStatus()
                                         == AttributeStatus.MODIFIED) {
                                     // problem, can't modify what isn't there
@@ -1082,7 +1110,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                             deltaComponentResult.getId(),
                                             provisionSessionId,
                                             componentSerialNumber, "Delta Component Modification "
-                                            + "on non-existent component."));
+                                            + "on non-existent component."
+                                            , deltaComponentResult.getComponentClassRegistryType()));
                                 }
                             }
                         }

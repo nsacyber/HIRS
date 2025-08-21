@@ -31,6 +31,9 @@ public class ComponentAttributeResult extends ArchivableEntity {
     @Setter
     private String attribute;
 
+    @Setter
+    private String registryType;
+
     private String expectedValue;
 
     private String actualValue;
@@ -44,10 +47,12 @@ public class ComponentAttributeResult extends ArchivableEntity {
      */
     public ComponentAttributeResult(final UUID componentId,
                                     final String expectedValue,
-                                    final String actualValue) {
+                                    final String actualValue,
+                                    final String registryType) {
         this.componentId = componentId;
         this.expectedValue = expectedValue;
         this.actualValue = actualValue;
+        this.registryType = registryType;
     }
 
     /**
@@ -61,11 +66,13 @@ public class ComponentAttributeResult extends ArchivableEntity {
     public ComponentAttributeResult(final UUID componentId,
                                     final UUID provisionSessionId,
                                     final String expectedValue,
-                                    final String actualValue) {
+                                    final String actualValue,
+                                    final String registryType) {
         this.componentId = componentId;
         this.provisionSessionId = provisionSessionId;
         this.expectedValue = expectedValue;
         this.actualValue = actualValue;
+        this.registryType = registryType;
     }
 
     /**
