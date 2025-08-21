@@ -344,8 +344,8 @@ public class SupplyChainValidationService {
                     String[] storedPcrs = eventLog.getExpectedPCRList();
                     PcrValidator pcrValidator = new PcrValidator(sRim.getExpectedPCRList());
                     // grab the quote
-                    byte[] hash = device.getDeviceInfo().getTpmInfo().getTpmQuoteHash();
-                    if (pcrValidator.validateQuote(hash, storedPcrs, policySettings)) {
+                    byte[] tpmQuoteHash = device.getDeviceInfo().getTpmInfo().getTpmQuoteHash();
+                    if (pcrValidator.validateQuote(tpmQuoteHash, storedPcrs, policySettings)) {
                         level = Level.INFO;
                         fwStatus = new AppraisalStatus(PASS,
                                 SupplyChainCredentialValidator.FIRMWARE_VALID);
