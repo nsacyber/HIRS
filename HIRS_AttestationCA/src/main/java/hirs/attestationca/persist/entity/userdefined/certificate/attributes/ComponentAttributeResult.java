@@ -44,6 +44,7 @@ public class ComponentAttributeResult extends ArchivableEntity {
      * @param componentId   id associated with component result
      * @param expectedValue platform certificate value
      * @param actualValue   paccor value from the device
+     * @param registryType  associated component result's registry type
      */
     public ComponentAttributeResult(final UUID componentId,
                                     final String expectedValue,
@@ -62,6 +63,7 @@ public class ComponentAttributeResult extends ArchivableEntity {
      * @param provisionSessionId an id for the associated provision
      * @param expectedValue      platform certificate value
      * @param actualValue        paccor value from the device
+     * @param registryType       associated component result's registry type
      */
     public ComponentAttributeResult(final UUID componentId,
                                     final UUID provisionSessionId,

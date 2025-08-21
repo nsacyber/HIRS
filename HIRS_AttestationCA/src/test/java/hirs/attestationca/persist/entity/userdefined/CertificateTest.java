@@ -175,7 +175,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
      */
     @Test
     public void testConstructCertFromPath() throws URISyntaxException, IOException {
-        Certificate certificate = new CertificateAuthorityCredential(
+        final Certificate certificate = new CertificateAuthorityCredential(
                 Paths.get(Objects.requireNonNull(this.getClass().getResource(
                         FAKE_ROOT_CA_FILE)).toURI())
         );
@@ -265,8 +265,8 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
      */
     @Test
     public void testX509CertificateParsing() throws IOException {
-        Certificate rootCert = getTestCertificate(FAKE_ROOT_CA_FILE);
-        X509Certificate certificate = readX509Certificate(FAKE_ROOT_CA_FILE);
+        final Certificate rootCert = getTestCertificate(FAKE_ROOT_CA_FILE);
+        final X509Certificate certificate = readX509Certificate(FAKE_ROOT_CA_FILE);
 
         assertEquals(certificate.getSerialNumber(), rootCert.getSerialNumber());
         assertEquals(certificate.getIssuerX500Principal().getName(),
@@ -281,7 +281,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     }
 
     /**
-     * Tests that Certificate correctly parses out non standard fields from an X509 Certificate.
+     * Tests that Certificate correctly parses out non-standard fields from an X509 Certificate.
      *
      * @throws IOException if there is a problem reading the cert file at the given path
      */
@@ -289,13 +289,11 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     public void testX509CertificateParsingExtended() throws IOException {
         Certificate rootCert = getTestCertificate(INTEL_INT_CA_FILE);
 
+        final String expectedAuthorityInfo =
+                "https://trustedservices.intel.com/content/TSC/certs/TSC_SS_RootCA_Certificate.cer";
+        assertEquals(expectedAuthorityInfo, rootCert.getAuthorityInfoAccess().trim());
         assertEquals(
-                "https://trustedservices.intel.com/"
-                        + "content/TSC/certs/TSC_SS_RootCA_Certificate.cer\r\n",
-                rootCert.getAuthorityInfoAccess());
-        assertEquals(
-                "b56f72cdfd66ce839e1fdb40498f07291f5b99b7",
-                rootCert.getAuthorityKeyIdentifier());
+                "b56f72cdfd66ce839e1fdb40498f07291f5b99b7", rootCert.getAuthorityKeyIdentifier());
     }
 
     /**
@@ -307,12 +305,11 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
      */
     @Test
     public void testX509AttributeCertificateParsing() throws IOException, URISyntaxException {
-        Certificate platformCert = getTestCertificate(
-                PlatformCredential.class,
+        final Certificate platformCert = getTestCertificate(PlatformCredential.class,
                 TEST_PLATFORM_CERT_3
         );
 
-        X509AttributeCertificateHolder attrCertHolder = new X509AttributeCertificateHolder(
+        final X509AttributeCertificateHolder attrCertHolder = new X509AttributeCertificateHolder(
                 Files.readAllBytes(Paths.get(Objects.requireNonNull(this.getClass().getResource(
                         TEST_PLATFORM_CERT_3)).toURI()))
         );
@@ -341,11 +338,12 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testX509AttributeCertificateParsingExtended()
             throws IOException {
-        Certificate platformCert = getTestCertificate(
+        final Certificate platformCert = getTestCertificate(
                 PlatformCredential.class, TEST_PLATFORM_CERT_6);
 
-        assertEquals("https://trustedservices.intel.com/content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer\r\n",
-                platformCert.getAuthorityInfoAccess());
+        final String expectedAuthorityInfo =
+                "https://trustedservices.intel.com/content/TSC/certs/TSC_IssuingCAIKGF_TEST.cer";
+        assertEquals(expectedAuthorityInfo, platformCert.getAuthorityInfoAccess().trim());
         assertEquals("a5ecc6c07da02c6af8764d4e5c16483610a0b040",
                 platformCert.getAuthorityKeyIdentifier());
     }
@@ -358,13 +356,13 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
      */
     @Test
     public void testCertificateTrim() throws IOException, URISyntaxException {
-        byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
+        final byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
                 .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
 
         final int finalPosition = 908;
-        byte[] expectedCertBytes = Arrays.copyOfRange(rawFileBytes, 0, finalPosition);
+        final byte[] expectedCertBytes = Arrays.copyOfRange(rawFileBytes, 0, finalPosition);
 
-        Certificate ekCert = getTestCertificate(EndorsementCredential.class,
+        final Certificate ekCert = getTestCertificate(EndorsementCredential.class,
                 EK_CERT_WITH_PADDED_BYTES);
         assertEquals(new BigInteger("16842032579184247954"), ekCert.getSerialNumber());
         assertEquals("CN=Nuvoton TPM Root CA 2010+O=Nuvoton Technology Corporation+C=TW",
@@ -383,7 +381,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testCertificateTrimThrowsWhenNoLengthFieldFound() throws IOException,
             URISyntaxException {
-        byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
+        final byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
                 .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
 
         assertThrows(IllegalArgumentException.class, () ->
@@ -401,7 +399,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testCertificateTrimThrowsWhenOnlyASN1Sequence() throws IOException,
             URISyntaxException {
-        byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
+        final byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
                 .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
 
         final int finalPosition = 4;
@@ -420,7 +418,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testCertificateTrimThrowsWhenLengthIsTooLarge() throws IOException,
             URISyntaxException {
-        byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
+        final byte[] rawFileBytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(CertificateTest.class
                 .getResource(EK_CERT_WITH_PADDED_BYTES)).toURI()));
 
         final int finalPosition = 42;
@@ -479,8 +477,8 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
      */
     @Test
     public void testIsIssuer() throws IOException {
-        Certificate issuerCert = getTestCertificate(FAKE_ROOT_CA_FILE);
-        Certificate cert = getTestCertificate(INT_CA_CERT02);
+        final Certificate issuerCert = getTestCertificate(FAKE_ROOT_CA_FILE);
+        final Certificate cert = getTestCertificate(INT_CA_CERT02);
 
         assertEquals("Certificate signature failed to verify", issuerCert.isIssuer(cert));
         assertTrue(cert.isIssuer(issuerCert).isEmpty());
