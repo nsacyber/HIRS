@@ -1,8 +1,11 @@
 package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
+import hirs.utils.crypto.AlgorithmsIds;
 import hirs.utils.digest.AbstractDigest;
 import hirs.utils.tpm.eventlog.events.EvConstants;
+import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
+import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 import org.apache.commons.codec.DecoderException;
@@ -12,102 +15,128 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
+
+import static hirs.utils.crypto.AlgorithmsIds.ALG_TYPE_HASH;
+import static hirs.utils.crypto.AlgorithmsIds.SPEC_TCG_ALG;
+import static hirs.utils.crypto.AlgorithmsIds.findAlgId;
+import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA256_STR;
+import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA384_STR;
+import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA512_STR;
 
 /**
  * Class for handling different formats of TCG Event logs.
  */
 public final class TCGEventLog {
 
+    // The TCG PC Client Platform TPM Profile Specification for TPM 2.0 defines 5 localities
+    //    (In this code these localities are referred to as 'environment localities')
+    //    Locality 0: The Static RTM, its chain of trust and its environment.
+    //    Locality 1: An environment for use by the Dynamic OS.
+    //    Locality 2: Dynamically Launched OS (Dynamic OS) "runtime" environment.
+    //    Locality 3: Auxiliary components. Use of this is optional and, if used, is implementation dependent.
+    //    Locality 4: Usually associated with the CPU executing microcode. Used to establish the Dynamic RTM.
+    //
+    // Global System Power States /Sleeping States, described in TCG PFP 2.2.14
+    //    (Transitions described in TCG PFP 8.3)
+    //    G0 = S0: On
+    //    G1: Sleeping State
+    //      S1: Stand-by with low wakeup latency
+    //      S2: Stand-by with CPU context lost
+    //      S3: Suspend to RAM                   --> PCR0 will be initialized differently
+    //      S4: Hibernate (OS Initiated)         --> PCR0 will be initialized differently
+    //      S4: Hibernate (BIOS Initiated)       --> PCR0 will be initialized differently
+    //    G2 = S5: Soft Off State
+    //    G3: Mechanical Off State
+    //
+    // Boot Startup Locality event - This event records the (power state) locality from which the
+    //                               TPM2_Startup command was sent.
+    //    (In this code StartupLocality is referred to as 'startup locality')
+    //    (In this code Locality is referred to as 'locality', and essentially corresponds
+    //    to S0-S5 State Transitions)
+    //    The TCG PFP section 10.4.5.3 mentions Startup Locality:
+    //       StartupLocality 0: is Locality 0 without an H-CRTM sequence
+    //       StartupLocality 3: is Locality 3 without an H-CRTM sequence (S3 -> S0)
+    //       StartupLocality 4: is Locality 4 with an H-CRTM sequence initialized (S4 -> S0)
+    //
+    // 1) TPM Reset -- Tpm2Startup(CLEAR) after Tpm2Shutdown(CLEAR)
+    //    PCRs with default initialization state go back to their default initialization state.
+    // 2) TPM Restart -- Tpm2Startup(CLEAR) after Tpm2Shutdown(STATE)
+    //    Preserves much of the previous state of the TPM, with some exceptions.
+    // 3) TPM Resume -- Tpm2Startup(STATE) after Tpm2Shutdown(STATE).
+    //    Preserves the previous state of the TPM.
+    //
+    // Ex. An EV_NO_ACTION Boot Event with StartupLocality 3 refers to Locality 3, which refers to a
+    //     state transition S3 to S0, corresponding to TPM Restart. Requires PCR0 to be initialized to 3.
+
     /**
-     * Initial value for SHA 256 values.
+     * Initial values for the PCR registers environment locality 0-3.
      */
-    public static final String INIT_SHA256_LIST = "00000000000000000000000000"
-            + "00000000000000000000000000000000000000";
+    private static final byte PCR_INIT = (byte) 0x00;
     /**
-     * Initial value for SHA 256 values.
+     * Initial values for the PCR registers environment locality 4.
      */
-    public static final String LOCALITY4_SHA256_LIST = "ffffffffffffffffffffffffff"
-            + "ffffffffffffffffffffffffffffffffffffff";
-    /**
-     * Initial value for SHA 1 values.
-     */
-    public static final String INIT_SHA1_LIST = "0000000000000000000000000000000000000000";
-    /**
-     * Initial value for SHA 1 values.
-     */
-    public static final String LOCALITY4_SHA1_LIST = "ffffffffffffffffffffffffffffffffffffffff";
-    /**
-     * PFP defined EV_NO_ACTION identifier.
-     */
-    public static final int NO_ACTION_EVENT = 0x00000003;
-    /**
-     * String value of SHA1 hash.
-     */
-    public static final String HASH_STRING = "SHA1";
-    /**
-     * String value of SHA256 hash.
-     */
-    public static final String HASH256_STRING = "SHA-256";
+    private static final byte PCR_INIT_ENVLOCALITY4 = (byte) 0xff;
     /**
      * Each PCR bank holds 24 registers.
      */
     public static final int PCR_COUNT = 24;
     /**
-     * Locality 4 starts at PCR 17.
+     * Environment Locality 4 starts at PCR 17.
      */
-    public static final int PCR_LOCALITY4_MIN = 17;
+    private static final int PCR_ENVLOCALITY4_MIN = 17;
     /**
-     * Locality 4 Ends at PCR 23.
+     * Environment Locality 4 ends at PCR 22.
      */
-    public static final int PCR_LOCALITY4_MAX = 23;
+    private static final int PCR_ENVLOCALITY4_MAX = 22;
+    /**
+     * PFP defined EV_NO_ACTION identifier.
+     */
+    private static final int NO_ACTION_EVENT = 0x00000003;
+    /**
+     * Startup locality 3 defined in the TCG PFP section 10.4.5.3.
+     * Used for NO_ACTION_EVENT with "StartupLocality" in the signature.
+     */
+    private static final int STARTUP_LOCALITY3 = 0x03;
+    /**
+     * Startup locality 4 defined in the TCG PFP section 10.4.5.3.
+     * Used for NO_ACTION_EVENT with "StartupLocality" in the signature.
+     */
+    private static final int STARTUP_LOCALITY4 = 0x04;
     /**
      * Logger.
      */
     private static final Logger LOGGER = LogManager.getLogger(TCGEventLog.class);
     /**
-     * Parsed event log array.
-     */
-    private static final int SIG_OFFSET = 32;
-    /**
-     * TEV_NO_ACTION signature size.
-     */
-    private static final int SIG_SIZE = 16;
-    /**
-     * Name of the hash algorithm used to process the Event Log, default is SHA256.
-     */
-    @Getter
-    private String eventLogHashAlgorithm = "TPM_ALG_SHA256";
-    /**
-     * 2 dimensional array holding the PCR values.
-     */
-    private final byte[][] pcrList;
-    /**
      * List of parsed events within the log.
      */
     private final LinkedHashMap<Integer, TpmPcrEvent> eventList = new LinkedHashMap<>();
     /**
+     * String name of strongest event log hash algorithm. TCG format.
+     */
+    @Getter
+    private String strongestEvLogHashAlgName = "";
+    /**
      * Length of PCR. Indicates which hash algorithm is used.
+     *
      */
-    private final int pcrLength;
+    private int pcrLength;
     /**
-     * Name of hash algorithm.
+     * 2-dimensional array holding the PCR values.
+     * If more than one set of PCR banks exists in this log, store the one with the strongest algorithm.
      */
-    private final String hashType;
+    private byte[][] pcrList;
     /**
-     * Initial PCR Value to use.
+     * Startup locality. If none, then value is -1.
      */
-    private final String initValue;
-    /**
-     * Initial PcR Value to use for locality 4.
-     */
-    private final String initLocalityFourValue;
+    private int startupLocality = -0x01;
     /**
      * Content Output Flag use.
      */
@@ -149,11 +178,8 @@ public final class TCGEventLog {
      */
     public TCGEventLog() {
         this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
-        initValue = INIT_SHA1_LIST;
-        initLocalityFourValue = LOCALITY4_SHA1_LIST;
         pcrLength = EvConstants.SHA1_LENGTH;
-        hashType = HASH_STRING;
-        eventLogHashAlgorithm = "TPM_ALG_SHA1";
+        strongestEvLogHashAlgName = "TPM_ALG_SHA1";
         initPcrList();
     }
 
@@ -174,7 +200,7 @@ public final class TCGEventLog {
      * Default constructor for just the rawlog that'll set up SHA1 Log.
      *
      * @param rawlog        data for the event log file.
-     * @param bEventFlag    if true provides human readable event descriptions.
+     * @param bEventFlag    if true provides human-readable event descriptions.
      * @param bContentFlag  if true provides hex output for Content in the description.
      * @param bHexEventFlag if true provides hex event structure in the description.
      * @throws java.security.NoSuchAlgorithmException  if an unknown algorithm is encountered.
@@ -185,44 +211,40 @@ public final class TCGEventLog {
                        final boolean bContentFlag, final boolean bHexEventFlag)
             throws CertificateException, NoSuchAlgorithmException, IOException {
 
-        bCryptoAgile = isLogCrytoAgile(rawlog);
-        if (bCryptoAgile) {
-            initValue = INIT_SHA256_LIST;
-            initLocalityFourValue = LOCALITY4_SHA256_LIST;
-            eventLogHashAlgorithm = "TPM_ALG_SHA256";
-            hashType = HASH256_STRING;
-            pcrLength = EvConstants.SHA256_LENGTH;
-        } else {
-            initValue = INIT_SHA1_LIST;
-            initLocalityFourValue = LOCALITY4_SHA1_LIST;
-            hashType = HASH_STRING;
-            eventLogHashAlgorithm = "TPM_ALG_SHA1";
-            pcrLength = EvConstants.SHA1_LENGTH;
-        }
-        this.pcrList = new byte[PCR_COUNT][pcrLength];
-        int eventNumber = 0;
         bContent = bContentFlag;
         bEvent = bEventFlag;
         bHexEvent = bHexEventFlag;
-        ByteArrayInputStream is = new ByteArrayInputStream(rawlog);
-        // Process the 1st entry as a SHA1 format (per the spec)
-        eventList.put(eventNumber, new TpmPcrEvent1(is, eventNumber++));
-        // put all events into an event list for further processing
 
+        int eventNumber = 0;
+        ByteArrayInputStream is = new ByteArrayInputStream(rawlog);
+
+        // Process the 1st entry as a SHA1 format (per the spec) and put into the event list
+        TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, eventNumber++);
+        eventList.put(eventNumber, firstEvent);
+        useFirstEventToInitValues(firstEvent);
+
+        // put the remaining events into the event list
         while (is.available() > 0) {
             if (bCryptoAgile) {
-                eventList.put(eventNumber, new TpmPcrEvent2(is, eventNumber++));
+                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestEvLogHashAlgName);
+                eventList.put(eventNumber, event2);
+                if (event2.isStartupLocalityEvent()) {
+                    EvNoAction event = new EvNoAction(event2.getEventContent());
+                    startupLocality = event.getStartupLocality();
+                }
             } else {
-                eventList.put(eventNumber, new TpmPcrEvent1(is, eventNumber++));
+                TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
+                eventList.put(eventNumber, event1);
             }
+
             // first check if any previous event has not been able to access vendor-table.json,
-            // and if that is the case, the first comparison in the if returns false and
-            // the if statement is not executed
+            // and if that is the case, the first comparison in the if-statement returns false and
+            // the if-statement is not executed
             // [previous event file status = vendorTableFileStatus]
             // (ie. keep the file status to reflect that file was not accessible at some point)
             // next, check if the new event has any status other than the default 'filesystem',
-            // and if that is the case, the 2nd comparison in the if returns true and
-            // the if statement is executed
+            // and if that is the case, the 2nd comparison in the if-statement returns true and
+            // the if-statement is executed
             // [new event file status = eventList.get(eventNumber-1).getVendorTableFileStatus()]
             // (ie. if the new file status is not-accessible or from-code, then want to update)
             if ((vendorTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
@@ -241,56 +263,96 @@ public final class TCGEventLog {
     }
 
     /**
-     * This method puts blank values in the pcrList.
+     * If first event is EV_NO_ACTION Spec Id, then the log is crypto agile.
+     * Need info from this event about algorithms.
+     *
+     * @param firstEvent                                the first event in the log
+     * @throws java.security.NoSuchAlgorithmException   if an unknown algorithm is encountered.
+     * @throws java.io.UnsupportedEncodingException     if EvNoAction input fails to parse.
+     */
+    private void useFirstEventToInitValues(final TpmPcrEvent1 firstEvent)
+            throws NoSuchAlgorithmException, UnsupportedEncodingException {
+
+        // if first event is EV_NO_ACTION Spec Id Event, the log is crypto agile
+        if (firstEvent.isNoActionSpecIdEvent()) {
+
+            bCryptoAgile = true;
+            EvEfiSpecIdEvent specEvent = new EvEfiSpecIdEvent(firstEvent.getEventContent());
+            List<String> algList = specEvent.getAlgList();
+
+            // find the strongest algorithm used and select that for processing
+            String currentStrongestAlg = algList.get(0);
+            int currentStrongestAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, currentStrongestAlg);
+            for (int i = 1; i < algList.size(); i++) {
+                String newAlg = algList.get(i);
+                int newAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, newAlg);
+                if (newAlgRow > currentStrongestAlgRow) {
+                    currentStrongestAlg = newAlg;
+                }
+            }
+            strongestEvLogHashAlgName = currentStrongestAlg;
+
+            //TEMPORARILY use SHA256 until updates on Provisioner are pushed
+            strongestEvLogHashAlgName = "TPM_ALG_SHA256";
+
+            // if more than one set of PCR banks exists in this log, store the one with strongest algorithm
+            switch (strongestEvLogHashAlgName) {
+                case TPM_ALG_SHA256_STR:
+                    pcrLength = EvConstants.SHA256_LENGTH;
+                    break;
+                case TPM_ALG_SHA384_STR:
+                    pcrLength = EvConstants.SHA384_LENGTH;
+                    break;
+                case TPM_ALG_SHA512_STR:
+                    pcrLength = EvConstants.SHA512_LENGTH;
+                    break;
+                default:
+                    break;
+            }
+        } else {    // not crypto agile
+            strongestEvLogHashAlgName = "TPM_ALG_SHA1";
+            pcrLength = EvConstants.SHA1_LENGTH;
+
+            // startup locality event could be the first event in a non-crypto-agile log
+            if (firstEvent.isStartupLocalityEvent()) {
+                EvNoAction event = new EvNoAction(firstEvent.getEventContent());
+                startupLocality = event.getStartupLocality();
+            }
+        }
+
+        // if more than one set of PCR banks exists in this log, store the one with the strongest algorithm
+        pcrList = new byte[PCR_COUNT][pcrLength];
+    }
+
+    /**
+     * This method initializes the pcrList.
      */
     private void initPcrList() {
-        try {
-            for (int i = 0; i < PCR_COUNT; i++) {
-                System.arraycopy(Hex.decodeHex(initValue.toCharArray()),
-                        0, pcrList[i], 0, pcrLength);
-            }
-            for (int i = PCR_LOCALITY4_MIN; i < PCR_LOCALITY4_MAX; i++) {
-                System.arraycopy(Hex.decodeHex(initLocalityFourValue.toCharArray()),
-                        0, pcrList[i], 0, pcrLength);
-            }
-        } catch (DecoderException deEx) {
-            LOGGER.error(deEx);
+
+        for (int i = 0; i < PCR_COUNT; i++) {
+            byte[] initPcrValueB = new byte[pcrLength];
+            Arrays.fill(initPcrValueB, PCR_INIT);
+            System.arraycopy(initPcrValueB, 0, pcrList[i], 0, pcrLength);
+        }
+        for (int i = PCR_ENVLOCALITY4_MIN; i <= PCR_ENVLOCALITY4_MAX; i++) {
+            byte[] initPcrValueB = new byte[pcrLength];
+            Arrays.fill(initPcrValueB, PCR_INIT_ENVLOCALITY4);
+            System.arraycopy(initPcrValueB, 0, pcrList[i], 0, pcrLength);
+        }
+        if (startupLocality == STARTUP_LOCALITY3) {
+            pcrList[0][pcrLength - 1] = (byte) STARTUP_LOCALITY3;
+        } else if (startupLocality == STARTUP_LOCALITY4) {
+            LOGGER.error("Error Processing TGC Event Log: "
+                    + "Event of type EV_NO_ACTION with a Startup Locality 4 with an H-CRTM "
+                    + "encountered, but no support is currently provided by this application");
         }
     }
 
-//    /**
-//     * Creates a TPM baseline using the expected PCR Values.
-//     * Expected PCR Values were Calculated from the EventLog (RIM Support file).
-//     *
-//     * @param name name to call the TPM Baseline
-//     * @return whitelist baseline
-//     */
-//    public TpmWhiteListBaseline createTPMBaseline(final String name) {
-//        TpmWhiteListBaseline baseline = new TpmWhiteListBaseline(name);
-//        TPMMeasurementRecord record;
-//        String pcrValue;
-//        for (int i = 0; i < PCR_COUNT; i++) {
-//            if (eventLogHashAlgorithm.compareToIgnoreCase("TPM_ALG_SHA1") == 0) { // Log Was SHA1 Format
-//                pcrValue = getExpectedPCRValue(i);
-//                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-//                final Digest hash = new Digest(DigestAlgorithm.SHA1, hexValue);
-//                record = new TPMMeasurementRecord(i, hash);
-//            } else {  // Log was Crypto Agile, currently assumes SHA256
-//                pcrValue = getExpectedPCRValue(i);
-//                byte[] hexValue = HexUtils.hexStringToByteArray(pcrValue);
-//                final Digest hash = new Digest(DigestAlgorithm.SHA256, hexValue);
-//                record = new TPMMeasurementRecord(i, hash);
-//            }
-//            baseline.addToBaseline(record);
-//        }
-//        return baseline;
-//    }
-
     /**
-     * Calculates the "Expected Values for TPM PCRs based upon Event digests in the Event Log.
-     * Uses the algorithm and eventList passed into the constructor,
+     * Calculates the Expected Values for TPM PCRs based upon Event digests in the Event Log.
+     * Uses the algorithm and eventList passed into the constructor.
      */
-    private void calculatePcrValues() {
+    private void calculatePcrValues() throws UnsupportedEncodingException {
         byte[] extendedPCR;
         initPcrList();
         for (TpmPcrEvent currentEvent : eventList.values()) {
@@ -299,9 +361,9 @@ public final class TCGEventLog {
                     if (currentEvent.getEventType() != NO_ACTION_EVENT) {
                         // Don't include EV_NO_ACTION event
                         extendedPCR = extendPCR(pcrList[currentEvent.getPcrIndex()],
-                                currentEvent.getEventDigest());
+                                currentEvent.getEventStrongestDigest());
                         System.arraycopy(extendedPCR, 0, pcrList[currentEvent.getPcrIndex()],
-                                0, currentEvent.getDigestLength());
+                                0, pcrLength);
                     }
                 } catch (NoSuchAlgorithmException e) {
                     LOGGER.error(e);
@@ -320,7 +382,10 @@ public final class TCGEventLog {
      */
     private byte[] extendPCR(final byte[] currentValue, final byte[] newEvent)
             throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance(hashType);
+
+        String hashNistName = AlgorithmsIds.translateAlgId(AlgorithmsIds.ALG_TYPE_HASH,
+                AlgorithmsIds.SPEC_TCG_ALG, strongestEvLogHashAlgName, AlgorithmsIds.SPEC_COSE_ALG);
+        MessageDigest md = MessageDigest.getInstance(hashNistName);
         StringBuilder sb = new StringBuilder(AbstractDigest.SHA512_DIGEST_LENGTH);
         sb.append(Hex.encodeHexString(currentValue).toCharArray());
         sb.append(Hex.encodeHexString(newEvent).toCharArray());
@@ -377,7 +442,7 @@ public final class TCGEventLog {
     }
 
     /**
-     * Human readable string representing the contents of the Event Log.
+     * Human-readable string representing the contents of the Event Log.
      *
      * @return Description of the log.
      */
@@ -391,7 +456,7 @@ public final class TCGEventLog {
     }
 
     /**
-     * Human readable string representing the contents of the Event Log.
+     * Human-readable string representing the contents of the Event Log.
      *
      * @param event    flag to set
      * @param hexEvent flag to set
@@ -409,36 +474,12 @@ public final class TCGEventLog {
     }
 
     /**
-     * Returns the TCG Algorithm Registry defined ID for the Digest Algorithm
+     * Returns the TCG Algorithm Registry defined ID for the strongest Digest Algorithm
      * used in the event log.
      *
-     * @return TCG Defined Algorithm name
+     * @return TCG Defined Algorithm ID
      */
-    public int getEventLogHashAlgorithmID() {
-        return TcgTpmtHa.tcgAlgStringToId(eventLogHashAlgorithm);
-    }
-
-    /**
-     * Determines if an event is an EfiSpecIdEvent indicating that the log format is crypto agile.
-     * The EfiSpecIdEvent should be the first event in the TCG TPM Event Log.
-     *
-     * @param log The Event Log
-     * @return true if EfiSpecIDEvent is found and indicates that the format is crypto agile
-     */
-    private boolean isLogCrytoAgile(final byte[] log) {
-        byte[] eType = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(log, UefiConstants.SIZE_4, eType, 0, UefiConstants.SIZE_4);
-        byte[] eventType = HexUtils.leReverseByte(eType);
-        int eventID = new BigInteger(eventType).intValue();
-        if (eventID != TCGEventLog.NO_ACTION_EVENT) {
-            return false;
-        }  // Event Type should be EV_NO_ACTION
-        byte[] signature = new byte[SIG_SIZE];
-        // should be "Spec ID Event03"
-        System.arraycopy(log, SIG_OFFSET, signature, 0, SIG_SIZE);
-        // remove null char
-        String sig = new String(signature, StandardCharsets.UTF_8).substring(0, SIG_SIZE - 1);
-
-        return sig.equals("Spec ID Event03");
+    public int getStrongestEvLogHashAlgId() {
+        return TcgTpmtHa.tcgAlgStringToId(strongestEvLogHashAlgName);
     }
 }

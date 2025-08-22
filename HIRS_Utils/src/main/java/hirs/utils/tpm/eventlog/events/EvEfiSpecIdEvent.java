@@ -80,14 +80,16 @@ public class EvEfiSpecIdEvent {
     @Getter
     private int numberOfAlg = 0;
     /**
-     * True if event log uses Crypto Agile format.
-     */
-    @Getter
-    private boolean cryptoAgile = false;
-    /**
      * Algorithm list.
      */
     private List<String> algList;
+    /**
+     * Get algorithm list.
+     * @return list of algorithms used in this Event.
+     */
+    public  List<String> getAlgList() {
+        return new ArrayList<>(algList);
+    }
 
     /**
      * EvEfiSpecIdEvent Constructor.
@@ -131,26 +133,24 @@ public class EvEfiSpecIdEvent {
             String alg = TcgTpmtHa.tcgAlgIdToString(HexUtils.leReverseInt(algorithmIDBytes));
             algList.add(alg);
         }
-        if ((algList.size() == 1) && (algList.get(0).compareTo("SHA1") == 0)) {
-            cryptoAgile = false;
-        } else {
-            cryptoAgile = true;
-        }
     }
 
     /**
-     * Returns a human readable description of the data within this event.
+     * Returns a human-readable description of the data within this event.
      *
-     * @return a description of this event..
+     * @return a description of this event.
      */
     public String toString() {
         String specInfo = "";
-        if (signature.equals("Spec ID Event#")) {
-            specInfo += "Platform Profile Specification version = " + versionMajor + "." + versionMinor
-                    + " using errata version" + errata;
-        } else {
-            specInfo = "EV_NO_ACTION event named " + signature
-                    + " encountered but support for processing it has not been added to this application";
+
+        specInfo += "   Signature = Spec ID Event03 : ";
+            specInfo += "   Log format is Crypto Agile\n";
+        specInfo += "   Platform Profile Specification version = "
+                + versionMajor + "." + versionMinor
+                + " using errata version " + errata + "\n";
+        specInfo += "   Algorithm list:";
+        for (int i = 0; i < numberOfAlg; i++) {
+            specInfo += "\n      " + i + ": " + algList.get(i);
         }
         return specInfo;
     }

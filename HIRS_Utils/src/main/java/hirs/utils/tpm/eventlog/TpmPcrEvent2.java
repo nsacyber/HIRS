@@ -1,8 +1,8 @@
 package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -66,21 +66,21 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
     /**
      * Constructor.
      *
-     * @param is          ByteArrayInputStream holding the TCG Log event
-     * @param eventNumber event position within the event log.
+     * @param is            ByteArrayInputStream holding the TCG Log event
+     * @param eventNumber   event position within the event log.
+     * @param strongestAlg  name of strongest hash algorithm used in the log
      * @throws java.io.IOException                     if an error occurs in parsing the event
      * @throws java.security.NoSuchAlgorithmException  if an undefined algorithm is encountered.
      * @throws java.security.cert.CertificateException If a certificate within an event can't be processed.
      */
-    public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber)
+    public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber, final String strongestAlg)
             throws IOException, CertificateException, NoSuchAlgorithmException {
+
         super(is);
-        setDigestLength(EvConstants.SHA256_LENGTH);
         setLogFormat(2);
         // Event data.
-        // int eventDigestLength = 0;
         String hashName = "";
-        byte[] event;
+        byte[] event2;
         byte[] rawIndex = new byte[UefiConstants.SIZE_4];
         byte[] algCountBytes = new byte[UefiConstants.SIZE_4];
         byte[] rawType = new byte[UefiConstants.SIZE_4];
@@ -95,41 +95,50 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             setPcrIndex(rawIndex);
             is.read(rawType);
             setEventType(rawType);
-            // TPML_DIGEST_VALUES
+            // TPML_DIGEST_VALUES (algCount should match 'numberOfAlgorithms' in Spec ID event)
             is.read(algCountBytes);
             algCount = HexUtils.leReverseInt(algCountBytes);
             // Process TPMT_HA,
             for (int i = 0; i < algCount; i++) {
                 hashAlg = new TcgTpmtHa(is);
                 hashName = hashAlg.getHashName();
-                hashList.add(hashAlg);
                 eventDigest = new byte[hashAlg.getHashLength()];
-                setEventDigest(hashAlg.getDigest(), hashAlg.getHashLength());
+                hashList.add(hashAlg);
+                hashListFromEvent.add(new EventDigest(hashName, eventDigest));
+                if (hashName.compareTo(strongestAlg) == 0) {
+                    setEventStrongestDigest(hashAlg.getDigest());
+                }
             }
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
             eventContent = new byte[eventSize];
             is.read(eventContent);
             setEventContent(eventContent);
-            int eventLength = rawIndex.length + rawType.length + eventDigest.length
+            int eventLength = rawIndex.length + rawType.length
                     + rawEventSize.length;
             int offset = 0;
             for (TcgTpmtHa hash : hashList) {
                 eventLength += hash.getBuffer().length;
             }
-            event = new byte[eventLength];
-            System.arraycopy(rawIndex, 0, event, offset, rawIndex.length);
+            event2 = new byte[eventLength];
+            System.arraycopy(rawIndex, 0, event2, offset, rawIndex.length);
             offset += rawIndex.length;
-            System.arraycopy(rawType, 0, event, offset, rawType.length);
+            System.arraycopy(rawType, 0, event2, offset, rawType.length);
             offset += rawType.length;
-            System.arraycopy(eventDigest, 0, event, offset, eventDigest.length);
-            offset += eventDigest.length;
-            System.arraycopy(rawEventSize, 0, event, offset, rawEventSize.length);
+            System.arraycopy(rawEventSize, 0, event2, offset, rawEventSize.length);
             offset += rawEventSize.length;
-            //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
-            setEventData(event);
-            //setDigestLength(eventDigestLength);
-            this.processEvent(event, eventContent, eventNumber, hashName);
+
+            for (TcgTpmtHa hash : hashList) {
+                System.arraycopy(hash.getBuffer(), 0, event2, offset, hash.getBuffer().length);
+                offset += hash.getBuffer().length;
+            }
+            setEventData(event2);
+
+            this.processEvent(event2, eventContent, eventNumber);
+            for (int i = 0; i < algCount; i++) {
+                description +=  "\ndigest (" + hashList.get(i).getHashName() + "): "
+                        + Hex.encodeHexString(hashList.get(i).getDigest());
+            }
         }
     }
 }

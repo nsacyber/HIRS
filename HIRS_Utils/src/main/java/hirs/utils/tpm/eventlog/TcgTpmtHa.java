@@ -17,25 +17,22 @@ import java.math.BigInteger;
  * } TPMT_HA;
  */
 public class TcgTpmtHa {
-    /**
-     * TCG ID for SHA1.
-     */
+    /** TCG ID for SHA1. */
     public static final int TPM_ALG_SHA1 = 0x04;
-
-    /**
-     * TCG ID for SHA1.
-     */
+    /** TCG Name for SHA1. */
+    public static final String TPM_ALG_SHA1_STR = "TPM_ALG_SHA1";
+    /** TCG ID for SHA56. */
     public static final int TPM_ALG_SHA256 = 0x0B;
-
-    /**
-     * TCG ID for SHA 384.
-     */
+    /** TCG Name for SHA56. */
+    public static final String TPM_ALG_SHA256_STR = "TPM_ALG_SHA256";
+    /** TCG ID for SHA 384. */
     public static final int TPM_ALG_SHA384 = 0x0C;
-
-    /**
-     * TCG ID for SHA512.
-     */
-    public static final int TPM_ALG_SHA_512 = 0x0D;
+    /** TCG ID for SHA 384. */
+    public static final String  TPM_ALG_SHA384_STR = "TPM_ALG_SHA384";
+    /** TCG ID for SHA512. */
+    public static final int TPM_ALG_SHA512 = 0x0D;
+    /** TCG ID for SHA512. */
+    public static final String TPM_ALG_SHA512_STR = "TPM_ALG_SHA512";
 
     /**
      * TCG ID for Null algorithm.
@@ -126,10 +123,10 @@ public class TcgTpmtHa {
      */
     public static String tcgAlgIdToString(final int algId) {
         return switch (algId) {
-            case TPM_ALG_SHA1 -> "TPM_ALG_SHA1";
-            case TPM_ALG_SHA256 -> "TPM_ALG_SHA256";
-            case TPM_ALG_SHA384 -> "TPM_ALG_SHA384";
-            case TPM_ALG_SHA_512 -> "TPM_ALG_SHA512";
+            case TPM_ALG_SHA1 -> TPM_ALG_SHA1_STR;
+            case TPM_ALG_SHA256 -> TPM_ALG_SHA256_STR;
+            case TPM_ALG_SHA384 -> TPM_ALG_SHA384_STR;
+            case TPM_ALG_SHA512 -> TPM_ALG_SHA512_STR;
             case TPM_ALG_NULL -> "TPM_ALG_NULL";
             default -> "Unknown or invalid Hash";
         };
@@ -148,7 +145,7 @@ public class TcgTpmtHa {
             case "TPM_ALG_SHA1" -> TPM_ALG_SHA1;
             case "TPM_ALG_SHA256" -> TPM_ALG_SHA256;
             case "TPM_ALG_SHA384" -> TPM_ALG_SHA384;
-            case "TPM_ALG_SHA512" -> TPM_ALG_SHA_512;
+            case "TPM_ALG_SHA512" -> TPM_ALG_SHA512;
             default -> TPM_ALG_NULL;
         };
     }
@@ -166,7 +163,7 @@ public class TcgTpmtHa {
             case TPM_ALG_SHA1 -> TPM_ALG_SHA1_LENGTH;
             case TPM_ALG_SHA256 -> TPM_ALG_SHA256_LENGTH;
             case TPM_ALG_SHA384 -> TPM_ALG_SHA384_LENGTH;
-            case TPM_ALG_SHA_512 -> TPM_ALG_SHA512_LENGTH;
+            case TPM_ALG_SHA512 -> TPM_ALG_SHA512_LENGTH;
             default -> TPM_ALG_NULL_LENGTH;
         };
     }

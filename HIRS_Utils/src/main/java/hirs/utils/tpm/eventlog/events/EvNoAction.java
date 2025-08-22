@@ -33,9 +33,20 @@ public class EvNoAction {
      */
     private String signature = "";
     /**
-     * True of the event is a SpecIDEvent.
+     * True if the event is a SpecIDEvent.
      */
-    private boolean bSpecIDEvent = false;
+    @Getter
+    private boolean isSpecIdEvent = false;
+    /**
+     * True if the event is a StartupLocality event.
+     */
+    @Getter
+    private boolean isStartupLocality = false;
+    /**
+     * StartupLocality as defined in the PC Client Platform Firmware Profile.
+     */
+    @Getter
+    private int startupLocality = 0;
     /**
      * TCG Event Log spec version.
      */
@@ -76,8 +87,8 @@ public class EvNoAction {
         signature = signature.replaceAll("[^\\P{C}\t\r\n]", ""); // remove null characters
         if (signature.contains("Spec ID Event03")) {      // implies CryptAgileFormat
             EvEfiSpecIdEvent specIDEvent = new EvEfiSpecIdEvent(eventData);
-            noActionInfo += specIDEventToString(specIDEvent);
-            bSpecIDEvent = true;
+            noActionInfo += specIDEvent.toString();
+            isSpecIdEvent = true;
             specVersion = String.format("%s.%s",
                     specIDEvent.getVersionMajor(),
                     specIDEvent.getVersionMinor());
@@ -85,6 +96,8 @@ public class EvNoAction {
         } else if (signature.contains("StartupLocality")) {
             noActionInfo += "   Signature = StartupLocality";
             noActionInfo += "\n   StartupLocality = " + getLocality(eventData);
+            isStartupLocality = true;
+            getLocality(eventData); // set startupLocality variable
         } else if (signature.contains("NvIndexInstance")) {
             NvIndexInstanceEventLogData nvIndexInstanceEvent = new NvIndexInstanceEventLogData(eventData);
             noActionInfo += nvIndexInstanceEvent.toString();
@@ -100,53 +113,22 @@ public class EvNoAction {
     }
 
     /**
-     * Determines if this event is a SpecIDEvent.
-     *
-     * @return true of the event is a SpecIDEvent.
-     */
-    public boolean isSpecIDEvent() {
-        return bSpecIDEvent;
-    }
-
-    /**
-     * Returns a human-readable description of a SpecId event.
-     *
-     * @param specIDEvent byte array holding the event.
-     * @return a description of the event.
-     */
-    public String specIDEventToString(final EvEfiSpecIdEvent specIDEvent) {
-
-        String specIdInfo = "";
-        specIdInfo += "   Signature = Spec ID Event03 : ";
-        if (specIDEvent.isCryptoAgile()) {
-            specIdInfo += "Log format is Crypto Agile\n";
-        } else {
-            specIdInfo += "Log format is SHA 1 (NOT Crypto Agile)\n";
-        }
-        specIdInfo += "   Platform Profile Specification version = "
-                + specIDEvent.getVersionMajor() + "." + specIDEvent.getVersionMinor()
-                + " using errata version " + specIDEvent.getErrata();
-
-        return specIdInfo;
-    }
-
-    /**
      * Returns a human-readable description of locality based on numeric representation lookup.
      *
      * @param eventData byte array holding the event from which to grab locality
      * @return a description of the locality.
      */
-    private String getLocality(final byte[] eventData) {
+    public String getLocality(final byte[] eventData) {
         final int eventDataSrcIndex = 16;
-        byte[] localityBytes = new byte[1];
-        System.arraycopy(eventData, eventDataSrcIndex, localityBytes, 0, 1);
-        final int locality = HexUtils.leReverseInt(localityBytes);
-
         final int locality0 = 0;
         final int locality3 = 3;
         final int locality4 = 4;
 
-        return switch (locality) {
+        byte[] localityBytes = new byte[1];
+        System.arraycopy(eventData, eventDataSrcIndex, localityBytes, 0, 1);
+        startupLocality = HexUtils.leReverseInt(localityBytes);
+
+        return switch (startupLocality) {
             case locality0 -> "Locality 0 without an H-CRTM sequence";
             case locality3 -> "Locality 3 without an H-CRTM sequence";
             case locality4 -> "Locality 4 with an H-CRTM sequence initialized";

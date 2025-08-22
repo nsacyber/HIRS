@@ -252,7 +252,7 @@ public class UefiDevicePath {
         subType += String.format("0x%x", path[offset + UefiConstants.SIZE_4]);
         subType += "\n        PCI Device Number = ";
         subType += String.format("0x%x", path[offset + UefiConstants.SIZE_5]);
-        subType += "\n";
+     //   subType += "\n";
         return subType;
     }
 
@@ -273,7 +273,7 @@ public class UefiDevicePath {
         subType += " Port Multiplier  = " + HexUtils.byteArrayToHexString(data);
         System.arraycopy(path, UefiConstants.OFFSET_8 + offset, data, 0, UefiConstants.SIZE_2);
         subType += " Logical Unit Number  = " + HexUtils.byteArrayToHexString(data);
-        subType += "\n";
+      //  subType += "\n";
         return subType;
     }
 
@@ -320,7 +320,7 @@ public class UefiDevicePath {
         } else {
             subType += "Invalid partition table type";
         }
-        subType += "\n";
+    //    subType += "\n";
         return subType;
     }
 
@@ -342,7 +342,7 @@ public class UefiDevicePath {
                 0, subTypeLength);
         byte[] fileName = convertChar16tobyteArray(filePath);
         subType += new String(fileName, StandardCharsets.UTF_8);
-        subType += "\n";
+      //  subType += "\n";
         return subType;
     }
 
@@ -376,7 +376,7 @@ public class UefiDevicePath {
         } else {
             subType += " : No Vendor Data present";
         }
-        subType += "\n";
+    //    subType += "\n";
         return subType;
     }
 
@@ -399,7 +399,7 @@ public class UefiDevicePath {
         byte[] usbData = new byte[subTypeLength];
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, usbData,
                 0, subTypeLength);
-        subType += "\n";
+     //   subType += "\n";
         // Todo add further USB processing ...
         return subType;
     }
@@ -426,7 +426,7 @@ public class UefiDevicePath {
         System.arraycopy(path, UefiConstants.OFFSET_4 + offset, nvmData,
                 0, subTypeLength);
         subType += HexUtils.byteArrayToHexString(nvmData);
-        subType += "\n";
+    //    subType += "\n";
         return subType;
     }
 
@@ -474,7 +474,7 @@ public class UefiDevicePath {
                 subType += "Unknown";
                 break;
         }
-        subType += "\n";
+//subType += "\n";
         return subType;
     }
 
@@ -495,7 +495,7 @@ public class UefiDevicePath {
                 0, UefiConstants.SIZE_16);
         UefiGuid guid = new UefiGuid(guidData);
         subType += guid.toString();
-        subType += "\n";
+    //    subType += "\n";
         return subType;
     }
 
@@ -516,7 +516,7 @@ public class UefiDevicePath {
                 0, UefiConstants.SIZE_16);
         UefiGuid guid = new UefiGuid(guidData);
         subType += guid.toString();
-        subType += "\n";
+   ///     subType += "\n";
         return subType;
     }
 

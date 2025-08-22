@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
  *   <li>TCG (TCG Algorithm Registry):<br>
  *     <ul>
  *       <li>https://trustedcomputinggroup.org/resource/tcg-algorithm-registry/<br>
- *       Table 3 — Definition of (UINT16) TPM_ALG_ID Constants</li>
+ *       Table 3 - Definition of (UINT16) TPM_ALG_ID Constants</li>
  *     </ul>
  *   </li>
  *   <li>XML (XML Security Algorithm Cross-Reference):
@@ -229,7 +229,7 @@ public final class AlgorithmsIds {
      * @throws NoSuchAlgorithmException if the original algorithm type is
      * invalid
      */
-    private static int findAlgId(final String algType, final int spec, final String alg)
+    public static int findAlgId(final String algType, final int spec, final String alg)
             throws NoSuchAlgorithmException {
 
         int index = -1;

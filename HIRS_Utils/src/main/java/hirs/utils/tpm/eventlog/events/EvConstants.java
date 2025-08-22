@@ -31,6 +31,10 @@ public final class EvConstants {
      */
     public static final int SHA384_LENGTH = 48;
     /**
+     * Event Type (byte array).
+     */
+    public static final int SHA512_LENGTH = 64;
+    /**
      * Each PCR bank holds 24 registers.
      */
     public static final int PCR_COUNT = 24;
