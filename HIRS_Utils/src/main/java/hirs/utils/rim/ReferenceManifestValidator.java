@@ -292,6 +292,11 @@ public class ReferenceManifestValidator {
                         + SwidTagConstants.SHA_256_HASH.getLocalPart()))) {
             log.info("Support RIM hash verified for {}", filepath);
             return true;
+        } else if (getHashValue(filepath, "SHA384").equals(
+                file.getAttribute(SwidTagConstants.SHA_384_HASH.getPrefix() + ":"
+                        + SwidTagConstants.SHA_384_HASH.getLocalPart()))) {
+            log.info("Support RIM hash verified for {}", filepath);
+            return true;
         } else {
             return failWithError("Support RIM hash does not match Base RIM!");
         }
