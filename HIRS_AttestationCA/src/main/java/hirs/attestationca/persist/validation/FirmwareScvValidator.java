@@ -181,7 +181,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             try {
                 if (referenceManifestValidator.validateXmlSignature(
                         signingCert.getX509Certificate().getPublicKey(),
-                        signingCert.getSubjectKeyIdString(), signingCert.getEncodedPublicKey())) {
+                        signingCert.getSubjectKeyIdString())) {
                     try {
                         if (!SupplyChainCredentialValidator.verifyCertificate(
                                 signingCert.getX509Certificate(), keyStore)) {
