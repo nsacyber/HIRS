@@ -123,7 +123,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             return new AppraisalStatus(FAIL, message);
         }
 
-        X509AttributeCertificateHolder attributeCert = null;
+        X509AttributeCertificateHolder attributeCert;
         try {
             attributeCert = pc.getX509AttributeCertificateHolder();
         } catch (IOException e) {
@@ -174,6 +174,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      * @param componentInfos               list of device components
      * @param provisionSessionId           UUID associated with this run of the provision
      * @param ignoreRevisionAttribute      policy flag to ignore the revision attribute
+     * @param ignorePcieVpdAttribute       policy flag to ignore the pcie vpd attribute
      * @return The result of the validation.
      */
     public static AppraisalStatus validatePlatformCredentialAttributes(
@@ -183,7 +184,9 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) throws IOException {
+            final UUID provisionSessionId,
+            final boolean ignoreRevisionAttribute,
+            final boolean ignorePcieVpdAttribute) throws IOException {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
         if (platformCredential == null) {
@@ -219,7 +222,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV2p0(
                     platformCredential, deviceInfoReport, componentResultRepository,
                     componentAttributeRepository, componentInfos, provisionSessionId,
-                    ignoreRevisionAttribute);
+                    ignoreRevisionAttribute, ignorePcieVpdAttribute);
         }
         return CertificateAttributeScvValidator.validatePlatformCredentialAttributesV1p2(
                 platformCredential, deviceInfoReport);
@@ -239,6 +242,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      * @param componentAttributeRepository repository for the attribute status
      * @param provisionSessionId           the session id to share
      * @param ignoreRevisionAttribute      whether to ignore the revision attribute
+     * @param ignorePcieVpdAttribute       whether to ignore the pcie vpd attribute
      * @return the result of the validation.
      */
     public static AppraisalStatus validateDeltaPlatformCredentialAttributes(
@@ -249,7 +253,8 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final UUID provisionSessionId,
-            final boolean ignoreRevisionAttribute) {
+            final boolean ignoreRevisionAttribute,
+            final boolean ignorePcieVpdAttribute) {
         final String baseErrorMessage = "Can't validate platform credential attributes without ";
         String message;
 
@@ -288,7 +293,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
 
         return CertificateAttributeScvValidator.validateDeltaAttributesChainV2p0(
                 deviceInfoReport, deltaMapping, origPcComponents, componentInfos,
-                componentResultRepository,
-                componentAttributeRepository, provisionSessionId, ignoreRevisionAttribute);
+                componentResultRepository, componentAttributeRepository, provisionSessionId,
+                ignoreRevisionAttribute, ignorePcieVpdAttribute);
     }
 }

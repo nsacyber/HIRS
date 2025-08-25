@@ -131,6 +131,7 @@ public final class ValidationService {
      * @param componentInfos               list of component information
      * @param provisionSessionId           uuid representation of the provision session id
      * @param ignoreRevisionAttribute      whether to ignore revision attribute
+     * @param ignorePcieVpdAttribute       whether to ignore the pcie vpd attribute
      * @return a supply chain validation
      */
     public static SupplyChainValidation evaluatePCAttributesStatus(
@@ -140,7 +141,9 @@ public final class ValidationService {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) throws IOException {
+            final UUID provisionSessionId,
+            final boolean ignoreRevisionAttribute,
+            final boolean ignorePcieVpdAttribute) throws IOException {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
@@ -157,7 +160,7 @@ public final class ValidationService {
                 validatePlatformCredentialAttributes(platformCredential, deviceInfoReport,
                         endorsementCredential,
                         componentResultRepository, componentAttributeRepository,
-                        componentInfos, provisionSessionId, ignoreRevisionAttribute);
+                        componentInfos, provisionSessionId, ignoreRevisionAttribute, ignorePcieVpdAttribute);
 
         return switch (result.getAppStatus()) {
             case PASS -> buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
@@ -188,6 +191,7 @@ public final class ValidationService {
      * @param componentInfos               list of component information
      * @param provisionSessionId           uuid representation of the provision session ID
      * @param ignoreRevisionAttribute      whether to ignore the revision attribute
+     * @param ignorePcieVpdAttribute       whether to ignore the pcie vpd attribute
      * @return a supply chain validation
      */
     public static SupplyChainValidation evaluateDeltaAttributesStatus(
@@ -198,7 +202,9 @@ public final class ValidationService {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final List<ComponentInfo> componentInfos,
-            final UUID provisionSessionId, final boolean ignoreRevisionAttribute) {
+            final UUID provisionSessionId,
+            final boolean ignoreRevisionAttribute,
+            final boolean ignorePcieVpdAttribute) {
         final SupplyChainValidation.ValidationType validationType
                 = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
 
@@ -207,7 +213,7 @@ public final class ValidationService {
                 validateDeltaPlatformCredentialAttributes(deviceInfoReport,
                         base, deltaMapping, componentInfos,
                         componentResultRepository, componentAttributeRepository,
-                        provisionSessionId, ignoreRevisionAttribute);
+                        provisionSessionId, ignoreRevisionAttribute, ignorePcieVpdAttribute);
 
         return switch (result.getAppStatus()) {
             case PASS -> buildValidationRecord(validationType, AppraisalStatus.Status.PASS,
