@@ -105,7 +105,7 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
      * @return a certificate
      */
     @Query(value = "SELECT * FROM Certificate where certificateHash = ?1 AND DTYPE = ?2", nativeQuery = true)
-    Certificate findByCertificateHash(int certificateHash, String dType);
+    Certificate findByCertificateHashAndDType(int certificateHash, String dType);
 
     /**
      * Query that retrieves an endorssement credential using the provided public key modulus hex value.
@@ -128,7 +128,7 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
      * ldevID value and sort value.
      *
      * @param deviceId device id
-     * @param ldevID is it a LDevId
+     * @param ldevID   is it a LDevId
      * @param sort     sort
      * @return a list of issued attestation certificates
      */

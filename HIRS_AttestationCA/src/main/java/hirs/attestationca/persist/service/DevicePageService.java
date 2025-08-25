@@ -32,11 +32,11 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Service layer class that handles the storage and retrieval of devices.
+ * A service layer class responsible for encapsulating all business logic related to the Device Page.
  */
 @Service
 @Log4j2
-public class DeviceService {
+public class DevicePageService {
 
     private final DeviceRepository deviceRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
@@ -54,11 +54,11 @@ public class DeviceService {
      * @param entityManager                   entity manager
      */
     @Autowired
-    public DeviceService(final DeviceRepository deviceRepository,
-                         final PlatformCertificateRepository platformCertificateRepository,
-                         final EndorsementCredentialRepository endorsementCredentialRepository,
-                         final IssuedCertificateRepository issuedCertificateRepository,
-                         final EntityManager entityManager) {
+    public DevicePageService(final DeviceRepository deviceRepository,
+                             final PlatformCertificateRepository platformCertificateRepository,
+                             final EndorsementCredentialRepository endorsementCredentialRepository,
+                             final IssuedCertificateRepository issuedCertificateRepository,
+                             final EntityManager entityManager) {
         this.deviceRepository = deviceRepository;
         this.platformCertificateRepository = platformCertificateRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
