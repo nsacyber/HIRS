@@ -262,7 +262,7 @@ public class ReferenceManifestDetailsPageController
                         + e.getMessage());
             }
             if (RIM_VALIDATOR.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
-                    caCert.getSubjectKeyIdString(), caCert.getEncodedPublicKey())) {
+                    caCert.getSubjectKeyIdString())) {
                 try {
                     if (SupplyChainCredentialValidator.verifyCertificate(
                             caCert.getX509Certificate(), keystore)) {
