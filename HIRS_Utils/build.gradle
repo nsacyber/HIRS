@@ -55,6 +55,10 @@ jar {
     }
     //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
     archiveVersion = jarVersion
+
+    from(sourceSets.test.resources.srcDirs) {
+        into('/')
+    }
 }
 
 //task generateXjcLibrary(type:Exec) {
