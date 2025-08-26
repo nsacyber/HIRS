@@ -141,7 +141,7 @@ public class CoseSignature implements SignatureFormat {
      * @return toBeVerified data
      */
     public byte[] getToBeVerified(final byte[] coseData) throws IOException {
-        // COSEProtectedHeader pheader = processCose(coseData, true);
+        processCose(coseData, true);
         return toBeSigned.clone();
     }
 

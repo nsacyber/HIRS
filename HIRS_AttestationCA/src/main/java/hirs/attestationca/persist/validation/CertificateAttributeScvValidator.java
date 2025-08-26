@@ -368,6 +368,18 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
             numOfAttributes = attributeResults.size();
 
+            if (numOfAttributes == 0) {
+                passesValidation = false;
+
+                resultMessage.append(String.format("There are %d component(s) not matched%n.",
+                        remainingComponentResults.size()));
+
+                for (ComponentResult componentResult : remainingComponentResults) {
+                    resultMessage.append("Component not found: ")
+                            .append(componentResult.toString());
+                }
+            }
+
             boolean saveAttributeResult;
 
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
@@ -427,8 +439,8 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @param componentResultRepository    component result repository
      * @param componentAttributeRepository component attribute repository
      * @param provisionSessionId           uuid representation of the provision session id
-     * @param ignoreRevisionAttribute      whether to ignore the revision attribute
-     * @param ignorePcieVpdAttribute       whether to ignore the pcie vpd attribute
+     * @param ignoreRevisionAttribute      policy flag to ignore the revision attribute
+     * @param ignorePcieVpdAttribute       policy flag to ignore the pcie vpd attribute
      * @return Appraisal Status of delta being validated.
      */
 
@@ -496,6 +508,19 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             List<ComponentAttributeResult> attributeResults = checkComponentClassMap(
                     componentInfos, remainingComponentResults);
             numOfAttributes = attributeResults.size();
+
+            if (numOfAttributes == 0) {
+                fieldValidation = false;
+
+                resultMessage.append(String.format("There are %d component(s) not matched%n.",
+                        remainingComponentResults.size()));
+
+                for (ComponentResult componentResult : remainingComponentResults) {
+                    resultMessage.append("Component not found: ")
+                            .append(componentResult.toString());
+                }
+            }
+
 
             boolean saveAttributeResult;
 
@@ -727,6 +752,23 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         if (versionNumber == null) {
             return true;
         }
+        String fieldValue = versionNumber.trim().toLowerCase();
+
+        return fieldValue.equals(DeviceInfoEnums.NOT_SPECIFIED.toLowerCase())
+                || fieldValue.equals(LC_UNKNOWN);
+    }
+
+    /**
+     * Per update to the provisioning via Issue 723, Not Specified and Unknown values
+     * are to be ignored.
+     *
+     * @param versionNumber string value of the device/platform version number
+     * @return true if they equal Not Specified or Unknown
+     */
+    public static boolean isNullBlankNotSpecifiedOrUnknown(final String versionNumber) {
+        if (versionNumber == null || versionNumber.isBlank()) {
+            return true;
+        }
         String fieldValue = versionNumber.toLowerCase();
 
         return fieldValue.equals(DeviceInfoEnums.NOT_SPECIFIED.toLowerCase())
@@ -800,6 +842,14 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // if it exists, don't save the component
         List<ComponentResult> remainingComponentResults = new ArrayList<>();
         for (ComponentResult componentResult : compiledComponentList) {
+            if (CertificateAttributeScvValidator.isNotSpecifiedOrUnknown(
+                    componentResult.getSerialNumber().trim())) {
+                componentResult.setSerialNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
+            }
+            if (CertificateAttributeScvValidator.isNotSpecifiedOrUnknown(
+                    componentResult.getRevisionNumber().trim())) {
+                componentResult.setRevisionNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
+            }
             if (!deviceHashMap.containsKey(componentResult.hashCommonElements())) {
                 // didn't find the component result in the hashed mapping
                 remainingComponentResults.add(componentResult);

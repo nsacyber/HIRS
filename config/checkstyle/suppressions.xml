@@ -33,6 +33,7 @@
     <suppress files="CborTagProcessor.java" checks="MagicNumber"/>
     <suppress files="HexByteArrayDeserializer.java" checks="MagicNumber"/>
     <suppress files="HashSwid.java" checks="MagicNumber"/>
+    <suppress files="CoswidItemsTest.java" checks="MagicNumber"/>
     <!-- This ignores checking all protected variables -->
     <suppress files="CoRim.java" checks="VisibilityModifier"/>
     <suppress files="CoRimParser.java" checks="VisibilityModifier"/>

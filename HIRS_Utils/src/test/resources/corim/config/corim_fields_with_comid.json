@@ -1,0 +1,67 @@
+{
+  "id": "Test CoRIM 2",
+  "comid-tags": [
+    {
+      "language": "en-US",
+      "tag-identity": {
+        "tag-id": "742429b4-22ea-4d3b-baca-1e46fffa7379"
+      },
+      "triples": {
+        "reference-triples": [
+          {
+            "ref-env": {
+              "class": {
+                "vendor": "ACME Inc.",
+                "model": "ACME 9000"
+              }
+            },
+            "ref-claims": [
+              {
+                "mkey": 1,
+                "mval": {
+                  "digests": [
+                    {
+                      "alg": 1,
+                      "val": "e329ccd1760c290f0f22f82bd44655eb2130fc1ab14d96d235a859790011a5f8"
+                    }
+                  ]
+                }
+              },
+              {
+                "mkey": 2,
+                "mval": {
+                  "digests": [
+                    {
+                      "alg": 1,
+                      "val": "17b66b2c3ae27ec5b0d20ae4987dadff4d1b81941c010c94675a60fb97b4e700"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "dependent-rims": [
+    {
+      "href": [
+        "https://testURI1",
+        "https://testURI2",
+        "https://testURI3"
+      ]
+    }
+  ],
+  "profile": "https://testprofile",
+  "validity-map": {
+    "not-after": "2025-07-01 13:30"
+  },
+  "entities": [
+    {
+      "entity-name": "ACME Inc.",
+      "reg-id": "https://testing",
+      "role": [ 0, 1 ]
+    }
+  ]
+}
