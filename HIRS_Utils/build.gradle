@@ -50,11 +50,15 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
-                'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.toURI().toString() }.join(' ')
         )
     }
     //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
     archiveVersion = jarVersion
+
+    from(sourceSets.test.resources.srcDirs) {
+        into('/')
+    }
 }
 
 //task generateXjcLibrary(type:Exec) {

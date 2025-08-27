@@ -176,13 +176,11 @@ public class ReferenceManifestValidator {
      *
      * @param publicKey          public key from the CA credential
      * @param subjectKeyIdString string version of the subjet key id of the CA credential
-     * @param encodedPublicKey   the encoded public key
      * @return true if the signature element is validated, false otherwise
      */
 
     public boolean validateXmlSignature(final PublicKey publicKey,
-                                        final String subjectKeyIdString,
-                                        final byte[] encodedPublicKey) {
+                                        final String subjectKeyIdString) {
         DOMValidateContext context = null;
         validationErrorMessage = "Unable to verify RIM signature: ";
         try {
@@ -210,12 +208,17 @@ public class ReferenceManifestValidator {
                     validationErrorMessage += "embedded cert is null.";
                 }
             } else {
-                subjectKeyIdentifier = getKeyName();
-                if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
-                    context = new DOMValidateContext(publicKey,
-                            nodes.item(0));
+                if (publicKey != null && !subjectKeyIdString.isEmpty()) {
+                    subjectKeyIdentifier = getKeyName();
+                    if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
+                        context = new DOMValidateContext(publicKey,
+                                nodes.item(0));
+                    } else {
+                        validationErrorMessage += "issuer cert not found";
+                    }
                 } else {
-                    validationErrorMessage += "issuer cert not found";
+                    System.out.println("A public signing certificate (-p) is required " +
+                            "to verify this base RIM.");
                 }
             }
             if (context != null) {
@@ -240,21 +243,23 @@ public class ReferenceManifestValidator {
      * @return true if both the file element and signature are valid, false otherwise
      */
     public boolean validateRim(final String signingCertPath) {
-        X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
-        if (signingCert == null) {
-            return failWithError("Unable to parse the signing cert from " + signingCertPath);
-        }
+        PublicKey pk = null;
         String retrievedSubjectKeyIdentifier = "";
-        try {
-            retrievedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
-        } catch (IOException e) {
-            return failWithError("Error while parsing SKID: " + e.getMessage());
+        if (!signingCertPath.isEmpty()) {
+            X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
+            if (signingCert == null) {
+                return failWithError("Unable to parse the signing cert from " + signingCertPath);
+            } else {
+                pk = signingCert.getPublicKey();
+            }
+            try {
+                retrievedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
+            } catch (IOException e) {
+                return failWithError("Error while parsing SKID: " + e.getMessage());
+            }
         }
 
-        boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
-                retrievedSubjectKeyIdentifier,
-                signingCert.getPublicKey().getEncoded());
-
+        boolean isSignatureValid = validateXmlSignature(pk, retrievedSubjectKeyIdentifier);
         NodeList fileElement = getXmlElement(SwidTagConstants.SWIDTAG_NAMESPACE, "File");
         return isSignatureValid && validateFile((Element) fileElement.item(0));
     }
