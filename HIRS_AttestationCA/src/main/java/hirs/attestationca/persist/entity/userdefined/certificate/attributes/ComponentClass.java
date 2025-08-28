@@ -3,10 +3,12 @@ package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonObject.Member;
 import hirs.utils.JsonUtils;
+import hirs.utils.PciIds;
 import lombok.Getter;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * <p>
@@ -65,16 +67,18 @@ ComponentClass {
     private final String registryType;
 
     private final String componentIdentifier;
-
+    private final String registryOid;
     private String category;
-
     private String categoryStr;
-
     private String component;
-
     private String componentStr;
 
-    private final String registryOid;
+    /**
+     * This field will contain the component class complete information that will be displayed as
+     * a tooltip for each component. At the moment it will be used to display each PCIE component's
+     * complete information.
+     */
+    private String componentToolTipStr;
 
     /**
      * Default class constructor.
@@ -153,7 +157,15 @@ ComponentClass {
             default:
                 this.category = this.componentIdentifier.substring(0, MID_INDEX) + this.category;
                 this.component = OTHER + this.componentIdentifier.substring(MID_INDEX);
-                findStringValues(JsonUtils.getSpecificJsonObject(componentClassPath, registryType));
+
+                // if the registry type is of type PCIE, attempt to use the included library
+                // to parse the string values
+                if (this.registryType.equals("PCIE")) {
+                    this.findComponentValuesForPCIERegistry();
+                } else {
+                    this.findComponentValuesForAllOtherRegistryTypes(
+                            JsonUtils.getSpecificJsonObject(componentClassPath, registryType));
+                }
                 break;
         }
     }
@@ -172,12 +184,10 @@ ComponentClass {
             try {
                 if (component.contains("x")) {
                     componentValue = component.substring(component.indexOf("x") + 1);
+                } else if (component.contains("#")) {
+                    componentValue = component.replace("#", "");
                 } else {
-                    if (component.contains("#")) {
-                        componentValue = component.replace("#", "");
-                    } else {
-                        return component;
-                    }
+                    return component;
                 }
             } catch (NumberFormatException nfEx) {
                 //invalid entry
@@ -195,22 +205,54 @@ ComponentClass {
      */
     @Override
     public String toString() {
-        String resultString;
         if (componentStr.equals(UNKNOWN_STRING) || component.equals(OTHER_STRING)) {
-            resultString = String.format("%s%n%s", registryType, categoryStr);
-        } else {
-            resultString = String.format("%s%n%s - %s", registryType, categoryStr, componentStr);
+            return String.format("%s%n%s", registryType, categoryStr);
         }
-        return resultString;
+        return String.format("%s%n%s - %s", registryType, categoryStr, componentStr);
     }
 
     /**
-     * Getter for the Category mapped to the associated value in.
-     *
-     * @param categories a JSON object associated with mapped categories in file
-     *                   {}@link componentIdentifier}.
+     * Helper method that attempts to find and set the category and component string using the PCI IDs
+     * library. This method will be used only for the PCIE registry types.
      */
-    private void findStringValues(final JsonObject categories) {
+    private void findComponentValuesForPCIERegistry() {
+        if (PciIds.DB.isReady()) {
+            // remove the first two digits from the component value
+            final String classCode = this.componentIdentifier.substring(2);
+            final List<String> translateClassCode = PciIds.translateDeviceClass(classCode);
+
+            // grab the component's device class from the first element
+            // and if the PCI Ids DB did not return a number, set the category string to the
+            // translated device class
+            this.categoryStr = translateClassCode.get(0).matches("\\d+")
+                    ? UNKNOWN_STRING : translateClassCode.get(0);
+
+            // grab the component's device subclass from the second element
+            // and if the PCI Ids DB did not return a number, set the component string to the
+            // translated device subclass
+            this.componentStr = translateClassCode.get(1).matches("\\d+")
+                    ? NONE_STRING : translateClassCode.get(1);
+
+            // grab the component's programming interface from the third element
+            // and if the PCI Ids DB did not return a number, return an empty string
+            final String programmingInterface =
+                    translateClassCode.get(2).matches("\\d+") ? "" : translateClassCode.get(2);
+
+            // create a string that represents the component's complete information that can be
+            // displayed as tooltip (currently this is being used for just PCIE components)
+            this.componentToolTipStr = "Class: " + this.categoryStr + " | "
+                    + "\nSubclass: " + this.componentStr + " | "
+                    + "\nProgramming Interface: " + programmingInterface;
+        }
+    }
+
+    /**
+     * Helper method that attempts to find and set the category and component string using the provided
+     * JSON object. This method will typically be used for the SMBIOS, STORAGE-BASED, and TCG registry types.
+     *
+     * @param categories a JSON object associated with mapped categories in file.
+     */
+    private void findComponentValuesForAllOtherRegistryTypes(final JsonObject categories) {
         String categoryID;
         String componentMask;
         boolean found = false;
@@ -221,8 +263,7 @@ ComponentClass {
                         .asObject().get("ID").asString());
                 componentMask = componentIdentifier.substring(MID_INDEX);
                 // check for the correct flag
-                if (categoryMatch(componentIdentifier.substring(0, MID_INDEX),
-                        categoryID.substring(0, MID_INDEX))) {
+                if (componentIdentifier.substring(0, MID_INDEX).equals(categoryID.substring(0, MID_INDEX))) {
                     found = true;
                     JsonObject componentTypes = categories.get(name)
                             .asObject().get("Types").asObject();
@@ -243,17 +284,6 @@ ComponentClass {
             this.categoryStr = NONE_STRING;
             this.componentStr = UNKNOWN_STRING;
         }
-    }
-
-    /**
-     * Returns the value of the comparison between a category and the what's in the id.
-     *
-     * @param category    the category to compare
-     * @param componentId the id value to compare
-     * @return true if they match
-     */
-    public boolean categoryMatch(final String category, final String componentId) {
-        return category.equals(componentId);
     }
 
     /**

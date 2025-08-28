@@ -481,8 +481,10 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                 // Check if it's a directoryName [4] Name type
                 if (gname.getTagNo() == GeneralName.directoryName) {
                     X500Name name = X500Name.getInstance(gname.getName());
-                    for (RDN rdn : name.getRDNs()) {
-                        for (AttributeTypeAndValue attTV : rdn.getTypesAndValues()) {
+                    RDN[] rdns = name.getRDNs();
+                    for (RDN rdn : rdns) {
+                        AttributeTypeAndValue[] attributeTypeAndValues = rdn.getTypesAndValues();
+                        for (AttributeTypeAndValue attTV : attributeTypeAndValues) {
                             switch (attTV.getType().toString()) {
                                 case PLATFORM_MANUFACTURER_2_0:
                                     this.manufacturer = attTV.getValue().toString();

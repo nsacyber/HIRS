@@ -64,6 +64,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -109,6 +110,8 @@ public class ReferenceManifestValidator {
 
     @Getter
     private boolean supportRimValid;
+    @Getter
+    private String validationErrorMessage;
 
     /**
      * This default constructor creates the Schema object from SCHEMA_URL immediately to save
@@ -176,19 +179,20 @@ public class ReferenceManifestValidator {
      */
 
     public boolean validateXmlSignature(final PublicKey publicKey,
-                                        final String subjectKeyIdString,
-                                        final byte[] encodedPublicKey) {
+                                        final String subjectKeyIdString) {
         DOMValidateContext context = null;
+        validationErrorMessage = "Unable to verify RIM signature: ";
         try {
-            NodeList nodes = rim.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+            NodeList nodes = getXmlElement(XMLSignature.XMLNS, "Signature");
             if (nodes.getLength() == 0) {
-                log.error("Cannot validate RIM, signature element not found!");
+                validationErrorMessage += "invalid XML, signature element not found.";
+                log.error(validationErrorMessage);
                 return false;
             }
             if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
                 trustStore = parseCertificatesFromPem(trustStoreFile);
             }
-            NodeList certElement = rim.getElementsByTagName("X509Certificate");
+            NodeList certElement = getXmlElement(XMLSignature.XMLNS, "X509Certificate");
             if (certElement.getLength() > 0) {
                 X509Certificate embeddedCert = parseCertFromPEMString(
                         certElement.item(0).getTextContent());
@@ -196,16 +200,28 @@ public class ReferenceManifestValidator {
                     if (isCertChainValid(embeddedCert)) {
                         context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
                         subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
+                    } else {
+                        validationErrorMessage += "embedded cert chain invalid.";
                     }
+                } else {
+                    validationErrorMessage += "embedded cert is null.";
                 }
             } else {
-                subjectKeyIdentifier = getKeyName(rim);
-                if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
-                    context = new DOMValidateContext(publicKey,
-                            nodes.item(0));
+                if (publicKey != null && !subjectKeyIdString.isEmpty()) {
+                    subjectKeyIdentifier = getKeyName();
+                    if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
+                        context = new DOMValidateContext(publicKey,
+                                nodes.item(0));
+                    } else {
+                        validationErrorMessage += "issuer cert not found";
+                    }
+                } else {
+                    System.out.println("A public signing certificate (-p) is required " +
+                            "to verify this base RIM.");
                 }
             }
             if (context != null) {
+                validationErrorMessage = "";
                 this.publicKey = publicKey;
                 signatureValid = validateSignedXMLDocument(context);
                 return signatureValid;
@@ -226,23 +242,25 @@ public class ReferenceManifestValidator {
      * @return true if both the file element and signature are valid, false otherwise
      */
     public boolean validateRim(final String signingCertPath) {
-        Element fileElement = (Element) rim.getElementsByTagNameNS(
-                SwidTagConstants.SWIDTAG_NAMESPACE, "File").item(0);
-        X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
-        if (signingCert == null) {
-            return failWithError("Unable to parse the signing cert from " + signingCertPath);
-        }
+        PublicKey pk = null;
         String retrievedSubjectKeyIdentifier = "";
-        try {
-            retrievedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
-        } catch (IOException e) {
-            return failWithError("Error while parsing SKID: " + e.getMessage());
+        if (!signingCertPath.isEmpty()) {
+            X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
+            if (signingCert == null) {
+                return failWithError("Unable to parse the signing cert from " + signingCertPath);
+            } else {
+                pk = signingCert.getPublicKey();
+            }
+            try {
+                retrievedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
+            } catch (IOException e) {
+                return failWithError("Error while parsing SKID: " + e.getMessage());
+            }
         }
 
-        boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
-                retrievedSubjectKeyIdentifier,
-                signingCert.getPublicKey().getEncoded());
-        return isSignatureValid && validateFile(fileElement);
+        boolean isSignatureValid = validateXmlSignature(pk, retrievedSubjectKeyIdentifier);
+        NodeList fileElement = getXmlElement(SwidTagConstants.SWIDTAG_NAMESPACE, "File");
+        return isSignatureValid && validateFile((Element) fileElement.item(0));
     }
 
     /**
@@ -278,6 +296,11 @@ public class ReferenceManifestValidator {
                         + SwidTagConstants.SHA_256_HASH.getLocalPart()))) {
             log.info("Support RIM hash verified for {}", filepath);
             return true;
+        } else if (getHashValue(filepath, "SHA384").equals(
+                file.getAttribute(SwidTagConstants.SHA_384_HASH.getPrefix() + ":"
+                        + SwidTagConstants.SHA_384_HASH.getLocalPart()))) {
+            log.info("Support RIM hash verified for {}", filepath);
+            return true;
         } else {
             return failWithError("Support RIM hash does not match Base RIM!");
         }
@@ -290,7 +313,7 @@ public class ReferenceManifestValidator {
      * @return X509Certificate signing cert
      */
     private X509Certificate getCertFromTruststore() throws IOException {
-        String retrievedSubjectKeyIdentifier = getKeyName(rim);
+        String retrievedSubjectKeyIdentifier = getKeyName();
         for (X509Certificate trustedCert : trustStore) {
             String trustedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(trustedCert);
             if (retrievedSubjectKeyIdentifier.equals(trustedSubjectKeyIdentifier)) {
@@ -310,8 +333,11 @@ public class ReferenceManifestValidator {
      */
     private String getHashValue(final String filepath, final String sha) {
         try {
+            MessageDigest md = MessageDigest.getInstance(sha);
             byte[] bytes = Files.readAllBytes(Paths.get(filepath));
             return getHashValue(bytes, sha);
+        } catch (NoSuchAlgorithmException e) {
+            log.warn(e.getMessage());
         } catch (IOException e) {
             log.warn("Error reading {} for hashing: {}", filepath, e.getMessage());
         }
@@ -628,13 +654,30 @@ public class ReferenceManifestValidator {
      * @param doc document
      * @return SKID if found, or an empty string.
      */
-    private String getKeyName(final Document doc) {
-        NodeList keyName = doc.getElementsByTagName("KeyName");
+    private String getKeyName() {
+        NodeList keyName = getXmlElement(XMLSignature.XMLNS, "KeyName");
         if (keyName.getLength() > 0) {
             return keyName.item(0).getTextContent();
         } else {
             return null;
         }
+    }
+
+    /**
+     * This method parses an XML element from the rim document, checking for a namespace
+     * prefix if necessary.
+     *
+     * @param namespace the element's namespace
+     * @param tagName the element's name
+     * @return a NodeList containing the element
+     */
+    private NodeList getXmlElement(final String namespace, final String tagName) {
+        NodeList xmlElement = rim.getElementsByTagName(tagName);
+        if (xmlElement.getLength() == 0) {
+            xmlElement = rim.getElementsByTagNameNS(namespace, tagName);
+        }
+
+        return xmlElement;
     }
 
     /**
@@ -732,19 +775,25 @@ public class ReferenceManifestValidator {
                                         final AlgorithmMethod algorithm,
                                         final XMLCryptoContext context)
                 throws KeySelectorException {
-
-            List<XMLStructure> xmlStructures = keyinfo.getContent();
-
-            for (XMLStructure element : xmlStructures) {
+            Iterator keyinfoItr = keyinfo.getContent().iterator();
+            String subjectName = "";
+            while (keyinfoItr.hasNext()) {
+                XMLStructure element = (XMLStructure) keyinfoItr.next();
                 if (element instanceof X509Data data) {
-                    List<?> dataContent = data.getContent();
-                    for (Object object : dataContent) {
+                    Iterator dataItr = data.getContent().iterator();
+                    while (dataItr.hasNext()) {
+                        Object object = dataItr.next();
+                        if (object instanceof String subjName) { // Subject name
+                            subjectName = subjName;
+                        }
                         if (object instanceof X509Certificate embeddedCert) {
                             try {
-                                if (isCertChainValid(embeddedCert)) {
+                                if (embeddedCert.getSubjectX500Principal().getName().equals(subjectName)
+                                        || isCertChainValid(embeddedCert)) {
                                     publicKey = embeddedCert.getPublicKey();
                                     signingCert = embeddedCert;
                                     log.info("Certificate chain valid.");
+                                    break;
                                 }
                             } catch (Exception e) {
                                 log.error("Certificate chain invalid: {}", e.getMessage());
@@ -772,7 +821,8 @@ public class ReferenceManifestValidator {
                 }
                 if (publicKey != null) {
                     if (areAlgorithmsEqual(algorithm.getAlgorithm(), publicKey.getAlgorithm())) {
-                        return new RIMKeySelectorResult(publicKey);
+                        return new ReferenceManifestValidator.X509KeySelector
+                                .RIMKeySelectorResult(publicKey);
                     }
                 }
             }

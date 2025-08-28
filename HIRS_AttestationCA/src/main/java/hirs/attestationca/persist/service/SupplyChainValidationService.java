@@ -343,8 +343,8 @@ public class SupplyChainValidationService {
                     String[] storedPcrs = eventLog.getExpectedPCRList();
                     PcrValidator pcrValidator = new PcrValidator(sRim.getExpectedPCRList());
                     // grab the quote
-                    byte[] hash = device.getDeviceInfo().getTpmInfo().getTpmQuoteHash();
-                    if (pcrValidator.validateQuote(hash, storedPcrs, getPolicySettings())) {
+                    byte[] quote = device.getDeviceInfo().getTpmInfo().getTpmQuoteHash();
+                    if (pcrValidator.validateQuote(quote, storedPcrs, getPolicySettings())) {
                         level = Level.INFO;
                         fwStatus = new AppraisalStatus(PASS,
                                 SupplyChainCredentialValidator.FIRMWARE_VALID);
@@ -352,6 +352,10 @@ public class SupplyChainValidationService {
                     } else {
                         fwStatus.setMessage("Firmware validation of TPM Quote failed."
                                 + "\nPCR hash and Quote hash do not match.");
+                        for (int i = 0; i < storedPcrs.length; i++) {
+                            log.debug(String.format("PCR[%d]: %s", i, storedPcrs[i]));
+                        }
+                        log.debug(pcrValidator.validatePcrs(storedPcrs, getPolicySettings()));
                     }
                     eventLog.setOverallValidationResult(fwStatus.getAppStatus());
                     this.referenceManifestRepository.save(eventLog);

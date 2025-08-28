@@ -108,6 +108,8 @@ public final class SwidTagConstants {
             + PC_URI_GLOBAL;
     public static final QName SHA_256_HASH = new QName(
             "http://www.w3.org/2001/04/xmlenc#sha256", HASH, "SHA256");
+    public static final QName SHA_384_HASH = new QName(
+            "http://www.w3.org/2001/04/xmlenc#sha384", HASH, "SHA384");
     public static final QName QNAME_COLLOQUIAL_VERSION = new QName(
             NIST_NS, COLLOQUIAL_VERSION, N8060_PFX);
     public static final QName QNAME_EDITION = new QName(
@@ -118,7 +120,7 @@ public final class SwidTagConstants {
             NIST_NS, REVISION, N8060_PFX);
     public static final QName QNAME_PAYLOAD_TYPE = new QName(
             TCG_NS, PAYLOAD_TYPE, RIM_PFX);
-    public static final QName QNAME_PLATFORM_MANUFACTURER = new QName(
+    public static final QName QNAME_PLATFORM_MANUFACTURER_STR = new QName(
             TCG_NS, PLATFORM_MANUFACTURER_STR, RIM_PFX);
     public static final QName QNAME_PLATFORM_MANUFACTURER_ID = new QName(
             TCG_NS, PLATFORM_MANUFACTURER_ID, RIM_PFX);
@@ -150,11 +152,11 @@ public final class SwidTagConstants {
             TCG_NS, SUPPORT_RIM_FORMAT, RIM_PFX);
     public static final QName QNAME_SUPPORT_RIM_URI_GLOBAL = new QName(
             TCG_NS, SUPPORT_RIM_URI_GLOBAL, RIM_PFX);
-    public static final QName N8060_ENVVARPREFIX = new QName(
+    public static final QName QNAME_N8060_ENVVARPREFIX = new QName(
             NIST_NS, "envVarPrefix", N8060_PFX);
-    public static final QName N8060_ENVVARSUFFIX = new QName(
+    public static final QName QNAME_N8060_ENVVARSUFFIX = new QName(
             NIST_NS, "envVarSuffix", N8060_PFX);
-    public static final QName N8060_PATHSEPARATOR = new QName(
+    public static final QName QNAME_N8060_PATHSEPARATOR = new QName(
             NIST_NS, "pathSeparator", N8060_PFX);
     public static final String CA_ISSUERS = "1.3.6.1.5.5.7.48.2";
 

@@ -95,7 +95,7 @@ public final class PciIds {
             }
 
             // if pciids file is not found on the system or not accessible, then attempt to grab it from code
-            if (pciidsFileStatus == UefiConstants.FILESTATUS_NOT_ACCESSIBLE) {
+            if (pciidsFileStatus.equals(UefiConstants.FILESTATUS_NOT_ACCESSIBLE)) {
                 InputStream isFromCode = PciIds.class.getResourceAsStream(PCIIDS_FILENAME);
                 if (isFromCode != null) {
                     try {
@@ -113,7 +113,7 @@ public final class PciIds {
             }
 
             // if pciids file is not accessible on system or from within code, then log error
-            if (pciidsFileStatus == UefiConstants.FILESTATUS_NOT_ACCESSIBLE) {
+            if (pciidsFileStatus.equals(UefiConstants.FILESTATUS_NOT_ACCESSIBLE)) {
                 log.info("PCI IDs file was NOT accessible from within the system or within the code");
             }
         }
@@ -176,14 +176,13 @@ public final class PciIds {
      */
     public static ASN1UTF8String translateDevice(final ASN1UTF8String refManufacturer,
                                                  final ASN1UTF8String refModel) {
-        ASN1UTF8String manufacturer = refManufacturer;
         ASN1UTF8String model = refModel;
         if (!pciidsFileStatus.equals(UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                && manufacturer != null
+                && refManufacturer != null
                 && model != null
-                && manufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")
+                && refManufacturer.getString().trim().matches("^[0-9A-Fa-f]{4}$")
                 && model.getString().trim().matches("^[0-9A-Fa-f]{4}$")) {
-            Device dev = DB.findDevice(manufacturer.getString().toLowerCase(),
+            Device dev = DB.findDevice(refManufacturer.getString().toLowerCase(),
                     model.getString().toLowerCase());
             if (dev != null && !Strings.isNullOrEmpty(dev.getName())) {
                 model = new DERUTF8String(dev.getName());
@@ -235,40 +234,44 @@ public final class PciIds {
     public static List<String> translateDeviceClass(final String refClassCode) {
         List<String> translatedClassCode = new ArrayList<>();
 
-        String classCode = refClassCode;
         if (!pciidsFileStatus.equals(UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                && classCode != null
-                && classCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
+                && refClassCode != null
+                && refClassCode.trim().matches("^[0-9A-Fa-f]{6}$")) {
 
             final int startIndexOfDeviceClass = 0;
             final int endIndexOfDeviceClass = 2;
-            String deviceClass =
-                    classCode.substring(startIndexOfDeviceClass, endIndexOfDeviceClass).toLowerCase();
+            final String deviceClass =
+                    refClassCode.substring(startIndexOfDeviceClass, endIndexOfDeviceClass).toLowerCase();
 
             final int startIndexOfDeviceSubclass = 2;
             final int endIndexOfDeviceSubclass = 4;
-            String deviceSubclass =
-                    classCode.substring(startIndexOfDeviceSubclass, endIndexOfDeviceSubclass)
+            final String deviceSubclass =
+                    refClassCode.substring(startIndexOfDeviceSubclass, endIndexOfDeviceSubclass)
                             .toLowerCase();
 
             final int startIndexOfProgramInterface = 4;
             final int endIndexOfProgramInterface = 6;
             final String programInterface =
-                    classCode.substring(startIndexOfProgramInterface, endIndexOfProgramInterface)
+                    refClassCode.substring(startIndexOfProgramInterface, endIndexOfProgramInterface)
                             .toLowerCase();
 
             translatedClassCode.add(deviceClass);
             translatedClassCode.add(deviceSubclass);
             translatedClassCode.add(programInterface);
-            DeviceClass devC = DB.findDeviceClass(deviceClass);
-            DeviceSubclass devSc = DB.findDeviceSubclass(deviceClass, deviceSubclass);
-            ProgramInterface progI = DB.findProgramInterface(deviceClass, deviceSubclass, programInterface);
+
+            final DeviceClass devC = DB.findDeviceClass(deviceClass);
+            final DeviceSubclass devSc = DB.findDeviceSubclass(deviceClass, deviceSubclass);
+            final ProgramInterface progI =
+                    DB.findProgramInterface(deviceClass, deviceSubclass, programInterface);
+
             if (devC != null && !Strings.isNullOrEmpty(devC.getName())) {
                 translatedClassCode.set(0, devC.getName());
             }
+
             if (devSc != null && !Strings.isNullOrEmpty(devSc.getName())) {
                 translatedClassCode.set(1, devSc.getName());
             }
+
             if (progI != null && !Strings.isNullOrEmpty(progI.getName())) {
                 translatedClassCode.set(2, progI.getName());
             }

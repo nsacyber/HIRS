@@ -181,7 +181,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             try {
                 if (referenceManifestValidator.validateXmlSignature(
                         signingCert.getX509Certificate().getPublicKey(),
-                        signingCert.getSubjectKeyIdString(), signingCert.getEncodedPublicKey())) {
+                        signingCert.getSubjectKeyIdString())) {
                     try {
                         if (!SupplyChainCredentialValidator.verifyCertificate(
                                 signingCert.getX509Certificate(), keyStore)) {
@@ -227,9 +227,12 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
         if (passed && !referenceManifestValidator.isSignatureValid()) {
             passed = false;
-            rimSignatureStatus = new AppraisalStatus(FAIL,
-                    "RIM signature validation failed: Signature validation "
-                            + "failed for Base RIM.");
+            String validationErrorMessage = referenceManifestValidator.getValidationErrorMessage();
+            if (!validationErrorMessage.isEmpty()) {
+                rimSignatureStatus = new AppraisalStatus(FAIL, validationErrorMessage);
+            } else {
+                rimSignatureStatus = new AppraisalStatus(FAIL, "Base RIM signature invalid.");
+            }
         }
 
         if (passed && !referenceManifestValidator.isSupportRimValid()) {

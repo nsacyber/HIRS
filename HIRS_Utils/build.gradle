@@ -14,18 +14,22 @@ configurations {
 }
 
 dependencies {
+    implementation libs.authlete.cbor
     implementation libs.bouncycastle
     implementation libs.commons.codec
     implementation libs.commons.lang3
     implementation libs.commons.io
+    implementation libs.glassfish.jakarta.json
     implementation libs.glassfish.jaxb.runtime
     implementation libs.guava
+    implementation libs.jackson.cbor
     implementation libs.jackson.core
     implementation libs.jackson.databind
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
     implementation libs.spring.boot.starter.log4j2
     implementation libs.minimal.json
+    implementation libs.nimbus.jwt
 
     implementation libs.pci
     // explicitly include the patched version of the apache http client dependency
@@ -46,11 +50,15 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
-                'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.toURI().toString() }.join(' ')
         )
     }
     //jar name format: [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
     archiveVersion = jarVersion
+
+    from(sourceSets.test.resources.srcDirs) {
+        into('/')
+    }
 }
 
 //task generateXjcLibrary(type:Exec) {

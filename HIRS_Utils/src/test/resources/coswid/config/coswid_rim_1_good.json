@@ -1,0 +1,38 @@
+{
+	"software-name": "TCG RIM example",
+	"software-version": "0.1",
+	"tag-id": "0748cc25-6c40-477b-ad33-00c25fd218eb",
+	"tag-version": "1",
+	"patch": true,
+	"supplemental": false,
+	"corpus": false,
+	"entity": {
+		"entity-name": "HIRS",
+		"role": "tag-creator,software-creator",
+		"reg-id": "www.example.com"
+	},
+	"link": {
+		"href": "https://Example.com/support/ProductA/firmware/installfiles",
+		"rel": "installationmedia"
+	},
+	"software-meta": {
+		"colloquial-version": "12",
+		"product": "ProductA",
+		"revision": "1",
+		"persistent-id": "https://Example.com/support/ProductA/info",
+		"description": "Reference values for Product  A",
+		"product-family": "Personal IOT Devices",
+		"summary": "Complete set of reference values for Product A"
+	},
+	"payload": {
+		"directory": {
+			"fs-name": "iotBase",
+			"file": {
+			        "file-version": "123.4",
+				"fs-name": "TpmLog.bin",
+				"size": "7550",
+                                "hash": "4479ca722623f8c47b703996ced3cbd981b06b1ae8a897db70137e0b7c546848"
+			}
+		}
+	}
+}

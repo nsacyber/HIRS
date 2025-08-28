@@ -10,6 +10,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -176,7 +177,7 @@ public abstract class Certificate extends ArchivableEntity {
     // We're currently seeing 2048-bit keys, which is 512 hex digits.
     // Using a max length of 1024 for future-proofing.
     @Getter
-    @Column(length = CertificateVariables.MAX_PUB_KEY_MODULUS_HEX_LENGTH, nullable = true)
+    @Column(length = CertificateVariables.MAX_PUB_KEY_MODULUS_HEX_LENGTH)
     private final String publicKeyModulusHexValue;
 
     @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES, nullable = false)
@@ -210,13 +211,14 @@ public abstract class Certificate extends ArchivableEntity {
     @Column(precision = CertificateVariables.MAX_NUMERIC_PRECISION)
     private final BigInteger authoritySerialNumber;
 
-    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES * CertificateVariables.KEY_USAGE_BIT4,
-            nullable = false)
+    @Lob
+    @Column(nullable = false, columnDefinition = "BLOB")
     @JsonIgnore
     private byte[] certificateBytes;
 
     @Getter
     private String holderIssuer;
+
     // we don't need to persist this, but we don't want to unpack this cert multiple times
     @Transient
     private X509Certificate parsedX509Cert = null;

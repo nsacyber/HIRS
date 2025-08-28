@@ -1,0 +1,31 @@
+{
+  "id": "Test CoRIM 1",
+  "dependent-rims": [
+    {
+      "href": [
+        "https://testURI1",
+        "https://testURI2"
+      ]
+    },
+    {
+      "href": [
+        "https://testURI1"
+      ],
+      "thumbprint": {
+        "alg": 1,
+        "val": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+      }
+    }
+  ],
+  "profile": "https://testprofile",
+  "validity-map": {
+    "not-after": "2025-06-06 16:30"
+  },
+  "entities": [
+    {
+      "entity-name": "Test Inc.",
+      "reg-id": "https://testing",
+      "role": [ 0, 1 ]
+    }
+  ]
+}
