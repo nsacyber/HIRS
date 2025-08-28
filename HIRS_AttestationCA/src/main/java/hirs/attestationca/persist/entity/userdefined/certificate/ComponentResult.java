@@ -6,7 +6,11 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.AttributeStatus;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import jakarta.persistence.Entity;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -23,7 +23,14 @@ import org.bouncycastle.asn1.ASN1UTF8String;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
@@ -822,28 +829,31 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             if (ignorePcieVpdAttribute
                     && componentResult.getComponentClassRegistryType().equalsIgnoreCase("PCIE")) {
                 try {
-                    // create a deep copy so that we do not mess with the original component result object for this
-                    // scenario
+                    // create a deep copy so that we do not mess with the original component
+                    // result object for this scenario
                     ComponentResult copyComponentResult = componentResult.clone();
 
                     if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MANUFACTURER,
                             copyComponentResult.getManufacturer())) {
                         final String newComponentManufacturer =
-                                retrieveNonVpdPortionFromComponentAttribute(copyComponentResult.getManufacturer());
+                                retrieveNonVpdPortionFromComponentAttribute(
+                                        copyComponentResult.getManufacturer());
                         copyComponentResult.setManufacturer(newComponentManufacturer);
                     }
 
                     if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MODEL,
                             copyComponentResult.getModel())) {
                         final String newComponentModel =
-                                retrieveNonVpdPortionFromComponentAttribute(copyComponentResult.getModel());
+                                retrieveNonVpdPortionFromComponentAttribute(
+                                        copyComponentResult.getModel());
                         copyComponentResult.setModel(newComponentModel);
                     }
 
                     if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_SERIAL,
                             copyComponentResult.getSerialNumber())) {
                         final String newComponentSN =
-                                retrieveNonVpdPortionFromComponentAttribute(copyComponentResult.getSerialNumber());
+                                retrieveNonVpdPortionFromComponentAttribute(
+                                        copyComponentResult.getSerialNumber());
                         copyComponentResult.setSerialNumber(newComponentSN);
                     }
 
