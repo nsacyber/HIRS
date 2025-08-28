@@ -23,14 +23,7 @@ import org.bouncycastle.asn1.ASN1UTF8String;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
@@ -507,7 +500,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 }
             }
 
-
             boolean saveAttributeResult;
 
             for (ComponentAttributeResult componentAttributeResult : attributeResults) {
@@ -825,29 +817,46 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 componentResult.setRevisionNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
             }
 
-            // if the ignore pcie vpd policy has been enabled amd the component result's registry type is
+            // if the ignore pcie vpd policy has been enabled and the component result's registry type is
             // PCIE
             if (ignorePcieVpdAttribute
                     && componentResult.getComponentClassRegistryType().equalsIgnoreCase("PCIE")) {
-                if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MANUFACTURER,
-                        componentResult.getManufacturer())) {
-                    final String newComponentManufacturer =
-                            retrieveNonVpdPortionFromComponentAttribute(componentResult.getManufacturer());
-                    componentResult.setManufacturer(newComponentManufacturer);
-                }
+                try {
+                    // create a deep copy so that we do not mess with the original component result object for this
+                    // scenario
+                    ComponentResult copyComponentResult = componentResult.clone();
 
-                if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MODEL,
-                        componentResult.getModel())) {
-                    final String newComponentModel =
-                            retrieveNonVpdPortionFromComponentAttribute(componentResult.getModel());
-                    componentResult.setModel(newComponentModel);
-                }
+                    if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MANUFACTURER,
+                            copyComponentResult.getManufacturer())) {
+                        final String newComponentManufacturer =
+                                retrieveNonVpdPortionFromComponentAttribute(copyComponentResult.getManufacturer());
+                        copyComponentResult.setManufacturer(newComponentManufacturer);
+                    }
 
-                if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_SERIAL,
-                        componentResult.getSerialNumber())) {
-                    final String newComponentSN =
-                            retrieveNonVpdPortionFromComponentAttribute(componentResult.getSerialNumber());
-                    componentResult.setSerialNumber(newComponentSN);
+                    if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MODEL,
+                            copyComponentResult.getModel())) {
+                        final String newComponentModel =
+                                retrieveNonVpdPortionFromComponentAttribute(copyComponentResult.getModel());
+                        copyComponentResult.setModel(newComponentModel);
+                    }
+
+                    if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_SERIAL,
+                            copyComponentResult.getSerialNumber())) {
+                        final String newComponentSN =
+                                retrieveNonVpdPortionFromComponentAttribute(copyComponentResult.getSerialNumber());
+                        copyComponentResult.setSerialNumber(newComponentSN);
+                    }
+
+                    // hash the elements inside the copied, modified component result
+                    if (!deviceHashMap.containsKey(copyComponentResult.hashCommonElements())) {
+                        // if there are no matches, add back the original component result since
+                        // that object contains the original, unmodified information
+                        remainingComponentResults.add(componentResult);
+                    }
+
+                    continue;
+                } catch (CloneNotSupportedException ignored) {
+                    // do nothing and move on to the end of the block
                 }
             }
 

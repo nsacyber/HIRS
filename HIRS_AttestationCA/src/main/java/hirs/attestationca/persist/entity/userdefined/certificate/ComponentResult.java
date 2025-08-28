@@ -6,11 +6,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.AttributeStatus;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import jakarta.persistence.Entity;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -24,7 +20,7 @@ import java.util.Objects;
 @Entity
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ComponentResult extends ArchivableEntity {
+public class ComponentResult extends ArchivableEntity implements Cloneable {
 
     /**
      * String value for the Manufacturer title.
@@ -211,5 +207,20 @@ public class ComponentResult extends ArchivableEntity {
         return String.format("ComponentResult: certificateSerialNumber=[%s] "
                         + "manufacturer=[%s] model=[%s] componentClass=[%s] componentClassRegistry=[%s]",
                 boardSerialNumber, manufacturer, model, componentClassValue, componentClassRegistry);
+    }
+
+    /**
+     * Clones this Component Result object.
+     *
+     * @return a deep copy of this Component Result object
+     * @throws CloneNotSupportedException if there are any issues cloning the class' primitive types
+     */
+    @Override
+    public ComponentResult clone() throws CloneNotSupportedException {
+        try {
+            return (ComponentResult) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new CloneNotSupportedException("Cannot clone Component Result");
+        }
     }
 }
