@@ -144,9 +144,8 @@ public class ReferenceManifestValidator {
      */
     public void setRim(final byte[] rimBytes) {
         try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
+            this.rim = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
                     new ByteArrayInputStream(rimBytes))));
-            this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
         }
@@ -161,8 +160,7 @@ public class ReferenceManifestValidator {
     public void setRim(final String path) {
         File swidtagFile = new File(path);
         try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
-            this.rim = doc;
+            this.rim = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
         }
@@ -176,6 +174,7 @@ public class ReferenceManifestValidator {
      *
      * @param publicKey          public key from the CA credential
      * @param subjectKeyIdString string version of the subjet key id of the CA credential
+     * @param encodedPublicKey   the encoded public key
      * @return true if the signature element is validated, false otherwise
      */
 
@@ -360,8 +359,8 @@ public class ReferenceManifestValidator {
             byte[] bytes = md.digest(input);
             StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < bytes.length; i++) {
-                sb.append(Integer.toString((bytes[i] & EIGHT_BIT_MASK)
+            for (byte aByte : bytes) {
+                sb.append(Integer.toString((aByte & EIGHT_BIT_MASK)
                         + LEFT_SHIFT, RADIX).substring(1));
             }
             resultString = sb.toString();
@@ -408,9 +407,10 @@ public class ReferenceManifestValidator {
         } else {
             log.error("Signature value is invalid!");
         }
-        Iterator itr = signature.getSignedInfo().getReferences().iterator();
-        while (itr.hasNext()) {
-            Reference reference = (Reference) itr.next();
+
+        List<Reference> references = signature.getSignedInfo().getReferences();
+
+        for (Reference reference : references) {
             boolean refValidity = reference.validate(context);
             String refUri = reference.getURI();
             if (refUri.isEmpty()) {
@@ -651,6 +651,7 @@ public class ReferenceManifestValidator {
     /**
      * This method parses the subject key identifier from the KeyName element of a signature.
      *
+     * @param doc document
      * @return SKID if found, or an empty string.
      */
     private String getKeyName() {

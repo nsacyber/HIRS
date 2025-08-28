@@ -37,6 +37,9 @@ import java.util.UUID;
  */
 @Log4j2
 public final class CertificateStringMapBuilder {
+
+    //todo issue 923
+
     /**
      * This private constructor was created to silence checkstyle error.
      */
@@ -113,7 +116,7 @@ public final class CertificateStringMapBuilder {
             if (data.get("isSelfSigned").equals("false")) {
                 //Get the missing certificate chain for not self sign
                 Certificate missingCert =
-                        containsAllChain(certificate, certificateRepository, caCertificateRepository);
+                        containsAllChain(certificate, caCertificateRepository);
                 String issuerResult;
 
                 if (missingCert != null) {
@@ -151,13 +154,11 @@ public final class CertificateStringMapBuilder {
      * Recursive function that check if all the certificate chain is present.
      *
      * @param certificate            certificate to get the issuer
-     * @param certificateRepository  the certificate repository for retrieving certs.
      * @param caCredentialRepository CA Certificate repository
      * @return a boolean indicating if it has the full chain or not.
      */
     public static Certificate containsAllChain(
             final Certificate certificate,
-            final CertificateRepository certificateRepository,
             final CACredentialRepository caCredentialRepository) {
         List<CertificateAuthorityCredential> issuerCertificates = new ArrayList<>();
         CertificateAuthorityCredential skiCA = null;
@@ -198,7 +199,7 @@ public final class CertificateStringMapBuilder {
                             issuerCert.getSubjectSorted())) {
                         return null;
                     }
-                    return containsAllChain(issuerCert, certificateRepository, caCredentialRepository);
+                    return containsAllChain(issuerCert, caCredentialRepository);
                 }
             } catch (IOException ioEx) {
                 log.error(ioEx);

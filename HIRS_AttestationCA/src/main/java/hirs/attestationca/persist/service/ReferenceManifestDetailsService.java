@@ -1,362 +1,76 @@
-package hirs.attestationca.portal.page.controllers;
+package hirs.attestationca.persist.service;
 
-import hirs.attestationca.persist.service.ReferenceManifestDetailsService;
-import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
-import hirs.attestationca.portal.page.PageMessages;
-import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
+import hirs.attestationca.persist.DBServiceException;
+import hirs.attestationca.persist.entity.manager.CACredentialRepository;
+import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
+import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
+import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
+import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
+import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
+import hirs.attestationca.persist.validation.SupplyChainValidatorException;
+import hirs.utils.SwidResource;
+import hirs.utils.rim.ReferenceManifestValidator;
+import hirs.utils.tpm.eventlog.TCGEventLog;
+import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * Controller for the Reference Manifest Details page.
+ *
  */
 @Log4j2
-@Controller
-@RequestMapping("/HIRS_AttestationCAPortal/portal/rim-details")
-public class ReferenceManifestDetailsPageController
-        extends PageController<ReferenceManifestDetailsPageParams> {
-    private final ReferenceManifestDetailsService referenceManifestService;
+@Service
+public class ReferenceManifestDetailsService {
+    private final ReferenceManifestRepository referenceManifestRepository;
+    private final ReferenceDigestValueRepository referenceDigestValueRepository;
+    private final CertificateRepository certificateRepository;
+    private final CACredentialRepository caCertificateRepository;
 
     /**
-     * Constructor providing the Page's display and routing specification.
-     *
-     * @param referenceManifestService reference manifest service
+     * @param referenceManifestRepository    reference manifest repository
+     * @param referenceDigestValueRepository reference digest value repository
+     * @param certificateRepository          certificate repository
+     * @param caCertificateRepository        certificate authority credential repository
      */
     @Autowired
-    public ReferenceManifestDetailsPageController(
-            final ReferenceManifestDetailsService referenceManifestService) {
-        super(Page.RIM_DETAILS);
-        this.referenceManifestService = referenceManifestService;
+    public ReferenceManifestDetailsService(final ReferenceManifestRepository
+                                                   referenceManifestRepository,
+                                           final ReferenceDigestValueRepository
+                                                   referenceDigestValueRepository,
+                                           final CertificateRepository certificateRepository,
+                                           final CACredentialRepository caCertificateRepository) {
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.certificateRepository = certificateRepository;
         this.caCertificateRepository = caCertificateRepository;
     }
 
-    /**
-     * This method takes the place of an entire class for a string builder.
-     * Gathers all information and returns it for displays.
-     *
-     * @param uuid                           database reference for the requested RIM.
-     * @param referenceManifestRepository    the reference manifest manager.
-     * @param referenceDigestValueRepository the reference event manager.
-     * @param certificateRepository          the certificate manager.
-     * @param caCertificateRepository        the certificate manager.
-     * @return mapping of the RIM information from the database.
-     * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
-     */
-    public static HashMap<String, Object> getRimDetailInfo(
-            final UUID uuid,
-            final ReferenceManifestRepository referenceManifestRepository,
-            final ReferenceDigestValueRepository referenceDigestValueRepository,
-            final CertificateRepository certificateRepository,
-            final CACredentialRepository caCertificateRepository)
-            throws IOException,
-            CertificateException, NoSuchAlgorithmException {
-        HashMap<String, Object> data = new HashMap<>();
-
-        BaseReferenceManifest bRim = referenceManifestRepository.getBaseRimEntityById(uuid);
-
-        if (bRim != null) {
-            data.putAll(getBaseRimInfo(bRim, referenceManifestRepository, certificateRepository,
-                    caCertificateRepository));
-        }
-
-        SupportReferenceManifest sRim = referenceManifestRepository.getSupportRimEntityById(uuid);
-
-        if (sRim != null) {
-            data.putAll(getSupportRimInfo(sRim, referenceManifestRepository));
-        }
-
-        EventLogMeasurements bios = referenceManifestRepository.getEventLogRimEntityById(uuid);
-
-        if (bios != null) {
-            data.putAll(getMeasurementsRimInfo(bios, referenceManifestRepository,
-                    referenceDigestValueRepository));
-        }
-
-        return data;
-    }
-
-    /**
-     * This method takes the place of an entire class for a string builder.
-     * Gathers all information and returns it for displays.
-     *
-     * @param baseRim                     established ReferenceManifest Type.
-     * @param referenceManifestRepository the reference manifest manager.
-     * @param certificateRepository       the certificate manager.
-     * @param caCertificateRepository     the certificate manager.
-     * @return mapping of the RIM information from the database.
-     * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
-     */
-    private static HashMap<String, Object> getBaseRimInfo(
-            final BaseReferenceManifest baseRim,
-            final ReferenceManifestRepository referenceManifestRepository,
-            final CertificateRepository certificateRepository,
-            final CACredentialRepository caCertificateRepository)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
-        HashMap<String, Object> data = new HashMap<>();
-
-        // Software Identity
-        data.put("swidName", baseRim.getSwidName());
-        data.put("swidVersion", baseRim.getSwidVersion());
-        data.put("swidTagVersion", baseRim.getSwidTagVersion());
-        if (baseRim.getSwidCorpus() == 1) {
-            data.put("swidCorpus", "True");
-        } else {
-            data.put("swidCorpus", "False");
-        }
-        if (baseRim.isSwidPatch()) {
-            data.put("swidPatch", "True");
-        } else {
-            data.put("swidPatch", "False");
-        }
-        if (baseRim.isSwidSupplemental()) {
-            data.put("swidSupplemental", "True");
-        } else {
-            data.put("swidSupplemental", "False");
-        }
-        data.put("swidTagId", baseRim.getTagId());
-        // Entity
-        data.put("entityName", baseRim.getEntityName());
-        data.put("entityRegId", baseRim.getEntityRegId());
-        data.put("entityRole", baseRim.getEntityRole());
-        data.put("entityThumbprint", baseRim.getEntityThumbprint());
-        // Link
-        data.put("linkHref", baseRim.getLinkHref());
-        data.put("linkHrefLink", "");
-        for (BaseReferenceManifest bRim : referenceManifestRepository.findAllBaseRims()) {
-            if (baseRim.getLinkHref().contains(bRim.getTagId())) {
-                data.put("linkHrefLink", bRim.getId());
-            }
-        }
-        data.put("linkRel", baseRim.getLinkRel());
-        data.put("platformManufacturer", baseRim.getPlatformManufacturer());
-        data.put("platformManufacturerId", baseRim.getPlatformManufacturerId());
-        data.put("platformModel", baseRim.getPlatformModel());
-        data.put("platformVersion", baseRim.getPlatformVersion());
-        data.put("payloadType", baseRim.getPayloadType());
-        data.put("colloquialVersion", baseRim.getColloquialVersion());
-        data.put("edition", baseRim.getEdition());
-        data.put("product", baseRim.getProduct());
-        data.put("revision", baseRim.getRevision());
-        data.put("bindingSpec", baseRim.getBindingSpec());
-        data.put("bindingSpecVersion", baseRim.getBindingSpecVersion());
-        data.put("pcUriGlobal", baseRim.getPcURIGlobal());
-        data.put("pcUriLocal", baseRim.getPcURILocal());
-        data.put("rimLinkHash", baseRim.getRimLinkHash());
-        if (baseRim.getRimLinkHash() != null) {
-            ReferenceManifest rim = referenceManifestRepository.findByHexDecHashAndRimType(
-                    baseRim.getRimLinkHash(), ReferenceManifest.BASE_RIM);
-            if (rim != null) {
-                data.put("rimLinkId", rim.getId());
-                data.put("linkHashValid", true);
-            } else {
-                data.put("linkHashValid", false);
-            }
-        }
-        data.put("rimType", baseRim.getRimType());
-
-        List<SwidResource> resources = baseRim.getFileResources();
-        TCGEventLog logProcessor = null;
-        SupportReferenceManifest support = null;
-
-        // going to have to pull the filename and grab that from the DB
-        // to get the id to make the link
-        RIM_VALIDATOR.setRim(baseRim.getRimBytes());
-        for (SwidResource swidRes : resources) {
-            support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
-                    swidRes.getHashValue(), ReferenceManifest.SUPPORT_RIM);
-
-            if (support != null && swidRes.getHashValue()
-                    .equalsIgnoreCase(support.getHexDecHash())) {
-                baseRim.setAssociatedRim(support.getId());
-                RIM_VALIDATOR.validateSupportRimHash(support.getRimBytes(),
-                        swidRes.getHashValue());
-                if (RIM_VALIDATOR.isSupportRimValid()) {
-                    data.put("supportRimHashValid", true);
-                } else {
-                    data.put("supportRimHashValid", false);
-                }
-                break;
-            }
-        }
-
-        data.put("associatedRim", baseRim.getAssociatedRim());
-        data.put("swidFiles", resources);
-        if (support != null && (!baseRim.isSwidSupplemental()
-                && !baseRim.isSwidPatch())) {
-            data.put("pcrList", support.getExpectedPCRList());
-        }
-
-        List<Certificate> certificates = certificateRepository
-                .findByType("CertificateAuthorityCredential");
-        CertificateAuthorityCredential caCert;
-        //Report invalid signature unless RIM_VALIDATOR validates it and cert path is valid
-        data.put("signatureValid", false);
-        for (Certificate certificate : certificates) {
-            caCert = (CertificateAuthorityCredential) certificate;
-            KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
-            try {
-                List<X509Certificate> truststore =
-                        convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
-                                Collections.emptySet(),
-                                caCertificateRepository));
-                RIM_VALIDATOR.setTrustStore(truststore);
-            } catch (IOException e) {
-                log.error("Error building CA chain for " + caCert.getSubjectKeyIdentifier() + ": "
-                        + e.getMessage());
-            }
-            if (RIM_VALIDATOR.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
-                    caCert.getSubjectKeyIdString())) {
-                try {
-                    if (SupplyChainCredentialValidator.verifyCertificate(
-                            caCert.getX509Certificate(), keystore)) {
-                        data.replace("signatureValid", true);
-                        break;
-                    }
-                } catch (SupplyChainValidatorException scvEx) {
-                    log.error("Error verifying cert chain: " + scvEx.getMessage());
-                }
-            }
-        }
-        data.put("skID", RIM_VALIDATOR.getSubjectKeyIdentifier());
-        try {
-            if (RIM_VALIDATOR.getPublicKey() != null) {
-                for (Certificate certificate : certificates) {
-                    caCert = (CertificateAuthorityCredential) certificate;
-                    if (Arrays.equals(caCert.getEncodedPublicKey(),
-                            RIM_VALIDATOR.getPublicKey().getEncoded())) {
-                        data.put("issuerID", caCert.getId().toString());
-                    }
-                }
-            }
-        } catch (NullPointerException npEx) {
-            log.warn("Unable to link signing certificate: " + npEx.getMessage());
-        }
-        return data;
-    }
-
-    /**
-     * This method converts a Set<CertificateAuthorityCredential> to a List<X509Certificate>.
-     *
-     * @param set of CACs to convert
-     * @return list of X509Certificates
-     */
-    private static List<X509Certificate> convertCACsToX509Certificates(
-            final Set<CertificateAuthorityCredential> set)
-            throws IOException {
-        ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
-        for (CertificateAuthorityCredential cac : set) {
-            certs.add(cac.getX509Certificate());
-        }
-        return certs;
-    }
-
-    /**
-     * This method takes the place of an entire class for a string builder.
-     * Gathers all information and returns it for displays.
-     *
-     * @param support                     established ReferenceManifest Type.
-     * @param referenceManifestRepository the reference manifest manager.
-     * @return mapping of the RIM information from the database.
-     * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
-     */
-    private static HashMap<String, Object> getSupportRimInfo(
-            final SupportReferenceManifest support,
-            final ReferenceManifestRepository referenceManifestRepository)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
-        HashMap<String, Object> data = new HashMap<>();
-        EventLogMeasurements measurements = null;
-
-        if (support.getAssociatedRim() == null) {
-            List<BaseReferenceManifest> baseRims = referenceManifestRepository.findAllBaseRims();
-
-            for (BaseReferenceManifest baseRim : baseRims) {
-                if (baseRim != null && baseRim.getAssociatedRim() != null
-                        && baseRim.getAssociatedRim().equals(support.getId())) {
-                    support.setAssociatedRim(baseRim.getId());
-                    try {
-                        referenceManifestRepository.save(support);
-                    } catch (DBServiceException ex) {
-                        log.error("Failed to update Support RIM", ex);
-                    }
-                    break;
-                }
-            }
-        }
-
-        // testing this independent of the above if statement because the above
-        // starts off checking if associated rim is null; that is irrelevant for
-        // this statement.
-        measurements = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(
-                support.getHexDecHash(),
-                ReferenceManifest.MEASUREMENT_RIM);
-
-        if (support.isSwidPatch()) {
-            data.put("swidPatch", "True");
-        } else {
-            data.put("swidPatch", "False");
-        }
-        if (support.isSwidSupplemental()) {
-            data.put("swidSupplemental", "True");
-        } else {
-            data.put("swidSupplemental", "False");
-        }
-        data.put("swidBase", (!support.isSwidPatch()
-                && !support.isSwidSupplemental()));
-        data.put("baseRim", support.getTagId());
-        data.put("associatedRim", support.getAssociatedRim());
-        data.put("rimType", support.getRimType());
-        data.put("tagId", support.getTagId());
-
-        TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
-        LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
-        TCGEventLog measurementsProcess;
-        if (measurements != null) {
-            measurementsProcess = new TCGEventLog((measurements.getRimBytes()));
-            HashMap<String, TpmPcrEvent> digestMap = new HashMap<>();
-            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                digestMap.put(tpe.getEventDigestStr(), tpe);
-                if (!support.isSwidSupplemental()
-                        && !tpe.eventCompare(
-                        measurementsProcess.getEventByNumber(
-                                tpe.getEventNumber()))) {
-                    tpe.setError(true);
-                }
-                tpmPcrEvents.add(tpe);
-            }
-            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                tpe.setError(!digestMap.containsKey(tpe.getEventDigestStr()));
-            }
-            data.put("events", tpmPcrEvents);
-        } else {
-            data.put("events", logProcessor.getEventList());
-        }
-
-        getEventSummary(data, logProcessor.getEventList());
-        return data;
-    }
-
-    private static void getEventSummary(final HashMap<String, Object> data,
-                                        final Collection<TpmPcrEvent> eventList) {
+    private void getEventSummary(final HashMap<String, Object> data,
+                                 final Collection<TpmPcrEvent> eventList) {
         boolean crtm = false;
         boolean bootManager = false;
         boolean osLoader = false;
@@ -432,22 +146,317 @@ public class ReferenceManifestDetailsPageController
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param measurements                   established ReferenceManifest Type.
-     * @param referenceManifestRepository    the reference manifest manager.
-     * @param referenceDigestValueRepository the reference event manager.
+     * @param uuid database reference for the requested RIM.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
-    private static HashMap<String, Object> getMeasurementsRimInfo(
-            final EventLogMeasurements measurements,
-            final ReferenceManifestRepository referenceManifestRepository,
-            final ReferenceDigestValueRepository referenceDigestValueRepository)
+    public HashMap<String, Object> getRimDetailInfo(
+            final UUID uuid)
+            throws IOException,
+            CertificateException, NoSuchAlgorithmException, IllegalAccessException {
+        HashMap<String, Object> data = new HashMap<>();
+
+        BaseReferenceManifest bRim = referenceManifestRepository.getBaseRimEntityById(uuid);
+
+        if (bRim != null) {
+            data.putAll(getBaseRimInfo(bRim));
+        }
+
+        SupportReferenceManifest sRim = referenceManifestRepository.getSupportRimEntityById(uuid);
+
+        if (sRim != null) {
+            data.putAll(getSupportRimInfo(sRim));
+        }
+
+        EventLogMeasurements bios = referenceManifestRepository.getEventLogRimEntityById(uuid);
+
+        if (bios != null) {
+            data.putAll(getMeasurementsRimInfo(bios));
+        }
+
+        return data;
+    }
+
+    /**
+     * This method takes the place of an entire class for a string builder.
+     * Gathers all information and returns it for displays.
+     *
+     * @param baseRim established ReferenceManifest Type.
+     * @return mapping of the RIM information from the database.
+     * @throws java.io.IOException error for reading file bytes.
+     */
+    private HashMap<String, Object> getBaseRimInfo(
+            final BaseReferenceManifest baseRim)
+            throws IOException, IllegalAccessException {
+        HashMap<String, Object> data = new HashMap<>();
+
+
+        // Software Identity
+        data.put("swidName", baseRim.getSwidName());
+        data.put("swidVersion", baseRim.getSwidVersion());
+        data.put("swidTagVersion", baseRim.getSwidTagVersion());
+        if (baseRim.getSwidCorpus() == 1) {
+            data.put("swidCorpus", "True");
+        } else {
+            data.put("swidCorpus", "False");
+        }
+        if (baseRim.isSwidPatch()) {
+            data.put("swidPatch", "True");
+        } else {
+            data.put("swidPatch", "False");
+        }
+        if (baseRim.isSwidSupplemental()) {
+            data.put("swidSupplemental", "True");
+        } else {
+            data.put("swidSupplemental", "False");
+        }
+        data.put("swidTagId", baseRim.getTagId());
+        // Entity
+        data.put("entityName", baseRim.getEntityName());
+        data.put("entityRegId", baseRim.getEntityRegId());
+        data.put("entityRole", baseRim.getEntityRole());
+        data.put("entityThumbprint", baseRim.getEntityThumbprint());
+        // Link
+        data.put("linkHref", baseRim.getLinkHref());
+        data.put("linkHrefLink", "");
+        for (BaseReferenceManifest bRim : referenceManifestRepository.findAllBaseRims()) {
+            if (baseRim.getLinkHref().contains(bRim.getTagId())) {
+                data.put("linkHrefLink", bRim.getId());
+            }
+        }
+        data.put("linkRel", baseRim.getLinkRel());
+        data.put("platformManufacturer", baseRim.getPlatformManufacturer());
+        data.put("platformManufacturerId", baseRim.getPlatformManufacturerId());
+        data.put("platformModel", baseRim.getPlatformModel());
+        data.put("platformVersion", baseRim.getPlatformVersion());
+        data.put("payloadType", baseRim.getPayloadType());
+        data.put("colloquialVersion", baseRim.getColloquialVersion());
+        data.put("edition", baseRim.getEdition());
+        data.put("product", baseRim.getProduct());
+        data.put("revision", baseRim.getRevision());
+        data.put("bindingSpec", baseRim.getBindingSpec());
+        data.put("bindingSpecVersion", baseRim.getBindingSpecVersion());
+        data.put("pcUriGlobal", baseRim.getPcURIGlobal());
+        data.put("pcUriLocal", baseRim.getPcURILocal());
+        data.put("rimLinkHash", baseRim.getRimLinkHash());
+        if (baseRim.getRimLinkHash() != null) {
+            ReferenceManifest rim = referenceManifestRepository.findByHexDecHashAndRimType(
+                    baseRim.getRimLinkHash(), ReferenceManifest.BASE_RIM);
+            if (rim != null) {
+                data.put("rimLinkId", rim.getId());
+                data.put("linkHashValid", true);
+            } else {
+                data.put("linkHashValid", false);
+            }
+        }
+        data.put("rimType", baseRim.getRimType());
+
+        List<SwidResource> resources = baseRim.getFileResources();
+        SupportReferenceManifest support = null;
+
+        ReferenceManifestValidator referenceManifestValidator = new ReferenceManifestValidator();
+
+        // going to have to pull the filename and grab that from the DB
+        // to get the id to make the link
+        referenceManifestValidator.setRim(baseRim.getRimBytes());
+        for (SwidResource swidRes : resources) {
+            support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
+                    swidRes.getHashValue(), ReferenceManifest.SUPPORT_RIM);
+
+            if (support != null && swidRes.getHashValue()
+                    .equalsIgnoreCase(support.getHexDecHash())) {
+                baseRim.setAssociatedRim(support.getId());
+                referenceManifestValidator.validateSupportRimHash(support.getRimBytes(),
+                        swidRes.getHashValue());
+                if (referenceManifestValidator.isSupportRimValid()) {
+                    data.put("supportRimHashValid", true);
+                } else {
+                    data.put("supportRimHashValid", false);
+                }
+                break;
+            }
+        }
+
+        data.put("associatedRim", baseRim.getAssociatedRim());
+        data.put("swidFiles", resources);
+        if (support != null && (!baseRim.isSwidSupplemental()
+                && !baseRim.isSwidPatch())) {
+            data.put("pcrList", support.getExpectedPCRList());
+        }
+
+        List<Certificate> certificates = certificateRepository
+                .findByType("CertificateAuthorityCredential");
+        CertificateAuthorityCredential caCert;
+        //Report invalid signature unless referenceManifestValidator validates it and cert path is valid
+        data.put("signatureValid", false);
+        for (Certificate certificate : certificates) {
+            caCert = (CertificateAuthorityCredential) certificate;
+            KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
+            try {
+                List<X509Certificate> truststore =
+                        convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
+                                Collections.emptySet(),
+                                caCertificateRepository));
+                referenceManifestValidator.setTrustStore(truststore);
+            } catch (IOException e) {
+                log.error("Error building CA chain for {}: {}", caCert.getSubjectKeyIdentifier(),
+                        e.getMessage());
+            }
+            if (referenceManifestValidator.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
+                    caCert.getSubjectKeyIdString(), caCert.getEncodedPublicKey())) {
+                try {
+                    if (SupplyChainCredentialValidator.verifyCertificate(
+                            caCert.getX509Certificate(), keystore)) {
+                        data.replace("signatureValid", true);
+                        break;
+                    }
+                } catch (SupplyChainValidatorException scvEx) {
+                    log.error("Error verifying cert chain: {}", scvEx.getMessage());
+                }
+            }
+        }
+        data.put("skID", referenceManifestValidator.getSubjectKeyIdentifier());
+        try {
+            if (referenceManifestValidator.getPublicKey() != null) {
+                for (Certificate certificate : certificates) {
+                    caCert = (CertificateAuthorityCredential) certificate;
+                    if (Arrays.equals(caCert.getEncodedPublicKey(),
+                            referenceManifestValidator.getPublicKey().getEncoded())) {
+                        data.put("issuerID", caCert.getId().toString());
+                    }
+                }
+            }
+        } catch (Exception npEx) {
+            log.warn("Unable to link signing certificate: {}", npEx.getMessage());
+        }
+
+        //var data2 = convertPojoToMap(baseRim);
+
+        return data;
+    }
+
+    /**
+     * This method takes the place of an entire class for a string builder.
+     * Gathers all information and returns it for displays.
+     *
+     * @param support established ReferenceManifest Type.
+     * @return mapping of the RIM information from the database.
+     * @throws java.io.IOException      error for reading file bytes.
+     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
+     * @throws CertificateException     if a certificate doesn't parse.
+     */
+    private HashMap<String, Object> getSupportRimInfo(
+            final SupportReferenceManifest support)
+            throws IOException, CertificateException, NoSuchAlgorithmException {
+        HashMap<String, Object> data = new HashMap<>();
+        EventLogMeasurements measurements;
+
+        if (support.getAssociatedRim() == null) {
+            List<BaseReferenceManifest> baseRims = referenceManifestRepository.findAllBaseRims();
+
+            for (BaseReferenceManifest baseRim : baseRims) {
+                if (baseRim != null && baseRim.getAssociatedRim() != null
+                        && baseRim.getAssociatedRim().equals(support.getId())) {
+                    support.setAssociatedRim(baseRim.getId());
+                    try {
+                        referenceManifestRepository.save(support);
+                    } catch (DBServiceException ex) {
+                        log.error("Failed to update Support RIM", ex);
+                    }
+                    break;
+                }
+            }
+        }
+
+        // testing this independent of the above if statement because the above
+        // starts off checking if associated rim is null; that is irrelevant for
+        // this statement.
+        measurements = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(
+                support.getHexDecHash(),
+                ReferenceManifest.MEASUREMENT_RIM);
+
+        if (support.isSwidPatch()) {
+            data.put("swidPatch", "True");
+        } else {
+            data.put("swidPatch", "False");
+        }
+        if (support.isSwidSupplemental()) {
+            data.put("swidSupplemental", "True");
+        } else {
+            data.put("swidSupplemental", "False");
+        }
+        data.put("swidBase", (!support.isSwidPatch()
+                && !support.isSwidSupplemental()));
+        data.put("baseRim", support.getTagId());
+        data.put("associatedRim", support.getAssociatedRim());
+        data.put("rimType", support.getRimType());
+        data.put("tagId", support.getTagId());
+
+        TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
+        LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
+        TCGEventLog measurementsProcess;
+        if (measurements != null) {
+            measurementsProcess = new TCGEventLog((measurements.getRimBytes()));
+            HashMap<String, TpmPcrEvent> digestMap = new HashMap<>();
+            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                digestMap.put(tpe.getEventDigestStr(), tpe);
+                if (!support.isSwidSupplemental()
+                        && !tpe.eventCompare(
+                        measurementsProcess.getEventByNumber(
+                                tpe.getEventNumber()))) {
+                    tpe.setError(true);
+                }
+                tpmPcrEvents.add(tpe);
+            }
+            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                tpe.setError(!digestMap.containsKey(tpe.getEventDigestStr()));
+            }
+            data.put("events", tpmPcrEvents);
+        } else {
+            data.put("events", logProcessor.getEventList());
+        }
+
+        getEventSummary(data, logProcessor.getEventList());
+        return data;
+    }
+
+    private Map<String, Object> convertPojoToMap(Object pojo) throws IllegalAccessException {
+        Map<String, Object> map = new HashMap<>();
+
+        // Get the class of the POJO
+        Class<?> clazz = pojo.getClass();
+
+        // Get all fields of the class (including private ones)
+        Field[] fields = clazz.getDeclaredFields();
+
+        for (Field field : fields) {
+            field.setAccessible(true);  // allow access to private fields
+            String fieldName = field.getName();
+            Object fieldValue = field.get(pojo);
+            map.put(fieldName, fieldValue);
+        }
+
+        return map;
+    }
+
+    /**
+     * This method takes the place of an entire class for a string builder.
+     * Gathers all information and returns it for displays.
+     *
+     * @param measurements established ReferenceManifest Type.
+     * @return mapping of the RIM information from the database.
+     * @throws java.io.IOException      error for reading file bytes.
+     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
+     * @throws CertificateException     if a certificate doesn't parse.
+     */
+    private HashMap<String, Object> getMeasurementsRimInfo(
+            final EventLogMeasurements measurements)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
         LinkedList<TpmPcrEvent> evidence = new LinkedList<>();
-        BaseReferenceManifest base = null;
+        BaseReferenceManifest base;
         List<SupportReferenceManifest> supports = new ArrayList<>();
         SupportReferenceManifest baseSupport = null;
 
@@ -497,7 +506,7 @@ public class ReferenceManifestDetailsPageController
 
         if (!supports.isEmpty()) {
             Map<String, List<TpmPcrEvent>> baselineLogEvents = new HashMap<>();
-            List<TpmPcrEvent> matchedEvents = null;
+            List<TpmPcrEvent> matchedEvents;
             List<TpmPcrEvent> combinedBaselines = new LinkedList<>();
             for (SupportReferenceManifest support : supports) {
                 combinedBaselines.addAll(support.getEventLog());
@@ -536,60 +545,19 @@ public class ReferenceManifestDetailsPageController
     }
 
     /**
-     * Returns the filePath for the view and the data model for the page.
+     * This method converts a Set of CertificateAuthorityCredentials to a List of X509Certificates.
      *
-     * @param params The object to map url parameters into.
-     * @param model  The data model for the request. Can contain data from
-     *               redirect.
-     * @return the path for the view and data model for the page.
+     * @param set of CACs to convert
+     * @return list of X509Certificates
      */
-    @Override
-    public ModelAndView initPage(final ReferenceManifestDetailsPageParams params,
-                                 final Model model) {
-        // get the basic information to render the page
-        ModelAndView mav = getBaseModelAndView();
-        PageMessages messages = new PageMessages();
-
-        // Map with the rim information
-        HashMap<String, Object> data = new HashMap<>();
-
-        // Check if parameters were set
-        if (params.getId() == null) {
-            String typeError = "ID was not provided";
-            messages.addErrorMessage(typeError);
-            log.debug(typeError);
-            mav.addObject(MESSAGES_ATTRIBUTE, messages);
-        } else {
-            try {
-                UUID uuid = UUID.fromString(params.getId());
-                data.putAll(getRimDetailInfo(uuid, referenceManifestRepository,
-                        referenceDigestValueRepository, certificateRepository,
-                        caCertificateRepository));
-            } catch (IllegalArgumentException iaEx) {
-                String uuidError = "Failed to parse ID from: " + params.getId();
-                messages.addErrorMessage(uuidError);
-                log.error(uuidError, iaEx);
-            } catch (CertificateException cEx) {
-                log.error(cEx);
-            } catch (NoSuchAlgorithmException nsEx) {
-                log.error(nsEx);
-            } catch (IOException ioEx) {
-                log.error(ioEx);
-            } catch (Exception ex) {
-                log.error(ex);
-            }
-
-            if (data.isEmpty()) {
-                String notFoundMessage = "Unable to find RIM with ID: " + params.getId();
-                messages.addErrorMessage(notFoundMessage);
-                log.warn(notFoundMessage);
-                mav.addObject(MESSAGES_ATTRIBUTE, messages);
-            } else {
-                mav.addObject(INITIAL_DATA, data);
-            }
+    private List<X509Certificate> convertCACsToX509Certificates(
+            final Set<CertificateAuthorityCredential> set)
+            throws IOException {
+        ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
+        for (CertificateAuthorityCredential cac : set) {
+            certs.add(cac.getX509Certificate());
         }
-
-        // return the model and view
-        return mav;
+        return certs;
     }
+
 }
