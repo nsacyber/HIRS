@@ -44,7 +44,7 @@ public class EvEfiHandoffTable {
      */
     @Getter
     private int numberOfTables = 0;
-    private Path vendorPathString;
+    private Path guidTablePathStr;
 
     /**
      * EvEFIHandoffTable constructor.
@@ -71,16 +71,16 @@ public class EvEfiHandoffTable {
      * EvEFIHandoffTable constructor.
      *
      * @param tpmEventData     byte array holding the Handoff table data.
-     * @param vendorPathString the string for the vendor file
+     * @param guidTablePathStr the string for the vendor file
      */
-    public EvEfiHandoffTable(final byte[] tpmEventData, final Path vendorPathString) {
+    public EvEfiHandoffTable(final byte[] tpmEventData, final Path guidTablePathStr) {
         // Get NumberOfTables from the EventData
         byte[] count = new byte[UefiConstants.SIZE_8];
         System.arraycopy(tpmEventData, 0, count, 0, UefiConstants.SIZE_8);
         byte[] bigEndCount = HexUtils.leReverseByte(count);
         BigInteger countInt = new BigInteger(bigEndCount);
         numberOfTables = countInt.intValue();
-        this.vendorPathString = vendorPathString;
+        this.guidTablePathStr = guidTablePathStr;
         // process each UEFI_CONFIGURATION_TABLE table
         int offset = UefiConstants.OFFSET_8;
         for (int tables = 0; tables < numberOfTables; tables++) {
@@ -100,10 +100,10 @@ public class EvEfiHandoffTable {
     private UefiGuid getNextGUID(final byte[] eventData, final int offset) {
         byte[] guid = new byte[UefiConstants.SIZE_16];
         System.arraycopy(eventData, offset, guid, 0, UefiConstants.SIZE_16);
-        if (vendorPathString == null || vendorPathString.toString().isEmpty()) {
+        if (guidTablePathStr == null || guidTablePathStr.toString().isEmpty()) {
             return new UefiGuid(guid);
         } else {
-            return new UefiGuid(guid, vendorPathString);
+            return new UefiGuid(guid, guidTablePathStr);
         }
     }
 

@@ -108,10 +108,10 @@ public class UefiSignatureList {
     private UefiGuid signatureType = null;
 
     /**
-     * Track status of vendor-table.json.
+     * Track status of vendor-table.json file.
      */
     @Getter
-    private String vendorTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
+    private String guidTableFileStatus = FILESTATUS_NOT_ACCESSIBLE;
 
 //    /**
 //     * UefiSignatureList constructor.
@@ -127,7 +127,7 @@ public class UefiSignatureList {
 //        byte[] guid = new byte[UefiConstants.SIZE_16];
 //        System.arraycopy(list, 0, guid, 0, UefiConstants.SIZE_16);
 //        signatureType = new UefiGuid(guid);
-//        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
+//        guidTableFileStatus = signatureType.getGuidTableFileStatus();
 //
 //        byte[] lSize = new byte[UefiConstants.SIZE_4];
 //        System.arraycopy(list, UefiConstants.OFFSET_16, lSize, 0, UefiConstants.SIZE_4);
@@ -158,7 +158,7 @@ public class UefiSignatureList {
         byte[] guid = new byte[UefiConstants.SIZE_16];
         lists.read(guid);
         signatureType = new UefiGuid(guid);
-        vendorTableFileStatus = signatureType.getVendorTableFileStatus();
+        guidTableFileStatus = signatureType.getGuidTableFileStatus();
 
         // if signatureType is invalid, don't even process any of the data
         // however, if signatureType is valid, but some of the data later on is invalid, that will

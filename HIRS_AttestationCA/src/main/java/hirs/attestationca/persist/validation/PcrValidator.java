@@ -170,36 +170,50 @@ public class PcrValidator {
     public List<TpmPcrEvent> validateTpmEvents(final TCGEventLog tcgMeasurementLog,
                                                final Map<String, ReferenceDigestValue> eventLogRecords,
                                                final PolicySettings policySettings) {
-        List<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
+
+        // log firmware policy settings
+        if (policySettings.isIgnoreImaEnabled()) {
+            log.info("IMA Ignored - any associated events will not be checked");
+        } else if (policySettings.isIgnoretBootEnabled()) {
+            log.info("TBOOT Ignored - any associated events will not be checked");
+        } else if (policySettings.isIgnoreGptEnabled()) {
+            log.info("GPT Ignored - any associated events will not be checked");
+        } else if (policySettings.isIgnoreOsEvtEnabled()) {
+            log.info("OS Ignored - any associated events will not be checked");
+        }
+
+        // loop through each (measured) eventlog event; if the event is not found in RIM db (and was
+        // not configured to be ignored), add it to a list of not-expected events
+        List<TpmPcrEvent> tpmPcrEventsNotExpected = new LinkedList<>();
         for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
             if (policySettings.isIgnoreImaEnabled() && tpe.getPcrIndex() == IMA_PCR) {
-                log.info(String.format("IMA Ignored -> %s", tpe));
+                log.debug(String.format("IMA Ignored -> %s", tpe));
             } else if (policySettings.isIgnoretBootEnabled() && (tpe.getPcrIndex() >= TBOOT_PCR_START
                     && tpe.getPcrIndex() <= TBOOT_PCR_END)) {
-                log.info(String.format("TBOOT Ignored -> %s", tpe));
+                log.debug(String.format("TBOOT Ignored -> %s", tpe));
             } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getPcrIndex() >= PXE_PCR_START
                     && tpe.getPcrIndex() <= PXE_PCR_END)) {
-                log.info(String.format("OS Evt Ignored -> %s", tpe));
+                log.debug(String.format("OS Evt Ignored -> %s", tpe));
             } else {
                 if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
-                    log.info(String.format("GPT Ignored -> %s", tpe));
+                    log.debug(String.format("GPT Ignored -> %s", tpe));
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
                                 || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
-                    log.info(String.format("OS Evt Ignored -> %s", tpe));
+                    log.debug(String.format("OS Evt Ignored -> %s", tpe));
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_CFG)
                                 && tpe.getEventContentStr().contains("SecureBoot"))) {
-                    log.info(String.format("OS Evt Config Ignored -> %s", tpe));
+                    log.debug(String.format("OS Evt Config Ignored -> %s", tpe));
                 } else {
                     if (!eventLogRecords.containsKey(tpe.getEventDigestStr())) {
-                        tpmPcrEvents.add(tpe);
+                        tpmPcrEventsNotExpected.add(tpe);
                     }
                 }
             }
         }
 
-        return tpmPcrEvents;
+        return tpmPcrEventsNotExpected;
     }
 
     /**
