@@ -2442,7 +2442,6 @@ public class SupplyChainCredentialValidatorTest {
                 platformCredential.getPlatformChainType() == null
                         ? ""
                         : platformCredential.getPlatformChainType();
-        
         List<ComponentResult> componentResultList = new ArrayList<>();
         platformCredential.getComponentIdentifiers().forEach(componentIdentifier ->
                 componentResultList.add(

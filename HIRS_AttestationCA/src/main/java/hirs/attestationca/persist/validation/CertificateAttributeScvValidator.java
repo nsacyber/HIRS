@@ -355,7 +355,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
         // first create hash map based on hashCode
         List<ComponentResult> remainingComponentResults = checkDeviceHashMap(
-                componentInfos, componentResults);
+                ignorePcieVpdAttribute, componentInfos, componentResults);
 
         //this is used to get a unique count
         List<UUID> componentIdList = new ArrayList<>();
@@ -387,20 +387,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 if (ignoreRevisionAttribute) {
                     saveAttributeResult = !componentAttributeResult.getAttribute()
                             .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION);
-                }
-
-                if (ignorePcieVpdAttribute) {
-                    // since the vpd string is attached to the pcie component's manufacturer, model
-                    // and serial number, the aca will not save the attribute results if there is a mismatch
-                    // for any one of those attributes.
-                    if (componentAttributeResult.getRegistryType().equalsIgnoreCase("PCIE")) {
-                        saveAttributeResult = !(componentAttributeResult.getAttribute()
-                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_MANUFACTURER)
-                                || componentAttributeResult.getAttribute()
-                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_MODEL)
-                                || componentAttributeResult.getAttribute()
-                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_SERIAL));
-                    }
                 }
 
                 if (saveAttributeResult) {
@@ -500,7 +486,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // now pass in new list
         // first create hash map based on hashCode
         List<ComponentResult> remainingComponentResults = checkDeviceHashMap(
-                componentInfos, compiledComponentList);
+                ignorePcieVpdAttribute, componentInfos, compiledComponentList);
 
         List<UUID> componentIdList = new ArrayList<>();
         int numOfAttributes = 0;
@@ -530,20 +516,6 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                 if (ignoreRevisionAttribute) {
                     saveAttributeResult = !componentAttributeResult.getAttribute()
                             .equalsIgnoreCase(ComponentResult.ATTRIBUTE_REVISION);
-                }
-
-                if (ignorePcieVpdAttribute) {
-                    // since the vpd string is attached to the pcie component's manufacturer, model
-                    // and serial number, the aca will not save the attribute results if there is a mismatch
-                    // for any one of those attributes.
-                    if (componentAttributeResult.getRegistryType().equalsIgnoreCase("PCIE")) {
-                        saveAttributeResult = !(componentAttributeResult.getAttribute()
-                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_MANUFACTURER)
-                                || componentAttributeResult.getAttribute()
-                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_MODEL)
-                                || componentAttributeResult.getAttribute()
-                                .equalsIgnoreCase(ComponentResult.ATTRIBUTE_SERIAL));
-                    }
                 }
 
                 if (saveAttributeResult) {
@@ -816,11 +788,13 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
     /**
      * This method uses a specific hash to match device components with certificate components.
      *
-     * @param componentInfos        list of device component infos
-     * @param compiledComponentList list of the remaining unmatched component results
+     * @param ignorePcieVpdAttribute policy flag to ignore the pcie vpd attribute
+     * @param componentInfos         list of device component infos
+     * @param compiledComponentList  list of the remaining unmatched component results
      * @return remaining component results not matched
      */
     private static List<ComponentResult> checkDeviceHashMap(
+            final boolean ignorePcieVpdAttribute,
             final List<ComponentInfo> componentInfos,
             final List<ComponentResult> compiledComponentList) {
         Map<Integer, List<ComponentInfo>> deviceHashMap = new HashMap<>();
@@ -850,6 +824,33 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                     componentResult.getRevisionNumber().trim())) {
                 componentResult.setRevisionNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
             }
+
+            // if the ignore pcie vpd policy has been enabled amd the component result's registry type is
+            // PCIE
+            if (ignorePcieVpdAttribute
+                    && componentResult.getComponentClassRegistryType().equalsIgnoreCase("PCIE")) {
+                if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MANUFACTURER,
+                        componentResult.getManufacturer())) {
+                    final String newComponentManufacturer =
+                            retrieveNonVpdPortionFromComponentAttribute(componentResult.getManufacturer());
+                    componentResult.setManufacturer(newComponentManufacturer);
+                }
+
+                if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MODEL,
+                        componentResult.getModel())) {
+                    final String newComponentModel =
+                            retrieveNonVpdPortionFromComponentAttribute(componentResult.getModel());
+                    componentResult.setModel(newComponentModel);
+                }
+
+                if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_SERIAL,
+                        componentResult.getSerialNumber())) {
+                    final String newComponentSN =
+                            retrieveNonVpdPortionFromComponentAttribute(componentResult.getSerialNumber());
+                    componentResult.setSerialNumber(newComponentSN);
+                }
+            }
+
             if (!deviceHashMap.containsKey(componentResult.hashCommonElements())) {
                 // didn't find the component result in the hashed mapping
                 remainingComponentResults.add(componentResult);
@@ -1174,5 +1175,71 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         }
 
         return dbBaseComponents;
+    }
+
+    /**
+     * Takes the provided component attribute string and remove the non VPD string parts of the component
+     * attribute string.
+     *
+     * @param componentAttributeValue value associated with the provided component attribute type
+     * @return non-vpd portion of the component attribute string
+     */
+    private static String retrieveNonVpdPortionFromComponentAttribute(final String componentAttributeValue) {
+        final int lastColonIndex = componentAttributeValue.lastIndexOf(':');
+        return componentAttributeValue.substring(0, lastColonIndex + 1);
+    }
+
+    /**
+     * Takes the provided component attribute string and verifies if the string contains vital product data
+     * (vpd).
+     *
+     * @param componentAttributeType  component attribute type such as component manufacturer, component model
+     *                                and component serial number
+     * @param componentAttributeValue value associated with the provided component attribute type
+     * @return true if the component attribute contains the vpd string; otherwise return false
+     */
+    private static boolean verifyPCIEComponentAttributeContainsVPD(final String componentAttributeType,
+                                                                   final String componentAttributeValue) {
+
+        final boolean isCompManufacturerOrModel =
+                componentAttributeType.equalsIgnoreCase(ComponentResult.ATTRIBUTE_MANUFACTURER)
+                        || componentAttributeType.equalsIgnoreCase(ComponentResult.ATTRIBUTE_MODEL);
+        final boolean isCompSerialNumber =
+                componentAttributeType.equalsIgnoreCase(ComponentResult.ATTRIBUTE_SERIAL);
+
+        // Check if the component attribute type is valid
+        if (!isCompManufacturerOrModel && !isCompSerialNumber) {
+            return false;
+        }
+
+        // If the component attribute value doesn't contain any colons, return false immediately
+        if (!componentAttributeValue.contains(":")) {
+            return false;
+        }
+
+        // Count colons
+        final long colonCount = componentAttributeValue.chars().filter(c -> c == ':').count();
+
+        // Validate the number of colons according to component attribute type
+        if (isCompManufacturerOrModel && colonCount != 2) {
+            return false;
+        } else if (isCompSerialNumber && colonCount != 1) {
+            return false;
+        }
+
+        // Split the component attribute value on colons
+        final String[] componentAttributeParts = componentAttributeValue.split(":");
+
+        // if we are dealing with the component manufacturer or component model, verify that there are
+        // three strings inside the component attribute and that the last string is there
+        if (isCompManufacturerOrModel) {
+            final int numOfPartsForManufacturerModelString = 3;
+            return componentAttributeParts.length == numOfPartsForManufacturerModelString
+                    && !componentAttributeParts[2].isEmpty();
+        } else {
+            // if we are dealing with the component SN, verify that there are
+            // two strings inside the component attribute and that the last string is there
+            return componentAttributeParts.length == 2 && !componentAttributeParts[1].isEmpty();
+        }
     }
 }
