@@ -1,6 +1,6 @@
 {
   "VendorTable": {
-    "_comment_1": "UUIDS listed in the UEFI Specification",
+    "_comment_1": "UUIDS listed in the UEFI Specification or UEFITool: https://github.com/LongSoft/UEFITool/blob/new_engine/common/guids.csv",
     "eb9d2d30-2d88-11d3-9a16-0090273fc14d": "ACPI_TABLE_GUID",
     "eb9d2d32-2d88-11d3-9a16-0090273fc14d": "SAL_SYSTEM_TABLE_GUID",
     "eb9d2d31-2d88-11d3-9a16-0090273fc14d": "SMBIOS_TABLE_GUID",
@@ -14,6 +14,12 @@
     "3d5abd30-4175-87Ce-6d64-d2ADe523C4bb": "EFI_VIRTUAL_CD_GUID",
     "5Cea02c9-4d07-69d3-269f-4496Fbe096f9": "EFI_PERSISTENT_VIRTUAL_DISK_GUID",
     "08018188-42cd-bb48-100f-5387D53ded3d": "EFI_PERSISTENT_VIRTUAL_CD_GUID",
+    "63C64ECE-DA83-479D-B382-F4939072C80D": "DellGraphicsDrv",
+    "7DE9DF83-2D2A-4448-A9B1-7DA75158562A": "UsbBtHciDxe",
+    "B7D4E312-4894-4147-BF44-9D6BFF50B7AF": "BluetoothBusDxe",
+    "D51E367C-EF5A-4EC6-A39E-083C851EBF91": "HidKbDxe",
+    "DCEC4A77-8CF7-4EA0-ADF3-63365B42C539": "BluetoothHidDxe",
+    "D15E7D4B-138B-4CA3-BB2C-5907127F8DAD": "BluetoothConfigDxe",
     "_comment_2": "DXE GUIds from https://github.com/linuxboot/linuxboot/blob/master/boards/qemu/image-files.txt",
     "fc510ee7-ffdc-11d4-bd41-0080c73c8881": "DXE Apriori-FVRECOVERY",
     "1b45cc0a-156a-428a-62af-49864da0e6e6": "PEI Apriori file name",

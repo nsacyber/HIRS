@@ -37,10 +37,10 @@ public class UefiGuid {
      */
     private JsonObject uefiVendorRef;
     /**
-     * Track status of vendor-table.json.
+     * Track status of vendor-table.json file.
      */
     @Getter
-    private String vendorTableFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
+    private String guidTableFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
     /**
      * guid byte array.
@@ -64,22 +64,22 @@ public class UefiGuid {
      * UefiGUID constructor.
      *
      * @param guidBytes        byte array holding a valid guid.
-     * @param vendorPathString string path for vendor
+     * @param guidTablePathStr string path for json guidtable file
      */
-    public UefiGuid(final byte[] guidBytes, final Path vendorPathString) {
+    public UefiGuid(final byte[] guidBytes, final Path guidTablePathStr) {
         guid = new byte[UefiConstants.SIZE_16];
         System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
         uuid = processGuid(guidBytes);
-        uefiVendorRef = JsonUtils.getSpecificJsonObject(vendorPathString,
+        uefiVendorRef = JsonUtils.getSpecificJsonObject(guidTablePathStr,
                 "VendorTable");
 
         if (!isVendorTableReferenceHandleEmpty()) {
-            vendorTableFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+            guidTableFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
         } else {
             // could not access vendor-table.json from filesystem, so attempt to access from code
             uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_FILENAME, "VendorTable");
             if (!isVendorTableReferenceHandleEmpty()) {
-                vendorTableFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
+                guidTableFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
             }
         }
     }
