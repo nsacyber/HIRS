@@ -158,6 +158,6 @@ public class ComponentInfo extends ArchivableEntity {
      */
     public int hashCommonElements() {
         return Objects.hash(componentManufacturer, componentModel,
-                componentSerial, componentRevision, componentClassValue, componentClassRegistry);
+                componentSerial, componentRevision, componentClassValue.toUpperCase(), componentClassRegistry);
     }
 }

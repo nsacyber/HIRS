@@ -98,6 +98,25 @@
             </li>
           </ul>
         </form:form>
+
+        <form:form method="POST" modelAttribute="initialData" action="policy/update-pcie-vpd-ignore">
+          <ul>
+            <li>Ignore PCIE VPD Attribute: ${initialData.enableIgnorePcieVpdAttribute ? 'Enabled' : 'Disabled'}
+              <my:editor id="ignorePcieVpdEditor" label="Edit Settings">
+                <div class="radio">
+                  <label><input id="pcieVpdTop" type="radio" name="ignorePcieVpdAttribute" ${initialData.enableIgnorePcieVpdAttribute
+                      ? 'checked' : '' } value="checked" /> Ignore
+                    PCIE VPD Attribute enabled</label>
+                </div>
+                <div class="radio">
+                  <label><input id="pcieVpdBot" type="radio" name="ignorePcieVpdAttribute" ${initialData.enableIgnorePcieVpdAttribute ? ''
+                      : 'checked' } value="unchecked" /> Ignore
+                    PCIE VPD Attribute disabled</label>
+                </div>
+              </my:editor>
+            </li>
+          </ul>
+        </form:form>
     </ul>
     </div>
 
