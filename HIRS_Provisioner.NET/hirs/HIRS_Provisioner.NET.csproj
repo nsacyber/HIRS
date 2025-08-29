@@ -36,10 +36,10 @@
     <PackageReference Include="paccor.HardwareManifestPlugin" Version="2.0.5" />
     <PackageReference Include="paccor.HardwareManifestPluginManager" Version="2.0.5" />
     <PackageReference Include="paccor.paccor_scripts" Version="2.2.0" />
-    <PackageReference Include="paccor.pcie" Version="0.7.6" />
-    <PackageReference Include="paccor.smbios" Version="0.7.6" />
+    <PackageReference Include="paccor.pcie" Version="0.8.0" />
+    <PackageReference Include="paccor.smbios" Version="0.8.1" />
     <PackageReference Include="paccor.storage" Version="0.7.6" />
-    <PackageReference Include="Packaging.Targets" Version="0.1.226">
+    <PackageReference Include="Packaging.Targets" Version="0.1.232">
       <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -104,3 +104,4 @@
     </ItemGroup>
   </Target>
 </Project>
+
