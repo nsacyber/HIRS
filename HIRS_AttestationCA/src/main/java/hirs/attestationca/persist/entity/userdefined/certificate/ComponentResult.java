@@ -199,7 +199,7 @@ public class ComponentResult extends ArchivableEntity implements Cloneable {
      */
     public int hashCommonElements() {
         return Objects.hash(manufacturer,
-                model, serialNumber, revisionNumber, componentClassValue, componentClassRegistry);
+                model, serialNumber, revisionNumber, componentClassValue.toUpperCase(), componentClassRegistry);
     }
 
     /**
@@ -208,9 +208,9 @@ public class ComponentResult extends ArchivableEntity implements Cloneable {
      * @return a string for the component result
      */
     public String toString() {
-        return String.format("ComponentResult: certificateSerialNumber=[%s] "
+        return String.format("ComponentResult: serialNumber=[%s] "
                         + "manufacturer=[%s] model=[%s] componentClass=[%s] componentClassRegistry=[%s]",
-                boardSerialNumber, manufacturer, model, componentClassValue, componentClassRegistry);
+                serialNumber, manufacturer, model, componentClassValue, componentClassRegistry);
     }
 
     /**
