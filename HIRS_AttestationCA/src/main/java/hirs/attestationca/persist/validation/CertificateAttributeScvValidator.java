@@ -371,12 +371,12 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             if (numOfAttributes == 0) {
                 passesValidation = false;
 
-                resultMessage.append(String.format("There are %d component(s) not matched%n.",
+                resultMessage.append(String.format("There are %d component(s) not matched%n",
                         remainingComponentResults.size()));
 
                 for (ComponentResult componentResult : remainingComponentResults) {
-                    resultMessage.append("Component not found: ")
-                            .append(componentResult.toString());
+                    resultMessage.append(componentResult.toString())
+                            .append("%n");
                 }
             }
 
