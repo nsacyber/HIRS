@@ -65,9 +65,8 @@ ComponentClass {
     private static final String UNKNOWN = "0001";
 
     private final String registryType;
-
-    private final String componentIdentifier;
     private final String registryOid;
+    private final String componentIdentifier;
     private String category;
     private String categoryStr;
     private String component;

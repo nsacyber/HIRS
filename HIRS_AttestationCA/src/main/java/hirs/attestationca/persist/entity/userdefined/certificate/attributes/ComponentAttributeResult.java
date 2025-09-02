@@ -31,6 +31,9 @@ public class ComponentAttributeResult extends ArchivableEntity {
     @Setter
     private String attribute;
 
+    @Setter
+    private String registryType;
+
     private String expectedValue;
 
     private String actualValue;
@@ -41,13 +44,16 @@ public class ComponentAttributeResult extends ArchivableEntity {
      * @param componentId   id associated with component result
      * @param expectedValue platform certificate value
      * @param actualValue   paccor value from the device
+     * @param registryType  associated component result's registry type
      */
     public ComponentAttributeResult(final UUID componentId,
                                     final String expectedValue,
-                                    final String actualValue) {
+                                    final String actualValue,
+                                    final String registryType) {
         this.componentId = componentId;
         this.expectedValue = expectedValue;
         this.actualValue = actualValue;
+        this.registryType = registryType;
     }
 
     /**
@@ -57,14 +63,18 @@ public class ComponentAttributeResult extends ArchivableEntity {
      * @param provisionSessionId an id for the associated provision
      * @param expectedValue      platform certificate value
      * @param actualValue        paccor value from the device
+     * @param registryType       associated component result's registry type
      */
     public ComponentAttributeResult(final UUID componentId,
                                     final UUID provisionSessionId,
                                     final String expectedValue,
-                                    final String actualValue) {
+                                    final String actualValue,
+                                    final String registryType) {
         this.componentId = componentId;
+        this.provisionSessionId = provisionSessionId;
         this.expectedValue = expectedValue;
         this.actualValue = actualValue;
+        this.registryType = registryType;
     }
 
     /**
@@ -83,10 +93,6 @@ public class ComponentAttributeResult extends ArchivableEntity {
      * @return the string value of the attribute name
      */
     public String getAttribute() {
-        if (attribute == null) {
-            attribute = "";
-        }
-
-        return attribute;
+        return attribute == null ? "" : attribute;
     }
 }
