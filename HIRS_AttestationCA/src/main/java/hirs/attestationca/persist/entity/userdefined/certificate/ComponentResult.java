@@ -199,7 +199,8 @@ public class ComponentResult extends ArchivableEntity implements Cloneable {
      */
     public int hashCommonElements() {
         return Objects.hash(manufacturer,
-                model, serialNumber, revisionNumber, componentClassValue.toUpperCase(), componentClassRegistry);
+                model, serialNumber, revisionNumber, componentClassValue.toUpperCase(),
+                componentClassRegistry);
     }
 
     /**
