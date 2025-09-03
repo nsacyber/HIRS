@@ -1,6 +1,8 @@
 package hirs.attestationca.persist.provision;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
@@ -145,6 +147,13 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         // attempt to deserialize Protobuf IdentityClaim
         ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
 
+        String identityClaimJsonString = "";
+        try {
+            identityClaimJsonString = JsonFormat.printer().print(claim);
+        } catch (InvalidProtocolBufferException exception) {
+            log.error("Identity claim could not be parsed properly into a json string");
+        }
+
         // parse the EK Public key from the IdentityClaim once for use in supply chain validation
         // and later tpm20MakeCredential function
         RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(claim.getEkPublicArea().toByteArray());
@@ -159,7 +168,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             }
         }
 
-        ByteString blobStr = ByteString.copyFrom(new byte[] {});
+        ByteString blobStr = ByteString.copyFrom(new byte[]{});
 
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
@@ -185,12 +194,24 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .build();
 
+            String identityClaimResponseJsonStringAfterSuccess = "";
+            try {
+                identityClaimResponseJsonStringAfterSuccess = JsonFormat.printer().print(identityClaimResponse);
+            } catch (InvalidProtocolBufferException exception) {
+                log.error("Identity claim response after a successful validation "
+                        + "could not be parsed properly into a json string");
+            }
+
             if (!policySettings.isSaveProtobufToLogNeverEnabled()
                     && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
-                log.info("Identity Claim object received after a"
-                        + "successful validation: {}", claim);
+
+                log.info("Identity Claim object received after a "
+                        + "successful validation: {}", identityClaimJsonString.isEmpty() ?
+                        claim : identityClaimJsonString);
+
                 log.info("Identity Claim Response object after a "
-                        + "successful validation: {}", identityClaimResponse);
+                        + "successful validation: {}", identityClaimResponseJsonStringAfterSuccess.isEmpty() ?
+                        identityClaimResponse : identityClaimResponseJsonStringAfterSuccess);
             }
 
             return identityClaimResponse.toByteArray();
@@ -203,13 +224,23 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                     .build();
 
+            String identityClaimResponseJsonStringAfterFailure = "";
+            try {
+                identityClaimResponseJsonStringAfterFailure = JsonFormat.printer().print(identityClaimResponse);
+            } catch (InvalidProtocolBufferException exception) {
+                log.error("Identity claim response after a failed validation "
+                        + "could not be parsed properly into a json string");
+            }
+
             if (!policySettings.isSaveProtobufToLogNeverEnabled()
                     && (policySettings.isSaveProtobufToLogAlwaysEnabled()
                     || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
                 log.info("Identity Claim object received after a "
-                        + "failed validation: {}", claim);
+                        + "failed validation: {}", identityClaimJsonString.isEmpty() ? claim : identityClaimJsonString);
+
                 log.info("Identity Claim Response object after a "
-                        + "failed validation: {}", identityClaimResponse);
+                        + "failed validation: {}", identityClaimResponseJsonStringAfterFailure.isEmpty() ?
+                        identityClaimResponse : identityClaimResponseJsonStringAfterFailure);
             }
 
             return identityClaimResponse.toByteArray();
