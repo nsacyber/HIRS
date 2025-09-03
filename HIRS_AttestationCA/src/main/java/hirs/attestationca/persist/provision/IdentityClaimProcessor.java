@@ -179,7 +179,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             String strNonce = HexUtils.byteArrayToHexString(nonce);
             log.info("Sending nonce: {}", strNonce);
-            log.info("Persisting claim of length: {}", identityClaim.length);
+            log.info("Persisting identity claim of length: {}", identityClaim.length);
 
             tpm2ProvisionerStateRepository.save(new TPM2ProvisionerState(nonce, identityClaim));
 
@@ -196,7 +196,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             String identityClaimResponseJsonStringAfterSuccess = "";
             try {
-                identityClaimResponseJsonStringAfterSuccess = JsonFormat.printer().print(identityClaimResponse);
+                identityClaimResponseJsonStringAfterSuccess =
+                        JsonFormat.printer().print(identityClaimResponse);
             } catch (InvalidProtocolBufferException exception) {
                 log.error("Identity claim response after a successful validation "
                         + "could not be parsed properly into a json string");
@@ -205,13 +206,19 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             if (!policySettings.isSaveProtobufToLogNeverEnabled()
                     && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
 
+                log.info("----------------- Start Of Protobuf Logging Of Identity Claim/Response "
+                        + " After Successful Validation -----------------");
+
                 log.info("Identity Claim object received after a "
-                        + "successful validation: {}", identityClaimJsonString.isEmpty() ?
-                        claim : identityClaimJsonString);
+                        + "successful validation: {}", identityClaimJsonString.isEmpty()
+                        ? claim : identityClaimJsonString);
 
                 log.info("Identity Claim Response object after a "
-                        + "successful validation: {}", identityClaimResponseJsonStringAfterSuccess.isEmpty() ?
-                        identityClaimResponse : identityClaimResponseJsonStringAfterSuccess);
+                        + "successful validation: {}", identityClaimResponseJsonStringAfterSuccess.isEmpty()
+                        ? identityClaimResponse : identityClaimResponseJsonStringAfterSuccess);
+
+                log.info("----------------- End Of Protobuf Logging Of Identity Claim/Response "
+                        + " After Successful Validation -----------------");
             }
 
             return identityClaimResponse.toByteArray();
@@ -226,7 +233,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
             String identityClaimResponseJsonStringAfterFailure = "";
             try {
-                identityClaimResponseJsonStringAfterFailure = JsonFormat.printer().print(identityClaimResponse);
+                identityClaimResponseJsonStringAfterFailure =
+                        JsonFormat.printer().print(identityClaimResponse);
             } catch (InvalidProtocolBufferException exception) {
                 log.error("Identity claim response after a failed validation "
                         + "could not be parsed properly into a json string");
@@ -235,12 +243,19 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             if (!policySettings.isSaveProtobufToLogNeverEnabled()
                     && (policySettings.isSaveProtobufToLogAlwaysEnabled()
                     || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
+                log.info("----------------- Start Of Protobuf Logging Of Identity Claim/Response "
+                        + " After Failed Validation -----------------");
+
                 log.info("Identity Claim object received after a "
-                        + "failed validation: {}", identityClaimJsonString.isEmpty() ? claim : identityClaimJsonString);
+                        + "failed validation: {}", identityClaimJsonString.isEmpty()
+                        ? claim : identityClaimJsonString);
 
                 log.info("Identity Claim Response object after a "
-                        + "failed validation: {}", identityClaimResponseJsonStringAfterFailure.isEmpty() ?
-                        identityClaimResponse : identityClaimResponseJsonStringAfterFailure);
+                        + "failed validation: {}", identityClaimResponseJsonStringAfterFailure.isEmpty()
+                        ? identityClaimResponse : identityClaimResponseJsonStringAfterFailure);
+
+                log.info("----------------- End Of Protobuf Logging Of Identity Claim/Response "
+                        + " After Failed Validation -----------------");
             }
 
             return identityClaimResponse.toByteArray();
