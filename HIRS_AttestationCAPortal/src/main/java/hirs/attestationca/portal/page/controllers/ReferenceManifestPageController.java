@@ -256,7 +256,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 throw new EntityNotFoundException(notFoundMessage);
             }
 
-            // Set filename for download.
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment;" + "filename=\"" + referenceManifest.getFileName()
             );
@@ -266,11 +265,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             response.getOutputStream().write(referenceManifest.getRimBytes());
 
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to download the"
+            log.error("An exception was thrown while attempting to download the "
                     + " specified RIM", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified RIM
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -288,20 +284,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         log.info("Handling request to download all Reference Integrity Manifests");
         String fileName = "rims.zip";
 
-
-        // Set filename for download.
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
-        // write cert to output stream
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
             bulkDownloadRIMS(zipOut);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "reference integrity manifests", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // reference manifests
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }

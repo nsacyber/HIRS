@@ -178,7 +178,6 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                     + iDevIDCertificate.getSerialNumber()
                     + ".cer\"";
 
-            // Set filename for download.
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
@@ -187,9 +186,6 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
                     + " specified idevid certificate", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified idevid certificate
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -209,7 +205,6 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         final String fileName = "idevid_certificates.zip";
         final String singleFileName = "IDevID_Certificates";
 
-        // Set filename for download.
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
@@ -220,9 +215,6 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "idevid certificates", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified idevid certificates
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
