@@ -87,7 +87,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
                                                final CertificateService certificateService,
-                                               @Qualifier("acaTrustChainCerts") final X509Certificate[] acaTrustChainCertificates) {
+                                               @Qualifier("acaTrustChainCerts") final
+                                               X509Certificate[] acaTrustChainCertificates) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;

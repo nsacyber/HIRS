@@ -61,13 +61,29 @@ public class HelpPageService {
         try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(logDirectory)) {
             // Loop through each entry in the directory
             for (Path filePath : directoryStream) {
-                // Process only regular files (skip subdirectories, links, etc.)
+                // Skip if not a regular file
+                if (!Files.isRegularFile(filePath)) {
+                    log.error("Unable to process the following path [{}] since the provided file "
+                            + "path is not a regular file", filePath);
+                    continue;
+                }
+
+                Path fileNamePath = filePath.getFileName();
+
+                // Skip if the filename is null
+                if (fileNamePath == null) {
+                    log.error("Unable to process the following path [{}] since the provided file "
+                            + "path is null", filePath);
+                    continue;
+                }
+
+                final String fileName = fileNamePath.toString();
+
                 // and is a HIRS Attestation CA log file
-                if (Files.isRegularFile(filePath)
-                        && filePath.getFileName().toString().startsWith(HIRS_ATTESTATION_CA_PORTAL_LOG_NAME)
-                        && filePath.getFileName().toString().endsWith(".log")) {
+                if (fileName.startsWith(HIRS_ATTESTATION_CA_PORTAL_LOG_NAME)
+                        && fileName.endsWith(".log")) {
                     // Create a new zip entry with the file's name
-                    ZipEntry zipEntry = new ZipEntry(filePath.getFileName().toString());
+                    ZipEntry zipEntry = new ZipEntry(fileName);
                     zipEntry.setTime(System.currentTimeMillis());
                     zipOut.putNextEntry(zipEntry);
 
@@ -81,7 +97,6 @@ public class HelpPageService {
                 }
             }
         }
-
         zipOut.finish();
     }
 
