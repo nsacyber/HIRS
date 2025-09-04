@@ -1,6 +1,7 @@
 package hirs.attestationca.persist.provision;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
@@ -94,8 +95,16 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     "Could not deserialize Protobuf Certificate Request object.", ipbe);
         }
 
+        String certificateRequestJsonString = "";
+        try {
+            certificateRequestJsonString = JsonFormat.printer().print(request);
+        } catch (InvalidProtocolBufferException exception) {
+            log.error("Certificate request could not be parsed properly into a json string");
+        }
+
         // attempt to retrieve provisioner state based on nonce in request
         TPM2ProvisionerState tpm2ProvisionerState = getTpm2ProvisionerState(request);
+
         if (tpm2ProvisionerState != null) {
             // Reparse Identity Claim to gather necessary components
             byte[] identityClaim = tpm2ProvisionerState.getIdentityClaim();
@@ -192,13 +201,34 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
+                    String certResponseJsonStringAfterSuccess = "";
+                    try {
+                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(request);
+                    } catch (InvalidProtocolBufferException exception) {
+                        log.error("Certificate response object after a successful validation, "
+                                + "assuming the LDevId public key exists, could not be parsed "
+                                + "properly into a json string");
+                    }
+
                     if (!policySettings.isSaveProtobufToLogNeverEnabled()
                             && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
+                        log.info("------------- Start Of Protobuf Logging Of Certificate Request/Response "
+                                + "After Successful Validation (LDevId public key does exist) "
+                                + "-------------");
+
                         log.info("Certificate request object received after a successful validation "
-                                + " and if the LDevID public key exists {}", request);
-                        log.info("Certificate Request Response "
+                                        + " and if the LDevID public key exists {}",
+                                certificateRequestJsonString.isEmpty()
+                                        ? request : certificateRequestJsonString);
+
+                        log.info("Certificate Response "
                                 + "object after a successful validation and if the LDevID "
-                                + "public key exists : {}", certificateResponse);
+                                + "public key exists : {}", certResponseJsonStringAfterSuccess.isEmpty()
+                                ? certificateResponse : certResponseJsonStringAfterSuccess);
+
+                        log.info("------------- End Of Protobuf Logging Of Certificate Request/Response "
+                                + "After Successful Validation (LDevId public key does exist) "
+                                + "-------------");
                     }
 
                     return certificateResponse.toByteArray();
@@ -225,13 +255,36 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     ProvisionerTpm2.CertificateResponse certificateResponse =
                             certificateResponseBuilder.build();
 
+                    String certResponseJsonStringAfterSuccess = "";
+                    try {
+                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(request);
+                    } catch (InvalidProtocolBufferException exception) {
+                        log.error("Certificate response object after a successful validation, "
+                                + "assuming the LDevId public key does not exist, could not be parsed "
+                                + "propertly into a json string");
+                    }
+
                     if (!policySettings.isSaveProtobufToLogNeverEnabled()
                             && policySettings.isSaveProtobufToLogAlwaysEnabled()) {
+
+                        log.info("------------- Start Of Protobuf Logging Of Certificate Request/Response "
+                                + "After Successful Validation (LDevId public key does not exist) "
+                                + "-------------");
+
                         log.info("Certificate request object received after a successful validation "
-                                + " and if the LDevID public key does not exist {}", request);
+                                        + " and if the LDevID public key does not exist {}",
+                                certificateRequestJsonString.isEmpty()
+                                        ? request : certificateRequestJsonString);
+
                         log.info("Certificate Request Response "
-                                + "object after a successful validation and if the LDevID "
-                                + "public key does not exist : {}", certificateResponse);
+                                        + "object after a successful validation and if the LDevID "
+                                        + "public key does not exist : {}",
+                                certResponseJsonStringAfterSuccess.isEmpty()
+                                        ? certificateResponse : certResponseJsonStringAfterSuccess);
+
+                        log.info("------------- End Of Protobuf Logging Of Certificate Request/Response "
+                                + "After Successful Validation (LDevId public key does not exist) "
+                                + "-------------");
                     }
                     return certificateResponse.toByteArray();
                 }
@@ -244,13 +297,29 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                         .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
                         .build();
 
+                String certResponseJsonStringAfterFailure = "";
+                try {
+                    certResponseJsonStringAfterFailure = JsonFormat.printer().print(request);
+                } catch (InvalidProtocolBufferException exception) {
+                    log.error("Certificate response object after a failed validation could not be parsed"
+                            + " properly into a json string");
+                }
+
                 if (!policySettings.isSaveProtobufToLogNeverEnabled()
                         && (policySettings.isSaveProtobufToLogAlwaysEnabled()
                         || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
+                    log.info("------------- Start Of Protobuf Log Of Certificate Request/Response"
+                            + " After Failed Validation -------------");
+
                     log.info("Certificate request object received after a failed validation:"
                             + " {}", request);
                     log.info("Certificate Request Response "
-                            + "object after a failed validation: {}", certificateResponse);
+                                    + "object after a failed validation: {}",
+                            certResponseJsonStringAfterFailure.isEmpty()
+                                    ? certificateResponse : certResponseJsonStringAfterFailure);
+
+                    log.info("------------- End Of Protobuf Log Of Certificate Request/Response"
+                            + " After Failed Validation -------------");
                 }
 
                 return certificateResponse.toByteArray();
@@ -259,8 +328,15 @@ public class CertificateRequestProcessor extends AbstractProcessor {
             if (!policySettings.isSaveProtobufToLogNeverEnabled()
                     && (policySettings.isSaveProtobufToLogAlwaysEnabled()
                     || policySettings.isSaveProtobufToLogOnFailedValEnabled())) {
+                log.info("------------- Start Of Protobuf Log Of Certificate Request After Failed "
+                        + "Validation (Invalid Nonce) -------------");
+
                 log.error("Could not process credential request."
-                        + " Invalid nonce provided: {}", request);
+                                + " Invalid nonce provided: {}",
+                        certificateRequestJsonString.isEmpty() ? request : certificateRequestJsonString);
+
+                log.info("------------- End Of Protobuf Log Of Certificate Request After Failed "
+                        + "Validation (Invalid Nonce) -------------");
             }
             throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
