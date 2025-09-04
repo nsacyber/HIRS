@@ -180,7 +180,6 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                     + endorsementCredential.getSerialNumber()
                     + ".cer\"";
 
-            // Set filename for download.
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
@@ -190,9 +189,6 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
                     + " specified endorsement credential", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified endorsement credential
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -212,7 +208,6 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         final String fileName = "endorsement_certificates.zip";
         final String singleFileName = "Endorsement_Certificates";
 
-        // Set filename for download.
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
@@ -221,11 +216,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the"
+            log.error("An exception was thrown while attempting to bulk download all the "
                     + "endorsement credentials", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // endorsement credentials
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }

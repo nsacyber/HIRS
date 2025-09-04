@@ -180,7 +180,6 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
                     + issuedAttestationCertificate.getSerialNumber()
                     + ".cer\"";
 
-            // Set filename for download.
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
@@ -188,11 +187,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             response.getOutputStream().write(certificate.getRawBytes());
 
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to download the"
-                    + " specified issued attestation certificate", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified issued attestation certificate
+            log.error("An exception was thrown while attempting to download the "
+                    + "specified issued attestation certificate", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -212,7 +208,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         final String singleFileName = "Issued_Certificate";
         final String fileName = "issued_certificates.zip";
 
-        // Set filename for download.
+
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
@@ -221,11 +217,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
                     singleFileName);
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the"
+            log.error("An exception was thrown while attempting to bulk download all the "
                     + "issued attestation certificates", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // issued attestation certificates
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }

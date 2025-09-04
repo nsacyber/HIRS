@@ -87,8 +87,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
                                                final CertificateService certificateService,
-                                               @Qualifier("acaTrustChainCerts")
-                                               final X509Certificate[] acaTrustChainCertificates) {
+                                               @Qualifier("acaTrustChainCerts") final X509Certificate[] acaTrustChainCertificates) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;
@@ -227,7 +226,6 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                     + trustChainCertificate.getSerialNumber()
                     + ".cer\"";
 
-            // Set filename for download.
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
@@ -237,9 +235,6 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
                     + " specified trust chain certificate", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified trust chain certificate
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -263,7 +258,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             // PEM file of the leaf certificate, intermediate certificate and root certificate (in that order)
             final String fullChainPEM =
                     ControllerPagesUtils.convertCertificateArrayToPem(
-                            new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(0),
+                            new CertificateAuthorityCredential[]{certificateAuthorityCredentials.get(0),
                                     certificateAuthorityCredentials.get(1),
                                     certificateAuthorityCredentials.get(2)});
 
@@ -281,9 +276,6 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
                     + "aca trust chain", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // aca certificates
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -302,7 +294,6 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         final String fileName = "trust-chain.zip";
         final String singleFileName = "ca-certificates";
 
-        // Set filename for download.
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
@@ -313,9 +304,6 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "trust chain certificates", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // trust chain certificates
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }

@@ -2,12 +2,22 @@ package hirs.attestationca.persist.service;
 
 import hirs.attestationca.persist.entity.userdefined.HIRSLogger;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.logging.LoggersEndpoint;
 import org.springframework.boot.logging.LogLevel;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Service layer component that handles HIRS application logging
@@ -18,7 +28,12 @@ import java.util.Optional;
 public class HelpPageService {
     private static final String MAIN_HIRS_LOGGER_NAME = "hirs.attestationca";
 
+    private static final String HIRS_ATTESTATION_CA_PORTAL_LOG_NAME = "HIRS_AttestationCA_Portal";
+
     private final LoggersEndpoint loggersEndpoint;
+
+    @Value("${logging.file.path}")
+    private String logFilesPath;
 
     /**
      * Constructor for Help Page service.
@@ -27,6 +42,47 @@ public class HelpPageService {
      */
     public HelpPageService(final LoggersEndpoint loggersEndpoint) {
         this.loggersEndpoint = loggersEndpoint;
+    }
+
+    /**
+     * Packages a collection of HIRS Attestation log files into a zip file.
+     *
+     * @param zipOut zip output stream
+     * @throws IOException if there are any issues packaging or downloading the zip file
+     */
+    public void bulkDownloadHIRSLogFiles(final ZipOutputStream zipOut) throws IOException {
+        final Path logDirectory = Paths.get(logFilesPath);
+
+        if (!Files.isDirectory(logDirectory)) {
+            throw new IllegalArgumentException("Provided path is not a directory: " + logDirectory);
+        }
+
+        // Open the directory stream to iterate over files/directories inside the log directory
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(logDirectory)) {
+            // Loop through each entry in the directory
+            for (Path filePath : directoryStream) {
+                // Process only regular files (skip subdirectories, links, etc.)
+                // and is a HIRS Attestation CA log file
+                if (Files.isRegularFile(filePath)
+                        && filePath.getFileName().toString().startsWith(HIRS_ATTESTATION_CA_PORTAL_LOG_NAME)
+                        && filePath.getFileName().toString().endsWith(".log")) {
+                    // Create a new zip entry with the file's name
+                    ZipEntry zipEntry = new ZipEntry(filePath.getFileName().toString());
+                    zipEntry.setTime(System.currentTimeMillis());
+                    zipOut.putNextEntry(zipEntry);
+
+                    // Open an InputStream to read the file's contents
+                    try (InputStream fis = Files.newInputStream(filePath)) {
+                        // Copy the file content directly into the ZipOutputStream
+                        StreamUtils.copy(fis, zipOut);
+                    }
+
+                    zipOut.closeEntry();
+                }
+            }
+        }
+
+        zipOut.finish();
     }
 
     /**
@@ -87,9 +143,8 @@ public class HelpPageService {
         // if a user attempts to change the log level of a logger that is not a part of the HIRS application
         if (!loggerName.startsWith(MAIN_HIRS_LOGGER_NAME)) {
 
-            final String errorMessage = String.format(
-                    "An illegal attempt has been made to change the selected logger [%s]'s log level. ",
-                    loggerName);
+            final String errorMessage = String.format("An illegal attempt has been made to change "
+                    + "the selected logger [%s]'s log level. ", loggerName);
 
             log.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
