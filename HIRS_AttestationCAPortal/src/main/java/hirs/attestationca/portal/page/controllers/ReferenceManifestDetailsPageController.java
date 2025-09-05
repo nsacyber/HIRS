@@ -345,7 +345,7 @@ public class ReferenceManifestDetailsPageController
         // testing this independent of the above if statement because the above
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
-        measurements = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(
+        measurements = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimTypeUnarchived(
                 support.getHexDecHash(),
                 ReferenceManifest.MEASUREMENT_RIM);
 

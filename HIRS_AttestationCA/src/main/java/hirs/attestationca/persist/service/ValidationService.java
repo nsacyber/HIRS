@@ -260,8 +260,9 @@ public final class ValidationService {
             rimType = ReferenceManifest.BASE_RIM;
         }
         for (ReferenceManifest rim : rims) {
-            if (rim.getRimType().equals(rimType)) {
+            if (rim.getRimType().equals(rimType) && !rim.isArchived()) {
                 referenceManifest = rim;
+                break;
             }
         }
 
