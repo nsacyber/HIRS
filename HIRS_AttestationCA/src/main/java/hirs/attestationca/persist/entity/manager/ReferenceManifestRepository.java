@@ -41,6 +41,17 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     ReferenceManifest findByHexDecHashAndRimType(String hexDecHash, String rimType);
 
     /**
+     * Query that retrieves an unarchived reference manifest using the provided hex/dec hash and rim type.
+     *
+     * @param hexDecHash string representation of the hex dec hash
+     * @param rimType    string representation of the rim type
+     * @return a reference manifest
+     */
+    @Query(value = "SELECT * FROM ReferenceManifest WHERE hexDecHash = ?1 AND rimType = ?2 "
+            + "AND archiveFlag is false", nativeQuery = true)
+    ReferenceManifest findByHexDecHashAndRimTypeUnarchived(String hexDecHash, String rimType);
+
+    /**
      * Query that retrieves a reference manifest using the provided event log hash and rim type.
      *
      * @param hexDecHash string representation of the event log hash
@@ -156,6 +167,17 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     @Query(value = "SELECT * FROM ReferenceManifest WHERE deviceName = ?1 "
             + "AND DTYPE = 'EventLogMeasurements'", nativeQuery = true)
     EventLogMeasurements byMeasurementDeviceName(String deviceName);
+
+    /**
+     * Query that retrieves unarchived event log measurements using the provided device name
+     * and where the dtype is event log measurements.
+     *
+     * @param deviceName string representation of the device name
+     * @return event log measurements
+     */
+    @Query(value = "SELECT * FROM ReferenceManifest WHERE deviceName = ?1 "
+            + "AND DTYPE = 'EventLogMeasurements' AND archiveFlag is false", nativeQuery = true)
+    EventLogMeasurements byMeasurementDeviceNameUnarchived(String deviceName);
 
     /**
      * Query that retrieves a list of support reference manifests using the provided manufacturer and platform

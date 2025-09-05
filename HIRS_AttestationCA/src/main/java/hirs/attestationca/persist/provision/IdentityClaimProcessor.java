@@ -595,11 +595,12 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         dv.getLivelog().toByteArray());
                 // find previous version.
                 integrityMeasurements = referenceManifestRepository
-                        .byMeasurementDeviceName(dv.getNw().getHostname());
+                        .byMeasurementDeviceNameUnarchived(dv.getNw().getHostname());
 
                 if (integrityMeasurements != null) {
-                    // Find previous log and delete it
-                    referenceManifestRepository.delete(integrityMeasurements);
+                    // Find previous log and archive it
+                    integrityMeasurements.archive();
+                    this.referenceManifestRepository.save(integrityMeasurements);
                 }
 
                 List<BaseReferenceManifest> baseRims = referenceManifestRepository
@@ -612,7 +613,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                     integrityMeasurements.setTagId(tagId);
                 }
                 integrityMeasurements.setDeviceName(dv.getNw().getHostname());
-                integrityMeasurements.archive();
 
                 this.referenceManifestRepository.save(integrityMeasurements);
 
