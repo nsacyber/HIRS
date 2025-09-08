@@ -29,8 +29,8 @@
     <div class="aca-data-table">
       <h2>Main HIRS Logger Management</h2>
       <div class="download-header">
-        <h3>Download HIRS Attestation Log File</h3>
-        <a href="${portal}/help/hirs-log-download">
+        <h3>Download All HIRS Attestation Log Files</h3>
+        <a href="${portal}/help/hirs-logs-download">
           <img src="${icons}/ic_file_download_black_24dp.png" title="Download HIRS Log">
         </a>
       </div>

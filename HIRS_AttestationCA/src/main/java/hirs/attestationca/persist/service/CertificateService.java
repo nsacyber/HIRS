@@ -291,7 +291,7 @@ public class CertificateService {
     /**
      * Packages a collection of certificates into a zip file.
      *
-     * @param zipOut          zip outputs streams
+     * @param zipOut          zip outputs stream
      * @param singleFileName  zip file name
      * @param certificateType certificate type
      * @throws IOException if there are any issues packaging or downloading the zip file
