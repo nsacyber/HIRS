@@ -115,14 +115,14 @@ public class ComponentInfo extends ArchivableEntity {
         }
 
         this.componentSerial =
-                    CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(componentSerial)
-                            ? ComponentIdentifier.NOT_SPECIFIED_COMPONENT
-                            : componentSerial;
+                CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(componentSerial)
+                        ? ComponentIdentifier.NOT_SPECIFIED_COMPONENT
+                        : componentSerial;
 
         this.componentRevision =
-                    CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(componentRevision)
-                            ? ComponentIdentifier.NOT_SPECIFIED_COMPONENT
-                            : componentRevision;
+                CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(componentRevision)
+                        ? ComponentIdentifier.NOT_SPECIFIED_COMPONENT
+                        : componentRevision;
     }
 
     /**
@@ -158,6 +158,7 @@ public class ComponentInfo extends ArchivableEntity {
      */
     public int hashCommonElements() {
         return Objects.hash(componentManufacturer, componentModel,
-                componentSerial, componentRevision, componentClassValue, componentClassRegistry);
+                componentSerial, componentRevision, componentClassValue.toUpperCase(),
+                componentClassRegistry);
     }
 }

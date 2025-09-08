@@ -24,7 +24,7 @@ import java.util.Objects;
 @Entity
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ComponentResult extends ArchivableEntity {
+public class ComponentResult extends ArchivableEntity implements Cloneable {
 
     /**
      * String value for the Manufacturer title.
@@ -73,7 +73,7 @@ public class ComponentResult extends ArchivableEntity {
 
     private String componentClassToolTipStr;
 
-    private String componentClassType;
+    private String componentClassRegistryType;
 
     private AttributeStatus attributeStatus;
 
@@ -159,7 +159,7 @@ public class ComponentResult extends ArchivableEntity {
         this.componentClassRegistry = componentIdentifierV2.getComponentClass().getRegistryOid();
         this.componentClassStr = componentIdentifierV2.getComponentClass().toString();
         this.componentClassToolTipStr = componentIdentifierV2.getComponentClass().getComponentToolTipStr();
-        this.componentClassType = componentIdentifierV2.getComponentClass().getRegistryType();
+        this.componentClassRegistryType = componentIdentifierV2.getComponentClass().getRegistryType();
         this.attributeStatus = componentIdentifierV2.getAttributeStatus();
         this.version2 = true;
         if (componentIdentifierV2.getComponentPlatformCert() != null) {
@@ -199,7 +199,8 @@ public class ComponentResult extends ArchivableEntity {
      */
     public int hashCommonElements() {
         return Objects.hash(manufacturer,
-                model, serialNumber, revisionNumber, componentClassValue, componentClassRegistry);
+                model, serialNumber, revisionNumber, componentClassValue.toUpperCase(),
+                componentClassRegistry);
     }
 
     /**
@@ -208,8 +209,23 @@ public class ComponentResult extends ArchivableEntity {
      * @return a string for the component result
      */
     public String toString() {
-        return String.format("ComponentResult: certificateSerialNumber=[%s] "
-                        + "manufacturer=[%s] model=[%s] componentClass=[%s]",
-                boardSerialNumber, manufacturer, model, componentClassValue, componentClassRegistry);
+        return String.format("ComponentResult: serialNumber=[%s] "
+                        + "manufacturer=[%s] model=[%s] componentClass=[%s] componentClassRegistry=[%s]",
+                serialNumber, manufacturer, model, componentClassValue, componentClassRegistry);
+    }
+
+    /**
+     * Clones this Component Result object.
+     *
+     * @return a deep copy of this Component Result object
+     * @throws CloneNotSupportedException if there are any issues cloning the class' primitive types
+     */
+    @Override
+    public ComponentResult clone() throws CloneNotSupportedException {
+        try {
+            return (ComponentResult) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new CloneNotSupportedException("Cannot clone Component Result");
+        }
     }
 }

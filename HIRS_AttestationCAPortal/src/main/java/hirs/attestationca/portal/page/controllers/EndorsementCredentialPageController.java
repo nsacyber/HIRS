@@ -13,9 +13,11 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -268,5 +270,69 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Retrieves the total number of records in the endorsement credential repository.
+     *
+     * @return total number of records in the endorsement credential repository.
+     */
+    private long findEndorsementCredentialRepositoryCount() {
+        return this.endorsementCredentialRepository.findByArchiveFlag(false).size();
+    }
+
+    /**
+     * Attempts to parse the provided file in order to create an Endorsement Credential.
+     *
+     * @param file     file
+     * @param messages page messages
+     * @return endorsement credential
+     */
+    private EndorsementCredential parseEndorsementCredential(final MultipartFile file,
+                                                             final PageMessages messages) {
+        log.info("Received endorsement credential file of size: {}", file.getSize());
+
+        byte[] fileBytes;
+        String fileName = file.getOriginalFilename();
+
+        // attempt to retrieve file bytes from the provided file
+        try {
+            fileBytes = file.getBytes();
+        } catch (IOException ioEx) {
+            final String failMessage = String.format(
+                    "Failed to read uploaded endorsement credential file (%s): ", fileName);
+            log.error(failMessage, ioEx);
+            messages.addErrorMessage(failMessage + ioEx.getMessage());
+            return null;
+        }
+
+        // attempt to build the endorsement credential from the uploaded bytes
+        try {
+            return new EndorsementCredential(fileBytes);
+        } catch (IOException ioEx) {
+            final String failMessage = String.format(
+                    "Failed to parse uploaded endorsement credential file (%s): ", fileName);
+            log.error(failMessage, ioEx);
+            messages.addErrorMessage(failMessage + ioEx.getMessage());
+            return null;
+        } catch (DecoderException dEx) {
+            final String failMessage = String.format(
+                    "Failed to parse uploaded endorsement credential pem file (%s): ", fileName);
+            log.error(failMessage, dEx);
+            messages.addErrorMessage(failMessage + dEx.getMessage());
+            return null;
+        } catch (IllegalArgumentException iaEx) {
+            final String failMessage = String.format(
+                    "Endorsement credential format not recognized(%s): ", fileName);
+            log.error(failMessage, iaEx);
+            messages.addErrorMessage(failMessage + iaEx.getMessage());
+            return null;
+        } catch (IllegalStateException isEx) {
+            final String failMessage = String.format(
+                    "Unexpected object while parsing endorsement credential %s ", fileName);
+            log.error(failMessage, isEx);
+            messages.addErrorMessage(failMessage + isEx.getMessage());
+            return null;
+        }
     }
 }

@@ -80,6 +80,11 @@ public class PolicyPageService {
 
         policySettings.setPcAttributeValidationEnabled(isPcAttributeValidationOptionEnabled);
 
+        if (!isPcAttributeValidationOptionEnabled) {
+            policySettings.setIgnorePcieVpdEnabled(false);
+            policySettings.setIgnoreRevisionEnabled(false);
+        }
+
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the platform credential "
@@ -89,7 +94,35 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the Ignore Revision Attribute policy according to user input.
+     * Updates the Ignore PCIE VPD Attribute policy under the platform credential attribute validation
+     * policy setting according to user input.
+     *
+     * @param isIgnorePcieVpdOptionEnabled boolean value representation of the current policy
+     *                                     option's state
+     * @return true if the policy was updated successfully; otherwise, false.
+     */
+    public boolean updateIgnorePCIEVpdPolicy(final boolean isIgnorePcieVpdOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        if (isIgnorePcieVpdOptionEnabled && !policySettings.isPcAttributeValidationEnabled()) {
+            log.error("Ignore PCIE VPD Attribute cannot be enabled without PC Attribute "
+                    + "validation policy enabled.");
+            return false;
+        }
+
+        policySettings.setIgnorePcieVpdEnabled(isIgnorePcieVpdOptionEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the ignore "
+                + "pcie vpd policy: {}", policySettings);
+
+        return true;
+    }
+
+    /**
+     * Updates the Ignore Revision Attribute policy under the platform credential attribute validation policy
+     * setting according to user input.
      *
      * @param isIgnoreRevisionAttributeOptionEnabled boolean value representation of the current policy
      *                                               option's state
@@ -136,7 +169,7 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the DevId validation policy according to user input.
+     * Updates the LDevId validation policy according to user input.
      *
      * @param isLDevIdOptionEnabled boolean value representation of the current policy option's state
      */
@@ -215,7 +248,7 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the ignore IMA policy according to user input.
+     * Updates the ignore IMA policy under the firmware validation policy setting according to user input.
      *
      * @param isIgnoreImaOptionEnabled boolean value representation of the current policy option's state
      * @return true if the policy was updated successfully; otherwise, false.
@@ -223,7 +256,7 @@ public class PolicyPageService {
     public boolean updateIgnoreImaPolicy(final boolean isIgnoreImaOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If Ignore IMA is enabled without firmware, disallow change
+        //If Ignore IMA is enabled and firmware validation is not enabled, disallow change
         if (isIgnoreImaOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore IMA cannot be enabled without Firmware Validation policy enabled.");
             return false;
@@ -240,7 +273,8 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the ignore TBoot policy according to user input.
+     * Updates the ignore TBoot policy under the firmware validation policy setting
+     * according to user input.
      *
      * @param isIgnoreTbootOptionEnabled boolean value representation of the current policy option's state
      * @return true if the policy was updated successfully; otherwise, false.
@@ -248,7 +282,7 @@ public class PolicyPageService {
     public boolean updateIgnoreTBootPolicy(final boolean isIgnoreTbootOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If Ignore TBoot is enabled without firmware, disallow change
+        //If Ignore TBoot is enabled and firmware validation is not enabled, disallow change
         if (isIgnoreTbootOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore TBoot cannot be enabled without Firmware Validation policy enabled.");
             return false;
@@ -265,7 +299,8 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the ignore GPT events policy according to user input.
+     * Updates the ignore GPT events policy under the firmware validation policy setting
+     * according to user input.
      *
      * @param isIgnoreGptOptionEnabled boolean value representation of the current policy option's state
      * @return true if the policy was updated successfully; otherwise, false.
@@ -273,7 +308,7 @@ public class PolicyPageService {
     public boolean updateIgnoreGptEventsPolicy(final boolean isIgnoreGptOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If Ignore TBoot is enabled without firmware, disallow change
+        //If Ignore TBoot is enabled and firmware validation is not enabled, disallow change
         if (isIgnoreGptOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore GPT Events cannot be enabled without Firmware Validation policy enabled.");
             return false;
@@ -290,7 +325,8 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the ignore OS events policy according to user input.
+     * Updates the ignore OS events policy under the firmware validation policy setting
+     * according to user input.
      *
      * @param isIgnoreOSEvtOptionEnabled boolean value representation of the current policy option's state
      * @return true if the policy was updated successfully; otherwise, false.
@@ -298,7 +334,7 @@ public class PolicyPageService {
     public boolean updateIgnoreOSEventsPolicy(final boolean isIgnoreOSEvtOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If Ignore OS events is enabled without firmware, disallow change
+        //If Ignore OS events is enabled and firmware validation is not enabled, disallow change
         if (isIgnoreOSEvtOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore OS Events cannot be enabled without Firmware Validation policy enabled.");
             return false;
@@ -319,7 +355,8 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the Attestation Certificate generation expiration date using the provided user input.
+     * Updates the Attestation Certificate generation expiration date under the generate attestation
+     * certificate policy setting using the provided user input.
      *
      * @param expirationValue                    expiration value
      * @param isGenerateIssuedCertificateEnabled boolean value representation of the current policy
@@ -360,7 +397,8 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the LDevId Certificate generation expiration date using the provided user input.
+     * Updates the LDevId Certificate generation expiration date under the generate ldevid
+     * certificate policy setting using the provided user input.
      *
      * @param ldevIdExpirationValue              ldevid expiration value
      * @param isGenerateLDevIdCertificateEnabled boolean value representation of the current policy option's
@@ -403,7 +441,8 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the Attestation Certificate generation threshold value using the provided user input.
+     * Updates the Attestation Certificate generation threshold value under the generate attestation
+     * certificate policy setting  using the provided user input.
      *
      * @param thresholdValue                     threshold value
      * @param reissueThresholdValue              reissue threshold value
@@ -448,7 +487,8 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the LDevId Certificate generation threshold value using the provided user input.
+     * Updates the LDevId Certificate generation threshold value under the generate ldevid
+     * certificate policy setting using the provided user input.
      *
      * @param ldevIdThresholdValue               ldevid threshold value
      * @param ldevIdReissueThresholdValue        ldevid reissue threshold value
@@ -456,9 +496,9 @@ public class PolicyPageService {
      *                                           state
      * @return string message that describes the result of this policy update
      */
-    public String updateDevIdThresholdPolicy(final String ldevIdThresholdValue,
-                                             final String ldevIdReissueThresholdValue,
-                                             final boolean isGenerateLDevIdCertificateEnabled) {
+    public String updateLDevIdThresholdPolicy(final String ldevIdThresholdValue,
+                                              final String ldevIdReissueThresholdValue,
+                                              final boolean isGenerateLDevIdCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
         boolean canGenerateLDevIdCertificateEnabled = isGenerateLDevIdCertificateEnabled;
@@ -500,8 +540,7 @@ public class PolicyPageService {
      * @param saveProtobufToLogOption string value representation of the current policy
      *                                option's state
      */
-    public void updateSaveProtobufDataToLogPolicy(
-            final String saveProtobufToLogOption) {
+    public void updateSaveProtobufDataToLogPolicy(final String saveProtobufToLogOption) {
         PolicySettings policySettings = getDefaultPolicy();
 
         switch (saveProtobufToLogOption) {

@@ -148,21 +148,15 @@ public class TpmPcrEvent {
     private boolean error = false;
 
     /**
-     * Track status of vendor-table.json
-     * This is only used for events that use a UefiVariable data structure.
-     * Default is normal status (normal status is from-filesystem).
-     * Status will only change IF this is an event that has a UefiVariable,
-     * and if that event causes a different status.
+     * Track status of vendor-table.json file.
+     * See TCGEventLog for more detail.
      */
     @Getter
-    private String vendorTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
+    private String guidTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
-     * Track status of pci.ids
-     * This is only used for events that access the pci.ids file.
-     * Default is normal status (normal status is from-filesystem).
-     * Status will only change IF this is an event that uses this file,
-     * and if that event causes a different status.
+     * Track status of pci.ids file.
+     * See TCGEventLog for more detail.
      */
     @Getter
     private String pciidsFileStatus = FILESTATUS_FROM_FILESYSTEM;
@@ -587,7 +581,7 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 UefiVariable efiVar = new UefiVariable(content);
                 description += "Event Content:\n" + efiVar;
-                vendorTableFileStatus = efiVar.getVendorTableFileStatus();
+                guidTableFileStatus = efiVar.getGuidTableFileStatus();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
             case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER:

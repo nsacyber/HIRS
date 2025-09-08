@@ -48,15 +48,15 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
      * @param caCredentialRepository         CA Credential repository
      * @return an appraisal status
      */
-    @SuppressWarnings("methodlength")
     public static AppraisalStatus validateFirmware(
-            final Device device, final PolicySettings policySettings,
+            final Device device,
+            final PolicySettings policySettings,
             final ReferenceManifestRepository referenceManifestRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository,
             final CACredentialRepository caCredentialRepository) {
+        final String hostName = device.getDeviceInfo().getNetworkInfo().getHostname();
         boolean passed = true;
         AppraisalStatus fwStatus = null;
-        String hostName = device.getDeviceInfo().getNetworkInfo().getHostname();
         BaseReferenceManifest baseReferenceManifest = null;
         EventLogMeasurements measurement = null;
         log.info("Validating firmware...");
@@ -112,27 +112,27 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         measurement, referenceDigestValueRepository, policySettings);
                 fwStatus = pcrStatus;
                 if (pcrStatus.getAppStatus() == PASS) {
-                    EventLogMeasurements eventLog = measurement;
-                    eventLog.setOverallValidationResult(PASS);
-                    referenceManifestRepository.save(eventLog);
+                    measurement.setOverallValidationResult(PASS);
+                    referenceManifestRepository.save(measurement);
                     fwStatus = new AppraisalStatus(PASS, SupplyChainCredentialValidator.FIRMWARE_VALID);
                 } else {
                     failedString = pcrStatus.getMessage();
-                    log.warn("PCR value validation failed: " + failedString);
+                    log.warn("PCR value validation failed: {}", failedString);
                     passed = false;
                 }
             } else {
                 failedString = rimSignatureStatus.getMessage();
-                log.warn("RIM signature validation failed: " + failedString);
+                log.warn("RIM signature validation failed: {}", failedString);
                 passed = false;
             }
         }
-        if (!passed) {
-            if (measurement != null) {
-                measurement.setOverallValidationResult(fwStatus.getAppStatus());
-                referenceManifestRepository.save(measurement);
-            }
+
+        if (!passed && measurement != null) {
+            fwStatus = new AppraisalStatus(FAIL, failedString);
+            measurement.setOverallValidationResult(fwStatus.getAppStatus());
+            referenceManifestRepository.save(measurement);
         }
+
         return fwStatus;
     }
 
@@ -163,8 +163,9 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             try {
                 keyStore = ValidationService.caCertSetToKeystore(set);
             } catch (Exception e) {
-                log.error("Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
-                        + e.getMessage());
+                log.error("Error building CA chain for {}: {}",
+                        signingCert.getSubjectKeyIdentifier(),
+                        e.getMessage());
             }
 
             ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
@@ -172,9 +173,9 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 try {
                     certs.add(cac.getX509Certificate());
                 } catch (IOException e) {
-                    log.error(
-                            "Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
-                                    + e.getMessage());
+                    log.error("Error building CA chain for {}: {}",
+                            signingCert.getSubjectKeyIdentifier(),
+                            e.getMessage());
                 }
             }
             referenceManifestValidator.setTrustStore(certs);
@@ -190,16 +191,16 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                                     "RIM signature validation failed: invalid certificate path.");
                         }
                     } catch (IOException ioEx) {
-                        log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
+                        log.error("Error getting X509 cert from manager: {}", ioEx.getMessage());
                     } catch (SupplyChainValidatorException scvEx) {
-                        log.error("Error validating cert against keystore: " + scvEx.getMessage());
+                        log.error("Error validating cert against keystore: {}", scvEx.getMessage());
                         rimSignatureStatus = new AppraisalStatus(FAIL,
                                 "RIM signature validation failed: invalid certificate path.");
                     }
                     break;
                 }
             } catch (IOException ioEx) {
-                log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
+                log.error("Error getting X509 cert from manager: {}", ioEx.getMessage());
             }
         }
 
@@ -260,12 +261,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         try {
             logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
             baseline = logProcessor.getExpectedPCRValues();
-        } catch (CertificateException cEx) {
-            log.error(cEx);
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        } catch (IOException ioEx) {
-            log.error(ioEx);
+        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+            log.error(exception);
         }
 
         // part 1 of firmware validation check: PCR baseline match
@@ -280,9 +277,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 pcrAppraisalStatus = new AppraisalStatus(FAIL,
                         "Firmware validation failed: Client did not "
                                 + "provide pcr values.");
-                log.warn(String.format(
-                        "Firmware validation failed: Client (%s) did not "
-                                + "provide pcr values.", device.getName()));
+                log.warn("Firmware validation failed: Client ({}) did not "
+                        + "provide pcr values.", device.getName());
             } else {
                 // we have a full set of PCR values
                 //int algorithmLength = baseline[0].length();
@@ -308,12 +304,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         tpmPcrEvents.addAll(pcrValidator.validateTpmEvents(
                                 tcgMeasurementLog, eventValueMap, policySettings));
                     }
-                } catch (NoSuchAlgorithmException e) {
-                    log.error(e);
-                } catch (CertificateException cEx) {
-                    log.error(cEx);
-                } catch (IOException e) {
-                    log.error(e);
+                } catch (NoSuchAlgorithmException | CertificateException | IOException exception) {
+                    log.error(exception);
                 }
 
                 if (!tpmPcrEvents.isEmpty()) {
@@ -327,7 +319,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                     }
                     if (pcrAppraisalStatus.getAppStatus().equals(FAIL)) {
                         pcrAppraisalStatus = new AppraisalStatus(FAIL, String.format("%s%n%s",
-                                pcrAppraisalStatus.getMessage(), sb.toString()));
+                                pcrAppraisalStatus.getMessage(), sb));
                     } else {
                         pcrAppraisalStatus = new AppraisalStatus(FAIL,
                                 sb.toString(), ReferenceManifest.MEASUREMENT_RIM);
@@ -339,10 +331,5 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         }
 
         return pcrAppraisalStatus;
-    }
-
-    private static void logAndReportError(final AppraisalStatus status, final String errorString) {
-        status.setMessage(errorString);
-        log.error(errorString);
     }
 }

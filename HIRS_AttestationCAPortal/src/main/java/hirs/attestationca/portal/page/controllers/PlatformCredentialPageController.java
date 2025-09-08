@@ -99,7 +99,6 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.info("Received request to display list of platform credentials");
         log.debug("Request received a datatable input object for the platform credentials page: {}", input);
 
-
         String orderColumnName = input.getOrderColumnName();
 
         log.debug("Ordering on column: {}", orderColumnName);
@@ -239,7 +238,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         for (MultipartFile file : files) {
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
-            
+
             PlatformCredential parsedPlatformCredential =
                     this.platformCredentialService.parsePlatformCredential(file,
                             errorMessages);

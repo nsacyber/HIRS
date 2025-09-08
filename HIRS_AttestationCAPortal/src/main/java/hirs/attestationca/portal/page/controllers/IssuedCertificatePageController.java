@@ -98,7 +98,6 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         log.debug("Request received a datatable input object for the issued attestation"
                 + " certificate page: {}", input);
 
-
         String orderColumnName = input.getOrderColumnName();
 
         log.debug("Ordering on column: {}", orderColumnName);
