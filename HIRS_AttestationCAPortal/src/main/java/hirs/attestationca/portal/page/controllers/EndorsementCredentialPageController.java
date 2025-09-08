@@ -2,7 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
-import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.EndorsementCredentialPageService;
 import hirs.attestationca.persist.util.DownloadFile;
@@ -13,11 +13,9 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -54,21 +52,21 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
 public class EndorsementCredentialPageController extends PageController<NoPageParams> {
     private final EndorsementCredentialPageService endorsementCredentialPageService;
-    private final CertificateService certificateService;
+    private final CertificatePageService certificatePageService;
 
     /**
-     * Constructor for the Endorsement Credential page.
+     * Constructor for the Endorsement Credential Page Controller.
      *
      * @param endorsementCredentialPageService endorsement credential page service
-     * @param certificateService               certificate service
+     * @param certificatePageService           certificate page service
      */
     @Autowired
     public EndorsementCredentialPageController(
             final EndorsementCredentialPageService endorsementCredentialPageService,
-            final CertificateService certificateService) {
+            final CertificatePageService certificatePageService) {
         super(Page.ENDORSEMENT_KEY_CREDENTIALS);
         this.endorsementCredentialPageService = endorsementCredentialPageService;
-        this.certificateService = certificateService;
+        this.certificatePageService = certificatePageService;
     }
 
     /**
@@ -80,8 +78,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @return the path for the view and data model for the Endorsement Key Credentials page.
      */
     @RequestMapping
-    public ModelAndView initPage(
-            final NoPageParams params, final Model model) {
+    public ModelAndView initPage(final NoPageParams params, final Model model) {
         return getBaseModelAndView(Page.ENDORSEMENT_KEY_CREDENTIALS);
     }
 
@@ -93,8 +90,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @return data table of endorsement credentials
      */
     @ResponseBody
-    @GetMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<EndorsementCredential> getEndorsementCredentialsTableData(
             final DataTableInput input) {
         log.info("Received request to display list of endorsement credentials");
@@ -119,7 +115,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult = this.endorsementCredentialPageService.findByArchiveFlag(false, pageable);
         } else {
-            pagedResult = this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
+            pagedResult = this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
                     EndorsementCredential.class,
                     searchableColumns,
                     searchTerm,
@@ -148,15 +144,14 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadEndorsementCredential(
-            @RequestParam final String id,
-            final HttpServletResponse response)
+    public void downloadEndorsementCredential(@RequestParam final String id,
+                                              final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download endorsement credential id {}", id);
 
         try {
             final DownloadFile downloadFile =
-                    this.certificateService.downloadCertificate(EndorsementCredential.class,
+                    this.certificatePageService.downloadCertificate(EndorsementCredential.class,
                             UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
                     + downloadFile.getFileName());
@@ -177,21 +172,21 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/bulk-download")
-    public void bulkDownloadEndorsementCredentials(final HttpServletResponse response)
-            throws IOException {
+    public void bulkDownloadEndorsementCredentials(final HttpServletResponse response) throws IOException {
         log.info("Received request to download all endorsement credentials");
 
-        final String fileName = "endorsement_certificates.zip";
+        final String zipFileName = "endorsement_certificates.zip";
         final String singleFileName = "Endorsement_Certificates";
 
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
+            this.certificatePageService.bulkDownloadCertificates(zipOut,
+                    CertificateType.ENDORSEMENT_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the"
+            log.error("An exception was thrown while attempting to bulk download all the "
                     + "endorsement credentials", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -222,7 +217,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                     this.endorsementCredentialPageService.parseEndorsementCredential(file, errorMessages);
 
             if (parsedEndorsementCredential != null) {
-                certificateService.storeCertificate(
+                this.certificatePageService.storeCertificate(
                         CertificateType.ENDORSEMENT_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedEndorsementCredential);
@@ -255,8 +250,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         List<String> successMessages = new ArrayList<>();
         List<String> errorMessages = new ArrayList<>();
+        
         try {
-            this.certificateService.deleteCertificate(UUID.fromString(id),
+            this.certificatePageService.deleteCertificate(UUID.fromString(id),
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);
@@ -270,69 +266,5 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, attr);
-    }
-
-    /**
-     * Retrieves the total number of records in the endorsement credential repository.
-     *
-     * @return total number of records in the endorsement credential repository.
-     */
-    private long findEndorsementCredentialRepositoryCount() {
-        return this.endorsementCredentialRepository.findByArchiveFlag(false).size();
-    }
-
-    /**
-     * Attempts to parse the provided file in order to create an Endorsement Credential.
-     *
-     * @param file     file
-     * @param messages page messages
-     * @return endorsement credential
-     */
-    private EndorsementCredential parseEndorsementCredential(final MultipartFile file,
-                                                             final PageMessages messages) {
-        log.info("Received endorsement credential file of size: {}", file.getSize());
-
-        byte[] fileBytes;
-        String fileName = file.getOriginalFilename();
-
-        // attempt to retrieve file bytes from the provided file
-        try {
-            fileBytes = file.getBytes();
-        } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to read uploaded endorsement credential file (%s): ", fileName);
-            log.error(failMessage, ioEx);
-            messages.addErrorMessage(failMessage + ioEx.getMessage());
-            return null;
-        }
-
-        // attempt to build the endorsement credential from the uploaded bytes
-        try {
-            return new EndorsementCredential(fileBytes);
-        } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded endorsement credential file (%s): ", fileName);
-            log.error(failMessage, ioEx);
-            messages.addErrorMessage(failMessage + ioEx.getMessage());
-            return null;
-        } catch (DecoderException dEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded endorsement credential pem file (%s): ", fileName);
-            log.error(failMessage, dEx);
-            messages.addErrorMessage(failMessage + dEx.getMessage());
-            return null;
-        } catch (IllegalArgumentException iaEx) {
-            final String failMessage = String.format(
-                    "Endorsement credential format not recognized(%s): ", fileName);
-            log.error(failMessage, iaEx);
-            messages.addErrorMessage(failMessage + iaEx.getMessage());
-            return null;
-        } catch (IllegalStateException isEx) {
-            final String failMessage = String.format(
-                    "Unexpected object while parsing endorsement credential %s ", fileName);
-            log.error(failMessage, isEx);
-            messages.addErrorMessage(failMessage + isEx.getMessage());
-            return null;
-        }
     }
 }

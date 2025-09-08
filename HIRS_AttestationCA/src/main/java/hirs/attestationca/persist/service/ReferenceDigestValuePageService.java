@@ -35,6 +35,8 @@ public class ReferenceDigestValuePageService {
     private final EntityManager entityManager;
 
     /**
+     * Constructor for the Reference Digest Value Page Service.
+     *
      * @param referenceManifestRepository    reference manifest repository
      * @param referenceDigestValueRepository reference digest value repository
      * @param entityManager                  entity manager
@@ -122,6 +124,8 @@ public class ReferenceDigestValuePageService {
     }
 
     /**
+     * Saves the provided reference digest value in the reference digest value repository.
+     *
      * @param referenceDigestValue reference digest value
      */
     public void saveReferenceDigestValue(final ReferenceDigestValue referenceDigestValue) {
@@ -129,25 +133,30 @@ public class ReferenceDigestValuePageService {
     }
 
     /**
-     * Retrieves the total number of records in the platform credential repository.
+     * Retrieves the total number of records in the reference digest value repository.
      *
-     * @return total number of records in the platform credential repository.
+     * @return total number of records in the reference digest value repository.
      */
     public long findReferenceDigestValueRepositoryCount() {
         return this.referenceDigestValueRepository.count();
     }
 
     /**
-     * @param uuid
-     * @return
+     * Determines if the RIM, using the provided id, exists in the repository.
+     *
+     * @param uuid uuid representation of the reference manifest id
+     * @return true if the provided RIM exists in the database,
+     * otherwise it returns false if it doesn't exist
      */
     public boolean doesRIMExist(final UUID uuid) {
         return this.referenceManifestRepository.existsById(uuid);
     }
 
     /**
-     * @param uuid
-     * @return
+     * Retrieves the Reference Manifest in the repository using the provided id.
+     *
+     * @param uuid uuid representation of the RIM
+     * @return the found Reference Manifest
      */
     public ReferenceManifest findRIMById(final UUID uuid) {
         return this.referenceManifestRepository.getReferenceById(uuid);

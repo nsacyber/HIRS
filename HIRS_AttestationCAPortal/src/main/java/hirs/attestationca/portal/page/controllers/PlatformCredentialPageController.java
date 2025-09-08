@@ -3,7 +3,7 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.PlatformCredentialPageService;
 import hirs.attestationca.persist.util.DownloadFile;
@@ -52,21 +52,21 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials")
 public class PlatformCredentialPageController extends PageController<NoPageParams> {
-    private final CertificateService certificateService;
+    private final CertificatePageService certificatePageService;
     private final PlatformCredentialPageService platformCredentialService;
 
     /**
-     * Constructor for the Platform Credential page.
+     * Constructor for the Platform Credential Page Controller.
      *
-     * @param certificateService        certificate service
+     * @param certificatePageService    certificate page service
      * @param platformCredentialService platform credential service
      */
     @Autowired
     public PlatformCredentialPageController(
-            final CertificateService certificateService,
+            final CertificatePageService certificatePageService,
             final PlatformCredentialPageService platformCredentialService) {
         super(Page.PLATFORM_CREDENTIALS);
-        this.certificateService = certificateService;
+        this.certificatePageService = certificatePageService;
         this.platformCredentialService = platformCredentialService;
     }
 
@@ -99,7 +99,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.info("Received request to display list of platform credentials");
         log.debug("Request received a datatable input object for the platform credentials page: {}", input);
 
-        String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = input.getOrderColumnName();
 
         log.debug("Ordering on column: {}", orderColumnName);
 
@@ -121,7 +121,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                     this.platformCredentialService.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
-                    this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             PlatformCredential.class,
                             searchableColumns,
                             searchTerm,
@@ -168,15 +168,13 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadPlatformCredential(
-            @RequestParam final String id,
-            final HttpServletResponse response)
+    public void downloadPlatformCredential(@RequestParam final String id, final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download platform credential id {}", id);
 
         try {
             final DownloadFile downloadFile =
-                    this.certificateService.downloadCertificate(PlatformCredential.class,
+                    this.certificatePageService.downloadCertificate(PlatformCredential.class,
                             UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
                     + downloadFile.getFileName());
@@ -197,18 +195,17 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/bulk-download")
-    public void bulkDownloadPlatformCredentials(final HttpServletResponse response)
-            throws IOException {
+    public void bulkDownloadPlatformCredentials(final HttpServletResponse response) throws IOException {
         log.info("Received request to download all platform credentials");
 
-        final String fileName = "platform_certificates.zip";
+        final String zipFileName = "platform_certificates.zip";
         final String singleFileName = "Platform_Certificate";
 
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
+            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
@@ -229,7 +226,6 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     protected RedirectView uploadPlatformCredentials(
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
-
         log.info("Received request to upload one or more platform credentials");
 
         Map<String, Object> model = new HashMap<>();
@@ -244,7 +240,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                             errorMessages);
 
             if (parsedPlatformCredential != null) {
-                certificateService.storeCertificate(
+                certificatePageService.storeCertificate(
                         CertificateType.PLATFORM_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedPlatformCredential);
@@ -268,9 +264,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deletePlatformCredential(
-            @RequestParam final String id,
-            final RedirectAttributes attr) throws URISyntaxException {
+    public RedirectView deletePlatformCredential(@RequestParam final String id,
+                                                 final RedirectAttributes attr) throws URISyntaxException {
         log.info("Received request to delete platform credential id {}", id);
 
         Map<String, Object> model = new HashMap<>();
@@ -280,7 +275,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificateService.deleteCertificate(UUID.fromString(id),
+            this.certificatePageService.deleteCertificate(UUID.fromString(id),
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);

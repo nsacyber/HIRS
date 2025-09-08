@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.service.ReferenceManifestDetailsService;
+import hirs.attestationca.persist.service.ReferenceManifestDetailsPageService;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -26,18 +26,18 @@ import java.util.UUID;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-details")
 public class ReferenceManifestDetailsPageController
         extends PageController<ReferenceManifestDetailsPageParams> {
-    private final ReferenceManifestDetailsService referenceManifestService;
+    private final ReferenceManifestDetailsPageService referenceManifestDetailsPageService;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
-     * @param referenceManifestService reference manifest service
+     * @param referenceManifestDetailsPageService reference manifest service
      */
     @Autowired
     public ReferenceManifestDetailsPageController(
-            final ReferenceManifestDetailsService referenceManifestService) {
+            final ReferenceManifestDetailsPageService referenceManifestDetailsPageService) {
         super(Page.RIM_DETAILS);
-        this.referenceManifestService = referenceManifestService;
+        this.referenceManifestDetailsPageService = referenceManifestDetailsPageService;
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.certificateRepository = certificateRepository;

@@ -19,6 +19,8 @@ public class IssuedAttestationCertificatePageService {
     private final IssuedCertificateRepository issuedCertificateRepository;
 
     /**
+     * Constructor for the Issued Certificate Page Service.
+     *
      * @param issuedCertificateRepository issued certificate repository
      */
     @Autowired

@@ -2,7 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
-import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.IssuedAttestationCertificatePageService;
 import hirs.attestationca.persist.util.DownloadFile;
@@ -51,21 +51,21 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
     private final IssuedAttestationCertificatePageService issuedAttestationCertificateService;
-    private final CertificateService certificateService;
+    private final CertificatePageService certificatePageService;
 
     /**
      * Constructor for the Issued Attestation Certificate page.
      *
      * @param issuedAttestationCertificateService issued certificate service
-     * @param certificateService                  certificate service
+     * @param certificatePageService              certificate page service
      */
     @Autowired
     public IssuedCertificatePageController(
             final IssuedAttestationCertificatePageService issuedAttestationCertificateService,
-            final CertificateService certificateService) {
+            final CertificatePageService certificatePageService) {
         super(Page.ISSUED_CERTIFICATES);
         this.issuedAttestationCertificateService = issuedAttestationCertificateService;
-        this.certificateService = certificateService;
+        this.certificatePageService = certificatePageService;
     }
 
     /**
@@ -77,8 +77,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * @return the path for the view and data model for the Issued Attestation Certificate page.
      */
     @RequestMapping
-    public ModelAndView initPage(
-            final NoPageParams params, final Model model) {
+    public ModelAndView initPage(final NoPageParams params, final Model model) {
         return getBaseModelAndView(Page.ISSUED_CERTIFICATES);
     }
 
@@ -90,8 +89,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * @return data table of issued certificates
      */
     @ResponseBody
-    @GetMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(
             final DataTableInput input) {
         log.info("Received request to display list of issued attestation certificates");
@@ -119,7 +117,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
                     this.issuedAttestationCertificateService.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
-                    this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             IssuedAttestationCertificate.class,
                             searchableColumns,
                             searchTerm,
@@ -148,15 +146,13 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadIssuedCertificate(
-            @RequestParam final String id,
-            final HttpServletResponse response)
+    public void downloadIssuedCertificate(@RequestParam final String id, final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download issued certificate id {}", id);
 
         try {
             final DownloadFile downloadFile =
-                    this.certificateService.downloadCertificate(IssuedAttestationCertificate.class,
+                    this.certificatePageService.downloadCertificate(IssuedAttestationCertificate.class,
                             UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
                     + downloadFile.getFileName());
@@ -182,13 +178,13 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         log.info("Received request to download all issued certificates");
 
         final String singleFileName = "Issued_Certificate";
-        final String fileName = "issued_certificates.zip";
+        final String zipFileName = "issued_certificates.zip";
 
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
+            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
@@ -207,9 +203,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteIssuedCertificate(
-            @RequestParam final String id,
-            final RedirectAttributes attr) throws URISyntaxException {
+    public RedirectView deleteIssuedCertificate(@RequestParam final String id, final RedirectAttributes attr)
+            throws URISyntaxException {
         log.info("Received request to delete issued attestation certificate id {}", id);
 
         Map<String, Object> model = new HashMap<>();
@@ -219,7 +214,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificateService.deleteCertificate(UUID.fromString(id),
+            this.certificatePageService.deleteCertificate(UUID.fromString(id),
                     successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);

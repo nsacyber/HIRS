@@ -37,7 +37,7 @@ public class DevicePageController extends PageController<NoPageParams> {
     private final DevicePageService devicePageService;
 
     /**
-     * Device Page Controller constructor.
+     * Constructor for the Device Page Controller.
      *
      * @param devicePageService device page service
      */
@@ -49,7 +49,7 @@ public class DevicePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Returns the path for the view and the data model for the validation reports page.
+     * Returns the path for the view and the data model for the device page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
@@ -70,22 +70,19 @@ public class DevicePageController extends PageController<NoPageParams> {
      * @return data table of devices
      */
     @ResponseBody
-    @GetMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<HashMap<String, Object>> getDevicesTableData(
-            final DataTableInput input) {
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DataTableResponse<HashMap<String, Object>> getDevicesTableData(final DataTableInput input) {
         log.info("Received request to display list of devices");
         log.debug("Request received a datatable input object for the device page: {}",
                 input);
 
-        String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
                 ControllerPagesUtils.findSearchableColumnsNames(Device.class, input.getColumns());
 
-        // get all the devices
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
 
         final int currentPage = input.getStart() / input.getLength();

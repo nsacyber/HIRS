@@ -4,6 +4,7 @@ package hirs.attestationca.persist.service;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
+import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -59,22 +60,29 @@ public class ValidationSummaryPageService {
     private static final String COMPONENT_COLUMN_HEADERS = "Component name,Component manufacturer,"
             + "Component model,Component SN,Issuer,Component status";
 
+    private final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EntityManager entityManager;
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
 
     /**
-     * @param platformCertificateRepository platform certificate repository
-     * @param certificateRepository         certificate repository
-     * @param deviceRepository              device repository
-     * @param entityManager                 entity manager
+     * Constructor for the Validation Summary Page Service.
+     *
+     * @param supplyChainValidationSummaryRepository supply chain validation summary repository
+     * @param platformCertificateRepository          platform certificate repository
+     * @param certificateRepository                  certificate repository
+     * @param deviceRepository                       device repository
+     * @param entityManager                          entity manager
      */
     @Autowired
-    public ValidationSummaryPageService(final PlatformCertificateRepository platformCertificateRepository,
+    public ValidationSummaryPageService(final SupplyChainValidationSummaryRepository
+                                                supplyChainValidationSummaryRepository,
+                                        final PlatformCertificateRepository platformCertificateRepository,
                                         final CertificateRepository certificateRepository,
                                         final DeviceRepository deviceRepository,
                                         final EntityManager entityManager) {
+        this.supplyChainValidationSummaryRepository = supplyChainValidationSummaryRepository;
         this.platformCertificateRepository = platformCertificateRepository;
         this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;
@@ -97,7 +105,7 @@ public class ValidationSummaryPageService {
             final String searchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
         CriteriaQuery<SupplyChainValidationSummary> query =
                 criteriaBuilder.createQuery(SupplyChainValidationSummary.class);
         Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot =
@@ -149,7 +157,7 @@ public class ValidationSummaryPageService {
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)));
 
         // Apply pagination
-        TypedQuery<SupplyChainValidationSummary> typedQuery = entityManager.createQuery(query);
+        TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
@@ -157,6 +165,21 @@ public class ValidationSummaryPageService {
         // Wrap the result in a Page object to return pagination info
         List<SupplyChainValidationSummary> resultList = typedQuery.getResultList();
         return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * @param pageable pageable
+     * @return
+     */
+    public Page<SupplyChainValidationSummary> findSummaryReportsByPageable(final Pageable pageable) {
+        return this.supplyChainValidationSummaryRepository.findByArchiveFlagFalse(pageable);
+    }
+
+    /**
+     * @return
+     */
+    public long findValidationSummaryRepositoryCount() {
+        return this.supplyChainValidationSummaryRepository.count();
     }
 
     /**
@@ -177,7 +200,7 @@ public class ValidationSummaryPageService {
         LocalDate startDate = null;
         LocalDate endDate = null;
         ArrayList<LocalDate> createTimes = new ArrayList<>();
-        String[] deviceNames = new String[] {};
+        String[] deviceNames = new String[]{};
 
         final Enumeration<String> parameters = request.getParameterNames();
 

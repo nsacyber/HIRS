@@ -38,7 +38,7 @@ import java.util.zip.ZipOutputStream;
  */
 @Log4j2
 @Service
-public class CertificateService {
+public class CertificatePageService {
     private final CertificateRepository certificateRepository;
     private final ComponentResultRepository componentResultRepository;
     private final EntityManager entityManager;
@@ -51,9 +51,9 @@ public class CertificateService {
      * @param entityManager             entity manager
      */
     @Autowired
-    public CertificateService(final CertificateRepository certificateRepository,
-                              final ComponentResultRepository componentResultRepository,
-                              final EntityManager entityManager) {
+    public CertificatePageService(final CertificateRepository certificateRepository,
+                                  final ComponentResultRepository componentResultRepository,
+                                  final EntityManager entityManager) {
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
         this.entityManager = entityManager;
@@ -77,7 +77,7 @@ public class CertificateService {
             final String searchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
         Root<T> rootCertificate = query.from(entityClass);
 
@@ -101,7 +101,7 @@ public class CertificateService {
                 criteriaBuilder.equal(rootCertificate.get("archiveFlag"), archiveFlag)));
 
         // Apply pagination
-        TypedQuery<T> typedQuery = entityManager.createQuery(query);
+        TypedQuery<T> typedQuery = this.entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
@@ -197,7 +197,7 @@ public class CertificateService {
                 this.certificateRepository.save(existingCertificate);
 
                 if (existingCertificate instanceof PlatformCredential existingPlatformCredential) {
-                    List<ComponentResult> componentResults = componentResultRepository
+                    List<ComponentResult> componentResults = this.componentResultRepository
                             .findByBoardSerialNumber(existingPlatformCredential
                                     .getPlatformSerial());
                     for (ComponentResult componentResult : componentResults) {
@@ -258,7 +258,7 @@ public class CertificateService {
                 for (PlatformCredential pc : sharedCertificates) {
                     if (!pc.isPlatformBase()) {
                         pc.archive("User requested deletion via UI of the base certificate");
-                        certificateRepository.save(pc);
+                        this.certificateRepository.save(pc);
                         deleteComponentResults(pc.getPlatformSerial());
                     }
                 }
@@ -267,7 +267,7 @@ public class CertificateService {
         }
 
         certificate.archive("User requested deletion via UI");
-        certificateRepository.save(certificate);
+        this.certificateRepository.save(certificate);
 
         final String deleteCompletedMessage = "Certificate successfully deleted";
         successMessages.add(deleteCompletedMessage);
@@ -309,7 +309,7 @@ public class CertificateService {
      * @param certificateClass generic certificate class
      * @param uuid             certificate uuid
      * @param <T>              certificate type
-     * @return download file
+     * @return download file of a certificate
      */
     public <T extends Certificate> DownloadFile downloadCertificate(final Class<T> certificateClass,
                                                                     final UUID uuid) {
@@ -361,7 +361,7 @@ public class CertificateService {
      */
     private void parseAndSaveComponentResults(final PlatformCredential platformCredential)
             throws IOException {
-        List<ComponentResult> componentResults = componentResultRepository
+        List<ComponentResult> componentResults = this.componentResultRepository
                 .findByCertificateSerialNumberAndBoardSerialNumber(
                         platformCredential.getSerialNumber().toString(),
                         platformCredential.getPlatformSerial());
@@ -370,7 +370,7 @@ public class CertificateService {
             for (ComponentResult componentResult : componentResults) {
                 componentResult.restore();
                 componentResult.resetCreateTime();
-                componentResultRepository.save(componentResult);
+                this.componentResultRepository.save(componentResult);
             }
             return;
         }
@@ -388,7 +388,7 @@ public class CertificateService {
                         componentIdentifier);
                 componentResult.setFailedValidation(false);
                 componentResult.setDelta(!platformCredential.isPlatformBase());
-                componentResultRepository.save(componentResult);
+                this.componentResultRepository.save(componentResult);
             }
         } else if (platformCredential.getPlatformConfigurationV2() != null) {
             List<ComponentIdentifierV2> componentIdentifiersV2 =
@@ -401,7 +401,7 @@ public class CertificateService {
                         componentIdentifierV2);
                 componentResult.setFailedValidation(false);
                 componentResult.setDelta(!platformCredential.isPlatformBase());
-                componentResultRepository.save(componentResult);
+                this.componentResultRepository.save(componentResult);
             }
         }
     }
@@ -413,12 +413,12 @@ public class CertificateService {
      * @param platformSerial platform serial number
      */
     private void deleteComponentResults(final String platformSerial) {
-        List<ComponentResult> componentResults = componentResultRepository
+        List<ComponentResult> componentResults = this.componentResultRepository
                 .findByBoardSerialNumber(platformSerial);
 
         for (ComponentResult componentResult : componentResults) {
             componentResult.archive();
-            componentResultRepository.save(componentResult);
+            this.componentResultRepository.save(componentResult);
         }
     }
 }

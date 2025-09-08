@@ -44,7 +44,7 @@ import java.util.UUID;
  */
 @Log4j2
 @Service
-public class ReferenceManifestDetailsService {
+public class ReferenceManifestDetailsPageService {
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final CertificateRepository certificateRepository;
@@ -57,12 +57,12 @@ public class ReferenceManifestDetailsService {
      * @param caCertificateRepository        certificate authority credential repository
      */
     @Autowired
-    public ReferenceManifestDetailsService(final ReferenceManifestRepository
-                                                   referenceManifestRepository,
-                                           final ReferenceDigestValueRepository
-                                                   referenceDigestValueRepository,
-                                           final CertificateRepository certificateRepository,
-                                           final CACredentialRepository caCertificateRepository) {
+    public ReferenceManifestDetailsPageService(final ReferenceManifestRepository
+                                                       referenceManifestRepository,
+                                               final ReferenceDigestValueRepository
+                                                       referenceDigestValueRepository,
+                                               final CertificateRepository certificateRepository,
+                                               final CACredentialRepository caCertificateRepository) {
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.certificateRepository = certificateRepository;

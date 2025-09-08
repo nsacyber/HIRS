@@ -38,7 +38,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
     private final ReferenceDigestValuePageService referenceDigestValuePageService;
 
     /**
-     * Constructor providing the Page's display and routing specification.
+     * Constructor for the RIM Database Page Controller.
      *
      * @param referenceDigestValuePageService reference digest value service
      */
@@ -58,8 +58,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
      * @return the filePath for the view and data model for the RIM Database page.
      */
     @Override
-    public ModelAndView initPage(final NoPageParams params,
-                                 final Model model) {
+    public ModelAndView initPage(final NoPageParams params, final Model model) {
         return getBaseModelAndView(Page.RIM_DATABASE);
     }
 
@@ -72,14 +71,12 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
      * information
      */
     @ResponseBody
-    @GetMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<ReferenceDigestValue> getRDVTableData(
-            @Valid final DataTableInput input) {
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DataTableResponse<ReferenceDigestValue> getRDVTableData(@Valid final DataTableInput input) {
         log.info("Received request to display list of TPM events");
         log.debug("Request received a datatable input object for the RIM database page: {}", input);
 
-        String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
@@ -121,7 +118,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                         rdv.getSupportRimId());
                 rdv.setBaseRimId(support.getAssociatedRim());
                 try {
-                    referenceDigestValuePageService.saveReferenceDigestValue(rdv);
+                    this.referenceDigestValuePageService.saveReferenceDigestValue(rdv);
                 } catch (DBManagerException dbMEx) {
                     log.error("Failed to update TPM Event with Base RIM ID");
                 }

@@ -38,11 +38,10 @@ import java.util.Set;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/validation-reports")
 public class ValidationReportsPageController extends PageController<NoPageParams> {
 
-    private final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository;
     private final ValidationSummaryPageService validationSummaryPageService;
 
     /**
-     * Constructor providing the Page's display and routing specification.
+     * Constructor for the Validation Reports Page Controller.
      *
      * @param supplyChainValidatorSummaryRepository the manager
      * @param validationSummaryPageService          the validation summary reports page service
@@ -52,7 +51,6 @@ public class ValidationReportsPageController extends PageController<NoPageParams
             final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository,
             final ValidationSummaryPageService validationSummaryPageService) {
         super(Page.VALIDATION_REPORTS);
-        this.supplyChainValidatorSummaryRepository = supplyChainValidatorSummaryRepository;
         this.validationSummaryPageService = validationSummaryPageService;
     }
 
@@ -80,12 +78,10 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<SupplyChainValidationSummary> getValidationReportsTableData(
             final DataTableInput input) {
-
         log.info("Received request to display list of validation reports");
         log.debug("Request received a datatable input object for the validation reports page: {}", input);
 
-
-        String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
@@ -103,16 +99,14 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult =
-                    this.supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(pageable);
+            pagedResult = this.validationSummaryPageService.findSummaryReportsByPageable(pageable);
         } else {
-            pagedResult =
-                    this.validationSummaryPageService
-                            .findValidationReportsBySearchableColumnsAndArchiveFlag(
-                                    searchableColumns,
-                                    searchTerm,
-                                    false,
-                                    pageable);
+            pagedResult = this.validationSummaryPageService
+                    .findValidationReportsBySearchableColumnsAndArchiveFlag(
+                            searchableColumns,
+                            searchTerm,
+                            false,
+                            pageable);
         }
 
         if (pagedResult.hasContent()) {
@@ -120,7 +114,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         }
 
         reportsFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        reportsFilteredRecordsList.setRecordsTotal(this.supplyChainValidatorSummaryRepository.count());
+        reportsFilteredRecordsList.setRecordsTotal(
+                this.validationSummaryPageService.findValidationSummaryRepositoryCount());
 
         log.info("Returning the size of the list of validation reports: "
                 + "{}", reportsFilteredRecordsList.getRecordsFiltered());
@@ -137,7 +132,6 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     public void downloadValidationReports(final HttpServletRequest request,
                                           final HttpServletResponse response) throws IOException {
         log.info("Received request to download validation report");
-
         this.validationSummaryPageService.downloadValidationReports(request, response);
     }
 }

@@ -45,7 +45,7 @@ public class DevicePageService {
     private final EntityManager entityManager;
 
     /**
-     * Constructor for Device Service.
+     * Constructor for Device Page Service.
      *
      * @param deviceRepository                device repository
      * @param platformCertificateRepository   platform certificate repository
@@ -91,10 +91,8 @@ public class DevicePageService {
         if (!StringUtils.isBlank(searchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumns) {
-                Predicate predicate =
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(deviceRoot.get(columnName)),
-                                "%" + searchTerm.toLowerCase() + "%");
+                Predicate predicate = criteriaBuilder.like(criteriaBuilder.lower(deviceRoot.get(columnName)),
+                        "%" + searchTerm.toLowerCase() + "%");
                 predicates.add(predicate);
             }
         }
@@ -146,19 +144,19 @@ public class DevicePageService {
         List<PlatformCredential> platformCredentialList = new ArrayList<>();
         List<EndorsementCredential> endorsementCredentialList = new ArrayList<>();
         List<IssuedAttestationCertificate> issuedCertificateList = new ArrayList<>();
-        List<Object> certificateListFromMap = new LinkedList<>();
+        List<Object> certificateListFromMap;
 
         // parse if there is a Device
         if (!deviceList.isEmpty()) {
             // get a list of Certificates that contains the device IDs from the list
             for (UUID id : deviceIdList) {
-                platformCredentialList.addAll(platformCertificateRepository.findByDeviceId(id));
-                endorsementCredentialList.addAll(endorsementCredentialRepository.findByDeviceId(id));
-                issuedCertificateList.addAll(issuedCertificateRepository.findByDeviceId(id));
+                platformCredentialList.addAll(this.platformCertificateRepository.findByDeviceId(id));
+                endorsementCredentialList.addAll(this.endorsementCredentialRepository.findByDeviceId(id));
+                issuedCertificateList.addAll(this.issuedCertificateRepository.findByDeviceId(id));
             }
 
             HashMap<String, List<Object>> certificatePropertyMap;
-            // loop all the devices
+
             for (Device device : deviceList) {
                 // hashmap containing the list of certificates based on the certificate type
                 certificatePropertyMap = new HashMap<>();
@@ -166,17 +164,18 @@ public class DevicePageService {
                 deviceCertMap.put("device", device);
                 String deviceName;
 
-                // loop all the certificates and combined the ones that match the ID
+                // loop all the certificates and combine the ones that match the ID
                 for (PlatformCredential pc : platformCredentialList) {
                     deviceName = deviceRepository.findById(pc.getDeviceId()).get().getName();
 
                     // set the certificate if it's the same ID
                     if (device.getName().equals(deviceName)) {
                         String certificateId = PlatformCredential.class.getSimpleName();
-                        // create a new list for the certificate type if does not exist
+
+                        // create a new list for the certificate type if it does not exist
                         // else add it to the current certificate type list
-                        certificateListFromMap
-                                = certificatePropertyMap.get(certificateId);
+                        certificateListFromMap = certificatePropertyMap.get(certificateId);
+
                         if (certificateListFromMap != null) {
                             certificateListFromMap.add(pc);
                         } else {
@@ -192,10 +191,11 @@ public class DevicePageService {
                     // set the certificate if it's the same ID
                     if (device.getName().equals(deviceName)) {
                         String certificateId = EndorsementCredential.class.getSimpleName();
-                        // create a new list for the certificate type if does not exist
+
+                        // create a new list for the certificate type if it does not exist
                         // else add it to the current certificate type list
-                        certificateListFromMap
-                                = certificatePropertyMap.get(certificateId);
+                        certificateListFromMap = certificatePropertyMap.get(certificateId);
+
                         if (certificateListFromMap != null) {
                             certificateListFromMap.add(ec);
                         } else {
@@ -207,13 +207,15 @@ public class DevicePageService {
 
                 for (IssuedAttestationCertificate ic : issuedCertificateList) {
                     deviceName = ic.getDeviceName();
+
                     // set the certificate if it's the same ID
                     if (device.getName().equals(deviceName)) {
                         String certificateId = IssuedAttestationCertificate.class.getSimpleName();
-                        // create a new list for the certificate type if does not exist
+
+                        // create a new list for the certificate type if it does not exist
                         // else add it to the current certificate type list
-                        certificateListFromMap
-                                = certificatePropertyMap.get(certificateId);
+                        certificateListFromMap = certificatePropertyMap.get(certificateId);
+
                         if (certificateListFromMap != null) {
                             certificateListFromMap.add(ic);
                         } else {

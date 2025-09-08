@@ -30,16 +30,19 @@ import java.util.List;
 public class TrustChainCertificatePageService {
 
     private final CACredentialRepository caCredentialRepository;
-    private final CertificateService certificateService;
+    private final CertificatePageService certificatePageService;
 
     /**
+     * Constructor for the Trust Chain Certificate Page Service.
+     *
+     * @param certificatePageService certificate page service
      * @param caCredentialRepository certificate authority credential repository
      */
     @Autowired
     public TrustChainCertificatePageService(final CACredentialRepository caCredentialRepository,
-                                            final CertificateService certificateService) {
+                                            final CertificatePageService certificatePageService) {
         this.caCredentialRepository = caCredentialRepository;
-        this.certificateService = certificateService;
+        this.certificatePageService = certificatePageService;
     }
 
     /**
@@ -97,7 +100,7 @@ public class TrustChainCertificatePageService {
                         List<String> moreSuccessMessages = new ArrayList<>();
                         List<String> moreErrorMessages = new ArrayList<>();
 
-                        this.certificateService.storeCertificate(
+                        this.certificatePageService.storeCertificate(
                                 CertificateType.TRUST_CHAIN,
                                 file.getOriginalFilename(),
                                 moreSuccessMessages,

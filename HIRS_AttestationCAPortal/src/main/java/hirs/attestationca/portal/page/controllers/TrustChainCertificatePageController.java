@@ -4,7 +4,7 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.TrustChainCertificatePageService;
 import hirs.attestationca.persist.util.DownloadFile;
@@ -66,31 +66,30 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
-    private final CertificateService certificateService;
+    private final CertificatePageService certificatePageService;
     private final List<CertificateAuthorityCredential> certificateAuthorityCredentials;
     private final TrustChainCertificatePageService trustChainCertificatePageService;
 
     /**
-     * Constructor for the Trust Chain Certificate page.
+     * Constructor for the Trust Chain Certificate Page Controller.
      *
      * @param certificateRepository            certificate repository
      * @param caCredentialRepository           caCredential repository
-     * @param certificateService               certificate service
+     * @param certificatePageService           certificate page service
      * @param trustChainCertificatePageService trust chain certificate page service
      * @param acaTrustChainCertificates        ACA Trust Chain certificates
      */
     @Autowired
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
-                                               final CertificateService certificateService,
+                                               final CertificatePageService certificatePageService,
                                                final TrustChainCertificatePageService
                                                        trustChainCertificatePageService,
-                                               @Qualifier("acaTrustChainCerts")
-                                               final X509Certificate[] acaTrustChainCertificates) {
+                                               @Qualifier("acaTrustChainCerts") final X509Certificate[] acaTrustChainCertificates) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;
-        this.certificateService = certificateService;
+        this.certificatePageService = certificatePageService;
         this.trustChainCertificatePageService = trustChainCertificatePageService;
         this.certificateAuthorityCredentials = new ArrayList<>();
 
@@ -165,7 +164,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                     this.trustChainCertificatePageService.findByArchiveFlag(false, pageable);
         } else {
             pagedResult =
-                    this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             CertificateAuthorityCredential.class,
                             searchableColumns,
                             searchTerm,
@@ -202,7 +201,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         try {
             final DownloadFile downloadFile =
-                    this.certificateService.downloadCertificate(CertificateAuthorityCredential.class,
+                    this.certificatePageService.downloadCertificate(CertificateAuthorityCredential.class,
                             UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
                     + downloadFile.getFileName());
@@ -233,7 +232,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             // PEM file of the leaf certificate, intermediate certificate and root certificate (in that order)
             final String fullChainPEM =
                     ControllerPagesUtils.convertCertificateArrayToPem(
-                            new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(0),
+                            new CertificateAuthorityCredential[]{certificateAuthorityCredentials.get(0),
                                     certificateAuthorityCredentials.get(1),
                                     certificateAuthorityCredentials.get(2)});
 
@@ -263,14 +262,14 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     public void bulkDownloadTrustChainCertificates(final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download all trust chain certificates");
-        final String fileName = "trust-chain.zip";
+        final String zipFileName = "trust-chain.zip";
         final String singleFileName = "ca-certificates";
 
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
+            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
@@ -306,7 +305,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                             errorMessages);
 
             if (parsedTrustChainCertificate != null) {
-                certificateService.storeCertificate(
+                certificatePageService.storeCertificate(
                         CertificateType.TRUST_CHAIN,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedTrustChainCertificate);
@@ -342,7 +341,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificateService.deleteCertificate(UUID.fromString(id),
+            this.certificatePageService.deleteCertificate(UUID.fromString(id),
                     successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);

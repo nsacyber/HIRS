@@ -24,6 +24,8 @@ public class EndorsementCredentialPageService {
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
     /**
+     * Constructor for the Endorsement Credential Page Service.
+     *
      * @param endorsementCredentialRepository endorsement credential repository
      */
     @Autowired

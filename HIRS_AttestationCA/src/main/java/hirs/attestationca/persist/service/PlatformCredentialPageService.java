@@ -27,12 +27,13 @@ public class PlatformCredentialPageService {
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
     /**
+     * Constructor for the Platform Credential Page service.
+     *
      * @param platformCertificateRepository   platform certificate repository
      * @param endorsementCredentialRepository endorsement credential repository
      */
     @Autowired
-    public PlatformCredentialPageService(final PlatformCertificateRepository
-                                                 platformCertificateRepository,
+    public PlatformCredentialPageService(final PlatformCertificateRepository platformCertificateRepository,
                                          final EndorsementCredentialRepository
                                                  endorsementCredentialRepository) {
         this.platformCertificateRepository = platformCertificateRepository;

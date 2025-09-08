@@ -24,6 +24,8 @@ public class IDevIdCertificatePageService {
     private final IDevIDCertificateRepository iDevIDCertificateRepository;
 
     /**
+     * Constructor for the IDevId Certificate Page Service.
+     *
      * @param iDevIDCertificateRepository idevid certificate repository
      */
     @Autowired
@@ -62,7 +64,7 @@ public class IDevIdCertificatePageService {
 
         byte[] fileBytes;
         String fileName = file.getOriginalFilename();
-        
+
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
