@@ -41,7 +41,8 @@ public class EndorsementCredentialPageService {
      * @param pageable    pageable
      * @return page of endorsement credentials
      */
-    public Page<EndorsementCredential> findByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
+    public Page<EndorsementCredential> findEndorsementCredentialsByArchiveFlag(final boolean archiveFlag,
+                                                                               final Pageable pageable) {
         return this.endorsementCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 

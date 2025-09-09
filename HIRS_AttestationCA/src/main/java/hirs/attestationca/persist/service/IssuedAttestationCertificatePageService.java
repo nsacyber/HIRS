@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Log4j2
 @Service
 public class IssuedAttestationCertificatePageService {
-
+    
     private final IssuedCertificateRepository issuedCertificateRepository;
 
     /**
@@ -24,8 +24,7 @@ public class IssuedAttestationCertificatePageService {
      * @param issuedCertificateRepository issued certificate repository
      */
     @Autowired
-    public IssuedAttestationCertificatePageService(
-            final IssuedCertificateRepository issuedCertificateRepository) {
+    public IssuedAttestationCertificatePageService(final IssuedCertificateRepository issuedCertificateRepository) {
         this.issuedCertificateRepository = issuedCertificateRepository;
     }
 
@@ -36,8 +35,8 @@ public class IssuedAttestationCertificatePageService {
      * @param pageable    pageable
      * @return page of issued attestation certificates
      */
-    public Page<IssuedAttestationCertificate> findByArchiveFlag(final boolean archiveFlag,
-                                                                final Pageable pageable) {
+    public Page<IssuedAttestationCertificate> findIssuedCertificatesByArchiveFlag(final boolean archiveFlag,
+                                                                                  final Pageable pageable) {
         return this.issuedCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 

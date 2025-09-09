@@ -40,27 +40,29 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- *
+ * A service layer class responsible for encapsulating all business logic related to the Reference Manifest Details
+ * Page.
  */
 @Log4j2
 @Service
 public class ReferenceManifestDetailsPageService {
+
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCertificateRepository;
 
     /**
+     * Constructor for the Reference Manifest Details Page Service.
+     *
      * @param referenceManifestRepository    reference manifest repository
      * @param referenceDigestValueRepository reference digest value repository
      * @param certificateRepository          certificate repository
      * @param caCertificateRepository        certificate authority credential repository
      */
     @Autowired
-    public ReferenceManifestDetailsPageService(final ReferenceManifestRepository
-                                                       referenceManifestRepository,
-                                               final ReferenceDigestValueRepository
-                                                       referenceDigestValueRepository,
+    public ReferenceManifestDetailsPageService(final ReferenceManifestRepository referenceManifestRepository,
+                                               final ReferenceDigestValueRepository referenceDigestValueRepository,
                                                final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCertificateRepository) {
         this.referenceManifestRepository = referenceManifestRepository;

@@ -30,19 +30,15 @@ import java.util.List;
 public class TrustChainCertificatePageService {
 
     private final CACredentialRepository caCredentialRepository;
-    private final CertificatePageService certificatePageService;
 
     /**
      * Constructor for the Trust Chain Certificate Page Service.
      *
-     * @param certificatePageService certificate page service
      * @param caCredentialRepository certificate authority credential repository
      */
     @Autowired
-    public TrustChainCertificatePageService(final CACredentialRepository caCredentialRepository,
-                                            final CertificatePageService certificatePageService) {
+    public TrustChainCertificatePageService(final CACredentialRepository caCredentialRepository) {
         this.caCredentialRepository = caCredentialRepository;
-        this.certificatePageService = certificatePageService;
     }
 
     /**
@@ -55,95 +51,13 @@ public class TrustChainCertificatePageService {
     }
 
     /**
+     * Retrieves a page of certificate authority credentials using the provided archive flag and pageable value.
+     *
      * @param archiveFlag archive flag
      * @param pageable    pageable
      * @return page of certificate authority credentials
      */
-    public Page<CertificateAuthorityCredential> findByArchiveFlag(final boolean archiveFlag,
-                                                                  final Pageable pageable) {
+    public Page<CertificateAuthorityCredential> findByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
         return this.caCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
-    }
-
-    /**
-     * Attempts to parse the provided file in order to create a trust chain certificate.
-     *
-     * @param file          file
-     * @param errorMessages error messages
-     * @return trust chain certificate
-     */
-    public CertificateAuthorityCredential parseTrustChainCertificate(final MultipartFile file,
-                                                                     final List<String> successMessages,
-                                                                     final List<String> errorMessages) {
-        log.info("Received trust chain certificate file of size: {}", file.getSize());
-
-        byte[] fileBytes;
-        final String fileName = file.getOriginalFilename();
-
-        try {
-            fileBytes = file.getBytes();
-        } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to read uploaded trust chain certificate file (%s): ", fileName);
-            log.error(failMessage, ioEx);
-            errorMessages.add(failMessage + ioEx.getMessage());
-            return null;
-        }
-
-        // attempt to build the trust chain certificates from the uploaded bytes
-        try {
-            if (CredentialHelper.isMultiPEM(new String(fileBytes, StandardCharsets.UTF_8))) {
-                try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(fileBytes)) {
-                    CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                    Collection<? extends Certificate> c = cf.generateCertificates(certInputStream);
-
-                    for (java.security.cert.Certificate certificate : c) {
-                        List<String> moreSuccessMessages = new ArrayList<>();
-                        List<String> moreErrorMessages = new ArrayList<>();
-
-                        this.certificatePageService.storeCertificate(
-                                CertificateType.TRUST_CHAIN,
-                                file.getOriginalFilename(),
-                                moreSuccessMessages,
-                                moreErrorMessages,
-                                new CertificateAuthorityCredential(
-                                        certificate.getEncoded()));
-
-                        successMessages.addAll(moreSuccessMessages);
-                        errorMessages.addAll(moreErrorMessages);
-                    }
-
-                    // stop the main thread from saving/storing
-                    return null;
-                } catch (CertificateException e) {
-                    throw new IOException("Cannot construct X509Certificate from the input stream",
-                            e);
-                }
-            }
-            return new CertificateAuthorityCredential(fileBytes);
-        } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded trust chain certificate file (%s): ", fileName);
-            log.error(failMessage, ioEx);
-            errorMessages.add(failMessage + ioEx.getMessage());
-            return null;
-        } catch (DecoderException dEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded trust chain certificate pem file (%s): ", fileName);
-            log.error(failMessage, dEx);
-            errorMessages.add(failMessage + dEx.getMessage());
-            return null;
-        } catch (IllegalArgumentException iaEx) {
-            final String failMessage = String.format(
-                    "Trust chain certificate format not recognized(%s): ", fileName);
-            log.error(failMessage, iaEx);
-            errorMessages.add(failMessage + iaEx.getMessage());
-            return null;
-        } catch (IllegalStateException isEx) {
-            final String failMessage = String.format(
-                    "Unexpected object while parsing trust chain certificate %s ", fileName);
-            log.error(failMessage, isEx);
-            errorMessages.add(failMessage + isEx.getMessage());
-            return null;
-        }
     }
 }

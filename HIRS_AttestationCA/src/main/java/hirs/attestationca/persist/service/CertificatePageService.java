@@ -3,10 +3,12 @@ package hirs.attestationca.persist.service;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.persist.util.DownloadFile;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,18 +19,21 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -339,6 +344,88 @@ public class CertificatePageService {
     }
 
     /**
+     * Attempts to parse the provided file in order to create a trust chain certificate.
+     *
+     * @param file          file
+     * @param errorMessages error messages
+     * @return trust chain certificate
+     */
+    public CertificateAuthorityCredential parseTrustChainCertificate(final MultipartFile file,
+                                                                     final List<String> successMessages,
+                                                                     final List<String> errorMessages) {
+        log.info("Received trust chain certificate file of size: {}", file.getSize());
+
+        byte[] fileBytes;
+        final String fileName = file.getOriginalFilename();
+
+        try {
+            fileBytes = file.getBytes();
+        } catch (IOException ioEx) {
+            final String failMessage = String.format(
+                    "Failed to read uploaded trust chain certificate file (%s): ", fileName);
+            log.error(failMessage, ioEx);
+            errorMessages.add(failMessage + ioEx.getMessage());
+            return null;
+        }
+
+        // attempt to build the trust chain certificates from the uploaded bytes
+        try {
+            if (CredentialHelper.isMultiPEM(new String(fileBytes, StandardCharsets.UTF_8))) {
+                try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(fileBytes)) {
+                    CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                    Collection<? extends java.security.cert.Certificate> c = cf.generateCertificates(certInputStream);
+
+                    for (java.security.cert.Certificate certificate : c) {
+                        List<String> moreSuccessMessages = new ArrayList<>();
+                        List<String> moreErrorMessages = new ArrayList<>();
+
+                        this.storeCertificate(
+                                CertificateType.TRUST_CHAIN,
+                                file.getOriginalFilename(),
+                                moreSuccessMessages,
+                                moreErrorMessages,
+                                new CertificateAuthorityCredential(
+                                        certificate.getEncoded()));
+
+                        successMessages.addAll(moreSuccessMessages);
+                        errorMessages.addAll(moreErrorMessages);
+                    }
+
+                    // stop the main thread from saving/storing
+                    return null;
+                } catch (CertificateException e) {
+                    throw new IOException("Cannot construct X509Certificate from the input stream",
+                            e);
+                }
+            }
+            return new CertificateAuthorityCredential(fileBytes);
+        } catch (IOException ioEx) {
+            final String failMessage = String.format(
+                    "Failed to parse uploaded trust chain certificate file (%s): ", fileName);
+            log.error(failMessage, ioEx);
+            errorMessages.add(failMessage + ioEx.getMessage());
+            return null;
+        } catch (DecoderException dEx) {
+            final String failMessage = String.format(
+                    "Failed to parse uploaded trust chain certificate pem file (%s): ", fileName);
+            log.error(failMessage, dEx);
+            errorMessages.add(failMessage + dEx.getMessage());
+            return null;
+        } catch (IllegalArgumentException iaEx) {
+            final String failMessage = String.format("Trust chain certificate format not recognized(%s): ", fileName);
+            log.error(failMessage, iaEx);
+            errorMessages.add(failMessage + iaEx.getMessage());
+            return null;
+        } catch (IllegalStateException isEx) {
+            final String failMessage = String.format(
+                    "Unexpected object while parsing trust chain certificate %s ", fileName);
+            log.error(failMessage, isEx);
+            errorMessages.add(failMessage + isEx.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Retrieves the platform certificate by the platform serial number.
      *
      * @param serialNumber the platform serial number
@@ -359,8 +446,7 @@ public class CertificatePageService {
      *
      * @param platformCredential certificate
      */
-    private void parseAndSaveComponentResults(final PlatformCredential platformCredential)
-            throws IOException {
+    private void parseAndSaveComponentResults(final PlatformCredential platformCredential) throws IOException {
         List<ComponentResult> componentResults = this.componentResultRepository
                 .findByCertificateSerialNumberAndBoardSerialNumber(
                         platformCredential.getSerialNumber().toString(),

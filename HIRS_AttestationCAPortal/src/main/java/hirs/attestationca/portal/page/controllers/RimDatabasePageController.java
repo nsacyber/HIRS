@@ -35,6 +35,7 @@ import java.util.Set;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-database")
 public class RimDatabasePageController extends PageController<NoPageParams> {
+
     private final ReferenceDigestValuePageService referenceDigestValuePageService;
 
     /**
@@ -43,8 +44,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
      * @param referenceDigestValuePageService reference digest value service
      */
     @Autowired
-    public RimDatabasePageController(
-            final ReferenceDigestValuePageService referenceDigestValuePageService) {
+    public RimDatabasePageController(final ReferenceDigestValuePageService referenceDigestValuePageService) {
         super(Page.RIM_DATABASE);
         this.referenceDigestValuePageService = referenceDigestValuePageService;
     }
@@ -91,13 +91,11 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult =
-                    this.referenceDigestValuePageService.findAllReferenceDigestValues(pageable);
+            pagedResult = this.referenceDigestValuePageService.findAllReferenceDigestValues(pageable);
         } else {
-            pagedResult =
-                    this.referenceDigestValuePageService.findReferenceDigestValuesBySearchableColumns(
-                            searchableColumns,
-                            searchTerm, pageable);
+            pagedResult = this.referenceDigestValuePageService.findReferenceDigestValuesBySearchableColumns(
+                    searchableColumns,
+                    searchTerm, pageable);
         }
 
         if (pagedResult.hasContent()) {

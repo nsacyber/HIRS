@@ -168,15 +168,19 @@ public class ValidationSummaryPageService {
     }
 
     /**
+     * Retrieves a page of Supply Chain Validation Summaries using the provided pageable value.
+     *
      * @param pageable pageable
-     * @return
+     * @return page of supply chain validation summaries
      */
-    public Page<SupplyChainValidationSummary> findSummaryReportsByPageable(final Pageable pageable) {
+    public Page<SupplyChainValidationSummary> findValidationSummaryReportsByPageable(final Pageable pageable) {
         return this.supplyChainValidationSummaryRepository.findByArchiveFlagFalse(pageable);
     }
 
     /**
-     * @return
+     * Retrieves the total number of records in the supply chain validation summary repository.
+     *
+     * @return total number of records in the supply chain validation summary repository
      */
     public long findValidationSummaryRepositoryCount() {
         return this.supplyChainValidationSummaryRepository.count();
@@ -189,8 +193,8 @@ public class ValidationSummaryPageService {
      * @param response http response
      * @throws IOException if there are any issues while trying to download the summary reports
      */
-    public void downloadValidationReports(final HttpServletRequest request,
-                                          final HttpServletResponse response) throws IOException {
+    public void downloadValidationReports(final HttpServletRequest request, final HttpServletResponse response)
+            throws IOException {
         String company = "";
         String contractNumber = "";
         Pattern pattern = Pattern.compile("^\\w*$");

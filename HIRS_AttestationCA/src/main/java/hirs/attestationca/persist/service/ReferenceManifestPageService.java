@@ -16,7 +16,6 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the Reference Manifest Page.
+ * A service layer class responsible for encapsulating all business logic related to the
+ * Reference Manifest Page.
  */
 @Log4j2
 @Service
@@ -113,9 +113,11 @@ public class ReferenceManifestPageService {
     }
 
     /**
+     * Retrieves a page of RIMS using the provided archive flag and pageable value.
+     *
      * @param archiveFlag archive flag
      * @param pageable    pageable
-     * @return
+     * @return page of RIMs
      */
     public Page<ReferenceManifest> findRIMsByArchiveFlag(final boolean archiveFlag, Pageable pageable) {
         return this.referenceManifestRepository.findByArchiveFlag(archiveFlag, pageable);
@@ -131,8 +133,7 @@ public class ReferenceManifestPageService {
     }
 
     /**
-     * This method takes the parameter and looks for this information in the
-     * Database.
+     * Retrieves the specified RIM using the provided uuid.
      *
      * @param uuid RIM uuid
      * @return the associated RIM from the DB
@@ -171,10 +172,11 @@ public class ReferenceManifestPageService {
     public void bulkDownloadRIMS(final ZipOutputStream zipOut) throws IOException {
         List<ReferenceManifest> allRIMs = this.referenceManifestRepository.findAll();
 
+        // create a list of all the RIMs that are of base rim or support rim type
         final List<ReferenceManifest> referenceManifestList =
                 allRIMs.stream().filter(rim ->
-                        rim instanceof BaseReferenceManifest
-                                || rim instanceof SupportReferenceManifest).toList();
+                        rim instanceof BaseReferenceManifest || rim instanceof SupportReferenceManifest).toList();
+
         String zipFileName;
 
         for (ReferenceManifest rim : referenceManifestList) {
@@ -218,7 +220,16 @@ public class ReferenceManifestPageService {
         log.info(deleteCompletedMessage);
     }
 
-    public void uploadRIMS(List<BaseReferenceManifest> baseRims, List<SupportReferenceManifest> supportRims) {
+    /**
+     * Stores the base and support reference manifests to the reference manifest repository.
+     *
+     * @param baseRims    list of base reference manifests
+     * @param supportRims list of support reference manifests
+     */
+    public void storeRIMS(final List<BaseReferenceManifest> baseRims,
+                          final List<SupportReferenceManifest> supportRims) {
+
+        // save the base rims in the repo if they don't already exist in the repo
         baseRims.forEach((baseRIM) -> {
             if (referenceManifestRepository.findByHexDecHashAndRimType(
                     baseRIM.getHexDecHash(), baseRIM.getRimType()) == null) {
@@ -227,6 +238,7 @@ public class ReferenceManifestPageService {
             }
         });
 
+        // save the support rims in the repo if they don't already exist in the repo
         supportRims.forEach((supportRIM) -> {
             if (referenceManifestRepository.findByHexDecHashAndRimType(
                     supportRIM.getHexDecHash(), supportRIM.getRimType()) == null) {
@@ -248,43 +260,13 @@ public class ReferenceManifestPageService {
     }
 
     /**
-     * todo
+     * Attempts to parse the provided file in order to create a Base Reference Manifest.
      *
      * @param errorMessages contains any error messages that will be displayed on the page
-     * @param file
+     * @param file          file
+     * @return base reference manifest
      */
-    public SupportReferenceManifest parseSupportRIM(final List<String> errorMessages,
-                                                    final MultipartFile file) {
-        byte[] fileBytes = new byte[0];
-        final String fileName = file.getOriginalFilename();
-
-        try {
-            fileBytes = file.getBytes();
-        } catch (IOException e) {
-            final String failMessage = String.format("Failed to read uploaded Support RIM file (%s): "
-                    , fileName);
-            log.error(failMessage, e);
-            errorMessages.add(failMessage + e.getMessage());
-        }
-
-        try {
-            return new SupportReferenceManifest(fileName, fileBytes);
-        } catch (Exception exception) {
-            final String failMessage = String.format("Failed to parse support RIM file (%s): ", fileName);
-            log.error(failMessage, exception);
-            errorMessages.add(failMessage + exception.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * todo
-     *
-     * @param errorMessages contains any error messages that will be displayed on the page
-     * @param file
-     */
-    public BaseReferenceManifest parseBaseRIM(final List<String> errorMessages,
-                                              final MultipartFile file) {
+    public BaseReferenceManifest parseBaseRIM(final List<String> errorMessages, final MultipartFile file) {
         byte[] fileBytes = new byte[0];
         final String fileName = file.getOriginalFilename();
 
@@ -305,6 +287,36 @@ public class ReferenceManifestPageService {
             return null;
         }
 
+    }
+
+    /**
+     * Attempts to parse the provided file in order to create a Support Reference Manifest.
+     *
+     * @param errorMessages contains any error messages that will be displayed on the page
+     * @param file          file
+     * @return support reference manifest
+     */
+    public SupportReferenceManifest parseSupportRIM(final List<String> errorMessages, final MultipartFile file) {
+        byte[] fileBytes = new byte[0];
+        final String fileName = file.getOriginalFilename();
+
+        try {
+            fileBytes = file.getBytes();
+        } catch (IOException e) {
+            final String failMessage = String.format("Failed to read uploaded Support RIM file (%s): "
+                    , fileName);
+            log.error(failMessage, e);
+            errorMessages.add(failMessage + e.getMessage());
+        }
+
+        try {
+            return new SupportReferenceManifest(fileName, fileBytes);
+        } catch (Exception exception) {
+            final String failMessage = String.format("Failed to parse support RIM file (%s): ", fileName);
+            log.error(failMessage, exception);
+            errorMessages.add(failMessage + exception.getMessage());
+            return null;
+        }
     }
 
     private Map<String, SupportReferenceManifest> updateSupportRimInfo(
@@ -344,10 +356,6 @@ public class ReferenceManifestPageService {
         return updatedSupportRims;
     }
 
-    public void storeRIM() {
-
-    }
-
     /**
      * If the support rim is a supplemental or base, this method looks for the
      * original oem base rim to associate with each event.
@@ -358,8 +366,7 @@ public class ReferenceManifestPageService {
     private ReferenceManifest findBaseRim(final SupportReferenceManifest supportRim) {
         if (supportRim != null && (supportRim.getId() != null
                 && !supportRim.getId().toString().isEmpty())) {
-            List<BaseReferenceManifest> baseRims = new LinkedList<>();
-            baseRims.addAll(this.referenceManifestRepository
+            List<BaseReferenceManifest> baseRims = new LinkedList<>(this.referenceManifestRepository
                     .getBaseByManufacturerModel(supportRim.getPlatformManufacturer(),
                             supportRim.getPlatformModel()));
 

@@ -19,13 +19,13 @@ import java.util.HashMap;
 import java.util.UUID;
 
 /**
- * Controller for the Reference Manifest Details page.
+ * Controller for the Reference Manifest Details Page.
  */
 @Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-details")
-public class ReferenceManifestDetailsPageController
-        extends PageController<ReferenceManifestDetailsPageParams> {
+public class ReferenceManifestDetailsPageController extends PageController<ReferenceManifestDetailsPageParams> {
+
     private final ReferenceManifestDetailsPageService referenceManifestDetailsPageService;
 
     /**
@@ -38,10 +38,6 @@ public class ReferenceManifestDetailsPageController
             final ReferenceManifestDetailsPageService referenceManifestDetailsPageService) {
         super(Page.RIM_DETAILS);
         this.referenceManifestDetailsPageService = referenceManifestDetailsPageService;
-        this.referenceManifestRepository = referenceManifestRepository;
-        this.referenceDigestValueRepository = referenceDigestValueRepository;
-        this.certificateRepository = certificateRepository;
-        this.caCertificateRepository = caCertificateRepository;
     }
 
     /**

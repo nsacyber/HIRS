@@ -52,6 +52,7 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials")
 public class PlatformCredentialPageController extends PageController<NoPageParams> {
+
     private final CertificatePageService certificatePageService;
     private final PlatformCredentialPageService platformCredentialService;
 
@@ -62,9 +63,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @param platformCredentialService platform credential service
      */
     @Autowired
-    public PlatformCredentialPageController(
-            final CertificatePageService certificatePageService,
-            final PlatformCredentialPageService platformCredentialService) {
+    public PlatformCredentialPageController(final CertificatePageService certificatePageService,
+                                            final PlatformCredentialPageService platformCredentialService) {
         super(Page.PLATFORM_CREDENTIALS);
         this.certificatePageService = certificatePageService;
         this.platformCredentialService = platformCredentialService;
@@ -79,23 +79,19 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @return the path for the view and data model for the platform credential page.
      */
     @RequestMapping
-    public ModelAndView initPage(
-            final NoPageParams params, final Model model) {
+    public ModelAndView initPage(final NoPageParams params, final Model model) {
         return getBaseModelAndView(Page.PLATFORM_CREDENTIALS);
     }
 
     /**
-     * Processes the request to retrieve a list of platform credentials for display
-     * on the platform credentials page.
+     * Processes the request to retrieve a list of platform credentials for display on the platform credentials page.
      *
      * @param input data table input received from the front-end
      * @return data table of platform credentials
      */
     @ResponseBody
-    @GetMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(
-            final DataTableInput input) {
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(final DataTableInput input) {
         log.info("Received request to display list of platform credentials");
         log.debug("Request received a datatable input object for the platform credentials page: {}", input);
 
@@ -105,9 +101,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         final String searchTerm = input.getSearch().getValue();
 
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class,
-                        input.getColumns());
+        final Set<String> searchableColumns = ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class,
+                input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -118,7 +113,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
-                    this.platformCredentialService.findByArchiveFlag(false, pageable);
+                    this.platformCredentialService.findPlatformCredentialsByArchiveFlag(false, pageable);
         } else {
             pagedResult =
                     this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
@@ -133,8 +128,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         }
 
         pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        pcFilteredRecordsList.setRecordsTotal(
-                this.platformCredentialService.findPlatformCredentialRepositoryCount());
+        pcFilteredRecordsList.setRecordsTotal(this.platformCredentialService.findPlatformCredentialRepositoryCount());
 
         EndorsementCredential associatedEC;
 
@@ -173,11 +167,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.info("Received request to download platform credential id {}", id);
 
         try {
-            final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(PlatformCredential.class,
-                            UUID.fromString(id));
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
-                    + downloadFile.getFileName());
+            final DownloadFile downloadFile = this.certificatePageService.downloadCertificate(PlatformCredential.class,
+                    UUID.fromString(id));
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
@@ -235,9 +227,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
 
-            PlatformCredential parsedPlatformCredential =
-                    this.platformCredentialService.parsePlatformCredential(file,
-                            errorMessages);
+            PlatformCredential parsedPlatformCredential = this.platformCredentialService.parsePlatformCredential(file,
+                    errorMessages);
 
             if (parsedPlatformCredential != null) {
                 certificatePageService.storeCertificate(

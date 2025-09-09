@@ -42,8 +42,7 @@ public class DevicePageController extends PageController<NoPageParams> {
      * @param devicePageService device page service
      */
     @Autowired
-    public DevicePageController(
-            final DevicePageService devicePageService) {
+    public DevicePageController(final DevicePageService devicePageService) {
         super(Page.DEVICES);
         this.devicePageService = devicePageService;
     }
@@ -63,8 +62,8 @@ public class DevicePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Processes the request to retrieve a list of devices and device related
-     * information for display on the devices page.
+     * Processes the request to retrieve a list of devices and device related information for display on the
+     * devices page.
      *
      * @param input data table input.
      * @return data table of devices
@@ -92,9 +91,8 @@ public class DevicePageController extends PageController<NoPageParams> {
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult = this.devicePageService.findAllDevices(pageable);
         } else {
-            pagedResult =
-                    this.devicePageService.findAllDevicesBySearchableColumns(searchableColumns, searchTerm,
-                            pageable);
+            pagedResult = this.devicePageService.findAllDevicesBySearchableColumns(searchableColumns, searchTerm,
+                    pageable);
         }
 
         if (pagedResult.hasContent()) {

@@ -34,11 +34,14 @@ public class IDevIdCertificatePageService {
     }
 
     /**
+     * Retrieves a page of idevid certificates using the provided archive flag and pageable value.
+     *
      * @param archiveFlag archive flag
      * @param pageable    pageable
      * @return page of idevid certificates
      */
-    public Page<IDevIDCertificate> findByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
+    public Page<IDevIDCertificate> findIDevCertificatesByArchiveFlag(final boolean archiveFlag,
+                                                                     final Pageable pageable) {
         return this.iDevIDCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
@@ -58,12 +61,11 @@ public class IDevIdCertificatePageService {
      * @param errorMessages error messages
      * @return IDevId certificate
      */
-    public IDevIDCertificate parseIDevIDCertificate(final MultipartFile file,
-                                                    final List<String> errorMessages) {
+    public IDevIDCertificate parseIDevIDCertificate(final MultipartFile file, final List<String> errorMessages) {
         log.info("Received IDevId certificate file of size: {}", file.getSize());
 
         byte[] fileBytes;
-        String fileName = file.getOriginalFilename();
+        final String fileName = file.getOriginalFilename();
 
         try {
             fileBytes = file.getBytes();

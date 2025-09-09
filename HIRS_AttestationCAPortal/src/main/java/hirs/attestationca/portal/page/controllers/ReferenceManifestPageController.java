@@ -1,11 +1,8 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
-import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
-import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.service.ReferenceManifestPageService;
 import hirs.attestationca.persist.util.DownloadFile;
@@ -16,22 +13,11 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
-import hirs.utils.tpm.eventlog.TCGEventLog;
-import hirs.utils.tpm.eventlog.TpmPcrEvent;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -39,7 +25,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,19 +37,13 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -112,8 +91,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<ReferenceManifest> getRIMTableData(
-            @Valid final DataTableInput input) {
+    public DataTableResponse<ReferenceManifest> getRIMTableData(@Valid final DataTableInput input) {
         log.info("Received request to display list of reference manifests");
         log.debug("Request received a datatable input object for the reference manifest page "
                 + " page: {}", input);
@@ -162,31 +140,30 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
-    protected RedirectView uploadRIMs(@RequestParam("file") final MultipartFile[] files,
-                                      final RedirectAttributes attr) throws URISyntaxException {
+    protected RedirectView uploadRIMs(@RequestParam("file") final MultipartFile[] files, final RedirectAttributes attr)
+            throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
-        String fileName;
-        Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
-        Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
-        Matcher matcher;
+
+        final Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
+        final Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
+
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
+
         log.info("Processing {} uploaded files", files.length);
 
         for (MultipartFile file : files) {
+            String fileName = file.getOriginalFilename();
             List<String> errorMessages = new ArrayList<>();
-            List<String> successMessages = new ArrayList<>();
 
-            boolean isBaseRim;
-            boolean isSupportRim = false;
-            fileName = file.getOriginalFilename();
-            matcher = baseRimPattern.matcher(fileName);
-            isBaseRim = matcher.matches();
-            if (!isBaseRim) {
-                matcher = supportRimPattern.matcher(fileName);
-                isSupportRim = matcher.matches();
+            if (fileName == null) {
+                log.warn("File with empty or null name skipped");
+                continue;  // Skip processing this file
             }
+
+            final boolean isBaseRim = baseRimPattern.matcher(fileName).matches();
+            final boolean isSupportRim = !isBaseRim && supportRimPattern.matcher(fileName).matches();
 
             if (isBaseRim) {
                 final BaseReferenceManifest baseReferenceManifest =
@@ -208,7 +185,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             }
         }
 
-        this.referenceManifestPageService.uploadRIMS(baseRims, supportRims);
+        this.referenceManifestPageService.storeRIMS(baseRims, supportRims);
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, attr);
@@ -223,13 +200,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @throws java.io.IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadRIM(@RequestParam final String id, final HttpServletResponse response)
-            throws IOException {
+    public void downloadRIM(@RequestParam final String id, final HttpServletResponse response) throws IOException {
         log.info("Received request to download RIM id {}", id);
 
         try {
-            final DownloadFile downloadFile =
-                    this.referenceManifestPageService.downloadRIM(UUID.fromString(id));
+            final DownloadFile downloadFile = this.referenceManifestPageService.downloadRIM(UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment;" + "filename=\"" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
@@ -288,7 +263,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         try {
             this.referenceManifestPageService.deleteRIM(UUID.fromString(id), successMessages, errorMessages);
-
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {

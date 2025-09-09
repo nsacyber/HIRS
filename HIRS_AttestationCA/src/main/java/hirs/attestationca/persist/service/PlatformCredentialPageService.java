@@ -34,8 +34,7 @@ public class PlatformCredentialPageService {
      */
     @Autowired
     public PlatformCredentialPageService(final PlatformCertificateRepository platformCertificateRepository,
-                                         final EndorsementCredentialRepository
-                                                 endorsementCredentialRepository) {
+                                         final EndorsementCredentialRepository endorsementCredentialRepository) {
         this.platformCertificateRepository = platformCertificateRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
     }
@@ -47,7 +46,8 @@ public class PlatformCredentialPageService {
      * @param pageable    pageable
      * @return page of platform credentials
      */
-    public Page<PlatformCredential> findByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
+    public Page<PlatformCredential> findPlatformCredentialsByArchiveFlag(final boolean archiveFlag,
+                                                                         final Pageable pageable) {
         return this.platformCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 

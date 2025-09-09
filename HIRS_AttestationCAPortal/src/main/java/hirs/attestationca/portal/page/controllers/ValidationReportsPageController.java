@@ -76,8 +76,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<SupplyChainValidationSummary> getValidationReportsTableData(
-            final DataTableInput input) {
+    public DataTableResponse<SupplyChainValidationSummary> getValidationReportsTableData(final DataTableInput input) {
         log.info("Received request to display list of validation reports");
         log.debug("Request received a datatable input object for the validation reports page: {}", input);
 
@@ -99,7 +98,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.validationSummaryPageService.findSummaryReportsByPageable(pageable);
+            pagedResult = this.validationSummaryPageService.findValidationSummaryReportsByPageable(pageable);
         } else {
             pagedResult = this.validationSummaryPageService
                     .findValidationReportsBySearchableColumnsAndArchiveFlag(
@@ -129,8 +128,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param response http response
      */
     @PostMapping("/download")
-    public void downloadValidationReports(final HttpServletRequest request,
-                                          final HttpServletResponse response) throws IOException {
+    public void downloadValidationReports(final HttpServletRequest request, final HttpServletResponse response)
+            throws IOException {
         log.info("Received request to download validation report");
         this.validationSummaryPageService.downloadValidationReports(request, response);
     }

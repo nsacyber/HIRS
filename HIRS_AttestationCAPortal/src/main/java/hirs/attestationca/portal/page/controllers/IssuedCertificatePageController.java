@@ -50,6 +50,7 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
+
     private final IssuedAttestationCertificatePageService issuedAttestationCertificateService;
     private final CertificatePageService certificatePageService;
 
@@ -82,16 +83,15 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to retrieve a list of issued attestation certificates
-     * for display on the issued certificates page.
+     * Processes the request to retrieve a list of issued attestation certificates for display on the issued
+     * certificates page.
      *
      * @param input data table input received from the front-end
      * @return data table of issued certificates
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(
-            final DataTableInput input) {
+    public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(final DataTableInput input) {
         log.info("Received request to display list of issued attestation certificates");
         log.debug("Request received a datatable input object for the issued attestation"
                 + " certificate page: {}", input);
@@ -113,8 +113,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult =
-                    this.issuedAttestationCertificateService.findByArchiveFlag(false, pageable);
+            pagedResult = this.issuedAttestationCertificateService.
+                    findIssuedCertificatesByArchiveFlag(false, pageable);
         } else {
             pagedResult =
                     this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
@@ -154,8 +154,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             final DownloadFile downloadFile =
                     this.certificatePageService.downloadCertificate(IssuedAttestationCertificate.class,
                             UUID.fromString(id));
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
-                    + downloadFile.getFileName());
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
@@ -187,7 +186,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
                     singleFileName);
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the"
+            log.error("An exception was thrown while attempting to bulk download all the "
                     + "issued attestation certificates", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -214,8 +213,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id),
-                    successMessages, errorMessages);
+            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {

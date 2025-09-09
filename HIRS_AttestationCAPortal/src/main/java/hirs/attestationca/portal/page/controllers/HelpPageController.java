@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/help")
 public class HelpPageController extends PageController<NoPageParams> {
+
     private final HelpPageService helpPageService;
 
     /**
@@ -66,8 +67,7 @@ public class HelpPageController extends PageController<NoPageParams> {
      */
     @GetMapping("/hirs-logs-download")
     public void downloadHIRSLogs(final HttpServletResponse response) throws IOException {
-        log.info("Received request to download a zip file of all the HIRS Attestation application's "
-                + "log files");
+        log.info("Received request to download a zip file of all the HIRS Attestation application's log files");
 
         final String zipFileName = "HIRS_AttestationCAPortal_Logs.zip";
 
@@ -84,8 +84,7 @@ public class HelpPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Processes the request to retrieve the main HIRS logger for display
-     * on the help page.
+     * Processes the request to retrieve the main HIRS logger for display on the help page.
      *
      * @param input data table input received from the front-end
      * @return data table of just the main HIRS logger
@@ -95,8 +94,7 @@ public class HelpPageController extends PageController<NoPageParams> {
     public DataTableResponse<HIRSLogger> getMainHIRSLogger(final DataTableInput input) {
 
         log.info("Received request to display the main HIRS logger");
-        log.debug("Request received a datatable input object for listing the main HIRS logger: "
-                + "{}", input);
+        log.debug("Request received a datatable input object for listing the main HIRS logger: {}", input);
 
         FilteredRecordsList<HIRSLogger> mainHIRSLoggersFilteredRecordsList = new FilteredRecordsList<>();
 
@@ -123,8 +121,7 @@ public class HelpPageController extends PageController<NoPageParams> {
     @PostMapping("/setLogLevel")
     public RedirectView setLogLevel(final HttpServletResponse response,
                                     @RequestParam final String loggerName,
-                                    @RequestParam final String logLevel)
-            throws IOException {
+                                    @RequestParam final String logLevel) throws IOException {
         try {
             log.info("Received a request to set the log level [{}] for the provided logger [{}]", logLevel,
                     loggerName);

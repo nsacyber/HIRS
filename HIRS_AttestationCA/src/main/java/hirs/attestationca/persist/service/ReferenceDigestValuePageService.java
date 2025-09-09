@@ -30,6 +30,7 @@ import java.util.UUID;
 @Log4j2
 @Service
 public class ReferenceDigestValuePageService {
+    
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final EntityManager entityManager;
@@ -42,10 +43,8 @@ public class ReferenceDigestValuePageService {
      * @param entityManager                  entity manager
      */
     @Autowired
-    public ReferenceDigestValuePageService(final ReferenceManifestRepository
-                                                   referenceManifestRepository,
-                                           final ReferenceDigestValueRepository
-                                                   referenceDigestValueRepository,
+    public ReferenceDigestValuePageService(final ReferenceManifestRepository referenceManifestRepository,
+                                           final ReferenceDigestValueRepository referenceDigestValueRepository,
                                            final EntityManager entityManager) {
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;

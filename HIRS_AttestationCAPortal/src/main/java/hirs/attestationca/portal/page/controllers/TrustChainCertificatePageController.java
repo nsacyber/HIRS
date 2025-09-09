@@ -83,9 +83,9 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
                                                final CACredentialRepository caCredentialRepository,
                                                final CertificatePageService certificatePageService,
-                                               final TrustChainCertificatePageService
-                                                       trustChainCertificatePageService,
-                                               @Qualifier("acaTrustChainCerts") final X509Certificate[] acaTrustChainCertificates) {
+                                               final TrustChainCertificatePageService trustChainCertificatePageService,
+                                               @Qualifier("acaTrustChainCerts") final X509Certificate[]
+                                                       acaTrustChainCertificates) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;
@@ -114,8 +114,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @return the path for the view and data model for the Trust Chain certificate page.
      */
     @RequestMapping
-    public ModelAndView initPage(
-            final NoPageParams params, final Model model) {
+    public ModelAndView initPage(final NoPageParams params, final Model model) {
 
         ModelAndView mav = getBaseModelAndView(Page.TRUST_CHAIN);
 
@@ -135,8 +134,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @return data table of trust chain certificates
      */
     @ResponseBody
-    @GetMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<CertificateAuthorityCredential> getTrustChainCertificatesTableData(
             final DataTableInput input) {
         log.info("Received request to display list of trust chain certificates");
@@ -160,15 +158,13 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult =
-                    this.trustChainCertificatePageService.findByArchiveFlag(false, pageable);
+            pagedResult = this.trustChainCertificatePageService.findByArchiveFlag(false, pageable);
         } else {
-            pagedResult =
-                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
-                            CertificateAuthorityCredential.class,
-                            searchableColumns,
-                            searchTerm,
-                            false, pageable);
+            pagedResult = this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    CertificateAuthorityCredential.class,
+                    searchableColumns,
+                    searchTerm,
+                    false, pageable);
         }
 
         if (pagedResult.hasContent()) {
@@ -193,9 +189,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadTrustChainCertificate(
-            @RequestParam final String id,
-            final HttpServletResponse response)
+    public void downloadTrustChainCertificate(@RequestParam final String id, final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download trust chain certificate {}", id);
 
@@ -203,8 +197,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             final DownloadFile downloadFile =
                     this.certificatePageService.downloadCertificate(CertificateAuthorityCredential.class,
                             UUID.fromString(id));
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;"
-                    + downloadFile.getFileName());
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
@@ -223,18 +216,16 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      */
     @ResponseBody
     @GetMapping("/download-aca-cert-chain")
-    public void downloadACATrustChain(final HttpServletResponse response)
-            throws IOException {
+    public void downloadACATrustChain(final HttpServletResponse response) throws IOException {
         log.info("Received request to download the ACA server trust chain certificates");
 
         // Get the output stream of the response
         try (OutputStream outputStream = response.getOutputStream()) {
             // PEM file of the leaf certificate, intermediate certificate and root certificate (in that order)
-            final String fullChainPEM =
-                    ControllerPagesUtils.convertCertificateArrayToPem(
-                            new CertificateAuthorityCredential[]{certificateAuthorityCredentials.get(0),
-                                    certificateAuthorityCredentials.get(1),
-                                    certificateAuthorityCredentials.get(2)});
+            final String fullChainPEM = ControllerPagesUtils.convertCertificateArrayToPem(
+                    new CertificateAuthorityCredential[]{certificateAuthorityCredentials.get(0),
+                            certificateAuthorityCredentials.get(1),
+                            certificateAuthorityCredentials.get(2)});
 
             final String pemFileName = "hirs-aca-trust_chain.pem ";
 
@@ -259,8 +250,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/bulk-download")
-    public void bulkDownloadTrustChainCertificates(final HttpServletResponse response)
-            throws IOException {
+    public void bulkDownloadTrustChainCertificates(final HttpServletResponse response) throws IOException {
         log.info("Received request to download all trust chain certificates");
         final String zipFileName = "trust-chain.zip";
         final String singleFileName = "ca-certificates";
@@ -269,8 +259,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
-                    singleFileName);
+            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN, singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "trust chain certificates", exception);
@@ -287,9 +276,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
-    protected RedirectView uploadTrustChainCertificate(
-            @RequestParam("file") final MultipartFile[] files,
-            final RedirectAttributes attr) throws URISyntaxException {
+    protected RedirectView uploadTrustChainCertificate(@RequestParam("file") final MultipartFile[] files,
+                                                       final RedirectAttributes attr) throws URISyntaxException {
 
         log.info("Received request to upload one or more trust chain certificates");
 
@@ -301,8 +289,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             List<String> successMessages = new ArrayList<>();
 
             CertificateAuthorityCredential parsedTrustChainCertificate =
-                    this.trustChainCertificatePageService.parseTrustChainCertificate(file, successMessages,
-                            errorMessages);
+                    this.certificatePageService.parseTrustChainCertificate(file, successMessages, errorMessages);
 
             if (parsedTrustChainCertificate != null) {
                 certificatePageService.storeCertificate(
@@ -329,9 +316,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteTrustChainCertificate(
-            @RequestParam final String id,
-            final RedirectAttributes attr) throws URISyntaxException {
+    public RedirectView deleteTrustChainCertificate(@RequestParam final String id, final RedirectAttributes attr)
+            throws URISyntaxException {
         log.info("Received request to delete trust chain certificate id {}", id);
 
         Map<String, Object> model = new HashMap<>();
@@ -341,8 +327,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id),
-                    successMessages, errorMessages);
+            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
