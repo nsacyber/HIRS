@@ -4,6 +4,7 @@ package hirs.attestationca.persist.service;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
+import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -45,12 +46,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Service layer class that handles the storage and retrieval of validation reports.
+ * A service layer class responsible for encapsulating all business logic related to the Validation Summary
+ * Page.
  */
 @Service
 @Log4j2
-public class ValidationSummaryReportsService {
-
+public class ValidationSummaryPageService {
     private static final String DEFAULT_COMPANY = "AllDevices";
     private static final String UNDEFINED = "undefined";
     private static final String SYSTEM_COLUMN_HEADERS = "Verified Manufacturer,"
@@ -58,22 +59,29 @@ public class ValidationSummaryReportsService {
     private static final String COMPONENT_COLUMN_HEADERS = "Component name,Component manufacturer,"
             + "Component model,Component SN,Issuer,Component status";
 
+    private final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EntityManager entityManager;
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
 
     /**
-     * @param platformCertificateRepository platform certificate repository
-     * @param certificateRepository         certificate repository
-     * @param deviceRepository              device repository
-     * @param entityManager                 entity manager
+     * Constructor for the Validation Summary Page Service.
+     *
+     * @param supplyChainValidationSummaryRepository supply chain validation summary repository
+     * @param platformCertificateRepository          platform certificate repository
+     * @param certificateRepository                  certificate repository
+     * @param deviceRepository                       device repository
+     * @param entityManager                          entity manager
      */
     @Autowired
-    public ValidationSummaryReportsService(final PlatformCertificateRepository platformCertificateRepository,
-                                           final CertificateRepository certificateRepository,
-                                           final DeviceRepository deviceRepository,
-                                           final EntityManager entityManager) {
+    public ValidationSummaryPageService(final SupplyChainValidationSummaryRepository
+                                                supplyChainValidationSummaryRepository,
+                                        final PlatformCertificateRepository platformCertificateRepository,
+                                        final CertificateRepository certificateRepository,
+                                        final DeviceRepository deviceRepository,
+                                        final EntityManager entityManager) {
+        this.supplyChainValidationSummaryRepository = supplyChainValidationSummaryRepository;
         this.platformCertificateRepository = platformCertificateRepository;
         this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;
@@ -96,7 +104,7 @@ public class ValidationSummaryReportsService {
             final String searchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
         CriteriaQuery<SupplyChainValidationSummary> query =
                 criteriaBuilder.createQuery(SupplyChainValidationSummary.class);
         Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot =
@@ -148,7 +156,7 @@ public class ValidationSummaryReportsService {
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)));
 
         // Apply pagination
-        TypedQuery<SupplyChainValidationSummary> typedQuery = entityManager.createQuery(query);
+        TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
@@ -159,14 +167,33 @@ public class ValidationSummaryReportsService {
     }
 
     /**
+     * Retrieves a page of Supply Chain Validation Summaries using the provided pageable value.
+     *
+     * @param pageable pageable
+     * @return page of supply chain validation summaries
+     */
+    public Page<SupplyChainValidationSummary> findValidationSummaryReportsByPageable(final Pageable pageable) {
+        return this.supplyChainValidationSummaryRepository.findByArchiveFlagFalse(pageable);
+    }
+
+    /**
+     * Retrieves the total number of records in the supply chain validation summary repository.
+     *
+     * @return total number of records in the supply chain validation summary repository
+     */
+    public long findValidationSummaryRepositoryCount() {
+        return this.supplyChainValidationSummaryRepository.count();
+    }
+
+    /**
      * Downloads the validation summary reports based on the provided request parameters.
      *
      * @param request  http request
      * @param response http response
      * @throws IOException if there are any issues while trying to download the summary reports
      */
-    public void downloadValidationReports(final HttpServletRequest request,
-                                          final HttpServletResponse response) throws IOException {
+    public void downloadValidationReports(final HttpServletRequest request, final HttpServletResponse response)
+            throws IOException {
         String company = "";
         String contractNumber = "";
         Pattern pattern = Pattern.compile("^\\w*$");
@@ -176,7 +203,7 @@ public class ValidationSummaryReportsService {
         LocalDate startDate = null;
         LocalDate endDate = null;
         ArrayList<LocalDate> createTimes = new ArrayList<>();
-        String[] deviceNames = new String[] {};
+        String[] deviceNames = new String[]{};
 
         final Enumeration<String> parameters = request.getParameterNames();
 
