@@ -56,15 +56,15 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     /**
      * Constructor for the Issued Attestation Certificate page.
      *
-     * @param issuedAttestationCertificateService issued certificate service
-     * @param certificatePageService              certificate page service
+     * @param issuedAttestationCertificatePageService issued certificate page service
+     * @param certificatePageService                  certificate page service
      */
     @Autowired
     public IssuedCertificatePageController(
-            final IssuedAttestationCertificatePageService issuedAttestationCertificateService,
+            final IssuedAttestationCertificatePageService issuedAttestationCertificatePageService,
             final CertificatePageService certificatePageService) {
         super(Page.ISSUED_CERTIFICATES);
-        this.issuedAttestationCertificateService = issuedAttestationCertificateService;
+        this.issuedAttestationCertificateService = issuedAttestationCertificatePageService;
         this.certificatePageService = certificatePageService;
     }
 

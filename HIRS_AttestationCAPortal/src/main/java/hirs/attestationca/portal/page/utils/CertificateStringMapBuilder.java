@@ -37,9 +37,6 @@ import java.util.UUID;
  */
 @Log4j2
 public final class CertificateStringMapBuilder {
-
-    //todo issue 923
-
     /**
      * This private constructor was created to silence checkstyle error.
      */
@@ -55,7 +52,8 @@ public final class CertificateStringMapBuilder {
      * @return a hash map with the general certificate information.
      */
     public static HashMap<String, String> getGeneralCertificateInfo(
-            final Certificate certificate, final CertificateRepository certificateRepository,
+            final Certificate certificate,
+            final CertificateRepository certificateRepository,
             final CACredentialRepository caCertificateRepository) {
         HashMap<String, String> data = new HashMap<>();
 

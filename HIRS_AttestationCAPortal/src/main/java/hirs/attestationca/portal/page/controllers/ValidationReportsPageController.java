@@ -1,7 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.service.ValidationSummaryPageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -42,13 +41,10 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     /**
      * Constructor for the Validation Reports Page Controller.
      *
-     * @param supplyChainValidatorSummaryRepository the manager
-     * @param validationSummaryPageService          the validation summary reports page service
+     * @param validationSummaryPageService the validation summary reports page service
      */
     @Autowired
-    public ValidationReportsPageController(
-            final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository,
-            final ValidationSummaryPageService validationSummaryPageService) {
+    public ValidationReportsPageController(final ValidationSummaryPageService validationSummaryPageService) {
         super(Page.VALIDATION_REPORTS);
         this.validationSummaryPageService = validationSummaryPageService;
     }
@@ -129,7 +125,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     @PostMapping("/download")
     public void downloadValidationReports(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException {
-        log.info("Received request to download validation report");
+        log.info("Received request to download validation summary reports");
         this.validationSummaryPageService.downloadValidationReports(request, response);
     }
 }

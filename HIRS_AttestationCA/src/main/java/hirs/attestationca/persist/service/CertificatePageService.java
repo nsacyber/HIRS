@@ -42,8 +42,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to all the Certificate
- * pages.
+ * A service layer class responsible for encapsulating all business logic related to all the Certificate pages.
  */
 @Log4j2
 @Service
@@ -53,7 +52,7 @@ public class CertificatePageService {
     private final EntityManager entityManager;
 
     /**
-     * Constructor for the Certificate Service.
+     * Constructor for the Certificate Page Service.
      *
      * @param certificateRepository     certificate repository
      * @param componentResultRepository component result repository
