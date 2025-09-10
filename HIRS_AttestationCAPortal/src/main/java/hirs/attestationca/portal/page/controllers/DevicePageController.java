@@ -33,7 +33,6 @@ import java.util.Set;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/devices")
 public class DevicePageController extends PageController<NoPageParams> {
-
     private final DevicePageService devicePageService;
 
     /**

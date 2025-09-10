@@ -158,7 +158,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.trustChainCertificatePageService.findByArchiveFlag(false, pageable);
+            pagedResult = this.trustChainCertificatePageService.findCACredentialsByArchiveFlag(false, pageable);
         } else {
             pagedResult = this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
                     CertificateAuthorityCredential.class,

@@ -20,7 +20,6 @@ import java.util.List;
 @Log4j2
 @Service
 public class IDevIdCertificatePageService {
-
     private final IDevIDCertificateRepository iDevIDCertificateRepository;
 
     /**
@@ -58,7 +57,7 @@ public class IDevIdCertificatePageService {
      * Attempts to parse the provided file in order to create an IDevId Certificate.
      *
      * @param file          file
-     * @param errorMessages error messages
+     * @param errorMessages contains any error messages that will be displayed on the page
      * @return IDevId certificate
      */
     public IDevIDCertificate parseIDevIDCertificate(final MultipartFile file, final List<String> errorMessages) {

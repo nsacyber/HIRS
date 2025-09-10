@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -46,7 +45,6 @@ import java.util.UUID;
 @Log4j2
 @Service
 public class ReferenceManifestDetailsPageService {
-
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final CertificateRepository certificateRepository;
@@ -69,6 +67,41 @@ public class ReferenceManifestDetailsPageService {
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.certificateRepository = certificateRepository;
         this.caCertificateRepository = caCertificateRepository;
+    }
+
+    /**
+     * This method takes the place of an entire class for a string builder.
+     * Gathers all information and returns it for displays.
+     *
+     * @param uuid database reference for the requested RIM.
+     * @return mapping of the RIM information from the database.
+     * @throws java.io.IOException      error for reading file bytes.
+     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
+     * @throws CertificateException     if a certificate doesn't parse.
+     */
+    public HashMap<String, Object> getRimDetailInfo(final UUID uuid) throws IOException, CertificateException,
+            NoSuchAlgorithmException {
+        HashMap<String, Object> data = new HashMap<>();
+
+        BaseReferenceManifest bRim = this.referenceManifestRepository.getBaseRimEntityById(uuid);
+
+        if (bRim != null) {
+            data.putAll(getBaseRimInfo(bRim));
+        }
+
+        SupportReferenceManifest sRim = this.referenceManifestRepository.getSupportRimEntityById(uuid);
+
+        if (sRim != null) {
+            data.putAll(getSupportRimInfo(sRim));
+        }
+
+        EventLogMeasurements bios = this.referenceManifestRepository.getEventLogRimEntityById(uuid);
+
+        if (bios != null) {
+            data.putAll(getMeasurementsRimInfo(bios));
+        }
+
+        return data;
     }
 
     private void getEventSummary(final HashMap<String, Object> data,
@@ -148,86 +181,56 @@ public class ReferenceManifestDetailsPageService {
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param uuid database reference for the requested RIM.
-     * @return mapping of the RIM information from the database.
-     * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
-     */
-    public HashMap<String, Object> getRimDetailInfo(
-            final UUID uuid)
-            throws IOException,
-            CertificateException, NoSuchAlgorithmException, IllegalAccessException {
-        HashMap<String, Object> data = new HashMap<>();
-
-        BaseReferenceManifest bRim = referenceManifestRepository.getBaseRimEntityById(uuid);
-
-        if (bRim != null) {
-            data.putAll(getBaseRimInfo(bRim));
-        }
-
-        SupportReferenceManifest sRim = referenceManifestRepository.getSupportRimEntityById(uuid);
-
-        if (sRim != null) {
-            data.putAll(getSupportRimInfo(sRim));
-        }
-
-        EventLogMeasurements bios = referenceManifestRepository.getEventLogRimEntityById(uuid);
-
-        if (bios != null) {
-            data.putAll(getMeasurementsRimInfo(bios));
-        }
-
-        return data;
-    }
-
-    /**
-     * This method takes the place of an entire class for a string builder.
-     * Gathers all information and returns it for displays.
-     *
      * @param baseRim established ReferenceManifest Type.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException error for reading file bytes.
      */
-    private HashMap<String, Object> getBaseRimInfo(
-            final BaseReferenceManifest baseRim)
-            throws IOException, IllegalAccessException {
+    private HashMap<String, Object> getBaseRimInfo(final BaseReferenceManifest baseRim) throws IOException {
         HashMap<String, Object> data = new HashMap<>();
-
 
         // Software Identity
         data.put("swidName", baseRim.getSwidName());
         data.put("swidVersion", baseRim.getSwidVersion());
         data.put("swidTagVersion", baseRim.getSwidTagVersion());
+
         if (baseRim.getSwidCorpus() == 1) {
             data.put("swidCorpus", "True");
         } else {
             data.put("swidCorpus", "False");
         }
+
         if (baseRim.isSwidPatch()) {
             data.put("swidPatch", "True");
         } else {
             data.put("swidPatch", "False");
         }
+
         if (baseRim.isSwidSupplemental()) {
             data.put("swidSupplemental", "True");
         } else {
             data.put("swidSupplemental", "False");
         }
+
         data.put("swidTagId", baseRim.getTagId());
+
         // Entity
         data.put("entityName", baseRim.getEntityName());
         data.put("entityRegId", baseRim.getEntityRegId());
         data.put("entityRole", baseRim.getEntityRole());
         data.put("entityThumbprint", baseRim.getEntityThumbprint());
+
         // Link
         data.put("linkHref", baseRim.getLinkHref());
         data.put("linkHrefLink", "");
-        for (BaseReferenceManifest bRim : referenceManifestRepository.findAllBaseRims()) {
+
+        List<BaseReferenceManifest> baseReferenceManifests = this.referenceManifestRepository.findAllBaseRims();
+
+        for (BaseReferenceManifest bRim : baseReferenceManifests) {
             if (baseRim.getLinkHref().contains(bRim.getTagId())) {
                 data.put("linkHrefLink", bRim.getId());
             }
         }
+
         data.put("linkRel", baseRim.getLinkRel());
         data.put("platformManufacturer", baseRim.getPlatformManufacturer());
         data.put("platformManufacturerId", baseRim.getPlatformManufacturerId());
@@ -244,7 +247,7 @@ public class ReferenceManifestDetailsPageService {
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());
         if (baseRim.getRimLinkHash() != null) {
-            ReferenceManifest rim = referenceManifestRepository.findByHexDecHashAndRimType(
+            ReferenceManifest rim = this.referenceManifestRepository.findByHexDecHashAndRimType(
                     baseRim.getRimLinkHash(), ReferenceManifest.BASE_RIM);
             if (rim != null) {
                 data.put("rimLinkId", rim.getId());
@@ -264,11 +267,10 @@ public class ReferenceManifestDetailsPageService {
         // to get the id to make the link
         referenceManifestValidator.setRim(baseRim.getRimBytes());
         for (SwidResource swidRes : resources) {
-            support = (SupportReferenceManifest) referenceManifestRepository.findByHexDecHashAndRimType(
+            support = (SupportReferenceManifest) this.referenceManifestRepository.findByHexDecHashAndRimType(
                     swidRes.getHashValue(), ReferenceManifest.SUPPORT_RIM);
 
-            if (support != null && swidRes.getHashValue()
-                    .equalsIgnoreCase(support.getHexDecHash())) {
+            if (support != null && swidRes.getHashValue().equalsIgnoreCase(support.getHexDecHash())) {
                 baseRim.setAssociatedRim(support.getId());
                 referenceManifestValidator.validateSupportRimHash(support.getRimBytes(),
                         swidRes.getHashValue());
@@ -288,26 +290,28 @@ public class ReferenceManifestDetailsPageService {
             data.put("pcrList", support.getExpectedPCRList());
         }
 
-        List<Certificate> certificates = certificateRepository
-                .findByType("CertificateAuthorityCredential");
+        List<Certificate> certificates = certificateRepository.findByType("CertificateAuthorityCredential");
+
         CertificateAuthorityCredential caCert;
+
         //Report invalid signature unless referenceManifestValidator validates it and cert path is valid
         data.put("signatureValid", false);
+
         for (Certificate certificate : certificates) {
             caCert = (CertificateAuthorityCredential) certificate;
             KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
             try {
-                List<X509Certificate> truststore =
-                        convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
-                                Collections.emptySet(),
-                                caCertificateRepository));
+                List<X509Certificate> truststore = convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
+                        Collections.emptySet(),
+                        caCertificateRepository));
                 referenceManifestValidator.setTrustStore(truststore);
             } catch (IOException e) {
                 log.error("Error building CA chain for {}: {}", caCert.getSubjectKeyIdentifier(),
                         e.getMessage());
             }
+
             if (referenceManifestValidator.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
-                    caCert.getSubjectKeyIdString(), caCert.getEncodedPublicKey())) {
+                    caCert.getSubjectKeyIdString())) {
                 try {
                     if (SupplyChainCredentialValidator.verifyCertificate(
                             caCert.getX509Certificate(), keystore)) {
@@ -319,6 +323,7 @@ public class ReferenceManifestDetailsPageService {
                 }
             }
         }
+
         data.put("skID", referenceManifestValidator.getSubjectKeyIdentifier());
         try {
             if (referenceManifestValidator.getPublicKey() != null) {
@@ -334,8 +339,6 @@ public class ReferenceManifestDetailsPageService {
             log.warn("Unable to link signing certificate: {}", npEx.getMessage());
         }
 
-        //var data2 = convertPojoToMap(baseRim);
-
         return data;
     }
 
@@ -343,27 +346,26 @@ public class ReferenceManifestDetailsPageService {
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
      *
-     * @param support established ReferenceManifest Type.
+     * @param supportReferenceManifest established ReferenceManifest Type.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
-    private HashMap<String, Object> getSupportRimInfo(
-            final SupportReferenceManifest support)
+    private HashMap<String, Object> getSupportRimInfo(final SupportReferenceManifest supportReferenceManifest)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
         EventLogMeasurements measurements;
 
-        if (support.getAssociatedRim() == null) {
-            List<BaseReferenceManifest> baseRims = referenceManifestRepository.findAllBaseRims();
+        if (supportReferenceManifest.getAssociatedRim() == null) {
+            List<BaseReferenceManifest> baseRims = this.referenceManifestRepository.findAllBaseRims();
 
             for (BaseReferenceManifest baseRim : baseRims) {
                 if (baseRim != null && baseRim.getAssociatedRim() != null
-                        && baseRim.getAssociatedRim().equals(support.getId())) {
-                    support.setAssociatedRim(baseRim.getId());
+                        && baseRim.getAssociatedRim().equals(supportReferenceManifest.getId())) {
+                    supportReferenceManifest.setAssociatedRim(baseRim.getId());
                     try {
-                        referenceManifestRepository.save(support);
+                        this.referenceManifestRepository.save(supportReferenceManifest);
                     } catch (DBServiceException ex) {
                         log.error("Failed to update Support RIM", ex);
                     }
@@ -375,28 +377,30 @@ public class ReferenceManifestDetailsPageService {
         // testing this independent of the above if statement because the above
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
-        measurements = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(
-                support.getHexDecHash(),
+        measurements = (EventLogMeasurements) this.referenceManifestRepository.findByHexDecHashAndRimType(
+                supportReferenceManifest.getHexDecHash(),
                 ReferenceManifest.MEASUREMENT_RIM);
 
-        if (support.isSwidPatch()) {
+        if (supportReferenceManifest.isSwidPatch()) {
             data.put("swidPatch", "True");
         } else {
             data.put("swidPatch", "False");
         }
-        if (support.isSwidSupplemental()) {
+
+        if (supportReferenceManifest.isSwidSupplemental()) {
             data.put("swidSupplemental", "True");
         } else {
             data.put("swidSupplemental", "False");
         }
-        data.put("swidBase", (!support.isSwidPatch()
-                && !support.isSwidSupplemental()));
-        data.put("baseRim", support.getTagId());
-        data.put("associatedRim", support.getAssociatedRim());
-        data.put("rimType", support.getRimType());
-        data.put("tagId", support.getTagId());
 
-        TCGEventLog logProcessor = new TCGEventLog(support.getRimBytes());
+        data.put("swidBase", (!supportReferenceManifest.isSwidPatch()
+                && !supportReferenceManifest.isSwidSupplemental()));
+        data.put("baseRim", supportReferenceManifest.getTagId());
+        data.put("associatedRim", supportReferenceManifest.getAssociatedRim());
+        data.put("rimType", supportReferenceManifest.getRimType());
+        data.put("tagId", supportReferenceManifest.getTagId());
+
+        TCGEventLog logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
         LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
         TCGEventLog measurementsProcess;
         if (measurements != null) {
@@ -404,7 +408,7 @@ public class ReferenceManifestDetailsPageService {
             HashMap<String, TpmPcrEvent> digestMap = new HashMap<>();
             for (TpmPcrEvent tpe : logProcessor.getEventList()) {
                 digestMap.put(tpe.getEventDigestStr(), tpe);
-                if (!support.isSwidSupplemental()
+                if (!supportReferenceManifest.isSwidSupplemental()
                         && !tpe.eventCompare(
                         measurementsProcess.getEventByNumber(
                                 tpe.getEventNumber()))) {
@@ -424,25 +428,6 @@ public class ReferenceManifestDetailsPageService {
         return data;
     }
 
-    private Map<String, Object> convertPojoToMap(Object pojo) throws IllegalAccessException {
-        Map<String, Object> map = new HashMap<>();
-
-        // Get the class of the POJO
-        Class<?> clazz = pojo.getClass();
-
-        // Get all fields of the class (including private ones)
-        Field[] fields = clazz.getDeclaredFields();
-
-        for (Field field : fields) {
-            field.setAccessible(true);  // allow access to private fields
-            String fieldName = field.getName();
-            Object fieldValue = field.get(pojo);
-            map.put(fieldName, fieldValue);
-        }
-
-        return map;
-    }
-
     /**
      * This method takes the place of an entire class for a string builder.
      * Gathers all information and returns it for displays.
@@ -453,8 +438,7 @@ public class ReferenceManifestDetailsPageService {
      * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
      * @throws CertificateException     if a certificate doesn't parse.
      */
-    private HashMap<String, Object> getMeasurementsRimInfo(
-            final EventLogMeasurements measurements)
+    private HashMap<String, Object> getMeasurementsRimInfo(final EventLogMeasurements measurements)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
         LinkedList<TpmPcrEvent> evidence = new LinkedList<>();
@@ -472,7 +456,7 @@ public class ReferenceManifestDetailsPageService {
 
         List<ReferenceDigestValue> assertions = new LinkedList<>();
         if (measurements.getDeviceName() != null) {
-            supports.addAll(referenceManifestRepository.byDeviceName(measurements
+            supports.addAll(this.referenceManifestRepository.byDeviceName(measurements
                     .getDeviceName()));
             for (SupportReferenceManifest support : supports) {
                 if (support.isBaseSupport()) {
@@ -485,12 +469,12 @@ public class ReferenceManifestDetailsPageService {
                 data.put("supportId", baseSupport.getId());
                 data.put("tagId", baseSupport.getTagId());
 
-                base = referenceManifestRepository.getBaseRimEntityById(baseSupport.getAssociatedRim());
+                base = this.referenceManifestRepository.getBaseRimEntityById(baseSupport.getAssociatedRim());
                 if (base != null) {
                     data.put("associatedRim", base.getId());
                 }
 
-                assertions.addAll(referenceDigestValueRepository.findBySupportRimId(baseSupport.getId()));
+                assertions.addAll(this.referenceDigestValueRepository.findBySupportRimId(baseSupport.getId()));
             }
         }
 
@@ -552,10 +536,9 @@ public class ReferenceManifestDetailsPageService {
      * @param set of CACs to convert
      * @return list of X509Certificates
      */
-    private List<X509Certificate> convertCACsToX509Certificates(
-            final Set<CertificateAuthorityCredential> set)
+    private List<X509Certificate> convertCACsToX509Certificates(final Set<CertificateAuthorityCredential> set)
             throws IOException {
-        ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
+        List<X509Certificate> certs = new ArrayList<>(set.size());
         for (CertificateAuthorityCredential cac : set) {
             certs.add(cac.getX509Certificate());
         }

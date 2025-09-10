@@ -50,7 +50,6 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
-
     private final IssuedAttestationCertificatePageService issuedAttestationCertificateService;
     private final CertificatePageService certificatePageService;
 

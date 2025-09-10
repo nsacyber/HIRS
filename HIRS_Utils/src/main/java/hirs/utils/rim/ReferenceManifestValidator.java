@@ -110,6 +110,7 @@ public class ReferenceManifestValidator {
 
     @Getter
     private boolean supportRimValid;
+
     @Getter
     private String validationErrorMessage;
 
@@ -144,10 +145,9 @@ public class ReferenceManifestValidator {
      */
     public void setRim(final byte[] rimBytes) {
         try {
-            this.rim = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
-                    new ByteArrayInputStream(rimBytes))));
+            this.rim = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(new ByteArrayInputStream(rimBytes))));
         } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
+            log.error("Error while unmarshalling rim bytes using the provided rim bytes: {}", e.getMessage());
         }
     }
 
@@ -162,7 +162,7 @@ public class ReferenceManifestValidator {
         try {
             this.rim = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
         } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
+            log.error("Error while unmarshalling rim bytes using the provided file path: {}", e.getMessage());
         }
     }
 
@@ -174,24 +174,25 @@ public class ReferenceManifestValidator {
      *
      * @param publicKey          public key from the CA credential
      * @param subjectKeyIdString string version of the subjet key id of the CA credential
-     * @param encodedPublicKey   the encoded public key
      * @return true if the signature element is validated, false otherwise
      */
 
-    public boolean validateXmlSignature(final PublicKey publicKey,
-                                        final String subjectKeyIdString) {
+    public boolean validateXmlSignature(final PublicKey publicKey, final String subjectKeyIdString) {
         DOMValidateContext context = null;
         validationErrorMessage = "Unable to verify RIM signature: ";
         try {
             NodeList nodes = getXmlElement(XMLSignature.XMLNS, "Signature");
+
             if (nodes.getLength() == 0) {
                 validationErrorMessage += "invalid XML, signature element not found.";
                 log.error(validationErrorMessage);
                 return false;
             }
+
             if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
                 trustStore = parseCertificatesFromPem(trustStoreFile);
             }
+
             NodeList certElement = getXmlElement(XMLSignature.XMLNS, "X509Certificate");
             if (certElement.getLength() > 0) {
                 X509Certificate embeddedCert = parseCertFromPEMString(
@@ -216,8 +217,7 @@ public class ReferenceManifestValidator {
                         validationErrorMessage += "issuer cert not found";
                     }
                 } else {
-                    System.out.println("A public signing certificate (-p) is required " +
-                            "to verify this base RIM.");
+                    System.out.println("A public signing certificate (-p) is required to verify this base RIM.");
                 }
             }
             if (context != null) {
@@ -294,12 +294,12 @@ public class ReferenceManifestValidator {
         if (getHashValue(filepath, "SHA256").equals(
                 file.getAttribute(SwidTagConstants.SHA_256_HASH.getPrefix() + ":"
                         + SwidTagConstants.SHA_256_HASH.getLocalPart()))) {
-            log.info("Support RIM hash verified for {}", filepath);
+            log.info("Support RIM hash under SHA256 has been verified for {}", filepath);
             return true;
         } else if (getHashValue(filepath, "SHA384").equals(
                 file.getAttribute(SwidTagConstants.SHA_384_HASH.getPrefix() + ":"
                         + SwidTagConstants.SHA_384_HASH.getLocalPart()))) {
-            log.info("Support RIM hash verified for {}", filepath);
+            log.info("Support RIM hash under SHA384 has been verified for {}", filepath);
             return true;
         } else {
             return failWithError("Support RIM hash does not match Base RIM!");
@@ -651,7 +651,6 @@ public class ReferenceManifestValidator {
     /**
      * This method parses the subject key identifier from the KeyName element of a signature.
      *
-     * @param doc document
      * @return SKID if found, or an empty string.
      */
     private String getKeyName() {
@@ -668,7 +667,7 @@ public class ReferenceManifestValidator {
      * prefix if necessary.
      *
      * @param namespace the element's namespace
-     * @param tagName the element's name
+     * @param tagName   the element's name
      * @return a NodeList containing the element
      */
     private NodeList getXmlElement(final String namespace, final String tagName) {

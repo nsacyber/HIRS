@@ -52,7 +52,6 @@ import java.util.regex.Pattern;
 @Service
 @Log4j2
 public class ValidationSummaryPageService {
-
     private static final String DEFAULT_COMPANY = "AllDevices";
     private static final String UNDEFINED = "undefined";
     private static final String SYSTEM_COLUMN_HEADERS = "Verified Manufacturer,"

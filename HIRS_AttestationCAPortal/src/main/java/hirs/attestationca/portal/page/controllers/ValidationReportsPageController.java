@@ -37,7 +37,6 @@ import java.util.Set;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/validation-reports")
 public class ValidationReportsPageController extends PageController<NoPageParams> {
-
     private final ValidationSummaryPageService validationSummaryPageService;
 
     /**

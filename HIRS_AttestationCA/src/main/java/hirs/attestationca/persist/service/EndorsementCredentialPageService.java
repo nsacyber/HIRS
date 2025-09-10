@@ -20,7 +20,6 @@ import java.util.List;
 @Log4j2
 @Service
 public class EndorsementCredentialPageService {
-
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
     /**
@@ -59,7 +58,7 @@ public class EndorsementCredentialPageService {
      * Attempts to parse the provided file in order to create an Endorsement Credential.
      *
      * @param file          file
-     * @param errorMessages error messages
+     * @param errorMessages contains any error messages that will be displayed on the page
      * @return endorsement credential
      */
     public EndorsementCredential parseEndorsementCredential(final MultipartFile file,

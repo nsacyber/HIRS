@@ -33,7 +33,6 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/help")
 public class HelpPageController extends PageController<NoPageParams> {
-
     private final HelpPageService helpPageService;
 
     /**

@@ -30,7 +30,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -41,7 +47,6 @@ import java.util.zip.ZipOutputStream;
 @Log4j2
 @Service
 public class ReferenceManifestPageService {
-
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final EntityManager entityManager;
@@ -119,7 +124,7 @@ public class ReferenceManifestPageService {
      * @param pageable    pageable
      * @return page of RIMs
      */
-    public Page<ReferenceManifest> findRIMsByArchiveFlag(final boolean archiveFlag, Pageable pageable) {
+    public Page<ReferenceManifest> findRIMsByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
         return this.referenceManifestRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
@@ -200,10 +205,10 @@ public class ReferenceManifestPageService {
      * Deletes the specified RIM using the provided UUID.
      *
      * @param uuid            the UUID of the RIM to delete
-     * @param successMessages success messages
-     * @param errorMessages   error messages
+     * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages   contains any error messages that will be displayed on the page
      */
-    public void deleteRIM(UUID uuid, List<String> successMessages, List<String> errorMessages) {
+    public void deleteRIM(final UUID uuid, final List<String> successMessages, final List<String> errorMessages) {
         ReferenceManifest referenceManifest = this.findSpecifiedRIM(uuid);
 
         if (referenceManifest == null) {
@@ -231,7 +236,7 @@ public class ReferenceManifestPageService {
 
         // save the base rims in the repo if they don't already exist in the repo
         baseRims.forEach((baseRIM) -> {
-            if (referenceManifestRepository.findByHexDecHashAndRimType(
+            if (this.referenceManifestRepository.findByHexDecHashAndRimType(
                     baseRIM.getHexDecHash(), baseRIM.getRimType()) == null) {
                 log.info("Storing swidtag {}", baseRIM.getFileName());
                 this.referenceManifestRepository.save(baseRIM);
@@ -240,7 +245,7 @@ public class ReferenceManifestPageService {
 
         // save the support rims in the repo if they don't already exist in the repo
         supportRims.forEach((supportRIM) -> {
-            if (referenceManifestRepository.findByHexDecHashAndRimType(
+            if (this.referenceManifestRepository.findByHexDecHashAndRimType(
                     supportRIM.getHexDecHash(), supportRIM.getRimType()) == null) {
                 log.info("Storing event log {}", supportRIM.getFileName());
                 this.referenceManifestRepository.save(supportRIM);
@@ -252,7 +257,7 @@ public class ReferenceManifestPageService {
         // or already exist create a map of the supports rims in case an uploaded swidtag
         // isn't one to one with the uploaded support rims.
         Map<String, SupportReferenceManifest> updatedSupportRims
-                = updateSupportRimInfo(referenceManifestRepository.findAllSupportRims());
+                = updateSupportRimInfo(this.referenceManifestRepository.findAllSupportRims());
 
         // pass in the updated support rims
         // and either update or add the events
@@ -303,8 +308,7 @@ public class ReferenceManifestPageService {
         try {
             fileBytes = file.getBytes();
         } catch (IOException e) {
-            final String failMessage = String.format("Failed to read uploaded Support RIM file (%s): "
-                    , fileName);
+            final String failMessage = String.format("Failed to read uploaded Support RIM file (%s): ", fileName);
             log.error(failMessage, e);
             errorMessages.add(failMessage + e.getMessage());
         }
@@ -321,33 +325,33 @@ public class ReferenceManifestPageService {
 
     private Map<String, SupportReferenceManifest> updateSupportRimInfo(
             final List<SupportReferenceManifest> dbSupportRims) {
-        SupportReferenceManifest supportRim;
-        String fileString;
         Map<String, SupportReferenceManifest> updatedSupportRims = new HashMap<>();
         Map<String, SupportReferenceManifest> hashValues = new HashMap<>();
         for (SupportReferenceManifest support : dbSupportRims) {
             hashValues.put(support.getHexDecHash(), support);
         }
 
-        for (BaseReferenceManifest dbBaseRim : this.referenceManifestRepository.findAllBaseRims()) {
-            for (String supportHash : hashValues.keySet()) {
-                fileString = new String(dbBaseRim.getRimBytes(), StandardCharsets.UTF_8);
+        List<BaseReferenceManifest> baseReferenceManifests = this.referenceManifestRepository.findAllBaseRims();
 
-                if (fileString.contains(supportHash)) {
-                    supportRim = hashValues.get(supportHash);
-                    // I have to assume the baseRim is from the database
-                    // Updating the id values, manufacturer, model
-                    if (supportRim != null && !supportRim.isUpdated()) {
-                        supportRim.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
-                        supportRim.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
-                        supportRim.setPlatformModel(dbBaseRim.getPlatformModel());
-                        supportRim.setTagId(dbBaseRim.getTagId());
-                        supportRim.setAssociatedRim(dbBaseRim.getId());
-                        dbBaseRim.setAssociatedRim(supportRim.getId());
-                        supportRim.setUpdated(true);
-                        this.referenceManifestRepository.save(supportRim);
-                        updatedSupportRims.put(supportHash, supportRim);
-                    }
+        for (BaseReferenceManifest dbBaseRim : baseReferenceManifests) {
+            for (Map.Entry<String, SupportReferenceManifest> entry : hashValues.entrySet()) {
+                String supportHash = entry.getKey();
+                SupportReferenceManifest supportRim = entry.getValue();
+
+                String fileString = new String(dbBaseRim.getRimBytes(), StandardCharsets.UTF_8);
+
+                // I have to assume the baseRim is from the database
+                // Updating the id values, manufacturer, model
+                if (fileString.contains(supportHash) && supportRim != null && !supportRim.isUpdated()) {
+                    supportRim.setSwidTagVersion(dbBaseRim.getSwidTagVersion());
+                    supportRim.setPlatformManufacturer(dbBaseRim.getPlatformManufacturer());
+                    supportRim.setPlatformModel(dbBaseRim.getPlatformModel());
+                    supportRim.setTagId(dbBaseRim.getTagId());
+                    supportRim.setAssociatedRim(dbBaseRim.getId());
+                    dbBaseRim.setAssociatedRim(supportRim.getId());
+                    supportRim.setUpdated(true);
+                    this.referenceManifestRepository.save(supportRim);
+                    updatedSupportRims.put(supportHash, supportRim);
                 }
             }
             this.referenceManifestRepository.save(dbBaseRim);
@@ -364,8 +368,7 @@ public class ReferenceManifestPageService {
      * @return reference to the base rim
      */
     private ReferenceManifest findBaseRim(final SupportReferenceManifest supportRim) {
-        if (supportRim != null && (supportRim.getId() != null
-                && !supportRim.getId().toString().isEmpty())) {
+        if (supportRim != null && (supportRim.getId() != null && !supportRim.getId().toString().isEmpty())) {
             List<BaseReferenceManifest> baseRims = new LinkedList<>(this.referenceManifestRepository
                     .getBaseByManufacturerModel(supportRim.getPlatformManufacturer(),
                             supportRim.getPlatformModel()));

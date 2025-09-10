@@ -52,7 +52,6 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials")
 public class PlatformCredentialPageController extends PageController<NoPageParams> {
-
     private final CertificatePageService certificatePageService;
     private final PlatformCredentialPageService platformCredentialService;
 

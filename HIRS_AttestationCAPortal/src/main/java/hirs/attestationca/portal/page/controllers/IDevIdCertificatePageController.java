@@ -51,7 +51,6 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates")
 public class IDevIdCertificatePageController extends PageController<NoPageParams> {
-
     private final CertificatePageService certificatePageService;
     private final IDevIdCertificatePageService iDevIdCertificatePageService;
 

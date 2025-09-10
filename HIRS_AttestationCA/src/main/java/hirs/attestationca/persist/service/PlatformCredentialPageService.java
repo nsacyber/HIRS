@@ -74,12 +74,10 @@ public class PlatformCredentialPageService {
      * Attempts to parse the provided file in order to create a Platform Credential.
      *
      * @param file          file
-     * @param errorMessages error messages
+     * @param errorMessages contains any error messages that will be displayed on the page
      * @return platform credential
      */
-    public PlatformCredential parsePlatformCredential(final MultipartFile file,
-                                                      final List<String> errorMessages
-    ) {
+    public PlatformCredential parsePlatformCredential(final MultipartFile file, final List<String> errorMessages) {
         log.info("Received platform credential file of size: {}", file.getSize());
 
         byte[] fileBytes;

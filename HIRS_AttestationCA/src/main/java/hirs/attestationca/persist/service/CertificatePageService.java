@@ -33,7 +33,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -327,8 +331,7 @@ public class CertificatePageService {
             throw new EntityNotFoundException(errorMessage);
         } else if (!certificateClass.isInstance(certificate)) {
             final String errorMessage =
-                    "Unable to cast the found certificate to a(n) " + certificateClass.getSimpleName() +
-                            " object";
+                    "Unable to cast the found certificate to a(n) " + certificateClass.getSimpleName() + " object";
             log.warn(errorMessage);
             throw new ClassCastException(errorMessage);
         }
@@ -346,8 +349,9 @@ public class CertificatePageService {
     /**
      * Attempts to parse the provided file in order to create a trust chain certificate.
      *
-     * @param file          file
-     * @param errorMessages error messages
+     * @param file            file
+     * @param successMessages contains any success messages that will be displayed on the pages
+     * @param errorMessages   contains any error messages that will be displayed on the page
      * @return trust chain certificate
      */
     public CertificateAuthorityCredential parseTrustChainCertificate(final MultipartFile file,

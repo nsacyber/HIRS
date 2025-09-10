@@ -51,7 +51,6 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
 public class EndorsementCredentialPageController extends PageController<NoPageParams> {
-
     private final EndorsementCredentialPageService endorsementCredentialPageService;
     private final CertificatePageService certificatePageService;
 

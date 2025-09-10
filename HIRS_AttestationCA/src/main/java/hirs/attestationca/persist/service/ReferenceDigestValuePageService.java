@@ -30,7 +30,6 @@ import java.util.UUID;
 @Log4j2
 @Service
 public class ReferenceDigestValuePageService {
-    
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final EntityManager entityManager;

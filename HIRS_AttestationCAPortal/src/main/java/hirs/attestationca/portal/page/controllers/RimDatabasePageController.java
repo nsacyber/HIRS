@@ -35,7 +35,6 @@ import java.util.Set;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-database")
 public class RimDatabasePageController extends PageController<NoPageParams> {
-
     private final ReferenceDigestValuePageService referenceDigestValuePageService;
 
     /**

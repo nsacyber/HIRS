@@ -2,24 +2,11 @@ package hirs.attestationca.persist.service;
 
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.util.CredentialHelper;
 import lombok.extern.log4j.Log4j2;
-import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * A service layer class responsible for encapsulating all business logic related to the Trust Chain
@@ -28,7 +15,6 @@ import java.util.List;
 @Log4j2
 @Service
 public class TrustChainCertificatePageService {
-
     private final CACredentialRepository caCredentialRepository;
 
     /**
@@ -57,7 +43,8 @@ public class TrustChainCertificatePageService {
      * @param pageable    pageable
      * @return page of certificate authority credentials
      */
-    public Page<CertificateAuthorityCredential> findByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
+    public Page<CertificateAuthorityCredential> findCACredentialsByArchiveFlag(final boolean archiveFlag,
+                                                                               final Pageable pageable) {
         return this.caCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 }

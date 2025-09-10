@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 @Log4j2
 @Service
 public class IssuedAttestationCertificatePageService {
-    
     private final IssuedCertificateRepository issuedCertificateRepository;
 
     /**
