@@ -185,12 +185,7 @@ public class ReferenceManifestPageService {
         String zipFileName;
 
         for (ReferenceManifest rim : referenceManifestList) {
-            if (rim.getFileName().isEmpty()) {
-                zipFileName = "";
-            } else {
-                // configure the zip entry, the properties of the 'file'
-                zipFileName = rim.getFileName();
-            }
+            zipFileName = rim.getFileName().isEmpty() ? "" : rim.getFileName();
             ZipEntry zipEntry = new ZipEntry(zipFileName);
             zipEntry.setSize((long) rim.getRimBytes().length * Byte.SIZE);
             zipEntry.setTime(System.currentTimeMillis());
