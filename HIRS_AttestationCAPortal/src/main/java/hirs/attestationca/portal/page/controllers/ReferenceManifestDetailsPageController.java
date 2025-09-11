@@ -549,12 +549,26 @@ public class ReferenceManifestDetailsPageController
                 for (TpmPcrEvent tpmPcrEvent : combinedBaselines) {
                     if (tpmPcrEvent.getEventType() == tpe.getEventType()) {
                         if (tpe.getEventContentStr().contains(variablePrefix)) {
-                            bootVariable = tpe.getEventContentStr().substring((
-                                            tpe.getEventContentStr().indexOf(variablePrefix)
-                                                    + variablePrefix.length()),
-                                    tpe.getEventContentStr().indexOf(variableSuffix));
-                            if (tpmPcrEvent.getEventContentStr().contains(bootVariable)) {
-                                matchedEvents.add(tpmPcrEvent);
+                            try {
+                                bootVariable = tpe.getEventContentStr().substring((
+                                                tpe.getEventContentStr().indexOf(variablePrefix)
+                                                        + variablePrefix.length()),
+                                        tpe.getEventContentStr().indexOf(variableSuffix));
+                                if (tpmPcrEvent.getEventContentStr().contains(bootVariable)) {
+                                    matchedEvents.add(tpmPcrEvent);
+                                }
+                            } catch (StringIndexOutOfBoundsException e) {
+                                log.error(String.format("Live log event: %s\n" +
+                                                "Expected event: %s\n" +
+                                                "Live log content string: %s\n" +
+                                                "Substring from %s (%d) to %s (%d)",
+                                    tpe.getEventType(),
+                                        tpmPcrEvent.getEventType(),
+                                        tpe.getEventContentStr(),
+                                        variablePrefix,
+                                        tpe.getEventContentStr().indexOf(variablePrefix) + variablePrefix.length(),
+                                        variableSuffix,
+                                        tpe.getEventContentStr().indexOf(variableSuffix)));
                             }
                         } else {
                             matchedEvents.add(tpmPcrEvent);
