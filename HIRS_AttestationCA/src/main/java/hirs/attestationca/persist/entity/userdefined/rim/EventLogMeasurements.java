@@ -60,7 +60,7 @@ public class EventLogMeasurements extends SupportReferenceManifest {
                                 final byte[] rimBytes) throws IOException {
         super(rimBytes);
         this.setFileName(fileName);
-        this.archive("Event Log Measurement");
+        this.setArchivedDescription("Event Log Measurement");
         this.setRimType(MEASUREMENT_RIM);
         this.pcrHash = 0;
     }

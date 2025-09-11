@@ -72,7 +72,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 baseReferenceManifest = (BaseReferenceManifest) deviceRim;
             }
 
-            if (deviceRim instanceof EventLogMeasurements) {
+            if (deviceRim instanceof EventLogMeasurements && deviceRim.isArchived()) {
                 measurement = (EventLogMeasurements) deviceRim;
             }
         }
@@ -89,11 +89,12 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             failedString = "Base Reference Integrity Manifest not found for " + hostName + "\n";
             passed = false;
         } else if (measurement == null) {
-            measurement = (EventLogMeasurements) referenceManifestRepository.findByHexDecHashAndRimType(
-                    baseReferenceManifest.getEventLogHash(), ReferenceManifest.MEASUREMENT_RIM);
+            measurement = (EventLogMeasurements) referenceManifestRepository
+                    .findByHexDecHashAndRimTypeUnarchived(baseReferenceManifest.getEventLogHash(),
+                                                            ReferenceManifest.MEASUREMENT_RIM);
 
             if (measurement == null) {
-                measurement = referenceManifestRepository.byMeasurementDeviceName(
+                measurement = referenceManifestRepository.byMeasurementDeviceNameUnarchived(
                         baseReferenceManifest.getDeviceName());
             }
         }
