@@ -23,6 +23,7 @@ import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
+import hirs.utils.tpm.eventlog.events.EvConstants;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -45,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Controller for the Reference Manifest Details page.
@@ -544,12 +547,19 @@ public class ReferenceManifestDetailsPageController
             String bootVariable;
             String variablePrefix = "Variable Name:";
             String variableSuffix = "UEFI_GUID";
+            Pattern variableName = Pattern.compile("Variable Name: (\\w+)");
+            Matcher matcher;
+
             for (TpmPcrEvent tpe : evidence) {
                 matchedEvents = new ArrayList<>();
                 for (TpmPcrEvent tpmPcrEvent : combinedBaselines) {
                     if (tpmPcrEvent.getEventType() == tpe.getEventType()) {
                         if (tpe.getEventContentStr().contains(variablePrefix)) {
                             try {
+                                matcher = variableName.matcher(tpe.getEventContentStr());
+                                if (matcher.find()) {
+                                    log.info("Even variable name: " + matcher.group(1));
+                                }
                                 bootVariable = tpe.getEventContentStr().substring((
                                                 tpe.getEventContentStr().indexOf(variablePrefix)
                                                         + variablePrefix.length()),
@@ -586,6 +596,24 @@ public class ReferenceManifestDetailsPageController
         getEventSummary(data, logProcessor.getEventList());
 
         return data;
+    }
+
+    /**
+     * This method checks if the given event is of the below event types.
+     *
+     * @param eventType to check for event type
+     * @return true if the below types are matched, otherwise false
+     */
+    private boolean eventIsType(int eventType) {
+        if (eventType == EvConstants.EV_EFI_VARIABLE_AUTHORITY
+        || eventType == EvConstants.EV_EFI_VARIABLE_BOOT
+        || eventType == EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG
+        || eventType == EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY
+        || eventType == EvConstants.EV_EFI_SPDM_DEVICE_POLICY) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
