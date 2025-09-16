@@ -72,7 +72,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 baseReferenceManifest = (BaseReferenceManifest) deviceRim;
             }
 
-            if (deviceRim instanceof EventLogMeasurements && deviceRim.isArchived()) {
+            if (deviceRim instanceof EventLogMeasurements && !deviceRim.isArchived()) {
                 measurement = (EventLogMeasurements) deviceRim;
             }
         }

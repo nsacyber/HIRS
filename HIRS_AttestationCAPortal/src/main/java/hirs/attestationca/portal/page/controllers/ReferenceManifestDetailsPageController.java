@@ -545,8 +545,6 @@ public class ReferenceManifestDetailsPageController
                 combinedBaselines.addAll(support.getEventLog());
             }
             String bootVariable;
-            String variablePrefix = "Variable Name:";
-            String variableSuffix = "UEFI_GUID";
             Pattern variableName = Pattern.compile("Variable Name: (\\w+)");
             Matcher matcher;
 
@@ -554,7 +552,7 @@ public class ReferenceManifestDetailsPageController
                 matchedEvents = new ArrayList<>();
                 for (TpmPcrEvent tpmPcrEvent : combinedBaselines) {
                     if (tpmPcrEvent.getEventType() == tpe.getEventType()) {
-                        if (tpe.getEventContentStr().contains(variablePrefix)) {
+                        if (eventIsType(tpe.getEventType())) {
                             matcher = variableName.matcher(tpe.getEventContentStr());
                             if (matcher.find()) {
                                 log.debug("Event variable name: " + matcher.group(1));
@@ -587,7 +585,7 @@ public class ReferenceManifestDetailsPageController
      * @param eventType to check for event type
      * @return true if the below types are matched, otherwise false
      */
-    private boolean eventIsType(int eventType) {
+    private static boolean eventIsType(long eventType) {
         if (eventType == EvConstants.EV_EFI_VARIABLE_AUTHORITY
         || eventType == EvConstants.EV_EFI_VARIABLE_BOOT
         || eventType == EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG
