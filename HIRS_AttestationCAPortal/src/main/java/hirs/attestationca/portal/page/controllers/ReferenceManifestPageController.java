@@ -142,7 +142,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.referenceManifestRepository.findByArchiveFlag(false, pageable);
+            pagedResult = this.referenceManifestRepository.findAllBaseSupportRimsPageable(pageable);
         } else {
             pagedResult = findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns, searchTerm, false,
                     pageable);
@@ -373,22 +373,21 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchTerm)) {
-            // Dynamically loop through columns and create LIKE conditions for each searchable column
-            for (String columnName : searchableColumns) {
-                Predicate predicate =
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(rimRoot.get(columnName)),
-                                "%" + searchTerm.toLowerCase() + "%");
-                predicates.add(predicate);
-            }
+        // Dynamically loop through columns and create LIKE conditions for each searchable column
+        for (String columnName : searchableColumns) {
+            Predicate predicate =
+                    criteriaBuilder.like(
+                            criteriaBuilder.lower(rimRoot.get(columnName)),
+                            "%" + searchTerm.toLowerCase() + "%");
+            predicates.add(predicate);
         }
 
         Predicate likeConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
 
         // Add archiveFlag condition if specified
         query.where(criteriaBuilder.and(likeConditions,
-                criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag)));
+                criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag),
+                criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")));
 
         // Apply pagination
         TypedQuery<ReferenceManifest> typedQuery = entityManager.createQuery(query);
