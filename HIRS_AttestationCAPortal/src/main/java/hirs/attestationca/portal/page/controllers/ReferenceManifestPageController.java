@@ -142,7 +142,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.referenceManifestRepository.findAllBaseSupportRimsPageable(pageable);
+            pagedResult = this.referenceManifestRepository.findAllBaseAndSupportRimsPageable(pageable);
         } else {
             pagedResult = findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns, searchTerm, false,
                     pageable);

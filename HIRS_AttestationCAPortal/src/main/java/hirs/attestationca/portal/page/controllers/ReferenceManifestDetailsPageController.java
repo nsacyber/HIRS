@@ -488,7 +488,7 @@ public class ReferenceManifestDetailsPageController
             final ReferenceDigestValueRepository referenceDigestValueRepository)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
-        LinkedList<TpmPcrEvent> evidence = new LinkedList<>();
+        LinkedList<TpmPcrEvent> unmatchedAttestationEvents = new LinkedList<>();
         BaseReferenceManifest base = null;
         List<SupportReferenceManifest> supports = new ArrayList<>();
         SupportReferenceManifest baseSupport = null;
@@ -503,8 +503,8 @@ public class ReferenceManifestDetailsPageController
 
         List<ReferenceDigestValue> assertions = new LinkedList<>();
         if (measurements.getDeviceName() != null) {
-            supports.addAll(referenceManifestRepository.byDeviceName(measurements
-                    .getDeviceName()));
+            supports.addAll(referenceManifestRepository.getSupportByManufacturerModel(
+                    measurements.getPlatformManufacturer(), measurements.getPlatformModel()));
             for (SupportReferenceManifest support : supports) {
                 if (support.isBaseSupport()) {
                     baseSupport = support;
@@ -526,53 +526,54 @@ public class ReferenceManifestDetailsPageController
         }
 
         TCGEventLog measurementLog = new TCGEventLog(measurements.getRimBytes());
-        Map<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
+        Map<String, ReferenceDigestValue> referenceValueMap = new HashMap<>();
 
         for (ReferenceDigestValue record : assertions) {
-            eventValueMap.put(record.getDigestValue(), record);
+            referenceValueMap.put(record.getDigestValue(), record);
         }
-        for (TpmPcrEvent measurementEvent : measurementLog.getEventList()) {
-            if (!eventValueMap.containsKey(measurementEvent.getEventDigestStr())) {
-                evidence.add(measurementEvent);
+        for (TpmPcrEvent attestationEvent : measurementLog.getEventList()) {
+            if (!referenceValueMap.containsKey(attestationEvent.getEventDigestStr())) {
+                unmatchedAttestationEvents.add(attestationEvent);
             }
         }
 
         if (!supports.isEmpty()) {
             Map<String, List<TpmPcrEvent>> baselineLogEvents = new HashMap<>();
             List<TpmPcrEvent> matchedEvents = null;
-            List<TpmPcrEvent> combinedBaselines = new LinkedList<>();
+            List<TpmPcrEvent> referenceEventValues = new LinkedList<>();
             for (SupportReferenceManifest support : supports) {
-                combinedBaselines.addAll(support.getEventLog());
+                referenceEventValues.addAll(support.getEventLog());
             }
             String bootVariable;
             Pattern variableName = Pattern.compile("Variable Name: (\\w+)");
             Matcher matcher;
 
-            for (TpmPcrEvent tpe : evidence) {
+            for (TpmPcrEvent attestationEvent : unmatchedAttestationEvents) {
                 matchedEvents = new ArrayList<>();
-                for (TpmPcrEvent tpmPcrEvent : combinedBaselines) {
-                    if (tpmPcrEvent.getEventType() == tpe.getEventType()) {
-                        if (eventIsType(tpe.getEventType())) {
-                            matcher = variableName.matcher(tpe.getEventContentStr());
+                for (TpmPcrEvent referenceEvent : referenceEventValues) {
+                    if ((referenceEvent.getEventType() == attestationEvent.getEventType()) &&
+                        (referenceEvent.getPcrIndex() == attestationEvent.getPcrIndex())) {
+                        if (eventIsType(attestationEvent.getEventType())) {
+                            matcher = variableName.matcher(attestationEvent.getEventContentStr());
                             if (matcher.find()) {
                                 log.debug("Event variable name: " + matcher.group(1));
                                 bootVariable = matcher.group(1);
-                                if (tpmPcrEvent.getEventContentStr().contains(bootVariable)) {
-                                    matchedEvents.add(tpmPcrEvent);
+                                if (referenceEvent.getEventContentStr().contains(bootVariable)) {
+                                    matchedEvents.add(referenceEvent);
                                 }
                             }
                         } else {
-                            matchedEvents.add(tpmPcrEvent);
+                            matchedEvents.add(referenceEvent);
                         }
                     }
                 }
-                baselineLogEvents.put(tpe.getEventDigestStr(), matchedEvents);
+                baselineLogEvents.put(attestationEvent.getEventDigestStr(), matchedEvents);
             }
             data.put("eventTypeMap", baselineLogEvents);
         }
 
         TCGEventLog logProcessor = new TCGEventLog(measurements.getRimBytes());
-        data.put("livelogEvents", evidence);
+        data.put("livelogEvents", unmatchedAttestationEvents);
         data.put("events", logProcessor.getEventList());
         getEventSummary(data, logProcessor.getEventList());
 

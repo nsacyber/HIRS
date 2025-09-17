@@ -155,7 +155,7 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE deviceName = ?1 "
             + "AND DTYPE = 'SupportReferenceManifest'", nativeQuery = true)
-    List<SupportReferenceManifest> byDeviceName(String deviceName);
+    List<SupportReferenceManifest> getSupportRimsByDeviceName(String deviceName);
 
     /**
      * Query that retrieves event log measurements using the provided device name and where the dtype is
@@ -232,7 +232,7 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
      * @param pageable pageable
      * @return a page of reference manifests
      */
-    @Query(value = "SELECT * FROM ReferenceManifest WHERE DTYPE IN " +
-            "('BaseReferenceManifest', 'SupportReferenceManifest')", nativeQuery = true)
-    Page<ReferenceManifest> findAllBaseSupportRimsPageable(Pageable pageable);
+    @Query(value = "SELECT * FROM ReferenceManifest WHERE DTYPE IN "
+            + "('BaseReferenceManifest', 'SupportReferenceManifest')", nativeQuery = true)
+    Page<ReferenceManifest> findAllBaseAndSupportRimsPageable(Pageable pageable);
 }
