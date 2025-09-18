@@ -115,13 +115,13 @@ Function set_mysql_tls () {
 	if (!(Get-Content $global:DB_CONF | Select-String "ssl")) {
 		# Add TLS files to my.ini- Assumes [client] section at the end, and no [server] section
 		Write-Output "Updating $global:DB_CONF with ssl parameters..." | WriteAndLog
-        Write-Output "ssl_ca=$SSL_DB_CLIENT_CHAIN" >> $global:DB_CONF
-		Write-Output "ssl_cert=$SSL_DB_CLIENT_CERT" >> $global:DB_CONF
-        Write-Output "ssl_key=$SSL_DB_CLIENT_KEY" >> $global:DB_CONF
+        Write-Output "ssl_ca=$SSL_DB_RSA_CLIENT_CHAIN" >> $global:DB_CONF
+		Write-Output "ssl_cert=$SSL_DB_RSA_CLIENT_CERT" >> $global:DB_CONF
+        Write-Output "ssl_key=$SSL_DB_RSA_CLIENT_KEY" >> $global:DB_CONF
 		Write-Output "[server]" >> $global:DB_CONF
-		Write-Output "ssl_ca=$global:SSL_DB_SRV_CHAIN" >> $global:DB_CONF
-		Write-Output "ssl_cert=$global:SSL_DB_SRV_CERT" >> $global:DB_CONF
-		Write-Output "ssl_key=$global:SSL_DB_SRV_KEY" >> $global:DB_CONF
+		Write-Output "ssl_ca=$global:SSL_DB_RSA_SRV_CHAIN" >> $global:DB_CONF
+		Write-Output "ssl_cert=$global:SSL_DB_RSA_SRV_CERT" >> $global:DB_CONF
+		Write-Output "ssl_key=$global:SSL_DB_RSA_SRV_KEY" >> $global:DB_CONF
 		ChangeFileBackslashToForwardSlash $global:DB_CONF
 	} else {
         Write-Output "$global:DB_CONF contains existing entry for ssl. Skipping this step ..." | WriteAndLog

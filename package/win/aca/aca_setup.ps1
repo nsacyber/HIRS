@@ -101,7 +101,7 @@ if (!$skippki) {
     Write-Output ("ACA PKI setup cannot be run because there are command line argument(s): "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-pki|sp' } )) | WriteAndLog
 }
 
-# Runs the create_dbp script (along with the other scripts under the DB folder)
+# Runs the create_db script (along with the other scripts under the DB folder)
 if (!$skipdb) {
 	pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_DB_CREATE -LOG_FILE:"$global:LOG_FILE" -UNATTENDED:"$unattended"
     if ($LastExitCode -eq 0) { 
