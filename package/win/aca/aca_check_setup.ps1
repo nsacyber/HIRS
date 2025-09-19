@@ -58,17 +58,17 @@ Function check_pwds() {
         Write-Host "The ACA properties file does not exist. There are no passwords set for this setup"
         $PWDS_PRESENT=$false
     }else{
-        if (-not $aca_prop_table.ContainsKey("hirs_pki_password") -or $null -eq $aca_prop_table["hirs_pki_password"]) {
+        if (-not $aca_prop_table.ContainsKey($global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME) -or $null -eq $aca_prop_table[$global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME]) {
             Write-Host "ACA pki password not set"
             $PWDS_PRESENT = $false
         }
 
-        if (-not $aca_prop_table.ContainsKey("hirs_db_username") -or $null -eq $aca_prop_table["hirs_db_username"]) {
+        if (-not $aca_prop_table.ContainsKey($global:ACA_PROPERTIES_HIRS_DB_USERNAME_PROPERTY_NAME) -or $null -eq $aca_prop_table[$global:ACA_PROPERTIES_HIRS_DB_USERNAME_PROPERTY_NAME]) {
             Write-Host "hirs_db username not set"
             $PWDS_PRESENT = $false
         }
 
-        if (-not $aca_prop_table.ContainsKey("hirs_db_password") -or $null -eq $aca_prop_table["hirs_db_password"]){
+        if (-not $aca_prop_table.ContainsKey($global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME) -or $null -eq $aca_prop_table[$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME]){
             Write-Host "hirs_db user password not set"
             $PWDS_PRESENT = $false
         }
@@ -123,9 +123,9 @@ Function check_pki() {
         $global:ALL_CHECKS_PASSED=$false
     }else{
         # verify that the hirs_pki_password and assocaited value exist in the aca properties file
-        if ($aca_prop_table.ContainsKey("hirs_pki_password") -and $aca_prop_table["hirs_pki_password"]) {
+        if ($aca_prop_table.ContainsKey($global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME) -and $aca_prop_table[$global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME]) {
             # retrieve the hirs pki password
-            $pkiPassword = $aca_prop_table["hirs_pki_password"]
+            $pkiPassword = $aca_prop_table[$global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME]
 
             # store the path to the trust store
             $keyStorePath = (Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR "TrustStore.jks")
@@ -196,10 +196,10 @@ Function check_mysql_setup() {
         Write-Host "Mysql server [$DB_CONF] is configured for Server Side TLS"
     }
 
-    if($aca_prop_table.ContainsKey("mysql_admin_password") -and $aca_prop_table["mysql_admin_password"]){
+    if($aca_prop_table.ContainsKey($global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME) -and $aca_prop_table[$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME]){
         $mysqlPwd = ""
 
-        $mysqlPwd = $aca_prop_table["mysql_admin_password"]
+        $mysqlPwd = $aca_prop_table[$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME]
 
         mysql -u root --password=$mysqlPwd -e "STATUS;" | Out-Null
 
@@ -227,8 +227,8 @@ Function check_db() {
         return
 	}
 
-	if($aca_prop_table.ContainsKey("mysql_admin_password") -and $aca_prop_table["mysql_admin_password"]){
-		$mysql_admin_password = $aca_prop_table["mysql_admin_password"]
+	if($aca_prop_table.ContainsKey($global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME) -and $aca_prop_table[$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME]){
+		$mysql_admin_password = $aca_prop_table[$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME]
 
         # Check if MySQL server-side TLS is enabled
         $sslResult = mysql -u root --password=$mysql_admin_password -e "SHOW VARIABLES LIKE '%have_ssl%'" | Select-String -Pattern "YES"
@@ -243,8 +243,8 @@ Function check_db() {
 
     # todo unsure as to why this section is not working properly. The user and password exist in the mysql db
 
-    # if($aca_prop_table.ContainsKey("hirs_db_password") -and $aca_prop_table["hirs_db_password"]) {
-    #     $hirs_db_password = $aca_prop_table["hirs_db_password"]
+    # if($aca_prop_table.ContainsKey($global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME) -and $aca_prop_table[$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME]) {
+    #     $hirs_db_password = $aca_prop_table[$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME]
 
     #     # Check if the hirs_db is visible to the hirs_db user
     #     $dbResult = mysqlshow --user="hirs_db" --password=$hirs_db_password hirs_db -h localhost | Select-String -Pattern "hirs_db"

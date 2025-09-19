@@ -30,6 +30,19 @@ $global:HIRS_DATA_LOG_DIR=(Join-Path $global:HIRS_DATA_DIR "log")
 $global:HIRS_DATA_INSTALL_LOG_NAME=(Join-Path $global:HIRS_DATA_LOG_DIR ("hirs_aca_install_"+(Get-Date -Format "yyyy-MM-dd")+'.log'))
 $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR=(Join-Path $global:HIRS_CONF_DIR "default-properties")
 
+#         ACA Property Keys
+$global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME="hirs_pki_password"
+$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME="mysql_admin_password"
+$global:ACA_PROPERTIES_HIRS_DB_USERNAME_PROPERTY_NAME="hirs_db_username"
+$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME="hirs_db_password"
+
+
+#         Spring Property Keys
+$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME="hibernate.connection.username"
+$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME="hibernate.connection.password"
+$global:SPRING_PROPERTIES_SSL_KEY_STORE_PWD_PROPERTY_NAME="server.ssl.key-store-password"
+$global:SPRING_PROPERTIES_SSL_KEY_TRUST_STORE_PWD_PROPERTY_NAME="server.ssl.trust-store-password"
+
 #         DB Configuration file
 $global:DB_CONF = (Resolve-Path ([System.IO.Path]::Combine($Env:ProgramFiles, 'MariaDB 11.1', 'data', 'my.ini'))).Path
 

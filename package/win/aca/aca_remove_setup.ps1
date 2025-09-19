@@ -41,8 +41,8 @@ Function retrieve_mysql_root_pwd () {
 		exit 1
 	}
 
-	if($aca_prop_table.ContainsKey("mysql_admin_password") -and $aca_prop_table["mysql_admin_password"]){
-		return $aca_prop_table["mysql_admin_password"]
+	if($aca_prop_table.ContainsKey($global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME) -and $aca_prop_table[$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME]){
+		return $aca_prop_table[$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME]
 	}
 }
 
