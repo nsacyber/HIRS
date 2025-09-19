@@ -25,17 +25,19 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 	exit 1
 }
 
-$APP_HOME=(Split-Path -parent $PSCommandPath)
-$ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
+Write-Host "----------------------------------------------------------------------"
+Write-Host ""
+Write-Host "Checking HIRS ACA setup on this device..."
+
+$ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
+$ACA_COMMON_SCRIPT=(Join-Path $ACA_SCRIPTS_HOME 'aca_common.ps1')
 
 # Load other scripts
-. $global:HIRS_REL_WIN_DB_MYSQL_UTIL
 . $ACA_COMMON_SCRIPT
+. $global:HIRS_REL_WIN_DB_MYSQL_UTIL
 
 $global:ALL_CHECKS_PASSED=$true
 $global:ALL_CERTS_PASSED=$true
-
-Write-Host "Checking HIRS ACA setup on this device..."
 
 Function populate_aca_properties_table{
     if(-not (Test-Path $global:HIRS_DATA_ACA_PROPERTIES_FILE)){
@@ -281,3 +283,6 @@ if($global:ALL_CHECKS_PASSED -eq $true){
 } else {
     Write-Host "ACA setup checks on Windows have failed."
 }
+
+Write-Host "----------------------------------------------------------------------"
+Write-Host ""

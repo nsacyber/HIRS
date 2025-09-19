@@ -7,36 +7,34 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 	exit 1
 }
 
+Write-Host "----------------------------------------------------------------------"
+Write-Host ""
 Write-Host "Running the aca removal script ... "
 
-# Import the db scripts from the win directories
-$APP_HOME=(Split-Path -parent $PSCommandPath)
-$MYSQL_WIN_DB_DROP_SCRIPT = (Resolve-Path ([System.IO.Path]::Combine($APP_HOME, '..', 'db', 'db_drop.ps1'))).Path
-$MYSQL_WIN_UTIL_SCRIPT = (Resolve-Path ([System.IO.Path]::Combine($APP_HOME, '..','db','mysql_util.ps1'))).Path
+$ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
+$ACA_COMMON_SCRIPT=(Join-Path $ACA_SCRIPTS_HOME 'aca_common.ps1')
 
-. $MYSQL_WIN_UTIL_SCRIPT
+# load other scripts
+. $ACA_COMMON_SCRIPT
+. $global:HIRS_REL_WIN_DB_MYSQL_UTIL
 
-$WIN_HIRS_HOME = "C:\ProgramData\hirs\"
+Write-Host "Checking if the [$global:HIRS_DATA_DIR] directory exists"
 
-Write-Host "Checking if the [C:\ProgramData\hirs\] directory exists"
-
-if(-not (Test-Path -Path $WIN_HIRS_HOME)){
-	Write-Host "C:\ProgramData\hirs\ does not exist. Aborting removal"
+if(-not (Test-Path -Path $global:HIRS_DATA_DIR)){
+	Write-Host "$global:HIRS_DATA_DIR does not exist. Aborting removal"
 	exit 1
 } else{
-	Write-Host "Directory [$WIN_HIRS_HOME} exists"
+	Write-Host "Directory [$global:HIRS_DATA_DIR] exists"
 }
 
-Function retrieve_mysql_root_pwd (){
-	$ACA_PROPERTIES_PATH = "C:\ProgramData\hirs\aca\aca.properties"
-
-	if(-not (Test-Path $ACA_PROPERTIES_PATH)){
+Function retrieve_mysql_root_pwd () {
+	if(-not (Test-Path $global:HIRS_DATA_ACA_PROPERTIES_FILE)){
         Write-Host "The ACA property files does not exist. Aborting removal."
         exit 1
     }
 
     # Convert the contents of the aca properties file into a hash table
-    $aca_prop_table = Get-Content -Path $ACA_PROPERTIES_PATH -Raw | ConvertFrom-StringData
+    $aca_prop_table = Get-Content -Path $global:HIRS_DATA_ACA_PROPERTIES_FILE -Raw | ConvertFrom-StringData
 
 	if(-not $aca_prop_table){
 		Write-Host "Unable to create a hash table using the provided aca properties file. Aborting removal."
@@ -64,10 +62,13 @@ if(-not $DB_ADMIN_PWD){
 
 # remove the hrs-db and hirs_db user (execute the .\db_drop.ps1 script)
 Write-Host "Calling the db_drop.ps1 script to drop the hirs_db"
-. $MYSQL_WIN_DB_DROP_SCRIPT -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
+. $global:HIRS_REL_WIN_DB_DROP -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
 
 # remove the entire hirs directory which contains the rsa/ecc certificates, the logs and the war file
-Write-Host "Removing the [C:\ProgramData\hirs\] directory"
-Remove-Item -Path $WIN_HIRS_HOME -Recurse -Force
+Write-Host "Removing the [$global:HIRS_DATA_DIR] directory"
+Remove-Item -Path $global:HIRS_DATA_DIR -Recurse -Force
 
 Write-Host "ACA setup removal complete"
+
+Write-Host "----------------------------------------------------------------------"
+Write-Host ""

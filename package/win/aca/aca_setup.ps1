@@ -29,14 +29,14 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 	exit 1
 }
 
-$APP_HOME=(Split-Path -parent $PSCommandPath)
-$ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
+$ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
+$ACA_COMMON_SCRIPT=(Join-Path $ACA_SCRIPTS_HOME 'aca_common.ps1')
 $COMP_JSON = (Resolve-Path ([System.IO.Path]::Combine(
-    $APP_HOME, '..', '..', '..', 'HIRS_AttestationCA', 'src', 'main', 'resources', 'component-class.json'))).Path
+    $ACA_SCRIPTS_HOME, '..', '..', '..', 'HIRS_AttestationCA', 'src', 'main', 'resources', 'component-class.json'))).Path
 $VENDOR_TABLE=(Resolve-Path ([System.IO.Path]::Combine(
-    $APP_HOME, '..', '..', '..', 'HIRS_Utils', 'src', 'main', 'resources', 'vendor-table.json'))).Path
+    $ACA_SCRIPTS_HOME, '..', '..', '..', 'HIRS_Utils', 'src', 'main', 'resources', 'vendor-table.json'))).Path
 $SPRING_PROPERTIES_FILE=(Resolve-Path ([System.IO.Path]::Combine(
-    $APP_HOME, '..', '..', '..', 'HIRS_AttestationCAPortal', 'src', 'main', 'resources', 'application.win.properties'))).Path
+    $ACA_SCRIPTS_HOME, '..', '..', '..', 'HIRS_AttestationCAPortal', 'src', 'main', 'resources', 'application.win.properties'))).Path
 
 # Load other scripts
 . $ACA_COMMON_SCRIPT
@@ -115,3 +115,5 @@ if (!$skipdb) {
 }
 
 Write-Output "ACA setup complete" | WriteAndLog
+Write-Host "----------------------------------------------------------------------"
+Write-Host ""

@@ -35,8 +35,8 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 	exit 1
 }
 
-$APP_HOME=(Split-Path -parent $PSCommandPath)
-$ACA_COMMON_SCRIPT=(Join-Path $APP_HOME 'aca_common.ps1')
+$ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
+$ACA_COMMON_SCRIPT=(Join-Path $ACA_SCRIPTS_HOME 'aca_common.ps1')
 $GRADLE_WRAPPER='./gradlew'
 $DEPLOYED_WAR=$null
 $DEBUG_OPTIONS='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9123'

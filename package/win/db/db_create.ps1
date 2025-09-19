@@ -13,8 +13,8 @@ param (
 	[switch]$unattended = $false
 )
 
-$APP_HOME=(Split-Path -parent $PSCommandPath)
-$ACA_COMMON_SCRIPT=(Join-Path "$APP_HOME" .. aca aca_common.ps1)
+$ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
+$ACA_COMMON_SCRIPT=(Join-Path "$ACA_SCRIPTS_HOME" .. aca aca_common.ps1)
 
 # Load other scripts
 . $ACA_COMMON_SCRIPT

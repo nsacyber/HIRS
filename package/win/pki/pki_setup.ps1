@@ -14,8 +14,8 @@ param (
 	[switch]$UNATTENDED = $false
 )
 
-$APP_HOME=(Split-Path -parent $PSCommandPath)
-$ACA_COMMON_SCRIPT=(Join-Path "$APP_HOME" .. aca aca_common.ps1)
+$ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
+$ACA_COMMON_SCRIPT=(Join-Path "$ACA_SCRIPTS_HOME" .. aca aca_common.ps1)
 
 # Load other scripts
 . $ACA_COMMON_SCRIPT
@@ -44,7 +44,7 @@ if (!$PKI_PASS) {
 }
 
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
-Write-Output "APP_HOME is $APP_HOME" | WriteAndLog
+Write-Output "APP_HOME is $ACA_SCRIPTS_HOME" | WriteAndLog
 
 # Check for sudo or root user 
 if(!(New-Object Security.Principal.WindowsPrincipal(
@@ -59,7 +59,7 @@ if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_DIR)) {
     if ([System.IO.Directory]::Exists($global:HIRS_REL_WIN_PKI_HOME)) {
 		$PKI_SETUP_DIR=$global:HIRS_REL_WIN_PKI_HOME
 	} else {
-        $PKI_SETUP_DIR=$APP_HOME
+        $PKI_SETUP_DIR=$ACA_SCRIPTS_HOME
 	}
 	Write-Output "PKI_SETUP_DIR is $PKI_SETUP_DIR" | WriteAndLog
 

@@ -104,13 +104,13 @@ $global:ECC_WEB_TLS_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH
 $global:HIRS_REL_WIN_ACA_HOME=(Split-Path -parent $PSCommandPath)
 $global:HIRS_REL_WIN_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME ..)
 $global:HIRS_REL_PACKAGE_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME ..)
-$global:HIRS_REL_SCRIPTS_HOME=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME 'linux')
-$global:HIRS_REL_SCRIPTS_ACA_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'aca')
-$global:HIRS_REL_SCRIPTS_DB_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'db')
-$global:HIRS_REL_SCRIPTS_DB_CREATE_SQL=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_DB_HOME 'db_create.sql')
-$global:HIRS_REL_SCRIPTS_DB_SECURE_MYSQL_SQL=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_DB_HOME 'secure_mysql.sql')
-$global:HIRS_REL_SCRIPTS_PKI_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'pki')
-$global:HIRS_REL_SCRIPTS_PKI_CA_CONF=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_PKI_HOME 'ca.conf')
+$global:HIRS_REL_LINUX_HOME=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME 'linux')
+$global:HIRS_REL_SCRIPTS_ACA_HOME=(Join-Path -Resolve $global:HIRS_REL_LINUX_HOME 'aca')
+$global:HIRS_REL_SCRIPTS_LINUX_DB_HOME=(Join-Path -Resolve $global:HIRS_REL_LINUX_HOME 'db')
+$global:HIRS_REL_SCRIPTS_DB_CREATE_SQL=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_LINUX_DB_HOME 'db_create.sql')
+$global:HIRS_REL_SCRIPTS_DB_SECURE_MYSQL_SQL=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_LINUX_DB_HOME 'secure_mysql.sql')
+$global:HIRS_REL_SCRIPTS_LINUX_PKI_HOME=(Join-Path -Resolve $global:HIRS_REL_LINUX_HOME 'pki')
+$global:HIRS_REL_SCRIPTS_PKI_CA_CONF=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_LINUX_PKI_HOME 'ca.conf')
 
 #           WIN ACA powershell scripts
 $global:HIRS_REL_WIN_ACA_BOOTRUN=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_bootRun.ps1')
@@ -131,17 +131,15 @@ $global:HIRS_REL_WIN_PKI_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME 'pki
 $global:HIRS_REL_WIN_PKI_CHAIN_GEN=(Join-Path -Resolve $global:HIRS_REL_WIN_PKI_HOME 'pki_chain_gen.ps1')
 $global:HIRS_REL_WIN_PKI_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_PKI_HOME 'pki_setup.ps1')
 
-#           ACA properties file
+#           ACA Properties Files
+$HIRS_PORTAL_PATH = (Resolve-Path "$global:HIRS_REL_PACKAGE_HOME\..\HIRS_AttestationCAPortal\src\main\resources").Path
 
-$BASE = Join-Path -Path $global:HIRS_REL_PACKAGE_HOME -ChildPath ".."
-$PORTAL_PATH = Join-Path -Path $BASE -ChildPath "HIRS_AttestationCAPortal\src\main\resources"
-
-$global:HIRS_REL_PORTAL_LOG4J_SPRING_XML = Join-Path $PORTAL_PATH "log4j2-spring.xml"
-$global:HIRS_REL_PORTAL_APPLICATION_PROPERTIES = Join-Path $PORTAL_PATH "application.properties"
-$global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML = Join-Path $PORTAL_PATH "log4j2-spring.linux.xml"
-$global:HIRS_REL_PORTAL_APPLICATION_LINUX_PROPERTIES = Join-Path $PORTAL_PATH "application.linux.properties"
-$global:HIRS_REL_PORTAL_LOG4J_SPRING_WIN_XML = Join-Path $PORTAL_PATH "log4j2-spring.win.xml"
-$global:HIRS_REL_PORTAL_APPLICATION_WIN_PROPERTIES = Join-Path $PORTAL_PATH "application.win.properties"
+$global:HIRS_REL_PORTAL_LOG4J_SPRING_XML = Join-Path $HIRS_PORTAL_PATH "log4j2-spring.xml"
+$global:HIRS_REL_PORTAL_APPLICATION_SPRING_PROPERTIES = Join-Path $HIRS_PORTAL_PATH "application.properties"
+$global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML = Join-Path $HIRS_PORTAL_PATH "log4j2-spring.linux.xml"
+$global:HIRS_REL_PORTAL_APPLICATION_LINUX_SPRING_PROPERTIES = Join-Path $HIRS_PORTAL_PATH "application.linux.properties"
+$global:HIRS_REL_PORTAL_LOG4J_SPRING_WIN_XML = Join-Path $HIRS_PORTAL_PATH "log4j2-spring.win.xml"
+$global:HIRS_REL_PORTAL_APPLICATION_WIN_SPRING_PROPERTIES = Join-Path $HIRS_PORTAL_PATH "application.win.properties"
 $global:HIRS_REL_WIN_PKI_CA_CONF = Join-Path $global:HIRS_REL_WIN_PKI_HOME "ca.conf"
 
 #    Saved values
@@ -150,7 +148,8 @@ $global:HIRS_REL_WIN_PKI_CA_CONF = Join-Path $global:HIRS_REL_WIN_PKI_HOME "ca.c
 $global:ACA_PROPERTIES=$null
 $global:SPRING_PROPERTIES=$null
 
-# Common utility functions
+# Below are the common utility functions that are used by the other ACA powershell scripts
+
 Function read_aca_properties () {
     # This converts the ACA properties file into a hash table
     # Values are accessed by key like this: $propertyValue=$global:ACA_PROPERTIES.'example.property.key'
