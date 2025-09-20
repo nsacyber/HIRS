@@ -8,13 +8,9 @@ import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -27,8 +23,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Controller for the Help page.
@@ -39,14 +35,6 @@ import java.io.IOException;
 public class HelpPageController extends PageController<NoPageParams> {
     private final HelpPageService helpPageService;
 
-    private String fullLogFilePath;
-
-    @Value("${logging.file.path}")
-    private String logFilePath;
-
-    @Value("${logging.file.name}")
-    private String logFileName;
-
     /**
      * Constructor providing the Help Page's display and routing specification.
      *
@@ -56,15 +44,6 @@ public class HelpPageController extends PageController<NoPageParams> {
     public HelpPageController(final HelpPageService helpPageService) {
         super(Page.HELP);
         this.helpPageService = helpPageService;
-    }
-
-    /**
-     * After this component has been created, combine the two application property values together
-     * to create the log file's full path.
-     */
-    @PostConstruct
-    public void initialize() {
-        this.fullLogFilePath = this.logFilePath + "/" + this.logFileName;
     }
 
     /**
@@ -80,39 +59,26 @@ public class HelpPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Processes the request to download the HIRS application's log file.
+     * Processes the request to download a zip file of the HIRS application's log files.
      *
      * @param response response that will be sent out after processing download request
      * @throws IOException when writing to response output stream
      */
-    @GetMapping("/hirs-log-download")
-    public void downloadHIRSLog(final HttpServletResponse response) throws IOException {
+    @GetMapping("/hirs-logs-download")
+    public void downloadHIRSLogs(final HttpServletResponse response) throws IOException {
+        log.info("Received request to download a zip file of all the"
+                + " HIRS Attestation application's log files");
 
-        try {
-            log.info("Received request to download the HIRS Attestation application's log file");
-            final File logFile = new File(this.fullLogFilePath);
+        final String fileName = "HIRS_AttestationCAPortal_Logs.zip";
 
-            if (!logFile.exists()) {
-                log.error("The log file cannot be downloaded because it does not exist");
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+        response.setContentType("application/zip");
 
-            Resource resource = new FileSystemResource(logFile);
-
-            // Set the response headers for file download
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + logFile.getName());
-            response.setContentType(
-                    MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-            // Copy the file content to the response output stream
-            org.apache.commons.io.IOUtils.copy(resource.getInputStream(), response.getOutputStream());
-
+        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+            this.helpPageService.bulkDownloadHIRSLogFiles(zipOut);
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to download the"
-                    + " HIRS Application log file", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // HIRS log file
+            log.error("An exception was thrown while attempting to bulk download all the "
+                    + "HIRS Attestation Logs", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -147,7 +113,6 @@ public class HelpPageController extends PageController<NoPageParams> {
         return new DataTableResponse<>(mainHIRSLoggersFilteredRecordsList, input);
     }
 
-
     /**
      * Processes the request that sets the log level of the selected logger.
      *
@@ -170,8 +135,6 @@ public class HelpPageController extends PageController<NoPageParams> {
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to set the logging level for the"
                     + " selected logger", exception);
-
-            // send a 404 error when an exception is thrown while attempting to set the logger's log level
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
 

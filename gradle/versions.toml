@@ -20,7 +20,7 @@ minimalJsonVersion = "0.9.5"
 nimbusJwtVersion = "10.0.1"
 ospackageVersion = "11.2.0"
 pciVersion = "0.3"
-protobufJavaVersion = "4.28.3"
+protobufJavaVersion = "4.32.0"
 snakeYamlVersion = "2.0"
 springBootVersion = "3.4.1"
 springFrameworkVersion = "6.2.1"
@@ -57,6 +57,7 @@ minimal-json = { module = "com.eclipsesource.minimal-json:minimal-json", version
 nimbus-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbusJwtVersion" }
 pci = { module = "com.github.marandus:pci-ids", version.ref = "pciVersion" }
 protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufJavaVersion" }
+protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobufJavaVersion" }
 snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "snakeYamlVersion" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "springBootVersion" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "springBootVersion" }
