@@ -204,7 +204,6 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                     + platformCredential.getSerialNumber()
                     + ".cer\"";
 
-            // Set filename for download.
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
@@ -212,11 +211,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             response.getOutputStream().write(certificate.getRawBytes());
 
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to download the"
-                    + " specified platform credential", exception);
-
-            // send a 404 error when an exception is thrown while attempting to download the
-            // specified platform credential
+            log.error("An exception was thrown while attempting to download the "
+                    + "specified platform credential", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -236,7 +232,6 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         final String fileName = "platform_certificates.zip";
         final String singleFileName = "Platform_Certificate";
 
-        // Set filename for download.
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
         response.setContentType("application/zip");
 
@@ -245,11 +240,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the"
+            log.error("An exception was thrown while attempting to bulk download all the "
                     + "platform credentials", exception);
 
-            // send a 404 error when an exception is thrown while attempting to download the
-            //platform credentials
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
