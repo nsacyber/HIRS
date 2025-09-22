@@ -1,0 +1,21 @@
+plugins {
+    id 'base' // lightweight plugin, avoids applying Java
+}
+
+def frontendDir = file("$projectDir/HIRS_UI/hirs-ui")
+def angularDistDir = "$buildDir/dist"  // can be adjusted
+
+//// Task: npm install
+//task npmInstall(type: Exec) {
+//    workingDir frontendDir
+//    commandLine 'npm', 'install'
+//}
+//
+//// Task: ng build
+//task buildAngular(type: Exec) {
+//    dependsOn npmInstall
+//    workingDir frontendDir
+//    commandLine 'npm', 'run', 'build' // Make sure this is defined in package.json
+//}
+//
+
