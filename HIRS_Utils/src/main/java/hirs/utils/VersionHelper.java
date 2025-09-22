@@ -20,9 +20,19 @@ import java.nio.file.Paths;
 @Log4j2
 public final class VersionHelper {
     private static final String VERSION = "VERSION";
-    private static final Path LINUX_OPT_PATH = Paths.get("opt", "hirs", "aca", VERSION);
-    private static final Path LINUX_ETC_PATH = Paths.get("etc", "hirs", "aca", VERSION);
-    private static final Path WINDOWS_PATH = Paths.get("C:/", "ProgramData", "hirs", "aca", VERSION);
+
+    private static final Path LINUX_OPT_PATH = Paths.get(
+            System.getenv().getOrDefault("HIRS_LINUX_OPT", "/opt/hirs/aca/" + VERSION)
+    );
+
+    private static final Path LINUX_ETC_PATH = Paths.get(
+            System.getenv().getOrDefault("HIRS_LINUX_ETC", "/etc/hirs/aca/" + VERSION)
+    );
+
+    private static final Path WINDOWS_PATH = Paths.get(
+            System.getenv().getOrDefault("HIRS_WIN_PATH", "C:/ProgramData/hirs/aca/" + VERSION)
+    );
+
     private static final int FILE_BUFFER_SIZE = 8192;
 
     private VersionHelper() {
@@ -35,12 +45,16 @@ public final class VersionHelper {
      * @return A string representing the current version.
      */
     public static String getVersion() {
-        if (Files.exists(LINUX_OPT_PATH)) {
-            return getVersion(LINUX_OPT_PATH);
-        } else if (Files.exists(LINUX_ETC_PATH)) {
-            return getVersion(LINUX_ETC_PATH);
-        } else if (Files.exists(WINDOWS_PATH)) {
+        final String osName = System.getProperty("os.name").toLowerCase();
+
+        if (osName.contains("win") && Files.exists(WINDOWS_PATH)) {
             return getVersion(WINDOWS_PATH);
+        } else if (osName.contains("nux") || osName.contains("nix")) {
+            if (Files.exists(LINUX_OPT_PATH)) {
+                return getVersion(LINUX_OPT_PATH);
+            } else if (Files.exists(LINUX_ETC_PATH)) {
+                return getVersion(LINUX_ETC_PATH);
+            }
         }
         return getVersion(VERSION);
     }
