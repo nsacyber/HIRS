@@ -36,7 +36,7 @@ public class HelpPageController extends PageController<NoPageParams> {
     private final HelpPageService helpPageService;
 
     /**
-     * Constructor providing the Help Page's display and routing specification.
+     * Constructor for the Help Page Controller.
      *
      * @param helpPageService help service
      */
@@ -47,11 +47,11 @@ public class HelpPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Returns the path for the view and the data model for the page.
+     * Returns the path for the view and the data model for the help page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from redirect.
-     * @return the path for the view and data model for the page.
+     * @return the path for the view and data model for the help page.
      */
     @RequestMapping
     public ModelAndView initPage(final NoPageParams params, final Model model) {
@@ -66,12 +66,11 @@ public class HelpPageController extends PageController<NoPageParams> {
      */
     @GetMapping("/hirs-logs-download")
     public void downloadHIRSLogs(final HttpServletResponse response) throws IOException {
-        log.info("Received request to download a zip file of all the"
-                + " HIRS Attestation application's log files");
+        log.info("Received request to download a zip file of all the HIRS Attestation application's log files");
 
-        final String fileName = "HIRS_AttestationCAPortal_Logs.zip";
+        final String zipFileName = "HIRS_AttestationCAPortal_Logs.zip";
 
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
@@ -84,23 +83,19 @@ public class HelpPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Processes the request to retrieve the main HIRS logger for display
-     * on the help page.
+     * Processes the request to retrieve the main HIRS logger for display on the help page.
      *
      * @param input data table input received from the front-end
      * @return data table of just the main HIRS logger
      */
     @ResponseBody
-    @GetMapping(value = "/list-main-logger",
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/list-main-logger", produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<HIRSLogger> getMainHIRSLogger(final DataTableInput input) {
 
         log.info("Received request to display the main HIRS logger");
-        log.debug("Request received a datatable input object for listing the main HIRS logger: "
-                + "{}", input);
+        log.debug("Request received a datatable input object for listing the main HIRS logger: {}", input);
 
-        FilteredRecordsList<HIRSLogger> mainHIRSLoggersFilteredRecordsList =
-                new FilteredRecordsList<>();
+        FilteredRecordsList<HIRSLogger> mainHIRSLoggersFilteredRecordsList = new FilteredRecordsList<>();
 
         final HIRSLogger mainHIRSLogger = this.helpPageService.getMainHIRSLogger();
         mainHIRSLoggersFilteredRecordsList.add(mainHIRSLogger);
@@ -125,8 +120,7 @@ public class HelpPageController extends PageController<NoPageParams> {
     @PostMapping("/setLogLevel")
     public RedirectView setLogLevel(final HttpServletResponse response,
                                     @RequestParam final String loggerName,
-                                    @RequestParam final String logLevel)
-            throws IOException {
+                                    @RequestParam final String logLevel) throws IOException {
         try {
             log.info("Received a request to set the log level [{}] for the provided logger [{}]", logLevel,
                     loggerName);

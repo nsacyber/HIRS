@@ -36,7 +36,7 @@ public class HelpPageService {
     private String logFilesPath;
 
     /**
-     * Constructor for Help Page service.
+     * Constructor for Help Page Service.
      *
      * @param loggersEndpoint loggers endpoint
      */

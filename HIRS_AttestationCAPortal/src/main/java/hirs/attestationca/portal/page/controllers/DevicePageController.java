@@ -2,7 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.Device;
-import hirs.attestationca.persist.service.DeviceService;
+import hirs.attestationca.persist.service.DevicePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -33,23 +33,21 @@ import java.util.Set;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/devices")
 public class DevicePageController extends PageController<NoPageParams> {
-
-    private final DeviceService deviceService;
+    private final DevicePageService devicePageService;
 
     /**
-     * Device Page Controller constructor.
+     * Constructor for the Device Page Controller.
      *
-     * @param deviceService device service
+     * @param devicePageService device page service
      */
     @Autowired
-    public DevicePageController(
-            final DeviceService deviceService) {
+    public DevicePageController(final DevicePageService devicePageService) {
         super(Page.DEVICES);
-        this.deviceService = deviceService;
+        this.devicePageService = devicePageService;
     }
 
     /**
-     * Returns the path for the view and the data model for the validation reports page.
+     * Returns the path for the view and the data model for the device page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
@@ -63,29 +61,26 @@ public class DevicePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Processes the request to retrieve a list of devices and device related
-     * information for display on the devices page.
+     * Processes the request to retrieve a list of devices and device related information for display on the
+     * devices page.
      *
      * @param input data table input.
      * @return data table of devices
      */
     @ResponseBody
-    @GetMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<HashMap<String, Object>> getDevicesTableData(
-            final DataTableInput input) {
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DataTableResponse<HashMap<String, Object>> getDevicesTableData(final DataTableInput input) {
         log.info("Received request to display list of devices");
         log.debug("Request received a datatable input object for the device page: {}",
                 input);
 
-        String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
         final Set<String> searchableColumns =
                 ControllerPagesUtils.findSearchableColumnsNames(Device.class, input.getColumns());
 
-        // get all the devices
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
 
         final int currentPage = input.getStart() / input.getLength();
@@ -93,9 +88,9 @@ public class DevicePageController extends PageController<NoPageParams> {
         org.springframework.data.domain.Page<Device> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.deviceService.findAllDevices(pageable);
+            pagedResult = this.devicePageService.findAllDevices(pageable);
         } else {
-            pagedResult = this.deviceService.findAllDevicesBySearchableColumns(searchableColumns, searchTerm,
+            pagedResult = this.devicePageService.findAllDevicesBySearchableColumns(searchableColumns, searchTerm,
                     pageable);
         }
 
@@ -104,10 +99,10 @@ public class DevicePageController extends PageController<NoPageParams> {
         }
 
         deviceList.setRecordsFiltered(pagedResult.getTotalElements());
-        deviceList.setRecordsTotal(this.deviceService.findDeviceRepositoryCount());
+        deviceList.setRecordsTotal(this.devicePageService.findDeviceRepositoryCount());
 
         FilteredRecordsList<HashMap<String, Object>> devicesAndAssociatedCertificates
-                = this.deviceService.retrieveDevicesAndAssociatedCertificates(deviceList);
+                = this.devicePageService.retrieveDevicesAndAssociatedCertificates(deviceList);
 
         log.info("Returning the size of the list of devices: {}", devicesAndAssociatedCertificates.size());
         return new DataTableResponse<>(devicesAndAssociatedCertificates, input);
