@@ -30,6 +30,7 @@ public abstract class ArchivableEntity extends AbstractEntity {
     @Column(name = "archived_time")
     private Date archivedTime;
 
+    @Setter
     @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "archived_description")
     private String archivedDescription;
