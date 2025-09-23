@@ -31,6 +31,7 @@ $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH=(Join-Path $HIRS_DATA_CERTIFICATES_
 $global:HIRS_DATA_LOG_DIR=(Join-Path $global:HIRS_DATA_DIR "log")
 $global:HIRS_DATA_INSTALL_LOG_NAME=(Join-Path $global:HIRS_DATA_LOG_DIR ("hirs_aca_install_"+(Get-Date -Format "yyyy-MM-dd")+'.log'))
 $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR=(Join-Path $global:HIRS_CONF_DIR "default-properties")
+$global:HIRS_DATA_WIN_VERSION_FILE=(Join-Path $global:HIRS_CONF_DIR 'VERSION')
 
 #         Db Configuration files
 $global:DB_CONF = (Resolve-Path ([System.IO.Path]::Combine($Env:ProgramFiles, 'MariaDB 11.1', 'data', 'my.ini'))).Path
@@ -86,6 +87,7 @@ $global:HIRS_REL_WIN_DB_MYSQL_UTIL=(Join-Path -Resolve $global:HIRS_REL_WIN_DB_H
 $global:HIRS_REL_WIN_PKI_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME 'pki')
 $global:HIRS_REL_WIN_PKI_CHAIN_GEN=(Join-Path -Resolve $global:HIRS_REL_WIN_PKI_HOME 'pki_chain_gen.ps1')
 $global:HIRS_REL_WIN_PKI_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_PKI_HOME 'pki_setup.ps1')
+$global:HIRS_RELEASE_VERSION_FILE = (Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME '..\VERSION')
 
 #    Saved values
 # $Env:HIRS_MYSQL_ROOT_PWD
