@@ -2,20 +2,40 @@ plugins {
     id 'base' // lightweight plugin, avoids applying Java
 }
 
-def frontendDir = file("$projectDir/HIRS_UI/hirs-ui")
-def angularDistDir = "$buildDir/dist"  // can be adjusted
+def frontEndDir = file("$projectDir/hirs-ui")
+def angularOutputDir = "${frontEndDir}/dist/hirs-ui/browser"
+def backendStaticDir = file("$rootDir/HIRS_AttestationCAPortal/src/main/resources/static")
 
-//// Task: npm install
-//task npmInstall(type: Exec) {
-//    workingDir frontendDir
-//    commandLine 'npm', 'install'
+tasks.register('npmInstall', Exec) {
+    workingDir = frontEndDir
+    commandLine 'npm', 'install'
+    println(backendStaticDir)
+}
+
+tasks.register('npmBuild', Exec) {
+    dependsOn 'npmInstall'
+    workingDir = frontEndDir
+    commandLine 'npm', 'run', 'build'  // or 'ng', 'build' if globally installed
+}
+
+tasks.register('npmTest', Exec) {
+    dependsOn npmBuild
+    workingDir = frontEndDir
+    commandLine 'npm', 'run', 'test'  // Run Angular tests
+}
+
+tasks.register('copyFrontEndStaticFilesToBackEnd', Copy) {
+    dependsOn 'npmBuild'
+    from angularOutputDir
+    into backendStaticDir
+}
+
+//// Make sure copyFrontend runs before processResources and bootRun
+//tasks.named('processResources') {
+//    dependsOn 'copyFrontend'
 //}
-//
-//// Task: ng build
-//task buildAngular(type: Exec) {
-//    dependsOn npmInstall
-//    workingDir frontendDir
-//    commandLine 'npm', 'run', 'build' // Make sure this is defined in package.json
+
+//tasks.named('bootRun') {
+//    dependsOn 'copyFrontend'
 //}
-//
 
