@@ -26,25 +26,70 @@ $global:HIRS_DATA_ACA_PROPERTIES_FILE=(Join-Path $global:HIRS_CONF_DIR 'aca.prop
 $global:HIRS_DATA_SPRING_PROP_FILE=(Join-Path $global:HIRS_CONF_DIR 'application.win.properties')
 $global:HIRS_DATA_CERTIFICATES_DIR=(Join-Path $global:HIRS_DATA_DIR "certificates")
 $global:HIRS_DATA_CERTIFICATES_HIRS_DIR=(Join-Path $global:HIRS_DATA_CERTIFICATES_DIR "HIRS")
-$global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH=(Join-Path $HIRS_DATA_CERTIFICATES_HIRS_DIR "rsa_3k_sha384_certs")
-$global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH=(Join-Path $HIRS_DATA_CERTIFICATES_HIRS_DIR "ecc_512_sha384_certs")
 $global:HIRS_DATA_LOG_DIR=(Join-Path $global:HIRS_DATA_DIR "log")
 $global:HIRS_DATA_INSTALL_LOG_NAME=(Join-Path $global:HIRS_DATA_LOG_DIR ("hirs_aca_install_"+(Get-Date -Format "yyyy-MM-dd")+'.log'))
 $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR=(Join-Path $global:HIRS_CONF_DIR "default-properties")
 $global:HIRS_DATA_WIN_VERSION_FILE=(Join-Path $global:HIRS_CONF_DIR 'VERSION')
 
-#         Db Configuration files
+#         ACA Property Keys
+$global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME="hirs_pki_password"
+$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME="mysql_admin_password"
+$global:ACA_PROPERTIES_HIRS_DB_USERNAME_PROPERTY_NAME="hirs_db_username"
+$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME="hirs_db_password"
+
+
+#         Spring Property Keys
+$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME="hibernate.connection.username"
+$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME="hibernate.connection.password"
+$global:SPRING_PROPERTIES_SSL_KEY_STORE_PWD_PROPERTY_NAME="server.ssl.key-store-password"
+$global:SPRING_PROPERTIES_SSL_KEY_TRUST_STORE_PWD_PROPERTY_NAME="server.ssl.trust-store-password"
+
+#         DB Configuration file
 $global:DB_CONF = (Resolve-Path ([System.IO.Path]::Combine($Env:ProgramFiles, 'MariaDB 11.1', 'data', 'my.ini'))).Path
 
-#         Default Server Side Certificates
-$global:SSL_DB_SRV_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
-$global:SSL_DB_SRV_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_srv_rsa_3k_sha384.pem')
-$global:SSL_DB_SRV_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_srv_rsa_3k_sha384.key')
+#         RSA Certificates Directory
+$global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH=(Join-Path $HIRS_DATA_CERTIFICATES_HIRS_DIR "rsa_3k_sha384_certs")
 
-#         Default Client Side Certificates
-$global:SSL_DB_CLIENT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
-$global:SSL_DB_CLIENT_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.pem')
-$global:SSL_DB_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.key')
+#         RSA Server Side Certificates (Default)
+$global:SSL_DB_RSA_SRV_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
+$global:SSL_DB_RSA_SRV_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_srv_rsa_3k_sha384.pem')
+$global:SSL_DB_RSA_SRV_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_srv_rsa_3k_sha384.key')
+
+#         RSA Client Side Certificates (Default)
+$global:SSL_DB_RSA_CLIENT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rsa_3k_sha384_Cert_Chain.pem')
+$global:SSL_DB_RSA_CLIENT_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.pem')
+$global:SSL_DB_RSA_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_db_client_rsa_3k_sha384.key')
+
+#         RSA PKI Certificates
+$global:RSA_HIRS_ROOT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_root_ca_rsa_3k_sha384.pem')
+$global:RSA_HIRS_INTERMEDIATE=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_intermediate_ca_rsa_3k_sha384.pem')
+$global:RSA_HIRS_CA1=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_leaf_ca1_rsa_3k_sha384.pem')
+$global:RSA_HIRS_CA2=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_leaf_ca2_rsa_3k_sha384.pem')
+$global:RSA_HIRS_CA3=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_leaf_ca3_rsa_3k_sha384.pem')
+$global:RSA_RIM_SIGNER=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_rim_signer_rsa_3k_sha384.pem')
+$global:RSA_WEB_TLS_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH 'HIRS_aca_tls_rsa_3k_sha384.pem')
+
+#         ECC Certificates Directory       
+$global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH=(Join-Path $HIRS_DATA_CERTIFICATES_HIRS_DIR "ecc_512_sha384_certs")
+
+#         ECC Server Side Certificates 
+$global:SSL_DB_ECC_SRV_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_ecc_512_sha384_Cert_Chain.pem')
+$global:SSL_DB_ECC_SRV_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_db_srv_ecc_512_sha384.pem')
+$global:SSL_DB_ECC_SRV_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_db_srv_ecc_512_sha384.key')
+
+#         ECC Client Side Certificates 
+$global:SSL_DB_ECC_CLIENT_CHAIN=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_ecc_512_sha384_Cert_Chain.pem')
+$global:SSL_DB_ECC_CLIENT_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_db_client_ecc_512_sha384.pem')
+$global:SSL_DB_ECC_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_db_client_ecc_512_sha384.key')
+
+#         ECC PKI Certificates
+$global:ECC_HIRS_ROOT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_root_ca_ecc_512_sha384.pem')
+$global:ECC_HIRS_INTERMEDIATE=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_intermediate_ca_ecc_512_sha384.pem')
+$global:ECC_HIRS_CA1=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_leaf_ca1_ecc_512_sha384.pem')
+$global:ECC_HIRS_CA2=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_leaf_ca2_ecc_512_sha384.pem')
+$global:ECC_HIRS_CA3=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_leaf_ca3_ecc_512_sha384.pem')
+$global:ECC_RIM_SIGNER=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_rim_signer_ecc_512_sha384.pem')
+$global:ECC_WEB_TLS_CERT=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_aca_tls_ecc_512_sha384.pem')
 
 #     HIRS Relative directories assumed structure
 #         package
@@ -58,11 +103,14 @@ $global:SSL_DB_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PAT
 #           win
 #             aca
 #               aca_bootRun.ps1
+#               aca_check_setup.ps1
 #               aca_common.ps1         # This script. You are here.
+#               aca_remove_setup.ps1
 #               aca_setup.ps1
 #               aca_win_config.ps1
 #             db
 #               db_create.ps1
+#               db_drop.ps1
 #               mysql_util.ps1
 #             pki
 #               pki_chain_gen.ps1
@@ -70,24 +118,44 @@ $global:SSL_DB_CLIENT_KEY=(Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PAT
 $global:HIRS_REL_WIN_ACA_HOME=(Split-Path -parent $PSCommandPath)
 $global:HIRS_REL_WIN_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME ..)
 $global:HIRS_REL_PACKAGE_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME ..)
-$global:HIRS_REL_SCRIPTS_HOME=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME 'linux')
-$global:HIRS_REL_SCRIPTS_ACA_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'aca')
-$global:HIRS_REL_SCRIPTS_DB_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'db')
-$global:HIRS_REL_SCRIPTS_DB_CREATE_SQL=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_DB_HOME 'db_create.sql')
-$global:HIRS_REL_SCRIPTS_DB_SECURE_MYSQL_SQL=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_DB_HOME 'secure_mysql.sql')
-$global:HIRS_REL_SCRIPTS_PKI_HOME=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_HOME 'pki')
-$global:HIRS_REL_SCRIPTS_PKI_CA_CONF=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_PKI_HOME 'ca.conf')
+$global:HIRS_REL_LINUX_HOME=(Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME 'linux')
+$global:HIRS_REL_SCRIPTS_ACA_HOME=(Join-Path -Resolve $global:HIRS_REL_LINUX_HOME 'aca')
+$global:HIRS_REL_SCRIPTS_LINUX_DB_HOME=(Join-Path -Resolve $global:HIRS_REL_LINUX_HOME 'db')
+$global:HIRS_REL_SCRIPTS_DB_CREATE_SQL=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_LINUX_DB_HOME 'db_create.sql')
+$global:HIRS_REL_SCRIPTS_DB_SECURE_MYSQL_SQL=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_LINUX_DB_HOME 'secure_mysql.sql')
+$global:HIRS_REL_SCRIPTS_LINUX_PKI_HOME=(Join-Path -Resolve $global:HIRS_REL_LINUX_HOME 'pki')
+$global:HIRS_REL_SCRIPTS_PKI_CA_CONF=(Join-Path -Resolve $global:HIRS_REL_SCRIPTS_LINUX_PKI_HOME 'ca.conf')
+
+#           WIN ACA powershell scripts
 $global:HIRS_REL_WIN_ACA_BOOTRUN=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_bootRun.ps1')
 $global:HIRS_REL_WIN_ACA_COMMON=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_common.ps1')
 $global:HIRS_REL_WIN_ACA_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_setup.ps1')
 $global:HIRS_REL_WIN_ACA_CONFIG=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_win_config.ps1')
+$global:HIRS_REL_WIN_ACA_CHECK_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_check_setup.ps1')
+$global:HIRS_REL_WIN_ACA_REMOVE_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_ACA_HOME 'aca_remove_setup.ps1')
+
+#           WIN DB powershell scripts
 $global:HIRS_REL_WIN_DB_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME 'db')
 $global:HIRS_REL_WIN_DB_CREATE=(Join-Path -Resolve $global:HIRS_REL_WIN_DB_HOME 'db_create.ps1')
 $global:HIRS_REL_WIN_DB_MYSQL_UTIL=(Join-Path -Resolve $global:HIRS_REL_WIN_DB_HOME 'mysql_util.ps1')
+$global:HIRS_REL_WIN_DB_DROP=(Join-Path -Resolve $global:HIRS_REL_WIN_DB_HOME 'db_drop.ps1')
+
+#           WIN PKI powershell scripts
 $global:HIRS_REL_WIN_PKI_HOME=(Join-Path -Resolve $global:HIRS_REL_WIN_HOME 'pki')
 $global:HIRS_REL_WIN_PKI_CHAIN_GEN=(Join-Path -Resolve $global:HIRS_REL_WIN_PKI_HOME 'pki_chain_gen.ps1')
 $global:HIRS_REL_WIN_PKI_SETUP=(Join-Path -Resolve $global:HIRS_REL_WIN_PKI_HOME 'pki_setup.ps1')
 $global:HIRS_RELEASE_VERSION_FILE = (Join-Path -Resolve $global:HIRS_REL_PACKAGE_HOME '..\VERSION')
+
+#           ACA Properties Files
+$HIRS_PORTAL_PATH = (Resolve-Path "$global:HIRS_REL_PACKAGE_HOME\..\HIRS_AttestationCAPortal\src\main\resources").Path
+
+$global:HIRS_REL_PORTAL_LOG4J_SPRING_XML = Join-Path $HIRS_PORTAL_PATH "log4j2-spring.xml"
+$global:HIRS_REL_PORTAL_APPLICATION_SPRING_PROPERTIES = Join-Path $HIRS_PORTAL_PATH "application.properties"
+$global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML = Join-Path $HIRS_PORTAL_PATH "log4j2-spring.linux.xml"
+$global:HIRS_REL_PORTAL_APPLICATION_LINUX_SPRING_PROPERTIES = Join-Path $HIRS_PORTAL_PATH "application.linux.properties"
+$global:HIRS_REL_PORTAL_LOG4J_SPRING_WIN_XML = Join-Path $HIRS_PORTAL_PATH "log4j2-spring.win.xml"
+$global:HIRS_REL_PORTAL_APPLICATION_WIN_SPRING_PROPERTIES = Join-Path $HIRS_PORTAL_PATH "application.win.properties"
+$global:HIRS_REL_WIN_PKI_CA_CONF = Join-Path $global:HIRS_REL_WIN_PKI_HOME "ca.conf"
 
 #    Saved values
 # $Env:HIRS_MYSQL_ROOT_PWD
@@ -95,7 +163,8 @@ $global:HIRS_RELEASE_VERSION_FILE = (Join-Path -Resolve $global:HIRS_REL_PACKAGE
 $global:ACA_PROPERTIES=$null
 $global:SPRING_PROPERTIES=$null
 
-# Common utility functions
+# Below are the common utility functions that are used by the other ACA powershell scripts
+
 Function read_aca_properties () {
     # This converts the ACA properties file into a hash table
     # Values are accessed by key like this: $propertyValue=$global:ACA_PROPERTIES.'example.property.key'
