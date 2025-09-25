@@ -23,6 +23,10 @@ import org.bouncycastle.util.encoders.Hex;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,8 +75,6 @@ public final class CertificateStringMapBuilder {
             data.put("beginValidity", Long.toString(certificate.getBeginValidity().getTime()));
             data.put("endValidity", Long.toString(certificate.getEndValidity().getTime()));
             data.put("signature", Arrays.toString(certificate.getSignature()));
-            data.put("signatureSize", Integer.toString(certificate.getSignature().length
-                    * Certificate.MIN_ATTR_CERT_LENGTH));
 
             if (certificate.getSubject() != null) {
                 data.put("subject", certificate.getSubject());
@@ -93,11 +95,37 @@ public final class CertificateStringMapBuilder {
                 data.put("encodedPublicKey",
                         Arrays.toString(certificate.getEncodedPublicKey()));
                 data.put("publicKeyAlgorithm", certificate.getPublicKeyAlgorithm());
+                byte[] encodedPublicKey = certificate.getEncodedPublicKey();
+                try {
+                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedPublicKey);
+                    PublicKey publicKey = null;
+                    // Attempt EC
+                    try {
+                        KeyFactory ecFactory = KeyFactory.getInstance("EC");
+                        publicKey = ecFactory.generatePublic(keySpec);
+                    } catch (Exception ignore) {}
+                    // If no EC then RSA
+                    if (publicKey == null) {
+                        KeyFactory rsaFactory = KeyFactory.getInstance("RSA");
+                        publicKey = rsaFactory.generatePublic(keySpec);
+                    }
+                    // Get public key size
+                    if (publicKey != null) {
+                        String keySizeStr;
+                        if (publicKey instanceof ECPublicKey ecKey) {
+                            keySizeStr = Integer.toString(ecKey.getParams().getCurve().getField().getFieldSize());
+                        } else {
+                            keySizeStr = String.valueOf(certificate.getPublicKeySize());
+                        }
+                        data.put("publicKeySize", keySizeStr);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to parse public key from certificate", e);
+                }
             }
 
             if (certificate.getPublicKeyModulusHexValue() != null) {
                 data.put("publicKeyValue", certificate.getPublicKeyModulusHexValue());
-                data.put("publicKeySize", String.valueOf(certificate.getPublicKeySize()));
             }
 
             if (certificate.getKeyUsage() != null) {
@@ -120,6 +148,20 @@ public final class CertificateStringMapBuilder {
                     data.put("missingChainIssuer", String.format("Missing %s from the chain.",
                             missingCert.getIssuer()));
                 }
+
+                // Match AKI against SKI
+                if (certificate.getAuthorityKeyIdentifier() != null
+                        && !certificate.getAuthorityKeyIdentifier().isEmpty()) {
+                    CertificateAuthorityCredential keyIdMatch = caCertificateRepository
+                            .findBySubjectKeyIdStringAndArchiveFlag(
+                                    certificate.getAuthorityKeyIdentifier(), false);
+                    if (keyIdMatch != null) {
+                        data.put("issuerID", keyIdMatch.getId().toString());
+                        return data;
+                    }
+                }
+
+                // If no AKI SKI match found, fall back on DN match
                 List<Certificate> certificates = certificateRepository.findBySubjectSorted(
                         certificate.getIssuerSorted(), "CertificateAuthorityCredential");
                 //Find all certificates that could be the issuer certificate based on subject name
