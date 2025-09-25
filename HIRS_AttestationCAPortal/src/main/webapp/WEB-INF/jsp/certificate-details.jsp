@@ -216,7 +216,7 @@
                                 aria-labelledby="headingOne" aria-expanded="false">
                                 <div>
                                     <span class="fieldValue">
-                                        ${initialData.signatureAlgorithm} / ${initialData.signatureSize}
+                                        ${initialData.signatureAlgorithm}
                                     </span>
                                 </div>
                             </div>
@@ -406,16 +406,16 @@
                         <div id="tpmSecurityAssertion" class="col col-md-8">
                             <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"
                                 aria-expanded="false">
-                                <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsVersion}</span></div>
+                                <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}</span></div>
                                 <div>Field
                                     Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span>
                                 </div>
                                 <div>ek Generation Type:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenType}</span>
                                 </div>
                                 <div>ek Generation
-                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenLoc}</span></div>
+                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenerationLocation}</span></div>
                                 <div>ek Certificate Generation
-                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertGenLoc}</span></div>
+                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertificateGenerationLocation}</span></div>
                             </div>
                         </div>
                     </div>
@@ -1047,14 +1047,14 @@
                 <div id="tpmSecurityAssertion" class="col col-md-8">
                     <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"
                         aria-expanded="false">
-                        <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsVersion}</span></div>
+                        <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}</span></div>
                         <div>Field Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span>
                         </div>
                         <div>ek Generation Type:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenType}</span></div>
-                        <div>ek Generation Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenLoc}</span>
+                        <div>ek Generation Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenerationLocation}</span>
                         </div>
                         <div>ek Certificate Generation
-                            Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertGenLoc}</span></div>
+                            Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertificateGenerationLocation}</span></div>
                     </div>
                 </div>
             </div>
