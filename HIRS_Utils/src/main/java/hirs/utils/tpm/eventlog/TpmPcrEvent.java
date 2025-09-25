@@ -147,12 +147,12 @@ public class TpmPcrEvent {
     @Setter
     private boolean error = false;
 
-    /**
-     * Track status of vendor-table.json file.
-     * See TCGEventLog for more detail.
-     */
-    @Getter
-    private String guidTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
+//    /**
+//     * Track status of vendor-table.json file.
+//     * See TCGEventLog for more detail.
+//     */
+//    @Getter
+//    private String guidTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * Track status of pci.ids file.
@@ -581,7 +581,7 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 UefiVariable efiVar = new UefiVariable(content);
                 description += "Event Content:\n" + efiVar;
-                guidTableFileStatus = efiVar.getGuidTableFileStatus();
+//                guidTableFileStatus = efiVar.getGuidTableFileStatus();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
             case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER:
