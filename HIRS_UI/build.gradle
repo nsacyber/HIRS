@@ -1,41 +1,34 @@
 plugins {
     id 'base' // lightweight plugin, avoids applying Java
+    id("com.github.node-gradle.node") version "7.1.0"
 }
 
 def frontEndDir = file("$projectDir/hirs-ui")
 def angularOutputDir = "${frontEndDir}/dist/hirs-ui/browser"
 def backendStaticDir = file("$rootDir/HIRS_AttestationCAPortal/src/main/resources/static")
 
-tasks.register('npmInstall', Exec) {
-    workingDir = frontEndDir
-    commandLine 'npm', 'install'
-    println(backendStaticDir)
+node {
+    download = true
+
+    // Version of node to download and install (only used if download is true)
+    // It will be unpacked in the workDir
+    version = "24.8.0"
+
+    // The directory where Node.js is unpacked (when download is true)
+    workDir = file("${project.projectDir}/.gradle/nodejs")
+
+    // This is where the package.json file and node_modules directory are located
+    // By default it is at the root of the current project
+    nodeProjectDir = frontEndDir
+
 }
 
-tasks.register('npmBuild', Exec) {
-    dependsOn 'npmInstall'
-    workingDir = frontEndDir
-    commandLine 'npm', 'run', 'build'  // or 'ng', 'build' if globally installed
+tasks.register('npmBuild', NpmTask) {
+    args = ['run', 'build']
 }
 
-tasks.register('npmTest', Exec) {
-    dependsOn npmBuild
-    workingDir = frontEndDir
-    commandLine 'npm', 'run', 'test'  // Run Angular tests
-}
-
-tasks.register('copyFrontEndStaticFilesToBackEnd', Copy) {
+tasks.register('copyStaticFilesToBackEnd', Copy) {
     dependsOn 'npmBuild'
     from angularOutputDir
     into backendStaticDir
 }
-
-//// Make sure copyFrontend runs before processResources and bootRun
-//tasks.named('processResources') {
-//    dependsOn 'copyFrontend'
-//}
-
-//tasks.named('bootRun') {
-//    dependsOn 'copyFrontend'
-//}
-

@@ -1,7 +1,7 @@
 #!/bin/bash
 #####################################################################################
 #
-# Script to run ACA using the gradle spring pluing bootRun command with parameters
+# Script to run ACA using the gradle spring plugin bootRun command with parameters
 #       parameters include setting up the DB with TLS and embedded Tomcat with TLS.
 #
 #####################################################################################
@@ -135,8 +135,10 @@ if [ -z "$USE_WAR" ]; then
   echo "Booting the ACA from local build..."
   if [ "$DEBUG_ACA" == YES ]; then
     echo "... in debug"
+    ./gradlew :HIRS_UI:copyStaticFilesToBackEnd
     ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug="$DEBUG_OPTIONS"
   else
+    ./gradlew :HIRS_UI:copyStaticFilesToBackEnd
     ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
   fi
 else
