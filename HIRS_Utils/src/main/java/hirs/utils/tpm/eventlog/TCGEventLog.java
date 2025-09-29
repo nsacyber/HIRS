@@ -154,19 +154,19 @@ public final class TCGEventLog {
      */
     @Getter
     private boolean bCryptoAgile = false;
-    /**
-     * Track status of vendor-table.json file.
-     * This file (and variable) is only used if there is an event that uses a UefiVariable data structure.
-     * Default is normal status (normal status is from-filesystem).
-     * Status will only change IF there is a UefiVariable event in this log,
-     * and if that event causes a different status.
-     * (vendor-table.json exists in /HIRS_Utils/src/main/resources/ folder.
-     * It gets packaged into the system's /etc/hirs/aca/default-properties/ folder via
-     * HIRS_AttestationCAPortal/build.gradle, so that users can add GUIDs to the list without having
-     * to rebuild the ACA. If the ACA does not find the file on the system, ACA uses the version from code.)
-     */
-    @Getter
-    private String guidTableFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+//    /**
+//     * Track status of vendor-table.json file.
+//     * This file (and variable) is only used if there is an event that uses a UefiVariable data structure.
+//     * Default is normal status (normal status is from-filesystem).
+//     * Status will only change IF there is a UefiVariable event in this log,
+//     * and if that event causes a different status.
+//     * (vendor-table.json exists in /HIRS_Utils/src/main/resources/ folder.
+//     * It gets packaged into the system's /etc/hirs/aca/default-properties/ folder via
+//     * HIRS_AttestationCAPortal/build.gradle, so that users can add GUIDs to the list without having
+//     * to rebuild the ACA. If the ACA does not find the file on the system, ACA uses the version from code.)
+//     */
+//    @Getter
+//    private String guidTableFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
     /**
      * Track status of pci.ids file.
      * This is only used if there is an event that uses functions from the pciids class.
@@ -251,12 +251,22 @@ public final class TCGEventLog {
             // the if-statement is executed
             // [new event file status = eventList.get(eventNumber-1).getGuidTableFileStatus()]
             // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if ((guidTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                    && (eventList.get(eventNumber - 1).getGuidTableFileStatus()
-                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-                guidTableFileStatus = eventList.get(eventNumber - 1).getGuidTableFileStatus();
-            }
-            //similar to above with vendor-table.json file, but here with pci.ids file
+//            if ((guidTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+//                    && (eventList.get(eventNumber - 1).getGuidTableFileStatus()
+//                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+//                guidTableFileStatus = eventList.get(eventNumber - 1).getGuidTableFileStatus();
+//            }
+
+            // first check if any previous event has not been able to access pci.ids file,
+            // and if that is the case, the first comparison in the if-statement returns false and
+            // the if-statement is not executed
+            // [previous event file status = pciidsFileStatus]
+            // (ie. keep the file status to reflect that file was not accessible at some point)
+            // next, check if the new event has any status other than the default 'filesystem',
+            // and if that is the case, the 2nd comparison in the if-statement returns true and
+            // the if-statement is executed
+            // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
+            // (ie. if the new file status is not-accessible or from-code, then want to update)
             if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
                     && (eventList.get(eventNumber - 1).getPciidsFileStatus()
                     != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {

@@ -36,11 +36,11 @@ public class UefiGuid {
      * Reference to the vendor-table json object.
      */
     private JsonObject uefiVendorRef;
-    /**
-     * Track status of vendor-table.json file.
-     */
-    @Getter
-    private String guidTableFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
+//    /**
+//     * Track status of vendor-table.json file.
+//     */
+//    @Getter
+//    private String guidTableFileStatus = UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
     /**
      * guid byte array.
@@ -70,18 +70,18 @@ public class UefiGuid {
         guid = new byte[UefiConstants.SIZE_16];
         System.arraycopy(guidBytes, 0, guid, 0, UefiConstants.SIZE_16);
         uuid = processGuid(guidBytes);
-        uefiVendorRef = JsonUtils.getSpecificJsonObject(guidTablePathStr,
-                "VendorTable");
+//        uefiVendorRef = JsonUtils.getSpecificJsonObject(guidTablePathStr,
+//                "VendorTable");
 
-        if (!isVendorTableReferenceHandleEmpty()) {
-            guidTableFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
-        } else {
+//        if (!isVendorTableReferenceHandleEmpty()) {
+//            guidTableFileStatus = UefiConstants.FILESTATUS_FROM_FILESYSTEM;
+//        } else {
             // could not access vendor-table.json from filesystem, so attempt to access from code
             uefiVendorRef = JsonUtils.getSpecificJsonObject(JSON_FILENAME, "VendorTable");
-            if (!isVendorTableReferenceHandleEmpty()) {
-                guidTableFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
-            }
-        }
+//            if (!isVendorTableReferenceHandleEmpty()) {
+//                guidTableFileStatus = UefiConstants.FILESTATUS_FROM_CODE;
+//            }
+//        }
     }
 
     /**
