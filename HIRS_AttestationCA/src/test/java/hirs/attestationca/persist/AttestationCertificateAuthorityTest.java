@@ -239,7 +239,7 @@ public class AttestationCertificateAuthorityTest {
         byte[] randomBytes = new byte[ENCRYPTION_IV_LEN];
 
         // generate the random bytes
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        SecureRandom random = SecureRandom.getInstance("NativePRNG");
         random.nextBytes(randomBytes);
 
         // the shared secret
@@ -289,7 +289,7 @@ public class AttestationCertificateAuthorityTest {
 
         // generate a random session key to be used for encryption and decryption
         byte[] sessionKey = new byte[ENCRYPTION_IV_LEN];
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        SecureRandom random = SecureRandom.getInstance("NativePRNG");
         random.nextBytes(sessionKey);
 
         // perform the test
