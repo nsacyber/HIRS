@@ -1,0 +1,8 @@
+<%@attribute name="customButtons" fragment="true" required="false"%>
+
+<a data-toggle="modal" href="#${id}" title="${label}">
+    <img src="${icons}/ic_library_add_black_24dp.png"/>
+</a>
+<my:modal customButtons="${customButtons}" id="${id}" label="${label}">
+    <jsp:doBody/>
+</my:modal>

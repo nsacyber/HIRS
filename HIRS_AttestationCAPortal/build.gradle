@@ -47,6 +47,7 @@ dependencies {
 
     implementation libs.mariadb.java.client
     implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.thymeleaf
 
     // explicitly include the patched version of the snake yaml dependency
     implementation libs.snake.yaml

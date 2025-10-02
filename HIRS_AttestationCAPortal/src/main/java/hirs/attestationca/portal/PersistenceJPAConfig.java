@@ -76,10 +76,6 @@ import java.util.Set;
         "hirs.attestationca.persist.service"})
 @EnableJpaRepositories(basePackages = "hirs.attestationca.persist.entity.manager")
 public class PersistenceJPAConfig implements WebMvcConfigurer {
-
-//    @Value("${aca.directories.certificates}")
-//    private String certificatesLocation;
-
     @Value("${server.ssl.key-store}")
     private String keyStoreLocation;
 
@@ -143,25 +139,6 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
     void initialize() {
         // ensure that Bouncy Castle is registered as a security provider
         Security.addProvider(new BouncyCastleProvider());
-
-        // obtain path to ACA configuration
-//        Path certificatesPath = Paths.get(certificatesLocation);
-//
-//        // create base directories if they do not exist
-//        try {
-//            Files.createDirectories(certificatesPath);
-//        } catch (IOException ioEx) {
-//            throw new BeanInitializationException(
-//                    "Encountered error while initializing ACA directories: " + ioEx.getMessage(), ioEx);
-//        }
-
-        // create the ACA key store if it doesn't exist
-//        Path keyStorePath = Paths.get(keyStoreLocation);
-//        if (!Files.exists(keyStorePath)) {
-//            throw new IllegalStateException(
-//                    String.format("ACA Key Store not found at %s. Consult the HIRS User "
-//                            + "Guide for ACA installation instructions.", keyStoreLocation));
-//        }
     }
 
     /**
@@ -203,7 +180,7 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
         try {
             X509Certificate leafACACertificate = (X509Certificate) keyStore.getCertificate(leaf3KeyAlias);
 
-            // break early if the certificate is not available.
+            // throw an exception if the certificate is not available.
             if (leafACACertificate == null) {
                 throw new BeanInitializationException(String.format("Leaf ACA certificate with alias "
                         + "%s was not in KeyStore %s. Ensure that the KeyStore has the "
@@ -237,9 +214,8 @@ public class PersistenceJPAConfig implements WebMvcConfigurer {
             // intermediate certificate has been signed by the root certificate
             validateCertificateChain(leafThreeACACert, intermediateACACert, rootACACert);
 
-            X509Certificate[] certsChainArray =
-                    new X509Certificate[] {leafThreeACACert,
-                            intermediateACACert, rootACACert};
+            X509Certificate[] certsChainArray = new X509Certificate[] {leafThreeACACert,
+                    intermediateACACert, rootACACert};
 
             log.info("The ACA certificate chain is valid and trusted");
             return certsChainArray;
