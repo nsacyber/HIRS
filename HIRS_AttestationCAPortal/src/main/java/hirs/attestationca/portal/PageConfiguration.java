@@ -6,14 +6,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
 
 /**
  * Configuration file for the Page Controllers.
  */
 @Configuration
-@EnableWebMvc
 @ComponentScan("hirs.attestationca.portal.page.controllers")
 public class PageConfiguration {
 

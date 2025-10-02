@@ -11,7 +11,6 @@ glassfishJaxbRuntimeVersion = "4.0.5"
 guavaVersion = "33.4.0-jre"
 jacksonVersion = "2.18.2"
 jakartaPersistenceApiVersion = "3.1.0"
-jakartaServletVersion = "3.0.0"
 jakartaXmlVersion = "4.0.2"
 jcommanderVersion = "2.0"
 lombokVersion = "1.18.36"
@@ -48,7 +47,6 @@ jackson-cbor = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-c
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jacksonVersion" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonVersion" }
 jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakartaPersistenceApiVersion" }
-jakarta-servlet = { module = "org.glassfish.web:jakarta.servlet.jsp.jstl", version.ref = "jakartaServletVersion" }
 jakarta-xml = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaXmlVersion" }
 jcommander = { module = "org.jcommander:jcommander", version.ref = "jcommanderVersion" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
@@ -70,7 +68,6 @@ spring-framework-jdbc = { module = "org.springframework:spring-jdbc", version.re
 spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springFrameworkVersion" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
 tomcat-embed-core = { module = "org.apache.tomcat.embed:tomcat-embed-core", version.ref = "tomcatVersion" }
-tomcat-embed-jasper = { module = "org.apache.tomcat.embed:tomcat-embed-jasper", version.ref = "tomcatVersion" }
 tomcat-embed-websocket = { module = "org.apache.tomcat.embed:tomcat-embed-websocket", version.ref = "tomcatVersion" }
 
 

@@ -35,7 +35,6 @@ dependencies {
     implementation libs.guava
     implementation libs.gson
     implementation libs.jakarta.persistence.api
-    implementation libs.jakarta.servlet
     implementation libs.jakarta.xml
 
     implementation libs.pci
@@ -65,8 +64,6 @@ dependencies {
     // explicitly include the patched version of the tomcat embed core dependency
     implementation libs.tomcat.embed.core
 
-    implementation libs.tomcat.embed.jasper
-
     // explicitly include the patched version of the tomcat embed websocket dependency
     implementation libs.tomcat.embed.websocket
 
@@ -86,7 +83,7 @@ dependencies {
     testImplementation libs.xmlunit.core
 }
 
-task buildVersion() {
+tasks.register('buildVersion') {
     doLast {
         def verFile = new File(projectDir, "build/VERSION")
         verFile.write("${jarVersion}")
