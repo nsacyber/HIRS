@@ -51,7 +51,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
+import java.util.Random;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -126,6 +126,7 @@ public class AttestationCertificateAuthorityTest {
     private AccessAbstractProcessor abstractProcessor;
     // test key pair
     private KeyPair keyPair;
+    private  Random random = new Random();
 
     /**
      * Registers bouncy castle as a security provider. Normally the JEE container will handle this,
@@ -239,7 +240,6 @@ public class AttestationCertificateAuthorityTest {
         byte[] randomBytes = new byte[ENCRYPTION_IV_LEN];
 
         // generate the random bytes
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         random.nextBytes(randomBytes);
 
         // the shared secret
@@ -289,9 +289,9 @@ public class AttestationCertificateAuthorityTest {
 
         // generate a random session key to be used for encryption and decryption
         byte[] sessionKey = new byte[ENCRYPTION_IV_LEN];
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.nextBytes(sessionKey);
 
+        random.nextBytes(sessionKey);
+        
         // perform the test
         byte[] result = ProvisionUtils.generateAsymmetricContents(identityProofEncoded,
                 sessionKey, keyPair.getPublic());
