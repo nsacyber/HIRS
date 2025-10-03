@@ -1,3 +1,12 @@
+<!--<%@ page contentType="text/html" pageEncoding="UTF-8"%>-->
+<!--<%&#45;&#45; JSP TAGS&#45;&#45;%>-->
+<!--<%@taglib prefix="c" uri="jakarta.tags.core" %>-->
+<!--<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>-->
+<!--<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>-->
+<!--<%@taglib prefix="fn" uri="jakarta.tags.functions"%>-->
+<!--<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>-->
+
+<!--<%&#45;&#45;CONTENT&#45;&#45;%>-->
 <!--<my:page>-->
 <!--    <jsp:attribute name="style">-->
 <!--        <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css" />-->
@@ -50,7 +59,7 @@
 <!--                            <c:choose>-->
 <!--                                <c:when test="${not empty initialData.issuerID}">-->
 <!--                                    <a-->
-<!--                                        href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">-->
+<!--                                            href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">-->
 <!--                                        ${initialData.issuer}-->
 <!--                                    </a>-->
 <!--                                </c:when>-->
@@ -83,7 +92,7 @@
 <!--                                </c:when>-->
 <!--                                <c:when test="${empty initialData.missingChainIssuer}">-->
 <!--                                    <img src="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"-->
-<!--                                        title="All certificates in the chain were found.">-->
+<!--                                         title="All certificates in the chain were found.">-->
 <!--                                </c:when>-->
 <!--                                <c:otherwise>-->
 <!--                                    <img src="${icons}/ic_error_red_24dp.png" title="${initialData.missingChainIssuer}">-->
@@ -110,15 +119,15 @@
 <!--                    <c:choose>-->
 <!--                        <c:when test="${not empty initialData.ekCertificateDigest}">-->
 <!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"-->
-<!--                                    title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware-->
+<!--                                                                        title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware-->
 <!--                                    Module Name</span></div>-->
 <!--                            <div class="col col-md-8">-->
 <!--                                <div><span class="help-text"-->
-<!--                                        title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware-->
+<!--                                           title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware-->
 <!--                                        Type</span>:&nbsp;<span id="hwTypeReadable">${initialData.hwTypeReadable}</span>-->
 <!--                                </div>-->
 <!--                                <div><span class="help-text"-->
-<!--                                        title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate public key. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware-->
+<!--                                           title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate public key. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware-->
 <!--                                        Serial Number</span>:</div>-->
 <!--                                <ul>-->
 <!--                                    <li>EK Certificate Public Key:&nbsp;<span-->
@@ -128,15 +137,15 @@
 <!--                        </c:when>-->
 <!--                        <c:otherwise>-->
 <!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"-->
-<!--                                    title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific context.">Hardware-->
+<!--                                                                        title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific context.">Hardware-->
 <!--                                    Module Name</span></div>-->
 <!--                            <div class="col col-md-8">-->
 <!--                                <div><span class="help-text"-->
-<!--                                        title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.hwType}">Hardware-->
+<!--                                           title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.hwType}">Hardware-->
 <!--                                        Type</span>:&nbsp;<span id="hwTypeReadable">${initialData.hwTypeReadable}</span>-->
 <!--                                </div>-->
 <!--                                <div><span class="help-text"-->
-<!--                                        title="Used for identifying the device's hardware module. This field may have manufacturer-specific context.">Hardware-->
+<!--                                           title="Used for identifying the device's hardware module. This field may have manufacturer-specific context.">Hardware-->
 <!--                                        Serial Number</span>:&nbsp;<span-->
 <!--                                        id="hwSerialNum">${initialData.hwSerialNum}</span></div>-->
 <!--                            </div>-->
@@ -147,14 +156,14 @@
 <!--            <c:if test="${not empty initialData.tcgTpmManufacturer}">-->
 <!--                <div class="row">-->
 <!--                    <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"-->
-<!--                            title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware-->
+<!--                                                                title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware-->
 <!--                            Module Name</span></div>-->
 <!--                    <div class="col col-md-8">-->
 <!--                        <div><span class="help-text"-->
-<!--                                title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware-->
+<!--                                   title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware-->
 <!--                                Type</span>:&nbsp;<span id="hwTypeReadable">${initialData.hwTypeReadable}</span></div>-->
 <!--                        <div><span class="help-text"-->
-<!--                                title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware-->
+<!--                                   title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware-->
 <!--                                Serial Number</span>:-->
 <!--                            <ul>-->
 <!--                                <li>TCG TPM Manufacturer Code:&nbsp;<span-->
@@ -186,25 +195,25 @@
 <!--                        <div class="panel panel-default">-->
 <!--                            <div class="panel-heading">-->
 <!--                                <a role="button" data-toggle="collapse" class="collapsed"-->
-<!--                                    href="#signatureComponentcollapse" aria-expanded="true" data-placement="top"-->
-<!--                                    aria-controls="signatureComponentcollapse">-->
+<!--                                   href="#signatureComponentcollapse" aria-expanded="true" data-placement="top"-->
+<!--                                   aria-controls="signatureComponentcollapse">-->
 <!--                                    Signature-->
 <!--                                </a>-->
 <!--                            </div>-->
 <!--                            <div id="signatureComponentcollapse" class="panel-body collapse" role="tabpanel"-->
-<!--                                aria-labelledby="headingOne" aria-expanded="false">-->
+<!--                                 aria-labelledby="headingOne" aria-expanded="false">-->
 <!--                                <div id="signature" class="fieldValue"></div>-->
 <!--                            </div>-->
 <!--                        </div>-->
 <!--                        <div class="panel panel-default">-->
 <!--                            <div class="panel-heading">-->
 <!--                                <a role="button" data-toggle="collapse" class="collapsed" href="#signatureSizecollapse"-->
-<!--                                    aria-expanded="true" data-placement="top" aria-controls="signatureSizecollapse">-->
+<!--                                   aria-expanded="true" data-placement="top" aria-controls="signatureSizecollapse">-->
 <!--                                    Algorithm-->
 <!--                                </a>-->
 <!--                            </div>-->
 <!--                            <div id="signatureSizecollapse" class="panel-body collapse" role="tabpanel"-->
-<!--                                aria-labelledby="headingOne" aria-expanded="false">-->
+<!--                                 aria-labelledby="headingOne" aria-expanded="false">-->
 <!--                                <div>-->
 <!--                                    <span class="fieldValue">-->
 <!--                                        ${initialData.signatureAlgorithm}-->
@@ -223,12 +232,12 @@
 <!--                            <div class="panel panel-default">-->
 <!--                                <div class="panel-heading">-->
 <!--                                    <a role="button" data-toggle="collapse" class="collapsed" href="#publicKeycollapse"-->
-<!--                                        aria-expanded="true" data-placement="top" aria-controls="publicKeycollapse">-->
+<!--                                       aria-expanded="true" data-placement="top" aria-controls="publicKeycollapse">-->
 <!--                                        Public Key-->
 <!--                                    </a>-->
 <!--                                </div>-->
 <!--                                <div id="publicKeycollapse" class="panel-body collapse" role="tabpanel"-->
-<!--                                    aria-labelledby="headingOne" aria-expanded="false">-->
+<!--                                     aria-labelledby="headingOne" aria-expanded="false">-->
 <!--                                    <c:choose>-->
 <!--                                        <c:when test="${not empty initialData.publicKeyValue}">-->
 <!--                                            <div id="encodedPublicKey" class="fieldValue"></div>-->
@@ -242,13 +251,13 @@
 <!--                            <div class="panel panel-default">-->
 <!--                                <div class="panel-heading">-->
 <!--                                    <a role="button" data-toggle="collapse" class="collapsed"-->
-<!--                                        href="#publicKeySizecollapse" aria-expanded="true" data-placement="top"-->
-<!--                                        aria-controls="publicKeySizecollapse">-->
+<!--                                       href="#publicKeySizecollapse" aria-expanded="true" data-placement="top"-->
+<!--                                       aria-controls="publicKeySizecollapse">-->
 <!--                                        Algorithm-->
 <!--                                    </a>-->
 <!--                                </div>-->
 <!--                                <div id="publicKeySizecollapse" class="panel-body collapse" role="tabpanel"-->
-<!--                                    aria-expanded="false">-->
+<!--                                     aria-expanded="false">-->
 <!--                                    <div>-->
 <!--                                        <span class="fieldValue">-->
 <!--                                            ${initialData.publicKeyAlgorithm} / ${initialData.publicKeySize}-->
@@ -370,14 +379,14 @@
 <!--                        <div class="col-md-1 col-md-offset-1">-->
 <!--                            <span class="colHeader">-->
 <!--                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"-->
-<!--                                    aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">-->
+<!--                                   aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">-->
 <!--                                    TPM Specification-->
 <!--                                </a>-->
 <!--                            </span>-->
 <!--                        </div>-->
 <!--                        <div id="tpmSpecification" class="col col-md-8">-->
 <!--                            <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel"-->
-<!--                                aria-expanded="false">-->
+<!--                                 aria-expanded="false">-->
 <!--                                <div>Family:&nbsp;<span>${initialData.TPMSpecificationFamily}</span></div>-->
 <!--                                <div>Level:&nbsp;<span>${initialData.TPMSpecificationLevel}</span></div>-->
 <!--                                <div>Revision:&nbsp;<span>${initialData.TPMSpecificationRevision}</span></div>-->
@@ -388,15 +397,15 @@
 <!--                        <div class="col-md-1 col-md-offset-1">-->
 <!--                            <span class="colHeader">-->
 <!--                                <a role="button" data-toggle="collapse" class="collapsed"-->
-<!--                                    href="#tpmSecurityAssertionInner" aria-expanded="true" data-placement="top"-->
-<!--                                    aria-controls="tpmSecurityAssertionInner">-->
+<!--                                   href="#tpmSecurityAssertionInner" aria-expanded="true" data-placement="top"-->
+<!--                                   aria-controls="tpmSecurityAssertionInner">-->
 <!--                                    TPM Security Assertion-->
 <!--                                </a>-->
 <!--                            </span>-->
 <!--                        </div>-->
 <!--                        <div id="tpmSecurityAssertion" class="col col-md-8">-->
 <!--                            <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"-->
-<!--                                aria-expanded="false">-->
+<!--                                 aria-expanded="false">-->
 <!--                                <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}</span></div>-->
 <!--                                <div>Field-->
 <!--                                    Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span>-->
@@ -422,14 +431,14 @@
 <!--                            <div id="platformType" class="col col-md-8 vertical">-->
 <!--                                <span>-->
 <!--                                    <c:forEach items="${initialData.chainCertificates}" var="credential"-->
-<!--                                        varStatus="loop">-->
+<!--                                               varStatus="loop">-->
 <!--                                        <c:choose>-->
 <!--                                            <c:when test="${initialData.certificateId==credential.getId().toString()}">-->
 <!--                                                ${loop.index}&nbsp;-->
 <!--                                            </c:when>-->
 <!--                                            <c:otherwise>-->
 <!--                                                <a-->
-<!--                                                    href="${portal}/certificate-details?id=${credential.getId()}&type=platform">${loop.index}</a>&nbsp;-->
+<!--                                                        href="${portal}/certificate-details?id=${credential.getId()}&type=platform">${loop.index}</a>&nbsp;-->
 <!--                                            </c:otherwise>-->
 <!--                                        </c:choose>-->
 <!--                                    </c:forEach>-->
@@ -459,15 +468,15 @@
 <!--                                            <span>-->
 <!--                                                <c:choose>-->
 <!--                                                    <c:when-->
-<!--                                                        test="${(not empty initialData.platformType) and (initialData.platformType=='Delta')}">-->
+<!--                                                            test="${(not empty initialData.platformType) and (initialData.platformType=='Delta')}">-->
 <!--                                                        <a-->
-<!--                                                            href="${portal}/certificate-details?id=${initialData.holderId}&type=platform">-->
+<!--                                                                href="${portal}/certificate-details?id=${initialData.holderId}&type=platform">-->
 <!--                                                            ${initialData.holderSerialNumber}-->
 <!--                                                        </a>-->
 <!--                                                    </c:when>-->
 <!--                                                    <c:otherwise>-->
 <!--                                                        <a-->
-<!--                                                            href="${portal}/certificate-details?id=${initialData.holderId}&type=endorsement">-->
+<!--                                                                href="${portal}/certificate-details?id=${initialData.holderId}&type=endorsement">-->
 <!--                                                            ${initialData.holderSerialNumber}-->
 <!--                                                        </a>-->
 <!--                                                    </c:otherwise>-->
@@ -511,13 +520,13 @@
 <!--                                <div class="tbbsecurityLine">-->
 <!--                                    <span class="fieldHeader">Version:</span>-->
 <!--                                    <span-->
-<!--                                        class="fieldValue">${initialData.tbbSecurityAssertion.getVersion()}&nbsp;(v${initialData.tbbSecurityAssertion.getVersion().getValue()-->
+<!--                                            class="fieldValue">${initialData.tbbSecurityAssertion.getVersion()}&nbsp;(v${initialData.tbbSecurityAssertion.getVersion().getValue()-->
 <!--                                        + 1})</span>-->
 <!--                                </div>-->
 <!--                                <div class="tbbsecurityLine">-->
 <!--                                    <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>-->
 <!--                                    <span-->
-<!--                                        class="fieldValue">${fn:toUpperCase(initialData.tbbSecurityAssertion.getRtmType().getValue())}</span>-->
+<!--                                            class="fieldValue">${fn:toUpperCase(initialData.tbbSecurityAssertion.getRtmType().getValue())}</span>-->
 <!--                                </div>-->
 <!--                                &lt;!&ndash; CCINFO &ndash;&gt;-->
 <!--                                <c:if test="${not empty initialData.tbbSecurityAssertion.getCcInfo()}">-->
@@ -526,14 +535,14 @@
 <!--                                        <div class="panel-heading" role="tab" id="headingOne">-->
 <!--                                            <h4 class="panel-title">-->
 <!--                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"-->
-<!--                                                    class="collapsed" href="#ccinfocollapse" aria-expanded="false"-->
-<!--                                                    aria-controls="ccinfocollapse">-->
+<!--                                                   class="collapsed" href="#ccinfocollapse" aria-expanded="false"-->
+<!--                                                   aria-controls="ccinfocollapse">-->
 <!--                                                    Common Criteria Measures Information-->
 <!--                                                </a>-->
 <!--                                            </h4>-->
 <!--                                        </div>-->
 <!--                                        <div id="ccinfocollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                            aria-labelledby="headingOne">-->
+<!--                                             aria-labelledby="headingOne">-->
 <!--                                            <div class="panel-body">-->
 <!--                                                <div id="ccinfo" class="row">-->
 <!--                                                    <div class="tbbsecurityLine">-->
@@ -543,12 +552,12 @@
 <!--                                                    <div class="tbbsecurityLine">-->
 <!--                                                        <span class="fieldHeader">Assurance Level:</span>-->
 <!--                                                        <span-->
-<!--                                                            class="fieldValue">${fn:toUpperCase(ccinfo.getAssuranceLevel().getValue())}</span>-->
+<!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getAssuranceLevel().getValue())}</span>-->
 <!--                                                    </div>-->
 <!--                                                    <div class="tbbsecurityLine">-->
 <!--                                                        <span class="fieldHeader">Evaluation Status:</span>-->
 <!--                                                        <span-->
-<!--                                                            class="fieldValue">${fn:toUpperCase(ccinfo.getEvaluationStatus().getValue())}</span>-->
+<!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getEvaluationStatus().getValue())}</span>-->
 <!--                                                    </div>-->
 <!--                                                    <div class="tbbsecurityLine">-->
 <!--                                                        <c:choose>-->
@@ -563,7 +572,7 @@
 <!--                                                    <div class="tbbsecurityLine">-->
 <!--                                                        <span class="fieldHeader">Strength of Function:</span>-->
 <!--                                                        <span-->
-<!--                                                            class="fieldValue">${fn:toUpperCase(ccinfo.getStrengthOfFunction().getValue())}</span>-->
+<!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getStrengthOfFunction().getValue())}</span>-->
 <!--                                                    </div>-->
 <!--                                                    <c:if test="${not empty ccinfo.getProfileOid()}">-->
 <!--                                                        <div class="tbbsecurityLine">-->
@@ -576,24 +585,24 @@
 <!--                                                            <span class="fieldHeader">Profile URI:</span>-->
 <!--                                                            <span class="fieldValue">-->
 <!--                                                                <a-->
-<!--                                                                    href="${ccinfo.getProfileUri().getUniformResourceIdentifier()}">-->
+<!--                                                                        href="${ccinfo.getProfileUri().getUniformResourceIdentifier()}">-->
 <!--                                                                    ${ccinfo.getProfileUri().getUniformResourceIdentifier()}-->
 <!--                                                                </a>-->
 <!--                                                            </span>-->
 <!--                                                        </div>-->
 <!--                                                        <c:if-->
-<!--                                                            test="${not empty ccinfo.getProfileUri().getHashAlgorithm()}">-->
+<!--                                                                test="${not empty ccinfo.getProfileUri().getHashAlgorithm()}">-->
 <!--                                                            <div class="tbbsecurityLine">-->
 <!--                                                                <span class="fieldHeader">Profile Hash Algorithm:</span>-->
 <!--                                                                <span-->
-<!--                                                                    class="fieldValue">${ccinfo.getProfileUri().getHashAlgorithm()}</span>-->
+<!--                                                                        class="fieldValue">${ccinfo.getProfileUri().getHashAlgorithm()}</span>-->
 <!--                                                            </div>-->
 <!--                                                        </c:if>-->
 <!--                                                        <c:if test="${not empty ccinfo.getProfileUri().getHashValue()}">-->
 <!--                                                            <div class="tbbsecurityLine">-->
 <!--                                                                <span class="fieldHeader">Profile Hash Value:</span>-->
 <!--                                                                <span-->
-<!--                                                                    class="fieldValue">${ccinfo.getProfileUri().getHashValue()}</span>-->
+<!--                                                                        class="fieldValue">${ccinfo.getProfileUri().getHashValue()}</span>-->
 <!--                                                            </div>-->
 <!--                                                        </c:if>-->
 <!--                                                    </c:if>-->
@@ -608,24 +617,24 @@
 <!--                                                            <span class="fieldHeader">Target URI:</span>-->
 <!--                                                            <span class="fieldValue">-->
 <!--                                                                <a-->
-<!--                                                                    href="${ccinfo.getTargetUri().getUniformResourceIdentifier()}">-->
+<!--                                                                        href="${ccinfo.getTargetUri().getUniformResourceIdentifier()}">-->
 <!--                                                                    ${ccinfo.getTargetUri().getUniformResourceIdentifier()}-->
 <!--                                                                </a>-->
 <!--                                                            </span>-->
 <!--                                                        </div>-->
 <!--                                                        <c:if-->
-<!--                                                            test="${not empty ccinfo.getTargetUri().getHashAlgorithm()}">-->
+<!--                                                                test="${not empty ccinfo.getTargetUri().getHashAlgorithm()}">-->
 <!--                                                            <div class="tbbsecurityLine">-->
 <!--                                                                <span class="fieldHeader">Target Hash Algorithm:</span>-->
 <!--                                                                <span-->
-<!--                                                                    class="fieldValue">${ccinfo.getTargetUri().getHashAlgorithm()}</span>-->
+<!--                                                                        class="fieldValue">${ccinfo.getTargetUri().getHashAlgorithm()}</span>-->
 <!--                                                            </div>-->
 <!--                                                        </c:if>-->
 <!--                                                        <c:if test="${not empty ccinfo.getTargetUri().getHashValue()}">-->
 <!--                                                            <div class="tbbsecurityLine">-->
 <!--                                                                <span class="fieldHeader">Target Hash Value:</span>-->
 <!--                                                                <span-->
-<!--                                                                    class="fieldValue">${ccinfo.getTargetUri().getHashValue()}</span>-->
+<!--                                                                        class="fieldValue">${ccinfo.getTargetUri().getHashValue()}</span>-->
 <!--                                                            </div>-->
 <!--                                                        </c:if>-->
 <!--                                                    </c:if>-->
@@ -641,14 +650,14 @@
 <!--                                        <div class="panel-heading" role="tab" id="headingThree">-->
 <!--                                            <h4 class="panel-title">-->
 <!--                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"-->
-<!--                                                    class="collapsed" href="#fipscollapse" aria-expanded="false"-->
-<!--                                                    aria-controls="fipscollapse">-->
+<!--                                                   class="collapsed" href="#fipscollapse" aria-expanded="false"-->
+<!--                                                   aria-controls="fipscollapse">-->
 <!--                                                    FIPS Level-->
 <!--                                                </a>-->
 <!--                                            </h4>-->
 <!--                                        </div>-->
 <!--                                        <div id="fipscollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                            aria-labelledby="headingTwo">-->
+<!--                                             aria-labelledby="headingTwo">-->
 <!--                                            <div class="panel-body">-->
 <!--                                                <div id="fipsLevel" class="row">-->
 <!--                                                    <div class="tbbsecurityLine">-->
@@ -658,7 +667,7 @@
 <!--                                                    <div class="tbbsecurityLine">-->
 <!--                                                        <span class="fieldHeader">Level:</span>-->
 <!--                                                        <span-->
-<!--                                                            class="fieldValue">${fn:toUpperCase(fipslevel.getLevel().getValue())}</span>-->
+<!--                                                                class="fieldValue">${fn:toUpperCase(fipslevel.getLevel().getValue())}</span>-->
 <!--                                                    </div>-->
 <!--                                                    <div class="tbbsecurityLine">-->
 <!--                                                        <c:choose>-->
@@ -680,20 +689,20 @@
 <!--                                    <div class="panel-heading" role="tab" id="headingThree">-->
 <!--                                        <h4 class="panel-title">-->
 <!--                                            <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"-->
-<!--                                                class="collapsed" href="#iso9000collapse" aria-expanded="false"-->
-<!--                                                aria-controls="iso9000collapse">-->
+<!--                                               class="collapsed" href="#iso9000collapse" aria-expanded="false"-->
+<!--                                               aria-controls="iso9000collapse">-->
 <!--                                                ISO 9000-->
 <!--                                            </a>-->
 <!--                                        </h4>-->
 <!--                                    </div>-->
 <!--                                    <div id="iso9000collapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                        aria-labelledby="headingThree">-->
+<!--                                         aria-labelledby="headingThree">-->
 <!--                                        <div class="panel-body">-->
 <!--                                            <div id="iso9000" class="row">-->
 <!--                                                <div class="tbbsecurityLine">-->
 <!--                                                    <c:choose>-->
 <!--                                                        <c:when-->
-<!--                                                            test="${initialData.tbbSecurityAssertion.getIso9000Certified()=='TRUE'}">-->
+<!--                                                                test="${initialData.tbbSecurityAssertion.getIso9000Certified()=='TRUE'}">-->
 <!--                                                            <span class="label label-success">ISO 9000 Certified</span>-->
 <!--                                                        </c:when>-->
 <!--                                                        <c:otherwise>-->
@@ -703,12 +712,12 @@
 <!--                                                    </c:choose>-->
 <!--                                                </div>-->
 <!--                                                <c:if-->
-<!--                                                    test="${not empty initialData.tbbSecurityAssertion.getIso9000Uri()}">-->
+<!--                                                        test="${not empty initialData.tbbSecurityAssertion.getIso9000Uri()}">-->
 <!--                                                    <div class="tbbsecurityLine">-->
 <!--                                                        <span class="fieldHeader">URI:</span>-->
 <!--                                                        <span class="fieldValue">-->
 <!--                                                            <a-->
-<!--                                                                href="${initialData.tbbSecurityAssertion.getIso9000Uri()}">-->
+<!--                                                                    href="${initialData.tbbSecurityAssertion.getIso9000Uri()}">-->
 <!--                                                                ${initialData.tbbSecurityAssertion.getIso9000Uri()}-->
 <!--                                                            </a>-->
 <!--                                                        </span>-->
@@ -733,15 +742,15 @@
 <!--                                        <div class="panel-heading" role="tab" id="headingOne">-->
 <!--                                            <h4 class="panel-title">-->
 <!--                                                <a role="button" data-toggle="collapse"-->
-<!--                                                    data-parent="#platformConfiguration" class="collapsed"-->
-<!--                                                    href="#componentIdentifiercollapse" aria-expanded="true"-->
-<!--                                                    aria-controls="componentIdentifiercollapse">-->
+<!--                                                   data-parent="#platformConfiguration" class="collapsed"-->
+<!--                                                   href="#componentIdentifiercollapse" aria-expanded="true"-->
+<!--                                                   aria-controls="componentIdentifiercollapse">-->
 <!--                                                    Components-->
 <!--                                                </a>-->
 <!--                                            </h4>-->
 <!--                                        </div>-->
 <!--                                        <div id="componentIdentifiercollapse" class="panel-collapse collapse in"-->
-<!--                                            role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">-->
+<!--                                             role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">-->
 <!--                                            <div class="panel-body">-->
 <!--                                                <div id="componentIdentifier" class="row">-->
 <!--                                                    <c:forEach items="${initialData.componentResults}" var="component">-->
@@ -749,9 +758,9 @@
 <!--                                                            <div class="panel panel-default">-->
 <!--                                                                <c:choose>-->
 <!--                                                                    <c:when-->
-<!--                                                                        test="${component.isFailedValidation() =='TRUE'}">-->
+<!--                                                                            test="${component.isFailedValidation() =='TRUE'}">-->
 <!--                                                                        <div class="panel-heading"-->
-<!--                                                                            style="background-color: red; color: white">-->
+<!--                                                                             style="background-color: red; color: white">-->
 <!--                                                                    </c:when>-->
 <!--                                                                    <c:otherwise>-->
 <!--                                                                        <div class="panel-heading">-->
@@ -760,11 +769,11 @@
 <!--                                                                <c:choose>-->
 <!--                                                                    <c:when test="${component.isVersion2()=='TRUE'}">-->
 <!--                                                                        <span data-toggle="tooltip" data-placement="top"-->
-<!--                                                                            title="${component.getComponentClassToolTipStr()}">${component.getComponentClassStr()}</span>-->
+<!--                                                                              title="${component.getComponentClassToolTipStr()}">${component.getComponentClassStr()}</span>-->
 <!--                                                                    </c:when>-->
 <!--                                                                    <c:otherwise>-->
 <!--                                                                        <span data-toggle="tooltip" data-placement="top"-->
-<!--                                                                            title="Component Class">Platform-->
+<!--                                                                              title="Component Class">Platform-->
 <!--                                                                            Components</span>-->
 <!--                                                                    </c:otherwise>-->
 <!--                                                                </c:choose>-->
@@ -772,39 +781,39 @@
 <!--                                                            <div class="panel-body">-->
 <!--                                                                <span class="fieldHeader">Manufacturer:</span>-->
 <!--                                                                <span-->
-<!--                                                                    class="fieldValue">${component.getManufacturer()}</span><br />-->
+<!--                                                                        class="fieldValue">${component.getManufacturer()}</span><br />-->
 <!--                                                                <span class="fieldHeader">Model:</span>-->
 <!--                                                                <span-->
-<!--                                                                    class="fieldValue">${component.getModel()}</span><br />-->
+<!--                                                                        class="fieldValue">${component.getModel()}</span><br />-->
 <!--                                                                <c:if-->
-<!--                                                                    test="${not empty fn:trim(component.getSerialNumber())}">-->
+<!--                                                                        test="${not empty fn:trim(component.getSerialNumber())}">-->
 <!--                                                                    <span class="fieldHeader">Serial Number:</span>-->
 <!--                                                                    <span-->
-<!--                                                                        class="fieldValue">${component.getSerialNumber()}</span><br />-->
+<!--                                                                            class="fieldValue">${component.getSerialNumber()}</span><br />-->
 <!--                                                                </c:if>-->
 <!--                                                                <c:if-->
-<!--                                                                    test="${not empty fn:trim(component.getRevisionNumber())}">-->
+<!--                                                                        test="${not empty fn:trim(component.getRevisionNumber())}">-->
 <!--                                                                    <span class="fieldHeader">Revision:</span>-->
 <!--                                                                    <span-->
-<!--                                                                        class="fieldValue">${component.getRevisionNumber()}</span><br />-->
+<!--                                                                            class="fieldValue">${component.getRevisionNumber()}</span><br />-->
 <!--                                                                </c:if>-->
 <!--                                                                <c:forEach items="${component.getComponentAddresses()}"-->
-<!--                                                                    var="address">-->
+<!--                                                                           var="address">-->
 <!--                                                                    <span-->
-<!--                                                                        class="fieldHeader">${address.getAddressTypeString()}-->
+<!--                                                                            class="fieldHeader">${address.getAddressTypeString()}-->
 <!--                                                                        address:</span>-->
 <!--                                                                    <span-->
-<!--                                                                        class="fieldValue">${address.getAddressValueString()}</span><br />-->
+<!--                                                                            class="fieldValue">${address.getAddressValueString()}</span><br />-->
 <!--                                                                </c:forEach>-->
 <!--                                                                <c:choose>-->
 <!--                                                                    <c:when-->
-<!--                                                                        test="${component.isFieldReplaceable()=='TRUE'}">-->
+<!--                                                                            test="${component.isFieldReplaceable()=='TRUE'}">-->
 <!--                                                                        <span-->
-<!--                                                                            class="label label-success">Replaceable</span><br />-->
+<!--                                                                                class="label label-success">Replaceable</span><br />-->
 <!--                                                                    </c:when>-->
 <!--                                                                    <c:otherwise>-->
 <!--                                                                        <span-->
-<!--                                                                            class="label label-danger">Irreplaceable</span><br />-->
+<!--                                                                                class="label label-danger">Irreplaceable</span><br />-->
 <!--                                                                    </c:otherwise>-->
 <!--                                                                </c:choose>-->
 <!--                                                                <c:if test="${component.isVersion2()}">-->
@@ -812,23 +821,23 @@
 <!--                                                                        <span class="fieldHeader">Platform Certificate-->
 <!--                                                                            Issuer:</span>-->
 <!--                                                                        <span-->
-<!--                                                                            class="fieldValue">${component.getIssuerDN()}</span><br />-->
+<!--                                                                                class="fieldValue">${component.getIssuerDN()}</span><br />-->
 <!--                                                                        <span class="fieldHeader">Platform Certificate-->
 <!--                                                                            Serial Number:</span>-->
 <!--                                                                        <span-->
-<!--                                                                            class="fieldValue">${component.getCertificateSerialNumber()}</span><br />-->
+<!--                                                                                class="fieldValue">${component.getCertificateSerialNumber()}</span><br />-->
 <!--                                                                        <span class="fieldHeader">Platform Certificate-->
 <!--                                                                            URI:</span>-->
 <!--                                                                    </c:if>-->
 <!--                                                                    <span class="fieldValue">-->
 <!--                                                                        <a-->
-<!--                                                                            href="${component.getUniformResourceIdentifier()}">-->
+<!--                                                                                href="${component.getUniformResourceIdentifier()}">-->
 <!--                                                                            ${component.getUniformResourceIdentifier()}-->
 <!--                                                                        </a>-->
 <!--                                                                    </span><br />-->
 <!--                                                                    <span class="fieldHeader">Status:</span>-->
 <!--                                                                    <span-->
-<!--                                                                        class="fieldValue">${component.getAttributeStatus()}</span><br />-->
+<!--                                                                            class="fieldValue">${component.getAttributeStatus()}</span><br />-->
 <!--                                                                </c:if>-->
 <!--                                                            </div>-->
 <!--                                                        </div>-->
@@ -845,14 +854,14 @@
 <!--                            <div class="panel-heading" role="tab" id="headingTwo">-->
 <!--                                <h4 class="panel-title">-->
 <!--                                    <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"-->
-<!--                                        class="collapsed" href="#componentIdentifierURIcollapse" aria-expanded="false"-->
-<!--                                        aria-controls="componentIdentifierURIcollapse">-->
+<!--                                       class="collapsed" href="#componentIdentifierURIcollapse" aria-expanded="false"-->
+<!--                                       aria-controls="componentIdentifierURIcollapse">-->
 <!--                                        Components Identifier URI-->
 <!--                                    </a>-->
 <!--                                </h4>-->
 <!--                            </div>-->
 <!--                            <div id="componentIdentifierURIcollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                aria-labelledby="headingTwo">-->
+<!--                                 aria-labelledby="headingTwo">-->
 <!--                                <div class="panel-body">-->
 <!--                                    <div id="componentIdentifierURI" class="row">-->
 <!--                                        <span class="fieldHeader">URI:</span>-->
@@ -860,7 +869,7 @@
 <!--                                            ${initialData.componentsIdentifierURI.getUniformResourceIdentifier()}-->
 <!--                                        </a>-->
 <!--                                        <c:if-->
-<!--                                            test="${not empty initialData.componentsIdentifierURI.getHashAlgorithm()}">-->
+<!--                                                test="${not empty initialData.componentsIdentifierURI.getHashAlgorithm()}">-->
 <!--                                            <span class="fieldHeader">Hash Algorithm:</span>-->
 <!--                                            <span>${initialData.componentsIdentifierURI.getHashAlgorithm()}</span>-->
 <!--                                        </c:if>-->
@@ -879,14 +888,14 @@
 <!--                            <div class="panel-heading" role="tab" id="headingThree">-->
 <!--                                <h4 class="panel-title">-->
 <!--                                    <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"-->
-<!--                                        class="collapsed" href="#platformPropertiescollapse" aria-expanded="false"-->
-<!--                                        aria-controls="platformPropertiescollapse">-->
+<!--                                       class="collapsed" href="#platformPropertiescollapse" aria-expanded="false"-->
+<!--                                       aria-controls="platformPropertiescollapse">-->
 <!--                                        Platform Properties-->
 <!--                                    </a>-->
 <!--                                </h4>-->
 <!--                            </div>-->
 <!--                            <div id="platformPropertiescollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                aria-labelledby="headingThree">-->
+<!--                                 aria-labelledby="headingThree">-->
 <!--                                <div class="panel-body">-->
 <!--                                    <div id="platformProperties" class="row">-->
 <!--                                        <c:forEach items="${initialData.platformProperties}" var="property">-->
@@ -895,10 +904,10 @@
 <!--                                                    <div class="panel-body">-->
 <!--                                                        <span class="fieldHeader">Name:</span>-->
 <!--                                                        <span-->
-<!--                                                            class="fieldValue">${property.getPropertyName()}</span><br />-->
+<!--                                                                class="fieldValue">${property.getPropertyName()}</span><br />-->
 <!--                                                        <span class="fieldHeader">Value:</span>-->
 <!--                                                        <span class="fieldValue"-->
-<!--                                                            style="word-wrap: break-word">${property.getPropertyValue()}</span><br />-->
+<!--                                                              style="word-wrap: break-word">${property.getPropertyValue()}</span><br />-->
 <!--                                                    </div>-->
 <!--                                                </div>-->
 <!--                                            </div>-->
@@ -914,14 +923,14 @@
 <!--                            <div class="panel-heading" role="tab" id="headingFour">-->
 <!--                                <h4 class="panel-title">-->
 <!--                                    <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"-->
-<!--                                        class="collapsed" href="#platformPropertiesURIcollapse" aria-expanded="false"-->
-<!--                                        aria-controls="platformPropertiesURIcollapse">-->
+<!--                                       class="collapsed" href="#platformPropertiesURIcollapse" aria-expanded="false"-->
+<!--                                       aria-controls="platformPropertiesURIcollapse">-->
 <!--                                        Platform Properties URI-->
 <!--                                    </a>-->
 <!--                                </h4>-->
 <!--                            </div>-->
 <!--                            <div id="platformPropertiesURIcollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                aria-labelledby="headingFour">-->
+<!--                                 aria-labelledby="headingFour">-->
 <!--                                <div class="panel-body">-->
 <!--                                    <div id="platformPropertiesURI" class="row">-->
 <!--                                        <span class="fieldHeader">URI:</span>-->
@@ -1013,7 +1022,7 @@
 <!--                <div class="col-md-1 col-md-offset-1">-->
 <!--                    <span class="colHeader">-->
 <!--                        <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"-->
-<!--                            aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">-->
+<!--                           aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">-->
 <!--                            TPM Specification-->
 <!--                        </a>-->
 <!--                    </span>-->
@@ -1030,14 +1039,14 @@
 <!--                <div class="col-md-1 col-md-offset-1">-->
 <!--                    <span class="colHeader">-->
 <!--                        <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"-->
-<!--                            aria-expanded="true" data-placement="top" aria-controls="tpmSecurityAssertionInner">-->
+<!--                           aria-expanded="true" data-placement="top" aria-controls="tpmSecurityAssertionInner">-->
 <!--                            TPM Security Assertion-->
 <!--                        </a>-->
 <!--                    </span>-->
 <!--                </div>-->
 <!--                <div id="tpmSecurityAssertion" class="col col-md-8">-->
 <!--                    <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"-->
-<!--                        aria-expanded="false">-->
+<!--                         aria-expanded="false">-->
 <!--                        <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}</span></div>-->
 <!--                        <div>Field Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span>-->
 <!--                        </div>-->
@@ -1055,7 +1064,7 @@
 <!--                <c:when test="${not empty initialData.tpmPolicies}">-->
 <!--                    <div class="row">-->
 <!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"-->
-<!--                                title="TPM verification policies, as defined in the TCG specification &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">TPM-->
+<!--                                                                    title="TPM verification policies, as defined in the TCG specification &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">TPM-->
 <!--                                Policies</span></div>-->
 <!--                        <div id="tpmPolicies" class="col col-md-8 vertical">${initialData.tpmPolicies}</div>-->
 <!--                    </div>-->

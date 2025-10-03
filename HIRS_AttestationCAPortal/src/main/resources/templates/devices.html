@@ -1,8 +1,17 @@
+<!--<%@page contentType="text/html" pageEncoding="UTF-8"%>-->
+
+<!--<%&#45;&#45; JSP TAGS &#45;&#45;%>-->
+<!--<%@taglib prefix="c" uri="jakarta.tags.core" %>-->
+<!--<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>-->
+<!--<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>-->
+<!--<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>-->
+
+<!--<%&#45;&#45; CONTENT &#45;&#45;%>-->
 <!--<my:page>-->
 <!--  <jsp:attribute name="script">-->
 <!--    <script-->
-<!--            src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"-->
 <!--            type="text/javascript"-->
+<!--            src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"-->
 <!--    ></script>-->
 <!--  </jsp:attribute>-->
 <!--    <jsp:attribute name="pageHeaderTitle">Device Listing</jsp:attribute>-->
@@ -10,22 +19,22 @@
 <!--    <jsp:body>-->
 <!--        &lt;!&ndash; text and icon resource variables &ndash;&gt;-->
 <!--        <c:set-->
-<!--                value="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"-->
 <!--                var="passIcon"-->
+<!--                value="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"-->
 <!--        />-->
-<!--        <c:set value="${icons}/ic_error_red_24dp.png" var="failIcon"/>-->
-<!--        <c:set value=".${icons}/ic_error_black_24dp.png" var="errorIcon"/>-->
+<!--        <c:set var="failIcon" value="${icons}/ic_error_red_24dp.png" />-->
+<!--        <c:set var="errorIcon" value=".${icons}/ic_error_black_24dp.png" />-->
 <!--        <c:set-->
-<!--                value="${icons}/ic_questionmark_circle_orange_24dp.png"-->
 <!--                var="unknownIcon"-->
+<!--                value="${icons}/ic_questionmark_circle_orange_24dp.png"-->
 <!--        />-->
-<!--        <c:set value="Validation Passed" var="passText"/>-->
-<!--        <c:set value="Validation Failed" var="failText"/>-->
-<!--        <c:set value="Validation Error" var="errorText"/>-->
-<!--        <c:set value="Unknown Validation Status" var="unknownText"/>-->
+<!--        <c:set var="passText" value="Validation Passed" />-->
+<!--        <c:set var="failText" value="Validation Failed" />-->
+<!--        <c:set var="errorText" value="Validation Error" />-->
+<!--        <c:set var="unknownText" value="Unknown Validation Status" />-->
 
 <!--        <div class="aca-data-table">-->
-<!--            <table class="display" id="deviceTable" width="100%">-->
+<!--            <table id="deviceTable" class="display" width="100%">-->
 <!--                <thead>-->
 <!--                <tr>-->
 <!--                    <th rowspan="2">Validation Status</th>-->
@@ -84,12 +93,12 @@
 <!--                    if (full.IssuedAttestationCertificate === undefined) return "";-->
 <!--                    let size = full.IssuedAttestationCertificate.length;-->
 <!--                    let html = "";-->
-
+<!--      -->
 <!--                    for (let i = 0; i < size; i++) {-->
 <!--                      let id = full.IssuedAttestationCertificate[i].id;-->
 <!--                      html += certificateDetailsLink("issued", id, false);-->
 <!--                    }-->
-
+<!--      -->
 <!--                    return html;-->
 <!--                  },-->
 <!--                },-->
@@ -102,13 +111,13 @@
 <!--                    if (full.PlatformCredential === undefined) return "";-->
 <!--                    let size = full.PlatformCredential.length;-->
 <!--                    let html = "";-->
-
+<!--      -->
 <!--                    for (let i = 0; i < size; i++) {-->
 <!--                      let id = full.PlatformCredential[i].id;-->
 <!--                      html +=-->
 <!--                        certificateDetailsLink("platform", id, false) + "&nbsp;";-->
 <!--                    }-->
-
+<!--      -->
 <!--                    return html;-->
 <!--                  },-->
 <!--                },-->
@@ -121,18 +130,18 @@
 <!--                    if (full.EndorsementCredential === undefined) return "";-->
 <!--                    let size = full.EndorsementCredential.length;-->
 <!--                    let html = "";-->
-
+<!--      -->
 <!--                    for (let i = 0; i < size; i++) {-->
 <!--                      let id = full.EndorsementCredential[i].id;-->
 <!--                      html +=-->
 <!--                        certificateDetailsLink("endorsement", id, false) + "&nbsp;";-->
 <!--                    }-->
-
+<!--      -->
 <!--                    return html;-->
 <!--                  },-->
 <!--                },-->
 <!--              ];-->
-
+<!--      -->
 <!--              //Set data tables-->
 <!--              setDataTables("#deviceTable", url, columns);-->
 <!--            });-->

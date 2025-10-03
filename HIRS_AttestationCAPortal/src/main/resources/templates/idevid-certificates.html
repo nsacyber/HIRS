@@ -1,8 +1,17 @@
+<!--<%@page contentType="text/html" pageEncoding="UTF-8"%>-->
+
+<!--<%&#45;&#45; JSP TAGS &#45;&#45;%>-->
+<!--<%@taglib prefix="c" uri="jakarta.tags.core" %>-->
+<!--<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>-->
+<!--<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>-->
+<!--<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>-->
+
+<!--<%&#45;&#45; CONTENT &#45;&#45;%>-->
 <!--<my:page>-->
 <!--  <jsp:attribute name="script">-->
 <!--    <script-->
-<!--            src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"-->
 <!--            type="text/javascript"-->
+<!--            src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"-->
 <!--    ></script>-->
 <!--  </jsp:attribute>-->
 <!--    <jsp:attribute name="pageHeaderTitle">IDevID Certificates</jsp:attribute>-->
@@ -10,22 +19,22 @@
 <!--    <jsp:body>-->
 <!--        <div class="aca-input-box-header">-->
 <!--            <form:form-->
+<!--                    method="POST"-->
 <!--                    action="${portal}/certificate-request/idevid-certificates/upload"-->
 <!--                    enctype="multipart/form-data"-->
-<!--                    method="POST"-->
 <!--            >-->
 <!--                Import IDevID Certificates-->
 <!--                <my:file-chooser id="idevid-editor" label="Import IDevID Certificates">-->
-<!--                    <input id="importFile" multiple="multiple" name="file" type="file"/>-->
+<!--                    <input id="importFile" type="file" name="file" multiple="multiple" />-->
 <!--                </my:file-chooser>-->
 <!--                <a href="${portal}/certificate-request/idevid-certificates/bulk-download">-->
 <!--                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download All IDevID Certificates">-->
 <!--                </a>-->
 <!--            </form:form>-->
 <!--        </div>-->
-<!--        <br/>-->
+<!--        <br />-->
 <!--        <div class="aca-data-table">-->
-<!--            <table class="display" id="idevidCertificateTable" width="100%">-->
+<!--            <table id="idevidCertificateTable" class="display" width="100%">-->
 <!--                <thead>-->
 <!--                <tr>-->
 <!--                    <th>Issuer</th>-->
@@ -87,7 +96,7 @@
 <!--                  },-->
 <!--                },-->
 <!--              ];-->
-
+<!--      -->
 <!--              //Set data tables-->
 <!--              setDataTables("#idevidCertificateTable", url, columns);-->
 <!--            });-->

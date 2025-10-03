@@ -1,8 +1,17 @@
+<!--<%@page contentType="text/html" pageEncoding="UTF-8"%>-->
+
+<!--<%&#45;&#45; JSP TAGS &#45;&#45;%>-->
+<!--<%@taglib prefix="c" uri="jakarta.tags.core" %>-->
+<!--<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>-->
+<!--<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>-->
+<!--<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>-->
+
+<!--<%&#45;&#45; CONTENT &#45;&#45;%>-->
 <!--<my:page>-->
 <!--  <jsp:attribute name="script">-->
 <!--    <script-->
-<!--            src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"-->
 <!--            type="text/javascript"-->
+<!--            src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"-->
 <!--    ></script>-->
 <!--  </jsp:attribute>-->
 <!--    <jsp:attribute name="pageHeaderTitle">Issued Certificates</jsp:attribute>-->
@@ -13,9 +22,9 @@
 <!--                <img src="${icons}/ic_file_download_black_24dp.png" title="Download All Issued Certificates">-->
 <!--            </a>-->
 <!--        </div>-->
-<!--        <br/>-->
+<!--        <br />-->
 <!--        <div class="aca-data-table">-->
-<!--            <table class="display" id="issuedTable" width="100%">-->
+<!--            <table id="issuedTable" class="display" width="100%">-->
 <!--                <thead>-->
 <!--                <tr>-->
 <!--                    <th rowspan="2">Hostname</th>-->
@@ -114,14 +123,14 @@
 <!--                      full.platformCredentials !== null-->
 <!--                    ) {-->
 <!--                      let size = full.platformCredentials.length;-->
-
+<!--      -->
 <!--                      for (let i = 0; i < size; i++) {-->
 <!--                        let id = full.platformCredentials[i].id;-->
 <!--                        html +=-->
 <!--                          certificateDetailsLink("platform", id, false) + "&nbsp;";-->
 <!--                      }-->
 <!--                    }-->
-
+<!--      -->
 <!--                    return html;-->
 <!--                  },-->
 <!--                },-->
@@ -135,12 +144,12 @@
 <!--                    html += certificateDetailsLink("issued", full.id, true);-->
 <!--                    html += certificateDownloadLink(full.id, pagePath);-->
 <!--                    html += certificateDeleteLink(full.id, pagePath);-->
-
+<!--      -->
 <!--                    return html;-->
 <!--                  },-->
 <!--                },-->
 <!--              ];-->
-
+<!--      -->
 <!--              //Set data tables-->
 <!--              setDataTables("#issuedTable", url, columns);-->
 <!--            });-->

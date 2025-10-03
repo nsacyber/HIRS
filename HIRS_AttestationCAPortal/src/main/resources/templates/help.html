@@ -1,10 +1,19 @@
+<!--<%@page contentType="text/html" pageEncoding="UTF-8"%>-->
+
+<!--<%&#45;&#45; JSP TAGS &#45;&#45;%>-->
+<!--<%@taglib prefix="c" uri="jakarta.tags.core" %>-->
+<!--<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>-->
+<!--<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>-->
+<!--<%@taglib prefix="my" tagdir="/WEB-INF/tags"%>-->
+<!--<%&#45;&#45; CONTENT &#45;&#45;%>-->
+
 <!--<my:page>-->
 <!--    <jsp:attribute name="pageHeaderTitle">Help</jsp:attribute>-->
 
 <!--    <jsp:attribute name="script">-->
 <!--    <script-->
-<!--            src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"-->
 <!--            type="text/javascript"-->
+<!--            src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"-->
 <!--    ></script>-->
 <!--  </jsp:attribute>-->
 
@@ -16,7 +25,7 @@
 <!--                our <a href="https://github.com/nsacyber/HIRS/wiki">code repository</a>.-->
 <!--            </p>-->
 <!--        </div>-->
-<!--        <hr/>-->
+<!--        <hr />-->
 <!--        <div class="aca-data-table">-->
 <!--            <h2>Main HIRS Logger Management</h2>-->
 <!--            <div class="download-header">-->
@@ -25,7 +34,7 @@
 <!--                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download HIRS Log">-->
 <!--                </a>-->
 <!--            </div>-->
-<!--            <table class="display" id="loggersTable" style="width: 100%">-->
+<!--            <table id="loggersTable" class="display" style="width: 100%">-->
 <!--                <thead>-->
 <!--                <tr>-->
 <!--                    <th>Logger Name</th>-->
@@ -41,10 +50,10 @@
 <!--<script>-->
 <!--    $(document).ready(function () {-->
 <!--      const levels = ["ERROR", "WARN", "INFO", "DEBUG"];-->
-
+<!--  -->
 <!--      const mainLoggerName = "hirs.attestationca";-->
 <!--      const mainLoggerPath = "var/log/hirs/HIRS_AttestationCA_Portal.log";-->
-
+<!--  -->
 <!--      // Mapping log levels to button colors-->
 <!--      const logLevelColors = {-->
 <!--        ERROR: "btn-danger", // Red for ERROR-->
@@ -52,7 +61,7 @@
 <!--        INFO: "btn-info", // Light Blue for INFO-->
 <!--        DEBUG: "btn-primary", // Blue for DEBUG-->
 <!--      };-->
-
+<!--  -->
 <!--      let url = pagePath + "/list-main-logger";-->
 <!--      let columns = [-->
 <!--        {-->
@@ -64,7 +73,7 @@
 <!--              // display the main logger's path-->
 <!--              return mainLoggerPath;-->
 <!--            }-->
-
+<!--  -->
 <!--            // otherwise just return the row's logger name as is-->
 <!--            return row.loggerName;-->
 <!--          },-->
@@ -79,11 +88,11 @@
 <!--          render: function (data, type, row) {-->
 <!--            // Start the btn-group div to wrap all the buttons-->
 <!--            let buttonsHtml = '<div class="btn-group" role="group">';-->
-
+<!--  -->
 <!--            // Loop through the log levels and generate buttons-->
 <!--            levels.forEach(function (logLevel) {-->
 <!--              let logLevelColor = logLevelColors[logLevel] || "btn-secondary"; // Default to gray if color not found-->
-
+<!--  -->
 <!--              // Append button HTML for the current log level-->
 <!--              buttonsHtml +=-->
 <!--                '<button type="button" class="btn ' +-->
@@ -96,15 +105,15 @@
 <!--                logLevel +-->
 <!--                "</button>";-->
 <!--            });-->
-
+<!--  -->
 <!--            // Close the btn-group div-->
 <!--            buttonsHtml += "</div>";-->
-
+<!--  -->
 <!--            return buttonsHtml;-->
 <!--          }-->
 <!--        },-->
 <!--      ];-->
-
+<!--  -->
 <!--      //Set data tables-->
 <!--      let dataTable = setDataTables("#loggersTable", url, columns, { searching: false, ordering : false, paging: false, info: false });-->
 <!--    });-->
