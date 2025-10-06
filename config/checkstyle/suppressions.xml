@@ -47,8 +47,10 @@
     <suppress files="CoseHeader.java" checks="VisibilityModifier"/>
     <suppress files="TcgCompRimCoswid.java" checks="VisibilityModifier"/>
     <suppress files="PcClientRimBuilder.java" checks="VisibilityModifier"/>
+    <suppress files="TpmPcrEvent.java" checks="VisibilityModifier"/>
 
     <!-- This ignores checking for public constructors in utility classes in certain files -->
     <suppress files="HIRSApplication.java" checks="HideUtilityClassConstructor"/>
     <suppress files="PersistenceConfiguration.java" checks="HideUtilityClassConstructor"/>
+    <suppress files="Main.java" checks="HideUtilityClassConstructor"/>
 </suppressions>

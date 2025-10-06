@@ -13,12 +13,18 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class FileArgumentValidator implements IParameterValidator {
-    public void validate(String name, String value) throws ParameterException {
+    /**
+     * Validates file arguments.
+     * @param name
+     * @param value
+     * @throws ParameterException
+     */
+    public void validate(final String name, final String value) throws ParameterException {
         try {
             File file = new File(value);
             if (!file.isFile()) {
-                throw new ParameterException("Invalid file path: " + value +
-                        ". Please verify file path.");
+                throw new ParameterException("Invalid file path: " + value
+                        + ". Please verify file path.");
             }
             if (file.length() == 0) {
                 throw new ParameterException("File " + value + " is empty.");
@@ -26,8 +32,8 @@ public class FileArgumentValidator implements IParameterValidator {
         } catch (NullPointerException e) {
             throw new ParameterException("File path cannot be null: " + e.getMessage());
         } catch (SecurityException e) {
-            throw new ParameterException("Read access denied for " + value +
-                    ", please verify permissions.");
+            throw new ParameterException("Read access denied for " + value
+                    + ", please verify permissions.");
         }
     }
 }

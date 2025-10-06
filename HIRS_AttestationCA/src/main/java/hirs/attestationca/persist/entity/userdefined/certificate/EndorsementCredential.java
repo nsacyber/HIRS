@@ -310,8 +310,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                     // there may be subfields that are expected, so continue parsing
                     parseSingle((ASN1Primitive) obj2, false, null);
                 }
-            }
-            else {
+            } else {
                 // parse the elements of the sequence individually
                 for (ASN1Encodable component : seq) {
                     parseSingle((ASN1Primitive) component, false, null);

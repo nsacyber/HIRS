@@ -291,7 +291,6 @@ public class AttestationCertificateAuthorityTest {
         byte[] sessionKey = new byte[ENCRYPTION_IV_LEN];
 
         random.nextBytes(sessionKey);
-        
         // perform the test
         byte[] result = ProvisionUtils.generateAsymmetricContents(identityProofEncoded,
                 sessionKey, keyPair.getPublic());
