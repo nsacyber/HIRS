@@ -2,8 +2,7 @@ plugins {
     id 'application'
     id 'war'
     id 'com.netflix.nebula.ospackage' version '11.10.0'
-    id 'org.springframework.boot' version '3.1.12'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.4.1'
 }
 
 // Get version from main project gradle
@@ -47,6 +46,7 @@ dependencies {
     implementation libs.mariadb.java.client
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.thymeleaf
+    implementation libs.thymeleaf.layout.dialect
 
     // explicitly include the patched version of the snake yaml dependency
     implementation libs.snake.yaml

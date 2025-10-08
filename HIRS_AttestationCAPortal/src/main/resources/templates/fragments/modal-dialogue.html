@@ -1,20 +1,24 @@
-<!--<%@attribute name="customButton" fragment="true" required="false"%>-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 
-<!--<div class="modal fade" id="${id}" role="dialog" style="top:5%">-->
-<!--    <div class="modal-dialog">-->
-<!--        <div class="modal-content">-->
-<!--            <div class="modal-header">-->
-<!--                <h1 id="modal-title">${label}</h1>-->
-<!--            </div>-->
-<!--            <div class="modal-body">-->
-<!--                <jsp:doBody/>-->
-<!--            </div>-->
-<!--            <div class="modal-footer">-->
-<!--                <div class="modal-custom-button">-->
-<!--                    <jsp:invoke fragment="customButton"/>-->
-<!--                </div>-->
-<!--                <button class="btn btn-secondary" data-dismiss="modal">Done</button>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
+<body>
+    <div th:fragment="modalDialogue(id, label, customButton, bodyContent)">
+        <div th:id="${id}" class="modal fade" role="dialog" style="top:5%">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 th:id="modal-title" th:text="${label}">Modal Title</h1>
+                    </div>
+                    <div class="modal-body" th:replace="${bodyContent}"></div>
+                    <div class="modal-footer">
+                        <div class="modal-custom-button" th:if="${customButton != null}" th:replace="${customButton}">
+                        </div>
+                        <button class="btn btn-secondary" data-dismiss="modal">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

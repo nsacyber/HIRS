@@ -1,6 +1,21 @@
-<!--<a data-toggle="modal" href="#${id}" title="${label}">-->
-<!--    <img src="${icons}/ic_assignment_black_24dp.png"/>-->
-<!--</a>-->
-<!--<my:modal-dialogue customButton="${customButton}" id="${id}" label="${label}">-->
-<!--    <jsp:doBody/>-->
-<!--</my:modal-dialogue>-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <div th:fragment="detailsViewerIcon(id, label, customButton, bodyContent)">
+        <!-- Details viewer icon anchor -->
+        <a th:href="'#' + ${id}" data-toggle="modal" th:title="${label}">
+            <img th:src="@{/icons/ic_assignment_black_24dp.png}" alt="Details Viewer Icon" />
+        </a>
+
+        <!-- Include modal-dialogue fragment -->
+        <div th:replace="fragments/modal-dialogue :: modalDialogue(
+        id=${id}, 
+        label=${label}, 
+        customButton=${customButton}, 
+        bodyContent=${bodyContent}
+    )"></div>
+    </div>
+</body>
+
+</html>

@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
@@ -36,7 +37,11 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
     private EndorsementCredential endorsementCredential;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "pc_id")
+    @JoinTable(
+            name = "issued_attestation_platform_join_table",
+            joinColumns = @JoinColumn(name = "issued_attestation_id"),         // foreign key to this certificate
+            inverseJoinColumns = @JoinColumn(name = "platform_credential_id") // foreign key to related certificates
+    )
     private List<PlatformCredential> platformCredentials;
 
     /**
@@ -45,7 +50,7 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      * @param certificateBytes      the issued certificate bytes
      * @param endorsementCredential the endorsement credential
      * @param platformCredentials   the platform credentials
-     * @param ldevID              is LDevID
+     * @param ldevID                is LDevID
      * @throws IOException if there is a problem extracting information from the certificate
      */
     public IssuedAttestationCertificate(final byte[] certificateBytes,
@@ -65,7 +70,7 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
      * @param certificatePath       path to certificate
      * @param endorsementCredential the endorsement credential
      * @param platformCredentials   the platform credentials
-     * @param ldevID              is it an LDevID
+     * @param ldevID                is it an LDevID
      * @throws IOException if there is a problem extracting information from the certificate
      */
     public IssuedAttestationCertificate(final Path certificatePath,

@@ -25,6 +25,7 @@ springBootVersion = "3.4.1"
 springFrameworkVersion = "6.2.1"
 springRetryVersion = "2.0.10"
 tomcatVersion = "10.1.34"
+thymeleafDialectVersion = "3.3.0"
 
 #test dependencies versions
 hsqldbVersion = "2.7.3"
@@ -67,6 +68,7 @@ spring-framework-expression = { module = "org.springframework:spring-expression"
 spring-framework-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "springFrameworkVersion" }
 spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springFrameworkVersion" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
+thymeleaf-layout-dialect = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleafDialectVersion" }
 tomcat-embed-core = { module = "org.apache.tomcat.embed:tomcat-embed-core", version.ref = "tomcatVersion" }
 tomcat-embed-websocket = { module = "org.apache.tomcat.embed:tomcat-embed-websocket", version.ref = "tomcatVersion" }
 
