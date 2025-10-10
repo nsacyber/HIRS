@@ -3,13 +3,11 @@
     layout:decorate="~{layout}">
 
 <head>
-    <title th:text="Welcome to the HIRS Attestation CA">Welcome to the HIRS Attestation CA</title>
+    <title th:text="'Welcome to the HIRS Attestation CA'">Welcome to the HIRS Attestation CA</title>
 </head>
 
 <body>
-    <section layout:fragment="pageHeaderTitle">
-        Home Page
-    </section>
+    <h1 layout:fragment="pageHeaderTitle"> Home Page </h1>
     <section layout:fragment="content">
         <div class="container-fluid" id="index-page">
             <div class="row">
@@ -20,13 +18,13 @@
                         </div>
                     </div>
                     <h3>
-                        <a href="${portal}/policy">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/policy}">
                             <img alt="" th:src="@{/icons/ic_store_black_24dp.png}" /> Policy
                         </a>
                     </h3>
                     <h4>Configure Identity CA and Supply Chain validation policies.</h4>
                     <h3>
-                        <a href="${certificateRequest}/trust-chain">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain}">
                             <img alt="" th:src="@{/icons/ic_subtitles_black_24dp.png}" /> Trust Chain
                             Management
                         </a>
@@ -36,28 +34,29 @@
                         for hardware credentials.
                     </h4>
                     <h3>
-                        <a href="${certificateRequest}/platform-credentials">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials}">
                             <img th:src="@{/icons/ic_important_devices_black_24dp.png}" />
                             Platform Certificates
                         </a>
                     </h3>
                     <h4>Upload, view and manage platform credentials.</h4>
                     <h3>
-                        <a href="${certificateRequest}/endorsement-key-credentials">
+                        <a
+                            th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials}">
                             <img alt="" th:src="@{/icons/ic_vpn_key_black_24dp.png}" /> Endorsement
                             Certificates
                         </a>
                     </h3>
                     <h4>Upload, view and manage endorsement credentials.</h4>
                     <h3>
-                        <a href="${certificateRequest}/idevid-certificates">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates}">
                             <img alt="" th:src="@{/icons/ic_important_devices_black_24dp.png}" /> IDevID
                             Certificates
                         </a>
                     </h3>
                     <h4>Upload, view and manage IDevID certificates.</h4>
                     <h3>
-                        <a href="${portal}/reference-manifests">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests}">
                             <img alt="" th:src="@{/icons/ic_important_devices_black_24dp.png}" />
                             Reference Integrity Manifests
                         </a>
@@ -71,30 +70,33 @@
                         </div>
                     </div>
                     <h3>
-                        <a href="${certificateRequest}/issued-certificates">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates}">
                             <img alt="" th:src="@{/icons/ic_library_books_black_24dp.png}" /> Issued
                             Certificates
                         </a>
                     </h3>
                     <h4>View Certificates issued by this CA</h4>
                     <h3>
-                        <a href="${portal}/validation-reports"><img alt=""
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/validation-reports}"><img alt=""
                                 th:src="@{/icons/ic_assignment_black_24dp.png}" /> Validation
                             Reports</a>
                     </h3>
                     <h4>View a list of device validations carried out by this CA.</h4>
                     <h3>
-                        <a href="${portal}/devices"><img th:src="@{/icons/ic_devices_black_24dp.png}" /> Devices</a>
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/devices}"><img
+                                th:src="@{/icons/ic_devices_black_24dp.png}" /> Devices</a>
                     </h3>
                     <h4>View devices covered by this CA for supply chain validation.</h4>
                     <h3>
-                        <a href="${portal}/rim-database"><img alt="" th:src="@{/icons/ic_devices_black_24dp.png}" />
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-database}"><img alt=""
+                                th:src="@{/icons/ic_devices_black_24dp.png}" />
                             RIM
                             Database</a>
                     </h3>
                     <h4>View a list of Reference Integrity Measurements</h4>
                     <h3>
-                        <a href="${portal}/help"><img alt="" th:src="@{/icons/ic_live_help_black_24dp.png}" />
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/help}"><img alt=""
+                                th:src="@{/icons/ic_live_help_black_24dp.png}" />
                             Help</a>
                     </h3>
                     <h4>

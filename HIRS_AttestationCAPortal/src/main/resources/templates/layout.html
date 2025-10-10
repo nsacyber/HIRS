@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- Title -->
-    <title th:text="${page.title}">Default Title</title>
+    <title th:text="${page?.title}">Default Title</title>
 
     <!-- Favicons -->
     <link rel="icon" th:href="@{/icons/hirs.ico}" type="image/x-icon">
@@ -29,14 +29,6 @@
     <script th:src="@{/js/date.js}"></script>
     <script th:src="@{/js/common.js}"></script>
 
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        let portal = /*[[${portal}]]*/ '';
-        let pagePath = /*[[${pagePath}]]*/ '';
-        let icons = /*[[${icons}]]*/ '';
-        /*]]>*/
-    </script>
-
     <!-- Page-specific scripts -->
     <section layout:fragment="script"></section>
 
@@ -50,12 +42,12 @@
 
     <!-- Header -->
     <nav id="header" class="navbar navbar-fixed-top">
-        <a class="navbar-brand" th:href="@{${portal}/index}">
+        <a class="navbar-brand" th:href="@{/}">
             <img th:src="@{/images/hirs92.png}" alt="Logo" />
         </a>
         <div class="navbar-text page-title">
             Attestation Certificate Authority
-            <div class="subtitle" th:if="${page.subtitle}" th:text="${page.subtitle}"></div>
+            <div class="subtitle" th:if="${page?.subtitle}" th:text="${page?.subtitle}"></div>
         </div>
     </nav>
 
@@ -66,8 +58,7 @@
         <div th:replace="fragments/page-nav :: nav"></div>
 
         <!-- Main content area with dynamic class -->
-        <div th:class="${page.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
-
+        <div th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
             <!-- Messages fragment TODO-->
             <!-- <div th:replace="fragments/page-messages :: messages"></div> -->
 
@@ -87,6 +78,6 @@
 
     <!-- Bottom banner -->
     <div th:utext="${bottomBanner}"></div>
-
-
 </body>
+
+</html>

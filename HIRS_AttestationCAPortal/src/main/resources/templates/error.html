@@ -1,18 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
 <head>
-    <title>Fallback error</title>
+    <meta charset="UTF-8">
+    <title th:text="'Fallback Error'">Fallback Error</title>
 </head>
+
 <body>
+    <section layout:fragment="content">
 
-<!--&lt;!&ndash; Use the layout fragment and pass in the page header title &ndash;&gt;-->
-<!--<div th:replace="fragments/page-layout :: layout('Error - 404')">-->
-
-<!--    &lt;!&ndash; This body content will be inserted into the layout fragment &ndash;&gt;-->
-<!--    &lt;!&ndash;<div th:text="${exception}"></div>-->
-<!--    <div>from URL -> <span th:text="${url}"></span></div>&ndash;&gt;-->
-
-<!--</div>-->
-
+    </section>
 </body>
+
 </html>

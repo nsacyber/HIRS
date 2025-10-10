@@ -3,7 +3,7 @@
 
 <body>
     <div th:fragment="pageNav(page, pages, portal)">
-        <nav class="navbar navbar-default sidebar" role="navigation" th:if="${page.hasMenu}">
+        <nav class="navbar navbar-default sidebar" role="navigation" th:if="${page?.hasMenu}">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#sidebar-navbar">
@@ -16,7 +16,7 @@
                 <div class="collapse navbar-collapse" id="sidebar-navbar">
                     <ul class="nav navbar-nav">
                         <li th:each="p : ${pages}" th:if="${p.inMenu}"
-                            th:class="${p.menuLinkClass} + (${p.title} == ${page.title} ? ' active' : '')">
+                            th:class="${p.menuLinkClass} + (${p.title} == ${page?.title} ? ' active' : '')">
                             <a th:href="@{${portal}/${p.prefixPath}${p.viewName}}">
                                 <span th:text="${p.title}">Page Title</span>
                                 <span class="pull-right hidden-xs showopacity">

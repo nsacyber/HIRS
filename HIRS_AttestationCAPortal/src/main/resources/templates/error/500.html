@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
 
 <head>
     <meta charset="UTF-8">
-    <title>500 error</title>
+    <title th:text="'500 error'">500 error</title>
 </head>
 
 <body>
+    <section layout:fragment="content">
 
+    </section>
 </body>
 
 </html>
