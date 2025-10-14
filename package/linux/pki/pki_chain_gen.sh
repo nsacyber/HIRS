@@ -114,6 +114,7 @@ add_to_stores () {
    # Import the cert into a java trust store via keytool
    keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" >> "$LOG_FILE" 2>&1
    # Remove the temp p1 file.
+   #echo "key with alias of $ALIAS stored"
    rm tmpkey.p12
 } 
 
@@ -178,6 +179,7 @@ create_cert () {
    # Import the cert into a java trust store via keytool
    keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" >> "$LOG_FILE" 2>&1
    # Remove the temp p1 file.
+   #echo "Key with alias of $ALIAS stored in jks"
    rm -f tmpkey.p12 &>/dev/null
 }
 
