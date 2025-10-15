@@ -720,7 +720,7 @@ public class SwidTagGateway {
                 }
                 break;
             default:
-                System.out.println("Invalid Timestamp format specified" + timestampFormat);
+                System.out.println("Invalid Timestamp format specified: " + timestampFormat);
                 System.exit(1);
                 break;
         }

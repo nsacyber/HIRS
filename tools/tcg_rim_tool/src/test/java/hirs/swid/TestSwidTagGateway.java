@@ -18,7 +18,7 @@ public class TestSwidTagGateway {
             TestSwidTagGateway.class.getClassLoader()
                     .getResource("rim_fields.json")).getPath();
 
-    private static final String CA_CHAN_FILE = Objects.requireNonNull(
+    private static final String CA_CHAIN_FILE = Objects.requireNonNull(
             TestSwidTagGateway.class.getClassLoader()
                     .getResource("RimCertChain.pem")).getPath();
 
