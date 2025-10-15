@@ -59,7 +59,7 @@ public class TestSwidTagGateway {
         gateway.setAttributesFile(ATTRIBUTES_FILE);
         validator = new ReferenceManifestValidator();
         validator.setRimEventLog(SUPPORT_RIM_FILE);
-        validator.setTrustStoreFile(CA_CHAN_FILE);
+        validator.setTrustStoreFile(CA_CHAIN_FILE);
     }
 
     /**
