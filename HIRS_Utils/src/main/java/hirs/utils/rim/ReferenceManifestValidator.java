@@ -217,8 +217,8 @@ public class ReferenceManifestValidator {
                         validationErrorMessage += "issuer cert not found";
                     }
                 } else {
-                    System.out.println("A public signing certificate (-p) is required " +
-                            "to verify this base RIM.");
+                    System.out.println("A public signing certificate (-p) is required "
+                            + "to verify this base RIM.");
                 }
             }
             if (context != null) {
