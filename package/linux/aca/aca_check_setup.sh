@@ -7,6 +7,7 @@
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 
 LOG_FILE=/dev/null
+SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 CERT_PATH="/etc/hirs/certificates/HIRS/"
 RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
@@ -40,7 +41,7 @@ ALL_CHECKS_PASSED=true
 ALL_CERTS_PASSED=true
 
 source $SCRIPT_DIR/../db/mysql_util.sh
-source /etc/os-release 
+source /etc/os-release
 
 # Setup distro specifc paths and variables
 if [ $ID = "ubuntu" ]; then 
@@ -77,6 +78,8 @@ done
 
 check_systemd -p
 
+source /etc/hirs/aca/aca.properties;
+
 echo "Checking HIRS ACA Setup on this device..."
 # Check if aca setup was performed
   # Check is RPM was installed via RPM package 
@@ -108,7 +111,6 @@ echo "Checking HIRS ACA Setup on this device..."
   fi
 
 
-
 # Check install setup pki files
   if [ ! -d $CERT_PATH ]; then
       check_db_cleared
@@ -118,7 +120,46 @@ echo "Checking HIRS ACA Setup on this device..."
       exit 1;
   fi
 
-source /etc/hirs/aca/aca.properties;
+check_pki_config () {
+TLS_KEY_ALIAS=$(awk -F'=' '/^server.ssl.trust-alias=/ {print $2}' $SPRING_PROP_FILE)
+ACA_ROOT_KEY_ALIAS=$(awk -F'=' '/^aca.certificates.root-key-alias=/ {print $2}' $SPRING_PROP_FILE)
+
+# Check Spring app settings for a few config items...
+# TLS Algorithm Check
+echo "Checking HIRS ACA pki configuration:"
+   case $TLS_KEY_ALIAS in
+      "hirs_aca_tls_rsa_3k_sha384")
+      echo "    ACA Portal is configured for TLS using rsa 3072 key with SHA 384"
+      ;;
+      "hirs_aca_tls_ecc_512_sha384")
+      echo "    ACA Portal is configured for TLS using ecc 512 key with SHA 384"
+      ;;
+      "hirs_aca_tls_mlsa_77_sha384")
+      echo "    ACA Portal is configured for TLS using ml-dsa 77 key with SHA 384"
+      ;;
+      *)
+      echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
+      ALL_CHECKS_PASSED=false
+      ;;
+   esac
+# ACA Algorithm Check
+  case $ACA_ROOT_KEY_ALIAS in
+        "HIRS_root_ca_rsa_3k_sha384_key")
+        echo "    ACA is configured to sign Attestation or LDevID certificates using rsa 3072 key with SHA 384"
+        ;;
+        "HIRS_root_ca_ecc_512_sha384_key")
+        echo "    ACA is configured to sign Attestation or LDevID certificates using ecc 512 key with SHA 384"
+        ;;
+        "HIRS_root_ca_mldsa_77_sha384_key")
+        echo "    ACA is configured  to sign Attestation or LDevID certificates using ml-dsa 77 key with SHA 384"
+        ;;
+        *)
+        echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
+        ALL_CHECKS_PASSED=false
+        ;;
+     esac
+}
+
 
 check_pwds () {
 
@@ -231,9 +272,13 @@ check_pki () {
     fi
        keytool -list -keystore  /etc/hirs/certificates/HIRS/TrustStore.jks  -storepass $hirs_pki_password | grep hirs | sed -e 's/^/     /' > /dev/null
     else  #verbose
-       echo "   Checking KeyStore, Keystore aliases, and pki password"
+       echo "   Checking TrustStore, aliases, and pki password"
+       echo "   Truststore alias list:"
+       keytool -list -keystore  /etc/hirs/certificates/HIRS/TrustStore.jks  -storepass $hirs_pki_password  | sed -e 's/^/     /' 2>/dev/null
+
+       echo "   Checking KeyStore, aliases, and pki password"
        echo "   Keystore alias list:"
-       keytool -list -keystore  /etc/hirs/certificates/HIRS/TrustStore.jks  -storepass $hirs_pki_password | grep hirs | sed -e 's/^/     /' 
+       keytool -list -keystore  /etc/hirs/certificates/HIRS/KeyStore.jks  -storepass $hirs_pki_password   | sed -e 's/^/     /'  2>/dev/null
   fi
  
   if [ $? -eq 0 ]; then
@@ -319,6 +364,7 @@ check_fips () {
 
 check_pwds
 check_pki
+check_pki_config
 check_mysql_setup
 check_db
 check_selinux
