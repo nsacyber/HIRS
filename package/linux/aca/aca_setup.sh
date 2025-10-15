@@ -1,4 +1,4 @@
-##!/bin/bash
+#!/bin/bash
 #####################################################################################
 #
 # Script to create ACA setup files and configure the hirs_db database.
@@ -202,20 +202,20 @@ fi
 echo "Setting algorithm setting for TLS and ACA..."
 if [ "$TLS_ALG" == "rsa" ]; then
   echo "server.ssl.trust-alias=hirs_aca_tls_rsa_3k_sha384" >> $SPRING_PROP_FILE
-  echo "server.ssl.key-alias=hirs_aca_tls_rsa_3k_sha384" >> $SPRING_PROP_FILE
+  echo "server.ssl.key-alias=hirs_aca_tls_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
 elif [ "$TLS_ALG" == "ecc" ]; then
   echo "server.ssl.trust-alias=hirs_aca_tls_ecc_512_sha384" >> $SPRING_PROP_FILE
-  echo "server.ssl.key-alias=hirs_aca_tls_ecc_512_sha384" >> $SPRING_PROP_FILE
+  echo "server.ssl.key-alias=hirs_aca_tls_ecc_512_sha384_key" >> $SPRING_PROP_FILE
 fi
 
 if [ "$ACA_ALG" == "rsa" ]; then
-  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_rsa_3k_sha384" >> $SPRING_PROP_FILE
-  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_rsa_3k_sha384" >> $SPRING_PROP_FILE
-  echo "aca.certificates.root-key-alias=HIRS_root_ca_rsa_3k_sha384" >> $SPRING_PROP_FILE
+  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
+  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
+  echo "aca.certificates.root-key-alias=HIRS_root_ca_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
 elif [ "$ACA_ALG" == "ecc" ]; then
-  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_ecc_512_sha384" >> $SPRING_PROP_FILE
-  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_ecc_512_sha384" >> $SPRING_PROP_FILE
-  echo "aca.certificates.root-key-alias=HIRS_root_ca_ecc_512_sha384" >> $SPRING_PROP_FILE
+  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_ecc_512_sha384_key" >> $SPRING_PROP_FILE
+  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_ecc_512_sha384_key" >> $SPRING_PROP_FILE
+  echo "aca.certificates.root-key-alias=HIRS_root_ca_ecc_512_sha384_key" >> $SPRING_PROP_FILE
 fi
 
 echo "ACA setup complete" | tee -a "$LOG_FILE"
