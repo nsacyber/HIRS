@@ -2,7 +2,6 @@ package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
 import lombok.Getter;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -11,9 +10,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
-import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_NOT_ACCESSIBLE;
 
 /**
  * Class to process a UEFI variable within a TPM Event.
@@ -66,14 +62,14 @@ public class UefiVariable {
      */
     private byte[] uefiVariableData = null;
 
-    /**
-     * Track status of vendor-table.json file.
-     * The default here is that each list correctly grabbed the file from file system.
-     * If any one list has issues, this overall status will change to reflect the
-     * problematic list's status.
-     */
-    @Getter
-    private String guidTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
+//    /**
+//     * Track status of vendor-table.json file.
+//     * The default here is that each list correctly grabbed the file from file system.
+//     * If any one list has issues, this overall status will change to reflect the
+//     * problematic list's status.
+//     */
+//    @Getter
+//    private String guidTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
 
     /**
      * Human-readable description of the data within the SPDM devdc (to be updated with more test data).
@@ -174,20 +170,20 @@ public class UefiVariable {
             UefiSignatureList list;
             list = new UefiSignatureList(certData);
 
-            // first check if any previous list has not been able to access vendor-table.json,
-            // and if that is the case, the first comparison in the if returns false and
-            // the if statement is not executed
-            // [previous event file status = guidTableFileStatus]
-            // (ie. keep the file status to reflect that file was not accessible at some point)
-            // next, check if the new list has any status other than the default 'filesystem',
-            // and if that is the case, the 2nd comparison in the if returns true and
-            // the if statement is executed
-            // [new event file status = list.getGuidTableFileStatus()]
-            // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if ((guidTableFileStatus != FILESTATUS_NOT_ACCESSIBLE)
-                    && (list.getGuidTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
-                guidTableFileStatus = list.getGuidTableFileStatus();
-            }
+//            // first check if any previous list has not been able to access vendor-table.json,
+//            // and if that is the case, the first comparison in the if returns false and
+//            // the if statement is not executed
+//            // [previous event file status = guidTableFileStatus]
+//            // (ie. keep the file status to reflect that file was not accessible at some point)
+//            // next, check if the new list has any status other than the default 'filesystem',
+//            // and if that is the case, the 2nd comparison in the if returns true and
+//            // the if statement is executed
+//            // [new event file status = list.getGuidTableFileStatus()]
+//            // (ie. if the new file status is not-accessible or from-code, then want to update)
+//            if ((guidTableFileStatus != FILESTATUS_NOT_ACCESSIBLE)
+//                    && (list.getGuidTableFileStatus() != FILESTATUS_FROM_FILESYSTEM)) {
+//                guidTableFileStatus = list.getGuidTableFileStatus();
+//            }
 
 //            efiVariableSigListContents += list.toString();
             if (!list.isSignatureTypeValid()) {

@@ -50,6 +50,32 @@ Write-Output "-----------------------------------------------------------" | Wri
 Write-Output "ACA setup log file is $global:LOG_FILE" | WriteAndLog
 Write-Output ("Running with these arguments: "+($PSBoundParameters | Out-String)) | WriteAndLog
 
+Write-Output "Setting up the VERSION file that the bootRun can use" | WriteAndLog
+
+# Check if git is available
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    # Check if we're inside a git working tree
+    $isInsideWorkTree = git rev-parse --is-inside-work-tree 2>$null
+
+    if ($LASTEXITCODE -eq 0 -and $isInsideWorkTree.Trim() -eq "true") {
+        # Read the VERSION file
+        $version = Get-Content $global:HIRS_RELEASE_VERSION_FILE -Raw
+
+        # Get the current Unix timestamp
+        $timestamp = [int][DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+
+        $gitHash = git rev-parse --short HEAD
+
+        $jarVersion = "$($version.Trim()).$timestamp.$($gitHash.Trim())"
+
+        if (-not (Test-Path $global:HIRS_DATA_WIN_VERSION_FILE)) {
+            New-Item -ItemType File -Path $global:HIRS_DATA_WIN_VERSION_FILE -Force | Out-Null
+        }
+
+        $jarVersion | Set-Content $global:HIRS_DATA_WIN_VERSION_FILE
+    }
+}
+
 # Read aca.properties
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DEFAULT_PROPERTIES_DIR -Force | Out-Null

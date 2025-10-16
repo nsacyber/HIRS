@@ -16,7 +16,7 @@ env:
   IMAGE_NAME_WINDOWS: ghcr.io/nsacyber/hirs/aca-windows
   PUBLIC_IMAGE_NAME: ghcr.io/nsacyber/hirs/aca
   PUBLIC_IMAGE_TAG_LATEST: ghcr.io/nsacyber/hirs/aca:latest
-  TAG_LATEST: ${{ github.event_name == 'release' || inputs.also_tag_latest }} # The public docker image will be tagged 'latest' for releases, or if this option is manually selected.
+  TAG_LATEST: ${{ github.event_name == 'release' && !github.event.release.prerelease || inputs.also_tag_latest }} # The public docker image will be tagged 'latest' for releases, or if this option is manually selected.
 jobs:
   setup:
     runs-on: ubuntu-latest
