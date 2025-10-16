@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 @Log4j2
 @Service
 public class PolicyPageService {
-
     private final PolicyRepository policyRepository;
 
     /**
