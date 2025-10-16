@@ -10,19 +10,26 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
+ * helper class to process CSV files.
  */
 public class CsvParser {
 
     private static final char DEFAULT_SEPARATOR = ',';
     private static final char DEFAULT_QUOTE = '"';
-    
     private List<String> content;
 
+    /**
+     * CsvParser constructor.
+     * @param file name of the file contains the CSV data.
+     */
     public CsvParser(final File file) {
         this(file.getAbsolutePath());
     }
-    
+
+    /**
+     * CsvParser constructor.
+     * @param csvfile Sting containing the contents of the SCV file.
+     */
     public CsvParser(final String csvfile) {
         content = readerCsv(csvfile);
     }
@@ -30,9 +37,9 @@ public class CsvParser {
     /**
      * This method takes an existing csv file and reads the file by line and
      * adds the contents to a list of Strings.
-     * 
-     * @param file valid path to a csv file
-     * @return 
+     *
+     * @param file valid path to a csv file.
+     * @return  List of Strings.
      */
     private List<String> readerCsv(final String file) {
         String line = "";
@@ -41,7 +48,7 @@ public class CsvParser {
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             while ((line = br.readLine()) != null) {
-                if (line.length() > 0 
+                if (line.length() > 0
                         && line.contains(csvSplitBy)) {
                  tempList.add(line);
                 }
@@ -50,23 +57,46 @@ public class CsvParser {
             System.out.println(String.format("Error reading in CSV file...(%s)", file));
             System.exit(1);
         }
-        
         return tempList;
     }
 
+    /**
+     * Gets content as a list of Stings.
+     * @return List of Strings.
+     */
     public final List<String> getContent() {
-        return Collections.unmodifiableList(content);
+       return Collections.unmodifiableList(content);
     }
-    
-    public static List<String> parseLine(String csvLine) {
+
+    /**
+     * Gets a list of parsed lines.
+     * @param csvLine
+     * @return List of Strings.
+     */
+    public static List<String> parseLine(final String csvLine) {
         return parseLine(csvLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE);
     }
 
-    public static List<String> parseLine(String csvLine, char separators) {
+    /**
+     * Parses a CSV Line.
+     * @param csvLine
+     * @param separators
+     * @return List of Strings.
+     */
+    public static List<String> parseLine(final String csvLine, final char separators) {
         return parseLine(csvLine, separators, DEFAULT_QUOTE);
     }
 
-    public static List<String> parseLine(String csvLine, char separators, char customQuote) {
+    /**
+     * Parses a CSV Line.
+     * @param csvLine
+     * @param separators
+     * @param customQuote
+     * @return List of Stings.
+     */
+    public static List<String> parseLine(final String csvLine, final char separators, final char customQuote) {
+        char separator = separators;
+        char quote = customQuote;
         List<String> result = new ArrayList<>();
 
         if (csvLine == null || csvLine.isEmpty()) {
@@ -74,11 +104,11 @@ public class CsvParser {
         }
 
         if (customQuote == ' ') {
-            customQuote = DEFAULT_QUOTE;
+            quote = DEFAULT_QUOTE;
         }
 
-        if (separators == ' ') {
-            separators = DEFAULT_SEPARATOR;
+        if (separator == ' ') {
+            separator = DEFAULT_SEPARATOR;
         }
 
         StringBuilder currVal = new StringBuilder();
@@ -91,7 +121,7 @@ public class CsvParser {
         for (char ch : chars) {
             if (inQuotes) {
                 startCollectChar = true;
-                if (ch == customQuote) {
+                if (ch == quote) {
                     inQuotes = false;
                     dbleQuotesInCol = false;
                 } else {
@@ -105,17 +135,15 @@ public class CsvParser {
                     }
                 }
             } else {
-                if (ch == customQuote) {
+                if (ch == quote) {
                     inQuotes = true;
-
-                    if (chars[0] != '"' && customQuote == '\"') {
+                    if (chars[0] != '"' && quote == '\"') {
                         currVal.append('"');
                     }
-
                     if (startCollectChar) {
                         currVal.append('"');
                     }
-                } else if (ch == separators) {
+                } else if (ch == separator) {
                     result.add(currVal.toString());
                     currVal = new StringBuilder();
                     startCollectChar = false;
@@ -128,9 +156,7 @@ public class CsvParser {
                 }
             }
         }
-
         result.add(currVal.toString());
-
         return result;
     }
 }

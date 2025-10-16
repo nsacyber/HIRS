@@ -1,11 +1,11 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
-import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.IssuedAttestationCertificatePageService;
+import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -13,7 +13,6 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -51,22 +50,22 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
-    private final IssuedCertificateRepository issuedCertificateRepository;
-    private final CertificateService certificateService;
+    private final IssuedAttestationCertificatePageService issuedAttestationCertificateService;
+    private final CertificatePageService certificatePageService;
 
     /**
      * Constructor for the Issued Attestation Certificate page.
      *
-     * @param issuedCertificateRepository issued certificate repository
-     * @param certificateService          certificate service
+     * @param issuedAttestationCertificatePageService issued certificate page service
+     * @param certificatePageService                  certificate page service
      */
     @Autowired
     public IssuedCertificatePageController(
-            final IssuedCertificateRepository issuedCertificateRepository,
-            final CertificateService certificateService) {
+            final IssuedAttestationCertificatePageService issuedAttestationCertificatePageService,
+            final CertificatePageService certificatePageService) {
         super(Page.ISSUED_CERTIFICATES);
-        this.issuedCertificateRepository = issuedCertificateRepository;
-        this.certificateService = certificateService;
+        this.issuedAttestationCertificateService = issuedAttestationCertificatePageService;
+        this.certificatePageService = certificatePageService;
     }
 
     /**
@@ -78,28 +77,24 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * @return the path for the view and data model for the Issued Attestation Certificate page.
      */
     @RequestMapping
-    public ModelAndView initPage(
-            final NoPageParams params, final Model model) {
+    public ModelAndView initPage(final NoPageParams params, final Model model) {
         return getBaseModelAndView(Page.ISSUED_CERTIFICATES);
     }
 
     /**
-     * Processes the request to retrieve a list of issued attestation certificates
-     * for display on the issued certificates page.
+     * Processes the request to retrieve a list of issued attestation certificates for display on the issued
+     * certificates page.
      *
      * @param input data table input received from the front-end
      * @return data table of issued certificates
      */
     @ResponseBody
-    @GetMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(
-            final DataTableInput input) {
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(final DataTableInput input) {
         log.info("Received request to display list of issued attestation certificates");
-        log.debug("Request received a datatable input object for the issued attestation certificate page: "
-                + "{}", input);
+        log.debug("Request received a datatable input object for the issued attestation"
+                + " certificate page: {}", input);
 
-        // attempt to get the column property based on the order index.
         String orderColumnName = input.getOrderColumnName();
 
         log.debug("Ordering on column: {}", orderColumnName);
@@ -117,11 +112,11 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult =
-                    this.issuedCertificateRepository.findByArchiveFlag(false, pageable);
+            pagedResult = this.issuedAttestationCertificateService.
+                    findIssuedCertificatesByArchiveFlag(false, pageable);
         } else {
             pagedResult =
-                    this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             IssuedAttestationCertificate.class,
                             searchableColumns,
                             searchTerm,
@@ -133,7 +128,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         }
 
         issuedCertificateFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        issuedCertificateFilteredRecordsList.setRecordsTotal(findIssuedCertificateRepoCount());
+        issuedCertificateFilteredRecordsList.setRecordsTotal(
+                this.issuedAttestationCertificateService.findIssuedCertificateRepoCount());
 
         log.info("Returning the size of the list of issued certificates: "
                 + "{}", issuedCertificateFilteredRecordsList.getRecordsFiltered());
@@ -149,46 +145,20 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadIssuedCertificate(
-            @RequestParam final String id,
-            final HttpServletResponse response)
+    public void downloadIssuedCertificate(@RequestParam final String id, final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download issued certificate id {}", id);
 
         try {
-            final UUID uuid = UUID.fromString(id);
-            Certificate certificate = this.certificateService.findCertificate(uuid);
-
-            if (certificate == null) {
-                final String errorMessage =
-                        "Unable to locate issued attestation certificate record with ID " + uuid;
-                log.warn(errorMessage);
-                throw new EntityNotFoundException(errorMessage);
-            } else if (!(certificate instanceof IssuedAttestationCertificate)) {
-                final String errorMessage =
-                        "Unable to cast the found certificate to an issued attestation certificate "
-                                + "object";
-                log.warn(errorMessage);
-                throw new ClassCastException(errorMessage);
-            }
-
-            final IssuedAttestationCertificate issuedAttestationCertificate =
-                    (IssuedAttestationCertificate) certificate;
-
-            final String fileName = "filename=\"" + IssuedAttestationCertificate.class.getSimpleName()
-                    + "_"
-                    + issuedAttestationCertificate.getSerialNumber()
-                    + ".cer\"";
-
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
+            final DownloadFile downloadFile =
+                    this.certificatePageService.downloadCertificate(IssuedAttestationCertificate.class,
+                            UUID.fromString(id));
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-            // write issued certificate to output stream
-            response.getOutputStream().write(certificate.getRawBytes());
-
+            response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to download the "
-                    + "specified issued attestation certificate", exception);
+            log.error("An exception was thrown while attempting to download the"
+                    + " specified issued attestation certificate", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -206,15 +176,13 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         log.info("Received request to download all issued certificates");
 
         final String singleFileName = "Issued_Certificate";
-        final String fileName = "issued_certificates.zip";
+        final String zipFileName = "issued_certificates.zip";
 
-
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            //  write issued attestation certificates to output stream and bulk download them
-            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
+            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
@@ -233,9 +201,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteIssuedCertificate(
-            @RequestParam final String id,
-            final RedirectAttributes attr) throws URISyntaxException {
+    public RedirectView deleteIssuedCertificate(@RequestParam final String id, final RedirectAttributes attr)
+            throws URISyntaxException {
         log.info("Received request to delete issued attestation certificate id {}", id);
 
         Map<String, Object> model = new HashMap<>();
@@ -245,11 +212,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            final UUID uuid = UUID.fromString(id);
-
-            this.certificateService.deleteCertificate(uuid, CertificateType.ISSUED_CERTIFICATES,
-                    successMessages, errorMessages);
-
+            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -261,14 +224,5 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.ISSUED_CERTIFICATES, new NoPageParams(), model, attr);
-    }
-
-    /**
-     * Retrieves the total number of records in the issued certificate repository.
-     *
-     * @return total number of records in the issued certificate repository.
-     */
-    private long findIssuedCertificateRepoCount() {
-        return this.issuedCertificateRepository.findByArchiveFlag(false).size();
     }
 }

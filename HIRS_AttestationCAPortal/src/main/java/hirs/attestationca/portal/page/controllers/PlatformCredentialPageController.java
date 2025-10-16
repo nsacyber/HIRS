@@ -1,13 +1,12 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
-import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.service.CertificateService;
+import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.PlatformCredentialPageService;
+import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -15,11 +14,9 @@ import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -55,26 +52,21 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials")
 public class PlatformCredentialPageController extends PageController<NoPageParams> {
-    private final PlatformCertificateRepository platformCertificateRepository;
-    private final EndorsementCredentialRepository endorsementCredentialRepository;
-    private final CertificateService certificateService;
+    private final CertificatePageService certificatePageService;
+    private final PlatformCredentialPageService platformCredentialService;
 
     /**
-     * Constructor for the Platform Credential page.
+     * Constructor for the Platform Credential Page Controller.
      *
-     * @param platformCertificateRepository   platform certificate repository
-     * @param endorsementCredentialRepository endorsement credential repository
-     * @param certificateService              certificate service
+     * @param certificatePageService    certificate page service
+     * @param platformCredentialService platform credential service
      */
     @Autowired
-    public PlatformCredentialPageController(
-            final PlatformCertificateRepository platformCertificateRepository,
-            final EndorsementCredentialRepository endorsementCredentialRepository,
-            final CertificateService certificateService) {
+    public PlatformCredentialPageController(final CertificatePageService certificatePageService,
+                                            final PlatformCredentialPageService platformCredentialService) {
         super(Page.PLATFORM_CREDENTIALS);
-        this.platformCertificateRepository = platformCertificateRepository;
-        this.endorsementCredentialRepository = endorsementCredentialRepository;
-        this.certificateService = certificateService;
+        this.certificatePageService = certificatePageService;
+        this.platformCredentialService = platformCredentialService;
     }
 
     /**
@@ -86,36 +78,30 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @return the path for the view and data model for the platform credential page.
      */
     @RequestMapping
-    public ModelAndView initPage(
-            final NoPageParams params, final Model model) {
+    public ModelAndView initPage(final NoPageParams params, final Model model) {
         return getBaseModelAndView(Page.PLATFORM_CREDENTIALS);
     }
 
     /**
-     * Processes the request to retrieve a list of platform credentials for display
-     * on the platform credentials page.
+     * Processes the request to retrieve a list of platform credentials for display on the platform credentials page.
      *
      * @param input data table input received from the front-end
      * @return data table of platform credentials
      */
     @ResponseBody
-    @GetMapping(value = "/list",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(
-            final DataTableInput input) throws Exception {
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(final DataTableInput input) {
         log.info("Received request to display list of platform credentials");
         log.debug("Request received a datatable input object for the platform credentials page: {}", input);
 
-        // attempt to get the column property based on the order index.
-        String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = input.getOrderColumnName();
 
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
 
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class,
-                        input.getColumns());
+        final Set<String> searchableColumns = ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class,
+                input.getColumns());
 
         final int currentPage = input.getStart() / input.getLength();
         Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
@@ -126,10 +112,10 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         if (StringUtils.isBlank(searchTerm)) {
             pagedResult =
-                    this.platformCertificateRepository.findByArchiveFlag(false, pageable);
+                    this.platformCredentialService.findPlatformCredentialsByArchiveFlag(false, pageable);
         } else {
             pagedResult =
-                    this.certificateService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
                             PlatformCredential.class,
                             searchableColumns,
                             searchTerm,
@@ -141,7 +127,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         }
 
         pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        pcFilteredRecordsList.setRecordsTotal(findPlatformCredentialRepositoryCount());
+        pcFilteredRecordsList.setRecordsTotal(this.platformCredentialService.findPlatformCredentialRepositoryCount());
 
         EndorsementCredential associatedEC;
 
@@ -149,8 +135,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             // loop all the platform credentials
             for (PlatformCredential pc : pcFilteredRecordsList) {
                 // find the EC using the PC's "holder serial number"
-                associatedEC = this.endorsementCredentialRepository
-                        .findBySerialNumber(pc.getHolderSerialNumber());
+                associatedEC = this.platformCredentialService
+                        .findECBySerialNumber(pc.getHolderSerialNumber());
 
                 if (associatedEC != null) {
                     log.debug("EC ID for holder s/n {} = {}", pc
@@ -175,44 +161,19 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadPlatformCredential(
-            @RequestParam final String id,
-            final HttpServletResponse response)
+    public void downloadPlatformCredential(@RequestParam final String id, final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download platform credential id {}", id);
 
         try {
-            final UUID uuid = UUID.fromString(id);
-            Certificate certificate = this.certificateService.findCertificate(uuid);
-
-            if (certificate == null) {
-                final String errorMessage = "Unable to locate platform credential record with ID " + uuid;
-                log.warn(errorMessage);
-                throw new EntityNotFoundException(errorMessage);
-            } else if (!(certificate instanceof PlatformCredential)) {
-                final String errorMessage =
-                        "Unable to cast the found certificate to a platform credential object";
-                log.warn(errorMessage);
-                throw new ClassCastException(errorMessage);
-
-            }
-
-            final PlatformCredential platformCredential = (PlatformCredential) certificate;
-
-            final String fileName = "filename=\"" + PlatformCredential.class.getSimpleName()
-                    + "_"
-                    + platformCredential.getSerialNumber()
-                    + ".cer\"";
-
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + fileName);
+            final DownloadFile downloadFile = this.certificatePageService.downloadCertificate(PlatformCredential.class,
+                    UUID.fromString(id));
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
-            // write platform credential to output stream
-            response.getOutputStream().write(certificate.getRawBytes());
-
+            response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to download the "
-                    + "specified platform credential", exception);
+            log.error("An exception was thrown while attempting to download the"
+                    + " specified platform credential", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -225,24 +186,21 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/bulk-download")
-    public void bulkDownloadPlatformCredentials(final HttpServletResponse response)
-            throws IOException {
+    public void bulkDownloadPlatformCredentials(final HttpServletResponse response) throws IOException {
         log.info("Received request to download all platform credentials");
 
-        final String fileName = "platform_certificates.zip";
+        final String zipFileName = "platform_certificates.zip";
         final String singleFileName = "Platform_Certificate";
 
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            //  write platform credentials to output stream and bulk download them
-            this.certificateService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
+            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the "
+            log.error("An exception was thrown while attempting to bulk download all the"
                     + "platform credentials", exception);
-
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
@@ -259,7 +217,6 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     protected RedirectView uploadPlatformCredentials(
             @RequestParam("file") final MultipartFile[] files,
             final RedirectAttributes attr) throws URISyntaxException {
-
         log.info("Received request to upload one or more platform credentials");
 
         Map<String, Object> model = new HashMap<>();
@@ -269,24 +226,21 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
 
-            //Parse platform credential
-            PlatformCredential parsedPlatformCredential = parsePlatformCredential(file, messages);
+            PlatformCredential parsedPlatformCredential = this.platformCredentialService.parsePlatformCredential(file,
+                    errorMessages);
 
-            //Store only if it was parsed
             if (parsedPlatformCredential != null) {
-                certificateService.storeCertificate(
+                certificatePageService.storeCertificate(
                         CertificateType.PLATFORM_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedPlatformCredential);
-
-                messages.addSuccessMessages(successMessages);
-                messages.addErrorMessages(errorMessages);
             }
+
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
         }
 
-        //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
-
         return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, attr);
     }
 
@@ -300,9 +254,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deletePlatformCredential(
-            @RequestParam final String id,
-            final RedirectAttributes attr) throws URISyntaxException {
+    public RedirectView deletePlatformCredential(@RequestParam final String id,
+                                                 final RedirectAttributes attr) throws URISyntaxException {
         log.info("Received request to delete platform credential id {}", id);
 
         Map<String, Object> model = new HashMap<>();
@@ -312,9 +265,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            final UUID uuid = UUID.fromString(id);
-
-            this.certificateService.deleteCertificate(uuid, CertificateType.PLATFORM_CREDENTIALS,
+            this.certificatePageService.deleteCertificate(UUID.fromString(id),
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);
@@ -328,70 +279,5 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, attr);
-    }
-
-    /**
-     * Retrieves the total number of records in the platform credential repository.
-     *
-     * @return total number of records in the platform credential repository.
-     */
-    private long findPlatformCredentialRepositoryCount() {
-        return this.platformCertificateRepository.findByArchiveFlag(false).size();
-    }
-
-    /**
-     * N
-     * Attempts to parse the provided file in order to create a Platform Credential.
-     *
-     * @param file     file
-     * @param messages page messages
-     * @return platform credential
-     */
-    private PlatformCredential parsePlatformCredential(final MultipartFile file,
-                                                       final PageMessages messages) {
-        log.info("Received platform credential file of size: {}", file.getSize());
-
-        byte[] fileBytes;
-        String fileName = file.getOriginalFilename();
-
-        // attempt to retrieve file bytes from the provided file
-        try {
-            fileBytes = file.getBytes();
-        } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to read uploaded platform credential file (%s): ", fileName);
-            log.error(failMessage, ioEx);
-            messages.addErrorMessage(failMessage + ioEx.getMessage());
-            return null;
-        }
-
-        // attempt to build the platform credential from the uploaded bytes
-        try {
-            return new PlatformCredential(fileBytes);
-        } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded platform credential file (%s): ", fileName);
-            log.error(failMessage, ioEx);
-            messages.addErrorMessage(failMessage + ioEx.getMessage());
-            return null;
-        } catch (DecoderException dEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded platform credential pem file (%s): ", fileName);
-            log.error(failMessage, dEx);
-            messages.addErrorMessage(failMessage + dEx.getMessage());
-            return null;
-        } catch (IllegalArgumentException iaEx) {
-            final String failMessage = String.format(
-                    "Platform credential format not recognized(%s): ", fileName);
-            log.error(failMessage, iaEx);
-            messages.addErrorMessage(failMessage + iaEx.getMessage());
-            return null;
-        } catch (IllegalStateException isEx) {
-            final String failMessage = String.format(
-                    "Unexpected object while parsing platform credential %s ", fileName);
-            log.error(failMessage, isEx);
-            messages.addErrorMessage(failMessage + isEx.getMessage());
-            return null;
-        }
     }
 }

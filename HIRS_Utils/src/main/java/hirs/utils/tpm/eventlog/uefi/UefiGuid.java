@@ -3,8 +3,6 @@ package hirs.utils.tpm.eventlog.uefi;
 import com.eclipsesource.json.JsonObject;
 import hirs.utils.HexUtils;
 import hirs.utils.JsonUtils;
-import lombok.Getter;
-
 import java.math.BigInteger;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;

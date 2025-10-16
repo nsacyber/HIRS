@@ -1,9 +1,8 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
-import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
-import hirs.attestationca.persist.service.ValidationSummaryReportsService;
+import hirs.attestationca.persist.service.ValidationSummaryPageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -31,29 +30,23 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * Controller for the Validation Reports page.
+ * Controller for the Validation Summary Reports page.
  */
 @Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/validation-reports")
 public class ValidationReportsPageController extends PageController<NoPageParams> {
-
-    private final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository;
-    private final ValidationSummaryReportsService validationSummaryReportsService;
+    private final ValidationSummaryPageService validationSummaryPageService;
 
     /**
-     * Constructor providing the Page's display and routing specification.
+     * Constructor for the Validation Reports Page Controller.
      *
-     * @param supplyChainValidatorSummaryRepository the manager
-     * @param validationSummaryReportsService       the validation summary reports service
+     * @param validationSummaryPageService the validation summary reports page service
      */
     @Autowired
-    public ValidationReportsPageController(
-            final SupplyChainValidationSummaryRepository supplyChainValidatorSummaryRepository,
-            final ValidationSummaryReportsService validationSummaryReportsService) {
+    public ValidationReportsPageController(final ValidationSummaryPageService validationSummaryPageService) {
         super(Page.VALIDATION_REPORTS);
-        this.supplyChainValidatorSummaryRepository = supplyChainValidatorSummaryRepository;
-        this.validationSummaryReportsService = validationSummaryReportsService;
+        this.validationSummaryPageService = validationSummaryPageService;
     }
 
     /**
@@ -78,14 +71,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<SupplyChainValidationSummary> getValidationReportsTableData(
-            final DataTableInput input) {
-
+    public DataTableResponse<SupplyChainValidationSummary> getValidationReportsTableData(final DataTableInput input) {
         log.info("Received request to display list of validation reports");
         log.debug("Request received a datatable input object for the validation reports page: {}", input);
 
-        // attempt to get the column property based on the order index.
-        String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = input.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String searchTerm = input.getSearch().getValue();
@@ -103,16 +93,14 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult =
-                    this.supplyChainValidatorSummaryRepository.findByArchiveFlagFalse(pageable);
+            pagedResult = this.validationSummaryPageService.findValidationSummaryReportsByPageable(pageable);
         } else {
-            pagedResult =
-                    this.validationSummaryReportsService
-                            .findValidationReportsBySearchableColumnsAndArchiveFlag(
-                                    searchableColumns,
-                                    searchTerm,
-                                    false,
-                                    pageable);
+            pagedResult = this.validationSummaryPageService
+                    .findValidationReportsBySearchableColumnsAndArchiveFlag(
+                            searchableColumns,
+                            searchTerm,
+                            false,
+                            pageable);
         }
 
         if (pagedResult.hasContent()) {
@@ -120,7 +108,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         }
 
         reportsFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        reportsFilteredRecordsList.setRecordsTotal(this.supplyChainValidatorSummaryRepository.count());
+        reportsFilteredRecordsList.setRecordsTotal(
+                this.validationSummaryPageService.findValidationSummaryRepositoryCount());
 
         log.info("Returning the size of the list of validation reports: "
                 + "{}", reportsFilteredRecordsList.getRecordsFiltered());
@@ -134,10 +123,9 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param response http response
      */
     @PostMapping("/download")
-    public void downloadValidationReports(final HttpServletRequest request,
-                                          final HttpServletResponse response) throws IOException {
-        log.info("Received request to download validation report");
-
-        this.validationSummaryReportsService.downloadValidationReports(request, response);
+    public void downloadValidationReports(final HttpServletRequest request, final HttpServletResponse response)
+            throws IOException {
+        log.info("Received request to download validation summary reports");
+        this.validationSummaryPageService.downloadValidationReports(request, response);
     }
 }

@@ -110,6 +110,7 @@ public class ReferenceManifestValidator {
 
     @Getter
     private boolean supportRimValid;
+
     @Getter
     private String validationErrorMessage;
 
@@ -148,7 +149,7 @@ public class ReferenceManifestValidator {
                     new ByteArrayInputStream(rimBytes))));
             this.rim = doc;
         } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
+            log.error("Error while unmarshalling rim bytes using the provided rim bytes: {}", e.getMessage());
         }
     }
 
@@ -164,7 +165,7 @@ public class ReferenceManifestValidator {
             Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
             this.rim = doc;
         } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes: {}", e.getMessage());
+            log.error("Error while unmarshalling rim bytes using the provided file path: {}", e.getMessage());
         }
     }
 
@@ -179,20 +180,22 @@ public class ReferenceManifestValidator {
      * @return true if the signature element is validated, false otherwise
      */
 
-    public boolean validateXmlSignature(final PublicKey publicKey,
-                                        final String subjectKeyIdString) {
+    public boolean validateXmlSignature(final PublicKey publicKey, final String subjectKeyIdString) {
         DOMValidateContext context = null;
         validationErrorMessage = "Unable to verify RIM signature: ";
         try {
             NodeList nodes = getXmlElement(XMLSignature.XMLNS, "Signature");
+
             if (nodes.getLength() == 0) {
                 validationErrorMessage += "invalid XML, signature element not found.";
                 log.error(validationErrorMessage);
                 return false;
             }
+
             if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
                 trustStore = parseCertificatesFromPem(trustStoreFile);
             }
+
             NodeList certElement = getXmlElement(XMLSignature.XMLNS, "X509Certificate");
             if (certElement.getLength() > 0) {
                 X509Certificate embeddedCert = parseCertFromPEMString(
@@ -217,8 +220,8 @@ public class ReferenceManifestValidator {
                         validationErrorMessage += "issuer cert not found";
                     }
                 } else {
-                    System.out.println("A public signing certificate (-p) is required " +
-                            "to verify this base RIM.");
+                    System.out.println("A public signing certificate (-p) is required "
+                            + "to verify this base RIM.");
                 }
             }
             if (context != null) {
@@ -295,12 +298,12 @@ public class ReferenceManifestValidator {
         if (getHashValue(filepath, "SHA256").equals(
                 file.getAttribute(SwidTagConstants.SHA_256_HASH.getPrefix() + ":"
                         + SwidTagConstants.SHA_256_HASH.getLocalPart()))) {
-            log.info("Support RIM hash verified for {}", filepath);
+            log.info("Support RIM hash under SHA256 has been verified for {}", filepath);
             return true;
         } else if (getHashValue(filepath, "SHA384").equals(
                 file.getAttribute(SwidTagConstants.SHA_384_HASH.getPrefix() + ":"
                         + SwidTagConstants.SHA_384_HASH.getLocalPart()))) {
-            log.info("Support RIM hash verified for {}", filepath);
+            log.info("Support RIM hash under SHA384 has been verified for {}", filepath);
             return true;
         } else {
             return failWithError("Support RIM hash does not match Base RIM!");
@@ -408,9 +411,10 @@ public class ReferenceManifestValidator {
         } else {
             log.error("Signature value is invalid!");
         }
-        Iterator itr = signature.getSignedInfo().getReferences().iterator();
-        while (itr.hasNext()) {
-            Reference reference = (Reference) itr.next();
+
+        List<Reference> references = signature.getSignedInfo().getReferences();
+
+        for (Reference reference : references) {
             boolean refValidity = reference.validate(context);
             String refUri = reference.getURI();
             if (refUri.isEmpty()) {
@@ -667,7 +671,7 @@ public class ReferenceManifestValidator {
      * prefix if necessary.
      *
      * @param namespace the element's namespace
-     * @param tagName the element's name
+     * @param tagName   the element's name
      * @return a NodeList containing the element
      */
     private NodeList getXmlElement(final String namespace, final String tagName) {

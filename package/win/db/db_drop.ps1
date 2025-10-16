@@ -12,13 +12,14 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 	exit 1
 }
 
-$DB_CONF="C:\Program Files\MariaDB 11.1\data\my.ini"
-$MYSQL_WIN_UTIL_SCRIPT= (Resolve-Path ([System.IO.Path]::Combine($APP_HOME, '..','db',"mysql_util.ps1"))).Path
-
-# Load win mysql util script
-. $MYSQL_WIN_UTIL_SCRIPT
-
 Write-Host "Dropping the hirs_db database"
+
+$ACA_SCRIPTS_HOME = Join-Path -Path (Split-Path -Parent $PSCommandPath) -ChildPath "..\aca"
+$ACA_COMMON_SCRIPT=(Join-Path $ACA_SCRIPTS_HOME 'aca_common.ps1')
+
+# load other scripts
+. $ACA_COMMON_SCRIPT
+. $global:HIRS_REL_WIN_DB_MYSQL_UTIL
 
 # Run multiple flush commands in one go
 mysql -u root --password=$DB_ADMIN_PWD -e "FLUSH HOSTS; FLUSH LOGS; FLUSH STATUS; FLUSH PRIVILEGES; FLUSH USER_RESOURCES;"
@@ -43,18 +44,16 @@ $DB_ADMIN_PWD = ""
 # Flush logs
 mysql -u root --password=$DB_ADMIN_PWD -e "FLUSH LOGS;"
 
-# Remove key , cert and truststore entries from my.ini file
+# Remove key, cert and truststore entries from my.ini file
 
 Write-Host "Removing hirs tls references from mariadb configuration files"
 
 # Read all lines except those containing "hirs"
-$filteredLines = Get-Content $DB_CONF | Where-Object { $_ -notmatch "hirs" }
+$filteredLines = Get-Content $global:DB_CONF | Where-Object { $_ -notmatch "hirs" }
 
 # Overwrite the original file with the filtered content
-$filteredLines | Set-Content $DB_CONF
+$filteredLines | Set-Content $global:DB_CONF
 
 Write-Host "Restarting MariaDB"
 
 mysqld_reboot
-
-Write-Host "----------------------------------------------------------------------"
