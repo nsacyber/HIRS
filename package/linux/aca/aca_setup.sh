@@ -99,22 +99,25 @@ fi
 # Check for valid algorithms
 if [ ! $ACA_ALG == "rsa" ] && [ ! $ACA_ALG == "ecc" ] ; then
    echo  "Invalid ACA algorithm $ACA_ALG specified. Valid options are rsa or ecc."
+   exit 1;
 fi
 if [ ! $TLS_ALG == "rsa" ] && [ ! $TLS_ALG == "ecc" ] ; then
    echo  "Invalid TLS algorithm $TLS_ALG specified. Valid options are rsa or ecc."
+   exit 1;
 fi
 if [ ! $DB_ALG == "rsa" ] && [ ! $DB_ALG == "ecc" ] ; then
    echo  "Invalid DB algorithm $DB_ALG specified. Valid options are rsa or ecc."
+   exit 1;
 fi
 
-echo  "ARG_ACA_ALG is $ARG_ACA_ALG"
-echo  "ACA_ALG is $ACA_ALG"
+#echo  "ARG_ACA_ALG is $ARG_ACA_ALG"
+#echo  "ACA_ALG is $ACA_ALG"
 
-echo  "ARG_TLS_ALG is $ARG_TLS_ALG"
-echo "TLS_ALG is $TLS_ALG"
+#echo  "ARG_TLS_ALG is $ARG_TLS_ALG"
+#echo "TLS_ALG is $TLS_ALG"
 
-echo "ARG_DB_ALG is  $ARG_DB_ALG"
-echo "DB_ALG is $DB_ALG"
+#echo "ARG_DB_ALG is  $ARG_DB_ALG"
+#echo "DB_ALG is $DB_ALG"
 
 #echo "Input is $1"
 #if [[ $1 -eq 1 ]] ; then
@@ -200,6 +203,9 @@ fi
 
 # Update properties file based upon algorithm choices
 echo "Setting algorithm setting for TLS and ACA..."
+# remove default config file lines for tomcat ssl aliases
+  sed -i '/server.ssl.trust-alias/d' $SPRING_PROP_FILE
+  sed -i '/server.ssl.key-alias/d' $SPRING_PROP_FILE
 if [ "$TLS_ALG" == "rsa" ]; then
   echo "server.ssl.trust-alias=hirs_aca_tls_rsa_3k_sha384" >> $SPRING_PROP_FILE
   echo "server.ssl.key-alias=hirs_aca_tls_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
@@ -208,7 +214,12 @@ elif [ "$TLS_ALG" == "ecc" ]; then
   echo "server.ssl.key-alias=hirs_aca_tls_ecc_512_sha384_key" >> $SPRING_PROP_FILE
 fi
 
+ # remove default config file lines for aca aliases
+  sed -i '/aca.certificates.leaf-three-key-alias/d' $SPRING_PROP_FILE
+  sed -i '/aca.certificates.intermediate-key-alias/d' $SPRING_PROP_FILE
+  sed -i '/aca.certificates.root-key-alias/d' $SPRING_PROP_FILE
 if [ "$ACA_ALG" == "rsa" ]; then
+  # Add new lines for aca aliases
   echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
   echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
   echo "aca.certificates.root-key-alias=HIRS_root_ca_rsa_3k_sha384_key" >> $SPRING_PROP_FILE

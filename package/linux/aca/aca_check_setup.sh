@@ -78,7 +78,9 @@ done
 
 check_systemd -p
 
-source /etc/hirs/aca/aca.properties;
+if [ -f /etc/hirs/aca/aca.properties ]; then
+    source /etc/hirs/aca/aca.properties;
+fi
 
 echo "Checking HIRS ACA Setup on this device..."
 # Check if aca setup was performed
