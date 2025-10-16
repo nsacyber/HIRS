@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-    <div th:fragment="pageNav(page, pages, portal)">
+    <div th:fragment="pageNav(page, pages)">
         <nav class="navbar navbar-default sidebar" role="navigation" th:if="${page?.hasMenu}">
             <div class="container-fluid">
                 <div class="navbar-header">
@@ -15,12 +15,12 @@
                 </div>
                 <div class="collapse navbar-collapse" id="sidebar-navbar">
                     <ul class="nav navbar-nav">
-                        <li th:each="p : ${pages}" th:if="${p.inMenu}"
-                            th:class="${p.menuLinkClass} + (${p.title} == ${page?.title} ? ' active' : '')">
-                            <a th:href="@{${portal}/${p.prefixPath}${p.viewName}}">
-                                <span th:text="${p.title}">Page Title</span>
+                        <li th:each="p : ${pages}" th:if="${p?.inMenu}"
+                            th:class="${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '')">
+                            <a th:href="@{'/HIRS_AttestationCAPortal/portal/' + ${p?.prefixPath} + ${p?.viewName}}">
+                                <span th:text="${p?.title}">Page Title</span>
                                 <span class="pull-right hidden-xs showopacity">
-                                    <img th:src="@{/icons/{icon}_white_24dp.png(icon=${p.icon})}" alt="" />
+                                    <img th:src="@{/icons/{icon}_white_24dp.png(icon=${p?.icon})}" alt="" />
                                 </span>
                             </a>
                         </li>

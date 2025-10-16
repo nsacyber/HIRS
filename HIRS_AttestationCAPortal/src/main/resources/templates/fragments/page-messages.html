@@ -1,33 +1,32 @@
-<!--<c:if test="${not empty messages}">-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 
-<!--    <div id="page-messages-container">-->
-<!--        <ul class="noPaddingOrMargin" id="page-messages">-->
-<!--            <c:forEach items="${messages.errorMessages}" var="error">-->
-<!--                <li class="page-message" id="page-errorMessage">-->
-<!--                    <span class="page-messageIcon">-->
-<!--                        <img src="${icons}/ic_priority_high_white_24dp.png"/>-->
-<!--                    </span>-->
-<!--                    ${error}-->
-<!--                </li>-->
-<!--            </c:forEach>-->
+<body>
+    <div th:fragment="pageMessages(messages)">
+        <div th:if="${not #lists.isEmpty(messages)}" id="page-messages-container">
+            <ul class="noPaddingOrMargin" id="page-messages">
+                <li th:each="error : ${messages.errorMessages}" class="page-message" id="page-errorMessage">
+                    <span class="page-messageIcon">
+                        <img th:src="@{/icons/ic_priority_high_white_24dp.png}" alt="Error icon" />
+                    </span>
+                    <span th:text="${error}">Error message</span>
+                </li>
 
-<!--            <c:forEach items="${messages.successMessages}" var="success">-->
-<!--                <li class="page-message" id="page-successMessage">-->
-<!--                    <span class="page-messageIcon">-->
-<!--                        <img src="${icons}/ic_done_white_24dp.png"/>-->
-<!--                    </span>-->
-<!--                    ${success}-->
-<!--                </li>-->
-<!--            </c:forEach>-->
+                <li th:each="success : ${messages.successMessages}" class="page-message" id="page-successMessage">
+                    <span class="page-messageIcon">
+                        <img th:src="@{/icons/ic_done_white_24dp.png}" alt="Success icon" />
+                    </span>
+                    <span th:text="${success}">Success message</span>
+                </li>
 
-<!--            <c:forEach items="${messages.infoMessages}" var="info">-->
-<!--                <li class="page-message" id="page-infoMessage">-->
-<!--                    <span class="page-messageIcon">-->
-<!--                        <img src="${icons}/ic_priority_high_white_24dp.png"/>-->
-<!--                    </span>-->
-<!--                    ${info}-->
-<!--                </li>-->
-<!--            </c:forEach>-->
-<!--        </ul>-->
-<!--    </div>-->
-<!--</c:if>-->
+                <li th:each="info : ${messages.infoMessages}" class="page-message" id="page-infoMessage">
+                    <span class="page-messageIcon">
+                        <img th:src="@{/icons}/ic_priority_high_white_24dp.png" alt="Info icon" />
+                    </span>
+                    <span th:text="${info}">Info message</span>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</body>
