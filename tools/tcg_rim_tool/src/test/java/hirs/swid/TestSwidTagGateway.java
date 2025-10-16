@@ -30,25 +30,28 @@ public class TestSwidTagGateway {
 
     private static ReferenceManifestValidator validator;
 
-    private final String DEFAULT_OUTPUT = "generated_swidTag.swidtag";
+    private final String defaultOutput = "generated_swidTag.swidtag";
 
-    private final String BASE_USER_CERT = "generated_user_cert.swidtag";
+    private final String baseUserCert = "generated_user_cert.swidtag";
 
-    private final String JKS_KEYSTORE_FILE = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
+    private final String jksKeystoreFile = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
             .getResource("keystore.jks")).getPath();
 
-    private final String SIGNING_CERT_FILE = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
+    private final String signingCertFile = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
             .getResource("RimSignCert.pem")).getPath();
 
-    private final String PRIVATE_KEY_FILE = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
+    private final String privateKeyFile = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
             .getResource("privateRimKey.pem")).getPath();
 
-    private final String RFC3852_COUNTERSIGNATURE_FILE = Objects.requireNonNull(
+    private final String rfc3852CounterSignatureFile = Objects.requireNonNull(
             TestSwidTagGateway.class.getClassLoader()
                     .getResource("counterSignature.file")).getPath();
 
     private InputStream expectedFile;
 
+    /**
+     * Sets the variables used for the test.
+     */
     @BeforeAll
     public static void setUp() {
         gateway = new SwidTagGateway();
@@ -59,6 +62,10 @@ public class TestSwidTagGateway {
         validator.setTrustStoreFile(CA_CHAIN_FILE);
     }
 
+    /**
+     * Cleans up after testing.
+     * @throws Exception
+     */
     @AfterEach
     public void tearDown() throws Exception {
         if (expectedFile != null) {
@@ -67,26 +74,26 @@ public class TestSwidTagGateway {
     }
 
     /**
-     * This test corresponds to the arguments:
+     * This test corresponds to the arguments -c option 1.
      * -c base -l TpmLog.bin -k privateRimKey.pem -p RimSignCert.pem
      * where RimSignCert.pem has the AIA extension.
      */
     @Test
     public void testCreateBaseUserCertNotEmbedded() {
         gateway.setDefaultCredentials(false);
-        gateway.setPemCertificateFile(SIGNING_CERT_FILE);
-        gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
+        gateway.setPemCertificateFile(signingCertFile);
+        gateway.setPemPrivateKeyFile(privateKeyFile);
         gateway.setEmbeddedCert(false);
-        gateway.generateSwidTag(DEFAULT_OUTPUT);
+        gateway.generateSwidTag(defaultOutput);
         expectedFile = TestSwidTagGateway.class.getClassLoader()
-                .getResourceAsStream(BASE_USER_CERT);
-        assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-        validator.setRim(DEFAULT_OUTPUT);
-        assertTrue(validator.validateRim(SIGNING_CERT_FILE));
+                .getResourceAsStream(baseUserCert);
+        assertTrue(compareFileBytesToExpectedFile(defaultOutput));
+        validator.setRim(defaultOutput);
+        assertTrue(validator.validateRim(signingCertFile));
     }
 
     /**
-     * This test creates the following base RIM:
+     * This test creates the following base RIM with -c option 2.
      * -c base -l TpmLog.bin -k privateRimKey.pem -p RimSignCert.pem -e
      * And then validates it:
      * -v [base RIM] -l TpmLog.bin -t RimCertChain.pem
@@ -94,84 +101,83 @@ public class TestSwidTagGateway {
     @Test
     public void testCreateBaseUserCertEmbedded() {
         gateway.setDefaultCredentials(false);
-        gateway.setPemCertificateFile(SIGNING_CERT_FILE);
-        gateway.setPemPrivateKeyFile(PRIVATE_KEY_FILE);
+        gateway.setPemCertificateFile(signingCertFile);
+        gateway.setPemPrivateKeyFile(privateKeyFile);
         gateway.setEmbeddedCert(true);
-        gateway.generateSwidTag(DEFAULT_OUTPUT);
-        final String BASE_USER_CERT_EMBED = "generated_user_cert_embed.swidtag";
+        gateway.generateSwidTag(defaultOutput);
+        final String baseUserCertEmbed = "generated_user_cert_embed.swidtag";
         expectedFile = TestSwidTagGateway.class.getClassLoader()
-                .getResourceAsStream(BASE_USER_CERT_EMBED);
-        assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-        validator.setRim(DEFAULT_OUTPUT);
-        assertTrue(validator.validateRim(SIGNING_CERT_FILE));
+                .getResourceAsStream(baseUserCertEmbed);
+        assertTrue(compareFileBytesToExpectedFile(defaultOutput));
+        validator.setRim(defaultOutput);
+        assertTrue(validator.validateRim(signingCertFile));
     }
 
     /**
-     * This test corresponds to the arguments:
+     * This test corresponds to the arguments -c option 3.
      * -c base -l TpmLog.bin -d
      */
     @Test
     public void testCreateBaseDefaultCert() {
         gateway.setDefaultCredentials(true);
-        gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
-        gateway.generateSwidTag(DEFAULT_OUTPUT);
-        final String BASE_DEFAULT_CERT = "generated_default_cert.swidtag";
+        gateway.setJksTruststoreFile(jksKeystoreFile);
+        gateway.generateSwidTag(defaultOutput);
+        final String baseDefaultCert = "generated_default_cert.swidtag";
         expectedFile = TestSwidTagGateway.class.getClassLoader()
-                .getResourceAsStream(BASE_DEFAULT_CERT);
-        assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-        validator.setRim(DEFAULT_OUTPUT);
-        assertTrue(validator.validateRim(SIGNING_CERT_FILE));
+                .getResourceAsStream(baseDefaultCert);
+        assertTrue(compareFileBytesToExpectedFile(defaultOutput));
+        validator.setRim(defaultOutput);
+        assertTrue(validator.validateRim(signingCertFile));
     }
 
     /**
-     * This test corresponds to the arguments:
+     * This test corresponds to the arguments -c option 4.
      * -c base -l TpmLog.bin -d --timestamp rfc3339 2023-01-01T00:00:00Z
      */
     @Test
     public void testCreateTimestampRfc3339() {
         gateway.setDefaultCredentials(true);
-        gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
+        gateway.setJksTruststoreFile(jksKeystoreFile);
         gateway.setTimestampFormat("RFC3339");
         gateway.setTimestampArgument("2023-01-01T00:00:00Z");
-        gateway.generateSwidTag(DEFAULT_OUTPUT);
-        final String BASE_RFC3339_TIMESTAMP = "generated_timestamp_rfc3339.swidtag";
+        gateway.generateSwidTag(defaultOutput);
+        final String baseRfc3339Timestamp = "generated_timestamp_rfc3339.swidtag";
         expectedFile = TestSwidTagGateway.class.getClassLoader()
-                .getResourceAsStream(BASE_RFC3339_TIMESTAMP);
-        assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-        validator.setRim(DEFAULT_OUTPUT);
-        assertTrue(validator.validateRim(SIGNING_CERT_FILE));
+                .getResourceAsStream(baseRfc3339Timestamp);
+        assertTrue(compareFileBytesToExpectedFile(defaultOutput));
+        validator.setRim(defaultOutput);
+        assertTrue(validator.validateRim(signingCertFile));
     }
 
     /**
-     * This test corresponds to the arguments:
+     * This test corresponds to the arguments for -c option 5.
      * -c base -l TpmLog.bin -d --timestamp rfc3852 countersignature.file
      */
     @Test
     public void testCreateTimestampRfc3852() {
         gateway.setDefaultCredentials(true);
-        gateway.setJksTruststoreFile(JKS_KEYSTORE_FILE);
+        gateway.setJksTruststoreFile(jksKeystoreFile);
         gateway.setTimestampFormat("RFC3852");
-        gateway.setTimestampArgument(RFC3852_COUNTERSIGNATURE_FILE);
-        gateway.generateSwidTag(DEFAULT_OUTPUT);
-        final String BASE_RFC3852_TIMESTAMP = "generated_timestamp_rfc3852.swidtag";
+        gateway.setTimestampArgument(rfc3852CounterSignatureFile);
+        gateway.generateSwidTag(defaultOutput);
+        final String baseRfc3852Timestamp = "generated_timestamp_rfc3852.swidtag";
         expectedFile = TestSwidTagGateway.class.getClassLoader()
-                .getResourceAsStream(BASE_RFC3852_TIMESTAMP);
-        assertTrue(compareFileBytesToExpectedFile(DEFAULT_OUTPUT));
-        validator.setRim(DEFAULT_OUTPUT);
-        assertTrue(validator.validateRim(SIGNING_CERT_FILE));
+                .getResourceAsStream(baseRfc3852Timestamp);
+        assertTrue(compareFileBytesToExpectedFile(defaultOutput));
+        validator.setRim(defaultOutput);
+        assertTrue(validator.validateRim(signingCertFile));
     }
 
     /**
-     * This test corresponds to the arguments:
-     * -v <path>
+     * This test corresponds to the arguments -v <path>.
      */
     @Test
     public void testValidateSwidtagFile() {
         final String filepath = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
-                .getResource(BASE_USER_CERT)).getPath();
+                .getResource(baseUserCert)).getPath();
         System.out.println("Validating file at " + filepath);
-        validator.setRim(DEFAULT_OUTPUT);
-        assertTrue(validator.validateRim(SIGNING_CERT_FILE));
+        validator.setRim(defaultOutput);
+        assertTrue(validator.validateRim(signingCertFile));
     }
 
     /**
@@ -180,7 +186,7 @@ public class TestSwidTagGateway {
      * @param file to be compared to the expected value.
      * @return true if they are equal, false if not.
      */
-    private boolean compareFileBytesToExpectedFile(String file) {
+    private boolean compareFileBytesToExpectedFile(final String file) {
         FileInputStream testFile = null;
         try {
             int data;

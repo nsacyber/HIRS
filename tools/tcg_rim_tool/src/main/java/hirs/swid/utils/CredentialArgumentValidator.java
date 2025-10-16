@@ -9,10 +9,17 @@ public class CredentialArgumentValidator {
     private String errorMessage;
     private static final String PEM = "PEM";
 
-    public CredentialArgumentValidator(String truststoreFile,
-                                       String certificateFile,
-                                       String privateKeyFile,
-                                       boolean isValidating) {
+    /**
+     * Validates Certificate based arguments.
+     * @param truststoreFile
+     * @param certificateFile
+     * @param privateKeyFile
+     * @param isValidating
+     */
+    public CredentialArgumentValidator(final String truststoreFile,
+                                       final String certificateFile,
+                                       final String privateKeyFile,
+                                       final boolean isValidating) {
         this.truststoreFile = truststoreFile;
         this.certificateFile = certificateFile;
         this.privateKeyFile = privateKeyFile;
@@ -21,7 +28,7 @@ public class CredentialArgumentValidator {
     }
 
     /**
-     * Getter for format property
+     * Getter for format property.
      *
      * @return string
      */
@@ -30,7 +37,7 @@ public class CredentialArgumentValidator {
     }
 
     /**
-     * Getter for error message
+     * Getter for error message.
      *
      * @return string
      */
@@ -39,11 +46,9 @@ public class CredentialArgumentValidator {
     }
 
     /**
-     * This method checks for the following valid configurations of input arguments:
-     * 1.
-     * 2. truststore only for validating (PEM format)
-     * 3. certificate + private key for signing (PEM format)
-     * 4.
+     * This method checks for the following valid configurations of input arguments.
+     * 1. truststore only for validating (PEM format)
+     * 2. certificate + private key for signing (PEM format)
      *
      * @return true if the above are found, false otherwise
      */
@@ -62,12 +67,12 @@ public class CredentialArgumentValidator {
                 return true;
             } else {
                 if (certificateFile.isEmpty()) {
-                    errorMessage = "A public certificate must be specified by \'-p\' " +
-                            "for signing operations.";
+                    errorMessage = "A public certificate must be specified by \'-p\' "
+                            + "for signing operations.";
                 }
                 if (privateKeyFile.isEmpty()) {
-                    errorMessage = "A private key must be specified by \'-k\' " +
-                            "for signing operations.";
+                    errorMessage = "A private key must be specified by \'-k\' "
+                            + "for signing operations.";
                 }
                 return false;
             }

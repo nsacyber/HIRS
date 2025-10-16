@@ -16,7 +16,11 @@ import java.util.regex.Pattern;
 @Log4j2
 public class Main {
 
-    public static void main(String[] args) {
+    /**
+     * Processes tcg_rim_tool commands.
+     * @param args
+     */
+    public static void main(final String[] args) {
         Commander commander = new Commander();
         JCommander jc = JCommander.newBuilder().addObject(commander).build();
         try {
@@ -33,7 +37,7 @@ public class Main {
             for (String opt : unknownOpts) {
                 sb.append(opt + ", ");
             }
-            exitWithErrorCode(sb.substring(0,sb.lastIndexOf(",")));
+            exitWithErrorCode(sb.substring(0, sb.lastIndexOf(",")));
         } else if (commander.isHelp()) {
             jc.usage();
             System.out.println(commander.printHelpExamples());
@@ -79,7 +83,7 @@ public class Main {
                     case "BASE":
                         gateway.setAttributesFile(attributesFile);
                         gateway.setRimEventLog(rimEventLog);
-                        if (defaultKey){
+                        if (defaultKey) {
                             gateway.setDefaultCredentials(true);
                             gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
                         } else {
@@ -98,8 +102,8 @@ public class Main {
                                     gateway.setTimestampArgument(timestampArguments.get(1));
                                 }
                             } else {
-                                exitWithErrorCode("The provided timestamp argument(s) " +
-                                        "is/are not valid.");
+                                exitWithErrorCode("The provided timestamp argument(s) "
+                                        + "is/are not valid.");
                             }
                         }
                         gateway.generateSwidTag(commander.getOutFile());
@@ -113,8 +117,9 @@ public class Main {
 
     /**
      * Use cases that exit with an error code are redirected here.
+     * @param errorMessage
      */
-    private static void exitWithErrorCode(String errorMessage) {
+    private static void exitWithErrorCode(final String errorMessage) {
         log.error(errorMessage);
         System.exit(1);
     }

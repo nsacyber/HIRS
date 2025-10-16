@@ -18,6 +18,7 @@ import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
+import hirs.utils.tpm.eventlog.events.EvConstants;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A service layer class responsible for encapsulating all business logic related to the Reference Manifest Details
@@ -223,7 +226,8 @@ public class ReferenceManifestDetailsPageService {
         data.put("linkHref", baseRim.getLinkHref());
         data.put("linkHrefLink", "");
 
-        List<BaseReferenceManifest> baseReferenceManifests = this.referenceManifestRepository.findAllBaseRims();
+        List<BaseReferenceManifest> baseReferenceManifests =
+                this.referenceManifestRepository.findAllBaseRims();
 
         for (BaseReferenceManifest bRim : baseReferenceManifests) {
             if (baseRim.getLinkHref().contains(bRim.getTagId())) {
@@ -301,9 +305,10 @@ public class ReferenceManifestDetailsPageService {
             caCert = (CertificateAuthorityCredential) certificate;
             KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
             try {
-                List<X509Certificate> truststore = convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
-                        Collections.emptySet(),
-                        caCertificateRepository));
+                List<X509Certificate> truststore =
+                        convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
+                                Collections.emptySet(),
+                                caCertificateRepository));
                 referenceManifestValidator.setTrustStore(truststore);
             } catch (IOException e) {
                 log.error("Error building CA chain for {}: {}", caCert.getSubjectKeyIdentifier(),
@@ -377,9 +382,10 @@ public class ReferenceManifestDetailsPageService {
         // testing this independent of the above if statement because the above
         // starts off checking if associated rim is null; that is irrelevant for
         // this statement.
-        measurements = (EventLogMeasurements) this.referenceManifestRepository.findByHexDecHashAndRimType(
-                supportReferenceManifest.getHexDecHash(),
-                ReferenceManifest.MEASUREMENT_RIM);
+        measurements =
+                (EventLogMeasurements) this.referenceManifestRepository.findByHexDecHashAndRimTypeUnarchived(
+                        supportReferenceManifest.getHexDecHash(),
+                        ReferenceManifest.MEASUREMENT_RIM);
 
         if (supportReferenceManifest.isSwidPatch()) {
             data.put("swidPatch", "True");
@@ -441,7 +447,7 @@ public class ReferenceManifestDetailsPageService {
     private HashMap<String, Object> getMeasurementsRimInfo(final EventLogMeasurements measurements)
             throws IOException, CertificateException, NoSuchAlgorithmException {
         HashMap<String, Object> data = new HashMap<>();
-        LinkedList<TpmPcrEvent> evidence = new LinkedList<>();
+        LinkedList<TpmPcrEvent> unmatchedAttestationEvents = new LinkedList<>();
         BaseReferenceManifest base;
         List<SupportReferenceManifest> supports = new ArrayList<>();
         SupportReferenceManifest baseSupport = null;
@@ -456,8 +462,8 @@ public class ReferenceManifestDetailsPageService {
 
         List<ReferenceDigestValue> assertions = new LinkedList<>();
         if (measurements.getDeviceName() != null) {
-            supports.addAll(this.referenceManifestRepository.byDeviceName(measurements
-                    .getDeviceName()));
+            supports.addAll(this.referenceManifestRepository.getSupportByManufacturerModel(
+                    measurements.getPlatformManufacturer(), measurements.getPlatformModel()));
             for (SupportReferenceManifest support : supports) {
                 if (support.isBaseSupport()) {
                     baseSupport = support;
@@ -474,60 +480,79 @@ public class ReferenceManifestDetailsPageService {
                     data.put("associatedRim", base.getId());
                 }
 
-                assertions.addAll(this.referenceDigestValueRepository.findBySupportRimId(baseSupport.getId()));
+                assertions.addAll(
+                        this.referenceDigestValueRepository.findBySupportRimId(baseSupport.getId()));
             }
         }
 
         TCGEventLog measurementLog = new TCGEventLog(measurements.getRimBytes());
-        Map<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
+        Map<String, ReferenceDigestValue> referenceValueMap = new HashMap<>();
 
         for (ReferenceDigestValue record : assertions) {
-            eventValueMap.put(record.getDigestValue(), record);
+            referenceValueMap.put(record.getDigestValue(), record);
         }
-        for (TpmPcrEvent measurementEvent : measurementLog.getEventList()) {
-            if (!eventValueMap.containsKey(measurementEvent.getEventDigestStr())) {
-                evidence.add(measurementEvent);
+        for (TpmPcrEvent attestationEvent : measurementLog.getEventList()) {
+            if (!referenceValueMap.containsKey(attestationEvent.getEventDigestStr())) {
+                unmatchedAttestationEvents.add(attestationEvent);
             }
         }
 
         if (!supports.isEmpty()) {
             Map<String, List<TpmPcrEvent>> baselineLogEvents = new HashMap<>();
-            List<TpmPcrEvent> matchedEvents;
-            List<TpmPcrEvent> combinedBaselines = new LinkedList<>();
+            List<TpmPcrEvent> matchedEvents = null;
+            List<TpmPcrEvent> referenceEventValues = new LinkedList<>();
             for (SupportReferenceManifest support : supports) {
-                combinedBaselines.addAll(support.getEventLog());
+                referenceEventValues.addAll(support.getEventLog());
             }
             String bootVariable;
-            String variablePrefix = "Variable Name:";
-            String variableSuffix = "UEFI_GUID";
-            for (TpmPcrEvent tpe : evidence) {
+            Pattern variableName = Pattern.compile("Variable Name: (\\w+)");
+            Matcher matcher;
+
+            for (TpmPcrEvent attestationEvent : unmatchedAttestationEvents) {
                 matchedEvents = new ArrayList<>();
-                for (TpmPcrEvent tpmPcrEvent : combinedBaselines) {
-                    if (tpmPcrEvent.getEventType() == tpe.getEventType()) {
-                        if (tpe.getEventContentStr().contains(variablePrefix)) {
-                            bootVariable = tpe.getEventContentStr().substring((
-                                            tpe.getEventContentStr().indexOf(variablePrefix)
-                                                    + variablePrefix.length()),
-                                    tpe.getEventContentStr().indexOf(variableSuffix));
-                            if (tpmPcrEvent.getEventContentStr().contains(bootVariable)) {
-                                matchedEvents.add(tpmPcrEvent);
+                for (TpmPcrEvent referenceEvent : referenceEventValues) {
+                    if ((referenceEvent.getEventType() == attestationEvent.getEventType()) &&
+                            (referenceEvent.getPcrIndex() == attestationEvent.getPcrIndex())) {
+                        if (eventIsType(attestationEvent.getEventType())) {
+                            matcher = variableName.matcher(attestationEvent.getEventContentStr());
+                            if (matcher.find()) {
+                                log.debug("Event variable name: {}", matcher.group(1));
+                                bootVariable = matcher.group(1);
+                                if (referenceEvent.getEventContentStr().contains(bootVariable)) {
+                                    matchedEvents.add(referenceEvent);
+                                }
                             }
                         } else {
-                            matchedEvents.add(tpmPcrEvent);
+                            matchedEvents.add(referenceEvent);
                         }
                     }
                 }
-                baselineLogEvents.put(tpe.getEventDigestStr(), matchedEvents);
+                baselineLogEvents.put(attestationEvent.getEventDigestStr(), matchedEvents);
             }
             data.put("eventTypeMap", baselineLogEvents);
         }
 
         TCGEventLog logProcessor = new TCGEventLog(measurements.getRimBytes());
-        data.put("livelogEvents", evidence);
+        data.put("livelogEvents", unmatchedAttestationEvents);
         data.put("events", logProcessor.getEventList());
         getEventSummary(data, logProcessor.getEventList());
 
         return data;
+    }
+
+
+    /**
+     * This method checks if the given event is of the below event types.
+     *
+     * @param eventType to check for event type
+     * @return true if the below types are matched, otherwise false
+     */
+    private boolean eventIsType(long eventType) {
+        return eventType == EvConstants.EV_EFI_VARIABLE_AUTHORITY
+                || eventType == EvConstants.EV_EFI_VARIABLE_BOOT
+                || eventType == EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG
+                || eventType == EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY
+                || eventType == EvConstants.EV_EFI_SPDM_DEVICE_POLICY;
     }
 
     /**

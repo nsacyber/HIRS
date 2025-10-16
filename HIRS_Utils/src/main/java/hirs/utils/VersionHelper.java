@@ -10,19 +10,29 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Utility class to get the current version from the VERSION file.
  */
 @Log4j2
 public final class VersionHelper {
-
-    private static final String OPT_PREFIX = "/opt";
-    private static final String ETC_PREFIX = "/etc";
     private static final String VERSION = "VERSION";
+
+    private static final Path LINUX_OPT_PATH = Paths.get(
+            System.getenv().getOrDefault("HIRS_LINUX_OPT", "/opt/hirs/aca/" + VERSION)
+    );
+
+    private static final Path LINUX_ETC_PATH = Paths.get(
+            System.getenv().getOrDefault("HIRS_LINUX_ETC", "/etc/hirs/aca/" + VERSION)
+    );
+
+    private static final Path WINDOWS_PATH = Paths.get(
+            System.getenv().getOrDefault("HIRS_WIN_PATH", "C:/ProgramData/hirs/aca/" + VERSION)
+    );
+
     private static final int FILE_BUFFER_SIZE = 8192;
 
     private VersionHelper() {
@@ -35,16 +45,17 @@ public final class VersionHelper {
      * @return A string representing the current version.
      */
     public static String getVersion() {
-        if (Files.exists(FileSystems.getDefault().getPath(OPT_PREFIX,
-                "hirs", "aca", VERSION))) {
-            return getVersion(FileSystems.getDefault().getPath(OPT_PREFIX,
-                    "hirs", "aca", VERSION));
-        } else if (Files.exists(FileSystems.getDefault().getPath(ETC_PREFIX,
-                "hirs", "aca", VERSION))) {
-            return getVersion(FileSystems.getDefault().getPath(ETC_PREFIX,
-                    "hirs", "aca", VERSION));
-        }
+        final String osName = System.getProperty("os.name").toLowerCase();
 
+        if (osName.contains("win") && Files.exists(WINDOWS_PATH)) {
+            return getVersion(WINDOWS_PATH);
+        } else if (osName.contains("nux") || osName.contains("nix")) {
+            if (Files.exists(LINUX_OPT_PATH)) {
+                return getVersion(LINUX_OPT_PATH);
+            } else if (Files.exists(LINUX_ETC_PATH)) {
+                return getVersion(LINUX_ETC_PATH);
+            }
+        }
         return getVersion(VERSION);
     }
 
@@ -89,7 +100,7 @@ public final class VersionHelper {
      *
      * @param filename "VERSION"
      * @return the version number from the file
-     * @throws IOException
+     * @throws IOException if there are any issues attempting to read the input stream
      */
     private static String getFileContents(final String filename) throws IOException {
         final char[] buffer = new char[FILE_BUFFER_SIZE];
@@ -111,7 +122,7 @@ public final class VersionHelper {
      *
      * @param filename "VERSION"
      * @return the version number from the file
-     * @throws IOException
+     * @throws IOException if there are any issues attempting to retrieve the resource contents
      */
     private static String getResourceContents(final String filename) throws IOException {
         URL url = Resources.getResource(filename);

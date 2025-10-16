@@ -17,7 +17,6 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -89,22 +88,21 @@ public class ReferenceManifestPageService {
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchTerm)) {
-            // Dynamically loop through columns and create LIKE conditions for each searchable column
-            for (String columnName : searchableColumns) {
-                Predicate predicate =
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(rimRoot.get(columnName)),
-                                "%" + searchTerm.toLowerCase() + "%");
-                predicates.add(predicate);
-            }
+        // Dynamically loop through columns and create LIKE conditions for each searchable column
+        for (String columnName : searchableColumns) {
+            Predicate predicate =
+                    criteriaBuilder.like(
+                            criteriaBuilder.lower(rimRoot.get(columnName)),
+                            "%" + searchTerm.toLowerCase() + "%");
+            predicates.add(predicate);
         }
 
         Predicate likeConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
 
-        // Add archiveFlag condition if specified
+        // Add archiveFlag and rim type condition if specified
         query.where(criteriaBuilder.and(likeConditions,
-                criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag)));
+                criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag),
+                criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")));
 
         // Apply pagination
         TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
@@ -120,12 +118,11 @@ public class ReferenceManifestPageService {
     /**
      * Retrieves a page of RIMS using the provided archive flag and pageable value.
      *
-     * @param archiveFlag archive flag
-     * @param pageable    pageable
+     * @param pageable pageable
      * @return page of RIMs
      */
-    public Page<ReferenceManifest> findRIMsByArchiveFlag(final boolean archiveFlag, final Pageable pageable) {
-        return this.referenceManifestRepository.findByArchiveFlag(archiveFlag, pageable);
+    public Page<ReferenceManifest> findAllBaseAndSupportRIMSByPageable(final Pageable pageable) {
+        return this.referenceManifestRepository.findAllBaseAndSupportRimsPageable(pageable);
     }
 
     /**
@@ -180,7 +177,8 @@ public class ReferenceManifestPageService {
         // create a list of all the RIMs that are of base rim or support rim type
         final List<ReferenceManifest> referenceManifestList =
                 allRIMs.stream().filter(rim ->
-                        rim instanceof BaseReferenceManifest || rim instanceof SupportReferenceManifest).toList();
+                                rim instanceof BaseReferenceManifest || rim instanceof SupportReferenceManifest)
+                        .toList();
 
         String zipFileName;
 
@@ -203,7 +201,8 @@ public class ReferenceManifestPageService {
      * @param successMessages contains any success messages that will be displayed on the page
      * @param errorMessages   contains any error messages that will be displayed on the page
      */
-    public void deleteRIM(final UUID uuid, final List<String> successMessages, final List<String> errorMessages) {
+    public void deleteRIM(final UUID uuid, final List<String> successMessages,
+                          final List<String> errorMessages) {
         ReferenceManifest referenceManifest = this.findSpecifiedRIM(uuid);
 
         if (referenceManifest == null) {
@@ -273,7 +272,8 @@ public class ReferenceManifestPageService {
         try {
             fileBytes = file.getBytes();
         } catch (IOException e) {
-            final String failMessage = String.format("Failed to read uploaded Base RIM file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to read uploaded Base RIM file (%s): ", fileName);
             log.error(failMessage, e);
             errorMessages.add(failMessage + e.getMessage());
         }
@@ -296,14 +296,16 @@ public class ReferenceManifestPageService {
      * @param file          file
      * @return support reference manifest
      */
-    public SupportReferenceManifest parseSupportRIM(final List<String> errorMessages, final MultipartFile file) {
+    public SupportReferenceManifest parseSupportRIM(final List<String> errorMessages,
+                                                    final MultipartFile file) {
         byte[] fileBytes = new byte[0];
         final String fileName = file.getOriginalFilename();
 
         try {
             fileBytes = file.getBytes();
         } catch (IOException e) {
-            final String failMessage = String.format("Failed to read uploaded Support RIM file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to read uploaded Support RIM file (%s): ", fileName);
             log.error(failMessage, e);
             errorMessages.add(failMessage + e.getMessage());
         }
@@ -326,7 +328,8 @@ public class ReferenceManifestPageService {
             hashValues.put(support.getHexDecHash(), support);
         }
 
-        List<BaseReferenceManifest> baseReferenceManifests = this.referenceManifestRepository.findAllBaseRims();
+        List<BaseReferenceManifest> baseReferenceManifests =
+                this.referenceManifestRepository.findAllBaseRims();
 
         for (BaseReferenceManifest dbBaseRim : baseReferenceManifests) {
             for (Map.Entry<String, SupportReferenceManifest> entry : hashValues.entrySet()) {

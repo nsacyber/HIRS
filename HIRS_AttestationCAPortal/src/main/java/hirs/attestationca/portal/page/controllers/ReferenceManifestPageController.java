@@ -112,7 +112,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult;
 
         if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.referenceManifestPageService.findRIMsByArchiveFlag(false, pageable);
+            pagedResult = this.referenceManifestPageService.findAllBaseAndSupportRIMSByPageable(pageable);
         } else {
             pagedResult = this.referenceManifestPageService.
                     findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns, searchTerm, false,
@@ -140,7 +140,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
-    protected RedirectView uploadRIMs(@RequestParam("file") final MultipartFile[] files, final RedirectAttributes attr)
+    protected RedirectView uploadRIMs(@RequestParam("file") final MultipartFile[] files,
+                                      final RedirectAttributes attr)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -200,11 +201,13 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * @throws java.io.IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadRIM(@RequestParam final String id, final HttpServletResponse response) throws IOException {
+    public void downloadRIM(@RequestParam final String id, final HttpServletResponse response)
+            throws IOException {
         log.info("Received request to download RIM id {}", id);
 
         try {
-            final DownloadFile downloadFile = this.referenceManifestPageService.downloadRIM(UUID.fromString(id));
+            final DownloadFile downloadFile =
+                    this.referenceManifestPageService.downloadRIM(UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment;" + "filename=\"" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);

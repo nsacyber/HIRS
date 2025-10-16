@@ -145,7 +145,9 @@ public class ReferenceManifestValidator {
      */
     public void setRim(final byte[] rimBytes) {
         try {
-            this.rim = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(new ByteArrayInputStream(rimBytes))));
+            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
+                    new ByteArrayInputStream(rimBytes))));
+            this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes using the provided rim bytes: {}", e.getMessage());
         }
@@ -160,7 +162,8 @@ public class ReferenceManifestValidator {
     public void setRim(final String path) {
         File swidtagFile = new File(path);
         try {
-            this.rim = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
+            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
+            this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes using the provided file path: {}", e.getMessage());
         }
@@ -217,7 +220,8 @@ public class ReferenceManifestValidator {
                         validationErrorMessage += "issuer cert not found";
                     }
                 } else {
-                    System.out.println("A public signing certificate (-p) is required to verify this base RIM.");
+                    System.out.println("A public signing certificate (-p) is required "
+                            + "to verify this base RIM.");
                 }
             }
             if (context != null) {
@@ -359,8 +363,8 @@ public class ReferenceManifestValidator {
             byte[] bytes = md.digest(input);
             StringBuilder sb = new StringBuilder();
 
-            for (byte aByte : bytes) {
-                sb.append(Integer.toString((aByte & EIGHT_BIT_MASK)
+            for (int i = 0; i < bytes.length; i++) {
+                sb.append(Integer.toString((bytes[i] & EIGHT_BIT_MASK)
                         + LEFT_SHIFT, RADIX).substring(1));
             }
             resultString = sb.toString();
