@@ -4,7 +4,7 @@ plugins {
 }
 
 configurations {
-    all {
+    configureEach {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
     compileOnly {
@@ -52,6 +52,8 @@ dependencies {
 
     testImplementation libs.commons.io
     testImplementation libs.spring.boot.starter.test
+    testRuntimeOnly libs.junit.platform.launcher
+
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok

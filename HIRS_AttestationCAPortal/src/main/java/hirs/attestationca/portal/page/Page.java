@@ -13,7 +13,7 @@ public enum Page {
      * Site landing page.
      */
     INDEX("HIRS Attestation CA", "Version: " + VersionHelper.getVersion(),
-            null, false, false, null, null),
+            null, false, false, null, ""),
 
     /**
      * Page to import and manage trust chains.
@@ -52,7 +52,7 @@ public enum Page {
     /**
      * Non-menu page to display certificate.  Reachable from all certificate pages.
      */
-    CERTIFICATE_DETAILS("Certificate Details", "", null, true, false, null, null),
+    CERTIFICATE_DETAILS("Certificate Details", "", null, true, false, null, ""),
 
     /**
      * Page to display registered devices.
@@ -69,7 +69,7 @@ public enum Page {
      * Non-menu page to display rims.
      */
     RIM_DETAILS("Reference Integrity Manifest Details",
-            "", null, true, false, null, null),
+            "", null, true, false, null, ""),
 
     /**
      * Page to display RIM event digest table.
@@ -146,11 +146,8 @@ public enum Page {
      * @param menuLinkClass the category to which this page belongs
      * @param prefixPath    prefix path that appears in the URL for this page
      */
-    Page(final String title,
-         final String icon,
-         final String menuLinkClass,
-         final String prefixPath) {
-        this(title, null, icon, true, true, menuLinkClass, prefixPath);
+    Page(final String title, final String icon, final String menuLinkClass, final String prefixPath) {
+        this(title, "", icon, true, true, menuLinkClass, prefixPath);
     }
 
     /**
@@ -160,10 +157,8 @@ public enum Page {
      * @param icon          icon for the page
      * @param menuLinkClass the category to which this page belongs
      */
-    Page(final String title,
-         final String icon,
-         final String menuLinkClass) {
-        this(title, null, icon, true, true, menuLinkClass, null);
+    Page(final String title, final String icon, final String menuLinkClass) {
+        this(title, "", icon, true, true, menuLinkClass, "");
     }
 
     /**
@@ -172,8 +167,7 @@ public enum Page {
      * @param title title of the page
      * @param icon  icon for the page
      */
-    Page(final String title,
-         final String icon) {
-        this(title, null, icon, true, true, null, null);
+    Page(final String title, final String icon) {
+        this(title, "", icon, true, true, null, "");
     }
 }

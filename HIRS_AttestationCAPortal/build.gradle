@@ -2,15 +2,13 @@ plugins {
     id 'application'
     id 'war'
     id 'com.netflix.nebula.ospackage' version '11.10.0'
-    id 'org.springframework.boot' version '3.1.12'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.5.6'
 }
 
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion")
 def jarVersion = properties.get("jarVersion")
 def projVersion = properties.get("projVersion")
-//println "packageVersion is ${projVersion}"
 
 bootRun {
     if (project.hasProperty('debug')) {
@@ -19,7 +17,7 @@ bootRun {
 }
 
 configurations {
-    all {
+    configureEach {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
     compileOnly {
@@ -35,7 +33,6 @@ dependencies {
     implementation libs.guava
     implementation libs.gson
     implementation libs.jakarta.persistence.api
-    implementation libs.jakarta.servlet
     implementation libs.jakarta.xml
 
     implementation libs.pci
@@ -47,6 +44,8 @@ dependencies {
 
     implementation libs.mariadb.java.client
     implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.thymeleaf
+    implementation libs.thymeleaf.layout.dialect
 
     // explicitly include the patched version of the snake yaml dependency
     implementation libs.snake.yaml
@@ -64,8 +63,6 @@ dependencies {
     // explicitly include the patched version of the tomcat embed core dependency
     implementation libs.tomcat.embed.core
 
-    implementation libs.tomcat.embed.jasper
-
     // explicitly include the patched version of the tomcat embed websocket dependency
     implementation libs.tomcat.embed.websocket
 
@@ -77,6 +74,7 @@ dependencies {
 
     testImplementation libs.hsqldb
     testImplementation libs.spring.boot.starter.test
+    testRuntimeOnly libs.junit.platform.launcher
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
@@ -85,7 +83,7 @@ dependencies {
     testImplementation libs.xmlunit.core
 }
 
-task buildVersion() {
+tasks.register('buildVersion') {
     doLast {
         def verFile = new File(projectDir, "build/VERSION")
         verFile.write("${jarVersion}")

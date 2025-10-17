@@ -1,0 +1,108 @@
+#eventInput {  
+  width: 100%;
+  font-size: 16px; /* Increase font-size */
+  padding: 12px 20px 12px 40px; /* Add some padding */
+  border: 1px solid #ddd; /* Add a grey border */
+  margin-bottom: 12px; /* Add some space below the input */
+}
+
+#tableDivTag {
+    padding-top: 5px;
+    padding-left: 125px;
+    padding-bottom: 15px;
+    margin-right: 125px;
+    overflow-y: scroll;
+}
+
+.colRimHeader{
+    font-weight: bold;
+    margin: auto 0;
+}
+
+#eventLog {
+  border-collapse: collapse; /* Collapse borders */
+  width: 100%;
+  border: 1px solid #ddd; /* Add a grey border */
+  font-size: 14px; /* Increase font-size */    
+}
+
+#eventLog th, #eventLog td {
+  text-align: left; /* Left-align text */
+  padding: 10px; /* Add padding */
+}
+
+#eventLog tr {
+  /* Add a bottom border to all table rows */
+  border-bottom: 1px solid #ddd;
+}
+
+#eventLog tr.header, #eventLog tr:hover {
+  /* Add a grey background color to the table header and on hover */
+  background-color: #f1f1f1;
+}
+
+.dataCell {
+  display: table-cell;
+  padding: 2px 15px 2px 15px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+  max-width: 1px;
+}
+
+.digestCell {
+  max-width: 200px;
+  word-wrap: break-word;
+}
+
+.pcrCell {
+  max-width: 50px;
+}
+
+.event-element {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-data {
+    display: flex;
+    flex: 1
+}
+
+.event-data:first-child {
+    background: lightgray;
+}
+
+.data-label {
+    flex: 1
+}
+
+.data-value {
+    flex: 5
+}
+
+.mappedType {
+    display: flex 1;
+    padding: 1rem;
+    width: 20rem;
+    font-weight: bold
+}
+
+.mappedOverhead {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.mappedData {
+    font-weight: bold;
+}
+
+.mappedButton {
+    display: flex 1;
+    padding: 1rem;
+    width: 20rem;
+    font-weight: bold;
+}

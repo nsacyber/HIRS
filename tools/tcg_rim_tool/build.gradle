@@ -4,11 +4,11 @@ plugins {
 }
 
 // Get version from main project gradle
-def packVersion = properties.get("packageVersion");
-def jarVersion = properties.get("jarVersion");
+def packVersion = properties.get("packageVersion")
+def jarVersion = properties.get("jarVersion")
 
 configurations {
-    all {
+    configureEach {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
 }
@@ -32,6 +32,7 @@ dependencies {
     annotationProcessor libs.lombok
 
     testImplementation libs.spring.boot.starter.test
+    testRuntimeOnly libs.junit.platform.launcher
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok

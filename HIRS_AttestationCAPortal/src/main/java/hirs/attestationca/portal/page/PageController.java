@@ -33,24 +33,24 @@ public abstract class PageController<P extends PageParams> {
     public static final String INITIAL_DATA = "initialData";
 
     /**
-     * Reserved attribute used by page.tag to identify a page's general
+     * Reserved attribute used by layout.html to identify a page's general
      * information.
      */
     public static final String PAGE_ATTRIBUTE = "page";
 
     /**
-     * Reserved attribute used by page.tag to identify the page collection used
+     * Reserved attribute used by layout.html to identify the page collection used
      * for navigation.
      */
     public static final String PAGES_ATTRIBUTE = "pages";
 
     /**
-     * Reserved attribute used by page.tag to identify the banner information.
+     * Reserved attribute used by layout.html to identify the banner information.
      */
     public static final String BANNER_ATTRIBUTE = "banner";
 
     /**
-     * Reserved attribute used by page.tag to identify the messages the page
+     * Reserved attribute used by layout.html to identify the messages the page
      * should display.
      */
     public static final String MESSAGES_ATTRIBUTE = "messages";

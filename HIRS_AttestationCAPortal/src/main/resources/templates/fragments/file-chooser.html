@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <div th:fragment="fileChooserIcon(id, label, customButtons, bodyContent)">
+        <!-- File chooser icon anchor -->
+        <a th:href="'#' + ${id}" data-toggle="modal" th:title="${label}">
+            <img th:src="@{/icons/ic_library_add_black_24dp.png}" alt="File Chooser Icon" />
+        </a>
+
+        <!-- Include modal fragment -->
+        <div th:replace="fragments/modal :: modal(
+        id=${id},
+        label=${label},
+        customButtons=${customButtons},
+        bodyContent=${bodyContent}
+    )"></div>
+    </div>
+</body>
+
+</html>

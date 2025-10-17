@@ -172,9 +172,9 @@ public class ComponentResult extends ArchivableEntity implements Cloneable {
     }
 
     /**
-     * This method is only used by the certificate-details.jsp page. This
+     * This method is only used by the certificate-details.html page. This
      * method splits the compiled string of addresses into the component address
-     * object for display on the jsp page.
+     * object for display on the html page.
      *
      * @return a collection of component addresses.
      */
