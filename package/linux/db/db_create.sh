@@ -10,7 +10,8 @@
 LOG_FILE=$1
 DB_LOG_FILE="/var/log/mariadb/mariadb.log"
 PKI_PASS=$2
-UNATTENDED=$3
+DB_ALG=$3
+UNATTENDED=$4
 RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
 # Capture location of the script to allow from invocation from any location
@@ -21,15 +22,26 @@ DB_ADMIN_PWD=""
 # Db Configuration fileis, use RHELpaths as default
 DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
-# Default Server Side Certificates
-SSL_DB_SRV_CHAIN="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem";
-SSL_DB_SRV_CERT="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_srv_rsa_3k_sha384.pem"; 
-SSL_DB_SRV_KEY="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_srv_rsa_3k_sha384.key";
-# Default Client Side Certificates
-SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem";
-SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.pem"; 
-SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.key";
-
+# Default Certificates
+if [ "$DB_ALG" == "rsa" ]; then
+  # Default Server Side Certificates
+  SSL_DB_SRV_CHAIN="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem";
+  SSL_DB_SRV_CERT="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_srv_rsa_3k_sha384.pem";
+  SSL_DB_SRV_KEY="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_srv_rsa_3k_sha384.key";
+  # Default Client Side Certificates
+  SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem";
+  SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.pem";
+  SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.key";
+elif [ "$DB_ALG" == "ecc" ]; then
+  # Default Server Side Certificates
+  SSL_DB_SRV_CHAIN="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_ecc_512_sha384_Cert_Chain.pem";
+  SSL_DB_SRV_CERT="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_db_srv_ecc_512_sha384.pem";
+  SSL_DB_SRV_KEY="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_db_srv_ecc_512_sha384.key";
+  # Default Client Side Certificates
+  SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_ecc_512_sha384_Cert_Chain.pem";
+  SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_db_client_ecc_512_sha384.pem";
+  SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_db_client_ecc_512_sha384.key";
+fi
 # Make sure required paths exist
 mkdir -p /etc/hirs/aca/
 mkdir -p /var/log/hirs/
@@ -207,7 +219,7 @@ create_hibernate_url () {
  ALG=$1
  db_username=$2
 
-  if [ $ALG = "RSA" ]; then 
+  if [ $ALG = "rsa" ]; then
     CERT_PATH="/etc/hirs/certificates/HIRS/$RSA_PATH"
     CERT_CHAIN="$CERT_PATH/HIRS_rsa_3k_sha384_Cert_Chain.pem"
     CLIENT_DB_P12=$CERT_PATH/HIRS_db_client_rsa_3k_sha384.p12
@@ -243,5 +255,5 @@ set_hirs_db_pwd
 create_hirs_db_with_tls
 set_mysql_server_tls
 set_mysql_client_tls
-create_hibernate_url "RSA" "hirs_db"
+create_hibernate_url $DB_ALG "hirs_db"
 mysqld_reboot

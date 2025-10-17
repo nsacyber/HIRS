@@ -90,7 +90,7 @@ if [ -d "$ACTOR_ALT"/"$CERT_FOLDER" ]; then
    exit 1;
 fi
 
-# Intialize sub folders
+# Initialize sub folders
 echo "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..." | tee -a "$LOG_FILE"
 
 mkdir -p "$ACTOR_ALT" "$ACTOR_ALT"/"$CERT_FOLDER" "$ACTOR_ALT"/ca/certs
@@ -106,19 +106,21 @@ fi
 add_to_stores () {
    CERT_PATH=$1
    ALIAS=${CERT_PATH#*/}    # Use filename without path as an alias
+   KEY_ALIAS=$ALIAS"_key"
    echo "Adding $ALIAS to the $TRUSTSTORE and $KEYSTORE" | tee -a "$LOG_FILE" 
    # Add the cert and key to the key store. make a p12 file to import into te keystore
    openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:"$PASS" -aes256 -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
-   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$ALIAS" >> "$LOG_FILE" 2>&1 
+   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$KEY_ALIAS" >> "$LOG_FILE" 2>&1
    # Import the cert into a java trust store via keytool
    keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" >> "$LOG_FILE" 2>&1
    # Remove the temp p1 file.
+   #echo "key with alias of $ALIAS stored"
    rm tmpkey.p12
 } 
 
 # Function to create an Intermediate Key, CSR, and Certificate
-# PARMS: 
+# PARAMS:
 # 1. Cert Type String
 # 2. Issuer Key File Name
 # 3. Subject Distinguished Name String
@@ -131,6 +133,7 @@ create_cert () {
    ISSUER_KEY="$ISSUER".key
    ISSUER_CERT="$ISSUER".pem
    ALIAS=${CERT_PATH#*/}    # Use filename without path as an alias    
+   KEY_ALIAS=$ALIAS"_key"
 
    echo "Creating cert using "$ISSUER_KEY" with a DN="$SUBJ_DN"..." | tee -a "$LOG_FILE"
 
@@ -174,10 +177,11 @@ create_cert () {
    # Add the cert and key to the key store. make a p12 file to import into te keystore
    openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:$PASS -aes256 -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
-   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$ALIAS" >> "$LOG_FILE" 2>&1 
+   keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$KEY_ALIAS" >> "$LOG_FILE" 2>&1
    # Import the cert into a java trust store via keytool
    keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" >> "$LOG_FILE" 2>&1
    # Remove the temp p1 file.
+   #echo "Key with alias of $ALIAS stored in jks"
    rm -f tmpkey.p12 &>/dev/null
 }
 
