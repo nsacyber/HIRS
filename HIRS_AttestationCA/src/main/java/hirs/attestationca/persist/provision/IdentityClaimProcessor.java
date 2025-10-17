@@ -163,9 +163,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             validationResult = doSupplyChainValidation(claim, ekPub);
         } catch (Exception ex) {
             log.error(ex.getMessage());
-            for (StackTraceElement ste : ex.getStackTrace()) {
-                log.error(ste.toString());
-            }
         }
 
         ByteString blobStr = ByteString.copyFrom(new byte[]{});
@@ -624,6 +621,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         dbSupport.setUpdated(true);
                         dbSupport.setAssociatedRim(baseRim.getId());
                         this.referenceManifestRepository.save(dbSupport);
+                    } else {
+                        log.warn("Could not locate support RIM with hash {}}", swid.getHashValue());
                     }
                 }
                 this.referenceManifestRepository.save(baseRim);
@@ -668,10 +667,15 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                         // event log hash for use during provision
                         SupportReferenceManifest sBaseRim = referenceManifestRepository
                                 .getSupportRimEntityById(bRim.getAssociatedRim());
-                        bRim.setEventLogHash(deviceLiveLog.getHexDecHash());
-                        sBaseRim.setEventLogHash(deviceLiveLog.getHexDecHash());
-                        referenceManifestRepository.save(bRim);
-                        referenceManifestRepository.save(sBaseRim);
+                        if (sBaseRim != null) {
+                            bRim.setEventLogHash(deviceLiveLog.getHexDecHash());
+                            sBaseRim.setEventLogHash(deviceLiveLog.getHexDecHash());
+                            referenceManifestRepository.save(bRim);
+                            referenceManifestRepository.save(sBaseRim);
+                        } else {
+                            log.warn("Could not locate support RIM associated with " +
+                                    "base RIM " + bRim.getId());
+                        }
                     }
                 }
             } catch (IOException ioEx) {
