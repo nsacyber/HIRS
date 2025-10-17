@@ -38,7 +38,7 @@ public class IssuedAttestationCertificate extends DeviceAssociatedCertificate {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "issued_attestation_platform_join_table",
+            name = "Issued_Attestation_Platform_Join_Table",
             joinColumns = @JoinColumn(name = "issued_attestation_id"),         // foreign key to this certificate
             inverseJoinColumns = @JoinColumn(name = "platform_credential_id") // foreign key to related certificates
     )
