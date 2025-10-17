@@ -511,7 +511,7 @@ public class SwidTagGateway {
         } else {
             fileHash = jsonObject.getString(SwidTagConstants.HASH, HashSwid.get256Hash(rimEventLog));
         }
-        addNonNullAttribute(attributes, SwidTagConstants._SHA256_HASH, fileHash, true);
+        addNonNullAttribute(attributes, SwidTagConstants.QNAME_SHA256_HASH, fileHash, true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
                 SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
         if (!supportRimFormat.equals(SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING)) {

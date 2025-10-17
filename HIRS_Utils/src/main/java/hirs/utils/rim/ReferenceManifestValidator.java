@@ -267,9 +267,15 @@ public class ReferenceManifestValidator {
         if (signingCert == null) {
             return failWithError("Unable to parse the signing cert from " + signingCertPath);
         }
+        String retrievedSubjectKeyIdentifier = "";
+        try {
+            retrievedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
+        } catch (IOException e) {
+            return failWithError("Error while parsing SKID: " + e.getMessage());
+        }
+
         boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
-                retrievedSubjectKeyIdentifier,
-                signingCert.getPublicKey().getEncoded());
+                retrievedSubjectKeyIdentifier);
         return isSignatureValid && isPayloadValid;
     }
 
