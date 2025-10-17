@@ -41,6 +41,7 @@ dependencies {
     annotationProcessor libs.lombok
 
     testImplementation libs.spring.boot.starter.test
+    testRuntimeOnly libs.junit.platform.launcher
 
     testImplementation project(path: ':HIRS_AttestationCA')
 

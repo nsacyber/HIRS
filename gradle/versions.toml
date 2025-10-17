@@ -29,6 +29,7 @@ thymeleafDialectVersion = "3.3.0"
 #test dependencies versions
 hsqldbVersion = "2.7.3"
 jsonPathVersion = "2.9.0"
+junitPlatformLauncherVersion = "1.12.2"
 spotBugAnnotationVersion = "4.8.6"
 xmlunitCoreVersion = "2.10.0"
 
@@ -75,6 +76,7 @@ tomcat-embed-websocket = { module = "org.apache.tomcat.embed:tomcat-embed-websoc
 # test dependencies
 hsqldb = { module = "org.hsqldb:hsqldb", version.ref = "hsqldbVersion" }
 jsonPath = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonPathVersion" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformLauncherVersion" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBootVersion" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version.ref = "spotBugAnnotationVersion" }
 xmlunit-core = { module = "org.xmlunit:xmlunit-core", version.ref = "xmlunitCoreVersion" }
