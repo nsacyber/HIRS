@@ -11,25 +11,25 @@ glassfishJaxbRuntimeVersion = "4.0.5"
 guavaVersion = "33.4.0-jre"
 jacksonVersion = "2.18.2"
 jakartaPersistenceApiVersion = "3.1.0"
-jakartaServletVersion = "3.0.0"
 jakartaXmlVersion = "4.0.2"
 jcommanderVersion = "2.0"
-lombokVersion = "1.18.36"
+lombokVersion = "1.18.42"
 mariadbVersion = "3.5.1"
 minimalJsonVersion = "0.9.5"
 nimbusJwtVersion = "10.0.1"
-ospackageVersion = "11.2.0"
 pciVersion = "0.3"
 protobufJavaVersion = "4.32.0"
 snakeYamlVersion = "2.0"
-springBootVersion = "3.4.1"
-springFrameworkVersion = "6.2.1"
-springRetryVersion = "2.0.10"
+springBootVersion = "3.5.6"
+springFrameworkVersion = "6.2.11"
+springRetryVersion = "2.0.12"
 tomcatVersion = "10.1.34"
+thymeleafDialectVersion = "3.3.0"
 
 #test dependencies versions
 hsqldbVersion = "2.7.3"
 jsonPathVersion = "2.9.0"
+junitPlatformLauncherVersion = "1.12.2"
 spotBugAnnotationVersion = "4.8.6"
 xmlunitCoreVersion = "2.10.0"
 
@@ -48,7 +48,6 @@ jackson-cbor = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-c
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jacksonVersion" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonVersion" }
 jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakartaPersistenceApiVersion" }
-jakarta-servlet = { module = "org.glassfish.web:jakarta.servlet.jsp.jstl", version.ref = "jakartaServletVersion" }
 jakarta-xml = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakartaXmlVersion" }
 jcommander = { module = "org.jcommander:jcommander", version.ref = "jcommanderVersion" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
@@ -69,14 +68,15 @@ spring-framework-expression = { module = "org.springframework:spring-expression"
 spring-framework-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "springFrameworkVersion" }
 spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springFrameworkVersion" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
+thymeleaf-layout-dialect = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleafDialectVersion" }
 tomcat-embed-core = { module = "org.apache.tomcat.embed:tomcat-embed-core", version.ref = "tomcatVersion" }
-tomcat-embed-jasper = { module = "org.apache.tomcat.embed:tomcat-embed-jasper", version.ref = "tomcatVersion" }
 tomcat-embed-websocket = { module = "org.apache.tomcat.embed:tomcat-embed-websocket", version.ref = "tomcatVersion" }
 
 
 # test dependencies
 hsqldb = { module = "org.hsqldb:hsqldb", version.ref = "hsqldbVersion" }
 jsonPath = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonPathVersion" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformLauncherVersion" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBootVersion" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version.ref = "spotBugAnnotationVersion" }
 xmlunit-core = { module = "org.xmlunit:xmlunit-core", version.ref = "xmlunitCoreVersion" }

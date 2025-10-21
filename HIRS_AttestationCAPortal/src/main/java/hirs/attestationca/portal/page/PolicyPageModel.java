@@ -7,7 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * PolicyPage model object to demonstrate data exchange between policy.jsp page
+ * PolicyPage model object to demonstrate data exchange between policy.html page
  * form and controller.
  */
 @Setter
