@@ -55,12 +55,12 @@
     <div id="content" class="container-fluid">
 
         <!-- Side navigation fragment -->
-        <div th:replace="fragments/page-nav :: pageNav(${page}, ${pages})"></div>
+        <div th:replace="fragments/page-nav :: pageNav(page = ${page}, pages = ${pages})"></div>
 
         <!-- Main content area with dynamic class -->
         <div th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
             <!--Messages for successful and unsuccessful process fragment-->
-            <div th:replace="fragments/page-messages :: pageMessages(${messages})"></div>
+            <div th:replace="fragments/page-messages :: pageMessages(messages = ${messages})"></div>
 
             <div class="page-header">
                 <h1 layout:fragment="pageHeaderTitle">Page Header Title</h1>

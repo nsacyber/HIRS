@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-    <div th:fragment="editor(id, label, customButtons, bodyContent)">
+    <div th:fragment="editor(id, label, bodyContent)">
         <!-- Editor icon anchor -->
         <a th:href="'#' + ${id}" data-toggle="modal" th:title="${label}">
             <img th:src="@{/icons/ic_mode_edit_blue_18dp.png}" alt="Editor Icon" />
@@ -12,7 +12,6 @@
         <div th:replace="fragments/modal :: modal(
         id=${id}, 
         label=${label}, 
-        customButtons=${customButtons}, 
         bodyContent=${bodyContent}
     )"></div>
     </div>
