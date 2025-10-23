@@ -246,25 +246,37 @@ public class ReferenceManifestValidator {
      * @return true if both the file element and signature are valid, false otherwise
      */
     public boolean validateRim(final String signingCertPath) {
-        PublicKey pk = null;
-        String retrievedSubjectKeyIdentifier = "";
-        if (!signingCertPath.isEmpty()) {
-            X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
-            if (signingCert == null) {
-                return failWithError("Unable to parse the signing cert from " + signingCertPath);
-            } else {
-                pk = signingCert.getPublicKey();
+        boolean isPayloadValid = true;
+        NodeList files = rim.getElementsByTagName(SwidTagConstants.FILE);
+        if (files.getLength() <= 0) {
+            files = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.FILE);
+        }
+        if (files.getLength() > 0) {
+            for (int i = 0; i < files.getLength(); i++) {
+                Element file = (Element) files.item(i);
+                System.out.println(file.getAttribute("name") + ": " +
+                        file.getAttributeNS(SwidTagConstants.SHA_256_HASH.getNamespaceURI(),
+                                SwidTagConstants.HASH));
+                isPayloadValid &= validateFile(file);
             }
-            try {
-                retrievedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
-            } catch (IOException e) {
-                return failWithError("Error while parsing SKID: " + e.getMessage());
-            }
+        } else {
+            return failWithError("No payload found with which to validate.");
         }
 
-        boolean isSignatureValid = validateXmlSignature(pk, retrievedSubjectKeyIdentifier);
-        NodeList fileElement = getXmlElement(SwidTagConstants.SWIDTAG_NAMESPACE, "File");
-        return isSignatureValid && validateFile((Element) fileElement.item(0));
+        X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
+        if (signingCert == null) {
+            return failWithError("Unable to parse the signing cert from " + signingCertPath);
+        }
+        String retrievedSubjectKeyIdentifier = "";
+        try {
+            retrievedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(signingCert);
+        } catch (IOException e) {
+            return failWithError("Error while parsing SKID: " + e.getMessage());
+        }
+
+        boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
+                retrievedSubjectKeyIdentifier);
+        return isSignatureValid && isPayloadValid;
     }
 
     /**
