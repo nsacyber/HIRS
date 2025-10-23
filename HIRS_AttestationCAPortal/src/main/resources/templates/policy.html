@@ -19,9 +19,9 @@
     <section layout:fragment="content">
         <ul>
             <!-- Endorsement validation  -->
-            <div class="aca-input-box">
-                <form th:action="@{/policy/update-ec-validation}" th:object="${initialData}" method="POST">
-                    <li>
+            <li>
+                <div class="aca-input-box">
+                    <form th:action="@{/policy/update-ec-validation}" th:object="${initialData}" method="POST">
                         Endorsement Credential Validation:
                         <span th:text="${initialData.enableEcValidation ? 'Enabled' : 'Disabled'}"></span>
 
@@ -43,20 +43,18 @@
                             </div>
                         </div>
 
-                        <!-- Use the editor fragment -->
+                        <!-- editor fragment -->
                         <div
                             th:replace="fragments/editor :: editor( id='ecPolicyEditor',  label='Edit Endorsement Credential Validation Policy Settings', bodyContent=~{this::ecPolicyBody})">
                         </div>
-                    </li>
-                </form>
-
-
-            </div>
+                    </form>
+                </div>
+            </li>
 
             <!-- Platform validation -->
-            <div class="aca-input-box">
-                <form th:action="@{/policy/update-pc-validation}" th:object="${initialData}" method="POST">
-                    <li>
+            <li>
+                <div class="aca-input-box">
+                    <form th:action="@{/policy/update-pc-validation}" th:object="${initialData}" method="POST">
                         Platform Credential Validation:
                         <span th:text="${initialData.enablePcCertificateValidation ? 'Enabled' : 'Disabled'}"></span>
 
@@ -78,17 +76,19 @@
                             </div>
                         </div>
 
+                        <!-- editor fragment -->
                         <div
                             th:replace="fragments/editor :: editor( id='pcPolicyEditor',  label='Edit Platform Credential Validation Policy Settings', bodyContent=~{this::pcPolicyBody})">
                         </div>
-                    </li>
-                </form>
-            </div>
+                    </form>
+                </div>
+            </li>
 
             <!-- Platform attribute validation -->
-            <div class="aca-input-box">
-                <form th:action="@{/policy/update-pc-attribute-validation}" th:object="${initialData}" method="POST">
-                    <li>
+            <li>
+                <div class="aca-input-box">
+                    <form th:action="@{/policy/update-pc-attribute-validation}" th:object="${initialData}"
+                        method="POST">
                         Platform Attribute Credential Validation:
                         <span
                             th:text="${initialData.enablePcCertificateAttributeValidation ? 'Enabled' : 'Disabled'}"></span>
@@ -113,82 +113,87 @@
                             </div>
                         </div>
 
+                        <!-- editor fragment -->
                         <div
                             th:replace="fragments/editor :: editor( id='pcAttrPolicyEditor',  label='Edit Platform Credential Attribute Validation Policy Settings', bodyContent=~{this::pcAttrPolicyBody})">
                         </div>
-                    </li>
-                </form>
+                    </form>
 
-                <form th:action="@{/policy/update-revision-ignore}" th:object="${initialData}" method="POST">
                     <ul>
                         <li>
-                            Ignore Component Revision Attribute:
-                            <span
-                                th:text="${initialData.enableIgnoreRevisionAttribute ? 'Enabled' : 'Disabled'}"></span>
+                            <form th:action="@{/policy/update-revision-ignore}" th:object="${initialData}"
+                                method="POST">
+                                Ignore Component Revision Attribute:
+                                <span
+                                    th:text="${initialData.enableIgnoreRevisionAttribute ? 'Enabled' : 'Disabled'}"></span>
 
-                            <!-- Define the content of the modal -->
-                            <div th:fragment="revisionIgnoredPolicyBody">
-                                <div class="radio">
-                                    <label>
-                                        <input id="revisionTop" type="radio" name="ignoreRevisionAttribute"
-                                            th:checked="${initialData.enableIgnoreRevisionAttribute}" value="checked" />
-                                        Component Revision Attribute enabled
-                                    </label>
+                                <!-- Define the content of the modal -->
+                                <div th:fragment="revisionIgnoredPolicyBody">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="revisionTop" type="radio" name="ignoreRevisionAttribute"
+                                                th:checked="${initialData.enableIgnoreRevisionAttribute}"
+                                                value="checked" />
+                                            Component Revision Attribute enabled
+                                        </label>
+                                    </div>
+                                    <div class="radio">
+                                        <label>
+                                            <input id="revisionBot" type="radio" name="ignoreRevisionAttribute"
+                                                th:checked="${!initialData.enableIgnoreRevisionAttribute}"
+                                                value="unchecked" />
+                                            Component Revision Attribute disabled
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="radio">
-                                    <label>
-                                        <input id="revisionBot" type="radio" name="ignoreRevisionAttribute"
-                                            th:checked="${!initialData.enableIgnoreRevisionAttribute}"
-                                            value="unchecked" />
-                                        Component Revision Attribute disabled
-                                    </label>
-                                </div>
-                            </div>
 
-                            <div
-                                th:replace="fragments/editor :: editor( id='revisionIgnoredPolicyEditor',  label='Edit Ignore Component Revision Policy Settings', bodyContent=~{this::revisionIgnoredPolicyBody})">
-                            </div>
+                                <div
+                                    th:replace="fragments/editor :: editor( id='revisionIgnoredPolicyEditor',  label='Edit Ignore Component Revision Policy Settings', bodyContent=~{this::revisionIgnoredPolicyBody})">
+                                </div>
+                            </form>
                         </li>
-                    </ul>
-                </form>
 
-                <form th:action="@{/policy/update-pcie-vpd-ignore}" th:object="${initialData}" method="POST">
-                    <ul>
                         <li>
-                            Ignore PCIE VPD Attribute:
-                            <span th:text="${initialData.enableIgnorePcieVpdAttribute ? 'Enabled' : 'Disabled'}"></span>
+                            <form th:action="@{/policy/update-pcie-vpd-ignore}" th:object="${initialData}"
+                                method="POST">
+                                Ignore PCIE VPD Attribute:
+                                <span
+                                    th:text="${initialData.enableIgnorePcieVpdAttribute ? 'Enabled' : 'Disabled'}"></span>
 
-                            <!-- Define the content of the modal -->
-                            <div th:fragment="pcieVpdIgnoredPolicyBody">
-                                <div class="radio">
-                                    <label>
-                                        <input id="pcieVpdTop" type="radio" name="ignorePcieVpdAttribute"
-                                            th:checked="${initialData.enableIgnorePcieVpdAttribute}" value="checked" />
-                                        PCIE VPD Attribute enabled
-                                    </label>
+                                <!-- Define the content of the modal -->
+                                <div th:fragment="pcieVpdIgnoredPolicyBody">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="pcieVpdTop" type="radio" name="ignorePcieVpdAttribute"
+                                                th:checked="${initialData.enableIgnorePcieVpdAttribute}"
+                                                value="checked" />
+                                            PCIE VPD Attribute enabled
+                                        </label>
+                                    </div>
+                                    <div class="radio">
+                                        <label>
+                                            <input id="pcieVpdBot" type="radio" name="ignorePcieVpdAttribute"
+                                                th:checked="${!initialData.enableIgnorePcieVpdAttribute}"
+                                                value="unchecked" />
+                                            PCIE VPD Attribute disabled
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="radio">
-                                    <label>
-                                        <input id="pcieVpdBot" type="radio" name="ignorePcieVpdAttribute"
-                                            th:checked="${!initialData.enableIgnorePcieVpdAttribute}"
-                                            value="unchecked" />
-                                        PCIE VPD Attribute disabled
-                                    </label>
-                                </div>
-                            </div>
 
-                            <div
-                                th:replace="fragments/editor :: editor( id='ignorePcieVpdPolicyEditor',  label='Edit Ignore PCIE VPD Policy Settings', bodyContent=~{this::pcieVpdIgnoredPolicyBody})">
-                            </div>
+                                <div
+                                    th:replace="fragments/editor :: editor( id='ignorePcieVpdPolicyEditor',  label='Edit Ignore PCIE VPD Policy Settings', bodyContent=~{this::pcieVpdIgnoredPolicyBody})">
+                                </div>
+                            </form>
+
                         </li>
                     </ul>
-                </form>
-            </div>
+                </div>
+            </li>
 
             <!-- Firmware validation -->
-            <div class="aca-input-box">
-                <form th:action="@{/policy/update-firmware-validation}" th:object="${initialData}" method="POST">
-                    <li>
+            <li>
+                <div class="aca-input-box">
+                    <form th:action="@{/policy/update-firmware-validation}" th:object="${initialData}" method="POST">
                         Firmware Validation:
                         <span th:text="${initialData.enableFirmwareValidation ? 'Enabled' : 'Disabled'}"></span>
 
@@ -213,14 +218,12 @@
                         <div
                             th:replace="fragments/editor :: editor( id='fwrPolicyEditor',  label='Edit Firmware Validation Policy Settings', bodyContent=~{this::firmwarePolicyBody})">
                         </div>
-                    </li>
-                </form>
+                    </form>
 
-                <ul>
-                    <form th:action="@{/policy/update-ima-ignore}" th:object="${initialData}" method="POST">
-                        <ul>
-                            <li>
-                                Ignore IMA PCR Entry
+                    <ul>
+                        <li>
+                            <form th:action="@{/policy/update-ima-ignore}" th:object="${initialData}" method="POST">
+                                Ignore IMA PCR Entry:
                                 <span th:text="${initialData.enableIgnoreIma ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
@@ -242,245 +245,300 @@
                                 </div>
 
                                 <div
-                                    th:replace="fragments/editor :: editor( id='ignoreImaPolicyEditor',  label='Edit Ignore IMA Ignore Policy Settings', bodyContent=~{this::imaIgnoredPolicyBody})">
+                                    th:replace="fragments/editor :: editor( id='ignoreImaPolicyEditor',  label='Edit Ignore IMA Policy Settings', bodyContent=~{this::imaIgnoredPolicyBody})">
                                 </div>
-                            </li>
-                        </ul>
-                    </form>
+                            </form>
+                        </li>
 
-                    <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-tboot-ignore">
-                    <li>Ignore TBOOT PCRs Entry: ${initialData.enableIgnoreTboot ? 'Enabled' : 'Disabled'}
-                        <my:editor id="ignoreTbootPolicyEditor" label="Edit Settings">
-                            <div class="radio">
-                                <label><input id="tbootTop" type="radio" name="ignoretBoot"
-                                        ${initialData.enableIgnoreTboot ? 'checked' : '' } value="checked" /> Ignore
-                                    TBoot enabled</label>
-                            </div>
-                            <div class="radio">
-                                <label><input id="tbootBot" type="radio" name="ignoretBoot"
-                                        ${initialData.enableIgnoreTboot ? '' : 'checked' } value="unchecked" /> Ignore
-                                    TBoot disabled</label>
-                            </div>
-                        </my:editor>
-                    </li>
-                </form:form> -->
+                        <li>
+                            <form th:action="@{/policy/update-tboot-ignore}" th:object="${initialData}" method="POST">
+                                Ignore TBOOT PCRs Entry:
+                                <span th:text="${initialData.enableIgnoreTboot ? 'Enabled' : 'Disabled'}"></span>
 
-                    <form th:action="@{/policy/update-tboot-ignore}" th:object="${initialData}" method="POST">
-                    </form>
+                                <!-- Define the content of the modal -->
+                                <div th:fragment="tbootIgnoredPolicyBody">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="tbootTop" type="radio" name="ignoretBoot"
+                                                th:checked="${initialData.enableIgnoreTboot}" value="checked" />
+                                            Ignore TBoot enabled
+                                        </label>
+                                    </div>
+                                    <div class="radio">
+                                        <label>
+                                            <input id="tbootBot" type="radio" name="ignoretBoot"
+                                                th:checked="${!initialData.enableIgnoreTboot}" value="unchecked" />
+                                            Ignore TBoot disabled
+                                        </label>
+                                    </div>
+                                </div>
 
-                    <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-gpt-ignore">
-                    <li>Ignore GPT PCRs Entry: ${initialData.enableIgnoreGpt ? 'Enabled' : 'Disabled'}
-                        <my:editor id="ignoreGptPolicyEditor" label="Edit Settings">
-                            <div class="radio">
-                                <label><input id="gptTop" type="radio" name="ignoreGpt" ${initialData.enableIgnoreGpt
-                                        ? 'checked' : '' } value="checked" /> Ignore GPT enabled</label>
-                            </div>
-                            <div class="radio">
-                                <label><input id="gptBot" type="radio" name="ignoreGpt" ${initialData.enableIgnoreGpt
-                                        ? '' : 'checked' } value="unchecked" /> Ignore GPT disabled</label>
-                            </div>
-                        </my:editor>
-                    </li>
-                </form:form> -->
+                                <div
+                                    th:replace="fragments/editor :: editor( id='ignoreTbootPolicyEditor',  label='Edit Ignore Tboot Policy Settings', bodyContent=~{this::tbootIgnoredPolicyBody})">
+                                </div>
+                            </form>
+                        </li>
 
-                    <form th:action="@{/policy/update-gpt-ignore}" th:object="${initialData}" method="POST">
-                    </form>
+                        <li>
+                            <form th:action="@{/policy/update-gpt-ignore}" th:object="${initialData}" method="POST">
+                                Ignore GPT PCRs Entry:
+                                <span th:text="${initialData.enableIgnoreGpt ? 'Enabled' : 'Disabled'}"></span>
 
-                    <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-os-evt-ignore">
-                    <li>Ignore OS Events: ${initialData.enableIgnoreOsEvt ? 'Enabled' : 'Disabled'}
-                        <my:editor id="ignoreOsEvtPolicyEditor" label="Edit Settings">
-                            <div class="radio">
-                                <label><input id="osTop" type="radio" name="ignoreOsEvt" ${initialData.enableIgnoreOsEvt
-                                        ? 'checked' : '' } value="checked" /> Ignore Os Events enabled</label>
-                            </div>
-                            <div class="radio">
-                                <label><input id="osBot" type="radio" name="ignoreOsEvt" ${initialData.enableIgnoreOsEvt
-                                        ? '' : 'checked' } value="unchecked" /> Ignore Os Events disabled</label>
-                            </div>
-                        </my:editor>
-                    </li>
-                </form:form> -->
+                                <!-- Define the content of the modal -->
+                                <div th:fragment="gptIgnoredPolicyBody">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="gptTop" type="radio" name="ignoreGpt"
+                                                th:checked="${initialData.enableIgnoreGpt}" value="checked" />
+                                            Ignore GPT enabled
+                                        </label>
+                                    </div>
+                                    <div class="radio">
+                                        <label>
+                                            <input id="gptBot" type="radio" name="ignoreGpt"
+                                                th:checked="${!initialData.enableIgnoreGpt}" value="unchecked" />
+                                            Ignore GPT disabled
+                                        </label>
+                                    </div>
+                                </div>
 
-                    <form th:action="@{/policy/update-os-evt-ignore}" th:object="${initialData}" method="POST">
-                    </form>
-                </ul>
-                </li>
-            </div>
-        </ul>
+                                <div
+                                    th:replace="fragments/editor :: editor( id='ignoreGptPolicyEditor',  label='Edit Ignore GPT Policy Settings', bodyContent=~{this::gptIgnoredPolicyBody})">
+                                </div>
+                            </form>
+                        </li>
 
-        <br />
+                        <li>
+                            <form th:action="@{/policy/update-os-evt-ignore}" th:object="${initialData}" method="POST">
+                                Ignore OS Events:
+                                <span th:text="${initialData.enableIgnoreOsEvt ? 'Enabled' : 'Disabled'}"></span>
 
-        <!-- Generate Attestation Certificate  -->
-        <div class="aca-input-box">
-            <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-issued-attestation-generation">
-                <li>Generate Attestation Certificate: ${initialData.issueAttestationCertificate ? 'Enabled' :
-                    'Disabled'}
-                    <my:editor id="issuedCertificatePolicyEditor" label="Edit Settings">
-                        <div class="radio">
-                            <label><input id="aicTop" type="radio" name="attestationCertificateIssued"
-                                    ${initialData.issueAttestationCertificate ? '' : 'checked' } value="unchecked" />
-                                Never
-                                generate an Attestation Certificate</label>
-                        </div>
-                        <div class="radio">
-                            <label><input id="aicMid" type="radio" name="attestationCertificateIssued"
-                                    ${initialData.issueAttestationCertificate ? 'checked' : '' } value="checked" />
-                                Conditionally
-                                generate an Attestation Certificate before 'Not After' expiration date</label>
-                        </div>
-                    </my:editor>
-            </form:form> -->
+                                <!-- Define the content of the modal -->
+                                <div th:fragment="osIgnoredPolicyBody">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="osTop" type="radio" name="ignoreOsEvt"
+                                                th:checked="${initialData.enableIgnoreOsEvt}" value="checked" />
+                                            Ignore OS Events enabled
+                                        </label>
+                                    </div>
+                                    <div class="radio">
+                                        <label>
+                                            <input id="osBot" type="radio" name="ignoreOsEvt"
+                                                th:checked="${!initialData.enableIgnoreOsEvt}" value="unchecked" />
+                                            Ignore OS Events disabled
+                                        </label>
+                                    </div>
+                                </div>
 
-            <form th:action="@{/policy/update-issued-attestation-generation}" th:object="${initialData}" method="POST">
-            </form>
-
-            <ul>
-                <!-- <form:form method="POST" modelAttribute="initialData"
-                    action="policy/update-attestation-certificate-expiration">
-                    <li>Attestation Certificate Validity period: ${initialData.generateOnExpiration ? 'Enabled' :
-                        'Disabled'}
-                        <my:editor id="issuedCertificatePolicyExpirationEditor" label="Edit Settings">
-                            <div class="radio">
-                                <label>
-                                    <input id="aicBot" type="checkbox" name="generationExpirationOn"
-                                        ${initialData.generateOnExpiration ? 'checked' : '' } value="checked" />
-                                    Attestation Certificate validity period (Default 3651 days)<br />
-                                    Select period in days: <input id="expirationValue" type="text"
-                                        name="expirationValue" value="${initialData.expirationValue}" />
-                                </label>
-                            </div>
-                        </my:editor>
-                    </li>
-                </form:form> -->
-
-                <form th:action="@{/policy/update-attestation-certificate-expiration}" th:object="${initialData}"
-                    method="POST">
-                </form>
-
-                <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-issued-cert-threshold">
-                    <li>Attestation Certificate Renewal period: ${initialData.generateOnExpiration ? 'Enabled' :
-                        'Disabled'}
-                        <my:editor id="issuedCertificatePolicyGenerateEditor" label="Edit Settings">
-                            <div class="radio">
-                                <label>
-                                    <input id="aicBot" type="checkbox" name="generationExpirationOn"
-                                        ${initialData.generateOnExpiration ? 'checked' : '' } value="checked" />
-                                    Renew 'n' days before Attestation Certificate's 'Not After' Validity date (Default
-                                    365
-                                    days)<br />
-                                    Select 'n' period in days: <input id="thresholdValue" type="text"
-                                        name="thresholdValue" value="${initialData.thresholdValue}" />
-                                </label>
-                            </div>
-                        </my:editor>
-                    </li>
-                </form:form> -->
-
-                <form th:action="@{/policy/update-issued-cert-threshold}" th:object="${initialData}" method="POST">
-                </form>
-            </ul>
+                                <div
+                                    th:replace="fragments/editor :: editor( id='ignoreOSPolicyEditor',  label='Edit Ignore OS Events Policy Settings', bodyContent=~{this::osIgnoredPolicyBody})">
+                                </div>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             </li>
-        </div>
-        <br />
 
-        <!-- Generate LDevID Certificate -->
-        <div class="aca-input-box">
-            <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-issued-ldevid-generation">
-                <li>Generate LDevID Certificate: ${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}
-                    <my:editor id="issuedDevIdCertificatePolicyEditor" label="Edit Settings">
-                        <div class="radio">
-                            <label><input id="devIdTop" type="radio" name="devIdCertificateIssued"
-                                    ${initialData.issueDevIdCertificate ? '' : 'checked' } value="unchecked" /> Never
-                                generate
-                                a
-                                DevID Certificate</label>
-                        </div>
-                        <div class="radio">
-                            <label><input id="devIdMid" type="radio" name="devIdCertificateIssued"
-                                    ${initialData.issueDevIdCertificate ? 'checked' : '' } value="checked" />
-                                Conditionally
-                                generate an DevID Certificate before 'Not After' expiration date</label>
-                        </div>
-                    </my:editor>
-            </form:form> -->
+            <!-- Generate Attestation Certificate  -->
+            <li>
+                <div class="aca-input-box">
+                    <form th:action="@{/policy/update-issued-attestation-generation}" th:object="${initialData}"
+                        method="POST">
+                        Generate Attestation Certificate:
+                        <span th:text="${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}"></span>
 
-            <form th:action="@{/policy/update-issued-ldevid-generation}" th:object="${initialData}" method="POST">
-            </form>
-
-            <ul>
-                <!-- <form:form method="POST" modelAttribute="initialData"
-                    action="policy/update-ldevid-certificate-expiration">
-                    <li>LDevID Certificate Validity period: ${initialData.devIdExpirationFlag ? 'Enabled' :
-                        'Disabled'}
-                        <my:editor id="issuedDevIdCertificatePolicyExpirationEditor" label="Edit Settings">
+                        <!-- Define the content of the modal -->
+                        <div th:fragment="genAttestCertPolicyBody">
                             <div class="radio">
                                 <label>
-                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked"
-                                        ${initialData.devIdExpirationFlag ? 'checked' : '' } value="checked" />
-                                    LDevID Certificate validity period (Default 3651 days)<br />
-                                    Select period in days: <input id="devIdExpirationValue" type="text"
-                                        name="devIdExpirationValue" value="${initialData.devIdExpirationValue}" />
+                                    <input id="attestTop" type="radio" name="attestationCertificateIssued"
+                                        th:checked="${initialData.issueAttestationCertificate}" value="checked" />
+                                    Never generate an Attestation Certificate
                                 </label>
                             </div>
-                        </my:editor>
-                    </li>
-                </form:form> -->
-
-                <form th:action="@{/policy/update-ldevid-certificate-expiration}" th:object="${initialData}"
-                    method="POST">
-                </form>
-
-
-                <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-ldevid-threshold">
-                    <li>LDevID Certificate Renewal period: ${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}
-                        <my:editor id="issuedDevIdCertificatePolicyGenerateEditor" label="Edit Settings">
                             <div class="radio">
                                 <label>
-                                    <input id="devIdBot" type="checkbox" name="devIdExpirationChecked"
-                                        ${initialData.devIdExpirationFlag ? 'checked' : '' } value="checked" />
-                                    Renew 'n' days before LDevID Certificate's 'Not After' Validity date (Default 365
-                                    days)<br />
-                                    Select 'n' period in days: <input id="devIdThresholdValue" type="text"
-                                        name="devIdThresholdValue" value="${initialData.devIdThresholdValue}" />
+                                    <input id="attestBottom" type="radio" name="attestationCertificateIssued"
+                                        th:checked="${!initialData.issueAttestationCertificate}" value="unchecked" />
+                                    Conditionally generate an Attestation Certificate before 'Not After' expiration date
                                 </label>
                             </div>
-                        </my:editor>
-                    </li>
-                </form:form> -->
+                        </div>
 
-                <form th:action="@{/policy/update-ldevid-threshold}" th:object="${initialData}" method="POST">
-                </form>
+                        <div
+                            th:replace="fragments/editor :: editor( id='issuedCertificatePolicyEditor',  label='Edit Issued Attestation Certificate Policy Settings', bodyContent=~{this::genAttestCertPolicyBody})">
+                        </div>
+                    </form>
 
-            </ul>
-            </li>
-        </div>
-        <br />
-
-
-        <!-- Save ProtoBuf Data To ACA Log After Validation -->
-        <div class="aca-input-box">
-            <!-- <form:form method="POST" modelAttribute="initialData" action="policy/update-save-protobuf-data-to-log">
-                <li> Save Protobuf Data To ACA Log Settings:
                     <ul>
+                        <li>
+                            <form th:action="@{/policy/update-attestation-certificate-expiration}"
+                                th:object="${initialData}" method="POST">
+                                Attestation Certificate Validity period:
+                                <span th:text="${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}"></span>
+
+                                <!-- Define the content of the modal -->
+                                <div th:fragment="expCertPolicyBody">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="aicBot" type="checkbox" name="generationExpirationOn"
+                                                th:checked="${initialData.generateOnExpiration}" value="checked" />
+                                            Attestation Certificate validity period (Default 3651 days)<br />
+                                            Select period in days:
+                                            <input id="expirationValue" type="text" name="expirationValue"
+                                                th:value="${initialData.expirationValue}" />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div
+                                    th:replace="fragments/editor :: editor( id='issuedCertificatePolicyExpirationEditor',  label='Edit Generate Certificate Expiration Policy Settings', bodyContent=~{this::expCertPolicyBody})">
+                                </div>
+                            </form>
+                        </li>
+
+                        <li>
+                            <form th:action="@{/policy/update-issued-cert-threshold}" th:object="${initialData}"
+                                method="POST">
+                                Attestation Certificate Renewal period:
+                                <span th:text="${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}"></span>
+
+                                <!-- Define the content of the modal -->
+                                <div th:fragment="thresholdCertPolicyBody">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="aicBot" type="checkbox" name="generationExpirationOn"
+                                                th:checked="${initialData.generateOnExpiration}" value="checked" />
+                                            Renew 'n' days before Attestation Certificate's 'Not After' Validity date
+                                            (Default 365 days)<br />
+                                            Select 'n' period in days:
+                                            <input id="thresholdValue" type="text" name="thresholdValue"
+                                                th:value="${initialData.thresholdValue}" />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div
+                                    th:replace="fragments/editor :: editor( id='issuedCertificatePolicyRenewalEditor',  label='Edit Generate Certificate Renewal Policy Settings', bodyContent=~{this::thresholdCertPolicyBody})">
+                                </div>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+
+            <!-- Generate LDevID Certificate -->
+            <li>
+                <div class="aca-input-box">
+                    <form th:action="@{/policy/update-issued-ldevid-generation}" th:object="${initialData}"
+                        method="POST">
+                        Generate LDevID Certificate:
+                        <span th:text="${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}"></span>
+
+                        <!-- Define the content of the modal -->
+                        <div th:fragment="genLDevIDCertPolicyBody">
+                            <div class="radio">
+                                <label>
+                                    <input id="devIdTop" type="radio" name="devIdCertificateIssued"
+                                        th:checked="${initialData.issueDevIdCertificate}" value="checked" />
+                                    Never generate a DevID Certificate
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input id="devIdBottom" type="radio" name="devIdCertificateIssued"
+                                        th:checked="${!initialData.issueDevIdCertificate}" value="unchecked" />
+                                    Conditionally generate an DevID Certificate before 'Not After' expiration date
+                                </label>
+                            </div>
+                        </div>
+
+                        <div
+                            th:replace="fragments/editor :: editor( id='ldevidCertificatePolicyEditor',  label='Edit LDevID Certificate Generation Policy Settings', bodyContent=~{this::genLDevIDCertPolicyBody})">
+                        </div>
+                    </form>
+
+                    <ul>
+                        <li>
+                            <form th:action="@{/policy/update-ldevid-certificate-expiration}" th:object="${initialData}"
+                                method="POST">
+                                LDevID Certificate Validity period:
+                                <span th:text="${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}"></span>
+
+                                <!-- Define the content of the modal -->
+                                <div th:fragment="expirationLvedvIdCertPolicyBody">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="devIdBot" type="checkbox" name="devIdExpirationChecked"
+                                                th:checked="${initialData.devIdExpirationFlag}" value="checked" />
+                                            LDevID Certificate validity period (Default 3651 days)<br />
+                                            Select period in days:
+                                            <input id="devIdExpirationValue" type="text" name="devIdExpirationValue"
+                                                th:value="${initialData.devIdExpirationValue}" />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div
+                                    th:replace="fragments/editor :: editor( id='ldevidCertificateExpirationPolicyEditor',  label='Edit LDevID Certificate Expiration Policy Settings', bodyContent=~{this::expirationLvedvIdCertPolicyBody})">
+                                </div>
+                            </form>
+                        </li>
+
+                        <li>
+                            <form th:action="@{/policy/update-ldevid-threshold}" th:object="${initialData}"
+                                method="POST">
+                                LDevID Certificate Renewal period:
+                                <span th:text="${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}"></span>
+
+                                <!-- Define the content of the modal -->
+                                <div th:fragment="thresholdLvedvIdCertPolicyBody">
+                                    <div class="radio">
+                                        <label>
+                                            <input id="devIdBot" type="checkbox" name="devIdExpirationChecked"
+                                                th:checked="${initialData.devIdExpirationFlag}" value="checked" />
+                                            Renew 'n' days before LDevID Certificate's 'Not After' Validity date
+                                            (Default 365 days)<br />
+                                            Select 'n' period in days:
+                                            <input id="devIdThresholdValue" type="text" name="devIdThresholdValue"
+                                                th:value="${initialData.devIdThresholdValue}" />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div
+                                    th:replace="fragments/editor :: editor( id='ldevidCertificateRenewalPolicyEditor',  label='Edit LDevID Certificate Renewal Policy Settings', bodyContent=~{this::thresholdLvedvIdCertPolicyBody})">
+                                </div>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Save ProtoBuf Data To ACA Log After Validation -->
+            <li>
+                <div class="aca-input-box">
+                    <form th:action="@{/policy/update-save-protobuf-data-to-log}" th:object="${initialData}"
+                        method="POST">
+                        <p>Save Protobuf Data To ACA Log Settings:</p>
                         <div class="radio">
                             <input type="radio" name="saveProtobufToLogOption" value="always-log-protobuf"
-                                ${initialData.logProtobufAlways ? 'checked' : '' } />
+                                th:checked="${initialData.logProtobufAlways}" />
                             Log Protobuf Data Always<br />
+
                             <input type="radio" name="saveProtobufToLogOption" value="log-protobuf-on-fail-val"
-                                ${initialData.logProtobufOnFailedVal? 'checked' : '' } />
+                                th:checked="${initialData.logProtobufOnFailedVal}" />
                             Log Protobuf Data on Validation Failure<br />
+
                             <input type="radio" name="saveProtobufToLogOption" value="never-log-protobuf"
-                                ${initialData.logProtobufNever ? 'checked' : '' } />
+                                th:checked="${initialData.logProtobufNever}" />
                             Never Log Protobuf Data<br />
                         </div>
-                    </ul>
-                </li>
-            </form:form> -->
-
-            <form th:action="@{/policy/update-save-protobuf-data-to-log}" th:object="${initialData}" method="POST">
-            </form>
-        </div>
-        <br />
+                    </form>
+                </div>
+            </li>
         </ul>
     </section>
 </body>
