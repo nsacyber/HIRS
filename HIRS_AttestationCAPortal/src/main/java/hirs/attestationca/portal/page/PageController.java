@@ -119,7 +119,6 @@ public abstract class PageController<P extends PageParams> {
             final P params,
             final Map<String, ?> model,
             final RedirectAttributes attr) throws URISyntaxException {
-
         return redirectTo(page, params, model, attr);
     }
 
