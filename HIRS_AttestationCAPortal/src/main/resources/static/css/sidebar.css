@@ -4,10 +4,6 @@ nav.sidebar,
   transition: margin 200ms ease-out;
 }
 
-nav {
-  height: 100%;
-}
-
 nav.sidebar {
   background-color: darkslategray;
   color: white;

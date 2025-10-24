@@ -9,23 +9,22 @@
                     <span class="page-messageIcon">
                         <img th:src="@{/icons/ic_priority_high_white_24dp.png}" alt="Error icon" />
                     </span>
-                    <span th:text="${error}">Error message</span>
+                    <p th:text="${error}">Error message</p>
                 </li>
 
                 <li th:each="success : ${messages.successMessages}" class="page-message" id="page-successMessage">
                     <span class="page-messageIcon">
                         <img th:src="@{/icons/ic_done_white_24dp.png}" alt="Success icon" />
                     </span>
-                    <span th:text="${success}">Success message</span>
+                    <p th:text="${success}">Success message</p>
                 </li>
 
                 <li th:each="info : ${messages.infoMessages}" class="page-message" id="page-infoMessage">
                     <span class="page-messageIcon">
-                        <img th:src="@{/icons}/ic_priority_high_white_24dp.png" alt="Info icon" />
+                        <img th:src="@{/icons/ic_priority_high_white_24dp.png}" alt="Info icon" />
                     </span>
-                    <span th:text="${info}">Info message</span>
+                    <p th:text="${info}">Info message</p>
                 </li>
-
             </ul>
         </div>
     </div>

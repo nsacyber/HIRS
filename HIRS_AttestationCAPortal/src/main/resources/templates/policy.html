@@ -21,7 +21,8 @@
             <!-- Endorsement validation  -->
             <li>
                 <div class="aca-input-box">
-                    <form th:action="@{/policy/update-ec-validation}" th:object="${initialData}" method="POST">
+                    <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ec-validation}"
+                        th:object="${initialData}" method="POST">
                         Endorsement Credential Validation:
                         <span th:text="${initialData.enableEcValidation ? 'Enabled' : 'Disabled'}"></span>
 
@@ -54,7 +55,8 @@
             <!-- Platform validation -->
             <li>
                 <div class="aca-input-box">
-                    <form th:action="@{/policy/update-pc-validation}" th:object="${initialData}" method="POST">
+                    <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pc-validation}"
+                        th:object="${initialData}" method="POST">
                         Platform Credential Validation:
                         <span th:text="${initialData.enablePcCertificateValidation ? 'Enabled' : 'Disabled'}"></span>
 
@@ -87,8 +89,8 @@
             <!-- Platform attribute validation -->
             <li>
                 <div class="aca-input-box">
-                    <form th:action="@{/policy/update-pc-attribute-validation}" th:object="${initialData}"
-                        method="POST">
+                    <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pc-attribute-validation}"
+                        th:object="${initialData}" method="POST">
                         Platform Attribute Credential Validation:
                         <span
                             th:text="${initialData.enablePcCertificateAttributeValidation ? 'Enabled' : 'Disabled'}"></span>
@@ -121,8 +123,8 @@
 
                     <ul>
                         <li>
-                            <form th:action="@{/policy/update-revision-ignore}" th:object="${initialData}"
-                                method="POST">
+                            <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-revision-ignore}"
+                                th:object="${initialData}" method="POST">
                                 Ignore Component Revision Attribute:
                                 <span
                                     th:text="${initialData.enableIgnoreRevisionAttribute ? 'Enabled' : 'Disabled'}"></span>
@@ -154,8 +156,8 @@
                         </li>
 
                         <li>
-                            <form th:action="@{/policy/update-pcie-vpd-ignore}" th:object="${initialData}"
-                                method="POST">
+                            <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pcie-vpd-ignore}"
+                                th:object="${initialData}" method="POST">
                                 Ignore PCIE VPD Attribute:
                                 <span
                                     th:text="${initialData.enableIgnorePcieVpdAttribute ? 'Enabled' : 'Disabled'}"></span>
@@ -193,7 +195,8 @@
             <!-- Firmware validation -->
             <li>
                 <div class="aca-input-box">
-                    <form th:action="@{/policy/update-firmware-validation}" th:object="${initialData}" method="POST">
+                    <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-firmware-validation}"
+                        th:object="${initialData}" method="POST">
                         Firmware Validation:
                         <span th:text="${initialData.enableFirmwareValidation ? 'Enabled' : 'Disabled'}"></span>
 
@@ -201,14 +204,14 @@
                         <div th:fragment="firmwarePolicyBody">
                             <div class="radio">
                                 <label>
-                                    <input id="firmwareTop" type="radio" name="fwValidate"
+                                    <input id="firmwareTop" type="radio" name="fmValidate"
                                         th:checked="${initialData.enableFirmwareValidation}" value="checked" />
                                     Firmware will be validated
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="firmwareBottom" type="radio" name="fwValidate"
+                                    <input id="firmwareBottom" type="radio" name="fmValidate"
                                         th:checked="${!initialData.enableFirmwareValidation}" value="unchecked" />
                                     Firmware will not be validated
                                 </label>
@@ -216,13 +219,14 @@
                         </div>
 
                         <div
-                            th:replace="fragments/editor :: editor( id='fwrPolicyEditor',  label='Edit Firmware Validation Policy Settings', bodyContent=~{this::firmwarePolicyBody})">
+                            th:replace="fragments/editor :: editor( id='fwPolicyEditor',  label='Edit Firmware Validation Policy Settings', bodyContent=~{this::firmwarePolicyBody})">
                         </div>
                     </form>
 
                     <ul>
                         <li>
-                            <form th:action="@{/policy/update-ima-ignore}" th:object="${initialData}" method="POST">
+                            <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ima-ignore}"
+                                th:object="${initialData}" method="POST">
                                 Ignore IMA PCR Entry:
                                 <span th:text="${initialData.enableIgnoreIma ? 'Enabled' : 'Disabled'}"></span>
 
@@ -251,7 +255,8 @@
                         </li>
 
                         <li>
-                            <form th:action="@{/policy/update-tboot-ignore}" th:object="${initialData}" method="POST">
+                            <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-tboot-ignore}"
+                                th:object="${initialData}" method="POST">
                                 Ignore TBOOT PCRs Entry:
                                 <span th:text="${initialData.enableIgnoreTboot ? 'Enabled' : 'Disabled'}"></span>
 
@@ -280,7 +285,8 @@
                         </li>
 
                         <li>
-                            <form th:action="@{/policy/update-gpt-ignore}" th:object="${initialData}" method="POST">
+                            <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-gpt-ignore}"
+                                th:object="${initialData}" method="POST">
                                 Ignore GPT PCRs Entry:
                                 <span th:text="${initialData.enableIgnoreGpt ? 'Enabled' : 'Disabled'}"></span>
 
@@ -309,7 +315,8 @@
                         </li>
 
                         <li>
-                            <form th:action="@{/policy/update-os-evt-ignore}" th:object="${initialData}" method="POST">
+                            <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-os-evt-ignore}"
+                                th:object="${initialData}" method="POST">
                                 Ignore OS Events:
                                 <span th:text="${initialData.enableIgnoreOsEvt ? 'Enabled' : 'Disabled'}"></span>
 
@@ -343,8 +350,8 @@
             <!-- Generate Attestation Certificate  -->
             <li>
                 <div class="aca-input-box">
-                    <form th:action="@{/policy/update-issued-attestation-generation}" th:object="${initialData}"
-                        method="POST">
+                    <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-issued-attestation-generation}"
+                        th:object="${initialData}" method="POST">
                         Generate Attestation Certificate:
                         <span th:text="${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}"></span>
 
@@ -373,7 +380,8 @@
 
                     <ul>
                         <li>
-                            <form th:action="@{/policy/update-attestation-certificate-expiration}"
+                            <form
+                                th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-attestation-certificate-expiration}"
                                 th:object="${initialData}" method="POST">
                                 Attestation Certificate Validity period:
                                 <span th:text="${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}"></span>
@@ -399,8 +407,8 @@
                         </li>
 
                         <li>
-                            <form th:action="@{/policy/update-issued-cert-threshold}" th:object="${initialData}"
-                                method="POST">
+                            <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-issued-cert-threshold}"
+                                th:object="${initialData}" method="POST">
                                 Attestation Certificate Renewal period:
                                 <span th:text="${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}"></span>
 
@@ -432,8 +440,8 @@
             <!-- Generate LDevID Certificate -->
             <li>
                 <div class="aca-input-box">
-                    <form th:action="@{/policy/update-issued-ldevid-generation}" th:object="${initialData}"
-                        method="POST">
+                    <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-issued-ldevid-generation}"
+                        th:object="${initialData}" method="POST">
                         Generate LDevID Certificate:
                         <span th:text="${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}"></span>
 
@@ -462,8 +470,9 @@
 
                     <ul>
                         <li>
-                            <form th:action="@{/policy/update-ldevid-certificate-expiration}" th:object="${initialData}"
-                                method="POST">
+                            <form
+                                th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ldevid-certificate-expiration}"
+                                th:object="${initialData}" method="POST">
                                 LDevID Certificate Validity period:
                                 <span th:text="${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}"></span>
 
@@ -488,8 +497,8 @@
                         </li>
 
                         <li>
-                            <form th:action="@{/policy/update-ldevid-threshold}" th:object="${initialData}"
-                                method="POST">
+                            <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ldevid-threshold}"
+                                th:object="${initialData}" method="POST">
                                 LDevID Certificate Renewal period:
                                 <span th:text="${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}"></span>
 
@@ -520,8 +529,8 @@
             <!-- Save ProtoBuf Data To ACA Log After Validation -->
             <li>
                 <div class="aca-input-box">
-                    <form th:action="@{/policy/update-save-protobuf-data-to-log}" th:object="${initialData}"
-                        method="POST">
+                    <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-save-protobuf-data-to-log}"
+                        th:object="${initialData}" method="POST">
                         <p>Save Protobuf Data To ACA Log Settings:</p>
                         <div class="radio">
                             <input type="radio" name="saveProtobufToLogOption" value="always-log-protobuf"
