@@ -40,36 +40,36 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
-    - name: Install Package Tools
-      working-directory: HIRS_Provisioner.NET/hirs
-      run: |
-        dotnet tool install --global dotnet-deb
-        dotnet tool install --global dotnet-rpm
-    - name: Linux Packages
-      working-directory: HIRS_Provisioner.NET/hirs
-      run: |
-        dotnet deb install
-        dotnet rpm install
-        dotnet deb -r linux-x64 -c Release
-        dotnet rpm -r linux-x64 -c Release
-    - name: Windows Packages
-      working-directory: HIRS_Provisioner.NET/hirs
-      run: |
-        dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=${{env.DOTNET_MSI_TARGETFRAMEWORK}} /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
-    - name: Artifacts SHA256
-      shell: bash
-      run: |
-        sha256sum HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
-        ls -go --full-time HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
-    - name: Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dists
-        retention-days: 5
-        if-no-files-found: error
-        path: |
-          HIRS_Provisioner.NET/hirs/bin/Release/**/*.deb
-          HIRS_Provisioner.NET/hirs/bin/Release/**/*.msi
-          HIRS_Provisioner.NET/hirs/bin/Release/**/*.rpm
+      - name: Install Package Tools
+        working-directory: HIRS_Provisioner.NET/hirs
+        run: |
+          dotnet tool install --global dotnet-deb
+          dotnet tool install --global dotnet-rpm
+      - name: Linux Packages
+        working-directory: HIRS_Provisioner.NET/hirs
+        run: |
+          dotnet deb install
+          dotnet rpm install
+          dotnet deb -r linux-x64 -c Release
+          dotnet rpm -r linux-x64 -c Release
+      - name: Windows Packages
+        working-directory: HIRS_Provisioner.NET/hirs
+        run: |
+          dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=${{env.DOTNET_MSI_TARGETFRAMEWORK}} /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
+      - name: Artifacts SHA256
+        shell: bash
+        run: |
+          sha256sum HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
+          ls -go --full-time HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
+      - name: Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dists
+          retention-days: 5
+          if-no-files-found: error
+          path: |
+            HIRS_Provisioner.NET/hirs/bin/Release/**/*.deb
+            HIRS_Provisioner.NET/hirs/bin/Release/**/*.msi
+            HIRS_Provisioner.NET/hirs/bin/Release/**/*.rpm
 
         
