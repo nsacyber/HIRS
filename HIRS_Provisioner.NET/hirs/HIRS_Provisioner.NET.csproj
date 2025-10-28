@@ -9,7 +9,7 @@
     <SelfContained>true</SelfContained>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageVersion>3.0.5</PackageVersion>
+    <PackageVersion>3.0.6</PackageVersion>
     <Release></Release> 
 </PropertyGroup>
 
