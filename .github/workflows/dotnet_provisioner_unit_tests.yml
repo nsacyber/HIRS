@@ -42,6 +42,7 @@ jobs:
     needs: test
     name: Packages
     runs-on: windows-2022
+    steps:
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
