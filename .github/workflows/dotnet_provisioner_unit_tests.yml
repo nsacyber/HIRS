@@ -15,8 +15,6 @@ jobs:
           - os: windows-2022
           - os: ubuntu-latest
     steps:
-      - name: Remove problem matcher for now
-        run: echo "::remove-matcher owner=dotnet::"
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -26,6 +24,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
+      - name: Remove problem matcher for now
+        run: |
+          echo "::remove-matcher owner=csc::"
+          echo "::remove-matcher owner=dotnet::"
       - name: Restore dependencies
         working-directory: HIRS_Provisioner.NET
         run: dotnet restore
@@ -40,9 +42,6 @@ jobs:
     needs: test
     name: Packages
     runs-on: windows-2022
-    steps:
-      - name: Remove problem matcher for now
-        run: echo "::remove-matcher owner=dotnet::"
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -52,6 +51,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
+      - name: Remove problem matcher for now
+        run: |
+          echo "::remove-matcher owner=csc::"
+          echo "::remove-matcher owner=dotnet::"
       - name: Install Package Tools
         working-directory: HIRS_Provisioner.NET/hirs
         run: |
