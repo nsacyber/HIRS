@@ -489,6 +489,7 @@
                                                                         </c:when>
                                                                         <c:otherwise>
                                                                             ${resource.getName()}
+                                                                            <img src="${failIcon}" title="${supportRimHashInvalidText}"/>
                                                                         </c:otherwise>
                                                                     </c:choose>
                                                                 </span>
@@ -540,7 +541,7 @@
                                                                 </c:when>
                                                                 <c:otherwise>
                                                                 <c:if test="${not initialData.swidPatch and not initialData.swidSupplemental}">
-                                                                    <div class="component col col-md-10" style="color: red; padding-left: 20px">Support RIM file named ${resource.getName()} was not imported via the Reference Integrity Manifest page.</div>
+                                                                    <div class="component col col-md-10" style="color: red; padding-left: 20px">Support RIM file with hash ${resource.getHashValue()} was not found.</div>
                                                                 </c:if>
                                                                 </c:otherwise>
                                                             </c:choose>
