@@ -13,8 +13,8 @@ import java.util.Map;
  */
 @Log4j2
 public class VerifyArgumentValidator implements IParametersValidator {
-    String[] requiredArgs = {"--publicCertificate", "--truststore"};
-    String errorMessage = "";
+    private String[] requiredArgs = {"--publicCertificate", "--truststore"};
+    private String errorMessage = "";
 
     /**
      * This method validates the input parameter map.

@@ -1,6 +1,7 @@
 package hirs.utils.rim.unsignedRim.xml.pcclientrim;
 
 import hirs.utils.swid.CredentialParser;
+import hirs.utils.swid.HashSwid;
 import hirs.utils.swid.SwidTagConstants;
 import hirs.utils.xjc.File;
 import jakarta.xml.bind.JAXBContext;
@@ -433,8 +434,15 @@ public class PcClientRimBuilder {
         file.setName(jsonObject.getString("name", ""));
         file.setSize(new BigInteger(jsonObject.getString("size", "0")));
         Map<QName, String> attributes = file.getOtherAttributes();
-        this.addNonNullAttribute(attributes, SwidTagConstants.SHA_256_HASH, jsonObject.getString("hash"),
-                true);
+        String fileHash;
+        if (rimEventLog.isEmpty()) {
+            fileHash = jsonObject.getString(SwidTagConstants.SHA_256_HASH.getLocalPart());
+        } else {
+            fileHash = jsonObject.getString(SwidTagConstants.SHA_256_HASH.getLocalPart(),
+                    HashSwid.get256Hash(rimEventLog));
+        }
+        this.addNonNullAttribute(attributes, SwidTagConstants.SHA_256_HASH,
+                fileHash,true);
         String supportRimFormat = jsonObject.getString("supportRIMFormat",
                 "supportRIMFormat missing");
         if (!supportRimFormat.equals("supportRIMFormat missing")) {

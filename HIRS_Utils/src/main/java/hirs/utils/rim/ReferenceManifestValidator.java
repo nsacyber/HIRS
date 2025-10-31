@@ -301,43 +301,46 @@ public class ReferenceManifestValidator {
      * @return true if the provided file is valid, false otherwise
      */
     private boolean validateFile(final Element file) {
-        String filepath;
-        if (!rimEventLog.isEmpty()) {
-            filepath = rimEventLog;
-        } else {
-            filepath = file.getAttribute(SwidTagConstants.NAME);
-        }
-        if (getHashValue(filepath, "SHA256").equals(
-                file.getAttribute(SwidTagConstants.SHA_256_HASH.getPrefix() + ":"
-                        + SwidTagConstants.SHA_256_HASH.getLocalPart()))) {
+        String filepath = file.getAttribute(SwidTagConstants.NAME);
+        if (areHashesEqual(file, filepath, "SHA256")) {
             log.info("Support RIM hash under SHA256 has been verified for {}", filepath);
             return true;
-        } else if (getHashValue(filepath, "SHA384").equals(
-                file.getAttribute(SwidTagConstants.SHA_384_HASH.getPrefix() + ":"
-                        + SwidTagConstants.SHA_384_HASH.getLocalPart()))) {
+        } else if (areHashesEqual(file, filepath, "SHA384")) {
             log.info("Support RIM hash under SHA384 has been verified for {}", filepath);
             return true;
         } else {
-            return failWithError("Support RIM hash does not match Base RIM!");
+            return failWithError("Support RIM " + filepath + " hash does not match Base RIM!");
         }
     }
 
     /**
-     * This method pulls the signing certificate from the truststore based on the
-     * SKID parsed from this instance's swidtag XML.
+     * This method hashes a file and compares the result to a declared value.
      *
-     * @return X509Certificate signing cert
+     * @param file containing the declared hash
+     * @param filepath to be hashed
+     * @param sha hashing algorithm
+     * @return true if they match, false if not
      */
-    private X509Certificate getCertFromTruststore() throws IOException {
-        String retrievedSubjectKeyIdentifier = getKeyName();
-        for (X509Certificate trustedCert : trustStore) {
-            String trustedSubjectKeyIdentifier = getCertificateSubjectKeyIdentifier(trustedCert);
-            if (retrievedSubjectKeyIdentifier.equals(trustedSubjectKeyIdentifier)) {
-                return trustedCert;
-            }
+    private boolean areHashesEqual(final Element file, final String filepath, final String sha) {
+        String calculatedHash = getHashValue(filepath, sha);
+        String declaredHash = "";
+        String attributeName;
+        switch(sha) {
+            case "SHA256":
+                attributeName = SwidTagConstants.SHA_256_HASH.getPrefix() + ":"
+                        + SwidTagConstants.SHA_256_HASH.getLocalPart();
+                break;
+            case "SHA384":
+                attributeName = SwidTagConstants.SHA_384_HASH.getPrefix() + ":"
+                        + SwidTagConstants.SHA_384_HASH.getLocalPart();
+                break;
+            default:
+                log.warn(String.format("%s is not a supported hash algorithm.", sha));
+                return false;
         }
+        declaredHash = file.getAttribute(attributeName);
 
-        return null;
+        return calculatedHash.equals(declaredHash);
     }
 
     /**
@@ -349,16 +352,14 @@ public class ReferenceManifestValidator {
      */
     private String getHashValue(final String filepath, final String sha) {
         try {
-            MessageDigest md = MessageDigest.getInstance(sha);
-            byte[] bytes = Files.readAllBytes(Paths.get(filepath));
-            return getHashValue(bytes, sha);
-        } catch (NoSuchAlgorithmException e) {
-            log.warn(e.getMessage());
+            byte[] fileBytes = Files.readAllBytes(Paths.get(filepath));
+            return getHashValue(fileBytes, sha);
         } catch (IOException e) {
-            log.warn("Error reading {} for hashing: {}", filepath, e.getMessage());
+            String errorMessage = String.format("Error reading bytes from %s: %s",
+                    filepath, e.getMessage());
+            log.warn(errorMessage);
+            return errorMessage;
         }
-
-        return null;
     }
 
     /**
