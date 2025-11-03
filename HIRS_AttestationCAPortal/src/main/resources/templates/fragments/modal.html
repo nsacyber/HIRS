@@ -11,13 +11,15 @@
                     <h1 id="modal-title" th:text="${label}">Modal Title</h1>
                 </div>
 
-                <div class="modal-body" th:replace="${bodyContent}">
+                <div class="modal-body" th:insert="${bodyContent}">
                     <!-- Modal body content will be inserted here -->
                 </div>
 
                 <div class="modal-footer">
-                    <div class="modal-custom-buttons" th:if="${customButtons != null}" th:replace="${customButtons}">
-                    </div>
+                    <th:block th:if="${customButtons != null}">
+                        <div class="modal-custom-buttons" th:replace="${customButtons}">
+                        </div>
+                    </th:block>
                     <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     <input class="btn btn-primary" type="submit" value="Save" />
                 </div>

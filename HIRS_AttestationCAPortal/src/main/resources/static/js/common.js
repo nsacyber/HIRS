@@ -135,7 +135,7 @@ function setDataTables(id, url, columns, options = {}) {
  *       certificate type.
  */
 function certificateDetailsLink(type, id, sameType) {
-  let href = portal + "/certificate-details?id=" + id + "&type=" + type;
+  let href = "certificate-details?id=" + id + "&type=" + type;
   let title = "";
   let icon = icons;
 
@@ -206,9 +206,9 @@ function rimDetailsLink(id) {
  * @param id of the certificate
  * @param pagePath path to the link
  */
-function certificateDeleteLink(id, pagePath) {
+function certificateDeleteLink(id) {
   let icon = icons + "/ic_delete_black_24dp.png";
-  let formURL = pagePath + "/delete";
+  let formURL = "delete";
 
   let html =
     '<a href="#!" onclick="handleDeleteRequest(\'' +
@@ -260,9 +260,9 @@ function rimDeleteLink(id, pagePath) {
  * @param id of the certificate
  * @param pagePath path to the link
  */
-function certificateDownloadLink(id, pagePath) {
+function certificateDownloadLink(id) {
   let icon = icons + "/ic_file_download_black_24dp.png";
-  let href = pagePath + "/download?id=" + id;
+  let href = "download?id=" + id;
 
   let html =
     '<a href="' +
