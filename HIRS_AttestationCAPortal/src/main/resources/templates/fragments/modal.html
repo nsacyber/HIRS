@@ -2,16 +2,15 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-    <div th:fragment="modal(id,label,bodyContent)" th:id="${id}" class="modal fade" role="dialog" style="top:30%">
+    <div class="modal fade" role="dialog" style="top:30%" th:fragment="modal(id,label,bodyContent)" th:id="${id}">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 id="modal-title" th:text="${label}">Modal Title</h1>
                 </div>
 
-                <div class="modal-body">
+                <div class="modal-body" th:insert="${bodyContent}">
                     <!-- Modal body content will be inserted here -->
-                    <div th:replace="${bodyContent}"></div>
                 </div>
 
                 <div class="modal-footer">

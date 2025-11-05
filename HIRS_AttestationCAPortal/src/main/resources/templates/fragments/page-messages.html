@@ -3,25 +3,25 @@
 
 <body>
     <div th:fragment="pageMessages(messages)">
-        <div th:if="${not #lists.isEmpty(messages)}" id="page-messages-container">
+        <div id="page-messages-container" th:if="${not #lists.isEmpty(messages)}">
             <ul class="noPaddingOrMargin" id="page-messages">
-                <li th:each="error : ${messages.errorMessages}" class="page-message" id="page-errorMessage">
+                <li class="page-message" id="page-errorMessage" th:each="error : ${messages.errorMessages}">
                     <span class="page-messageIcon">
-                        <img th:src="@{/icons/ic_priority_high_white_24dp.png}" alt="Error icon" />
+                        <img alt="Error icon" th:src="@{/icons/ic_priority_high_white_24dp.png}" />
                     </span>
-                    <p th:text="${error}">Error message</p>
+                    [[${error}]]
                 </li>
 
-                <li th:each="success : ${messages.successMessages}" class="page-message" id="page-successMessage">
+                <li class="page-message" id="page-successMessage" th:each="success : ${messages.successMessages}">
                     <span class="page-messageIcon">
-                        <img th:src="@{/icons/ic_done_white_24dp.png}" alt="Success icon" />
+                        <img alt="Success icon" th:src="@{/icons/ic_done_white_24dp.png}" />
                     </span>
                     <p th:text="${success}">Success message</p>
                 </li>
 
-                <li th:each="info : ${messages.infoMessages}" class="page-message" id="page-infoMessage">
+                <li class="page-message" id="page-infoMessage" th:each="info : ${messages.infoMessages}">
                     <span class="page-messageIcon">
-                        <img th:src="@{/icons/ic_priority_high_white_24dp.png}" alt="Info icon" />
+                        <img alt="Info icon" th:src="@{/icons}/ic_priority_high_white_24dp.png" />
                     </span>
                     <p th:text="${info}">Info message</p>
                 </li>

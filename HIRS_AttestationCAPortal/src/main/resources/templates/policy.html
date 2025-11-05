@@ -6,13 +6,15 @@
     <title th:text="'Attestation Identity CA Policy Options'">Attestation Identity CA Policy Options</title>
 </head>
 
-<script>
-    document.querySelectorAll('input[name="saveProtobufToLogOption"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            radio.form.submit();
+<section layout:fragment="script">
+    <script th:inline="javascript">
+        document.querySelectorAll('input[name="saveProtobufToLogOption"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                radio.form.submit();
+            });
         });
-    });
-</script>
+    </script>
+</section>
 
 <body>
     <h1 layout:fragment="pageHeaderTitle"> Attestation Identity CA Policy Options </h1>
