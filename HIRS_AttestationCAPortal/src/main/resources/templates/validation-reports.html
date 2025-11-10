@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout}">
-<body>
+
 <head>
     <section layout:fragment="script">
         <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
@@ -108,7 +108,6 @@
                 dataTable.order([1, "desc"]).draw(); //order by createTime
 
                 $("#download").submit(function (e) {
-                    console.log("test2");
                     let tableLength = $("#reportTable").rows;
                     let createTimes = "";
                     let deviceNames = "";
@@ -238,49 +237,50 @@
     </section>
 </head>
 
-<h1 layout:fragment="pageHeaderTitle">Validation Reports</h1>
+<body>
+    <h1 layout:fragment="pageHeaderTitle">Validation Reports</h1>
 
-<div class="content" layout:fragment="content">
+    <div class="content" layout:fragment="content">
 
-    <form
-            id="download"
-            method="POST"
-            th:action="@{/HIRS_AttestationCAPortal/portal/validation-reports/download}"
-    >
-        Download Validation Reports
-        <th:block th:replace="fragments/download-info
-            :: downloadIcon('validationReportsDownload',
-            'Download Validation Reports', ${null}, ~{this :: bodyContent})"
+        <form
+                id="download"
+                method="POST"
+                th:action="@{/HIRS_AttestationCAPortal/portal/validation-reports/download}"
         >
-            <th:block th:fragment="bodyContent">
-                <label>Company<input id="company" type="text" pattern="^\w*$"
-                    title="Letters, numbers, and spaces only" name="company" /></label>
-                <label>Contract #<input id="contract" type="text" pattern="^\w*$"
-                    title="Letters, numbers, and spaces only" name="contract" /></label>
-                <br>
-                <label>Date range start<input id="dateStart" type="date" name="dateStart" /></label>
-                <label>Date range end<input id="dateEnd" type="date" name="dateEnd" /></label>
+            Download Validation Reports
+            <th:block th:replace="fragments/download-info
+                :: downloadIcon('validationReportsDownload',
+                'Download Validation Reports', ${null}, ~{this :: bodyContent})"
+            >
+                <th:block th:fragment="bodyContent">
+                    <label>Company<input id="company" type="text" pattern="^\w*$"
+                        title="Letters, numbers, and spaces only" name="company" /></label>
+                    <label>Contract #<input id="contract" type="text" pattern="^\w*$"
+                        title="Letters, numbers, and spaces only" name="contract" /></label>
+                    <br>
+                    <label>Date range start<input id="dateStart" type="date" name="dateStart" /></label>
+                    <label>Date range end<input id="dateEnd" type="date" name="dateEnd" /></label>
+                </th:block>
             </th:block>
-        </th:block>
-    </form>
+        </form>
 
-    <div class="aca-data-table">
-        <table id="reportTable" class="display" width="100%">
-            <thead>
-            <tr>
-                <th rowspan="2">Result</th>
-                <th rowspan="2">Timestamp</th>
-                <th rowspan="2">Device</th>
-                <th colspan="3">Credential Validations</th>
-            </tr>
-            <tr>
-                <th style="text-align: center">Endorsement</th>
-                <th style="text-align: center">Platform</th>
-                <th style="text-align: center">Firmware</th>
-            </tr>
-            </thead>
-        </table>
+        <div class="aca-data-table">
+            <table id="reportTable" class="display" width="100%">
+                <thead>
+                <tr>
+                    <th rowspan="2">Result</th>
+                    <th rowspan="2">Timestamp</th>
+                    <th rowspan="2">Device</th>
+                    <th colspan="3">Credential Validations</th>
+                </tr>
+                <tr>
+                    <th style="text-align: center">Endorsement</th>
+                    <th style="text-align: center">Platform</th>
+                    <th style="text-align: center">Firmware</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
     </div>
-</div>
 </body>
 </html>
