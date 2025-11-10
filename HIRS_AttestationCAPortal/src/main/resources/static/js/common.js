@@ -300,11 +300,11 @@ function rimDownloadLink(id, pagePath) {
  * @param date to format
  */
 function formatCertificateDate(dateText) {
-  let date = +dateText; // Convert to numeric
+  const timestamp = Date.parse(dateText); // Convert to numeric
 
-  if (date == 253402300799000) {
+  if (timestamp == 253402300799000) {
     return "Indefinite";
   }
 
-  return new Date(date).toUTCString();
+  return new Date(timestamp).toUTCString();
 }
