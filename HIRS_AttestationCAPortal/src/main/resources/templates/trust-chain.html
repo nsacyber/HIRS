@@ -9,12 +9,11 @@
                   let url = "trust-chain/list";
                   let acaCertDataSignature = JSON.parse([[${acaCertData.signature}]]);
                   let acaPublicKey = JSON.parse([[${acaCertData.encodedPublicKey}]]);
-                  //Convert byte array to string
+                  // Setup HIRS ACA Root Certificate items
                   $("#signature").html(byteToHexString(acaCertDataSignature));
                   $("#publicKey").html(byteToHexString(acaPublicKey));
 
-                  // Setup HIRS ACA Root Certificate items
-                      //Format validity time
+                  // Format validity time
                       $("#validity span").each(function () {
                           $(this).text(formatCertificateDate($(this).text()));
                        });
@@ -91,8 +90,8 @@
                     <th:block  th:replace="fragments/details-viewer
                         :: detailsViewerIcon('acaRootCertDialog',
                         'ACA Root Certificate', ${null}, ~{this :: aca-cert-viewer-modal})"
-                    > <!-- aca-cert-viewer-modal start -->
-                        <th:block th:fragment="aca-cert-viewer-modal" >
+                    >
+                        <th:block th:fragment="aca-cert-viewer-modal" > <!-- aca-cert-viewer-modal start -->
                             <div class="spacer"></div>
                             <div class="row">
                                 <div class="col-md-2 col-md-offset-1">
