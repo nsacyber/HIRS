@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <div th:fragment="pageMessages(messages)">
+        <div th:if="${not #lists.isEmpty(messages)}" id="page-messages-container">
+            <ul class="noPaddingOrMargin" id="page-messages">
+                <li th:each="error : ${messages.errorMessages}" class="page-message" id="page-errorMessage">
+                    <span class="page-messageIcon">
+                        <img th:src="@{/icons/ic_priority_high_white_24dp.png}" alt="Error icon" />
+                    </span>
+                    [[${error}]]
+                </li>
+
+                <li th:each="success : ${messages.successMessages}" class="page-message" id="page-successMessage">
+                    <span class="page-messageIcon">
+                        <img th:src="@{/icons/ic_done_white_24dp.png}" alt="Success icon" />
+                    </span>
+                    <span th:text="${success}">Success message</span>
+                </li>
+
+                <li th:each="info : ${messages.infoMessages}" class="page-message" id="page-infoMessage">
+                    <span class="page-messageIcon">
+                        <img th:src="@{/icons}/ic_priority_high_white_24dp.png" alt="Info icon" />
+                    </span>
+                    <span th:text="${info}">Info message</span>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</body>

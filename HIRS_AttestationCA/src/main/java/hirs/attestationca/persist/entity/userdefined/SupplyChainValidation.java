@@ -5,6 +5,8 @@ import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -23,9 +25,11 @@ import java.util.List;
 @Entity
 public class SupplyChainValidation extends ArchivableEntity {
     @Column
+    @Enumerated(EnumType.STRING)
     private final ValidationType validationType;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private final AppraisalStatus.Status validationResult;
 
     @Getter(AccessLevel.NONE)

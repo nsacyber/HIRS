@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <div th:fragment="modal(id, label, customButtons, bodyContent)" th:id="${id}" class="modal fade" role="dialog"
+        style="top:30%">
+
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 id="modal-title" th:text="${label}">Modal Title</h1>
+                </div>
+
+                <div class="modal-body" th:insert="${bodyContent}">
+                    <!-- Modal body content will be inserted here -->
+                </div>
+
+                <div class="modal-footer">
+                    <th:block th:if="${customButtons != null}">
+                        <div class="modal-custom-buttons" th:replace="${customButtons}">
+                        </div>
+                    </th:block>
+                    <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <input class="btn btn-primary" type="submit" value="Save" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
