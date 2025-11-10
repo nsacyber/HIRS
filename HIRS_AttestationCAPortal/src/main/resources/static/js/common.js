@@ -234,7 +234,7 @@ function certificateDeleteLink(pagePath, id) {
  * @param id of the RIM
  * @param pagePath path to the link
  */
-function rimDeleteLink(id, pagePath) {
+function rimDeleteLink(pagePath, id) {
   let icon = iconPath + "/ic_delete_black_24dp.png";
   let formURL = pagePath + "/delete";
 
@@ -281,7 +281,7 @@ function certificateDownloadLink(pagePath, id) {
  * @param id of the rim
  * @param pagePath path to the link
  */
-function rimDownloadLink(id, pagePath) {
+function rimDownloadLink(pagePath, id) {
   let icon = iconPath + "/ic_file_download_black_24dp.png";
   let href = pagePath + "/download?id=" + id;
 
