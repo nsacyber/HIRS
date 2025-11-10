@@ -1,34 +1,27 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
-<body>
-    <div th:fragment="pageNav(page, pages)">
-        <nav class="navbar navbar-default sidebar" role="navigation" th:if="${page?.hasMenu}">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#sidebar-navbar">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                </div>
-                <div class="collapse navbar-collapse" id="sidebar-navbar">
-                    <ul class="nav navbar-nav">
-                        <li th:each="p : ${pages}" th:if="${p?.inMenu}"
-                            th:class="${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '')">
-                            <a th:href="@{'/HIRS_AttestationCAPortal/portal/' + ${p?.prefixPath} + ${p?.viewName}}">
-                                <span th:text="${p?.title}">Page Title</span>
-                                <span class="pull-right hidden-xs showopacity">
-                                    <img th:src="@{/icons/{icon}_white_24dp.png(icon=${p?.icon})}" alt="icon" />
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+<div th:fragment="pageNav(page, pages)">
+    <nav class="navbar navbar-default sidebar" role="navigation" th:if="${page?.hasMenu}">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#sidebar-navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
             </div>
-        </nav>
-    </div>
-</body>
-
-</html>
+            <div class="collapse navbar-collapse" id="sidebar-navbar">
+                <ul class="nav navbar-nav">
+                    <li th:each="p : ${pages}" th:if="${p?.inMenu}"
+                        th:class="${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '')">
+                        <a th:href="@{'/HIRS_AttestationCAPortal/portal/' + ${p?.prefixPath} + ${p?.viewName}}">
+                            <span th:text="${p?.title}">Page Title</span>
+                            <span class="pull-right hidden-xs showopacity">
+                                <img th:src="@{/icons/{icon}_white_24dp.png(icon=${p?.icon})}" alt="icon" />
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</div>

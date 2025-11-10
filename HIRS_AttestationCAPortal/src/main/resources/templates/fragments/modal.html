@@ -1,25 +1,18 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<div class="modal fade" role="dialog" style="top:30%" th:fragment="modal(id,label,bodyContent)" th:id="${id}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 id="modal-title" th:text="${label}">Modal Title</h1>
+            </div>
 
-<body>
-    <div class="modal fade" role="dialog" style="top:30%" th:fragment="modal(id,label,bodyContent)" th:id="${id}">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 id="modal-title" th:text="${label}">Modal Title</h1>
-                </div>
+            <div class="modal-body" th:insert="${bodyContent}">
+                <!-- Modal body content will be inserted here -->
+            </div>
 
-                <div class="modal-body" th:insert="${bodyContent}">
-                    <!-- Modal body content will be inserted here -->
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <input class="btn btn-primary" type="submit" value="Save" />
-                </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <input class="btn btn-primary" type="submit" value="Save" />
             </div>
         </div>
     </div>
-</body>
-
-</html>
+</div>

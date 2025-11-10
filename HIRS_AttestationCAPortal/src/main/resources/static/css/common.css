@@ -1,176 +1,180 @@
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
 }
 body {
-    padding-top: 100px;
+  padding-top: 100px;
 }
 
 #header {
-    background-color: darkslategray;
-    color: white;
-    height: 100px;
-    min-width: 600px;
+  background-color: darkslategray;
+  color: white;
+  height: 100px;
+  min-width: 600px;
 }
 
 #content {
-    height: 100%;
-    margin: 0;
-    padding: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .main-without-navigation,
 .main {
-    overflow: auto;
-    padding: 0 15px;
-    height: 100%;
+  overflow: auto;
+  padding: 0 15px;
+  height: 100%;
 }
 
 .spacer {
-    height: 25px;
+  height: 25px;
 }
 
 .extra-spacer {
-    height: 50px;
+  height: 50px;
 }
 
 .page-title {
-    font-size: 40px;
-    width: 75%;
+  font-size: 40px;
+  width: 75%;
 }
-.aca-subtitle { 
-    font-size: 70%; 
+.aca-subtitle {
+  font-size: 70%;
 }
 
 .subtitle {
-    font-size: 14px;
+  font-size: 14px;
 }
 
 .navbar-brand > img {
-    height: 70px;
-    width: 160px;
-    margin-left: 10px;
+  height: 70px;
+  width: 160px;
+  margin-left: 10px;
 }
 
 #certificate-details-page .chainIcon img {
-    width: 15px;
+  width: 15px;
 }
 
 @media screen and (max-width: 1100px) {
-    .page-title {
-        font-size: 20px;
-        width: 45%;
-        white-space: nowrap;
-        padding-top: 20px;
-    }
+  .page-title {
+    font-size: 20px;
+    width: 45%;
+    white-space: nowrap;
+    padding-top: 20px;
+  }
 }
 
-
 #content .page-header {
-    text-align: center;
-    margin: 25px 0;
+  text-align: center;
+  margin: 25px 0;
 }
 /* not in bootstrap.css */
 .btn-secondary {
-    color: #292b2c;
-    background-color: #fff;
-    border-color: #ccc !important;
+  color: #292b2c;
+  background-color: #fff;
+  border-color: #ccc !important;
 }
 
 .btn-secondary:hover {
-    background-color: #ddd;
+  background-color: #ddd;
 }
 
 .aca-input-box {
-    font-size: 125%;
+  font-size: 125%;
 }
 
 .aca-input-box-header {
-    font-size: 150%;
-    padding: 10px;
+  font-size: 150%;
+  padding: 10px;
 }
 
 .aca-data-table {
-    text-align: center;
+  text-align: center;
 }
 
 /* Page messages */
 #page-messages-container {
-    padding-top: 15px;
+  padding-top: 15px;
 }
 
 #page-messages {
-    margin: 0px;
+  margin: 0px;
 }
 
 .page-message {
-    line-height: 24px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 .page-messageIcon {
-    height: 24px;
-    width: 24px;
-    padding: 2px;
-    display: inline-block;
-    border-radius: 15px;
-    margin-right: 10px;
+  height: 24px;
+  width: 24px;
+  padding: 2px;
+  display: inline-block;
+  border-radius: 15px;
+  margin-right: 10px;
 }
 
 .page-messageIcon img {
-    height: 20px;
-    width: 20px;
-    vertical-align: baseline; /* overrides bootstrap.css */
+  height: 20px;
+  width: 20px;
+  vertical-align: baseline; /* overrides bootstrap.css */
 }
 
 #page-successMessage {
-    color: green;
+  color: green;
 }
 
 #page-successMessage span {
-    background-color: green;
+  background-color: green;
 }
 
 #page-errorMessage {
-    color: red;
+  color: red;
 }
 
 #page-errorMessage span {
-    background-color: red;
+  background-color: red;
 }
 
 #page-infoMessage {
-    color: blue;
+  color: blue;
 }
 
 #page-infoMessage span {
-    background-color: blue;
+  background-color: blue;
 }
 
 #page-infoMessage img {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 /* Modal */
+.modal-visibility-on-close {
+  display: none;
+}
+
 .modal-custom-buttons {
-    display: inline-block;
-    float: left;
-    height: 36px;
+  display: inline-block;
+  float: left;
+  height: 36px;
 }
 
 .modal-custom-button {
-    display: inline-block;
-    height: 36px;
-    width: 36px;
-    cursor: pointer;
+  display: inline-block;
+  height: 36px;
+  width: 36px;
+  cursor: pointer;
 }
 
 #content .modal-dialog {
-    width: 900px;
+  width: 900px;
 }
 
 /**********************************
@@ -178,64 +182,64 @@ body {
 ***********************************/
 /*index page*/
 #index-page .col {
-    border: 0px solid black;
+  border: 0px solid black;
 }
 
-#index-page [class*="col-"]{
-    margin-bottom: -99999px;
-    padding-bottom: 99999px;
-} 
+#index-page [class*="col-"] {
+  margin-bottom: -99999px;
+  padding-bottom: 99999px;
+}
 
 #index-page .row {
-    overflow: hidden; 
+  overflow: hidden;
 }
 
 #index-page .page-header {
-    margin: 0;
-}     
+  margin: 0;
+}
 
 .index-left-side {
-    background: #d5f2e0;
+  background: #d5f2e0;
 }
 .index-left-side h1 {
-    background: #567361;
-    text-align: center;
+  background: #567361;
+  text-align: center;
 }
 .index-right-side {
-    background: #ffefc1;
+  background: #ffefc1;
 }
 .index-right-side h1 {
-    background: #b97042;
-    text-align: center;
+  background: #b97042;
+  text-align: center;
 }
 
-.index-left-side h4, 
+.index-left-side h4,
 .index-right-side h4 {
-    padding-left: 30px;
+  padding-left: 30px;
 }
 
 /*trust chain*/
 #aca-cert-viewer .row {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    flex-wrap: wrap;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  flex-wrap: wrap;
 }
-#aca-cert-viewer .row > [class*='col-'] {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    border-bottom: 1px solid black;
+#aca-cert-viewer .row > [class*="col-"] {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-bottom: 1px solid black;
 }
 
-#aca-cert-viewer .colHeader{
-    font-weight: bold;
-    margin: auto 0;
+#aca-cert-viewer .colHeader {
+  font-weight: bold;
+  margin: auto 0;
 }
 
 /*Help page styling*/
 .download-header {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }

@@ -1,31 +1,26 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="pageMessages(messages)">
+    <div id="page-messages-container" th:if="${not #lists.isEmpty(messages)}">
+        <ul class="noPaddingOrMargin" id="page-messages">
+            <li class="page-message" id="page-errorMessage" th:each="error : ${messages.errorMessages}">
+                <span class="page-messageIcon">
+                    <img alt="Error icon" th:src="@{/icons/ic_priority_high_white_24dp.png}" />
+                </span>
+                [[${error}]]
+            </li>
 
-<body>
-    <div th:fragment="pageMessages(messages)">
-        <div id="page-messages-container" th:if="${not #lists.isEmpty(messages)}">
-            <ul class="noPaddingOrMargin" id="page-messages">
-                <li class="page-message" id="page-errorMessage" th:each="error : ${messages.errorMessages}">
-                    <span class="page-messageIcon">
-                        <img alt="Error icon" th:src="@{/icons/ic_priority_high_white_24dp.png}" />
-                    </span>
-                    [[${error}]]
-                </li>
+            <li class="page-message" id="page-successMessage" th:each="success : ${messages.successMessages}">
+                <span class="page-messageIcon">
+                    <img alt="Success icon" th:src="@{/icons/ic_done_white_24dp.png}" />
+                </span>
+                <p th:text="${success}">Success message</p>
+            </li>
 
-                <li class="page-message" id="page-successMessage" th:each="success : ${messages.successMessages}">
-                    <span class="page-messageIcon">
-                        <img alt="Success icon" th:src="@{/icons/ic_done_white_24dp.png}" />
-                    </span>
-                    <p th:text="${success}">Success message</p>
-                </li>
-
-                <li class="page-message" id="page-infoMessage" th:each="info : ${messages.infoMessages}">
-                    <span class="page-messageIcon">
-                        <img alt="Info icon" th:src="@{/icons}/ic_priority_high_white_24dp.png" />
-                    </span>
-                    <p th:text="${info}">Info message</p>
-                </li>
-            </ul>
-        </div>
+            <li class="page-message" id="page-infoMessage" th:each="info : ${messages.infoMessages}">
+                <span class="page-messageIcon">
+                    <img alt="Info icon" th:src="@{/icons}/ic_priority_high_white_24dp.png" />
+                </span>
+                <p th:text="${info}">Info message</p>
+            </li>
+        </ul>
     </div>
-</body>
+</div>
