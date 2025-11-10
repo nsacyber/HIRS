@@ -105,11 +105,22 @@
                     let html = "";
                     html += certificateDetailsLink("issued", full.id, true);
                     html += certificateDownloadLink(full.id, "");
+
+                    //works:
 <!--                    html += certificateDeleteLink("issued-certificates", full.id);-->
+
 <!--                    html += certificateDeleteLink(${page}.viewName, full.id);-->
 <!--                    html += certificateDeleteLink(${page}.${viewName}, full.id);-->
 <!--                    html += certificateDeleteLink(${page?.viewName}, full.id);-->
-                    html += certificateDeleteLink("${page?.viewName}", full.id);
+<!--                    html += certificateDeleteLink("${page?.viewName}", full.id);-->
+<!--                    html += certificateDeleteLink("${page.viewName}", full.id);-->
+
+                // closest one maybe:
+<!--                    html += certificateDeleteLink(${page.viewName}, full.id);-->
+
+                    html += certificateDeleteLink([[${page.viewName}]], full.id);
+
+
                     return html;
                   },
                 },

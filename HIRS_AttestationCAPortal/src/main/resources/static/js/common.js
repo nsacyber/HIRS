@@ -227,6 +227,7 @@ function certificateDeleteLink(pagePath, id) {
 //  let formURL = "issued-certificates" + "/delete";
 //  let formURL = "${page.prefixPath}${page.viewName}" + "/delete";
   let formURL = pagePath + "/delete";
+//  console.log("HEEEEREE: " + pagePath);
 
   let html =
     '<a href="#!" onclick="handleDeleteRequest(\'' +
