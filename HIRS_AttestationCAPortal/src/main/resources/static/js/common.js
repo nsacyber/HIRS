@@ -148,7 +148,7 @@ function certificateDetailsLink(type, id, sameType) {
   let href = "certificate-details?id=" + id + "&type=" + type;
   let title = "";
 //  let icon = icons;
-  let icon = "icons";
+  let icon = "/icons";
 
   //If the details is the same certificate type use assignment icon,
   //otherwise use the icon for the certificate type.
@@ -218,11 +218,15 @@ function rimDetailsLink(id) {
  * @param id of the certificate
  * @param pagePath path to the link
  */
-function certificateDeleteLink(id) {
+function certificateDeleteLink(pagePath, id) {
 //  let icon = icons + "/ic_delete_black_24dp.png";
-  let icon = "/icons";
-  icon += "/ic_delete_black_24dp.png";
-  let formURL = "delete";
+  let icon = "/icons/ic_delete_black_24dp.png";
+//  let formURL = "delete";
+//  let formURL = "TESSTTT" + "/delete";
+//  let formURL = "${page.prefixPath}${page.viewName}" + "/delete";
+//  let formURL = "issued-certificates" + "/delete";
+//  let formURL = "${page.prefixPath}${page.viewName}" + "/delete";
+  let formURL = pagePath + "/delete";
 
   let html =
     '<a href="#!" onclick="handleDeleteRequest(\'' +
@@ -280,7 +284,8 @@ function certificateDownloadLink(id) {
 //  let icon = icons + "/ic_file_download_black_24dp.png";
   let icon = "/icons";
   icon += "/ic_file_download_black_24dp.png";
-  let href = "download?id=" + id;
+//  let href = "${page.prefixPath}${page.viewName}" + "download?id=" + id;
+  let href = "/TESSTTT" + "/download?id=" + id;
 
   let html =
     '<a href="' +

@@ -105,7 +105,11 @@
                     let html = "";
                     html += certificateDetailsLink("issued", full.id, true);
                     html += certificateDownloadLink(full.id, "");
-                    html += certificateDeleteLink(full.id, "");
+<!--                    html += certificateDeleteLink("issued-certificates", full.id);-->
+<!--                    html += certificateDeleteLink(${page}.viewName, full.id);-->
+<!--                    html += certificateDeleteLink(${page}.${viewName}, full.id);-->
+<!--                    html += certificateDeleteLink(${page?.viewName}, full.id);-->
+                    html += certificateDeleteLink("${page?.viewName}", full.id);
                     return html;
                   },
                 },
