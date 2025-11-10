@@ -1,3 +1,5 @@
+let iconPath = "/icons";
+
 /**
  * Converts a byte to HEX.
  */
@@ -126,16 +128,6 @@ function setDataTables(id, url, columns, options = {}) {
   return new DataTable(id, config);
 }
 
-
-//  let req = "${pageContext.request}";
-//  let baseURL = "${req.scheme}://${req.serverName}:${req.serverPort}${req.contextPath}";
-//  let icon = "${req.scheme}://${req.serverName}:${req.serverPort}${req.contextPath}/images/icons";
-//  let icon = "${baseURL}/images/icons";
-//  let icon = "../../src/main/webapp/images/icons";
-//  let icon = "../../../resources/static/icons";
-//  let icon = "@{/icons}";
-//  let icon = "/icons";
-
 /**
  * Create a certificate details like for the specified certificate
  * type and ID with the corresponding icon.
@@ -145,10 +137,9 @@ function setDataTables(id, url, columns, options = {}) {
  *       certificate type.
  */
 function certificateDetailsLink(type, id, sameType) {
+  let icon = iconPath;
   let href = "certificate-details?id=" + id + "&type=" + type;
   let title = "";
-//  let icon = icons;
-  let icon = "/icons";
 
   //If the details is the same certificate type use assignment icon,
   //otherwise use the icon for the certificate type.
@@ -193,13 +184,11 @@ function certificateDetailsLink(type, id, sameType) {
  * @param id of the rim
  */
 function rimDetailsLink(id) {
-  let href = portal + "/rim-details?id=" + id;
-  let title = "";
-//  let icon = icons;
-  let icon = "/icons";
+  let icon = iconPath + "/ic_assignment_black_24dp.png";
 
-  title = "Details";
-  icon += "/ic_assignment_black_24dp.png";
+  //needs update?:
+  let href = portal + "/rim-details?id=" + id;
+  let title = "Details";
 
   let html =
     "<a href=" +
@@ -219,15 +208,8 @@ function rimDetailsLink(id) {
  * @param pagePath path to the link
  */
 function certificateDeleteLink(pagePath, id) {
-//  let icon = icons + "/ic_delete_black_24dp.png";
-  let icon = "/icons/ic_delete_black_24dp.png";
-//  let formURL = "delete";
-//  let formURL = "TESSTTT" + "/delete";
-//  let formURL = "${page.prefixPath}${page.viewName}" + "/delete";
-//  let formURL = "issued-certificates" + "/delete";
-//  let formURL = "${page.prefixPath}${page.viewName}" + "/delete";
+  let icon = iconPath + "/ic_delete_black_24dp.png";
   let formURL = pagePath + "/delete";
-//  console.log("HEEEEREE: " + pagePath);
 
   let html =
     '<a href="#!" onclick="handleDeleteRequest(\'' +
@@ -253,9 +235,7 @@ function certificateDeleteLink(pagePath, id) {
  * @param pagePath path to the link
  */
 function rimDeleteLink(id, pagePath) {
-  let icon = "/icons";
-  icon += "/ic_delete_black_24dp.png";
-//  let icon = icons + "/ic_delete_black_24dp.png";
+  let icon = iconPath + "/ic_delete_black_24dp.png";
   let formURL = pagePath + "/delete";
 
   let html =
@@ -281,12 +261,9 @@ function rimDeleteLink(id, pagePath) {
  * @param id of the certificate
  * @param pagePath path to the link
  */
-function certificateDownloadLink(id) {
-//  let icon = icons + "/ic_file_download_black_24dp.png";
-  let icon = "/icons";
-  icon += "/ic_file_download_black_24dp.png";
-//  let href = "${page.prefixPath}${page.viewName}" + "download?id=" + id;
-  let href = "/TESSTTT" + "/download?id=" + id;
+function certificateDownloadLink(pagePath, id) {
+  let icon = iconPath + "/ic_file_download_black_24dp.png";
+  let href = pagePath + "/download?id=" + id;
 
   let html =
     '<a href="' +
@@ -305,9 +282,7 @@ function certificateDownloadLink(id) {
  * @param pagePath path to the link
  */
 function rimDownloadLink(id, pagePath) {
-  let icon = "/icons";
-  icon += "/ic_file_download_black_24dp.png";
-//  let icon = icons + "/ic_file_download_black_24dp.png";
+  let icon = iconPath + "/ic_file_download_black_24dp.png";
   let href = pagePath + "/download?id=" + id;
 
   let html =
