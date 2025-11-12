@@ -131,7 +131,7 @@ body {
   color: green;
 }
 
-#page-successMessage span {
+#page-successMessage .page-messageIcon {
   background-color: green;
 }
 
@@ -139,7 +139,7 @@ body {
   color: red;
 }
 
-#page-errorMessage span {
+#page-errorMessage .page-messageIcon {
   background-color: red;
 }
 
@@ -147,7 +147,7 @@ body {
   color: blue;
 }
 
-#page-infoMessage span {
+#page-infoMessage .page-messageIcon {
   background-color: blue;
 }
 

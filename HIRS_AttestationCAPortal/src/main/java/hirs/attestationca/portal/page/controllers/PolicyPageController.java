@@ -36,12 +36,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
      */
     public static final String INITIAL_DATA = "initialData";
 
-    /**
-     * Represents a web request indicating to enable a setting (based on radio
-     * buttons from a web form).
-     */
-    private static final String ENABLED_CHECKED_PARAMETER_VALUE = "checked";
-
     private final PolicyPageService policyPageService;
 
     /**
@@ -96,8 +90,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         log.info("Received request to update the platform credential validation policy setting");
 
         try {
-            final boolean isPcValidationOptionEnabled
-                    = ppModel.getPcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isPcValidationOptionEnabled = ppModel.isPcValidationEnabled();
 
             final boolean isPCValidationPolicyUpdateSuccessful =
                     this.policyPageService.updatePCValidationPolicy(isPcValidationOptionEnabled);
@@ -143,8 +136,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
         log.info("Received request to update the platform credential attribute validation policy setting");
 
         try {
-            final boolean isPCAttributeValidationOptionEnabled = ppModel.getPcAttributeValidate()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isPCAttributeValidationOptionEnabled =
+                    ppModel.isPcAttributeValidationEnabled();
 
             final boolean isPCAttributeValPolicyUpdateSuccessful =
                     this.policyPageService.updatePCAttributeValidationPolicy(
@@ -194,8 +187,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " the platform credential attribute validation policy setting");
 
         try {
-            final boolean isIgnorePcieVpdOptionEnabled = ppModel.getIgnorePcieVpdAttribute()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isIgnorePcieVpdOptionEnabled = ppModel.isIgnorePcieVpdAttributeEnabled();
 
             final boolean isIgnorePcieVpdPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnorePCIEVpdPolicy(isIgnorePcieVpdOptionEnabled);
@@ -244,8 +236,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " the platform credential attribute validation policy setting");
 
         try {
-            final boolean isIgnoreRevisionAttributeOptionEnabled = ppModel.getIgnoreRevisionAttribute()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isIgnoreRevisionAttributeOptionEnabled = ppModel.isIgnoreRevisionAttributeEnabled();
 
             final boolean isIgnoreRevisionPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreRevisionAttributePolicy(
@@ -292,8 +283,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         log.info("Received request to update the issue attestation certificate generation policy setting");
 
         try {
-            final boolean isIssuedAttestationOptionEnabled = ppModel.getAttestationCertificateIssued()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isIssuedAttestationOptionEnabled = ppModel.isIssueAttestationCertificateEnabled();
 
             this.policyPageService.updateIssuedAttestationGenerationPolicy(isIssuedAttestationOptionEnabled);
 
@@ -330,9 +320,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         log.info("Received request to update the ldevid certificate generation policy setting");
 
         try {
-            final boolean isIssuedLDevIdOptionEnabled = ppModel.getDevIdCertificateIssued()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-
+            final boolean isIssuedLDevIdOptionEnabled = ppModel.isIssueDevIdCertificateEnabled();
             this.policyPageService.updateLDevIdGenerationPolicy(isIssuedLDevIdOptionEnabled);
 
             // if the ldevid certificate generation policy update was successful
@@ -551,8 +539,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         log.info("Received request to update the endorsement credential validation policy setting");
 
         try {
-            final boolean isECValidationOptionEnabled
-                    = ppModel.getEcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isECValidationOptionEnabled = ppModel.isEcValidationEnabled();
 
             final boolean isECValPolicyUpdateSuccessful =
                     this.policyPageService.updateECValidationPolicy(isECValidationOptionEnabled);
@@ -599,8 +586,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         log.info("Received request to update the firmware validation policy setting");
 
         try {
-            final boolean isFirmwareValidationOptionEnabled = ppModel.getFmValidate()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isFirmwareValidationOptionEnabled = ppModel.isFirmwareValidationEnabled();
 
             final boolean isFirmwareValPolicyUpdateSuccessful =
                     this.policyPageService.updateFirmwareValidationPolicy(isFirmwareValidationOptionEnabled);
@@ -648,8 +634,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " validation policy setting");
 
         try {
-            final boolean isIgnoreImaOptionEnabled = ppModel.getIgnoreIma()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isIgnoreImaOptionEnabled = ppModel.isIgnoreImaEnabled();
 
             final boolean isIgnoreImaPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreImaPolicy(isIgnoreImaOptionEnabled);
@@ -695,8 +680,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " validation policy setting");
 
         try {
-            final boolean ignoreTbootOptionEnabled = ppModel.getIgnoretBoot()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean ignoreTbootOptionEnabled = ppModel.isIgnoreTbootEnabled();
 
             final boolean isIgnoreTbootPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreTBootPolicy(ignoreTbootOptionEnabled);
@@ -743,8 +727,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " validation policy setting");
 
         try {
-            final boolean isIgnoreGptOptionEnabled =
-                    ppModel.getIgnoreGpt().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isIgnoreGptOptionEnabled = ppModel.isIgnoreGptEnabled();
 
             final boolean isIgnoreGptOptionPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreGptEventsPolicy(isIgnoreGptOptionEnabled);
@@ -790,9 +773,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " validation policy setting");
 
         try {
-            final boolean isIgnoreOsEvtOptionEnabled = ppModel.getIgnoreOsEvt()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-
+            final boolean isIgnoreOsEvtOptionEnabled = ppModel.isIgnoreOsEvtEnabled();
             final boolean isIgnoreOSPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreOSEventsPolicy(isIgnoreOsEvtOptionEnabled);
 

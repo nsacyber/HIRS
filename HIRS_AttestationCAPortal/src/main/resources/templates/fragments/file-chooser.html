@@ -1,14 +1,13 @@
-<th:block th:fragment="fileChooser(id, label, customButtons, bodyContent)">
+<th:block th:fragment="fileChooser(id, label, bodyContent)">
     <!-- File chooser icon anchor -->
     <a data-toggle="modal" th:href="'#' + ${id}" th:title="${label}">
-        <img alt="File Chooser Icon" th:src="@{/icons/ic_library_add_black_24dp.png}"/>
+        <img alt="File Chooser Icon" th:src="@{/icons/ic_library_add_black_24dp.png}" />
     </a>
 
     <!-- Include modal fragment -->
     <th:block th:replace="fragments/modal :: modal(
         id=${id},
         label=${label},
-        customButtons=${customButtons},
         bodyContent=${bodyContent}
         )"></th:block>
 </th:block>

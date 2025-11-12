@@ -5,21 +5,21 @@
                 <span class="page-messageIcon">
                     <img alt="Error icon" th:src="@{/icons/ic_priority_high_white_24dp.png}" />
                 </span>
-                [[${error}]]
+                <span th:text="${error}">Error Message</span>
             </li>
 
             <li class="page-message" id="page-successMessage" th:each="success : ${messages.successMessages}">
                 <span class="page-messageIcon">
                     <img alt="Success icon" th:src="@{/icons/ic_done_white_24dp.png}" />
                 </span>
-                <p th:text="${success}">Success message</p>
+                <span th:text="${success}">Success Message</span>
             </li>
 
             <li class="page-message" id="page-infoMessage" th:each="info : ${messages.infoMessages}">
                 <span class="page-messageIcon">
                     <img alt="Info icon" th:src="@{/icons}/ic_priority_high_white_24dp.png" />
                 </span>
-                <p th:text="${info}">Info message</p>
+                <span th:text="${info}">Info Message</span>
             </li>
         </ul>
     </div>

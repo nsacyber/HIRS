@@ -43,27 +43,25 @@
                     <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ec-validation}"
                         th:object="${initialData}" method="POST">
                         Endorsement Credential Validation:
-                        <span th:text="${initialData.enableEcValidation ? 'Enabled' : 'Disabled'}"></span>
+                        <span th:text="${initialData.ecValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                         <!-- Define the content of the modal -->
                         <div id="ecPolicyBody" th:fragment="ecPolicyBody" class="modal-visibility-on-close ">
                             <div class="radio">
                                 <label>
-                                    <input id="ecTop" type="radio" name="ecValidate"
-                                        th:checked="${initialData.enableEcValidation}" value="checked" />
+                                    <input type="radio" th:field="*{ecValidationEnabled}" value="true" />
                                     Endorsement Credentials will be validated
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="ecBot" type="radio" name="ecValidate"
-                                        th:checked="${!initialData.enableEcValidation}" value="unchecked" />
+                                    <input type="radio" th:field="*{ecValidationEnabled}" value="false" />
                                     Endorsement Credentials will not be validated
                                 </label>
                             </div>
                         </div>
 
-                        <!-- Trigger to open the modal -->
+                        <!-- trigger to open the modal -->
                         <a th:href="'#' + ecPolicyEditor" onclick='showModal("#ecPolicyEditor", "#ecPolicyBody")'>
                             <img th:src="@{/icons/ic_mode_edit_blue_18dp.png}" alt="Editor Icon" />
                         </a>
@@ -82,21 +80,19 @@
                     <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pc-validation}"
                         th:object="${initialData}" method="POST">
                         Platform Credential Validation:
-                        <span th:text="${initialData.enablePcCertificateValidation ? 'Enabled' : 'Disabled'}"></span>
+                        <span th:text="${initialData.pcValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                         <!-- Define the content of the modal -->
                         <div id="pcPolicyBody" th:fragment="pcPolicyBody" class="modal-visibility-on-close">
                             <div class="radio">
                                 <label>
-                                    <input id="pcTop" type="radio" name="pcValidate"
-                                        th:checked="${initialData.enablePcCertificateValidation}" value="checked" />
+                                    <input type="radio" th:field="*{pcValidationEnabled}" value="true" />
                                     Platform Credentials will be validated
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="pcBot" type="radio" name="pcValidate"
-                                        th:checked="${!initialData.enablePcCertificateValidation}" value="unchecked" />
+                                    <input type="radio" th:field="*{pcValidationEnabled}" value="false" />
                                     Platform Credentials will not be validated
                                 </label>
                             </div>
@@ -121,24 +117,19 @@
                     <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pc-attribute-validation}"
                         th:object="${initialData}" method="POST">
                         Platform Attribute Credential Validation:
-                        <span
-                            th:text="${initialData.enablePcCertificateAttributeValidation ? 'Enabled' : 'Disabled'}"></span>
+                        <span th:text="${initialData.pcAttributeValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                         <!-- Define the content of the modal -->
                         <div id="pcAttrPolicyBody" th:fragment="pcAttrPolicyBody" class="modal-visibility-on-close">
                             <div class="radio">
                                 <label>
-                                    <input id="pcAttrTop" type="radio" name="pcAttributeValidate"
-                                        th:checked="${initialData.enablePcCertificateAttributeValidation}"
-                                        value="checked" />
+                                    <input type="radio" th:field="*{pcAttributeValidationEnabled}" value="true" />
                                     Platform Credential Attributes will be validated
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="pcAttrBot" type="radio" name="pcAttributeValidate"
-                                        th:checked="${!initialData.enablePcCertificateAttributeValidation}"
-                                        value="unchecked" />
+                                    <input type="radio" th:field="*{pcAttributeValidationEnabled}" value="false" />
                                     Platform Credential Attributes will not be validated
                                 </label>
                             </div>
@@ -162,24 +153,22 @@
                                 th:object="${initialData}" method="POST">
                                 Ignore Component Revision Attribute:
                                 <span
-                                    th:text="${initialData.enableIgnoreRevisionAttribute ? 'Enabled' : 'Disabled'}"></span>
+                                    th:text="${initialData.ignoreRevisionAttributeEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="revisionIgnoredPolicyBody" th:fragment="revisionIgnoredPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="revisionTop" type="radio" name="ignoreRevisionAttribute"
-                                                th:checked="${initialData.enableIgnoreRevisionAttribute}"
-                                                value="checked" />
+                                            <input type="radio" th:field="*{ignoreRevisionAttributeEnabled}"
+                                                value="true" />
                                             Component Revision Attribute enabled
                                         </label>
                                     </div>
                                     <div class="radio">
                                         <label>
-                                            <input id="revisionBot" type="radio" name="ignoreRevisionAttribute"
-                                                th:checked="${!initialData.enableIgnoreRevisionAttribute}"
-                                                value="unchecked" />
+                                            <input type="radio" th:field="*{ignoreRevisionAttributeEnabled}"
+                                                value="false" />
                                             Component Revision Attribute disabled
                                         </label>
                                     </div>
@@ -203,24 +192,22 @@
                                 th:object="${initialData}" method="POST">
                                 Ignore PCIE VPD Attribute:
                                 <span
-                                    th:text="${initialData.enableIgnorePcieVpdAttribute ? 'Enabled' : 'Disabled'}"></span>
+                                    th:text="${initialData.ignorePcieVpdAttributeEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="pcieVpdIgnoredPolicyBody" th:fragment="pcieVpdIgnoredPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="pcieVpdTop" type="radio" name="ignorePcieVpdAttribute"
-                                                th:checked="${initialData.enableIgnorePcieVpdAttribute}"
-                                                value="checked" />
+                                            <input type="radio" th:field="*{ignorePcieVpdAttributeEnabled}"
+                                                value="true" />
                                             PCIE VPD Attribute enabled
                                         </label>
                                     </div>
                                     <div class="radio">
                                         <label>
-                                            <input id="pcieVpdBot" type="radio" name="ignorePcieVpdAttribute"
-                                                th:checked="${!initialData.enableIgnorePcieVpdAttribute}"
-                                                value="unchecked" />
+                                            <input type="radio" th:field="*{ignorePcieVpdAttributeEnabled}"
+                                                value="false" />
                                             PCIE VPD Attribute disabled
                                         </label>
                                     </div>
@@ -249,21 +236,19 @@
                     <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-firmware-validation}"
                         th:object="${initialData}" method="POST">
                         Firmware Validation:
-                        <span th:text="${initialData.enableFirmwareValidation ? 'Enabled' : 'Disabled'}"></span>
+                        <span th:text="${initialData.firmwareValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                         <!-- Define the content of the modal -->
                         <div id="firmwarePolicyBody" th:fragment="firmwarePolicyBody" class="modal-visibility-on-close">
                             <div class="radio">
                                 <label>
-                                    <input id="firmwareTop" type="radio" name="fmValidate"
-                                        th:checked="${initialData.enableFirmwareValidation}" value="checked" />
+                                    <input type="radio" th:field="*{firmwareValidationEnabled}" value="true" />
                                     Firmware will be validated
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="firmwareBottom" type="radio" name="fmValidate"
-                                        th:checked="${!initialData.enableFirmwareValidation}" value="unchecked" />
+                                    <input type="radio" th:field="*{firmwareValidationEnabled}" value="false" />
                                     Firmware will not be validated
                                 </label>
                             </div>
@@ -285,22 +270,20 @@
                             <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ima-ignore}"
                                 th:object="${initialData}" method="POST">
                                 Ignore IMA PCR Entry:
-                                <span th:text="${initialData.enableIgnoreIma ? 'Enabled' : 'Disabled'}"></span>
+                                <span th:text="${initialData.ignoreImaEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="imaIgnoredPolicyBody" th:fragment="imaIgnoredPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="imaTop" type="radio" name="ignoreIma"
-                                                th:checked="${initialData.enableIgnoreIma}" value="checked" />
+                                            <input type="radio" th:field="*{ignoreImaEnabled}" value="true" />
                                             Ignore IMA enabled
                                         </label>
                                     </div>
                                     <div class="radio">
                                         <label>
-                                            <input id="imaBot" type="radio" name="ignoreIma"
-                                                th:checked="${!initialData.enableIgnoreIma}" value="unchecked" />
+                                            <input type="radio" th:field="*{ignoreImaEnabled}" value="false" />
                                             Ignore IMA disabled
                                         </label>
                                     </div>
@@ -323,22 +306,20 @@
                             <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-tboot-ignore}"
                                 th:object="${initialData}" method="POST">
                                 Ignore TBOOT PCRs Entry:
-                                <span th:text="${initialData.enableIgnoreTboot ? 'Enabled' : 'Disabled'}"></span>
+                                <span th:text="${initialData.ignoreTbootEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="tbootIgnoredPolicyBody" th:fragment="tbootIgnoredPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="tbootTop" type="radio" name="ignoretBoot"
-                                                th:checked="${initialData.enableIgnoreTboot}" value="checked" />
+                                            <input type="radio" th:field="*{ignoreTbootEnabled}" value="true" />
                                             Ignore TBoot enabled
                                         </label>
                                     </div>
                                     <div class="radio">
                                         <label>
-                                            <input id="tbootBot" type="radio" name="ignoretBoot"
-                                                th:checked="${!initialData.enableIgnoreTboot}" value="unchecked" />
+                                            <input type="radio" th:field="*{ignoreTbootEnabled}" value="false" />
                                             Ignore TBoot disabled
                                         </label>
                                     </div>
@@ -361,22 +342,20 @@
                             <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-gpt-ignore}"
                                 th:object="${initialData}" method="POST">
                                 Ignore GPT PCRs Entry:
-                                <span th:text="${initialData.enableIgnoreGpt ? 'Enabled' : 'Disabled'}"></span>
+                                <span th:text="${initialData.ignoreGptEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="gptIgnoredPolicyBody" th:fragment="gptIgnoredPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="gptTop" type="radio" name="ignoreGpt"
-                                                th:checked="${initialData.enableIgnoreGpt}" value="checked" />
+                                            <input type="radio" th:field="*{ignoreGptEnabled}" value="true" />
                                             Ignore GPT enabled
                                         </label>
                                     </div>
                                     <div class="radio">
                                         <label>
-                                            <input id="gptBot" type="radio" name="ignoreGpt"
-                                                th:checked="${!initialData.enableIgnoreGpt}" value="unchecked" />
+                                            <input type="radio" th:field="*{ignoreGptEnabled}" value="false" />
                                             Ignore GPT disabled
                                         </label>
                                     </div>
@@ -399,22 +378,20 @@
                             <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-os-evt-ignore}"
                                 th:object="${initialData}" method="POST">
                                 Ignore OS Events:
-                                <span th:text="${initialData.enableIgnoreOsEvt ? 'Enabled' : 'Disabled'}"></span>
+                                <span th:text="${initialData.ignoreOsEvtEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="osIgnoredPolicyBody" th:fragment="osIgnoredPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="osTop" type="radio" name="ignoreOsEvt"
-                                                th:checked="${initialData.enableIgnoreOsEvt}" value="checked" />
+                                            <input type="radio" th:field="*{ignoreOsEvtEnabled}" value="true" />
                                             Ignore OS Events enabled
                                         </label>
                                     </div>
                                     <div class="radio">
                                         <label>
-                                            <input id="osBot" type="radio" name="ignoreOsEvt"
-                                                th:checked="${!initialData.enableIgnoreOsEvt}" value="unchecked" />
+                                            <input type="radio" th:field="*{ignoreOsEvtEnabled}" value="false" />
                                             Ignore OS Events disabled
                                         </label>
                                     </div>
@@ -442,22 +419,22 @@
                     <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-issued-attestation-generation}"
                         th:object="${initialData}" method="POST">
                         Generate Attestation Certificate:
-                        <span th:text="${initialData.issueAttestationCertificate ? 'Enabled' : 'Disabled'}"></span>
+                        <span
+                            th:text="${initialData.issueAttestationCertificateEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                         <!-- Define the content of the modal -->
                         <div id="genAttestCertPolicyBody" th:fragment="genAttestCertPolicyBody"
                             class="modal-visibility-on-close">
                             <div class="radio">
                                 <label>
-                                    <input id="attestTop" type="radio" name="attestationCertificateIssued"
-                                        th:checked="${!initialData.issueAttestationCertificate}" value="unchecked" />
+                                    <input type="radio" th:field="*{issueAttestationCertificateEnabled}"
+                                        value="false" />
                                     Never generate an Attestation Certificate
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="attestBottom" type="radio" name="attestationCertificateIssued"
-                                        th:checked="${initialData.issueAttestationCertificate}" value="checked" />
+                                    <input type="radio" th:field="*{issueAttestationCertificateEnabled}" value="true" />
                                     Conditionally generate an Attestation Certificate before 'Not After' expiration date
                                 </label>
                             </div>
@@ -489,7 +466,7 @@
                                     <div class="radio">
                                         <label>
                                             <input id="aicBot" type="checkbox" name="generationExpirationOn"
-                                                th:checked="${initialData.generateOnExpiration}" value="checked" />
+                                                th:field="*{generateOnExpiration}" value="true" />
                                             Attestation Certificate validity period (Default 3651 days)<br />
                                             Select period in days:
                                             <input id="expirationValue" type="text" name="expirationValue"
@@ -523,7 +500,7 @@
                                     <div class="radio">
                                         <label>
                                             <input id="aicBot" type="checkbox" name="generationExpirationOn"
-                                                th:checked="${initialData.generateOnExpiration}" value="checked" />
+                                                th:field="*{generateOnExpiration}" value="true" />
                                             Renew 'n' days before Attestation Certificate's 'Not After' Validity date
                                             (Default 365 days)<br />
                                             Select 'n' period in days:
@@ -556,22 +533,20 @@
                     <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-issued-ldevid-generation}"
                         th:object="${initialData}" method="POST">
                         Generate LDevID Certificate:
-                        <span th:text="${initialData.issueDevIdCertificate ? 'Enabled' : 'Disabled'}"></span>
+                        <span th:text="${initialData.issueDevIdCertificateEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                         <!-- Define the content of the modal -->
                         <div id="genLDevIDCertPolicyBody" th:fragment="genLDevIDCertPolicyBody"
                             class="modal-visibility-on-close">
                             <div class="radio">
                                 <label>
-                                    <input id="devIdTop" type="radio" name="devIdCertificateIssued"
-                                        th:checked="${!initialData.issueDevIdCertificate}" value="unchecked" />
+                                    <input type="radio" th:field="*{issueDevIdCertificateEnabled}" value="false" />
                                     Never generate a DevID Certificate
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input id="devIdBottom" type="radio" name="devIdCertificateIssued"
-                                        th:checked="${initialData.issueDevIdCertificate}" value="checked" />
+                                    <input type="radio" th:field="*{issueDevIdCertificateEnabled}" value="true" />
                                     Conditionally generate an DevID Certificate before 'Not After' expiration date
                                 </label>
                             </div>
@@ -603,7 +578,7 @@
                                     <div class="radio">
                                         <label>
                                             <input id="devIdBot" type="checkbox" name="devIdExpirationChecked"
-                                                th:checked="${initialData.devIdExpirationFlag}" value="checked" />
+                                                th:field="*{devIdExpirationFlag}" value="true" />
                                             LDevID Certificate validity period (Default 3651 days)<br />
                                             Select period in days:
                                             <input id="devIdExpirationValue" type="text" name="devIdExpirationValue"
@@ -637,7 +612,7 @@
                                     <div class="radio">
                                         <label>
                                             <input id="devIdBot" type="checkbox" name="devIdExpirationChecked"
-                                                th:checked="${initialData.devIdExpirationFlag}" value="checked" />
+                                                th:field="*{devIdExpirationFlag}" value="true" />
                                             Renew 'n' days before LDevID Certificate's 'Not After' Validity date
                                             (Default 365 days)<br />
                                             Select 'n' period in days:

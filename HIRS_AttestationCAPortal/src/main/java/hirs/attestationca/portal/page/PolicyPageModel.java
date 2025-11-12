@@ -16,42 +16,30 @@ import lombok.ToString;
 @NoArgsConstructor
 public class PolicyPageModel {
     // Variables to communicate policy settings to page
-    private boolean enableEcValidation;
-    private boolean enablePcCertificateValidation;
-    private boolean enablePcCertificateAttributeValidation;
-    private boolean enableIgnoreRevisionAttribute;
-    private boolean enableFirmwareValidation;
-    private boolean issueAttestationCertificate;
-    private boolean issueDevIdCertificate;
+    private boolean ecValidationEnabled;
+    private boolean pcValidationEnabled;
+    private boolean pcAttributeValidationEnabled;
+    private boolean ignoreRevisionAttributeEnabled;
+    private boolean firmwareValidationEnabled;
+    private boolean issueAttestationCertificateEnabled;
+    private boolean issueDevIdCertificateEnabled;
     private boolean generateOnExpiration;
     private boolean devIdExpirationFlag;
-    private boolean enableIgnoreIma;
-    private boolean enableIgnoreTboot;
-    private boolean enableIgnoreGpt;
-    private boolean enableIgnoreOsEvt;
-    private boolean enableIgnorePcieVpdAttribute;
+    private boolean ignoreImaEnabled;
+    private boolean ignoreTbootEnabled;
+    private boolean ignoreGptEnabled;
+    private boolean ignoreOsEvtEnabled;
+    private boolean ignorePcieVpdAttributeEnabled;
     private boolean logProtobufOnFailedVal;
     private boolean logProtobufNever;
     private boolean logProtobufAlways;
 
     // Variables to get policy settings from page
-    private String pcValidate;
-    private String pcAttributeValidate;
-    private String ignoreRevisionAttribute;
-    private String ecValidate;
-    private String fmValidate;
-    private String attestationCertificateIssued;
-    private String devIdCertificateIssued;
     private String generationExpirationOn;
     private String devIdExpirationChecked;
     private String numOfValidDays;
     private String reissueThreshold;
     private String devIdReissueThreshold;
-    private String ignoreIma;
-    private String ignoretBoot;
-    private String ignoreGpt;
-    private String ignoreOsEvt;
-    private String ignorePcieVpdAttribute;
     private String expirationValue;
     private String devIdExpirationValue;
     private String thresholdValue;
@@ -64,13 +52,13 @@ public class PolicyPageModel {
      * @param policySettings The supply chain policy
      */
     public PolicyPageModel(final PolicySettings policySettings) {
-        this.enableEcValidation = policySettings.isEcValidationEnabled();
-        this.enablePcCertificateValidation = policySettings.isPcValidationEnabled();
-        this.enablePcCertificateAttributeValidation = policySettings.isPcAttributeValidationEnabled();
-        this.enableIgnoreRevisionAttribute = policySettings.isIgnoreRevisionEnabled();
-        this.enableFirmwareValidation = policySettings.isFirmwareValidationEnabled();
-        this.issueAttestationCertificate = policySettings.isIssueAttestationCertificate();
-        this.issueDevIdCertificate = policySettings.isIssueDevIdCertificate();
+        this.ecValidationEnabled = policySettings.isEcValidationEnabled();
+        this.pcValidationEnabled = policySettings.isPcValidationEnabled();
+        this.pcAttributeValidationEnabled = policySettings.isPcAttributeValidationEnabled();
+        this.ignoreRevisionAttributeEnabled = policySettings.isIgnoreRevisionEnabled();
+        this.firmwareValidationEnabled = policySettings.isFirmwareValidationEnabled();
+        this.issueAttestationCertificateEnabled = policySettings.isIssueAttestationCertificate();
+        this.issueDevIdCertificateEnabled = policySettings.isIssueDevIdCertificate();
         this.generateOnExpiration = policySettings.isGenerateOnExpiration();
         this.devIdExpirationFlag = policySettings.isDevIdExpirationFlag();
         this.numOfValidDays = policySettings.getValidityDays();
@@ -83,11 +71,10 @@ public class PolicyPageModel {
         this.logProtobufOnFailedVal = policySettings.isSaveProtobufToLogOnFailedValEnabled();
         this.logProtobufAlways = policySettings.isSaveProtobufToLogAlwaysEnabled();
         this.logProtobufNever = policySettings.isSaveProtobufToLogNeverEnabled();
-        this.enableIgnorePcieVpdAttribute = policySettings.isIgnorePcieVpdEnabled();
-        // pcrPolicy
-        this.enableIgnoreIma = policySettings.isIgnoreImaEnabled();
-        this.enableIgnoreTboot = policySettings.isIgnoretBootEnabled();
-        this.enableIgnoreGpt = policySettings.isIgnoreGptEnabled();
-        this.enableIgnoreOsEvt = policySettings.isIgnoreOsEvtEnabled();
+        this.ignorePcieVpdAttributeEnabled = policySettings.isIgnorePcieVpdEnabled();
+        this.ignoreImaEnabled = policySettings.isIgnoreImaEnabled();
+        this.ignoreTbootEnabled = policySettings.isIgnoretBootEnabled();
+        this.ignoreGptEnabled = policySettings.isIgnoreGptEnabled();
+        this.ignoreOsEvtEnabled = policySettings.isIgnoreOsEvtEnabled();
     }
 }
