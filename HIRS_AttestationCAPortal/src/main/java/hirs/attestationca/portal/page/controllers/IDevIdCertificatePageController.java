@@ -125,7 +125,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         idevidFilteredRecordsList.setRecordsTotal(
                 this.iDevIdCertificatePageService.findIDevIdCertificateRepositoryCount());
 
-        log.info("Returning the size of the list of IDdevId certificates: "
+        log.info("Returning the size of the list of IDevId certificates: "
                 + "{}", idevidFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(idevidFilteredRecordsList, input);
     }
