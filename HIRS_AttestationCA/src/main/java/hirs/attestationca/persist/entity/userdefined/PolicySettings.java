@@ -26,11 +26,12 @@ public class PolicySettings extends UserDefinedEntity {
     /**
      * Number of days in 10 years.
      */
-    public static final String TEN_YEARS = "3651";
+    public static final Long TEN_YEARS_IN_DAYS = 3651L;
+
     /**
      * Number of days in 1 year.
      */
-    public static final String YEAR = "365";
+    public static final Long A_YEAR_IN_DAYS = 365L;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean ecValidationEnabled = false;
@@ -53,32 +54,29 @@ public class PolicySettings extends UserDefinedEntity {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean expiredCertificateValidationEnabled = false;
 
-    @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean replaceEC = false;
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean issueAttestationCertificateEnabled = true;
 
     @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean issueAttestationCertificate = true;
-
-    @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean issueDevIdCertificate = true;
+    private boolean issueDevIdCertificateEnabled = true;
 
     @Column(nullable = false)
-    private String validityDays = TEN_YEARS;
+    private Long validityDays = TEN_YEARS_IN_DAYS;
 
     @Column(nullable = false)
-    private String devIdValidityDays = TEN_YEARS;
+    private Long devIdValidityDays = TEN_YEARS_IN_DAYS;
 
     @Column(nullable = false)
-    private String reissueThreshold = YEAR;
+    private Long reissueThreshold = A_YEAR_IN_DAYS;
 
     @Column(nullable = false)
-    private String devIdReissueThreshold = YEAR;
+    private Long devIdReissueThreshold = A_YEAR_IN_DAYS;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean generateOnExpiration = false;
+    private boolean generateAttestationCertificateOnExpiration = false;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean devIdExpirationFlag = false;
+    private boolean generateDevIdCertificateOnExpiration = false;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean ignoreImaEnabled = false;
@@ -88,9 +86,6 @@ public class PolicySettings extends UserDefinedEntity {
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean ignorePcieVpdEnabled = false;
-
-    @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean linuxOs = false;
 
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean ignoreGptEnabled = true;

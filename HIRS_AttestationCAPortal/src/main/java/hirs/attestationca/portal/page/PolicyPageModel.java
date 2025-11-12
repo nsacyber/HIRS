@@ -15,7 +15,6 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class PolicyPageModel {
-    // Variables to communicate policy settings to page
     private boolean ecValidationEnabled;
     private boolean pcValidationEnabled;
     private boolean pcAttributeValidationEnabled;
@@ -23,8 +22,8 @@ public class PolicyPageModel {
     private boolean firmwareValidationEnabled;
     private boolean issueAttestationCertificateEnabled;
     private boolean issueDevIdCertificateEnabled;
-    private boolean generateOnExpiration;
-    private boolean devIdExpirationFlag;
+    private boolean generateAttestationCertOnExpirationEnabled;
+    private boolean generateDevIdCertOnExpirationEnabled;
     private boolean ignoreImaEnabled;
     private boolean ignoreTbootEnabled;
     private boolean ignoreGptEnabled;
@@ -35,15 +34,14 @@ public class PolicyPageModel {
     private boolean logProtobufAlways;
 
     // Variables to get policy settings from page
-    private String generationExpirationOn;
     private String devIdExpirationChecked;
-    private String numOfValidDays;
-    private String reissueThreshold;
-    private String devIdReissueThreshold;
-    private String expirationValue;
-    private String devIdExpirationValue;
-    private String thresholdValue;
-    private String devIdThresholdValue;
+    private Long numOfValidDays;
+    private Long reissueThreshold;
+    private Long devIdReissueThreshold;
+    private Long generateAttestCertExpirationValue;
+    private Long generateDevIdCertExpirationValue;
+    private Long generateAttestCertThresholdValue;
+    private Long generateDevIdCertThresholdValue;
     private String saveProtobufToLogOption;
 
     /**
@@ -57,17 +55,18 @@ public class PolicyPageModel {
         this.pcAttributeValidationEnabled = policySettings.isPcAttributeValidationEnabled();
         this.ignoreRevisionAttributeEnabled = policySettings.isIgnoreRevisionEnabled();
         this.firmwareValidationEnabled = policySettings.isFirmwareValidationEnabled();
-        this.issueAttestationCertificateEnabled = policySettings.isIssueAttestationCertificate();
-        this.issueDevIdCertificateEnabled = policySettings.isIssueDevIdCertificate();
-        this.generateOnExpiration = policySettings.isGenerateOnExpiration();
-        this.devIdExpirationFlag = policySettings.isDevIdExpirationFlag();
+        this.issueAttestationCertificateEnabled = policySettings.isIssueAttestationCertificateEnabled();
+        this.issueDevIdCertificateEnabled = policySettings.isIssueDevIdCertificateEnabled();
+        this.generateAttestationCertOnExpirationEnabled =
+                policySettings.isGenerateAttestationCertificateOnExpiration();
+        this.generateDevIdCertOnExpirationEnabled = policySettings.isGenerateDevIdCertificateOnExpiration();
         this.numOfValidDays = policySettings.getValidityDays();
         this.reissueThreshold = policySettings.getReissueThreshold();
-        this.expirationValue = policySettings.getValidityDays();
-        this.thresholdValue = policySettings.getReissueThreshold();
-        this.devIdExpirationValue = policySettings.getDevIdValidityDays();
+        this.generateAttestCertExpirationValue = policySettings.getValidityDays();
+        this.generateAttestCertThresholdValue = policySettings.getReissueThreshold();
+        this.generateDevIdCertExpirationValue = policySettings.getDevIdValidityDays();
         this.devIdReissueThreshold = policySettings.getDevIdReissueThreshold();
-        this.devIdThresholdValue = policySettings.getDevIdReissueThreshold();
+        this.generateDevIdCertThresholdValue = policySettings.getDevIdReissueThreshold();
         this.logProtobufOnFailedVal = policySettings.isSaveProtobufToLogOnFailedValEnabled();
         this.logProtobufAlways = policySettings.isSaveProtobufToLogAlwaysEnabled();
         this.logProtobufNever = policySettings.isSaveProtobufToLogNeverEnabled();

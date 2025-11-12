@@ -156,10 +156,10 @@ public class PolicyPageService {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (!isIssuedAttestationOptionEnabled) {
-            policySettings.setGenerateOnExpiration(false);
+            policySettings.setGenerateAttestationCertificateOnExpiration(false);
         }
 
-        policySettings.setIssueAttestationCertificate(isIssuedAttestationOptionEnabled);
+        policySettings.setIssueAttestationCertificateEnabled(isIssuedAttestationOptionEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
@@ -176,10 +176,10 @@ public class PolicyPageService {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (!isLDevIdOptionEnabled) {
-            policySettings.setDevIdExpirationFlag(false);
+            policySettings.setGenerateDevIdCertificateOnExpiration(false);
         }
 
-        policySettings.setIssueDevIdCertificate(isLDevIdOptionEnabled);
+        policySettings.setIssueDevIdCertificateEnabled(isLDevIdOptionEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
@@ -357,12 +357,12 @@ public class PolicyPageService {
      * Updates the Attestation Certificate generation expiration date under the generate attestation
      * certificate policy setting using the provided user input.
      *
-     * @param expirationValue                    expiration value
+     * @param expirationValue                    attestation certificate expiration value
      * @param isGenerateIssuedCertificateEnabled boolean value representation of the current policy
      *                                           option's state
      * @return string message that describes the result of this policy update
      */
-    public String updateAttestationCertExpirationPolicy(final String expirationValue,
+    public String updateAttestationCertExpirationPolicy(final Long expirationValue,
                                                         final boolean isGenerateIssuedCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
@@ -370,11 +370,11 @@ public class PolicyPageService {
 
         boolean canGenerateIssuedCertificateEnabled = isGenerateIssuedCertificateEnabled;
 
-        if (policySettings.isIssueAttestationCertificate()) {
-            String numOfDays;
+        if (policySettings.isIssueAttestationCertificateEnabled()) {
+            Long numOfDays;
             if (canGenerateIssuedCertificateEnabled) {
                 successMessage = "Attestation Certificate generation expiration time enabled.";
-                numOfDays = (expirationValue != null) ? expirationValue : PolicySettings.TEN_YEARS;
+                numOfDays = (expirationValue != null) ? expirationValue : PolicySettings.TEN_YEARS_IN_DAYS;
             } else {
                 successMessage = "Attestation Certificate generation expiration time disabled.";
                 numOfDays = policySettings.getValidityDays();
@@ -385,7 +385,7 @@ public class PolicyPageService {
             successMessage = "Attestation Certificate generation is disabled, cannot set time expiration";
         }
 
-        policySettings.setGenerateOnExpiration(canGenerateIssuedCertificateEnabled);
+        policySettings.setGenerateAttestationCertificateOnExpiration(canGenerateIssuedCertificateEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
@@ -399,12 +399,12 @@ public class PolicyPageService {
      * Updates the LDevId Certificate generation expiration date under the generate ldevid
      * certificate policy setting using the provided user input.
      *
-     * @param ldevIdExpirationValue              ldevid expiration value
+     * @param ldevIdExpirationValue              ldevid certificate expiration value
      * @param isGenerateLDevIdCertificateEnabled boolean value representation of the current policy option's
      *                                           state
      * @return string message that describes the result of this policy update
      */
-    public String updateLDevIdExpirationPolicy(final String ldevIdExpirationValue,
+    public String updateLDevIdExpirationPolicy(final Long ldevIdExpirationValue,
                                                final boolean isGenerateLDevIdCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
@@ -412,12 +412,13 @@ public class PolicyPageService {
 
         String successMessage;
 
-        if (policySettings.isIssueDevIdCertificate()) {
-            String numOfDays;
+        if (policySettings.isIssueDevIdCertificateEnabled()) {
+            Long numOfDays;
             if (canGenerateLDevIdCertificateEnabled) {
                 successMessage = "DevID Certificate generation expiration time enabled.";
                 numOfDays =
-                        (ldevIdExpirationValue != null) ? ldevIdExpirationValue : PolicySettings.TEN_YEARS;
+                        (ldevIdExpirationValue != null) ? ldevIdExpirationValue :
+                                PolicySettings.TEN_YEARS_IN_DAYS;
             } else {
                 successMessage = "DevID Certificate generation expiration time disabled.";
                 numOfDays = policySettings.getDevIdValidityDays();
@@ -429,7 +430,7 @@ public class PolicyPageService {
                     + "cannot set time expiration";
         }
 
-        policySettings.setDevIdExpirationFlag(canGenerateLDevIdCertificateEnabled);
+        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
@@ -449,8 +450,8 @@ public class PolicyPageService {
      *                                           policy option's state
      * @return string message that describes the result of this policy update
      */
-    public String updateAttestationCertThresholdPolicy(final String thresholdValue,
-                                                       final String reissueThresholdValue,
+    public String updateAttestationCertThresholdPolicy(final Long thresholdValue,
+                                                       final Long reissueThresholdValue,
                                                        final boolean isGenerateIssuedCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
@@ -458,14 +459,14 @@ public class PolicyPageService {
 
         String successMessage;
 
-        if (policySettings.isIssueAttestationCertificate()) {
-            String threshold = canGenerateIssuedCertificateEnabled ? thresholdValue : reissueThresholdValue;
+        if (policySettings.isIssueAttestationCertificateEnabled()) {
+            Long threshold = canGenerateIssuedCertificateEnabled ? thresholdValue : reissueThresholdValue;
             successMessage = canGenerateIssuedCertificateEnabled
                     ? "Attestation Certificate generation threshold time enabled."
                     : "Attestation Certificate generation threshold time disabled.";
 
-            if (threshold == null || threshold.isEmpty()) {
-                threshold = PolicySettings.YEAR;
+            if (threshold == 0) { //todo
+                threshold = PolicySettings.A_YEAR_IN_DAYS;
             }
 
             policySettings.setReissueThreshold(threshold);
@@ -475,7 +476,7 @@ public class PolicyPageService {
                     + "cannot set time expiration";
         }
 
-        policySettings.setGenerateOnExpiration(canGenerateIssuedCertificateEnabled);
+        policySettings.setGenerateAttestationCertificateOnExpiration(canGenerateIssuedCertificateEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
@@ -495,8 +496,8 @@ public class PolicyPageService {
      *                                           state
      * @return string message that describes the result of this policy update
      */
-    public String updateLDevIdThresholdPolicy(final String ldevIdThresholdValue,
-                                              final String ldevIdReissueThresholdValue,
+    public String updateLDevIdThresholdPolicy(final Long ldevIdThresholdValue,
+                                              final Long ldevIdReissueThresholdValue,
                                               final boolean isGenerateLDevIdCertificateEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
@@ -504,8 +505,8 @@ public class PolicyPageService {
 
         String successMessage;
 
-        if (policySettings.isIssueDevIdCertificate()) {
-            String threshold = canGenerateLDevIdCertificateEnabled
+        if (policySettings.isIssueDevIdCertificateEnabled()) {
+            Long threshold = canGenerateLDevIdCertificateEnabled
                     ? ldevIdThresholdValue
                     : ldevIdReissueThresholdValue;
 
@@ -513,8 +514,8 @@ public class PolicyPageService {
                     ? "DevID Certificate generation threshold time enabled."
                     : "DevID Certificate generation threshold time disabled.";
 
-            if (threshold == null || threshold.isEmpty()) {
-                threshold = PolicySettings.YEAR;
+            if (threshold == 0) { //todo
+                threshold = PolicySettings.A_YEAR_IN_DAYS;
             }
 
             policySettings.setDevIdReissueThreshold(threshold);
@@ -523,7 +524,7 @@ public class PolicyPageService {
             successMessage = "DevID Certificate generation is disabled, cannot set threshold time";
         }
 
-        policySettings.setDevIdExpirationFlag(canGenerateLDevIdCertificateEnabled);
+        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 

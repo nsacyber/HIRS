@@ -280,7 +280,7 @@ public class AbstractProcessor {
         PolicyRepository scp = getPolicyRepository();
         PolicySettings policySettings;
         Date currentDate = new Date();
-        int days;
+        long days;
         try {
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
@@ -293,18 +293,18 @@ public class AbstractProcessor {
                 issuedAc = certificateRepository.findByDeviceIdAndLdevID(device.getId(), ldevID,
                         sortCriteria);
 
-                generateCertificate = ldevID ? policySettings.isIssueDevIdCertificate()
-                        : policySettings.isIssueAttestationCertificate();
+                generateCertificate = ldevID ? policySettings.isIssueDevIdCertificateEnabled()
+                        : policySettings.isIssueAttestationCertificateEnabled();
 
                 if (issuedAc != null && !issuedAc.isEmpty()
-                        && (ldevID ? policySettings.isDevIdExpirationFlag()
-                        : policySettings.isGenerateOnExpiration())) {
+                        && (ldevID ? policySettings.isGenerateDevIdCertificateOnExpiration()
+                        : policySettings.isGenerateAttestationCertificateOnExpiration())) {
                     if (issuedAc.get(0).getEndValidity().after(currentDate)) {
                         // so the issued AC is not expired
                         // however are we within the threshold
                         days = ProvisionUtils.daysBetween(currentDate, issuedAc.get(0).getEndValidity());
                         generateCertificate =
-                                days < Integer.parseInt(ldevID ? policySettings.getDevIdReissueThreshold()
+                                days < (ldevID ? policySettings.getDevIdReissueThreshold()
                                         : policySettings.getReissueThreshold());
                     }
                 }

@@ -358,16 +358,10 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + "generate attestation certificate policy setting");
 
         try {
-            boolean isGenerateCertificateEnabled = false;
-            // because this is just one option, there is not 'unchecked' value, so it is either
-            // 'checked' or null
-            if (ppModel.getGenerationExpirationOn() != null) {
-                isGenerateCertificateEnabled =
-                        ppModel.getGenerationExpirationOn().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-            }
+            boolean isGenerateCertificateEnabled = ppModel.isGenerateAttestationCertOnExpirationEnabled();
 
             final String successMessage = this.policyPageService.updateAttestationCertExpirationPolicy(
-                    ppModel.getExpirationValue(),
+                    ppModel.getGenerateAttestCertExpirationValue(),
                     isGenerateCertificateEnabled);
             messages.addSuccessMessage(successMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
@@ -406,13 +400,14 @@ public class PolicyPageController extends PageController<NoPageParams> {
             // because this is just one option, there is not 'unchecked' value, so it is either
             // 'checked' or null
             if (ppModel.getDevIdExpirationChecked() != null) {
-                isGenerateDevIdCertificateEnabled
-                        = ppModel.getDevIdExpirationChecked()
-                        .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+//                isGenerateDevIdCertificateEnabled
+//                        = ppModel.getDevIdExpirationChecked()
+//                        .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
             }
 
             final String successMessage =
-                    this.policyPageService.updateLDevIdExpirationPolicy(ppModel.getDevIdExpirationValue(),
+                    this.policyPageService.updateLDevIdExpirationPolicy(
+                            ppModel.getGenerateDevIdCertExpirationValue(),
                             isGenerateDevIdCertificateEnabled);
             messages.addSuccessMessage(successMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
@@ -447,17 +442,11 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + "the attestation certificate generation policy setting");
 
         try {
-            boolean generateCertificateEnabled = false;
-            // because this is just one option, there is not 'unchecked' value, so it is either
-            // 'checked' or null
-            if (ppModel.getGenerationExpirationOn() != null) {
-                generateCertificateEnabled
-                        = ppModel.getGenerationExpirationOn()
-                        .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-            }
+            boolean generateCertificateEnabled = ppModel.isGenerateAttestationCertOnExpirationEnabled();
 
             final String successMessage =
-                    this.policyPageService.updateAttestationCertThresholdPolicy(ppModel.getThresholdValue(),
+                    this.policyPageService.updateAttestationCertThresholdPolicy(
+                            ppModel.getGenerateAttestCertThresholdValue(),
                             ppModel.getReissueThreshold(),
                             generateCertificateEnabled);
             messages.addSuccessMessage(successMessage);
@@ -497,13 +486,14 @@ public class PolicyPageController extends PageController<NoPageParams> {
             // because this is just one option, there is not 'unchecked' value, so it is either
             // 'checked' or null
             if (ppModel.getDevIdExpirationChecked() != null) {
-                generateDevIdCertificateEnabled
-                        = ppModel.getDevIdExpirationChecked()
-                        .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+//                generateDevIdCertificateEnabled
+//                        = ppModel.getDevIdExpirationChecked()
+//                        .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
             }
 
             final String successMessage =
-                    this.policyPageService.updateLDevIdThresholdPolicy(ppModel.getDevIdThresholdValue(),
+                    this.policyPageService.updateLDevIdThresholdPolicy(
+                            ppModel.getGenerateDevIdCertThresholdValue(),
                             ppModel.getDevIdReissueThreshold(),
                             generateDevIdCertificateEnabled);
             messages.addSuccessMessage(successMessage);

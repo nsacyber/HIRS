@@ -427,15 +427,15 @@
                             class="modal-visibility-on-close">
                             <div class="radio">
                                 <label>
-                                    <input type="radio" th:field="*{issueAttestationCertificateEnabled}"
-                                        value="false" />
-                                    Never generate an Attestation Certificate
+                                    <input type="radio" th:field="*{issueAttestationCertificateEnabled}" value="true" />
+                                    Conditionally generate an Attestation Certificate before 'Not After' expiration date
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input type="radio" th:field="*{issueAttestationCertificateEnabled}" value="true" />
-                                    Conditionally generate an Attestation Certificate before 'Not After' expiration date
+                                    <input type="radio" th:field="*{issueAttestationCertificateEnabled}"
+                                        value="false" />
+                                    Never generate an Attestation Certificate
                                 </label>
                             </div>
                         </div>
@@ -458,19 +458,18 @@
                                 th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-attestation-certificate-expiration}"
                                 th:object="${initialData}" method="POST">
                                 Attestation Certificate Validity period:
-                                <span th:text="${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}"></span>
+                                <span
+                                    th:text="${initialData.generateAttestationCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="expCertPolicyBody" th:fragment="expCertPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="aicBot" type="checkbox" name="generationExpirationOn"
-                                                th:field="*{generateOnExpiration}" value="true" />
                                             Attestation Certificate validity period (Default 3651 days)<br />
                                             Select period in days:
-                                            <input id="expirationValue" type="text" name="expirationValue"
-                                                th:value="${initialData.expirationValue}" />
+                                            <input type="number" th:field="*{generateAttestCertExpirationValue}"
+                                                min="1" />
                                         </label>
                                     </div>
                                 </div>
@@ -492,20 +491,19 @@
                             <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-issued-cert-threshold}"
                                 th:object="${initialData}" method="POST">
                                 Attestation Certificate Renewal period:
-                                <span th:text="${initialData.generateOnExpiration ? 'Enabled' : 'Disabled'}"></span>
+                                <span
+                                    th:text="${initialData.generateAttestationCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="thresholdCertPolicyBody" th:fragment="thresholdCertPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="aicBot" type="checkbox" name="generationExpirationOn"
-                                                th:field="*{generateOnExpiration}" value="true" />
                                             Renew 'n' days before Attestation Certificate's 'Not After' Validity date
                                             (Default 365 days)<br />
                                             Select 'n' period in days:
-                                            <input id="thresholdValue" type="text" name="thresholdValue"
-                                                th:value="${initialData.thresholdValue}" />
+                                            <input type="number" th:field="*{generateAttestCertThresholdValue}"
+                                                min="1" />
                                         </label>
                                     </div>
                                 </div>
@@ -540,14 +538,14 @@
                             class="modal-visibility-on-close">
                             <div class="radio">
                                 <label>
-                                    <input type="radio" th:field="*{issueDevIdCertificateEnabled}" value="false" />
-                                    Never generate a DevID Certificate
+                                    <input type="radio" th:field="*{issueDevIdCertificateEnabled}" value="true" />
+                                    Conditionally generate an DevID Certificate before 'Not After' expiration date
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input type="radio" th:field="*{issueDevIdCertificateEnabled}" value="true" />
-                                    Conditionally generate an DevID Certificate before 'Not After' expiration date
+                                    <input type="radio" th:field="*{issueDevIdCertificateEnabled}" value="false" />
+                                    Never generate a DevID Certificate
                                 </label>
                             </div>
                         </div>
@@ -570,19 +568,18 @@
                                 th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ldevid-certificate-expiration}"
                                 th:object="${initialData}" method="POST">
                                 LDevID Certificate Validity period:
-                                <span th:text="${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}"></span>
+                                <span
+                                    th:text="${initialData.generateDevIdCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="expirationLvedvIdCertPolicyBody" th:fragment="expirationLvedvIdCertPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="devIdBot" type="checkbox" name="devIdExpirationChecked"
-                                                th:field="*{devIdExpirationFlag}" value="true" />
                                             LDevID Certificate validity period (Default 3651 days)<br />
                                             Select period in days:
-                                            <input id="devIdExpirationValue" type="text" name="devIdExpirationValue"
-                                                th:value="${initialData.devIdExpirationValue}" />
+                                            <input type="number" th:field="*{generateDevIdCertExpirationValue}"
+                                                min="1" />
                                         </label>
                                     </div>
                                 </div>
@@ -604,20 +601,19 @@
                             <form th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ldevid-threshold}"
                                 th:object="${initialData}" method="POST">
                                 LDevID Certificate Renewal period:
-                                <span th:text="${initialData.devIdExpirationFlag ? 'Enabled' : 'Disabled'}"></span>
+                                <span
+                                    th:text="${initialData.generateDevIdCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- Define the content of the modal -->
                                 <div id="thresholdLvedvIdCertPolicyBody" th:fragment="thresholdLvedvIdCertPolicyBody"
                                     class="modal-visibility-on-close">
                                     <div class="radio">
                                         <label>
-                                            <input id="devIdBot" type="checkbox" name="devIdExpirationChecked"
-                                                th:field="*{devIdExpirationFlag}" value="true" />
                                             Renew 'n' days before LDevID Certificate's 'Not After' Validity date
                                             (Default 365 days)<br />
                                             Select 'n' period in days:
-                                            <input id="devIdThresholdValue" type="text" name="devIdThresholdValue"
-                                                th:value="${initialData.devIdThresholdValue}" />
+                                            <input type="number" th:field="*{generateDevIdCertThresholdValue}"
+                                                min="1" />
                                         </label>
                                     </div>
                                 </div>
