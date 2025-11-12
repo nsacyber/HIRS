@@ -1,3 +1,5 @@
+const iconPath = "/icons";
+
 /**
  * Converts a byte to HEX.
  */
@@ -137,7 +139,7 @@ function setDataTables(id, url, columns, options = {}) {
 function certificateDetailsLink(type, id, sameType) {
   let href = "certificate-details?id=" + id + "&type=" + type;
   let title = "";
-  let icon = icons;
+  let icon = iconPath;
 
   //If the details is the same certificate type use assignment icon,
   //otherwise use the icon for the certificate type.
@@ -184,7 +186,7 @@ function certificateDetailsLink(type, id, sameType) {
 function rimDetailsLink(id) {
   let href = portal + "/rim-details?id=" + id;
   let title = "";
-  let icon = icons;
+  let icon = iconPath;
 
   title = "Details";
   icon += "/ic_assignment_black_24dp.png";
@@ -206,9 +208,9 @@ function rimDetailsLink(id) {
  * @param id of the certificate
  * @param pagePath path to the link
  */
-function certificateDeleteLink(id) {
-  let icon = icons + "/ic_delete_black_24dp.png";
-  let formURL = "delete";
+function certificateDeleteLink(id, pagePath) {
+  let icon = iconPath + "/ic_delete_black_24dp.png";
+  let formURL = pagePath + "/delete";
 
   let html =
     '<a href="#!" onclick="handleDeleteRequest(\'' +
@@ -234,7 +236,7 @@ function certificateDeleteLink(id) {
  * @param pagePath path to the link
  */
 function rimDeleteLink(id, pagePath) {
-  let icon = icons + "/ic_delete_black_24dp.png";
+  let icon = iconPath + "/ic_delete_black_24dp.png";
   let formURL = pagePath + "/delete";
 
   let html =
@@ -260,9 +262,9 @@ function rimDeleteLink(id, pagePath) {
  * @param id of the certificate
  * @param pagePath path to the link
  */
-function certificateDownloadLink(id) {
-  let icon = icons + "/ic_file_download_black_24dp.png";
-  let href = "download?id=" + id;
+function certificateDownloadLink(id, pagePath) {
+  let icon = iconPath + "/ic_file_download_black_24dp.png";
+  let href = pagePath + "/download?id=" + id;
 
   let html =
     '<a href="' +
@@ -281,7 +283,7 @@ function certificateDownloadLink(id) {
  * @param pagePath path to the link
  */
 function rimDownloadLink(id, pagePath) {
-  let icon = icons + "/ic_file_download_black_24dp.png";
+  let icon = iconPath + "/ic_file_download_black_24dp.png";
   let href = pagePath + "/download?id=" + id;
 
   let html =
@@ -300,11 +302,11 @@ function rimDownloadLink(id, pagePath) {
  * @param date to format
  */
 function formatCertificateDate(dateText) {
-  let date = +dateText; // Convert to numeric
+  const timestamp = Date.parse(dateText); // Convert to numeric
 
-  if (date == 253402300799000) {
+  if (timestamp == 253402300799000) {
     return "Indefinite";
   }
 
-  return new Date(date).toUTCString();
+  return new Date(timestamp).toUTCString();
 }
