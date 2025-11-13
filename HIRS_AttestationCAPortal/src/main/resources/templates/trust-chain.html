@@ -6,9 +6,11 @@
             <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
             <script th:inline="javascript">
                 $(document).ready(function () {
-                  let url = "trust-chain/list";
-                  let acaCertDataSignature = JSON.parse([[${acaCertData.signature}]]);
-                  let acaPublicKey = JSON.parse([[${acaCertData.encodedPublicKey}]]);
+                  const viewName = [[${page.viewName}]];
+                  const url = viewName + "/list";
+                  const acaCertDataSignature = JSON.parse([[${acaCertData.signature}]]);
+                  const acaPublicKey = JSON.parse([[${acaCertData.encodedPublicKey}]]);
+
                   // Setup HIRS ACA Root Certificate items
                   $("#signature").html(byteToHexString(acaCertDataSignature));
                   $("#publicKey").html(byteToHexString(acaPublicKey));
@@ -63,13 +65,9 @@
                         // sets up a hidden input field containing the ID which is
                         // used as a parameter to the REST POST call to delete
                         let html = "";
-                        //html += certificateDetailsLink(
-                        //  "certificateauthority",
-                        //  full.id,
-                        //  true
-                        //);
-                       // html += certificateDownloadLink(full.id, pagePath);
-                        //html += certificateDeleteLink(full.id, pagePath);
+                        html += certificateDetailsLink("certificateauthority", full.id, true);
+                        html += certificateDownloadLink(viewName, full.id);
+                        html += certificateDeleteLink(viewName, full.id);
                         return html;
                       },
                     },
@@ -155,7 +153,7 @@
                 >
                 Trust Chain CA Certificates
                     <th:block th:replace="fragments/file-chooser
-                        :: fileChooserIcon('tc-editor',
+                        :: fileChooser('tc-editor',
                         'Import Trust Chain Certificates', ${null}, ~{this :: bodyContent})"
                     >
                         <th:block th:fragment="bodyContent">
