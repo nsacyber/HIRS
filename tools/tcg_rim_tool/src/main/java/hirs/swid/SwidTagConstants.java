@@ -92,7 +92,7 @@ public final class SwidTagConstants {
     public static final String SHA256_PFX = "SHA256";
 
     public static final QName QNAME_SHA256_HASH = new QName(
-            SHA256_NS , HASH, SHA256_PFX);
+            SHA256_NS, HASH, SHA256_PFX);
     public static final QName QNAME_COLLOQUIAL_VERSION = new QName(
             NIST_NS, COLLOQUIAL_VERSION, N8060_PFX);
     public static final QName QNAME_EDITION = new QName(
