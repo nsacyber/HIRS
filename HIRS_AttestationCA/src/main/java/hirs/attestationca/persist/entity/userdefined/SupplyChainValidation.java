@@ -25,11 +25,11 @@ import java.util.List;
 @Entity
 public class SupplyChainValidation extends ArchivableEntity {
     @Column
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private final ValidationType validationType;
 
     @Column
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private final AppraisalStatus.Status validationResult;
 
     @Getter(AccessLevel.NONE)

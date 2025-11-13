@@ -49,9 +49,6 @@ public class PolicySettings extends UserDefinedEntity {
     private boolean firmwareValidationEnabled = false;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean utcValidationEnabled = false;
-
-    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean expiredCertificateValidationEnabled = false;
 
     @Column(nullable = false, columnDefinition = "boolean default true")

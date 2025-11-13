@@ -1,8 +1,8 @@
-<div th:fragment="pageNav(page, pages)">
+<th:block th:fragment="pageNav(page, pages)">
     <nav class="navbar navbar-default sidebar" role="navigation" th:if="${page?.hasMenu}">
         <div class="container-fluid">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#sidebar-navbar">
+                <button class="navbar-toggle" data-target="#sidebar-navbar" data-toggle="collapse" type="button">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
@@ -11,12 +11,12 @@
             </div>
             <div class="collapse navbar-collapse" id="sidebar-navbar">
                 <ul class="nav navbar-nav">
-                    <li th:each="p : ${pages}" th:if="${p?.inMenu}"
-                        th:class="${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '')">
+                    <li th:class="${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '')"
+                        th:each="p : ${pages}" th:if="${p?.inMenu}">
                         <a th:href="@{'/HIRS_AttestationCAPortal/portal/' + ${p?.prefixPath} + ${p?.viewName}}">
                             <span th:text="${p?.title}">Page Title</span>
                             <span class="pull-right hidden-xs showopacity">
-                                <img th:src="@{/icons/{icon}_white_24dp.png(icon=${p?.icon})}" alt="icon" />
+                                <img alt="nav-item-icon" th:src="@{/icons/{icon}_white_24dp.png(icon=${p?.icon})}" />
                             </span>
                         </a>
                     </li>
@@ -24,4 +24,4 @@
             </div>
         </div>
     </nav>
-</div>
+</th:block>
