@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-    <div th:fragment="pageNav(page, pages)">
+    <th:block th:fragment="pageNav(page, pages)">
         <nav class="navbar navbar-default sidebar" role="navigation" th:if="${page?.hasMenu}">
             <div class="container-fluid">
                 <div class="navbar-header">
@@ -28,7 +28,7 @@
                 </div>
             </div>
         </nav>
-    </div>
+    </th:block>
 </body>
 
 </html>
