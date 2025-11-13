@@ -290,7 +290,7 @@ public class ReferenceManifestValidator {
         String calculatedHash = getHashValue(input, SHA256);
         supportRimValid = calculatedHash.equals(expected);
         if (!supportRimValid) {
-            log.info("Unmatched support RIM hash! Expected: {}, actual: {}", expected, calculatedHash);
+            log.warn("Unmatched support RIM hash! Expected: {}, actual: {}", expected, calculatedHash);
         }
     }
 
@@ -420,9 +420,9 @@ public class ReferenceManifestValidator {
             throws XMLSignatureException {
         boolean cryptoValidity = signature.getSignatureValue().validate(context);
         if (cryptoValidity) {
-            log.error("Signature value is valid.");
+            log.info("Signature block validated.");
         } else {
-            log.error("Signature value is invalid!");
+            log.error("Signature block not valid, <SignedInfo> should be compared to <SignatureValue>.");
         }
 
         List<Reference> references = signature.getSignedInfo().getReferences();
@@ -431,12 +431,13 @@ public class ReferenceManifestValidator {
             boolean refValidity = reference.validate(context);
             String refUri = reference.getURI();
             if (refUri.isEmpty()) {
-                refUri = "whole document";
+                refUri = "<SoftwareIdentity>";
             }
             if (refValidity) {
-                log.error("Reference for {} is valid.", refUri);
+                log.info("Reference for {} is valid.", refUri);
             } else {
-                log.error("Reference for {} is invalid!", refUri);
+                log.error("Reference for {} is invalid, its <DigestValue> should be inspected.",
+                        refUri);
             }
         }
     }
