@@ -1,4 +1,4 @@
-let iconPath = "/icons";
+const iconPath = "/icons";
 
 /**
  * Converts a byte to HEX.
@@ -138,7 +138,7 @@ function setDataTables(id, url, columns, options = {}) {
  */
 function certificateDetailsLink(type, id, sameType) {
   let icon = iconPath;
-  let href = "certificate-details?id=" + id + "&type=" + type;
+  const href = "certificate-details?id=" + id + "&type=" + type;
   let title = "";
 
   //If the details is the same certificate type use assignment icon,
@@ -166,7 +166,7 @@ function certificateDetailsLink(type, id, sameType) {
         break;
     }
   }
-  let html =
+const html =
     "<a href=" +
     href +
     ">" +
@@ -184,13 +184,11 @@ function certificateDetailsLink(type, id, sameType) {
  * @param id of the rim
  */
 function rimDetailsLink(id) {
-  let icon = iconPath + "/ic_assignment_black_24dp.png";
+  const icon = iconPath + "/ic_assignment_black_24dp.png";
+  const href = portal + "/rim-details?id=" + id;
+  const title = "Details";
 
-  //needs update?:
-  let href = portal + "/rim-details?id=" + id;
-  let title = "Details";
-
-  let html =
+  const html =
     "<a href=" +
     href +
     ">" +
@@ -204,14 +202,14 @@ function rimDetailsLink(id) {
 
 /**
  * Create a certificate delete link for the specified ID
- * @param id of the certificate
  * @param pagePath path to the link
+ * @param id of the certificate
  */
 function certificateDeleteLink(pagePath, id) {
-  let icon = iconPath + "/ic_delete_black_24dp.png";
-  let formURL = pagePath + "/delete";
+  const icon = iconPath + "/ic_delete_black_24dp.png";
+  const formURL = pagePath + "/delete";
 
-  let html =
+  const html =
     '<a href="#!" onclick="handleDeleteRequest(\'' +
     id +
     "')\">" +
@@ -238,7 +236,7 @@ function rimDeleteLink(pagePath, id) {
   let icon = iconPath + "/ic_delete_black_24dp.png";
   let formURL = pagePath + "/delete";
 
-  let html =
+  const html =
     '<a href="#!" onclick="handleRimDeleteRequest(\'' +
     id +
     "')\">" +
@@ -262,10 +260,10 @@ function rimDeleteLink(pagePath, id) {
  * @param pagePath path to the link
  */
 function certificateDownloadLink(pagePath, id) {
-  let icon = iconPath + "/ic_file_download_black_24dp.png";
-  let href = pagePath + "/download?id=" + id;
+  const icon = iconPath + "/ic_file_download_black_24dp.png";
+  const href = pagePath + "/download?id=" + id;
 
-  let html =
+  const html =
     '<a href="' +
     href +
     '">' +
@@ -282,10 +280,10 @@ function certificateDownloadLink(pagePath, id) {
  * @param pagePath path to the link
  */
 function rimDownloadLink(pagePath, id) {
-  let icon = iconPath + "/ic_file_download_black_24dp.png";
-  let href = pagePath + "/download?id=" + id;
+  const icon = iconPath + "/ic_file_download_black_24dp.png";
+  const href = pagePath + "/download?id=" + id;
 
-  let html =
+  const html =
     '<a href="' +
     href +
     '">' +
@@ -301,7 +299,7 @@ function rimDownloadLink(pagePath, id) {
  * @param date to format
  */
 function formatCertificateDate(dateText) {
-  let date = +dateText; // Convert to numeric
+  const date = +dateText; // Convert to numeric
 
   if (date == 253402300799000) {
     return "Indefinite";
