@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-    <th:block th:fragment="downloadIcon(id, label, customButtons, bodyContent)">
+    <th:block th:fragment="downloadInfo(id, label, customButtons, bodyContent)">
         <!-- Download icon anchor -->
         <a th:href="'#' + ${id}" data-toggle="modal" th:title="${label}">
             <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" />

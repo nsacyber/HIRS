@@ -6,17 +6,17 @@
     <section layout:fragment="script">
         <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
         <script th:inline="javascript">
-            let unknownIcon = /*[[@{/icons/ic_library_add_black_24dp.png}]]*/ '';
-            let failIcon = /*[[@{/icons/ic_error_red_24dp.png}]]*/ '';
-            let passIcon = /*[[@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}]]*/ '';
+            const unknownIcon = /*[[@{/icons/ic_library_add_black_24dp.png}]]*/ '';
+            const failIcon = /*[[@{/icons/ic_error_red_24dp.png}]]*/ '';
+            const passIcon = /*[[@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}]]*/ '';
 
-            let passText = "Validation Passed";
-            let failText = "Validation Failed";
-            let errorText = "Validation Error";
-            let unknownText = "Unknown Validation Status";
+            const passText = "Validation Passed";
+            const failText = "Validation Failed";
+            const errorText = "Validation Error";
+            const unknownText = "Unknown Validation Status";
 
             $(document).ready(function () {
-                let url = "validation-reports/list";
+                const url = "validation-reports/list";
                 let columns = [
                   {
                     name: "overallValidationResult",
@@ -248,7 +248,7 @@
         >
             Download Validation Reports
             <th:block th:replace="fragments/download-info
-                :: downloadIcon('validationReportsDownload',
+                :: downloadInfo('validationReportsDownload',
                 'Download Validation Reports', ${null}, ~{this :: bodyContent})"
             >
                 <th:block th:fragment="bodyContent">
