@@ -7,8 +7,8 @@
         <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
         <script th:inline="javascript">
             $(document).ready(function () {
-              let viewName = [[${page.viewName}]];
-              let url = viewName + "/list";
+              const viewName = [[${page.viewName}]];
+              const url = viewName + "/list";
               let columns = [
                 {
                   name: "deviceName",
