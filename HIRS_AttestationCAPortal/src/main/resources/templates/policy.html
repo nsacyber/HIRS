@@ -8,23 +8,6 @@
 
 <section layout:fragment="script">
     <script th:inline="javascript">
-
-        $(document).ready(function () {
-            $("input[name='generateAttestCertExpirationValue']").each(function (index) {
-                $(this).attr('id', 'generateAttestCertExpirationValue-' + index); //todo
-            });
-        });
-
-        function showModal(modalId, modalContentId) {
-            const modalContentSelector = ".modal-body " + modalContentId;
-
-            // show the selected modal
-            $(modalId).modal('show')
-
-            // display the invisible content on the modal by removing the css class that makes the elements invisible
-            $(modalContentSelector).removeClass("modal-content-visibility-on-close");
-        }
-
         function submitProtobufLogSetting() {
             // find the selected protobuf log setting
             let form = $('input[name="saveProtobufToLogOption"]:checked').closest('form');
@@ -51,30 +34,29 @@
                         Endorsement Credential Validation:
                         <span th:text="${initialData.ecValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                        <!-- Define the content of the modal -->
-                        <div class="modal-content-visibility-on-close " id="ecPolicyBody">
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{ecValidationEnabled}" type="radio" value="true" />
-                                    Endorsement Credentials will be validated
-                                </label>
-                            </div>
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{ecValidationEnabled}" type="radio" value="false" />
-                                    Endorsement Credentials will not be validated
-                                </label>
-                            </div>
-                        </div>
-
                         <!-- trigger to open the modal -->
-                        <a onclick='showModal("#ecPolicyModal", "#ecPolicyBody")' th:href="'#' + ecPolicyModal">
+                        <a data-toggle="modal" th:href="'#' + ecPolicyModal">
                             <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                         </a>
 
                         <!-- modal fragment -->
                         <div th:replace="fragments/modal :: modal( id='ecPolicyModal', label='Edit Endorsement
                             Credential Validation Policy Settings', bodyContent=~{this::#ecPolicyBody})">
+                            <!-- Define the content of the modal -->
+                            <div id="ecPolicyBody">
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{ecValidationEnabled}" type="radio" value="true" />
+                                        Endorsement Credentials will be validated
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{ecValidationEnabled}" type="radio" value="false" />
+                                        Endorsement Credentials will not be validated
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -88,30 +70,29 @@
                         Platform Credential Validation:
                         <span th:text="${initialData.pcValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                        <!-- Define the content of the modal -->
-                        <div class="modal-content-visibility-on-close" id="pcPolicyBody">
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{pcValidationEnabled}" type="radio" value="true" />
-                                    Platform Credentials will be validated
-                                </label>
-                            </div>
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{pcValidationEnabled}" type="radio" value="false" />
-                                    Platform Credentials will not be validated
-                                </label>
-                            </div>
-                        </div>
-
                         <!-- trigger to open the modal -->
-                        <a onclick='showModal("#pcPolicyModal", "#pcPolicyBody")' th:href="'#' + pcPolicyModal">
+                        <a data-toggle="modal" th:href="'#' + pcPolicyModal">
                             <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                         </a>
 
                         <!-- modal fragment -->
                         <div
                             th:replace="fragments/modal :: modal( id='pcPolicyModal',  label='Edit Platform Credential Validation Policy Settings', bodyContent=~{this::#pcPolicyBody})">
+                            <!-- Define the content of the modal -->
+                            <div id="pcPolicyBody">
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{pcValidationEnabled}" type="radio" value="true" />
+                                        Platform Credentials will be validated
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{pcValidationEnabled}" type="radio" value="false" />
+                                        Platform Credentials will not be validated
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -126,31 +107,31 @@
                         Platform Attribute Credential Validation:
                         <span th:text="${initialData.pcAttributeValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                        <!-- Define the content of the modal -->
-                        <div class="modal-content-visibility-on-close" id="pcAttrPolicyBody">
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{pcAttributeValidationEnabled}" type="radio" value="true" />
-                                    Platform Credential Attributes will be validated
-                                </label>
-                            </div>
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{pcAttributeValidationEnabled}" type="radio" value="false" />
-                                    Platform Credential Attributes will not be validated
-                                </label>
-                            </div>
-                        </div>
+
 
                         <!-- trigger to open the modal -->
-                        <a onclick='showModal("#pcAttrPolicyModal", "#pcAttrPolicyBody")'
-                            th:href="'#' + pcAttrPolicyModal">
+                        <a data-toggle="modal" th:href="'#' + pcAttrPolicyModal">
                             <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                         </a>
 
                         <!-- modal fragment -->
                         <div
                             th:replace="fragments/modal :: modal( id='pcAttrPolicyModal',  label='Edit Platform Credential Attribute Validation Policy Settings', bodyContent=~{this::#pcAttrPolicyBody})">
+                            <!-- Define the content of the modal -->
+                            <div id="pcAttrPolicyBody">
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{pcAttributeValidationEnabled}" type="radio" value="true" />
+                                        Platform Credential Attributes will be validated
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{pcAttributeValidationEnabled}" type="radio" value="false" />
+                                        Platform Credential Attributes will not be validated
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </form>
 
@@ -163,33 +144,31 @@
                                 <span
                                     th:text="${initialData.ignoreRevisionAttributeEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="revisionIgnoredPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreRevisionAttributeEnabled}" type="radio"
-                                                value="true" />
-                                            Component Revision Attribute enabled
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreRevisionAttributeEnabled}" type="radio"
-                                                value="false" />
-                                            Component Revision Attribute disabled
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#revisionIgnoredPolicyModal", "#revisionIgnoredPolicyBody")'
-                                    th:href="'#' + revisionIgnoredPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + revisionIgnoredPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='revisionIgnoredPolicyModal',  label='Edit Ignore Component Revision Policy Settings', bodyContent=~{this::#revisionIgnoredPolicyBody})">
+                                    <!-- Define the content of the modal -->
+                                    <div id="revisionIgnoredPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreRevisionAttributeEnabled}" type="radio"
+                                                    value="true" />
+                                                Component Revision Attribute enabled
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreRevisionAttributeEnabled}" type="radio"
+                                                    value="false" />
+                                                Component Revision Attribute disabled
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </li>
@@ -202,33 +181,31 @@
                                 <span
                                     th:text="${initialData.ignorePcieVpdAttributeEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="pcieVpdIgnoredPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignorePcieVpdAttributeEnabled}" type="radio"
-                                                value="true" />
-                                            PCIE VPD Attribute enabled
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignorePcieVpdAttributeEnabled}" type="radio"
-                                                value="false" />
-                                            PCIE VPD Attribute disabled
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#ignorePcieVpdPolicyModal", "#pcieVpdIgnoredPolicyBody")'
-                                    th:href="'#' + ignorePcieVpdPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + ignorePcieVpdPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='ignorePcieVpdPolicyModal',  label='Edit Ignore PCIE VPD Policy Settings', bodyContent=~{this::#pcieVpdIgnoredPolicyBody})">
+                                    <!-- Define the content of the modal -->
+                                    <div id="pcieVpdIgnoredPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignorePcieVpdAttributeEnabled}" type="radio"
+                                                    value="true" />
+                                                PCIE VPD Attribute enabled
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignorePcieVpdAttributeEnabled}" type="radio"
+                                                    value="false" />
+                                                PCIE VPD Attribute disabled
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
 
@@ -246,30 +223,30 @@
                         Firmware Validation:
                         <span th:text="${initialData.firmwareValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                        <!-- Define the content of the modal -->
-                        <div class="modal-content-visibility-on-close" id="firmwarePolicyBody">
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{firmwareValidationEnabled}" type="radio" value="true" />
-                                    Firmware will be validated
-                                </label>
-                            </div>
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{firmwareValidationEnabled}" type="radio" value="false" />
-                                    Firmware will not be validated
-                                </label>
-                            </div>
-                        </div>
 
                         <!-- trigger to open the modal -->
-                        <a onclick='showModal("#fwPolicyModal", "#firmwarePolicyBody")' th:href="'#' + fwPolicyModal">
+                        <a data-toggle="modal" th:href="'#' + fwPolicyModal">
                             <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                         </a>
 
                         <!-- modal fragment -->
                         <div
                             th:replace="fragments/modal :: modal( id='fwPolicyModal',  label='Edit Firmware Validation Policy Settings', bodyContent=~{this::#firmwarePolicyBody})">
+                            <!-- Define the content of the modal -->
+                            <div id="firmwarePolicyBody">
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{firmwareValidationEnabled}" type="radio" value="true" />
+                                        Firmware will be validated
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{firmwareValidationEnabled}" type="radio" value="false" />
+                                        Firmware will not be validated
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </form>
 
@@ -280,31 +257,29 @@
                                 Ignore IMA PCR Entry:
                                 <span th:text="${initialData.ignoreImaEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="imaIgnoredPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreImaEnabled}" type="radio" value="true" />
-                                            Ignore IMA enabled
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreImaEnabled}" type="radio" value="false" />
-                                            Ignore IMA disabled
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#ignoreImaPolicyModal", "#imaIgnoredPolicyBody")'
-                                    th:href="'#' + ignoreImaPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + ignoreImaPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='ignoreImaPolicyModal',  label='Edit Ignore IMA Policy Settings', bodyContent=~{this::#imaIgnoredPolicyBody})">
+                                    <!-- Define the content of the modal -->
+                                    <div id="imaIgnoredPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreImaEnabled}" type="radio" value="true" />
+                                                Ignore IMA enabled
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreImaEnabled}" type="radio" value="false" />
+                                                Ignore IMA disabled
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </li>
@@ -316,31 +291,30 @@
                                 Ignore TBOOT PCRs Entry:
                                 <span th:text="${initialData.ignoreTbootEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="tbootIgnoredPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreTbootEnabled}" type="radio" value="true" />
-                                            Ignore TBoot enabled
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreTbootEnabled}" type="radio" value="false" />
-                                            Ignore TBoot disabled
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#ignoreTbootPolicyModal", "#tbootIgnoredPolicyBody")'
-                                    th:href="'#' + ignoreTbootPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + ignoreTbootPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='ignoreTbootPolicyModal',  label='Edit Ignore Tboot Policy Settings', bodyContent=~{this::#tbootIgnoredPolicyBody})">
+
+                                    <!-- Define the content of the modal -->
+                                    <div id="tbootIgnoredPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreTbootEnabled}" type="radio" value="true" />
+                                                Ignore TBoot enabled
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreTbootEnabled}" type="radio" value="false" />
+                                                Ignore TBoot disabled
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </li>
@@ -351,31 +325,30 @@
                                 Ignore GPT PCRs Entry:
                                 <span th:text="${initialData.ignoreGptEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="gptIgnoredPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreGptEnabled}" type="radio" value="true" />
-                                            Ignore GPT enabled
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreGptEnabled}" type="radio" value="false" />
-                                            Ignore GPT disabled
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#ignoreGptPolicyModal", "#gptIgnoredPolicyBody")'
-                                    th:href="'#' + ignoreGptPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + ignoreGptPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='ignoreGptPolicyModal',  label='Edit Ignore GPT Policy Settings', bodyContent=~{this::#gptIgnoredPolicyBody})">
+
+                                    <!-- Define the content of the modal -->
+                                    <div id="gptIgnoredPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreGptEnabled}" type="radio" value="true" />
+                                                Ignore GPT enabled
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreGptEnabled}" type="radio" value="false" />
+                                                Ignore GPT disabled
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </li>
@@ -387,31 +360,29 @@
                                 Ignore OS Events:
                                 <span th:text="${initialData.ignoreOsEvtEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="osIgnoredPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreOsEvtEnabled}" type="radio" value="true" />
-                                            Ignore OS Events enabled
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{ignoreOsEvtEnabled}" type="radio" value="false" />
-                                            Ignore OS Events disabled
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#ignoreOSPolicyModal", "#osIgnoredPolicyBody")'
-                                    th:href="'#' + ignoreOSPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + ignoreOSPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='ignoreOSPolicyModal',  label='Edit Ignore OS Events Policy Settings', bodyContent=~{this::#osIgnoredPolicyBody})">
+                                    <!-- Define the content of the modal -->
+                                    <div id="osIgnoredPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreOsEvtEnabled}" type="radio" value="true" />
+                                                Ignore OS Events enabled
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreOsEvtEnabled}" type="radio" value="false" />
+                                                Ignore OS Events disabled
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </li>
@@ -429,32 +400,32 @@
                         <span
                             th:text="${initialData.issueAttestationCertificateEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                        <!-- Define the content of the modal -->
-                        <div class="modal-content-visibility-on-close" id="genAttestCertPolicyBody">
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{issueAttestationCertificateEnabled}" type="radio" value="true" />
-                                    Conditionally generate an Attestation Certificate before 'Not After' expiration date
-                                </label>
-                            </div>
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{issueAttestationCertificateEnabled}" type="radio"
-                                        value="false" />
-                                    Never generate an Attestation Certificate
-                                </label>
-                            </div>
-                        </div>
-
                         <!-- trigger to open the modal -->
-                        <a onclick='showModal("#issuedCertificatePolicyModal", "#genAttestCertPolicyBody")'
-                            th:href="'#' + issuedCertificatePolicyModal">
+                        <a data-toggle="modal" th:href="'#' + issuedCertificatePolicyModal">
                             <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                         </a>
 
                         <!-- modal fragment -->
                         <div
                             th:replace="fragments/modal :: modal( id='issuedCertificatePolicyModal',  label='Edit Issued Attestation Certificate Policy Settings', bodyContent=~{this::#genAttestCertPolicyBody})">
+                            <!-- Define the content of the modal -->
+                            <div id="genAttestCertPolicyBody">
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{issueAttestationCertificateEnabled}" type="radio"
+                                            value="true" />
+                                        Conditionally generate an Attestation Certificate before 'Not After' expiration
+                                        date
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{issueAttestationCertificateEnabled}" type="radio"
+                                            value="false" />
+                                        Never generate an Attestation Certificate
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </form>
 
@@ -467,26 +438,44 @@
                                 <span
                                     th:text="${initialData.generateAttestationCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="expCertPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            Attestation Certificate validity period (Default 3651 days)<br />
-                                            Select period in days:
-                                            <input min="1" name="generateAttestCertExpirationValue" type="number" />
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#issuedCertificatePolicyExpirationModal", "#expCertPolicyBody")'
-                                    th:href="'#' + issuedCertificatePolicyExpirationModal">
+                                <a data-toggle="modal" th:href="'#' + issuedCertificatePolicyExpirationModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='issuedCertificatePolicyExpirationModal',  label='Edit Generate Certificate Expiration Policy Settings', bodyContent=~{this::#expCertPolicyBody})">
+                                    <!-- Define the content of the modal -->
+                                    <div id="expCertPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio"
+                                                    th:field="*{generateAttestationCertOnExpirationEnabled}"
+                                                    value="true" />
+                                                Generate Attestation Certificate before validity date
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio"
+                                                    th:field="*{generateAttestationCertOnExpirationEnabled}"
+                                                    value="false" />
+                                                Do not generate Attestation Certificate before validity date.
+                                            </label>
+                                        </div>
+
+                                        <br />
+
+                                        <div class="radio">
+                                            <label>
+                                                Attestation Certificate validity period (Default 3651 days)<br />
+                                                Enter validity period in days:
+                                                <input min="1" th:field="*{generateAttestCertExpirationValue}"
+                                                    type="number" />
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </li>
@@ -499,28 +488,46 @@
                                 <span
                                     th:text="${initialData.generateAttestationCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="thresholdCertPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            Renew 'n' days before Attestation Certificate's 'Not After' Validity date
-                                            (Default 365 days)<br />
-                                            Select 'n' period in days:
-                                            <input min="1" th:field="*{generateAttestCertThresholdValue}"
-                                                type="number" />
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#issuedCertificatePolicyRenewalModal", "#thresholdCertPolicyBody")'
-                                    th:href="'#' + issuedCertificatePolicyRenewalModal">
+                                <a data-toggle="modal" th:href="'#' + issuedCertificatePolicyRenewalModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='issuedCertificatePolicyRenewalModal',  label='Edit Generate Certificate Renewal Policy Settings', bodyContent=~{this::#thresholdCertPolicyBody})">
+                                    <!-- Define the content of the modal -->
+                                    <div id="thresholdCertPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio"
+                                                    th:field="*{generateAttestationCertOnExpirationEnabled}"
+                                                    value="true" />
+                                                Renew Attestation Certificate before validity date.
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio"
+                                                    th:field="*{generateAttestationCertOnExpirationEnabled}"
+                                                    value="false" />
+                                                Do not renew Attestation Certificate before validity date.
+                                            </label>
+                                        </div>
+
+                                        <br />
+
+                                        <div class="radio">
+                                            <label>
+                                                Renew 'n' days before Attestation Certificate's 'Not After' Validity
+                                                date
+                                                (Default 365 days)<br />
+                                                Enter 'n' period in days:
+                                                <input min="1" th:field="*{generateAttestCertThresholdValue}"
+                                                    type="number" />
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </li>
@@ -538,31 +545,29 @@
                         Generate LDevID Certificate:
                         <span th:text="${initialData.issueDevIdCertificateEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                        <!-- Define the content of the modal -->
-                        <div class="modal-content-visibility-on-close" id="genLDevIDCertPolicyBody">
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{issueDevIdCertificateEnabled}" type="radio" value="true" />
-                                    Conditionally generate an DevID Certificate before 'Not After' expiration date
-                                </label>
-                            </div>
-                            <div class="radio">
-                                <label>
-                                    <input th:field="*{issueDevIdCertificateEnabled}" type="radio" value="false" />
-                                    Never generate a DevID Certificate
-                                </label>
-                            </div>
-                        </div>
-
                         <!-- trigger to open the modal -->
-                        <a onclick='showModal("#ldevidCertificatePolicyModal", "#genLDevIDCertPolicyBody")'
-                            th:href="'#' + ldevidCertificatePolicyModal">
+                        <a data-toggle="modal" th:href="'#' + ldevidCertificatePolicyModal">
                             <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                         </a>
 
                         <!-- modal fragment -->
                         <div
                             th:replace="fragments/modal :: modal( id='ldevidCertificatePolicyModal',  label='Edit LDevID Certificate Generation Policy Settings', bodyContent=~{this::#genLDevIDCertPolicyBody})">
+                            <!-- Define the content of the modal -->
+                            <div id="genLDevIDCertPolicyBody">
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{issueDevIdCertificateEnabled}" type="radio" value="true" />
+                                        Conditionally generate an DevID Certificate before 'Not After' expiration date
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input th:field="*{issueDevIdCertificateEnabled}" type="radio" value="false" />
+                                        Never generate a DevID Certificate
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </form>
 
@@ -575,27 +580,42 @@
                                 <span
                                     th:text="${initialData.generateDevIdCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="expirationLvedvIdCertPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            LDevID Certificate validity period (Default 3651 days)<br />
-                                            Select period in days:
-                                            <input min="1" th:field="*{generateDevIdCertExpirationValue}"
-                                                type="number" />
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#ldevidCertificateExpirationPolicyModal", "#expirationLvedvIdCertPolicyBody")'
-                                    th:href="'#' + ldevidCertificateExpirationPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + ldevidCertificateExpirationPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='ldevidCertificateExpirationPolicyModal',  label='Edit LDevID Certificate Expiration Policy Settings', bodyContent=~{this::#expirationLvedvIdCertPolicyBody})">
+                                    <!-- Define the content of the modal -->
+                                    <div id="expirationLvedvIdCertPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" th:field="*{generateDevIdCertOnExpirationEnabled}"
+                                                    value="true" />
+                                                Generate LdevId Certificate before validity date.
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" th:field="*{generateDevIdCertOnExpirationEnabled}"
+                                                    value="false" />
+                                                Do not generate LdevId Certificate before validity date.
+                                            </label>
+                                        </div>
+
+                                        <br />
+
+                                        <div class="radio">
+                                            <label>
+                                                LDevId Certificate validity period (Default 3651 days)<br />
+                                                Enter validity period in days:
+                                                <input min="1" th:field="*{generateDevIdCertExpirationValue}"
+                                                    type="number" />
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </li>
@@ -608,28 +628,45 @@
                                 <span
                                     th:text="${initialData.generateDevIdCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                                <!-- Define the content of the modal -->
-                                <div class="modal-content-visibility-on-close" id="thresholdLvedvIdCertPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            Renew 'n' days before LDevID Certificate's 'Not After' Validity date
-                                            (Default 365 days)<br />
-                                            Select 'n' period in days:
-                                            <input min="1" th:field="*{generateDevIdCertThresholdValue}"
-                                                type="number" />
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <!-- trigger to open the modal -->
-                                <a onclick='showModal("#ldevidCertificateRenewalPolicyModal", "#thresholdLvedvIdCertPolicyBody")'
-                                    th:href="'#' + ldevidCertificateRenewalPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + ldevidCertificateRenewalPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
                                     th:replace="fragments/modal :: modal( id='ldevidCertificateRenewalPolicyModal',  label='Edit LDevID Certificate Renewal Policy Settings', bodyContent=~{this::#thresholdLvedvIdCertPolicyBody})">
+
+                                    <!-- Define the content of the modal -->
+                                    <div id="thresholdLvedvIdCertPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" th:field="*{generateDevIdCertOnExpirationEnabled}"
+                                                    value="true" />
+                                                Renew LDevId Certificate before validity date.
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" th:field="*{generateDevIdCertOnExpirationEnabled}"
+                                                    value="false" />
+                                                Do not renew LDevId Certificate before validity date.
+                                            </label>
+                                        </div>
+
+                                        <br />
+
+                                        <div class="radio">
+                                            <label>
+                                                Renew 'n' days before LDevId Certificate's 'Not After' Validity
+                                                date
+                                                (Default 365 days)<br />
+                                                Enter 'n' period in days:
+                                                <input min="1" th:field="*{generateDevIdCertThresholdValue}"
+                                                    type="number" />
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </li>

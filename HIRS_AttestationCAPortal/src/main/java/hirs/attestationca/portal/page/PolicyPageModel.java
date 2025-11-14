@@ -34,8 +34,6 @@ public class PolicyPageModel {
     private boolean logProtobufAlways;
 
     // Variables to get policy settings from page
-    private String devIdExpirationChecked;
-    private Long numOfValidDays;
     private Long reissueThreshold;
     private Long devIdReissueThreshold;
     private Long generateAttestCertExpirationValue;
@@ -60,13 +58,6 @@ public class PolicyPageModel {
         this.generateAttestationCertOnExpirationEnabled =
                 policySettings.isGenerateAttestationCertificateOnExpiration();
         this.generateDevIdCertOnExpirationEnabled = policySettings.isGenerateDevIdCertificateOnExpiration();
-        this.numOfValidDays = policySettings.getValidityDays();
-        this.reissueThreshold = policySettings.getReissueThreshold();
-        this.generateAttestCertExpirationValue = policySettings.getValidityDays();
-        this.generateAttestCertThresholdValue = policySettings.getReissueThreshold();
-        this.generateDevIdCertExpirationValue = policySettings.getDevIdValidityDays();
-        this.devIdReissueThreshold = policySettings.getDevIdReissueThreshold();
-        this.generateDevIdCertThresholdValue = policySettings.getDevIdReissueThreshold();
         this.logProtobufOnFailedVal = policySettings.isSaveProtobufToLogOnFailedValEnabled();
         this.logProtobufAlways = policySettings.isSaveProtobufToLogAlwaysEnabled();
         this.logProtobufNever = policySettings.isSaveProtobufToLogNeverEnabled();
@@ -75,5 +66,13 @@ public class PolicyPageModel {
         this.ignoreTbootEnabled = policySettings.isIgnoretBootEnabled();
         this.ignoreGptEnabled = policySettings.isIgnoreGptEnabled();
         this.ignoreOsEvtEnabled = policySettings.isIgnoreOsEvtEnabled();
+
+        this.reissueThreshold = policySettings.getReissueThreshold();
+        this.devIdReissueThreshold = policySettings.getDevIdReissueThreshold();
+        this.generateAttestCertExpirationValue = policySettings.getValidityDays();
+        this.generateAttestCertThresholdValue = policySettings.getReissueThreshold();
+        this.generateDevIdCertExpirationValue = policySettings.getDevIdValidityDays();
+        this.generateDevIdCertThresholdValue = policySettings.getDevIdReissueThreshold();
+
     }
 }

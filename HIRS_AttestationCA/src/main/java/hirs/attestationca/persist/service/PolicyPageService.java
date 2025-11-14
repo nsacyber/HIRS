@@ -30,6 +30,32 @@ public class PolicyPageService {
     }
 
     /**
+     * Updates the Endorsement Credential validation policy according to user input.
+     *
+     * @param isEcValidationOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
+     */
+    public boolean updateECValidationPolicy(final boolean isEcValidationOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        if (!isPolicyValid(isEcValidationOptionEnabled, policySettings.isPcValidationEnabled(),
+                policySettings.isPcAttributeValidationEnabled())) {
+            log.error("To disable Endorsement Credential Validation, Platform Validation"
+                    + " must also be disabled.");
+            return false;
+        }
+
+        policySettings.setEcValidationEnabled(isEcValidationOptionEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the endorsement credential "
+                + "validation policy: {}", policySettings);
+
+        return true;
+    }
+
+    /**
      * Updates the Platform Certificate Validation policy according to user input.
      *
      * @param isPcValidationOptionEnabled boolean value representation of the current policy option's state
@@ -142,73 +168,6 @@ public class PolicyPageService {
 
         log.debug("Current ACA Policy after updating the ignore component revision attribute"
                 + " option policy: {}", policySettings);
-
-        return true;
-    }
-
-    /**
-     * Updates the Issued Attestation Certificate generation policy according to user input.
-     *
-     * @param isIssuedAttestationOptionEnabled boolean value representation of the current policy option's
-     *                                         state
-     */
-    public void updateIssuedAttestationGenerationPolicy(final boolean isIssuedAttestationOptionEnabled) {
-        PolicySettings policySettings = getDefaultPolicy();
-
-        if (!isIssuedAttestationOptionEnabled) {
-            policySettings.setGenerateAttestationCertificateOnExpiration(false);
-        }
-
-        policySettings.setIssueAttestationCertificateEnabled(isIssuedAttestationOptionEnabled);
-
-        policyRepository.saveAndFlush(policySettings);
-
-        log.debug("Current ACA Policy after updating the issued attestation certificate generation "
-                + " policy: {}", policySettings);
-    }
-
-    /**
-     * Updates the LDevId validation policy according to user input.
-     *
-     * @param isLDevIdOptionEnabled boolean value representation of the current policy option's state
-     */
-    public void updateLDevIdGenerationPolicy(final boolean isLDevIdOptionEnabled) {
-        PolicySettings policySettings = getDefaultPolicy();
-
-        if (!isLDevIdOptionEnabled) {
-            policySettings.setGenerateDevIdCertificateOnExpiration(false);
-        }
-
-        policySettings.setIssueDevIdCertificateEnabled(isLDevIdOptionEnabled);
-
-        policyRepository.saveAndFlush(policySettings);
-
-        log.debug("Current ACA Policy after updating the ldevid validation "
-                + " policy: {}", policySettings);
-    }
-
-    /**
-     * Updates the Endorsement Credential validation policy according to user input.
-     *
-     * @param isEcValidationOptionEnabled boolean value representation of the current policy option's state
-     * @return true if the policy was updated successfully; otherwise, false.
-     */
-    public boolean updateECValidationPolicy(final boolean isEcValidationOptionEnabled) {
-        PolicySettings policySettings = getDefaultPolicy();
-
-        if (!isPolicyValid(isEcValidationOptionEnabled, policySettings.isPcValidationEnabled(),
-                policySettings.isPcAttributeValidationEnabled())) {
-            log.error("To disable Endorsement Credential Validation, Platform Validation"
-                    + " must also be disabled.");
-            return false;
-        }
-
-        policySettings.setEcValidationEnabled(isEcValidationOptionEnabled);
-
-        policyRepository.saveAndFlush(policySettings);
-
-        log.debug("Current ACA Policy after updating the endorsement credential "
-                + "validation policy: {}", policySettings);
 
         return true;
     }
@@ -353,185 +312,194 @@ public class PolicyPageService {
         return true;
     }
 
+
+    /**
+     * Updates the Issued Attestation Certificate generation policy according to user input.
+     *
+     * @param isIssuedAttestationOptionEnabled boolean value representation of the current policy option's
+     *                                         state
+     */
+    public void updateIssuedAttestationGenerationPolicy(final boolean isIssuedAttestationOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        if (!isIssuedAttestationOptionEnabled) {
+            policySettings.setGenerateAttestationCertificateOnExpiration(false);
+        }
+
+        policySettings.setIssueAttestationCertificateEnabled(isIssuedAttestationOptionEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the issued attestation certificate generation "
+                + " policy: {}", policySettings);
+    }
+
+    /**
+     * Updates the LDevId validation policy according to user input.
+     *
+     * @param isLDevIdOptionEnabled boolean value representation of the current policy option's state
+     */
+    public void updateLDevIdGenerationPolicy(final boolean isLDevIdOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        if (!isLDevIdOptionEnabled) {
+            policySettings.setGenerateDevIdCertificateOnExpiration(false);
+        }
+
+        policySettings.setIssueDevIdCertificateEnabled(isLDevIdOptionEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the ldevid validation "
+                + " policy: {}", policySettings);
+    }
+
     /**
      * Updates the Attestation Certificate generation expiration date under the generate attestation
      * certificate policy setting using the provided user input.
      *
-     * @param expirationValue                    attestation certificate expiration value
-     * @param isGenerateIssuedCertificateEnabled boolean value representation of the current policy
-     *                                           option's state
-     * @return string message that describes the result of this policy update
+     * @param attestCertExpirationValue attestation certificate expiration value
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public String updateAttestationCertExpirationPolicy(final Long expirationValue,
-                                                        final boolean isGenerateIssuedCertificateEnabled) {
+    public boolean updateAttestationCertExpirationPolicy(
+            final boolean canGenerateAttestationCertificateOnExpiration,
+            final Long attestCertExpirationValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        String successMessage;
-
-        boolean canGenerateIssuedCertificateEnabled = isGenerateIssuedCertificateEnabled;
-
-        if (policySettings.isIssueAttestationCertificateEnabled()) {
-            Long numOfDays;
-            if (canGenerateIssuedCertificateEnabled) {
-                successMessage = "Attestation Certificate generation expiration time enabled.";
-                numOfDays = (expirationValue != null) ? expirationValue : PolicySettings.TEN_YEARS_IN_DAYS;
-            } else {
-                successMessage = "Attestation Certificate generation expiration time disabled.";
-                numOfDays = policySettings.getValidityDays();
-            }
-            policySettings.setValidityDays(numOfDays);
-        } else {
-            canGenerateIssuedCertificateEnabled = false;
-            successMessage = "Attestation Certificate generation is disabled, cannot set time expiration";
+        if (canGenerateAttestationCertificateOnExpiration &&
+                !policySettings.isIssueAttestationCertificateEnabled()) {
+            log.error("Cannot set the attestation certificate expiration value when" +
+                    " the attestation certificate generation expiration policy is not enabled.");
+            return false;
         }
 
-        policySettings.setGenerateAttestationCertificateOnExpiration(canGenerateIssuedCertificateEnabled);
+        policySettings.setGenerateAttestationCertificateOnExpiration(
+                canGenerateAttestationCertificateOnExpiration);
+
+        if (canGenerateAttestationCertificateOnExpiration) {
+            final Long numOfDays = (attestCertExpirationValue != null) ? attestCertExpirationValue :
+                    PolicySettings.TEN_YEARS_IN_DAYS;
+            policySettings.setValidityDays(numOfDays);
+        }
 
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the attestation certificate "
                 + "generation expiration value policy: {}", policySettings);
 
-        return successMessage;
+        return true;
     }
 
     /**
      * Updates the LDevId Certificate generation expiration date under the generate ldevid
      * certificate policy setting using the provided user input.
      *
-     * @param ldevIdExpirationValue              ldevid certificate expiration value
-     * @param isGenerateLDevIdCertificateEnabled boolean value representation of the current policy option's
-     *                                           state
-     * @return string message that describes the result of this policy update
+     * @param canGenerateLDevIdCertificateOnExpiration boolean value representation of the current
+     *                                                 policy option's state
+     * @param ldevIdExpirationValue                    ldevid certificate expiration value
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public String updateLDevIdExpirationPolicy(final Long ldevIdExpirationValue,
-                                               final boolean isGenerateLDevIdCertificateEnabled) {
+    public boolean updateLDevIdExpirationPolicy(final boolean canGenerateLDevIdCertificateOnExpiration,
+                                                final Long ldevIdExpirationValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        boolean canGenerateLDevIdCertificateEnabled = isGenerateLDevIdCertificateEnabled;
-
-        String successMessage;
-
-        if (policySettings.isIssueDevIdCertificateEnabled()) {
-            Long numOfDays;
-            if (canGenerateLDevIdCertificateEnabled) {
-                successMessage = "DevID Certificate generation expiration time enabled.";
-                numOfDays =
-                        (ldevIdExpirationValue != null) ? ldevIdExpirationValue :
-                                PolicySettings.TEN_YEARS_IN_DAYS;
-            } else {
-                successMessage = "DevID Certificate generation expiration time disabled.";
-                numOfDays = policySettings.getDevIdValidityDays();
-            }
-            policySettings.setDevIdValidityDays(numOfDays);
-        } else {
-            canGenerateLDevIdCertificateEnabled = false;
-            successMessage = "DevID Certificate generation is disabled, "
-                    + "cannot set time expiration";
+        if (canGenerateLDevIdCertificateOnExpiration &&
+                !policySettings.isIssueDevIdCertificateEnabled()) {
+            log.error("Cannot set the ldevid certificate expiration value when" +
+                    " the ldevid certificate generation expiration policy is not enabled.");
+            return false;
         }
 
-        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateEnabled);
+        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateOnExpiration);
+
+        if (canGenerateLDevIdCertificateOnExpiration) {
+            final Long numOfDays = (ldevIdExpirationValue != null) ? ldevIdExpirationValue :
+                    PolicySettings.TEN_YEARS_IN_DAYS;
+            policySettings.setDevIdValidityDays(numOfDays);
+        }
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the devid certificate generation expiration "
+        log.debug("Current ACA Policy after updating the ldevid certificate generation expiration "
                 + "value policy: {}", policySettings);
 
-        return successMessage;
+        return true;
     }
 
     /**
      * Updates the Attestation Certificate generation threshold value under the generate attestation
      * certificate policy setting  using the provided user input.
+     * <p>
      *
-     * @param thresholdValue                     threshold value
-     * @param reissueThresholdValue              reissue threshold value
-     * @param isGenerateIssuedCertificateEnabled boolean value representation of the current
-     *                                           policy option's state
-     * @return string message that describes the result of this policy update
+     * @param canGenerateAttestationCertificateOnExpiration boolean value representation of the current
+     *                                                      policy option's state
+     * @param attestCertThresholdValue                      threshold value
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public String updateAttestationCertThresholdPolicy(final Long thresholdValue,
-                                                       final Long reissueThresholdValue,
-                                                       final boolean isGenerateIssuedCertificateEnabled) {
+    public boolean updateAttestationCertThresholdPolicy(
+            final boolean canGenerateAttestationCertificateOnExpiration,
+            final Long attestCertThresholdValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        boolean canGenerateIssuedCertificateEnabled = isGenerateIssuedCertificateEnabled;
-
-        String successMessage;
-
-        if (policySettings.isIssueAttestationCertificateEnabled()) {
-            Long threshold = canGenerateIssuedCertificateEnabled ? thresholdValue : reissueThresholdValue;
-            successMessage = canGenerateIssuedCertificateEnabled
-                    ? "Attestation Certificate generation threshold time enabled."
-                    : "Attestation Certificate generation threshold time disabled.";
-
-            if (threshold == 0) { //todo
-                threshold = PolicySettings.A_YEAR_IN_DAYS;
-            }
-
-            policySettings.setReissueThreshold(threshold);
-        } else {
-            canGenerateIssuedCertificateEnabled = false;
-            successMessage = "Attestation Certificate generation is disabled, "
-                    + "cannot set time expiration";
+        if (canGenerateAttestationCertificateOnExpiration &&
+                !policySettings.isIssueAttestationCertificateEnabled()) {
+            log.error("Cannot set the attestation certificate threshold value when" +
+                    " the attestation certificate generation expiration policy is not enabled.");
+            return false;
         }
 
-        policySettings.setGenerateAttestationCertificateOnExpiration(canGenerateIssuedCertificateEnabled);
+        policySettings.setGenerateAttestationCertificateOnExpiration(
+                canGenerateAttestationCertificateOnExpiration);
+
+        if (canGenerateAttestationCertificateOnExpiration) {
+            final Long threshold =
+                    (attestCertThresholdValue != null) ? attestCertThresholdValue :
+                            PolicySettings.A_YEAR_IN_DAYS;
+            policySettings.setReissueThreshold(threshold);
+        }
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the aca attestation certificate generation "
+        log.debug("Current ACA Policy after updating the attestation certificate generation "
                 + "threshold policy: {}", policySettings);
 
-        return successMessage;
+        return true;
     }
 
     /**
      * Updates the LDevId Certificate generation threshold value under the generate ldevid
      * certificate policy setting using the provided user input.
      *
-     * @param ldevIdThresholdValue               ldevid threshold value
-     * @param ldevIdReissueThresholdValue        ldevid reissue threshold value
-     * @param isGenerateLDevIdCertificateEnabled boolean value representation of the current policy option's
-     *                                           state
-     * @return string message that describes the result of this policy update
+     * @param canGenerateLDevIdCertificateOnExpiration boolean value representation of the current policy option's
+     *                                                 state
+     * @param ldevIdThresholdValue                     ldevid threshold value
+     * @return true if the policy was updated successfully; otherwise, false.
      */
-    public String updateLDevIdThresholdPolicy(final Long ldevIdThresholdValue,
-                                              final Long ldevIdReissueThresholdValue,
-                                              final boolean isGenerateLDevIdCertificateEnabled) {
+    public boolean updateLDevIdThresholdPolicy(final boolean canGenerateLDevIdCertificateOnExpiration,
+                                               final Long ldevIdThresholdValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        boolean canGenerateLDevIdCertificateEnabled = isGenerateLDevIdCertificateEnabled;
-
-        String successMessage;
-
-        if (policySettings.isIssueDevIdCertificateEnabled()) {
-            Long threshold = canGenerateLDevIdCertificateEnabled
-                    ? ldevIdThresholdValue
-                    : ldevIdReissueThresholdValue;
-
-            successMessage = canGenerateLDevIdCertificateEnabled
-                    ? "DevID Certificate generation threshold time enabled."
-                    : "DevID Certificate generation threshold time disabled.";
-
-            if (threshold == 0) { //todo
-                threshold = PolicySettings.A_YEAR_IN_DAYS;
-            }
-
-            policySettings.setDevIdReissueThreshold(threshold);
-        } else {
-            canGenerateLDevIdCertificateEnabled = false;
-            successMessage = "DevID Certificate generation is disabled, cannot set threshold time";
+        if (canGenerateLDevIdCertificateOnExpiration &&
+                !policySettings.isIssueDevIdCertificateEnabled()) {
+            log.error("Cannot set the ldevid certificate threshold value when" +
+                    " the ldevid certificate generation expiration policy is not enabled.");
+            return false;
         }
 
-        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateEnabled);
+        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateOnExpiration);
+
+        if (canGenerateLDevIdCertificateOnExpiration) {
+            final Long ldevidThreshold =
+                    (ldevIdThresholdValue != null) ? ldevIdThresholdValue : PolicySettings.A_YEAR_IN_DAYS;
+            policySettings.setDevIdReissueThreshold(ldevidThreshold);
+        }
 
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the ldevid certificate generation "
                 + "threshold policy: {}", policySettings);
 
-        return successMessage;
+        return true;
     }
 
     /**

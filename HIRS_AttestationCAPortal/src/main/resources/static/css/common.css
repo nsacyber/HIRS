@@ -156,16 +156,6 @@ body {
 }
 
 /* Modal */
-.modal-content-visibility-on-close {
-  display: none;
-}
-
-.modal-custom-buttons {
-  display: inline-block;
-  float: left;
-  height: 36px;
-}
-
 .modal-custom-button {
   display: inline-block;
   height: 36px;
@@ -201,13 +191,16 @@ body {
 .index-left-side {
   background: #d5f2e0;
 }
+
 .index-left-side h1 {
   background: #567361;
   text-align: center;
 }
+
 .index-right-side {
   background: #ffefc1;
 }
+
 .index-right-side h1 {
   background: #b97042;
   text-align: center;
@@ -226,6 +219,7 @@ body {
   display: flex;
   flex-wrap: wrap;
 }
+
 #aca-cert-viewer .row > [class*="col-"] {
   display: flex;
   flex-direction: column;
