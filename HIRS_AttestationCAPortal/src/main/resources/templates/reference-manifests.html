@@ -7,8 +7,8 @@
         <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
         <script th:inline="javascript">
             $(document).ready(function () {
-                let viewName = [[${page.viewName}]];
-                let url = "reference-manifests/list";
+                const viewName = [[${page.viewName}]];
+                const url = viewName + "/list";
                 let columns = [
                     {
                         name: "tagId",
@@ -50,8 +50,8 @@
                             // used as a parameter to the REST POST call to delete
                             let html = "";
                             html += rimDetailsLink(full.id);
-                            html += rimDownloadLink(full.id, viewName);
-                            html += rimDeleteLink(full.id, viewName);
+                            html += rimDownloadLink(viewName, full.id);
+                            html += rimDeleteLink(viewName, full.id);
 
                             return html;
                         }
