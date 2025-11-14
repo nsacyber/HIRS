@@ -84,7 +84,7 @@
             <!-- Details icon and dialog for HIRS ACA Root certificate -->
             <span class="aca-input-box-header">HIRS Attestation Certificate Chain</span>
             <th:block th:replace="fragments/details-viewer
-                :: detailsViewerIcon('aca-cert-viewer',
+                :: detailsViewer('aca-cert-viewer',
                 'HIRS Attestation Root Certificate', ${null}, ~{this :: aca-cert-viewer-modal})"
             >
                 <th:block th:fragment="aca-cert-viewer-modal" > <!-- aca-cert-viewer-modal start -->
