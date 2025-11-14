@@ -7,7 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * PolicyPage model object to demonstrate data exchange between policy.html page
+ * PolicyPage model object used to exchange Policy Settings updates between policy.html page
  * form and controller.
  */
 @Setter
@@ -20,27 +20,23 @@ public class PolicyPageModel {
     private boolean pcAttributeValidationEnabled;
     private boolean ignoreRevisionAttributeEnabled;
     private boolean firmwareValidationEnabled;
-    private boolean issueAttestationCertificateEnabled;
-    private boolean issueDevIdCertificateEnabled;
-    private boolean generateAttestationCertOnExpirationEnabled;
-    private boolean generateDevIdCertOnExpirationEnabled;
     private boolean ignoreImaEnabled;
     private boolean ignoreTbootEnabled;
     private boolean ignoreGptEnabled;
     private boolean ignoreOsEvtEnabled;
     private boolean ignorePcieVpdAttributeEnabled;
-    private boolean logProtobufOnFailedVal;
-    private boolean logProtobufNever;
-    private boolean logProtobufAlways;
-
-    // Variables to get policy settings from page
-    private Long reissueThreshold;
-    private Long devIdReissueThreshold;
+    private boolean issueAttestationCertificateEnabled;
+    private boolean issueDevIdCertificateEnabled;
+    private boolean generateAttestationCertOnExpirationEnabled;
+    private boolean generateDevIdCertOnExpirationEnabled;
     private Long generateAttestCertExpirationValue;
     private Long generateDevIdCertExpirationValue;
     private Long generateAttestCertThresholdValue;
     private Long generateDevIdCertThresholdValue;
     private String saveProtobufToLogOption;
+    private boolean logProtobufOnFailedVal;
+    private boolean logProtobufNever;
+    private boolean logProtobufAlways;
 
     /**
      * Constructor. Sets fields from policy.
@@ -66,13 +62,9 @@ public class PolicyPageModel {
         this.ignoreTbootEnabled = policySettings.isIgnoretBootEnabled();
         this.ignoreGptEnabled = policySettings.isIgnoreGptEnabled();
         this.ignoreOsEvtEnabled = policySettings.isIgnoreOsEvtEnabled();
-
-        this.reissueThreshold = policySettings.getReissueThreshold();
-        this.devIdReissueThreshold = policySettings.getDevIdReissueThreshold();
         this.generateAttestCertExpirationValue = policySettings.getValidityDays();
         this.generateAttestCertThresholdValue = policySettings.getReissueThreshold();
         this.generateDevIdCertExpirationValue = policySettings.getDevIdValidityDays();
         this.generateDevIdCertThresholdValue = policySettings.getDevIdReissueThreshold();
-
     }
 }

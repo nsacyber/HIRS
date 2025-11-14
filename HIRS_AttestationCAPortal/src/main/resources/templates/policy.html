@@ -6,21 +6,7 @@
     <title th:text="'Attestation Identity CA Policy Options'">Attestation Identity CA Policy Options</title>
 </head>
 
-<section layout:fragment="script">
-    <script th:inline="javascript">
-        function submitProtobufLogSetting() {
-            // find the selected protobuf log setting
-            let form = $('input[name="saveProtobufToLogOption"]:checked').closest('form');
-
-            // Submit the form
-            form.submit();
-
-            // Log the selected value to the console (for debugging)
-            console.log('Selected value: ' + $('input[name="saveProtobufToLogOption"]:checked').val());
-        }
-
-    </script>
-</section>
+<section layout:fragment="script"></section>
 
 <body>
     <h1 layout:fragment="pageHeaderTitle"> Attestation Identity CA Policy Options </h1>
@@ -106,7 +92,6 @@
                         th:object="${initialData}">
                         Platform Attribute Credential Validation:
                         <span th:text="${initialData.pcAttributeValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
-
 
 
                         <!-- trigger to open the modal -->
@@ -355,7 +340,7 @@
 
                         <li>
                             <form method="POST"
-                                th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-os-evt-ignore}"
+                                th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-os-events-ignore}"
                                 th:object="${initialData}">
                                 Ignore OS Events:
                                 <span th:text="${initialData.ignoreOsEvtEnabled ? 'Enabled' : 'Disabled'}"></span>
@@ -389,6 +374,8 @@
                     </ul>
                 </div>
             </li>
+
+            <br />
 
             <!-- Generate Attestation Certificate  -->
             <li>
@@ -450,17 +437,15 @@
                                     <div id="expCertPolicyBody">
                                         <div class="radio">
                                             <label>
-                                                <input type="radio"
-                                                    th:field="*{generateAttestationCertOnExpirationEnabled}"
-                                                    value="true" />
+                                                <input th:field="*{generateAttestationCertOnExpirationEnabled}"
+                                                    type="radio" value="true" />
                                                 Generate Attestation Certificate before validity date
                                             </label>
                                         </div>
                                         <div class="radio">
                                             <label>
-                                                <input type="radio"
-                                                    th:field="*{generateAttestationCertOnExpirationEnabled}"
-                                                    value="false" />
+                                                <input th:field="*{generateAttestationCertOnExpirationEnabled}"
+                                                    type="radio" value="false" />
                                                 Do not generate Attestation Certificate before validity date.
                                             </label>
                                         </div>
@@ -500,17 +485,15 @@
                                     <div id="thresholdCertPolicyBody">
                                         <div class="radio">
                                             <label>
-                                                <input type="radio"
-                                                    th:field="*{generateAttestationCertOnExpirationEnabled}"
-                                                    value="true" />
+                                                <input th:field="*{generateAttestationCertOnExpirationEnabled}"
+                                                    type="radio" value="true" />
                                                 Renew Attestation Certificate before validity date.
                                             </label>
                                         </div>
                                         <div class="radio">
                                             <label>
-                                                <input type="radio"
-                                                    th:field="*{generateAttestationCertOnExpirationEnabled}"
-                                                    value="false" />
+                                                <input th:field="*{generateAttestationCertOnExpirationEnabled}"
+                                                    type="radio" value="false" />
                                                 Do not renew Attestation Certificate before validity date.
                                             </label>
                                         </div>
@@ -535,7 +518,7 @@
                 </div>
             </li>
 
-
+            <br />
             <!-- Generate LDevID Certificate -->
             <li>
                 <div class="aca-input-box">
@@ -592,14 +575,14 @@
                                     <div id="expirationLvedvIdCertPolicyBody">
                                         <div class="radio">
                                             <label>
-                                                <input type="radio" th:field="*{generateDevIdCertOnExpirationEnabled}"
+                                                <input th:field="*{generateDevIdCertOnExpirationEnabled}" type="radio"
                                                     value="true" />
                                                 Generate LdevId Certificate before validity date.
                                             </label>
                                         </div>
                                         <div class="radio">
                                             <label>
-                                                <input type="radio" th:field="*{generateDevIdCertOnExpirationEnabled}"
+                                                <input th:field="*{generateDevIdCertOnExpirationEnabled}" type="radio"
                                                     value="false" />
                                                 Do not generate LdevId Certificate before validity date.
                                             </label>
@@ -641,14 +624,14 @@
                                     <div id="thresholdLvedvIdCertPolicyBody">
                                         <div class="radio">
                                             <label>
-                                                <input type="radio" th:field="*{generateDevIdCertOnExpirationEnabled}"
+                                                <input th:field="*{generateDevIdCertOnExpirationEnabled}" type="radio"
                                                     value="true" />
                                                 Renew LDevId Certificate before validity date.
                                             </label>
                                         </div>
                                         <div class="radio">
                                             <label>
-                                                <input type="radio" th:field="*{generateDevIdCertOnExpirationEnabled}"
+                                                <input th:field="*{generateDevIdCertOnExpirationEnabled}" type="radio"
                                                     value="false" />
                                                 Do not renew LDevId Certificate before validity date.
                                             </label>
@@ -674,34 +657,51 @@
                 </div>
             </li>
 
+            <br />
             <!-- Save ProtoBuf Data To ACA Log After Validation -->
             <li>
                 <div class="aca-input-box">
                     <form method="POST"
                         th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-save-protobuf-data-to-log}"
                         th:object="${initialData}">
-                        <p>Save Protobuf Data To ACA Log Settings:</p>
+                        <span>Save Protobuf Data To ACA Log Settings:</span>
 
-                        <ul>
-                            <li>
+                        <!-- trigger to open the modal -->
+                        <a data-toggle="modal" th:href="'#' + protobufLogPolicyModal">
+                            <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
+                        </a>
+
+                        <!-- modal fragment -->
+                        <div
+                            th:replace="fragments/modal :: modal( id='protobufLogPolicyModal',  label='Edit Saving ProtoBuf To ACA Log Policy Settings', bodyContent=~{this::#protobufLogPolicyBody})">
+                            <!-- Define the content of the modal -->
+                            <div id="protobufLogPolicyBody">
                                 <div class="radio">
-                                    <input name="saveProtobufToLogOption" onchange="submitProtobufLogSetting()"
-                                        th:checked="${initialData.logProtobufAlways}" type="radio"
-                                        value="always-log-protobuf" />
-                                    Log Protobuf Data Always<br />
-
-                                    <input name="saveProtobufToLogOption" onchange="submitProtobufLogSetting()"
-                                        th:checked="${initialData.logProtobufOnFailedVal}" type="radio"
-                                        value="log-protobuf-on-fail-val" />
-                                    Log Protobuf Data on Validation Failure<br />
-
-                                    <input name="saveProtobufToLogOption" onchange="submitProtobufLogSetting()"
-                                        th:checked="${initialData.logProtobufNever}" type="radio"
-                                        value="never-log-protobuf" />
-                                    Never Log Protobuf Data<br />
+                                    <label>
+                                        <input name="saveProtobufToLogOption"
+                                            th:checked="${initialData.logProtobufAlways}" type="radio"
+                                            value="always-log-protobuf" />
+                                        Log Protobuf Data Always
+                                    </label>
                                 </div>
-                            </li>
-                        </ul>
+                                <div class="radio">
+                                    <label>
+                                        <input name="saveProtobufToLogOption"
+                                            th:checked="${initialData.logProtobufOnFailedVal}" type="radio"
+                                            value="log-protobuf-on-fail-val" />
+                                        Log Protobuf Data on Validation Failure
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input name="saveProtobufToLogOption"
+                                            th:checked="${initialData.logProtobufNever}" type="radio"
+                                            value="never-log-protobuf" />
+                                        Never Log Protobuf Data
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </li>

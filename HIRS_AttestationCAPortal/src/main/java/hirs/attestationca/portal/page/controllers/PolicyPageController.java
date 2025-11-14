@@ -249,7 +249,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             }
 
             // if the Ignore PCIE VPD Attribute update was successful
-            messages.addSuccessMessage("Ignore PCIE VPD Attribute  "
+            messages.addSuccessMessage("Ignore PCIE VPD Attribute "
                     + (isIgnorePcieVpdOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
@@ -507,7 +507,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-os-evt-ignore")
+    @PostMapping("update-os-events-ignore")
     public RedirectView updateIgnoreOsEventsPolicy(@ModelAttribute final PolicyPageModel ppModel,
                                                    final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
@@ -524,7 +524,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
             if (!isIgnoreOSPolicyUpdateSuccessful) {
                 messages.addErrorMessage(
-                        "Ignore Os Events cannot be enabled without Firmware Validation policy enabled.");
+                        "Ignore OS Events cannot be enabled without Firmware Validation policy enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
@@ -603,7 +603,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
             this.policyPageService.updateLDevIdGenerationPolicy(isIssuedLDevIdOptionEnabled);
 
             // if the ldevid certificate generation policy update was successful
-            messages.addSuccessMessage("LDevID Certificate Generation "
+            messages.addSuccessMessage("LDevId Certificate Generation "
                     + (isIssuedLDevIdOptionEnabled ? "enabled." : "disabled."));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
