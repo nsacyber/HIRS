@@ -2,102 +2,102 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout}">
 
-<!--<my:page>-->
-<!--  <jsp:attribute name="script">-->
-<!--    <script-->
-<!--            type="text/javascript"-->
-<!--            src="${lib}/jquery.spring-friendly/jquery.spring-friendly.js"-->
-<!--    ></script>-->
-<!--  </jsp:attribute>-->
-<!--    <jsp:attribute name="pageHeaderTitle"-->
-<!--    >Reference Integrity Manifests</jsp:attribute-->
-<!--    >-->
+<head>
+    <section layout:fragment="script">
+        <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
+        <script th:inline="javascript">
+            $(document).ready(function () {
+                const viewName = [[${page.viewName}]];
+                const url = viewName + "/list";
+                let columns = [
+                    {
+                        name: "tagId",
+                        data: "tagId",
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        name: "rimType",
+                        data: "rimType",
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        name: "platformManufacturer",
+                        data: "platformManufacturer",
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        name: "platformModel",
+                        data: "platformModel",
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        name: "swidTagVersion",
+                        data: "swidTagVersion",
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        data: "id",
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, full, meta) {
+                            // Set up a delete icon with link to handleDeleteRequest().
+                            // sets up a hidden input field containing the ID which is
+                            // used as a parameter to the REST POST call to delete
+                            let html = "";
+                            html += rimDetailsLink(full.id);
+                            html += rimDownloadLink(viewName, full.id);
+                            html += rimDeleteLink(viewName, full.id);
 
-<!--    <jsp:body>-->
-<!--        &lt;!&ndash; text and icon resource variables &ndash;&gt;-->
-<!--        <div class="aca-input-box-header">-->
-<!--            <form:form-->
-<!--                    method="POST"-->
-<!--                    action="${portal}/reference-manifests/upload"-->
-<!--                    enctype="multipart/form-data"-->
-<!--            >-->
-<!--                Reference Integrity Manifests-->
-<!--                <my:file-chooser id="referenceManifestsEditor" label="Import RIMs">-->
-<!--                    <input id="importFile" type="file" name="file" multiple="multiple" />-->
-<!--                </my:file-chooser>-->
-<!--                <a href="${portal}/reference-manifests/bulk-download">-->
-<!--                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download All RIMs">-->
-<!--                </a>-->
-<!--            </form:form>-->
-<!--        </div>-->
-<!--        <br />-->
-<!--        <div class="aca-data-table">-->
-<!--            <table id="referenceManifestTable" class="display" width="100%">-->
-<!--                <thead>-->
-<!--                <tr>-->
-<!--                    <th>Tag ID</th>-->
-<!--                    <th>Type</th>-->
-<!--                    <th>Manufacturer</th>-->
-<!--                    <th>Model</th>-->
-<!--                    <th>Version</th>-->
-<!--                    <th>Options</th>-->
-<!--                </tr>-->
-<!--                </thead>-->
-<!--            </table>-->
-<!--        </div>-->
-
-<!--        <script>-->
-<!--            $(document).ready(function () {-->
-<!--              let url = pagePath + "/list";-->
-<!--              let columns = [-->
-<!--                { name: "tagId", data: "tagId", orderable: true, searchable: true },-->
-<!--                {-->
-<!--                  name: "rimType",-->
-<!--                  data: "rimType",-->
-<!--                  orderable: true,-->
-<!--                  searchable: true,-->
-<!--                },-->
-<!--                {-->
-<!--                  name: "platformManufacturer",-->
-<!--                  data: "platformManufacturer",-->
-<!--                  orderable: true,-->
-<!--                  searchable: true,-->
-<!--                },-->
-<!--                {-->
-<!--                  name: "platformModel",-->
-<!--                  data: "platformModel",-->
-<!--                  orderable: true,-->
-<!--                  searchable: true,-->
-<!--                },-->
-<!--                {-->
-<!--                  name: "swidTagVersion",-->
-<!--                  data: "swidTagVersion",-->
-<!--                  orderable: true,-->
-<!--                  searchable: true,-->
-<!--                },-->
-<!--                {-->
-<!--                  data: "id",-->
-<!--                  orderable: false,-->
-<!--                  searchable: false,-->
-<!--                  render: function (data, type, full, meta) {-->
-<!--                    // Set up a delete icon with link to handleDeleteRequest().-->
-<!--                    // sets up a hidden input field containing the ID which is-->
-<!--                    // used as a parameter to the REST POST call to delete-->
-<!--                    let html = "";-->
-<!--                    html += rimDetailsLink(full.id);-->
-<!--                    html += rimDownloadLink(full.id, pagePath);-->
-<!--                    html += rimDeleteLink(full.id, pagePath);-->
-<!--      -->
-<!--                    return html;-->
-<!--                  },-->
-<!--                },-->
-<!--              ];-->
-<!--      -->
-<!--              //Set data tables-->
-<!--              setDataTables("#referenceManifestTable", url, columns);-->
-<!--            });-->
-<!--        </script>-->
-<!--    </jsp:body>-->
-<!--</my:page>-->
-
+                            return html;
+                        }
+                    }
+                ];
+                setDataTables("#referenceManifestTable", url, columns);
+            });
+        </script>
+    </section>
+</head>
+<body>
+    <h1 layout:fragment="pageHeaderTitle">Reference Integrity Manifests</h1>
+    <div class="content" layout:fragment="content">
+        <div class="aca-input-box-header">
+            <form
+                    method="post"
+                    th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}"
+                    enctype="multipart/form-data"
+            >
+                Reference Integrity Manifests
+                <th:block th:replace="fragments/file-chooser :: fileChooser('referenceManifestsEditor',
+                 'Import RIMs', ${null}, ~{this :: bodyContent})">
+                    <th:block th:fragment="bodyContent">
+                        <input id="importFile" type="file" name="file" multiple="multiple" />
+                    </th:block>
+                </th:block>
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}">
+                    <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download All RIMs">
+                </a>
+            </form>
+        </div>
+        <br />
+        <div class="aca-data-table">
+            <table id="referenceManifestTable" class="display" width="100%">
+                <thead>
+                    <tr>
+                        <th>Tag Id</th>
+                        <th>Type</th>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Version</th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</body>
 </html>
