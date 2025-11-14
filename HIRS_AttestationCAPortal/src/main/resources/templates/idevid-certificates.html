@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org">
+    xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <section layout:fragment="script">
@@ -45,14 +45,14 @@
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
-                        // Set up a delete icon with link to handleDeleteRequest().
-                        // sets up a hidden input field containing the ID which is
-                        // used as a parameter to the REST POST call to delete
-                        let html = "";
-                        html += certificateDetailsLink("idevid", full.id, true);
-                        html += certificateDownloadLink(viewName, full.id);
-                        html += certificateDeleteLink(viewName, full.id);
-                        return html;
+                            // Set up a delete icon with link to handleDeleteRequest().
+                            // sets up a hidden input field containing the ID which is
+                            // used as a parameter to the REST POST call to delete
+                            let html = "";
+                            html += certificateDetailsLink("idevid", full.id, true);
+                            html += certificateDownloadLink(viewName, full.id);
+                            html += certificateDeleteLink(viewName, full.id);
+                            return html;
                         },
                     },
                 ];
@@ -65,43 +65,42 @@
 </head>
 
 <body>
-<h1 layout:fragment="pageHeaderTitle">IDevID Certificates</h1>
+    <h1 layout:fragment="pageHeaderTitle">IDevID Certificates</h1>
 
-<div class="content" layout:fragment="content">
-    <div class="aca-input-box-header">
-        <form enctype="multipart/form-data"
-              method="POST"
-              th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/upload}">
-            Import IDevID Certificates
-            <th:block th:replace="fragments/file-chooser
+    <div class="content" layout:fragment="content">
+        <div class="aca-input-box-header">
+            <form enctype="multipart/form-data" method="POST"
+                th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/upload}">
+                Import IDevID Certificates
+                <th:block th:replace="fragments/file-chooser
                         :: fileChooser('idevid-editor',
                         'Import IDevID Certificates', ~{this :: bodyContent})">
-                <th:block th:fragment="bodyContent">
-                    <input id="importFile" multiple="multiple" name="file" type="file"/>
+                    <th:block th:fragment="bodyContent">
+                        <input id="importFile" multiple="multiple" name="file" type="file" />
+                    </th:block>
                 </th:block>
-            </th:block>
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-download}">
-                <img th:src="@{/icons/ic_file_download_black_24dp.png}" title="Download All IDevID Certificates">
-            </a>
-        </form>
-    </div>
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-download}">
+                    <img th:src="@{/icons/ic_file_download_black_24dp.png}" title="Download All IDevID Certificates">
+                </a>
+            </form>
+        </div>
 
-    <br/>
+        <br />
 
-    <div class="aca-data-table">
-        <table class="display" id="idevidCertificateTable" width="100%">
-            <thead>
-            <tr>
-                <th>Issuer</th>
-                <th>Subject</th>
-                <th>Valid (begin)</th>
-                <th>Valid (end)</th>
-                <th>Options</th>
-            </tr>
-            </thead>
-        </table>
+        <div class="aca-data-table">
+            <table class="display" id="idevidCertificateTable" width="100%">
+                <thead>
+                    <tr>
+                        <th>Issuer</th>
+                        <th>Subject</th>
+                        <th>Valid (begin)</th>
+                        <th>Valid (end)</th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
     </div>
-</div>
 </body>
 
 </html>
