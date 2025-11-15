@@ -7,7 +7,7 @@
         <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
         <script th:inline="javascript">
             $(document).ready(function () {
-                const viewName = [[${page.viewName}]];
+                const viewName = /*[[${ page.viewName }]]*/ '';
                 const url = viewName + "/list";
                 let columns = [
                     {
@@ -62,18 +62,16 @@
         </script>
     </section>
 </head>
+
 <body>
     <h1 layout:fragment="pageHeaderTitle">Reference Integrity Manifests</h1>
     <div class="content" layout:fragment="content">
         <div class="aca-input-box-header">
-            <form
-                    method="post"
-                    th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}"
-                    enctype="multipart/form-data"
-            >
+            <form method="post" th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}"
+                enctype="multipart/form-data">
                 Reference Integrity Manifests
                 <th:block th:replace="fragments/file-chooser :: fileChooser('referenceManifestsEditor',
-                 'Import RIMs', ${null}, ~{this :: bodyContent})">
+                 'Import RIMs', ~{this :: bodyContent})">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" type="file" name="file" multiple="multiple" />
                     </th:block>
@@ -100,4 +98,5 @@
         </div>
     </div>
 </body>
+
 </html>

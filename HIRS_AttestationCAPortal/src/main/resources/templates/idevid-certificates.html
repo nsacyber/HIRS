@@ -2,14 +2,14 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout}">
 
-    <head>
-        <section layout:fragment="script">
-            <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
-            <script th:inline="javascript">
-                $(document).ready(function () {
-                    const viewName = [[${page.viewName}]];
-                    const url = viewName + "/list";
-                    let columns = [
+<head>
+    <section layout:fragment="script">
+        <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
+        <script th:inline="javascript">
+            $(document).ready(function () {
+                const viewName = /*[[${ page.viewName }]]*/ '';
+                const url = viewName + "/list";
+                let columns = [
                     {
                         name: "issuer",
                         data: "issuer",
@@ -28,7 +28,7 @@
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
-                        return formatCertificateDate(full.beginValidity);
+                            return formatCertificateDate(full.beginValidity);
                         },
                     },
                     {
@@ -37,7 +37,7 @@
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
-                        return formatCertificateDate(full.endValidity);
+                            return formatCertificateDate(full.endValidity);
                         },
                     },
                     {
@@ -45,54 +45,52 @@
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
-                        // Set up a delete icon with link to handleDeleteRequest().
-                        // sets up a hidden input field containing the ID which is
-                        // used as a parameter to the REST POST call to delete
-                        let html = "";
-                        html += certificateDetailsLink("idevid", full.id, true);
-                        html += certificateDownloadLink(viewName, full.id);
-                        html += certificateDeleteLink(viewName, full.id);
-                        return html;
+                            // Set up a delete icon with link to handleDeleteRequest().
+                            // sets up a hidden input field containing the ID which is
+                            // used as a parameter to the REST POST call to delete
+                            let html = "";
+                            html += certificateDetailsLink("idevid", full.id, true);
+                            html += certificateDownloadLink(viewName, full.id);
+                            html += certificateDeleteLink(viewName, full.id);
+                            return html;
                         },
                     },
-                    ];
+                ];
 
-                    //Set data tables
-                    setDataTables("#idevidCertificateTable", url, columns);
-                });
-            </script>
-        </section>
-    </head>
-    <body>
-        <h1 layout:fragment="pageHeaderTitle">IDevID Certificates</h1>
+                //Set data tables
+                setDataTables("#idevidCertificateTable", url, columns);
+            });
+        </script>
+    </section>
+</head>
 
-        <div class="content" layout:fragment="content">
-            <div class="aca-input-box-header">
-                <form
-                    method="POST"
-                    th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/upload}"
-                    enctype="multipart/form-data"
-                >
-                    Import IDevID Certificates
-                    <th:block th:replace="fragments/file-chooser
+<body>
+    <h1 layout:fragment="pageHeaderTitle">IDevID Certificates</h1>
+
+    <div class="content" layout:fragment="content">
+        <div class="aca-input-box-header">
+            <form method="POST"
+                th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/upload}"
+                enctype="multipart/form-data">
+                Import IDevID Certificates
+                <th:block th:replace="fragments/file-chooser
                         :: fileChooser('idevid-editor',
-                        'Import IDevID Certificates', ${null}, ~{this :: bodyContent})"
-                    >
-                        <th:block th:fragment="bodyContent">
-                            <input id="importFile" type="file" name="file" multiple="multiple" />
-                        </th:block>
+                        'Import IDevID Certificates', ~{this :: bodyContent})">
+                    <th:block th:fragment="bodyContent">
+                        <input id="importFile" type="file" name="file" multiple="multiple" />
                     </th:block>
-                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-download}">
-                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" title="Download All IDevID Certificates">
-                    </a>
-                </form>
-            </div>
+                </th:block>
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-download}">
+                    <img th:src="@{/icons/ic_file_download_black_24dp.png}" title="Download All IDevID Certificates">
+                </a>
+            </form>
+        </div>
 
-            <br />
+        <br />
 
-            <div class="aca-data-table">
-                <table id="idevidCertificateTable" class="display" width="100%">
-                    <thead>
+        <div class="aca-data-table">
+            <table id="idevidCertificateTable" class="display" width="100%">
+                <thead>
                     <tr>
                         <th>Issuer</th>
                         <th>Subject</th>
@@ -100,9 +98,10 @@
                         <th>Valid (end)</th>
                         <th>Options</th>
                     </tr>
-                    </thead>
-                </table>
-            </div>
+                </thead>
+            </table>
         </div>
-    </body>
+    </div>
+</body>
+
 </html>
