@@ -1,7 +1,7 @@
 <th:block th:fragment="detailsViewer(id, label, customButton, bodyContent)">
     <!-- Details viewer icon anchor -->
-    <a data-toggle="modal" th:href="'#' + ${id}" th:title="${label}">
-        <img alt="Details Viewer Icon" th:src="@{/icons/ic_assignment_black_24dp.png}" />
+    <a th:href="'#' + ${id}" data-toggle="modal" th:title="${label}">
+        <img th:src="@{/icons/ic_assignment_black_24dp.png}" alt="Details Viewer Icon" />
     </a>
 
     <!-- Include modal-dialogue fragment -->
