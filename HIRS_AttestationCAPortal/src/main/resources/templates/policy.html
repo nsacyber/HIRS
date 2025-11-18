@@ -81,128 +81,125 @@
                             </div>
                         </div>
                     </form>
-                </div>
-            </li>
 
-            <!-- Platform attribute validation -->
-
-            <div class="aca-input-box">
-                <ul>
-                    <li>
-                        <form method="POST"
-                            th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pc-attribute-validation}"
-                            th:object="${initialData}">
-                            Platform Attribute Credential Validation:
-                            <span th:text="${initialData.pcAttributeValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
-
-
-                            <!-- trigger to open the modal -->
-                            <a data-toggle="modal" th:href="'#' + pcAttrPolicyModal">
-                                <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
-                            </a>
-
-                            <!-- modal fragment -->
-                            <div
-                                th:replace="fragments/modal :: modal( id='pcAttrPolicyModal',  label='Edit Platform Credential Attribute Validation Policy Settings', bodyContent=~{this::#pcAttrPolicyBody})">
-                                <!-- Define the content of the modal -->
-                                <div id="pcAttrPolicyBody">
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{pcAttributeValidationEnabled}" type="radio"
-                                                value="true" />
-                                            Platform Credential Attributes will be validated
-                                        </label>
-                                    </div>
-                                    <div class="radio">
-                                        <label>
-                                            <input th:field="*{pcAttributeValidationEnabled}" type="radio"
-                                                value="false" />
-                                            Platform Credential Attributes will not be validated
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </li>
+                    <!-- Platform attribute validation -->
                     <ul>
                         <li>
                             <form method="POST"
-                                th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-revision-ignore}"
+                                th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pc-attribute-validation}"
                                 th:object="${initialData}">
-                                Ignore Component Revision Attribute:
+                                Platform Attribute Credential Validation:
                                 <span
-                                    th:text="${initialData.ignoreRevisionAttributeEnabled ? 'Enabled' : 'Disabled'}"></span>
+                                    th:text="${initialData.pcAttributeValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
+
 
                                 <!-- trigger to open the modal -->
-                                <a data-toggle="modal" th:href="'#' + revisionIgnoredPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + pcAttrPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='revisionIgnoredPolicyModal',  label='Edit Ignore Component Revision Policy Settings', bodyContent=~{this::#revisionIgnoredPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='pcAttrPolicyModal',  label='Edit Platform Credential Attribute Validation Policy Settings', bodyContent=~{this::#pcAttrPolicyBody})">
                                     <!-- Define the content of the modal -->
-                                    <div id="revisionIgnoredPolicyBody">
+                                    <div id="pcAttrPolicyBody">
                                         <div class="radio">
                                             <label>
-                                                <input th:field="*{ignoreRevisionAttributeEnabled}" type="radio"
+                                                <input th:field="*{pcAttributeValidationEnabled}" type="radio"
                                                     value="true" />
-                                                Component Revision Attribute enabled
+                                                Platform Credential Attributes will be validated
                                             </label>
                                         </div>
                                         <div class="radio">
                                             <label>
-                                                <input th:field="*{ignoreRevisionAttributeEnabled}" type="radio"
+                                                <input th:field="*{pcAttributeValidationEnabled}" type="radio"
                                                     value="false" />
-                                                Component Revision Attribute disabled
+                                                Platform Credential Attributes will not be validated
                                             </label>
                                         </div>
                                     </div>
                                 </div>
                             </form>
                         </li>
+                        <ul>
+                            <li>
+                                <form method="POST"
+                                    th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-revision-ignore}"
+                                    th:object="${initialData}">
+                                    Ignore Component Revision Attribute:
+                                    <span
+                                        th:text="${initialData.ignoreRevisionAttributeEnabled ? 'Enabled' : 'Disabled'}"></span>
 
-                        <li>
-                            <form method="POST"
-                                th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pcie-vpd-ignore}"
-                                th:object="${initialData}">
-                                Ignore PCIE VPD Attribute:
-                                <span
-                                    th:text="${initialData.ignorePcieVpdAttributeEnabled ? 'Enabled' : 'Disabled'}"></span>
+                                    <!-- trigger to open the modal -->
+                                    <a data-toggle="modal" th:href="'#' + revisionIgnoredPolicyModal">
+                                        <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
+                                    </a>
 
-                                <!-- trigger to open the modal -->
-                                <a data-toggle="modal" th:href="'#' + ignorePcieVpdPolicyModal">
-                                    <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
-                                </a>
-
-                                <!-- modal fragment -->
-                                <div
-                                    th:replace="fragments/modal :: modal( id='ignorePcieVpdPolicyModal',  label='Edit Ignore PCIE VPD Policy Settings', bodyContent=~{this::#pcieVpdIgnoredPolicyBody})">
-                                    <!-- Define the content of the modal -->
-                                    <div id="pcieVpdIgnoredPolicyBody">
-                                        <div class="radio">
-                                            <label>
-                                                <input th:field="*{ignorePcieVpdAttributeEnabled}" type="radio"
-                                                    value="true" />
-                                                PCIE VPD Attribute enabled
-                                            </label>
-                                        </div>
-                                        <div class="radio">
-                                            <label>
-                                                <input th:field="*{ignorePcieVpdAttributeEnabled}" type="radio"
-                                                    value="false" />
-                                                PCIE VPD Attribute disabled
-                                            </label>
+                                    <!-- modal fragment -->
+                                    <div
+                                        th:replace="fragments/modal :: modal( id='revisionIgnoredPolicyModal',  label='Edit Ignore Component Revision Policy Settings', bodyContent=~{this::#revisionIgnoredPolicyBody})">
+                                        <!-- Define the content of the modal -->
+                                        <div id="revisionIgnoredPolicyBody">
+                                            <div class="radio">
+                                                <label>
+                                                    <input th:field="*{ignoreRevisionAttributeEnabled}" type="radio"
+                                                        value="true" />
+                                                    Component Revision Attribute enabled
+                                                </label>
+                                            </div>
+                                            <div class="radio">
+                                                <label>
+                                                    <input th:field="*{ignoreRevisionAttributeEnabled}" type="radio"
+                                                        value="false" />
+                                                    Component Revision Attribute disabled
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </form>
+                                </form>
+                            </li>
 
-                        </li>
+                            <li>
+                                <form method="POST"
+                                    th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pcie-vpd-ignore}"
+                                    th:object="${initialData}">
+                                    Ignore PCIE VPD Attribute:
+                                    <span
+                                        th:text="${initialData.ignorePcieVpdAttributeEnabled ? 'Enabled' : 'Disabled'}"></span>
+
+                                    <!-- trigger to open the modal -->
+                                    <a data-toggle="modal" th:href="'#' + ignorePcieVpdPolicyModal">
+                                        <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
+                                    </a>
+
+                                    <!-- modal fragment -->
+                                    <div
+                                        th:replace="fragments/modal :: modal( id='ignorePcieVpdPolicyModal',  label='Edit Ignore PCIE VPD Policy Settings', bodyContent=~{this::#pcieVpdIgnoredPolicyBody})">
+                                        <!-- Define the content of the modal -->
+                                        <div id="pcieVpdIgnoredPolicyBody">
+                                            <div class="radio">
+                                                <label>
+                                                    <input th:field="*{ignorePcieVpdAttributeEnabled}" type="radio"
+                                                        value="true" />
+                                                    PCIE VPD Attribute enabled
+                                                </label>
+                                            </div>
+                                            <div class="radio">
+                                                <label>
+                                                    <input th:field="*{ignorePcieVpdAttributeEnabled}" type="radio"
+                                                        value="false" />
+                                                    PCIE VPD Attribute disabled
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </li>
+                        </ul>
                     </ul>
-                </ul>
-            </div>
-
+                </div>
+            </li>
 
             <!-- Firmware validation -->
             <li>
