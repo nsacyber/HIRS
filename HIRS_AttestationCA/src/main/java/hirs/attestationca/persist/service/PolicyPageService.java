@@ -337,7 +337,9 @@ public class PolicyPageService {
      * Updates the Attestation Certificate generation expiration date under the generate attestation
      * certificate policy setting using the provided user input.
      *
-     * @param attestCertExpirationValue attestation certificate expiration value
+     * @param canGenerateAttestationCertificateOnExpiration boolean value representation of the current
+     *                                                      policy option's state
+     * @param attestCertExpirationValue                     attestation certificate expiration value
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updateAttestationCertExpirationPolicy(
@@ -345,10 +347,10 @@ public class PolicyPageService {
             final Long attestCertExpirationValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        if (canGenerateAttestationCertificateOnExpiration &&
-                !policySettings.isIssueAttestationCertificateEnabled()) {
-            log.error("Cannot set the attestation certificate expiration value when" +
-                    " the attestation certificate generation expiration policy is not enabled.");
+        if (canGenerateAttestationCertificateOnExpiration
+                && !policySettings.isIssueAttestationCertificateEnabled()) {
+            log.error("Cannot set the attestation certificate expiration value when"
+                    + " the attestation certificate generation expiration policy is not enabled.");
             return false;
         }
 
@@ -356,8 +358,8 @@ public class PolicyPageService {
                 canGenerateAttestationCertificateOnExpiration);
 
         if (canGenerateAttestationCertificateOnExpiration) {
-            final Long numOfDays = (attestCertExpirationValue != null) ? attestCertExpirationValue :
-                    PolicySettings.TEN_YEARS_IN_DAYS;
+            final Long numOfDays = (attestCertExpirationValue != null) ? attestCertExpirationValue
+                    : PolicySettings.TEN_YEARS_IN_DAYS;
             policySettings.setValidityDays(numOfDays);
         }
 
@@ -384,10 +386,10 @@ public class PolicyPageService {
             final Long attestCertThresholdValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        if (canGenerateAttestationCertificateOnExpiration &&
-                !policySettings.isIssueAttestationCertificateEnabled()) {
-            log.error("Cannot set the attestation certificate threshold value when" +
-                    " the attestation certificate generation expiration policy is not enabled.");
+        if (canGenerateAttestationCertificateOnExpiration
+                && !policySettings.isIssueAttestationCertificateEnabled()) {
+            log.error("Cannot set the attestation certificate threshold value when"
+                    + " the attestation certificate generation expiration policy is not enabled.");
             return false;
         }
 
@@ -396,8 +398,8 @@ public class PolicyPageService {
 
         if (canGenerateAttestationCertificateOnExpiration) {
             final Long threshold =
-                    (attestCertThresholdValue != null) ? attestCertThresholdValue :
-                            PolicySettings.A_YEAR_IN_DAYS;
+                    (attestCertThresholdValue != null) ? attestCertThresholdValue
+                            : PolicySettings.A_YEAR_IN_DAYS;
             policySettings.setReissueThreshold(threshold);
         }
 
@@ -435,25 +437,25 @@ public class PolicyPageService {
      *
      * @param canGenerateLDevIDCertificateOnExpiration boolean value representation of the current
      *                                                 policy option's state
-     * @param LDevIDExpirationValue                    LDevID certificate expiration value
+     * @param lDevIDExpirationValue                    LDevID certificate expiration value
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updateLDevIDExpirationPolicy(final boolean canGenerateLDevIDCertificateOnExpiration,
-                                                final Long LDevIDExpirationValue) {
+                                                final Long lDevIDExpirationValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        if (canGenerateLDevIDCertificateOnExpiration &&
-                !policySettings.isIssueDevIdCertificateEnabled()) {
-            log.error("Cannot set the LDevID certificate expiration value when" +
-                    " the LDevID certificate generation expiration policy is not enabled.");
+        if (canGenerateLDevIDCertificateOnExpiration
+                && !policySettings.isIssueDevIdCertificateEnabled()) {
+            log.error("Cannot set the LDevID certificate expiration value when"
+                    + " the LDevID certificate generation expiration policy is not enabled.");
             return false;
         }
 
         policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIDCertificateOnExpiration);
 
         if (canGenerateLDevIDCertificateOnExpiration) {
-            final Long numOfDays = (LDevIDExpirationValue != null) ? LDevIDExpirationValue :
-                    PolicySettings.TEN_YEARS_IN_DAYS;
+            final Long numOfDays = (lDevIDExpirationValue != null) ? lDevIDExpirationValue
+                    : PolicySettings.TEN_YEARS_IN_DAYS;
             policySettings.setDevIdValidityDays(numOfDays);
         }
 
@@ -471,26 +473,26 @@ public class PolicyPageService {
      *
      * @param canGenerateLDevIDCertificateOnExpiration boolean value representation of the current policy option's
      *                                                 state
-     * @param LDevIDThresholdValue                     LDevID threshold value
+     * @param lDevIDThresholdValue                     LDevID threshold value
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updateLDevIDThresholdPolicy(final boolean canGenerateLDevIDCertificateOnExpiration,
-                                               final Long LDevIDThresholdValue) {
+                                               final Long lDevIDThresholdValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        if (canGenerateLDevIDCertificateOnExpiration &&
-                !policySettings.isIssueDevIdCertificateEnabled()) {
-            log.error("Cannot set the LDevID certificate threshold value when" +
-                    " the LDevID certificate generation expiration policy is not enabled.");
+        if (canGenerateLDevIDCertificateOnExpiration
+                && !policySettings.isIssueDevIdCertificateEnabled()) {
+            log.error("Cannot set the LDevID certificate threshold value when"
+                    + " the LDevID certificate generation expiration policy is not enabled.");
             return false;
         }
 
         policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIDCertificateOnExpiration);
 
         if (canGenerateLDevIDCertificateOnExpiration) {
-            final Long LDevIDThreshold =
-                    (LDevIDThresholdValue != null) ? LDevIDThresholdValue : PolicySettings.A_YEAR_IN_DAYS;
-            policySettings.setDevIdReissueThreshold(LDevIDThreshold);
+            final Long lDevIDThreshold =
+                    (lDevIDThresholdValue != null) ? lDevIDThresholdValue : PolicySettings.A_YEAR_IN_DAYS;
+            policySettings.setDevIdReissueThreshold(lDevIDThreshold);
         }
 
         policyRepository.saveAndFlush(policySettings);

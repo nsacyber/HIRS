@@ -1035,12 +1035,12 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for enabling generate attestation certificate policy setting.
+     * Verifies the rest call for enabling generate LDevId certificate policy setting.
      *
      * @throws Exception if test fails
      */
     @Test
-    public void testUpdateGenerateLDevIdCertificateEnable() throws Exception {
+    public void testUpdateGenerateLDevIDCertificateEnable() throws Exception {
         ResultActions actions;
 
         //init the database
@@ -1059,14 +1059,14 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("successMessages",
-                                hasItem("LDevId Certificate Generation enabled."))));
+                                hasItem("LDevID Certificate Generation enabled."))));
 
         policy = policyRepository.findByName("Default");
         assertTrue(policy.isIssueDevIdCertificateEnabled());
     }
 
     /**
-     * Verifies the rest call for disabling the generate ldevid certificate policy setting.
+     * Verifies the rest call for disabling the generate LDevID certificate policy setting.
      *
      * @throws Exception if test fails
      */
@@ -1088,7 +1088,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("successMessages",
-                                hasItem("LDevId Certificate Generation disabled."))));
+                                hasItem("LDevID Certificate Generation disabled."))));
 
         policy = policyRepository.findByName("Default");
         assertFalse(policy.isIssueDevIdCertificateEnabled());
