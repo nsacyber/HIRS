@@ -1,21 +1,14 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="detailsViewer(id, label, customButton, bodyContent)">
+    <!-- Details viewer icon anchor -->
+    <a th:href="'#' + ${id}" data-toggle="modal" th:title="${label}">
+        <img th:src="@{/icons/ic_assignment_black_24dp.png}" alt="Details Viewer Icon" />
+    </a>
 
-<body>
-    <div th:fragment="detailsViewerIcon(id, label, customButton, bodyContent)">
-        <!-- Details viewer icon anchor -->
-        <a th:href="'#' + ${id}" data-toggle="modal" th:title="${label}">
-            <img th:src="@{/icons/ic_assignment_black_24dp.png}" alt="Details Viewer Icon" />
-        </a>
-
-        <!-- Include modal-dialogue fragment -->
-        <div th:replace="fragments/modal-dialogue :: modalDialogue(
+    <!-- Include modal-dialogue fragment -->
+    <th:block th:replace="fragments/modal-dialogue :: modalDialogue(
         id=${id}, 
         label=${label}, 
         customButton=${customButton}, 
         bodyContent=${bodyContent}
-    )"></div>
-    </div>
-</body>
-
-</html>
+    )"></th:block>
+</th:block>
