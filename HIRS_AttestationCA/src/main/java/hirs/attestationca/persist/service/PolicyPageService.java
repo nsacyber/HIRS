@@ -311,7 +311,7 @@ public class PolicyPageService {
 
         return true;
     }
-    
+
     /**
      * Updates the Issued Attestation Certificate generation policy according to user input.
      *
@@ -410,92 +410,92 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the LDevId validation policy according to user input.
+     * Updates the LDevID validation policy according to user input.
      *
-     * @param isLDevIdOptionEnabled boolean value representation of the current policy option's state
+     * @param isLDevIDOptionEnabled boolean value representation of the current policy option's state
      */
-    public void updateLDevIdGenerationPolicy(final boolean isLDevIdOptionEnabled) {
+    public void updateLDevIDGenerationPolicy(final boolean isLDevIDOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        if (!isLDevIdOptionEnabled) {
+        if (!isLDevIDOptionEnabled) {
             policySettings.setGenerateDevIdCertificateOnExpiration(false);
         }
 
-        policySettings.setIssueDevIdCertificateEnabled(isLDevIdOptionEnabled);
+        policySettings.setIssueDevIdCertificateEnabled(isLDevIDOptionEnabled);
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the ldevid validation "
+        log.debug("Current ACA Policy after updating the LDevID validation "
                 + " policy: {}", policySettings);
     }
 
     /**
-     * Updates the LDevId Certificate generation expiration date under the generate ldevid
+     * Updates the LDevID Certificate generation expiration date under the generate LDevID
      * certificate policy setting using the provided user input.
      *
-     * @param canGenerateLDevIdCertificateOnExpiration boolean value representation of the current
+     * @param canGenerateLDevIDCertificateOnExpiration boolean value representation of the current
      *                                                 policy option's state
-     * @param ldevIdExpirationValue                    ldevid certificate expiration value
+     * @param LDevIDExpirationValue                    LDevID certificate expiration value
      * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateLDevIdExpirationPolicy(final boolean canGenerateLDevIdCertificateOnExpiration,
-                                                final Long ldevIdExpirationValue) {
+    public boolean updateLDevIDExpirationPolicy(final boolean canGenerateLDevIDCertificateOnExpiration,
+                                                final Long LDevIDExpirationValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        if (canGenerateLDevIdCertificateOnExpiration &&
+        if (canGenerateLDevIDCertificateOnExpiration &&
                 !policySettings.isIssueDevIdCertificateEnabled()) {
-            log.error("Cannot set the ldevid certificate expiration value when" +
-                    " the ldevid certificate generation expiration policy is not enabled.");
+            log.error("Cannot set the LDevID certificate expiration value when" +
+                    " the LDevID certificate generation expiration policy is not enabled.");
             return false;
         }
 
-        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateOnExpiration);
+        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIDCertificateOnExpiration);
 
-        if (canGenerateLDevIdCertificateOnExpiration) {
-            final Long numOfDays = (ldevIdExpirationValue != null) ? ldevIdExpirationValue :
+        if (canGenerateLDevIDCertificateOnExpiration) {
+            final Long numOfDays = (LDevIDExpirationValue != null) ? LDevIDExpirationValue :
                     PolicySettings.TEN_YEARS_IN_DAYS;
             policySettings.setDevIdValidityDays(numOfDays);
         }
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the ldevid certificate generation expiration "
+        log.debug("Current ACA Policy after updating the LDevID certificate generation expiration "
                 + "value policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the LDevId Certificate generation threshold value under the generate ldevid
+     * Updates the LDevID Certificate generation threshold value under the generate LDevID
      * certificate policy setting using the provided user input.
      *
-     * @param canGenerateLDevIdCertificateOnExpiration boolean value representation of the current policy option's
+     * @param canGenerateLDevIDCertificateOnExpiration boolean value representation of the current policy option's
      *                                                 state
-     * @param ldevIdThresholdValue                     ldevid threshold value
+     * @param LDevIDThresholdValue                     LDevID threshold value
      * @return true if the policy was updated successfully; otherwise, false.
      */
-    public boolean updateLDevIdThresholdPolicy(final boolean canGenerateLDevIdCertificateOnExpiration,
-                                               final Long ldevIdThresholdValue) {
+    public boolean updateLDevIDThresholdPolicy(final boolean canGenerateLDevIDCertificateOnExpiration,
+                                               final Long LDevIDThresholdValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        if (canGenerateLDevIdCertificateOnExpiration &&
+        if (canGenerateLDevIDCertificateOnExpiration &&
                 !policySettings.isIssueDevIdCertificateEnabled()) {
-            log.error("Cannot set the ldevid certificate threshold value when" +
-                    " the ldevid certificate generation expiration policy is not enabled.");
+            log.error("Cannot set the LDevID certificate threshold value when" +
+                    " the LDevID certificate generation expiration policy is not enabled.");
             return false;
         }
 
-        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateOnExpiration);
+        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIDCertificateOnExpiration);
 
-        if (canGenerateLDevIdCertificateOnExpiration) {
-            final Long ldevidThreshold =
-                    (ldevIdThresholdValue != null) ? ldevIdThresholdValue : PolicySettings.A_YEAR_IN_DAYS;
-            policySettings.setDevIdReissueThreshold(ldevidThreshold);
+        if (canGenerateLDevIDCertificateOnExpiration) {
+            final Long LDevIDThreshold =
+                    (LDevIDThresholdValue != null) ? LDevIDThresholdValue : PolicySettings.A_YEAR_IN_DAYS;
+            policySettings.setDevIdReissueThreshold(LDevIDThreshold);
         }
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the ldevid certificate generation "
+        log.debug("Current ACA Policy after updating the LDevID certificate generation "
                 + "threshold policy: {}", policySettings);
 
         return true;

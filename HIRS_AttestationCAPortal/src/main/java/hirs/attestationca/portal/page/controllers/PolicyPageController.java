@@ -699,15 +699,15 @@ public class PolicyPageController extends PageController<NoPageParams> {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
-        log.info("Received request to update the ldevid certificate generation policy setting");
+        log.info("Received request to update the LDevID certificate generation policy setting");
 
         try {
-            final boolean isIssuedLDevIdOptionEnabled = ppModel.isIssueDevIdCertificateEnabled();
-            this.policyPageService.updateLDevIdGenerationPolicy(isIssuedLDevIdOptionEnabled);
+            final boolean isIssuedLDevIDOptionEnabled = ppModel.isIssueDevIdCertificateEnabled();
+            this.policyPageService.updateLDevIDGenerationPolicy(isIssuedLDevIDOptionEnabled);
 
-            // if the ldevid certificate generation policy update was successful
-            messages.addSuccessMessage("LDevId Certificate Generation "
-                    + (isIssuedLDevIdOptionEnabled ? "enabled." : "disabled."));
+            // if the LDevID certificate generation policy update was successful
+            messages.addSuccessMessage("LDevID Certificate Generation "
+                    + (isIssuedLDevIDOptionEnabled ? "enabled." : "disabled."));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -722,7 +722,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
 
     /**
-     * Updates the ldevid certification generation expiration policy setting and redirects the user
+     * Updates the LDevID certification generation expiration policy setting and redirects the user
      * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
@@ -731,36 +731,36 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-ldevid-certificate-expiration")
-    public RedirectView updateLDevIdCertExpirationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+    public RedirectView updateLDevIDCertExpirationPolicy(@ModelAttribute final PolicyPageModel ppModel,
                                                          final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
-        log.info("Received request to update the ldevid certificate expiration policy under "
-                + "the ldevid certificate generation policy setting");
+        log.info("Received request to update the LDevID certificate expiration policy under "
+                + "the LDevID certificate generation policy setting");
 
         try {
-            final Long ldevidCertExpirationValue = ppModel.getGenerateDevIdCertExpirationValue();
+            final Long LDevIDCertExpirationValue = ppModel.getGenerateDevIdCertExpirationValue();
             final boolean canGenerateLDevIDCertificateOnExpiration =
                     ppModel.isGenerateDevIdCertOnExpirationEnabled();
 
-            final boolean isLDevIdCertExpirationValueUpdateSuccessful =
-                    this.policyPageService.updateLDevIdExpirationPolicy(
+            final boolean isLDevIDCertExpirationValueUpdateSuccessful =
+                    this.policyPageService.updateLDevIDExpirationPolicy(
                             canGenerateLDevIDCertificateOnExpiration,
-                            ldevidCertExpirationValue);
+                            LDevIDCertExpirationValue);
 
-            if (!isLDevIdCertExpirationValueUpdateSuccessful) {
-                messages.addErrorMessage("Cannot set the ldevid certificate expiration value " +
-                        "when the ldevid certificate generation policy is not enabled.");
+            if (!isLDevIDCertExpirationValueUpdateSuccessful) {
+                messages.addErrorMessage("Cannot set the LDevID certificate expiration value " +
+                        "when the LDevID certificate generation policy is not enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
-            // if the ldevid certificate expiration value policy update was successful
+            // if the LDevID certificate expiration value policy update was successful
             messages.addSuccessMessage(canGenerateLDevIDCertificateOnExpiration ?
-                    "Ldevid certificate threshold time has been set" :
-                    "Ldevid certificate generation on expiration has been disabled");
+                    "LDevID certificate threshold time has been set" :
+                    "LDevID certificate generation on expiration has been disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -774,7 +774,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the ldevid certificate generation threshold policy setting and redirects the user
+     * Updates the LDevID certificate generation threshold policy setting and redirects the user
      * back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
@@ -783,39 +783,39 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-ldevid-threshold")
-    public RedirectView updateLDevIdThresholdValPolicy(@ModelAttribute final PolicyPageModel ppModel,
+    public RedirectView updateLDevIDThresholdValPolicy(@ModelAttribute final PolicyPageModel ppModel,
                                                        final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
-        log.info("Received request to update the ldevid certificate threshold policy under "
-                + "the ldevid certificate generation policy setting");
+        log.info("Received request to update the LDevID certificate threshold policy under "
+                + "the LDevID certificate generation policy setting");
 
         try {
-            final Long ldevIdCertThresholdValue = ppModel.getGenerateDevIdCertThresholdValue();
-            final boolean canGenerateLdevIdCertificateOnExpiration =
+            final Long LDevIDCertThresholdValue = ppModel.getGenerateDevIdCertThresholdValue();
+            final boolean canGenerateLDevIDCertificateOnExpiration =
                     ppModel.isGenerateDevIdCertOnExpirationEnabled();
 
             final boolean isLDevIdCertThresholdValueUpdateSuccessful =
-                    this.policyPageService.updateLDevIdThresholdPolicy(
-                            canGenerateLdevIdCertificateOnExpiration, ldevIdCertThresholdValue);
+                    this.policyPageService.updateLDevIDThresholdPolicy(
+                            canGenerateLDevIDCertificateOnExpiration, LDevIDCertThresholdValue);
 
             if (!isLDevIdCertThresholdValueUpdateSuccessful) {
-                messages.addErrorMessage("Cannot set the ldevid certificate threshold value " +
-                        "when the ldevid certificate generation policy is not enabled.");
+                messages.addErrorMessage("Cannot set the LDevID certificate threshold value " +
+                        "when the LDevID certificate generation policy is not enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
-            // if the ldevid certificate threshold value policy update was successful
-            messages.addSuccessMessage(canGenerateLdevIdCertificateOnExpiration ?
-                    "LDevId certificate threshold value has been set" :
-                    "LDevId certificate generation on expiration has been disabled");
+            // if the LDevID certificate threshold value policy update was successful
+            messages.addSuccessMessage(canGenerateLDevIDCertificateOnExpiration ?
+                    "LDevID certificate threshold value has been set" :
+                    "LDevID certificate generation on expiration has been disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
-                    "An exception was thrown while updating ACA DevID Certificate generation policy";
+                    "An exception was thrown while updating ACA LDevID Certificate generation policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
