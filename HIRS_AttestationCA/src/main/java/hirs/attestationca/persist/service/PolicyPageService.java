@@ -119,33 +119,6 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the Ignore PCIE VPD Attribute policy under the platform credential attribute validation
-     * policy setting according to user input.
-     *
-     * @param isIgnorePcieVpdOptionEnabled boolean value representation of the current policy
-     *                                     option's state
-     * @return true if the policy was updated successfully; otherwise, false.
-     */
-    public boolean updateIgnorePCIEVpdPolicy(final boolean isIgnorePcieVpdOptionEnabled) {
-        PolicySettings policySettings = getDefaultPolicy();
-
-        if (isIgnorePcieVpdOptionEnabled && !policySettings.isPcAttributeValidationEnabled()) {
-            log.error("Ignore PCIE VPD Attribute cannot be enabled without PC Attribute "
-                    + "validation policy enabled.");
-            return false;
-        }
-
-        policySettings.setIgnorePcieVpdEnabled(isIgnorePcieVpdOptionEnabled);
-
-        policyRepository.saveAndFlush(policySettings);
-
-        log.debug("Current ACA Policy after updating the ignore "
-                + "pcie vpd policy: {}", policySettings);
-
-        return true;
-    }
-
-    /**
      * Updates the Ignore Revision Attribute policy under the platform credential attribute validation policy
      * setting according to user input.
      *
@@ -168,6 +141,33 @@ public class PolicyPageService {
 
         log.debug("Current ACA Policy after updating the ignore component revision attribute"
                 + " option policy: {}", policySettings);
+
+        return true;
+    }
+
+    /**
+     * Updates the Ignore PCIE VPD Attribute policy under the platform credential attribute validation
+     * policy setting according to user input.
+     *
+     * @param isIgnorePcieVpdOptionEnabled boolean value representation of the current policy
+     *                                     option's state
+     * @return true if the policy was updated successfully; otherwise, false.
+     */
+    public boolean updateIgnorePCIEVpdPolicy(final boolean isIgnorePcieVpdOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        if (isIgnorePcieVpdOptionEnabled && !policySettings.isPcAttributeValidationEnabled()) {
+            log.error("Ignore PCIE VPD Attribute cannot be enabled without PC Attribute "
+                    + "validation policy enabled.");
+            return false;
+        }
+
+        policySettings.setIgnorePcieVpdEnabled(isIgnorePcieVpdOptionEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the ignore "
+                + "pcie vpd policy: {}", policySettings);
 
         return true;
     }
@@ -311,8 +311,7 @@ public class PolicyPageService {
 
         return true;
     }
-
-
+    
     /**
      * Updates the Issued Attestation Certificate generation policy according to user input.
      *
@@ -331,26 +330,6 @@ public class PolicyPageService {
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the issued attestation certificate generation "
-                + " policy: {}", policySettings);
-    }
-
-    /**
-     * Updates the LDevId validation policy according to user input.
-     *
-     * @param isLDevIdOptionEnabled boolean value representation of the current policy option's state
-     */
-    public void updateLDevIdGenerationPolicy(final boolean isLDevIdOptionEnabled) {
-        PolicySettings policySettings = getDefaultPolicy();
-
-        if (!isLDevIdOptionEnabled) {
-            policySettings.setGenerateDevIdCertificateOnExpiration(false);
-        }
-
-        policySettings.setIssueDevIdCertificateEnabled(isLDevIdOptionEnabled);
-
-        policyRepository.saveAndFlush(policySettings);
-
-        log.debug("Current ACA Policy after updating the ldevid validation "
                 + " policy: {}", policySettings);
     }
 
@@ -391,42 +370,6 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the LDevId Certificate generation expiration date under the generate ldevid
-     * certificate policy setting using the provided user input.
-     *
-     * @param canGenerateLDevIdCertificateOnExpiration boolean value representation of the current
-     *                                                 policy option's state
-     * @param ldevIdExpirationValue                    ldevid certificate expiration value
-     * @return true if the policy was updated successfully; otherwise, false.
-     */
-    public boolean updateLDevIdExpirationPolicy(final boolean canGenerateLDevIdCertificateOnExpiration,
-                                                final Long ldevIdExpirationValue) {
-        PolicySettings policySettings = getDefaultPolicy();
-
-        if (canGenerateLDevIdCertificateOnExpiration &&
-                !policySettings.isIssueDevIdCertificateEnabled()) {
-            log.error("Cannot set the ldevid certificate expiration value when" +
-                    " the ldevid certificate generation expiration policy is not enabled.");
-            return false;
-        }
-
-        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateOnExpiration);
-
-        if (canGenerateLDevIdCertificateOnExpiration) {
-            final Long numOfDays = (ldevIdExpirationValue != null) ? ldevIdExpirationValue :
-                    PolicySettings.TEN_YEARS_IN_DAYS;
-            policySettings.setDevIdValidityDays(numOfDays);
-        }
-
-        policyRepository.saveAndFlush(policySettings);
-
-        log.debug("Current ACA Policy after updating the ldevid certificate generation expiration "
-                + "value policy: {}", policySettings);
-
-        return true;
-    }
-
-    /**
      * Updates the Attestation Certificate generation threshold value under the generate attestation
      * certificate policy setting  using the provided user input.
      * <p>
@@ -462,6 +405,62 @@ public class PolicyPageService {
 
         log.debug("Current ACA Policy after updating the attestation certificate generation "
                 + "threshold policy: {}", policySettings);
+
+        return true;
+    }
+
+    /**
+     * Updates the LDevId validation policy according to user input.
+     *
+     * @param isLDevIdOptionEnabled boolean value representation of the current policy option's state
+     */
+    public void updateLDevIdGenerationPolicy(final boolean isLDevIdOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        if (!isLDevIdOptionEnabled) {
+            policySettings.setGenerateDevIdCertificateOnExpiration(false);
+        }
+
+        policySettings.setIssueDevIdCertificateEnabled(isLDevIdOptionEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the ldevid validation "
+                + " policy: {}", policySettings);
+    }
+
+    /**
+     * Updates the LDevId Certificate generation expiration date under the generate ldevid
+     * certificate policy setting using the provided user input.
+     *
+     * @param canGenerateLDevIdCertificateOnExpiration boolean value representation of the current
+     *                                                 policy option's state
+     * @param ldevIdExpirationValue                    ldevid certificate expiration value
+     * @return true if the policy was updated successfully; otherwise, false.
+     */
+    public boolean updateLDevIdExpirationPolicy(final boolean canGenerateLDevIdCertificateOnExpiration,
+                                                final Long ldevIdExpirationValue) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        if (canGenerateLDevIdCertificateOnExpiration &&
+                !policySettings.isIssueDevIdCertificateEnabled()) {
+            log.error("Cannot set the ldevid certificate expiration value when" +
+                    " the ldevid certificate generation expiration policy is not enabled.");
+            return false;
+        }
+
+        policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIdCertificateOnExpiration);
+
+        if (canGenerateLDevIdCertificateOnExpiration) {
+            final Long numOfDays = (ldevIdExpirationValue != null) ? ldevIdExpirationValue :
+                    PolicySettings.TEN_YEARS_IN_DAYS;
+            policySettings.setDevIdValidityDays(numOfDays);
+        }
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the ldevid certificate generation expiration "
+                + "value policy: {}", policySettings);
 
         return true;
     }

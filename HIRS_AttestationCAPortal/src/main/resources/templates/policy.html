@@ -519,25 +519,25 @@
             </li>
 
             <br />
-            <!-- Generate LDevID Certificate -->
+            <!-- Generate LDevId Certificate -->
             <li>
                 <div class="aca-input-box">
                     <form method="POST"
                         th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-issued-ldevid-generation}"
                         th:object="${initialData}">
-                        Generate LDevID Certificate:
+                        Generate LDevId Certificate:
                         <span th:text="${initialData.issueDevIdCertificateEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                         <!-- trigger to open the modal -->
-                        <a data-toggle="modal" th:href="'#' + ldevidCertificatePolicyModal">
+                        <a data-toggle="modal" th:href="'#' + LDevIdCertificatePolicyModal">
                             <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                         </a>
 
                         <!-- modal fragment -->
                         <div
-                            th:replace="fragments/modal :: modal( id='ldevidCertificatePolicyModal',  label='Edit LDevID Certificate Generation Policy Settings', bodyContent=~{this::#genLDevIDCertPolicyBody})">
+                            th:replace="fragments/modal :: modal( id='LDevIdCertificatePolicyModal',  label='Edit LDevId Certificate Generation Policy Settings', bodyContent=~{this::#genLDevIdCertPolicyBody})">
                             <!-- Define the content of the modal -->
-                            <div id="genLDevIDCertPolicyBody">
+                            <div id="genLDevIdCertPolicyBody">
                                 <div class="radio">
                                     <label>
                                         <input th:field="*{issueDevIdCertificateEnabled}" type="radio" value="true" />
@@ -559,32 +559,32 @@
                             <form method="POST"
                                 th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ldevid-certificate-expiration}"
                                 th:object="${initialData}">
-                                LDevID Certificate Validity period:
+                                LDevId Certificate Validity period:
                                 <span
                                     th:text="${initialData.generateDevIdCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- trigger to open the modal -->
-                                <a data-toggle="modal" th:href="'#' + ldevidCertificateExpirationPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + LDevIdCertificateExpirationPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='ldevidCertificateExpirationPolicyModal',  label='Edit LDevID Certificate Expiration Policy Settings', bodyContent=~{this::#expirationLvedvIdCertPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='LDevIdCertificateExpirationPolicyModal',  label='Edit LDevId Certificate Expiration Policy Settings', bodyContent=~{this::#expirationLvedvIdCertPolicyBody})">
                                     <!-- Define the content of the modal -->
                                     <div id="expirationLvedvIdCertPolicyBody">
                                         <div class="radio">
                                             <label>
                                                 <input th:field="*{generateDevIdCertOnExpirationEnabled}" type="radio"
                                                     value="true" />
-                                                Generate LdevId Certificate before validity date.
+                                                Generate LDevId Certificate before validity date.
                                             </label>
                                         </div>
                                         <div class="radio">
                                             <label>
                                                 <input th:field="*{generateDevIdCertOnExpirationEnabled}" type="radio"
                                                     value="false" />
-                                                Do not generate LdevId Certificate before validity date.
+                                                Do not generate LDevId Certificate before validity date.
                                             </label>
                                         </div>
 
@@ -607,18 +607,18 @@
                             <form method="POST"
                                 th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ldevid-threshold}"
                                 th:object="${initialData}">
-                                LDevID Certificate Renewal period:
+                                LDevId Certificate Renewal period:
                                 <span
                                     th:text="${initialData.generateDevIdCertOnExpirationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                                 <!-- trigger to open the modal -->
-                                <a data-toggle="modal" th:href="'#' + ldevidCertificateRenewalPolicyModal">
+                                <a data-toggle="modal" th:href="'#' + LDevIdCertificateRenewalPolicyModal">
                                     <img alt="Editor Icon" th:src="@{/icons/ic_mode_edit_blue_18dp.png}" />
                                 </a>
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='ldevidCertificateRenewalPolicyModal',  label='Edit LDevID Certificate Renewal Policy Settings', bodyContent=~{this::#thresholdLvedvIdCertPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='LDevIdCertificateRenewalPolicyModal',  label='Edit LDevId Certificate Renewal Policy Settings', bodyContent=~{this::#thresholdLvedvIdCertPolicyBody})">
 
                                     <!-- Define the content of the modal -->
                                     <div id="thresholdLvedvIdCertPolicyBody">
