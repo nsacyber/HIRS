@@ -36,12 +36,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
      */
     public static final String INITIAL_DATA = "initialData";
 
-    /**
-     * Represents a web request indicating to enable a setting (based on radio
-     * buttons from a web form).
-     */
-    private static final String ENABLED_CHECKED_PARAMETER_VALUE = "checked";
-
     private final PolicyPageService policyPageService;
 
     /**
@@ -78,6 +72,54 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Updates the Endorsement Credential Validation policy setting and redirects the user back to
+     * the Policy Settings page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-ec-validation")
+    public RedirectView updateECValidationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                 final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the endorsement credential validation policy setting");
+
+        try {
+            final boolean isECValidationOptionEnabled = ppModel.isEcValidationEnabled();
+
+            final boolean isECValPolicyUpdateSuccessful =
+                    this.policyPageService.updateECValidationPolicy(isECValidationOptionEnabled);
+
+            if (!isECValPolicyUpdateSuccessful) {
+                messages.addErrorMessage(
+                        "To disable Endorsement Credential Validation, Platform Validation"
+                                + " must also be disabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+            }
+
+            // if the EC validation policy update was successful
+            messages.addSuccessMessage("Endorsement Credential Validation "
+                    + (isECValidationOptionEnabled ? "enabled" : "disabled"));
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA endorsement validation policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
      * Updates the Platform Cert Validation policy setting and redirects the user back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
@@ -96,8 +138,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         log.info("Received request to update the platform credential validation policy setting");
 
         try {
-            final boolean isPcValidationOptionEnabled
-                    = ppModel.getPcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isPcValidationOptionEnabled = ppModel.isPcValidationEnabled();
 
             final boolean isPCValidationPolicyUpdateSuccessful =
                     this.policyPageService.updatePCValidationPolicy(isPcValidationOptionEnabled);
@@ -143,8 +184,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
         log.info("Received request to update the platform credential attribute validation policy setting");
 
         try {
-            final boolean isPCAttributeValidationOptionEnabled = ppModel.getPcAttributeValidate()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isPCAttributeValidationOptionEnabled =
+                    ppModel.isPcAttributeValidationEnabled();
 
             final boolean isPCAttributeValPolicyUpdateSuccessful =
                     this.policyPageService.updatePCAttributeValidationPolicy(
@@ -174,56 +215,6 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates Ignore PCIE VPD Attribute policy under the Platform Cert Attribute Validation policy setting
-     * and redirects the user back to the Policy Settings page.
-     *
-     * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the original
-     *                           page.
-     * @return View containing the url and parameters
-     * @throws URISyntaxException if malformed URI
-     */
-    @PostMapping("update-pcie-vpd-ignore")
-    public RedirectView updateIgnorePCIEVpdAttributePolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                           final RedirectAttributes redirectAttributes)
-            throws URISyntaxException {
-        Map<String, Object> model = new HashMap<>();
-        PageMessages messages = new PageMessages();
-
-        log.info("Received request to update the Ignore PCIE VPD Attribute policy under "
-                + " the platform credential attribute validation policy setting");
-
-        try {
-            final boolean isIgnorePcieVpdOptionEnabled = ppModel.getIgnorePcieVpdAttribute()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-
-            final boolean isIgnorePcieVpdPolicyUpdateSuccessful =
-                    this.policyPageService.updateIgnorePCIEVpdPolicy(isIgnorePcieVpdOptionEnabled);
-
-            if (!isIgnorePcieVpdPolicyUpdateSuccessful) {
-                messages.addErrorMessage(
-                        "Ignore PCIE VPD Attribute Policy cannot be enabled without PC Attribute"
-                                + " validation policy enabled.");
-                model.put(MESSAGES_ATTRIBUTE, messages);
-                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
-            }
-
-            // if the Ignore PCIE VPD Attribute update was successful
-            messages.addSuccessMessage("Ignore PCIE VPD Attribute  "
-                    + (isIgnorePcieVpdOptionEnabled ? "enabled" : "disabled"));
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        } catch (Exception exception) {
-            final String errorMessage =
-                    "An exception was thrown while updating ACA Ignore PCIE VPD Attribute policy";
-            log.error(errorMessage, exception);
-            messages.addErrorMessage(errorMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        }
-
-        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
-    }
-
-    /**
      * Updates the Ignore Component Revision Attribute Policy under Platform Cert Attribute Validation policy
      * setting and redirects the user back to the Policy Settings page.
      *
@@ -244,8 +235,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " the platform credential attribute validation policy setting");
 
         try {
-            final boolean isIgnoreRevisionAttributeOptionEnabled = ppModel.getIgnoreRevisionAttribute()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isIgnoreRevisionAttributeOptionEnabled = ppModel.isIgnoreRevisionAttributeEnabled();
 
             final boolean isIgnoreRevisionPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreRevisionAttributePolicy(
@@ -274,266 +264,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Updates the Attestation Certificate generation policy setting and redirects the user
-     * back to the Policy Settings page.
-     *
-     * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
-     * @throws URISyntaxException if malformed URI
-     */
-    @PostMapping("update-issued-attestation-generation")
-    public RedirectView updateAttestationCertGenerationPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                              final RedirectAttributes redirectAttributes)
-            throws URISyntaxException {
-        Map<String, Object> model = new HashMap<>();
-        PageMessages messages = new PageMessages();
-
-        log.info("Received request to update the issue attestation certificate generation policy setting");
-
-        try {
-            final boolean isIssuedAttestationOptionEnabled = ppModel.getAttestationCertificateIssued()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-
-            this.policyPageService.updateIssuedAttestationGenerationPolicy(isIssuedAttestationOptionEnabled);
-
-            messages.addSuccessMessage("Attestation Certificate Generation "
-                    + (isIssuedAttestationOptionEnabled ? "enabled." : "disabled."));
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        } catch (Exception exception) {
-            final String errorMessage =
-                    "An exception was thrown while updating ACA Attestation Certificate generation policy";
-            log.error(errorMessage, exception);
-            messages.addErrorMessage(errorMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        }
-
-        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
-    }
-
-    /**
-     * Updates the DevID Certificate generation policy setting and redirects the user
-     * back to the Policy Settings page.
-     *
-     * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
-     * @throws URISyntaxException if malformed URI
-     */
-    @PostMapping("update-issued-ldevid-generation")
-    public RedirectView updateLDevIdGenerationPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                     final RedirectAttributes redirectAttributes)
-            throws URISyntaxException {
-        Map<String, Object> model = new HashMap<>();
-        PageMessages messages = new PageMessages();
-
-        log.info("Received request to update the ldevid certificate generation policy setting");
-
-        try {
-            final boolean isIssuedLDevIdOptionEnabled = ppModel.getDevIdCertificateIssued()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-
-            this.policyPageService.updateLDevIdGenerationPolicy(isIssuedLDevIdOptionEnabled);
-
-            // if the ldevid certificate generation policy update was successful
-            messages.addSuccessMessage("LDevID Certificate Generation "
-                    + (isIssuedLDevIdOptionEnabled ? "enabled." : "disabled."));
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        } catch (Exception exception) {
-            final String errorMessage =
-                    "An exception was thrown while updating ACA LDevID Certificate generation policy";
-            log.error(errorMessage, exception);
-            messages.addErrorMessage(errorMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        }
-
-        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
-    }
-
-    /**
-     * Updates the attestation certificate generation expiration policy setting and redirects the user
-     * back to the Policy Settings page.
-     *
-     * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
-     * @throws URISyntaxException if malformed URI
-     */
-    @PostMapping("update-attestation-certificate-expiration")
-    public RedirectView updateAttestationCertExpirationPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                              final RedirectAttributes redirectAttributes)
-            throws URISyntaxException {
-        Map<String, Object> model = new HashMap<>();
-        PageMessages messages = new PageMessages();
-
-        log.info("Received request to update the attestation certificate expiration policy under the"
-                + "generate attestation certificate policy setting");
-
-        try {
-            boolean isGenerateCertificateEnabled = false;
-            // because this is just one option, there is not 'unchecked' value, so it is either
-            // 'checked' or null
-            if (ppModel.getGenerationExpirationOn() != null) {
-                isGenerateCertificateEnabled =
-                        ppModel.getGenerationExpirationOn().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-            }
-
-            final String successMessage = this.policyPageService.updateAttestationCertExpirationPolicy(
-                    ppModel.getExpirationValue(),
-                    isGenerateCertificateEnabled);
-            messages.addSuccessMessage(successMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        } catch (Exception exception) {
-            final String errorMessage =
-                    "An exception was thrown while updating ACA Attestation Certificate generation policy";
-            log.error(errorMessage, exception);
-            messages.addErrorMessage(errorMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        }
-
-        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
-    }
-
-    /**
-     * Updates the ldevid certification generation expiration policy setting and redirects the user
-     * back to the Policy Settings page.
-     *
-     * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
-     * @throws URISyntaxException if malformed URI
-     */
-    @PostMapping("update-ldevid-certificate-expiration")
-    public RedirectView updateLDevIdCertExpirationPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                         final RedirectAttributes redirectAttributes)
-            throws URISyntaxException {
-        Map<String, Object> model = new HashMap<>();
-        PageMessages messages = new PageMessages();
-
-        log.info("Received request to update the ldevid certificate expiration policy under "
-                + "the ldevid certificate generation policy setting");
-
-        try {
-            boolean isGenerateDevIdCertificateEnabled = false;
-            // because this is just one option, there is not 'unchecked' value, so it is either
-            // 'checked' or null
-            if (ppModel.getDevIdExpirationChecked() != null) {
-                isGenerateDevIdCertificateEnabled
-                        = ppModel.getDevIdExpirationChecked()
-                        .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-            }
-
-            final String successMessage =
-                    this.policyPageService.updateLDevIdExpirationPolicy(ppModel.getDevIdExpirationValue(),
-                            isGenerateDevIdCertificateEnabled);
-            messages.addSuccessMessage(successMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        } catch (Exception exception) {
-            final String errorMessage =
-                    "An exception was thrown while updating ACA LDevID Certificate expiration policy";
-            log.error(errorMessage, exception);
-            messages.addErrorMessage(errorMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        }
-
-        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
-    }
-
-    /**
-     * Updates the attestation certificate generation threshold policy setting and redirects the user
-     * back to the Policy Settings page.
-     *
-     * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
-     * @throws URISyntaxException if malformed URI
-     */
-    @PostMapping("update-issued-cert-threshold")
-    public RedirectView updateAttestationCertThresholdPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                             final RedirectAttributes redirectAttributes)
-            throws URISyntaxException {
-        Map<String, Object> model = new HashMap<>();
-        PageMessages messages = new PageMessages();
-
-        log.info("Received request to update the attestation certificate threshold policy under "
-                + "the attestation certificate generation policy setting");
-
-        try {
-            boolean generateCertificateEnabled = false;
-            // because this is just one option, there is not 'unchecked' value, so it is either
-            // 'checked' or null
-            if (ppModel.getGenerationExpirationOn() != null) {
-                generateCertificateEnabled
-                        = ppModel.getGenerationExpirationOn()
-                        .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-            }
-
-            final String successMessage =
-                    this.policyPageService.updateAttestationCertThresholdPolicy(ppModel.getThresholdValue(),
-                            ppModel.getReissueThreshold(),
-                            generateCertificateEnabled);
-            messages.addSuccessMessage(successMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        } catch (Exception exception) {
-            final String errorMessage =
-                    "An exception was thrown while updating ACA Attestation Certificate threshold value";
-            log.error(errorMessage, exception);
-            messages.addErrorMessage(errorMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        }
-
-        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
-    }
-
-    /**
-     * Updates the ldevid certificate generation threshold policy setting and redirects the user
-     * back to the Policy Settings page.
-     *
-     * @param ppModel            The data posted by the form mapped into an object.
-     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
-     * @throws URISyntaxException if malformed URI
-     */
-    @PostMapping("update-ldevid-threshold")
-    public RedirectView updateLDevIdThresholdValPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                       final RedirectAttributes redirectAttributes)
-            throws URISyntaxException {
-        Map<String, Object> model = new HashMap<>();
-        PageMessages messages = new PageMessages();
-
-        log.info("Received request to update the ldevid certificate threshold policy under "
-                + "the ldevid certificate generation policy setting");
-
-        try {
-            boolean generateDevIdCertificateEnabled = false;
-            // because this is just one option, there is not 'unchecked' value, so it is either
-            // 'checked' or null
-            if (ppModel.getDevIdExpirationChecked() != null) {
-                generateDevIdCertificateEnabled
-                        = ppModel.getDevIdExpirationChecked()
-                        .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-            }
-
-            final String successMessage =
-                    this.policyPageService.updateLDevIdThresholdPolicy(ppModel.getDevIdThresholdValue(),
-                            ppModel.getDevIdReissueThreshold(),
-                            generateDevIdCertificateEnabled);
-            messages.addSuccessMessage(successMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        } catch (Exception exception) {
-            final String errorMessage =
-                    "An exception was thrown while updating ACA DevID Certificate generation policy";
-            log.error(errorMessage, exception);
-            messages.addErrorMessage(errorMessage);
-            model.put(MESSAGES_ATTRIBUTE, messages);
-        }
-
-        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
-    }
-
-    /**
-     * Updates the Endorsement Credential Validation policy setting and redirects the user back to
-     * the Policy Settings page.
+     * Updates Ignore PCIE VPD Attribute policy under the Platform Cert Attribute Validation policy setting
+     * and redirects the user back to the Policy Settings page.
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
@@ -541,37 +273,37 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-ec-validation")
-    public RedirectView updateECValidationPolicy(@ModelAttribute final PolicyPageModel ppModel,
-                                                 final RedirectAttributes redirectAttributes)
+    @PostMapping("update-pcie-vpd-ignore")
+    public RedirectView updateIgnorePCIEVpdAttributePolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                           final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
 
-        log.info("Received request to update the endorsement credential validation policy setting");
+        log.info("Received request to update the Ignore PCIE VPD Attribute policy under "
+                + " the platform credential attribute validation policy setting");
 
         try {
-            final boolean isECValidationOptionEnabled
-                    = ppModel.getEcValidate().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isIgnorePcieVpdOptionEnabled = ppModel.isIgnorePcieVpdAttributeEnabled();
 
-            final boolean isECValPolicyUpdateSuccessful =
-                    this.policyPageService.updateECValidationPolicy(isECValidationOptionEnabled);
+            final boolean isIgnorePcieVpdPolicyUpdateSuccessful =
+                    this.policyPageService.updateIgnorePCIEVpdPolicy(isIgnorePcieVpdOptionEnabled);
 
-            if (!isECValPolicyUpdateSuccessful) {
+            if (!isIgnorePcieVpdPolicyUpdateSuccessful) {
                 messages.addErrorMessage(
-                        "To disable Endorsement Credential Validation, Platform Validation"
-                                + " must also be disabled.");
+                        "Ignore PCIE VPD Attribute Policy cannot be enabled without PC Attribute"
+                                + " validation policy enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
-            // if the EC validation policy update was successful
-            messages.addSuccessMessage("Endorsement Credential Validation "
-                    + (isECValidationOptionEnabled ? "enabled" : "disabled"));
+            // if the Ignore PCIE VPD Attribute update was successful
+            messages.addSuccessMessage("Ignore PCIE VPD Attribute "
+                    + (isIgnorePcieVpdOptionEnabled ? "enabled" : "disabled"));
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
-                    "An exception was thrown while updating ACA endorsement validation policy";
+                    "An exception was thrown while updating ACA Ignore PCIE VPD Attribute policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
@@ -599,8 +331,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
         log.info("Received request to update the firmware validation policy setting");
 
         try {
-            final boolean isFirmwareValidationOptionEnabled = ppModel.getFmValidate()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isFirmwareValidationOptionEnabled = ppModel.isFirmwareValidationEnabled();
 
             final boolean isFirmwareValPolicyUpdateSuccessful =
                     this.policyPageService.updateFirmwareValidationPolicy(isFirmwareValidationOptionEnabled);
@@ -648,8 +379,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " validation policy setting");
 
         try {
-            final boolean isIgnoreImaOptionEnabled = ppModel.getIgnoreIma()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isIgnoreImaOptionEnabled = ppModel.isIgnoreImaEnabled();
 
             final boolean isIgnoreImaPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreImaPolicy(isIgnoreImaOptionEnabled);
@@ -695,8 +425,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " validation policy setting");
 
         try {
-            final boolean ignoreTbootOptionEnabled = ppModel.getIgnoretBoot()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean ignoreTbootOptionEnabled = ppModel.isIgnoreTbootEnabled();
 
             final boolean isIgnoreTbootPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreTBootPolicy(ignoreTbootOptionEnabled);
@@ -743,8 +472,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " validation policy setting");
 
         try {
-            final boolean isIgnoreGptOptionEnabled =
-                    ppModel.getIgnoreGpt().equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
+            final boolean isIgnoreGptOptionEnabled = ppModel.isIgnoreGptEnabled();
 
             final boolean isIgnoreGptOptionPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreGptEventsPolicy(isIgnoreGptOptionEnabled);
@@ -779,7 +507,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @return View containing the url and parameters
      * @throws URISyntaxException if malformed URI
      */
-    @PostMapping("update-os-evt-ignore")
+    @PostMapping("update-os-events-ignore")
     public RedirectView updateIgnoreOsEventsPolicy(@ModelAttribute final PolicyPageModel ppModel,
                                                    final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
@@ -790,15 +518,13 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + " validation policy setting");
 
         try {
-            final boolean isIgnoreOsEvtOptionEnabled = ppModel.getIgnoreOsEvt()
-                    .equalsIgnoreCase(ENABLED_CHECKED_PARAMETER_VALUE);
-
+            final boolean isIgnoreOsEvtOptionEnabled = ppModel.isIgnoreOsEvtEnabled();
             final boolean isIgnoreOSPolicyUpdateSuccessful =
                     this.policyPageService.updateIgnoreOSEventsPolicy(isIgnoreOsEvtOptionEnabled);
 
             if (!isIgnoreOSPolicyUpdateSuccessful) {
                 messages.addErrorMessage(
-                        "Ignore Os Events cannot be enabled without Firmware Validation policy enabled.");
+                        "Ignore OS Events cannot be enabled without Firmware Validation policy enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
@@ -809,6 +535,287 @@ public class PolicyPageController extends PageController<NoPageParams> {
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while updating ACA OS Events ignore policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Updates the Attestation Certificate generation policy setting and redirects the user
+     * back to the Policy Settings page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-issued-attestation-generation")
+    public RedirectView updateAttestationCertGenerationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                              final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the issue attestation certificate generation policy setting");
+
+        try {
+            final boolean isIssuedAttestationOptionEnabled = ppModel.isIssueAttestationCertificateEnabled();
+
+            this.policyPageService.updateIssuedAttestationGenerationPolicy(isIssuedAttestationOptionEnabled);
+
+            messages.addSuccessMessage("Attestation Certificate Generation "
+                    + (isIssuedAttestationOptionEnabled ? "enabled." : "disabled."));
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA Attestation Certificate generation policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Updates the attestation certificate generation expiration policy setting and redirects the user
+     * back to the Policy Settings page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-attestation-certificate-expiration")
+    public RedirectView updateAttestationCertExpirationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                              final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the attestation certificate expiration policy under the "
+                + "generate attestation certificate policy setting");
+
+        try {
+            final int attestCertExpirationValue = ppModel.getGenerateAttestCertExpirationValue();
+            final boolean canGenerateAttestationCertificateOnExpiration =
+                    ppModel.isGenerateAttestationCertOnExpirationEnabled();
+
+            final boolean isAttestationCertExpirationValueUpdateSuccessful =
+                    this.policyPageService.updateAttestationCertExpirationPolicy(
+                            canGenerateAttestationCertificateOnExpiration,
+                            attestCertExpirationValue);
+
+            if (!isAttestationCertExpirationValueUpdateSuccessful) {
+                messages.addErrorMessage("Cannot set the attestation certificate expiration value "
+                        + "when the attestation certificate generation policy is not enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+            }
+
+            // if the attestation certificate expiration value policy update was successful
+            messages.addSuccessMessage(canGenerateAttestationCertificateOnExpiration
+                    ? "Attestation certificate expiration value has been set"
+                    : "Attestation certificate generation on expiration has been disabled");
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA Attestation Certificate generation policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Updates the attestation certificate generation threshold policy setting and redirects the user
+     * back to the Policy Settings page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-issued-cert-threshold")
+    public RedirectView updateAttestationCertThresholdPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                             final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the attestation certificate threshold policy under "
+                + "the attestation certificate generation policy setting");
+
+        try {
+            final int attestCertThresholdValue = ppModel.getGenerateAttestCertThresholdValue();
+            final boolean canGenerateAttestationCertificateOnExpiration =
+                    ppModel.isGenerateAttestationCertOnExpirationEnabled();
+
+            final boolean isAttestationCertThresholdValueUpdateSuccessful =
+                    this.policyPageService.updateAttestationCertThresholdPolicy(
+                            canGenerateAttestationCertificateOnExpiration, attestCertThresholdValue);
+
+            if (!isAttestationCertThresholdValueUpdateSuccessful) {
+                messages.addErrorMessage("Cannot set the attestation certificate threshold value "
+                        + "when the attestation certificate generation policy is not enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+            }
+
+            // if the attestation certificate threshold value policy update was successful
+            messages.addSuccessMessage(canGenerateAttestationCertificateOnExpiration
+                    ? "Attestation certificate threshold value has been set"
+                    : "Attestation certificate generation on expiration has been disabled");
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA Attestation Certificate threshold value";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Updates the DevID Certificate generation policy setting and redirects the user
+     * back to the Policy Settings page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-issued-ldevid-generation")
+    public RedirectView updateLDevIdGenerationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                     final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the LDevID certificate generation policy setting");
+
+        try {
+            final boolean isIssuedLDevIDOptionEnabled = ppModel.isIssueDevIdCertificateEnabled();
+            this.policyPageService.updateLDevIDGenerationPolicy(isIssuedLDevIDOptionEnabled);
+
+            // if the LDevID certificate generation policy update was successful
+            messages.addSuccessMessage("LDevID Certificate Generation "
+                    + (isIssuedLDevIDOptionEnabled ? "enabled." : "disabled."));
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA LDevID Certificate generation policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+
+    /**
+     * Updates the LDevID certification generation expiration policy setting and redirects the user
+     * back to the Policy Settings page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-ldevid-certificate-expiration")
+    public RedirectView updateLDevIDCertExpirationPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                         final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the LDevID certificate expiration policy under "
+                + "the LDevID certificate generation policy setting");
+
+        try {
+            final int lDevIDCertExpirationValue = ppModel.getGenerateDevIdCertExpirationValue();
+            final boolean canGenerateLDevIDCertificateOnExpiration =
+                    ppModel.isGenerateDevIdCertOnExpirationEnabled();
+
+            final boolean isLDevIDCertExpirationValueUpdateSuccessful =
+                    this.policyPageService.updateLDevIDExpirationPolicy(
+                            canGenerateLDevIDCertificateOnExpiration,
+                            lDevIDCertExpirationValue);
+
+            if (!isLDevIDCertExpirationValueUpdateSuccessful) {
+                messages.addErrorMessage("Cannot set the LDevID certificate expiration value "
+                        + "when the LDevID certificate generation policy is not enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+            }
+
+            // if the LDevID certificate expiration value policy update was successful
+            messages.addSuccessMessage(canGenerateLDevIDCertificateOnExpiration
+                    ? "LDevID certificate threshold time has been set"
+                    : "LDevID certificate generation on expiration has been disabled");
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA LDevID Certificate expiration policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Updates the LDevID certificate generation threshold policy setting and redirects the user
+     * back to the Policy Settings page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
+     * @return View containing the url and parameters
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-ldevid-threshold")
+    public RedirectView updateLDevIDThresholdValPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                       final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info("Received request to update the LDevID certificate threshold policy under "
+                + "the LDevID certificate generation policy setting");
+
+        try {
+            final int lDevIDCertThresholdValue = ppModel.getGenerateDevIdCertThresholdValue();
+            final boolean canGenerateLDevIDCertificateOnExpiration =
+                    ppModel.isGenerateDevIdCertOnExpirationEnabled();
+
+            final boolean isLDevIdCertThresholdValueUpdateSuccessful =
+                    this.policyPageService.updateLDevIDThresholdPolicy(
+                            canGenerateLDevIDCertificateOnExpiration, lDevIDCertThresholdValue);
+
+            if (!isLDevIdCertThresholdValueUpdateSuccessful) {
+                messages.addErrorMessage("Cannot set the LDevID certificate threshold value "
+                        + "when the LDevID certificate generation policy is not enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+            }
+
+            // if the LDevID certificate threshold value policy update was successful
+            messages.addSuccessMessage(canGenerateLDevIDCertificateOnExpiration
+                    ? "LDevID certificate threshold value has been set"
+                    : "LDevID certificate generation on expiration has been disabled");
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA LDevID Certificate generation policy";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
             model.put(MESSAGES_ATTRIBUTE, messages);
