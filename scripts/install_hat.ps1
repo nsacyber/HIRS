@@ -107,7 +107,7 @@ $Props=echo $Properties | Out-String | ConvertFrom-StringData
 $Prop=$Props.hirs_db_password
 docker exec aca mysql -u hirs_db -D hirs_db --password=$Prop -e `
 "Update policysettings set ecValidationEnabled=1, pcValidationEnabled=1, `
-pcAttributeValidationEnabled=1, utcValidationEnabled=0, firmwareValidationEnabled=0, `
+pcAttributeValidationEnabled=1, firmwareValidationEnabled=0, `
  expiredCertificateValidationEnabled=0, ignoreGptEnabled=1, `
 ignoreImaEnabled=0, ignoretBootEnabled=0, ignoreOsEvtEnabled=1, ignorePcieVpdEnabled=0,
 saveProtobufToLogOnFailedValEnabled=1, saveProtobufToLogAlwaysEnabled=0, saveProtobufToLogNeverEnabled=0;"

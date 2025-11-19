@@ -184,7 +184,7 @@ function certificateDetailsLink(type, id, sameType) {
  * @param id of the rim
  */
 function rimDetailsLink(id) {
-  const href = portal + "/rim-details?id=" + id;
+  const href = "rim-details?id=" + id;
   const icon = iconPath + "/ic_assignment_black_24dp.png";
   const title = "Details";
 
