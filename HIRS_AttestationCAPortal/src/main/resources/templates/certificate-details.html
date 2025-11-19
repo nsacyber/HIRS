@@ -1,3 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Test Page'">Test Page</title>
+</head>
+
+<body>
+<section layout:fragment="content">
+    <div th:switch="${param.type}">
+        <p th:case="'cool'">cool</p>
+        <p th:case="*">blah</p>
+    </div>
+</section>
+</body>
+
+</html>
+
 <!--<my:page>-->
 <!--    <jsp:attribute name="style">-->
 <!--        <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css" />-->
