@@ -4,7 +4,6 @@
 
 <head>
   <section layout:fragment="script">
-    <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
     <script th:inline="javascript">
       const unknownIcon = /*[[@{/icons/ic_library_add_black_24dp.png}]]*/ '';
       const failIcon = /*[[@{/icons/ic_error_red_24dp.png}]]*/ '';
@@ -16,7 +15,8 @@
       const unknownText = "Unknown Validation Status";
 
       $(document).ready(function () {
-        const url = "validation-reports/list";
+        const viewName = /*[[${ page.viewName }]]*/ '';
+        const url = viewName + "/list";
         let columns = [
           {
             name: "overallValidationResult",
