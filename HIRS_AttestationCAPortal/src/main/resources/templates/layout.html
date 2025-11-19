@@ -32,15 +32,9 @@
 
     <!-- Page-specific scripts -->
     <section layout:fragment="script"></section>
-
-    <!-- Banner fragment (replace with your fragment if you have one) -->
-    <!-- <div th:replace="fragments/banner :: banner"></div> -->
 </head>
 
 <body>
-    <!-- Top Banner (dynamic HTML from controller) -->
-    <div th:utext="${topBanner}"></div>
-
     <!-- Header -->
     <nav id="header" class="navbar navbar-fixed-top">
         <a class="navbar-brand" th:href="@{/}">
@@ -60,7 +54,7 @@
 
         <!-- Main content area with dynamic class -->
         <div th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
-            <!--Messages for successful and unsuccessful process fragment-->
+            <!--Successful/Unsuccessful/Info messages replace this fragment-->
             <div th:replace="fragments/page-messages :: pageMessages(messages = ${messages})"></div>
 
             <div class="page-header">
@@ -72,13 +66,9 @@
             </div>
 
             <div class="extra-spacer"></div>
-            <div th:utext="${bottomBannerInfo}"></div>
             <div class="spacer"></div>
         </div>
     </div>
-
-    <!-- Bottom banner -->
-    <div th:utext="${bottomBanner}"></div>
 </body>
 
 </html>
