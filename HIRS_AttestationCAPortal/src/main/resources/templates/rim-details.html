@@ -1,3 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">
+        <div th:if="${initialData.rimType == 'Measurement'}">
+            <div th:text="${initialData.validationResult} == 'PASS' ? 'TCG Log events' : 'TCG Log event(s) not found in the RIM DB'"></div>
+        </div>
+        <div th:unless="${initialData.rimType == 'Measurement'}">
+            <span th:text="${initialData.rimType}"></span> Reference Integrity Manifest
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/download?(id=${param.id})}">
+                <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download this RIM">
+            </a>
+        </div>
+    </h1>
+    <div id="rim-details-page" class="container-fluid" layout:fragment="content">
+        <th:block th:if="${initialData.rimType == 'Support'
+            || (initialData.rimType == 'Measurement' && initialData.validationResult == 'PASS')}">
+            <div class="row">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Additonal RIM Info</span></div>
+                <div class="col col-md-8">
+                    <th:block th:if="${#strings.isEmpty(initialData.associatedRim)}">
+                        <div class="component col col-md-10" style="color: red; padding-left: 20px">Associated RIM not found</div>
+                    </th:block>
+                    <th:block th:unless="${#strings.isEmpty(initialData.associatedRim)}">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.associatedRim})}">
+                            <span th:text="${initialData.associatedRim}"></span>
+                        </a>
+                        <th:block th:if="${#maps.containsKey(initialData, 'hostName')}">
+                            Device: <span th:text="${initialData.hostname}"></span>
+                        </th:block>
+                        <th:block th:if="${#maps.containsKey(initialData, 'supportId')}">
+                            Support: <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.supportId})}">
+                            <span th:text="${initialData.supportFilename}"></span></a>
+                        </th:block>
+                    </th:block>
+                </div>
+            </div>
+            <th:block th:unless="${initialData.swidBase}">
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1">
+                        <span>RIM Type</span>
+                    </div>
+                    <div id="baseRim" class="col col-md-8">
+                        <th:block th:if="${initialData.swidCorpus}">SWID Corpus</th:block>
+                        <th:block th:if="${initialData.swidPatch}">SWID Patch</th:block>
+                        <th:block th:if="${initialData.swidSupplemental}">SWID Supplemental</th:block>
+                    </div>
+                </div>
+            </th:block>
+            <div class="row">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colRimHeader">
+                        <a role="button" data-toggle="collapse" class="collapsed" th:href="#eventOptions"
+                           aria-expanded="true" data-placement="top" aria-controls="eventOptions">Event Summary
+                        </a>
+                    </span>
+                </div>
+                <div id="eventsCol" class="col col-md-8">
+                    <div id="eventOptions" class="collapse"  aria-expanded="false"></div>
+                </div>
+            </div>
+        </th:block>
+        <th:block th:if="${initialData.rimType == 'Measurement' && initialData.validationResult == 'FAIL'}">
+            <div class="row">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
+                <div id="measurements" class="col col-md-8">
+                    <div>Download Measurement:
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/download?(id=${param.id})}">
+                            BIOS Measurements
+                        </a>
+                    </div>
+                    <th:block th:if="#maps.containsKey(initialData, 'hostName')">
+                        <div>Device: <span th:text="${initialData.hostName}"></span></div>
+                    </th:block>
+                    <th:block th:if="#maps.containsKey(initialData, 'tagId')">
+                        <div>Base:&nbsp;
+                            <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.tagId})}">
+                                <span th:text="${initialData.tagId}"></span>
+                            </a>
+                        </div>
+                    </th:block>
+                    <th:block th:if="#maps.containsKey(initialData, 'supportId')">
+                        <div>Support:&nbsp;
+                            <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.supportId})}">
+                                <span th:text="${initialData.supportId}"></span>
+                            </a>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+        </th:block>
+        <th:block th:if="${initialData.rimType == 'Base'}">
+            <div class = "row">
+                <div class="col-md-1 col-md-offset-1">
+                    <span clas="colHeader">Software Identity</span>
+                </div>
+            </div>
+        </th:block>
+    </div>
+</body>
+</html>
 <!--<my:page>-->
 <!--    <jsp:attribute name="style">-->
 <!--        <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css"/>-->
