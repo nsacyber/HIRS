@@ -600,7 +600,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + "generate attestation certificate policy setting");
 
         try {
-            final Long attestCertExpirationValue = ppModel.getGenerateAttestCertExpirationValue();
+            final int attestCertExpirationValue = ppModel.getGenerateAttestCertExpirationValue();
             final boolean canGenerateAttestationCertificateOnExpiration =
                     ppModel.isGenerateAttestationCertOnExpirationEnabled();
 
@@ -610,16 +610,16 @@ public class PolicyPageController extends PageController<NoPageParams> {
                             attestCertExpirationValue);
 
             if (!isAttestationCertExpirationValueUpdateSuccessful) {
-                messages.addErrorMessage("Cannot set the attestation certificate expiration value " +
-                        "when the attestation certificate generation policy is not enabled.");
+                messages.addErrorMessage("Cannot set the attestation certificate expiration value "
+                        + "when the attestation certificate generation policy is not enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
             // if the attestation certificate expiration value policy update was successful
-            messages.addSuccessMessage(canGenerateAttestationCertificateOnExpiration ?
-                    "Attestation certificate expiration value has been set" :
-                    "Attestation certificate generation on expiration has been disabled");
+            messages.addSuccessMessage(canGenerateAttestationCertificateOnExpiration
+                    ? "Attestation certificate expiration value has been set"
+                    : "Attestation certificate generation on expiration has been disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -652,7 +652,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + "the attestation certificate generation policy setting");
 
         try {
-            final Long attestCertThresholdValue = ppModel.getGenerateAttestCertThresholdValue();
+            final int attestCertThresholdValue = ppModel.getGenerateAttestCertThresholdValue();
             final boolean canGenerateAttestationCertificateOnExpiration =
                     ppModel.isGenerateAttestationCertOnExpirationEnabled();
 
@@ -661,16 +661,16 @@ public class PolicyPageController extends PageController<NoPageParams> {
                             canGenerateAttestationCertificateOnExpiration, attestCertThresholdValue);
 
             if (!isAttestationCertThresholdValueUpdateSuccessful) {
-                messages.addErrorMessage("Cannot set the attestation certificate threshold value " +
-                        "when the attestation certificate generation policy is not enabled.");
+                messages.addErrorMessage("Cannot set the attestation certificate threshold value "
+                        + "when the attestation certificate generation policy is not enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
             // if the attestation certificate threshold value policy update was successful
-            messages.addSuccessMessage(canGenerateAttestationCertificateOnExpiration ?
-                    "Attestation certificate threshold value has been set" :
-                    "Attestation certificate generation on expiration has been disabled");
+            messages.addSuccessMessage(canGenerateAttestationCertificateOnExpiration
+                    ? "Attestation certificate threshold value has been set"
+                    : "Attestation certificate generation on expiration has been disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -741,26 +741,26 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + "the LDevID certificate generation policy setting");
 
         try {
-            final Long LDevIDCertExpirationValue = ppModel.getGenerateDevIdCertExpirationValue();
+            final int lDevIDCertExpirationValue = ppModel.getGenerateDevIdCertExpirationValue();
             final boolean canGenerateLDevIDCertificateOnExpiration =
                     ppModel.isGenerateDevIdCertOnExpirationEnabled();
 
             final boolean isLDevIDCertExpirationValueUpdateSuccessful =
                     this.policyPageService.updateLDevIDExpirationPolicy(
                             canGenerateLDevIDCertificateOnExpiration,
-                            LDevIDCertExpirationValue);
+                            lDevIDCertExpirationValue);
 
             if (!isLDevIDCertExpirationValueUpdateSuccessful) {
-                messages.addErrorMessage("Cannot set the LDevID certificate expiration value " +
-                        "when the LDevID certificate generation policy is not enabled.");
+                messages.addErrorMessage("Cannot set the LDevID certificate expiration value "
+                        + "when the LDevID certificate generation policy is not enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
             // if the LDevID certificate expiration value policy update was successful
-            messages.addSuccessMessage(canGenerateLDevIDCertificateOnExpiration ?
-                    "LDevID certificate threshold time has been set" :
-                    "LDevID certificate generation on expiration has been disabled");
+            messages.addSuccessMessage(canGenerateLDevIDCertificateOnExpiration
+                    ? "LDevID certificate threshold time has been set"
+                    : "LDevID certificate generation on expiration has been disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
@@ -793,25 +793,25 @@ public class PolicyPageController extends PageController<NoPageParams> {
                 + "the LDevID certificate generation policy setting");
 
         try {
-            final Long LDevIDCertThresholdValue = ppModel.getGenerateDevIdCertThresholdValue();
+            final int lDevIDCertThresholdValue = ppModel.getGenerateDevIdCertThresholdValue();
             final boolean canGenerateLDevIDCertificateOnExpiration =
                     ppModel.isGenerateDevIdCertOnExpirationEnabled();
 
             final boolean isLDevIdCertThresholdValueUpdateSuccessful =
                     this.policyPageService.updateLDevIDThresholdPolicy(
-                            canGenerateLDevIDCertificateOnExpiration, LDevIDCertThresholdValue);
+                            canGenerateLDevIDCertificateOnExpiration, lDevIDCertThresholdValue);
 
             if (!isLDevIdCertThresholdValueUpdateSuccessful) {
-                messages.addErrorMessage("Cannot set the LDevID certificate threshold value " +
-                        "when the LDevID certificate generation policy is not enabled.");
+                messages.addErrorMessage("Cannot set the LDevID certificate threshold value "
+                        + "when the LDevID certificate generation policy is not enabled.");
                 model.put(MESSAGES_ATTRIBUTE, messages);
                 return redirectToSelf(new NoPageParams(), model, redirectAttributes);
             }
 
             // if the LDevID certificate threshold value policy update was successful
-            messages.addSuccessMessage(canGenerateLDevIDCertificateOnExpiration ?
-                    "LDevID certificate threshold value has been set" :
-                    "LDevID certificate generation on expiration has been disabled");
+            messages.addSuccessMessage(canGenerateLDevIDCertificateOnExpiration
+                    ? "LDevID certificate threshold value has been set"
+                    : "LDevID certificate generation on expiration has been disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =

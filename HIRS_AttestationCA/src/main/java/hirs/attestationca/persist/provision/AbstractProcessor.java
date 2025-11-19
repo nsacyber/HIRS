@@ -280,7 +280,7 @@ public class AbstractProcessor {
         PolicyRepository scp = getPolicyRepository();
         PolicySettings policySettings;
         Date currentDate = new Date();
-        long days;
+        int days;
         try {
             // save issued certificate
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(

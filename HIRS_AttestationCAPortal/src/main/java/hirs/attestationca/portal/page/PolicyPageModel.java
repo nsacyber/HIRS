@@ -29,10 +29,10 @@ public class PolicyPageModel {
     private boolean issueDevIdCertificateEnabled;
     private boolean generateAttestationCertOnExpirationEnabled;
     private boolean generateDevIdCertOnExpirationEnabled;
-    private Long generateAttestCertExpirationValue;
-    private Long generateDevIdCertExpirationValue;
-    private Long generateAttestCertThresholdValue;
-    private Long generateDevIdCertThresholdValue;
+    private int generateAttestCertExpirationValue;
+    private int generateDevIdCertExpirationValue;
+    private int generateAttestCertThresholdValue;
+    private int generateDevIdCertThresholdValue;
     private String saveProtobufToLogOption;
     private boolean logProtobufOnFailedVal;
     private boolean logProtobufNever;

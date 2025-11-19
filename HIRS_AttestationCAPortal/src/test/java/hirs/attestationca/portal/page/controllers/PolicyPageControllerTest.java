@@ -417,8 +417,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Ignore Component Revision Attribute cannot be " +
-                                        "enabled without PC Attribute validation policy enabled."))));
+                                hasItem("Ignore Component Revision Attribute cannot be "
+                                        + "enabled without PC Attribute validation policy enabled."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isIgnoreRevisionEnabled());
@@ -590,7 +590,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Firmware validation cannot be enabled without PC Attributes policy enabled."))));
+                                hasItem("Firmware validation cannot be enabled without PC Attributes "
+                                        + "policy enabled."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isFirmwareValidationEnabled());
@@ -675,7 +676,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Ignore IMA cannot be enabled without Firmware Validation policy enabled."))));
+                                hasItem("Ignore IMA cannot be enabled without Firmware Validation policy "
+                                        + "enabled."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isIgnoreImaEnabled());
@@ -762,7 +764,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Ignore TBoot cannot be enabled without Firmware Validation policy enabled."))));
+                                hasItem("Ignore TBoot cannot be enabled without Firmware Validation policy "
+                                        + "enabled."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isIgnoretBootEnabled());
@@ -849,7 +852,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Ignore GPT Events cannot be enabled without Firmware Validation policy enabled."))));
+                                hasItem("Ignore GPT Events cannot be enabled without Firmware Validation "
+                                        + "policy enabled."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isIgnoreGptEnabled());
@@ -936,7 +940,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Ignore OS Events cannot be enabled without Firmware Validation policy enabled."))));
+                                hasItem("Ignore OS Events cannot be enabled without Firmware Validation "
+                                        + "policy enabled."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isIgnoreOsEvtEnabled());
@@ -990,7 +995,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         // perform the mock request
         actions = getMockMvc()
-                .perform(MockMvcRequestBuilders.post(pagePath + "/update-issued-attestation-generation")
+                .perform(MockMvcRequestBuilders.post(
+                                pagePath + "/update-issued-attestation-generation")
                         .param("issueAttestationCertificateEnabled", "true"));
 
         actions
@@ -1019,7 +1025,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         // perform the mock request
         actions = getMockMvc()
-                .perform(MockMvcRequestBuilders.post(pagePath + "/update-issued-attestation-generation")
+                .perform(MockMvcRequestBuilders.post(
+                                pagePath + "/update-issued-attestation-generation")
                         .param("issueAttestationCertificateEnabled", "false"));
 
         actions

@@ -344,7 +344,7 @@ public class PolicyPageService {
      */
     public boolean updateAttestationCertExpirationPolicy(
             final boolean canGenerateAttestationCertificateOnExpiration,
-            final Long attestCertExpirationValue) {
+            final int attestCertExpirationValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (canGenerateAttestationCertificateOnExpiration
@@ -358,7 +358,7 @@ public class PolicyPageService {
                 canGenerateAttestationCertificateOnExpiration);
 
         if (canGenerateAttestationCertificateOnExpiration) {
-            final Long numOfDays = (attestCertExpirationValue != null) ? attestCertExpirationValue
+            final int numOfDays = (attestCertExpirationValue != 0) ? attestCertExpirationValue
                     : PolicySettings.TEN_YEARS_IN_DAYS;
             policySettings.setValidityDays(numOfDays);
         }
@@ -383,7 +383,7 @@ public class PolicyPageService {
      */
     public boolean updateAttestationCertThresholdPolicy(
             final boolean canGenerateAttestationCertificateOnExpiration,
-            final Long attestCertThresholdValue) {
+            final int attestCertThresholdValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (canGenerateAttestationCertificateOnExpiration
@@ -397,8 +397,8 @@ public class PolicyPageService {
                 canGenerateAttestationCertificateOnExpiration);
 
         if (canGenerateAttestationCertificateOnExpiration) {
-            final Long threshold =
-                    (attestCertThresholdValue != null) ? attestCertThresholdValue
+            final int threshold =
+                    (attestCertThresholdValue != 0) ? attestCertThresholdValue
                             : PolicySettings.A_YEAR_IN_DAYS;
             policySettings.setReissueThreshold(threshold);
         }
@@ -441,7 +441,7 @@ public class PolicyPageService {
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updateLDevIDExpirationPolicy(final boolean canGenerateLDevIDCertificateOnExpiration,
-                                                final Long lDevIDExpirationValue) {
+                                                final int lDevIDExpirationValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (canGenerateLDevIDCertificateOnExpiration
@@ -454,7 +454,7 @@ public class PolicyPageService {
         policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIDCertificateOnExpiration);
 
         if (canGenerateLDevIDCertificateOnExpiration) {
-            final Long numOfDays = (lDevIDExpirationValue != null) ? lDevIDExpirationValue
+            final int numOfDays = (lDevIDExpirationValue != 0) ? lDevIDExpirationValue
                     : PolicySettings.TEN_YEARS_IN_DAYS;
             policySettings.setDevIdValidityDays(numOfDays);
         }
@@ -477,7 +477,7 @@ public class PolicyPageService {
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updateLDevIDThresholdPolicy(final boolean canGenerateLDevIDCertificateOnExpiration,
-                                               final Long lDevIDThresholdValue) {
+                                               final int lDevIDThresholdValue) {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (canGenerateLDevIDCertificateOnExpiration
@@ -490,8 +490,8 @@ public class PolicyPageService {
         policySettings.setGenerateDevIdCertificateOnExpiration(canGenerateLDevIDCertificateOnExpiration);
 
         if (canGenerateLDevIDCertificateOnExpiration) {
-            final Long lDevIDThreshold =
-                    (lDevIDThresholdValue != null) ? lDevIDThresholdValue : PolicySettings.A_YEAR_IN_DAYS;
+            final int lDevIDThreshold =
+                    (lDevIDThresholdValue != 0) ? lDevIDThresholdValue : PolicySettings.A_YEAR_IN_DAYS;
             policySettings.setDevIdReissueThreshold(lDevIDThreshold);
         }
 

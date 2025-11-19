@@ -26,12 +26,12 @@ public class PolicySettings extends UserDefinedEntity {
     /**
      * Number of days in 10 years.
      */
-    public static final Long TEN_YEARS_IN_DAYS = 3651L;
+    public static final int TEN_YEARS_IN_DAYS = 3651;
 
     /**
      * Number of days in 1 year.
      */
-    public static final Long A_YEAR_IN_DAYS = 365L;
+    public static final int A_YEAR_IN_DAYS = 365;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean ecValidationEnabled = false;
@@ -58,16 +58,16 @@ public class PolicySettings extends UserDefinedEntity {
     private boolean issueDevIdCertificateEnabled = true;
 
     @Column(nullable = false)
-    private Long validityDays = TEN_YEARS_IN_DAYS;
+    private int validityDays = TEN_YEARS_IN_DAYS;
 
     @Column(nullable = false)
-    private Long devIdValidityDays = TEN_YEARS_IN_DAYS;
+    private int devIdValidityDays = TEN_YEARS_IN_DAYS;
 
     @Column(nullable = false)
-    private Long reissueThreshold = A_YEAR_IN_DAYS;
+    private int reissueThreshold = A_YEAR_IN_DAYS;
 
     @Column(nullable = false)
-    private Long devIdReissueThreshold = A_YEAR_IN_DAYS;
+    private int devIdReissueThreshold = A_YEAR_IN_DAYS;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean generateAttestationCertificateOnExpiration = false;
