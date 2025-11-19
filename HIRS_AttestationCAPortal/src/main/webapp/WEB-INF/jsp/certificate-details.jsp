@@ -5,6 +5,7 @@
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@taglib prefix="fn" uri="jakarta.tags.functions"%>
 <%@taglib prefix="my" tagdir="/WEB-INF/tags"%>
+<%@taglib prefix="t" tagdir="/WEB-INF/tags" %>
 
 <%--CONTENT--%>
 <my:page>
@@ -380,7 +381,7 @@
                             <span class="colHeader">
                                 <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
                                     aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
-                                    TPM Specification
+                                    TPM Specification ▼
                                 </a>
                             </span>
                         </div>
@@ -399,26 +400,94 @@
                                 <a role="button" data-toggle="collapse" class="collapsed"
                                     href="#tpmSecurityAssertionInner" aria-expanded="true" data-placement="top"
                                     aria-controls="tpmSecurityAssertionInner">
-                                    TPM Security Assertion
+                                    TPM Security Assertion ▼
                                 </a>
                             </span>
                         </div>
                         <div id="tpmSecurityAssertion" class="col col-md-8">
-                            <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"
-                                aria-expanded="false">
-                                <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}</span></div>
-                                <div>Field
-                                    Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span>
+                            <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                <table class="table table-bordered table-sm">
+                                    <t:field-displayer label="Version" value="${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}" />
+                                    <t:field-displayer label="Field Upgradeable" value="${initialData.TPMSecurityAssertionsFieldUpgradeable}" />
+                                    <t:field-displayer label="EK Generation Type" value="${initialData.TPMSecurityAssertionsEkGenType}" />
+                                    <t:field-displayer label="EK Generation Location" value="${initialData.TPMSecurityAssertionsEkGenerationLocation}" />
+                                    <t:field-displayer label="EK Certificate Generation Location" value="${initialData.TPMSecurityAssertionsEkCertificateGenerationLocation}" />
+                                </table>
+                                <span class="colHeader">
+                                    <a role="button" data-toggle="collapse" class="collapsed"
+                                       href="#commonCriteriaInner" aria-expanded="false"
+                                       data-placement="top" aria-controls="commonCriteriaInner">
+                                        Common Criteria Info ▼<br><br>
+                                    </a>
+                                </span>
+                                <div id="commonCriteriaInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                    <table class="table table-bordered table-sm">
+                                        <t:field-displayer label="Version" value="${initialData.CommonCriteriaMeasuresCcVersion}" />
+                                        <t:field-displayer label="Assurance Level" value="${initialData.CommonCriteriaMeasuresAssuranceLevel}" />
+                                        <t:field-displayer label="Evaluation Status" value="${initialData.CommonCriteriaMeasuresEvaluationStatus}" />
+                                        <t:field-displayer label="Plus" value="${initialData.CommonCriteriaMeasuresCcPlus}" />
+                                        <t:field-displayer label="Strength of Function" value="${initialData.CommonCriteriaMeasuresStrengthOfFunction}" />
+                                        <t:field-displayer label="Profile OID" value="${initialData.CommonCriteriaMeasuresProfileOid}" />
+                                        <tr>
+                                            <th>Profile URI</th>
+                                            <td>
+                                                <table class="table table-sm mb-0">
+                                                    <t:field-displayer label="Uniform Resource Identifier" value="${initialData.CommonCriteriaMeasuresProfileUri}" />
+                                                    <tr>
+                                                        <th>Hash Algorithm</th>
+                                                        <td>
+                                                            <table class="table table-sm mb-0">
+                                                                <t:field-displayer label="Algorithm" value="${initialData.CommonCriteriaMeasuresProfileAlgOid}" />
+                                                                <t:field-displayer label="Parameters" value="${initialData.CommonCriteriaMeasuresProfileAlgParameters}" />
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                    <t:field-displayer label="Hash Value" value="${initialData.CommonCriteriaMeasuresProfileHashValue}" />
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <t:field-displayer label="Target OID" value="${initialData.CommonCriteriaMeasuresTargetOid}" />
+                                        <tr>
+                                            <th>Target URI</th>
+                                            <td>
+                                                <table class="table table-sm mb-0">
+                                                    <t:field-displayer label="Uniform Resource Identifier" value="${initialData.CommonCriteriaMeasuresTargetUri}" />
+
+                                                    <tr>
+                                                        <th>Hash Algorithm</th>
+                                                        <td>
+                                                            <table class="table table-sm mb-0">
+                                                                <t:field-displayer label="Algorithm" value="${initialData.CommonCriteriaMeasuresTargetAlgOid}" />
+                                                                <t:field-displayer label="Parameters" value="${initialData.CommonCriteriaMeasuresTargetAlgParameters}" />
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                    <t:field-displayer label="Hash Value" value="${initialData.CommonCriteriaMeasuresTargetHashValue}" />
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
-                                <div>ek Generation Type:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenType}</span>
+                                <span class="colHeader">
+                                    <a role="button" data-toggle="collapse" class="collapsed"
+                                       href="#fipsInfoInner" aria-expanded="false"
+                                       data-placement="top" aria-controls="fipsInfoInner">
+                                        FIPS Info ▼<br><br>
+                                    </a>
+                                </span>
+                                <div id="fipsInfoInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                    <table class="table table-bordered table-sm">
+                                        <t:field-displayer label="Version" value="${initialData.FIPSLevelFipsVersion}" />
+                                        <t:field-displayer label="Level" value="${initialData.FIPSLevelSecurityLevel}" />
+                                        <t:field-displayer label="Plus" value="${initialData.FIPSLevelFipsPlus}" />
+                                    </table>
                                 </div>
-                                <div>ek Generation
-                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenerationLocation}</span></div>
-                                <div>ek Certificate Generation
-                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertificateGenerationLocation}</span></div>
+                                <table class="table table-bordered table-sm">
+                                    <t:field-displayer label="ISO 9000 Certified" value="${initialData.iso9000Certified}" />
+                                    <t:field-displayer label="ISO 9000 URI" value="${initialData.iso9000Uri}" />
+                                </table>
                             </div>
                         </div>
-                    </div>
                 </c:when>
                 <c:when test="${param.type=='platform'}">
                     <c:if test="${not empty initialData.platformType}">
@@ -1023,7 +1092,7 @@
                     <span class="colHeader">
                         <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
                             aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
-                            TPM Specification
+                            TPM Specification ▼
                         </a>
                     </span>
                 </div>
@@ -1040,24 +1109,94 @@
                     <span class="colHeader">
                         <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"
                             aria-expanded="true" data-placement="top" aria-controls="tpmSecurityAssertionInner">
-                            TPM Security Assertion
+                            TPM Security Assertion ▼
                         </a>
                     </span>
                 </div>
                 <div id="tpmSecurityAssertion" class="col col-md-8">
-                    <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"
-                        aria-expanded="false">
-                        <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}</span></div>
-                        <div>Field Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span>
+                    <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                        <table class="table table-bordered table-sm">
+                            <t:field-displayer label="Version" value="${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}" />
+                            <t:field-displayer label="Field Upgradeable" value="${initialData.TPMSecurityAssertionsFieldUpgradeable}" />
+                            <t:field-displayer label="EK Generation Type" value="${initialData.TPMSecurityAssertionsEkGenType}" />
+                            <t:field-displayer label="EK Generation Location" value="${initialData.TPMSecurityAssertionsEkGenerationLocation}" />
+                            <t:field-displayer label="EK Certificate Generation Location" value="${initialData.TPMSecurityAssertionsEkCertificateGenerationLocation}" />
+                        </table>
+                        <span class="colHeader">
+                            <a role="button" data-toggle="collapse" class="collapsed"
+                               href="#commonCriteriaInner" aria-expanded="false"
+                               data-placement="top" aria-controls="commonCriteriaInner">
+                                Common Criteria Info ▼<br><br>
+                            </a>
+                        </span>
+                        <div id="commonCriteriaInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                            <table class="table table-bordered table-sm">
+                                <t:field-displayer label="Version" value="${initialData.CommonCriteriaMeasuresCcVersion}" />
+                                <t:field-displayer label="Assurance Level" value="${initialData.CommonCriteriaMeasuresAssuranceLevel}" />
+                                <t:field-displayer label="Evaluation Status" value="${initialData.CommonCriteriaMeasuresEvaluationStatus}" />
+                                <t:field-displayer label="Plus" value="${initialData.CommonCriteriaMeasuresCcPlus}" />
+                                <t:field-displayer label="Strength of Function" value="${initialData.CommonCriteriaMeasuresStrengthOfFunction}" />
+                                <t:field-displayer label="Profile OID" value="${initialData.CommonCriteriaMeasuresProfileOid}" />
+                                <tr>
+                                    <th>Profile URI</th>
+                                    <td>
+                                        <table class="table table-sm mb-0">
+                                            <t:field-displayer label="Uniform Resource Identifier" value="${initialData.CommonCriteriaMeasuresProfileUri}" />
+                                            <tr>
+                                                <th>Hash Algorithm</th>
+                                                <td>
+                                                    <table class="table table-sm mb-0">
+                                                        <t:field-displayer label="Algorithm" value="${initialData.CommonCriteriaMeasuresProfileAlgOid}" />
+                                                        <t:field-displayer label="Parameters" value="${initialData.CommonCriteriaMeasuresProfileAlgParameters}" />
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <t:field-displayer label="Hash Value" value="${initialData.CommonCriteriaMeasuresProfileHashValue}" />
+                                        </table>
+                                    </td>
+                                </tr>
+                                <t:field-displayer label="Target OID" value="${initialData.CommonCriteriaMeasuresTargetOid}" />
+                                <tr>
+                                    <th>Target URI</th>
+                                    <td>
+                                        <table class="table table-sm mb-0">
+                                            <t:field-displayer label="Uniform Resource Identifier" value="${initialData.CommonCriteriaMeasuresTargetUri}" />
+
+                                            <tr>
+                                                <th>Hash Algorithm</th>
+                                                <td>
+                                                    <table class="table table-sm mb-0">
+                                                        <t:field-displayer label="Algorithm" value="${initialData.CommonCriteriaMeasuresTargetAlgOid}" />
+                                                        <t:field-displayer label="Parameters" value="${initialData.CommonCriteriaMeasuresTargetAlgParameters}" />
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <t:field-displayer label="Hash Value" value="${initialData.CommonCriteriaMeasuresTargetHashValue}" />
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
-                        <div>ek Generation Type:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenType}</span></div>
-                        <div>ek Generation Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenerationLocation}</span>
+                        <span class="colHeader">
+                            <a role="button" data-toggle="collapse" class="collapsed"
+                               href="#fipsInfoInner" aria-expanded="false"
+                               data-placement="top" aria-controls="fipsInfoInner">
+                                FIPS Info ▼<br><br>
+                            </a>
+                        </span>
+                        <div id="fipsInfoInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                            <table class="table table-bordered table-sm">
+                                <t:field-displayer label="Version" value="${initialData.FIPSLevelFipsVersion}" />
+                                <t:field-displayer label="Level" value="${initialData.FIPSLevelSecurityLevel}" />
+                                <t:field-displayer label="Plus" value="${initialData.FIPSLevelFipsPlus}" />
+                            </table>
                         </div>
-                        <div>ek Certificate Generation
-                            Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertificateGenerationLocation}</span></div>
+                        <table class="table table-bordered table-sm">
+                            <t:field-displayer label="ISO 9000 Certified" value="${initialData.iso9000Certified}" />
+                            <t:field-displayer label="ISO 9000 URI" value="${initialData.iso9000Uri}" />
+                        </table>
                     </div>
                 </div>
-            </div>
         </c:when>
         <c:when test="${param.type=='idevid'}">
             <c:choose>
