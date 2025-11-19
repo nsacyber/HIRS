@@ -35,7 +35,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
     // Policy refers to the settings such as whether to validate endorsement credentials, platform credentials
     // , etc
-    private PolicySettings policy;
+    private PolicySettings policySetting;
 
     /**
      * Constructor requiring the Page's display and routing specification.
@@ -46,13 +46,13 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Sets up policy.
+     * Sets up policySetting.
      */
     @BeforeAll
     public void setUpPolicy() {
 
         // create the supply chain policy
-        policy = policyRepository.findByName("Default");
+        policySetting = policyRepository.findByName("Default");
     }
 
     /**
@@ -62,7 +62,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     @Test
     public void verifySpringInitialized() {
         assertNotNull(policyRepository);
-        assertNotNull(policy);
+        assertNotNull(policySetting);
     }
 
     /**
@@ -72,9 +72,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
      */
     @Test
     public void testInitPage() throws Exception {
-        final boolean ec = policy.isEcValidationEnabled();
-        final boolean pc = policy.isPcValidationEnabled();
-        final boolean fm = policy.isFirmwareValidationEnabled();
+        final boolean ec = policySetting.isEcValidationEnabled();
+        final boolean pc = policySetting.isPcValidationEnabled();
+        final boolean fm = policySetting.isFirmwareValidationEnabled();
 
         // perform test
         getMockMvc()
@@ -101,7 +101,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         //init the database
         setPolicyAllToFalse();
-        policyRepository.save(policy);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -116,8 +116,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Endorsement Credential Validation enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isEcValidationEnabled());
     }
 
     /**
@@ -131,8 +131,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         //init the database
         setPolicyAllToFalse();
-        policy.setEcValidationEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setEcValidationEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -147,13 +147,13 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Endorsement Credential Validation disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setEcValidationEnabled(true);
-        policy.setPcValidationEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setEcValidationEnabled(true);
+        policySetting.setPcValidationEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -169,8 +169,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                                 hasItem("To disable Endorsement Credential Validation, Platform Validation"
                                         + " must also be disabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isEcValidationEnabled());
 
     }
 
@@ -185,8 +185,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         //init the database
         setPolicyAllToFalse();
-        policy.setEcValidationEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setEcValidationEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -201,14 +201,14 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Platform Certificate Validation enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isPcValidationEnabled());
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isPcValidationEnabled());
+        assertTrue(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setEcValidationEnabled(false);
-        policy.setPcValidationEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setEcValidationEnabled(false);
+        policySetting.setPcValidationEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -224,9 +224,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                                 hasItem("Unable to update ACA Platform Validation setting due to the current "
                                         + "policy configuration."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isPcValidationEnabled());
-        assertFalse(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isPcValidationEnabled());
+        assertFalse(policySetting.isEcValidationEnabled());
     }
 
     /**
@@ -241,7 +241,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         //init the database
         setPolicyAllToFalse();
         setPolicyPcToTrue();
-        policyRepository.save(policy);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -256,13 +256,13 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Platform Certificate Validation disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isPcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isPcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setPcValidationEnabled(true);
-        policy.setPcAttributeValidationEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setPcValidationEnabled(true);
+        policySetting.setPcAttributeValidationEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -278,8 +278,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                                 hasItem("Unable to update ACA Platform Validation setting due to the current"
                                         + " policy configuration."))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isPcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isPcValidationEnabled());
     }
 
     /**
@@ -294,7 +294,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         //init the database
         setPolicyAllToFalse();
         setPolicyPcToTrue();
-        policyRepository.save(policy);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -309,15 +309,15 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Platform Certificate Attribute validation enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isPcAttributeValidationEnabled());
-        assertTrue(policy.isPcValidationEnabled());
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
+        assertTrue(policySetting.isPcValidationEnabled());
+        assertTrue(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setPcValidationEnabled(false);
-        policy.setPcAttributeValidationEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setPcValidationEnabled(false);
+        policySetting.setPcAttributeValidationEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -333,9 +333,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                                 hasItem("To enable Platform Attribute Validation,"
                                         + " Platform Credential Validation must also be enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isPcAttributeValidationEnabled());
-        assertFalse(policy.isPcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isPcAttributeValidationEnabled());
+        assertFalse(policySetting.isPcValidationEnabled());
     }
 
     /**
@@ -348,7 +348,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyPcAttributeToTrue();
-        policyRepository.save(policy);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -363,8 +363,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Platform Certificate Attribute validation disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isPcAttributeValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isPcAttributeValidationEnabled());
     }
 
     /**
@@ -379,8 +379,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         //init the database
         setPolicyAllToFalse();
         setPolicyPcAttributeToTrue();
-        policy.setIgnoreRevisionEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoreRevisionEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -395,16 +395,16 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore Component Revision enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isIgnoreRevisionEnabled());
-        assertTrue(policy.isPcAttributeValidationEnabled());
-        assertTrue(policy.isPcValidationEnabled());
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isIgnoreRevisionEnabled());
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
+        assertTrue(policySetting.isPcValidationEnabled());
+        assertTrue(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setPcAttributeValidationEnabled(false);
-        policy.setIgnoreRevisionEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setPcAttributeValidationEnabled(false);
+        policySetting.setIgnoreRevisionEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -420,9 +420,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                                 hasItem("Ignore Component Revision Attribute cannot be " +
                                         "enabled without PC Attribute validation policy enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoreRevisionEnabled());
-        assertFalse(policy.isPcAttributeValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoreRevisionEnabled());
+        assertFalse(policySetting.isPcAttributeValidationEnabled());
     }
 
     /**
@@ -435,8 +435,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyPcAttributeToTrue();
-        policy.setIgnoreRevisionEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoreRevisionEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -450,9 +450,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore Component Revision disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoreRevisionEnabled());
-        assertTrue(policy.isPcAttributeValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoreRevisionEnabled());
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
     }
 
     /**
@@ -467,8 +467,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         //init the database
         setPolicyAllToFalse();
         setPolicyPcAttributeToTrue();
-        policy.setIgnorePcieVpdEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnorePcieVpdEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -483,16 +483,16 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore PCIE VPD Attribute enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isIgnorePcieVpdEnabled());
-        assertTrue(policy.isPcAttributeValidationEnabled());
-        assertTrue(policy.isPcValidationEnabled());
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isIgnorePcieVpdEnabled());
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
+        assertTrue(policySetting.isPcValidationEnabled());
+        assertTrue(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setPcAttributeValidationEnabled(false);
-        policy.setIgnorePcieVpdEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setPcAttributeValidationEnabled(false);
+        policySetting.setIgnorePcieVpdEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -508,9 +508,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                                 hasItem("Ignore PCIE VPD Attribute Policy cannot be enabled without PC Attribute"
                                         + " validation policy enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnorePcieVpdEnabled());
-        assertFalse(policy.isPcAttributeValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnorePcieVpdEnabled());
+        assertFalse(policySetting.isPcAttributeValidationEnabled());
     }
 
     /**
@@ -523,8 +523,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyPcAttributeToTrue();
-        policy.setIgnorePcieVpdEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnorePcieVpdEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -538,9 +538,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore PCIE VPD Attribute disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnorePcieVpdEnabled());
-        assertTrue(policy.isPcAttributeValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnorePcieVpdEnabled());
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
     }
 
     /**
@@ -553,7 +553,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policyRepository.save(policy);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -568,16 +568,16 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Firmware Validation enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isFirmwareValidationEnabled());
-        assertTrue(policy.isPcAttributeValidationEnabled());
-        assertTrue(policy.isPcValidationEnabled());
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isFirmwareValidationEnabled());
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
+        assertTrue(policySetting.isPcValidationEnabled());
+        assertTrue(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setPcAttributeValidationEnabled(false);
-        policy.setFirmwareValidationEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setPcAttributeValidationEnabled(false);
+        policySetting.setFirmwareValidationEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -592,9 +592,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("errorMessages",
                                 hasItem("Firmware validation cannot be enabled without PC Attributes policy enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isFirmwareValidationEnabled());
-        assertFalse(policy.isPcAttributeValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isFirmwareValidationEnabled());
+        assertFalse(policySetting.isPcAttributeValidationEnabled());
     }
 
     /**
@@ -607,7 +607,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policyRepository.save(policy);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -622,8 +622,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Firmware Validation disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isFirmwareValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isFirmwareValidationEnabled());
     }
 
     /**
@@ -636,8 +636,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policy.setIgnoreImaEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoreImaEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -652,17 +652,17 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore IMA enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isIgnoreImaEnabled());
-        assertTrue(policy.isFirmwareValidationEnabled());
-        assertTrue(policy.isPcAttributeValidationEnabled());
-        assertTrue(policy.isPcValidationEnabled());
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isIgnoreImaEnabled());
+        assertTrue(policySetting.isFirmwareValidationEnabled());
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
+        assertTrue(policySetting.isPcValidationEnabled());
+        assertTrue(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setFirmwareValidationEnabled(false);
-        policy.setIgnoreImaEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setFirmwareValidationEnabled(false);
+        policySetting.setIgnoreImaEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -677,9 +677,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("errorMessages",
                                 hasItem("Ignore IMA cannot be enabled without Firmware Validation policy enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoreImaEnabled());
-        assertFalse(policy.isFirmwareValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoreImaEnabled());
+        assertFalse(policySetting.isFirmwareValidationEnabled());
     }
 
     /**
@@ -692,8 +692,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policy.setIgnoreImaEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoreImaEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -708,9 +708,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore IMA disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoreImaEnabled());
-        assertTrue(policy.isFirmwareValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoreImaEnabled());
+        assertTrue(policySetting.isFirmwareValidationEnabled());
     }
 
     /**
@@ -723,8 +723,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policy.setIgnoretBootEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoretBootEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -739,17 +739,17 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore TBoot enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isIgnoretBootEnabled());
-        assertTrue(policy.isFirmwareValidationEnabled());
-        assertTrue(policy.isPcAttributeValidationEnabled());
-        assertTrue(policy.isPcValidationEnabled());
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isIgnoretBootEnabled());
+        assertTrue(policySetting.isFirmwareValidationEnabled());
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
+        assertTrue(policySetting.isPcValidationEnabled());
+        assertTrue(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setFirmwareValidationEnabled(false);
-        policy.setIgnoretBootEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setFirmwareValidationEnabled(false);
+        policySetting.setIgnoretBootEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -764,9 +764,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("errorMessages",
                                 hasItem("Ignore TBoot cannot be enabled without Firmware Validation policy enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoretBootEnabled());
-        assertFalse(policy.isFirmwareValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoretBootEnabled());
+        assertFalse(policySetting.isFirmwareValidationEnabled());
     }
 
     /**
@@ -779,8 +779,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policy.setIgnoretBootEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoretBootEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -795,9 +795,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore TBoot disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoretBootEnabled());
-        assertTrue(policy.isFirmwareValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoretBootEnabled());
+        assertTrue(policySetting.isFirmwareValidationEnabled());
     }
 
     /**
@@ -810,8 +810,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policy.setIgnoreGptEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoreGptEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -826,17 +826,17 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore GPT enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isIgnoreGptEnabled());
-        assertTrue(policy.isFirmwareValidationEnabled());
-        assertTrue(policy.isPcAttributeValidationEnabled());
-        assertTrue(policy.isPcValidationEnabled());
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isIgnoreGptEnabled());
+        assertTrue(policySetting.isFirmwareValidationEnabled());
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
+        assertTrue(policySetting.isPcValidationEnabled());
+        assertTrue(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setFirmwareValidationEnabled(false);
-        policy.setIgnoreGptEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setFirmwareValidationEnabled(false);
+        policySetting.setIgnoreGptEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -851,9 +851,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("errorMessages",
                                 hasItem("Ignore GPT Events cannot be enabled without Firmware Validation policy enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoreGptEnabled());
-        assertFalse(policy.isFirmwareValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoreGptEnabled());
+        assertFalse(policySetting.isFirmwareValidationEnabled());
     }
 
     /**
@@ -866,8 +866,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policy.setIgnoreGptEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoreGptEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -882,9 +882,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore GPT disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoreGptEnabled());
-        assertTrue(policy.isFirmwareValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoreGptEnabled());
+        assertTrue(policySetting.isFirmwareValidationEnabled());
     }
 
     /**
@@ -897,8 +897,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policy.setIgnoreOsEvtEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoreOsEvtEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -913,17 +913,17 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore OS Events enabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isIgnoreOsEvtEnabled());
-        assertTrue(policy.isFirmwareValidationEnabled());
-        assertTrue(policy.isPcAttributeValidationEnabled());
-        assertTrue(policy.isPcValidationEnabled());
-        assertTrue(policy.isEcValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isIgnoreOsEvtEnabled());
+        assertTrue(policySetting.isFirmwareValidationEnabled());
+        assertTrue(policySetting.isPcAttributeValidationEnabled());
+        assertTrue(policySetting.isPcValidationEnabled());
+        assertTrue(policySetting.isEcValidationEnabled());
 
         //reset database for invalid policy test
-        policy.setFirmwareValidationEnabled(false);
-        policy.setIgnoreOsEvtEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setFirmwareValidationEnabled(false);
+        policySetting.setIgnoreOsEvtEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -938,9 +938,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("errorMessages",
                                 hasItem("Ignore OS Events cannot be enabled without Firmware Validation policy enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoreOsEvtEnabled());
-        assertFalse(policy.isFirmwareValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoreOsEvtEnabled());
+        assertFalse(policySetting.isFirmwareValidationEnabled());
     }
 
     /**
@@ -953,8 +953,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
         ResultActions actions;
         setPolicyAllToFalse();
         setPolicyFirmwareToTrue();
-        policy.setIgnoreOsEvtEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIgnoreOsEvtEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -969,9 +969,9 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Ignore OS Events disabled"))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIgnoreOsEvtEnabled());
-        assertTrue(policy.isFirmwareValidationEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIgnoreOsEvtEnabled());
+        assertTrue(policySetting.isFirmwareValidationEnabled());
     }
 
     /**
@@ -985,8 +985,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         //init the database
         setPolicyAllToFalse();
-        policy.setIssueAttestationCertificateEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setIssueAttestationCertificateEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -1001,8 +1001,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Attestation Certificate Generation enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isIssueAttestationCertificateEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isIssueAttestationCertificateEnabled());
     }
 
     /**
@@ -1014,8 +1014,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
     public void testUpdateGenerateAttestationCertificateDisable() throws Exception {
         ResultActions actions;
         setPolicyAllToFalse();
-        policy.setIssueAttestationCertificateEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIssueAttestationCertificateEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -1030,8 +1030,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("Attestation Certificate Generation disabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIssueAttestationCertificateEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIssueAttestationCertificateEnabled());
     }
 
     /**
@@ -1045,8 +1045,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         //init the database
         setPolicyAllToFalse();
-        policy.setIssueDevIdCertificateEnabled(false);
-        policyRepository.save(policy);
+        policySetting.setIssueDevIdCertificateEnabled(false);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -1061,8 +1061,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("LDevID Certificate Generation enabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertTrue(policy.isIssueDevIdCertificateEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertTrue(policySetting.isIssueDevIdCertificateEnabled());
     }
 
     /**
@@ -1074,8 +1074,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
     public void testUpdateGenerateLDevIdCertificateDisable() throws Exception {
         ResultActions actions;
         setPolicyAllToFalse();
-        policy.setIssueDevIdCertificateEnabled(true);
-        policyRepository.save(policy);
+        policySetting.setIssueDevIdCertificateEnabled(true);
+        policyRepository.save(policySetting);
 
         // perform the mock request
         actions = getMockMvc()
@@ -1090,45 +1090,136 @@ public class PolicyPageControllerTest extends PageControllerTest {
                         hasProperty("successMessages",
                                 hasItem("LDevID Certificate Generation disabled."))));
 
-        policy = policyRepository.findByName("Default");
-        assertFalse(policy.isIssueDevIdCertificateEnabled());
+        policySetting = policyRepository.findByName("Default");
+        assertFalse(policySetting.isIssueDevIdCertificateEnabled());
+    }
+
+    /**
+     * Verifies the rest call for enabling/disabling the saving protobuf to aca log policy setting.
+     *
+     * @throws Exception if test fails
+     */
+    @Test
+    public void testUpdateSaveProtobufToLogEnableDisable() throws Exception {
+        ResultActions actions;
+        setPolicyAllToFalse();
+        setSaveProtobufLogSettingsToFalse();
+
+        // set the policy setting to save protobuf data always
+        policySetting.setSaveProtobufToLogAlwaysEnabled(true);
+        policyRepository.save(policySetting);
+
+        // perform the mock request to save protobuf data only on failed validations
+        actions = getMockMvc()
+                .perform(MockMvcRequestBuilders.post(pagePath + "/update-save-protobuf-data-to-log")
+                        .param("saveProtobufToLogOption", "log-protobuf-on-fail-val"));
+
+        actions
+                // check HTTP status
+                .andExpect(status().is3xxRedirection())
+                // check the messages forwarded to the redirected page
+                .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
+                        hasProperty("successMessages",
+                                hasItem("Save Protobuf Data To ACA Log only on failed validation"
+                                        + " has been enabled"))));
+
+        policySetting = policyRepository.findByName("Default");
+
+        // verify that the other save protobuf data policy settings are disabled now
+        assertFalse(policySetting.isSaveProtobufToLogAlwaysEnabled());
+        assertFalse(policySetting.isSaveProtobufToLogNeverEnabled());
+
+        // verify that the save protobuf data on failed validations is enabled now
+        assertTrue(policySetting.isSaveProtobufToLogOnFailedValEnabled());
+
+        // perform the mock request to save protobuf data always
+        actions = getMockMvc()
+                .perform(MockMvcRequestBuilders.post(pagePath + "/update-save-protobuf-data-to-log")
+                        .param("saveProtobufToLogOption", "always-log-protobuf"));
+
+        actions
+                // check HTTP status
+                .andExpect(status().is3xxRedirection())
+                // check the messages forwarded to the redirected page
+                .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
+                        hasProperty("successMessages",
+                                hasItem("Save Protobuf Data To ACA Log always has been enabled"))));
+
+        policySetting = policyRepository.findByName("Default");
+
+        // verify that the other save protobuf data policy settings are disabled now
+        assertFalse(policySetting.isSaveProtobufToLogOnFailedValEnabled());
+        assertFalse(policySetting.isSaveProtobufToLogNeverEnabled());
+
+        // verify that the save protobuf data always is enabled now
+        assertTrue(policySetting.isSaveProtobufToLogAlwaysEnabled());
+
+        // perform the mock request to save protobuf data never
+        actions = getMockMvc()
+                .perform(MockMvcRequestBuilders.post(pagePath + "/update-save-protobuf-data-to-log")
+                        .param("saveProtobufToLogOption", "never-log-protobuf"));
+
+        actions
+                // check HTTP status
+                .andExpect(status().is3xxRedirection())
+                // check the messages forwarded to the redirected page
+                .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
+                        hasProperty("successMessages",
+                                hasItem("Save Protobuf Data To ACA Log never has been enabled"))));
+
+        policySetting = policyRepository.findByName("Default");
+
+        // verify that the other save protobuf data policy settings are disabled now
+        assertFalse(policySetting.isSaveProtobufToLogOnFailedValEnabled());
+        assertFalse(policySetting.isSaveProtobufToLogAlwaysEnabled());
+
+        // verify that the save protobuf data never is enabled now
+        assertTrue(policySetting.isSaveProtobufToLogNeverEnabled());
     }
 
     /**
      * Helper function to set policy member variable back to all false.
-     * After this function, can set specific values to true and then need to save policy.
      */
     private void setPolicyAllToFalse() {
-        policy.setEcValidationEnabled(false);
-        policy.setPcValidationEnabled(false);
-        policy.setPcAttributeValidationEnabled(false);
-        policy.setFirmwareValidationEnabled(false);
+        policySetting.setEcValidationEnabled(false);
+        policySetting.setPcValidationEnabled(false);
+        policySetting.setPcAttributeValidationEnabled(false);
+        policySetting.setFirmwareValidationEnabled(false);
     }
 
     /**
      * Helper function to set policy member variable - PC Validation to True
-     * Note: to set PC Validation to true, EC Validation must also be true.
+     * Note: to set PC Validation to true, EC Validation must also be set to true.
      */
     private void setPolicyPcToTrue() {
-        policy.setEcValidationEnabled(true);
-        policy.setPcValidationEnabled(true);
+        policySetting.setEcValidationEnabled(true);
+        policySetting.setPcValidationEnabled(true);
     }
 
     /**
      * Helper function to set policy member variable - PC Attribute Validation to True
-     * Note: to set PC Attribute Validation to true, PC Validation must also be true.
+     * Note: to set PC Attribute Validation to true, PC Validation must also be set to true.
      */
     private void setPolicyPcAttributeToTrue() {
         setPolicyPcToTrue();
-        policy.setPcAttributeValidationEnabled(true);
+        policySetting.setPcAttributeValidationEnabled(true);
     }
 
     /**
-     * Helper function to set policy member variable - PC Attribute Validation to True
-     * Note: to set PC Attribute Validation to true, PC Validation must also be true.
+     * Helper function to set policy member variable - Firmware Validation to True
+     * Note: to set Firmware Validation to true, PC Attribute Validation must also be set to true.
      */
     private void setPolicyFirmwareToTrue() {
         setPolicyPcAttributeToTrue();
-        policy.setFirmwareValidationEnabled(true);
+        policySetting.setFirmwareValidationEnabled(true);
+    }
+
+    /**
+     * Helper function to set policy member variables - Save Protobuf Data To Log to False
+     */
+    private void setSaveProtobufLogSettingsToFalse() {
+        policySetting.setSaveProtobufToLogOnFailedValEnabled(false);
+        policySetting.setSaveProtobufToLogNeverEnabled(false);
+        policySetting.setSaveProtobufToLogAlwaysEnabled(false);
     }
 }
