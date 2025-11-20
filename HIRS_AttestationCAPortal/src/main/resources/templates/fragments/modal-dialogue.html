@@ -1,6 +1,6 @@
 <th:block th:fragment="modalDialogue(id, label, customButton, bodyContent)">
-    <div th:id="${id}" class="modal fade" role="dialog" style="top:5%">
-        <div class="modal-dialog">
+    <div th:id="${id}" class="modal fade" style="top:5%">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 th:id="modal-title" th:text="${label}">Modal Title</h1>
@@ -11,7 +11,7 @@
                         <div class="modal-custom-button" th:replace="${customButtons}">
                         </div>
                     </th:block>
-                    <button class="btn btn-secondary" data-dismiss="modal">Done</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Done</button>
                 </div>
             </div>
         </div>
