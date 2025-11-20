@@ -4,12 +4,18 @@
 
 <head>
     <meta charset="UTF-8">
-    <title th:text="'404 error'">404 error</title>
+    <title th:text="'404 - Page Not Found'">404 Error</title>
 </head>
 
 <body>
-    <section layout:fragment="content">
+    <h1 layout:fragment="pageHeaderTitle">Page Not Found</h1>
 
+    <section layout:fragment="content">
+        <div class="text-center">
+            <h2>The requested page was not found.</h2>
+            <br>
+            <p>Click <a th:href="@{/}">here</a> to go to the home page.</p>
+        </div>
     </section>
 </body>
 
