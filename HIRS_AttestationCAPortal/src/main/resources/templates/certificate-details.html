@@ -8,14 +8,23 @@
 </head>
 
 <body>
-<section layout:fragment="content">
-    <div th:switch="${param.type}">
-        <p th:case="'cool'">cool</p>
-        <p th:case="*">blah</p>
-    </div>
-</section>
-</body>
 
+<h1 layout:fragment="pageHeaderTitle">
+    <div th:if="${#strings.equals(param.type, 'certificateauthority')}">
+        Certificate Authority
+    </div>
+    <div th:if="${#strings.equals(param.type, 'issued')}">
+        Issued Attestation Certificates
+        <a href="/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id=${param.id}">
+            <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+        </a>
+    </div>
+</h1>
+
+<section layout:fragment="content">
+</section>
+
+</body>
 </html>
 
 <!--<my:page>-->
