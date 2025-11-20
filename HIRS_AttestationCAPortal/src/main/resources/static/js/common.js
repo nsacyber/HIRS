@@ -2,6 +2,7 @@ const iconPath = "/icons";
 
 /**
  * Converts a byte to HEX.
+ * @param arr byte array
  */
 function byteToHexString(arr) {
   let str = "";
@@ -12,8 +13,9 @@ function byteToHexString(arr) {
 }
 
 /**
- Parses hex string for display.
-*/
+ * Parses hex string for display.
+ * @param hexString hex string
+ */
 function parseHexString(hexString) {
   let str = hexString.toUpperCase();
   //Do not parse if there is 2 characters
@@ -25,6 +27,7 @@ function parseHexString(hexString) {
 
 /**
  * Parses the HEX string value to display as byte hex string.
+ * @param hexString hex string
  */
 function parseSerialNumber(hexString) {
   let str = hexString.toUpperCase();
@@ -43,6 +46,7 @@ function parseSerialNumber(hexString) {
  * Handles user request to delete a cert. Prompts user to confirm.
  * Upon confirmation, submits the delete form which is required to make
  * a POST call to delete the credential.
+ * @param id certificate id
  */
 function handleDeleteRequest(id) {
   if (confirm("Delete certificate?")) {
@@ -91,6 +95,7 @@ function handleLogLevelChange(loggerName, newLogLevel) {
  * Handles user request to delete a cert. Prompts user to confirm.
  * Upon confirmation, submits the delete form which is required to make
  * a POST call to delete the reference integrity manifest.
+ * @param id RIM ID
  */
 function handleRimDeleteRequest(id) {
   if (confirm("Delete RIM?")) {
@@ -181,10 +186,11 @@ function certificateDetailsLink(type, id, sameType) {
 /**
  * Create a RIM details like for the specified rim.
  * type and ID with the corresponding icon.
+ * @param pagePath path to the link
  * @param id of the rim
  */
-function rimDetailsLink(id) {
-  const href = "rim-details?id=" + id;
+function rimDetailsLink(pagePath, id) {
+  const href = pagePath + "/rim-details?id=" + id;
   const icon = iconPath + "/ic_assignment_black_24dp.png";
   const title = "Details";
 
@@ -296,7 +302,7 @@ function rimDownloadLink(pagePath, id) {
 
 /**
  * Formats a given date to a UTC string, or returns an indefinite icon
- * @param date to format
+ * @param dateText date to format
  */
 function formatCertificateDate(dateText) {
   const timestamp = Date.parse(dateText); // Convert to numeric
