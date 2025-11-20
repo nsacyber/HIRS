@@ -8,6 +8,7 @@
             $(document).ready(function () {
                 const viewName = /*[[${ page.viewName }]]*/ '';
                 const url = viewName + "/list";
+                const rimDBViewName = "rim-database";
                 let columns = [
                     {
                         name: "tagId",
@@ -48,7 +49,7 @@
                             // sets up a hidden input field containing the ID which is
                             // used as a parameter to the REST POST call to delete
                             let html = "";
-                            html += rimDetailsLink(full.id);
+                            html += rimDetailsLink(rimDBViewName, full.id);
                             html += rimDownloadLink(viewName, full.id);
                             html += rimDeleteLink(viewName, full.id);
 
