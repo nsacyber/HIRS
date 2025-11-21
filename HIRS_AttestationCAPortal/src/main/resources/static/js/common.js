@@ -137,7 +137,6 @@ function setDataTables(id, url, columns, options = {}) {
  *       certificate type.
  */
 function certificateDetailsLink(type, id, sameType) {
-
   const href = "certificate-details?id=" + id + "&type=" + type;
   let icon = iconPath;
   let title = "";
