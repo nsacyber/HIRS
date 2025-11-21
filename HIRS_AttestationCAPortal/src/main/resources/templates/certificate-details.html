@@ -9,20 +9,41 @@
 
 <body>
 
-<h1 layout:fragment="pageHeaderTitle">
-    <div th:if="${#strings.equals(param.type, 'certificateauthority')}">
-        Certificate Authority
-    </div>
-    <div th:if="${#strings.equals(param.type, 'issued')}">
-        Issued Attestation Certificates
-        <a href="/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id=${param.id}">
-            <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
-        </a>
-    </div>
-</h1>
+    <h1 layout:fragment="pageHeaderTitle">
+        <div th:if="${#strings.equals(param.type, 'certificateauthority')}">
+            Certificate Authority
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download?id={id}(id=${param.id})}">
+                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+            </a>
+        </div>
+        <div th:if="${#strings.equals(param.type, 'endorsement')}">
+            Endorsement Certificate
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials/download?id={id}(id=${param.id})}">
+                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+            </a>
+        </div>
+        <div th:if="${#strings.equals(param.type, 'platform')}">
+            Platform Certificate
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials/download?id={id}(id=${param.id})}">
+                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+            </a>
+        </div>
+        <div th:if="${#strings.equals(param.type, 'issued')}">
+            Issued Attestation Certificates
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id={id}(id=${param.id})}">
+                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+            </a>
+        </div>
+        <div th:if="${#strings.equals(param.type, 'idevid')}">
+            IDevID Certificate
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/download?id={id}(id=${param.id})}">
+                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+            </a>
+        </div>
+    </h1>
 
-<section layout:fragment="content">
-</section>
+    <section layout:fragment="content">
+    </section>
 
 </body>
 </html>
