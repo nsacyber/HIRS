@@ -10,7 +10,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Java representation of a jQuery DataTables Column.
+ * Java representation of a DataTables Column.
  */
 @Getter
 @Setter
@@ -56,4 +56,10 @@ public class Column {
      */
     @NotNull
     private Search search;
+
+    /**
+     * Column control for this specific column.
+     */
+    @NotNull
+    private ColumnControl columnControl;
 }

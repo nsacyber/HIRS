@@ -116,6 +116,13 @@ function setDataTables(id, url, columns, options = {}) {
   let defaultConfig = {
     processing: true,
     serverSide: true,
+    colReorder: true,
+    rowReorder: true,
+    select: true,
+    responsive: true,
+    columnControl: [
+      { target: 0, content: ["colVisDropdown", "searchDropdown"] },
+    ],
     columnDefs: [{ className: "dt-head-center", targets: "_all" }],
     ajax: {
       url: url,
