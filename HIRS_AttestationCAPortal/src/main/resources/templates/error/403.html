@@ -4,12 +4,18 @@
 
 <head>
     <meta charset="UTF-8">
-    <title th:text="'403 error'">403 error</title>
+    <title th:text="'403 - Forbidden'">403 Error</title>
 </head>
 
 <body>
-    <section layout:fragment="content">
+    <h1 layout:fragment="pageHeaderTitle">Forbidden</h1>
 
+    <section layout:fragment="content">
+        <div class="text-center">
+            <h2>You are forbidden to view this content.</h2>
+            <br>
+            <p>Click <a th:href="@{/}">here</a> to go to the home page.</p>
+        </div>
     </section>
 </body>
 
