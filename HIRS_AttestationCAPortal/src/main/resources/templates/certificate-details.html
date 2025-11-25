@@ -6,104 +6,96 @@
     <section layout:fragment="script">
         <script th:inline="javascript">
             $(document).ready(function () {
+
+                //param parameters
                 const type = /*[[${ param.type }]]*/ '';
-                const signature = /*[[${initialData.get('signature')}]]*/ '';
+
+                //initialData parameters
+                const signature = JSON.parse(/*[[${initialData.get('signature')}]]*/ '');
                 const serialNumber = /*[[${initialData.get('serialNumber')}]]*/ '';
                 const authorityKeyIdentifier = /*[[${initialData.get('authKeyId')}]]*/ '';
                 const authoritySerialNumber = /*[[${initialData.get('authSerialNumber')}]]*/ '';
+                const publicKey = /*[[${initialData.get('publicKeyValue')}]]*/ '';
+                const encPublicKey = /*[[${initialData.get('encodedPublicKey')}]]*/ '';
+                const subjectKeyIdentifier = /*[[${initialData.get('subjectKeyIdentifier')}]]*/ '';
+                const hwSerialNum = /*[[${initialData.get('hwSerialNum')}]]*/ '';
+                const tcgTpmManufacturer = /*[[${initialData.get('tcgTpmManufacturer')}]]*/ '';
+                const ekAuthorityKeyIdentifier = /*[[${initialData.get('ekAuthorityKeyIdentifier')}]]*/ '';
+                const ekCertificateSerialNumber = /*[[${initialData.get('ekCertificateSerialNumber')}]]*/ '';
 
-<!--                //Format validity time-->
-<!--                $("#validity span").each(function () {-->
-<!--                    let dateText = $(this).text();-->
-<!--                    return $(this).text(formatCertificateDate(dateText));-->
-<!--                });-->
+                //Format validity time
+                $("#validity span").each(function () {
+                    let dateText = $(this).text();
+                    return $(this).text(formatCertificateDate(dateText));
+                });
 
-<!--                //Convert byte array to string-->
-<!--                $("#signature").html(byteToHexString(signature));-->
+                // Signature: convert byte array to string
+                $("#signature").html(byteToHexString(signature));
 
-<!--                //Convert byte array to string-->
-<!--                $("#serialNumber").html(parseSerialNumber(serialNumber));-->
+                // Serial number: convert hex string to byte hex string
+                $("#serialNumber").html(parseSerialNumber(serialNumber));
 
-                // authority key ID
-                if (${initialData.get['authKeyId']}) {
-                    console.log("hello1");
+                // Authority key ID: convert hex string to byte hex string
+                if (authorityKeyIdentifier) {
                     $("#authorityKeyIdentifier").html(parseSerialNumber(authorityKeyIdentifier));
                 } else {
-                    console.log("hello2");
                     $("#authorityKeyIdentifier").html("Not Specified");
                 }
-<!--                if (${initialData.get('authSerialNumber')}) {-->
-<!--                    //Convert string to serial String-->
-<!--                    $("#authSerialNumber").html(parseSerialNumber(authoritySerialNumber));-->
-<!--                }-->
 
-<!--                // authority key ID-->
-<!--                if ('yoo') {-->
-<!--                    console.log("hello1");-->
-<!--                    $("#authorityKeyIdentifier").html(parseSerialNumber(authorityKeyIdentifier));-->
-<!--                } else {-->
-<!--                    console.log("hello2");-->
-<!--                    $("#authorityKeyIdentifier").html("Not Specified");-->
-<!--                }-->
+                // Authority serial number: convert hex string to byte hex string
+                if (authoritySerialNumber) {
+                    $("#authSerialNumber").html(parseSerialNumber(authoritySerialNumber));
+                }
 
+                // Public key and encoded public key
+                if (publicKey) {
+                    $("#encodedPublicKey").html(parseHexString(publicKey));
+                } else {
+                    if (encPublicKey) {
+                        $("#encodedPublicKey").html(byteToHexString(encPublicKey));
+                    }
+                }
 
+                // Subject key identifier
+                if (subjectKeyIdentifier) {
+                    //Change subject byte to hex only for CACertificate
+                    if (type === "certificateauthority") {
+                        $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
+                    }
+                }
 
-<!--            <c:choose>-->
-<!--                <c:when test="${not empty initialData.publicKeyValue}">-->
-<!--                let publicKey = '${initialData.publicKeyValue}';-->
-<!--                $("#encodedPublicKey").html(parseHexString(publicKey));-->
-<!--                </c:when>-->
-<!--                <c:otherwise>-->
-<!--                    <c:if test="${not empty initialData.encodedPublicKey}">-->
-<!--                //Change public key byte to hex-->
-<!--                let encPublicKey = ${initialData.encodedPublicKey};-->
-<!--                $("#encodedPublicKey").html(byteToHexString(encPublicKey));-->
-<!--                    </c:if>-->
-<!--                </c:otherwise>-->
-<!--            </c:choose>-->
+                // Hw serial number
+                if (hwSerialNum) {
+                    $("#hwSerialNum").html(parseHexString(hwSerialNum));
+                }
 
-<!--            <c:if test="${not empty initialData.subjectKeyIdentifier}">-->
-<!--                //Change subject byte to hex only for CACertificate-->
-<!--                if (type === "certificateauthority") {-->
-<!--                    let subjectKeyIdentifier = ${initialData.subjectKeyIdentifier};-->
-<!--                    $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));-->
-<!--                }-->
-<!--            </c:if>-->
+                // Tcg tpm manufacturer / ekAuthorityKeyIdentifier / ekCertificateSerialNumber
+                if (tcgTpmManufacturer) {
+                    $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAKI));
+                    $("#ekCertificateSerialNumber").html(parseHexString(ekCSN));
+                }
 
-<!--                <c:if test="${not empty initialData.hwSerialNumHex}">-->
-<!--                    let hwSerialNum = '${initialData.hwSerialNum}';-->
-<!--                    $("#hwSerialNum").html(parseHexString(hwSerialNum));-->
-<!--                </c:if>-->
+                //Initilize tooltips
+                $('[data-toggle="tooltip"]').tooltip();
 
-<!--                <c:if test="${not empty initialData.tcgTpmManufacturer}">-->
-<!--                    let ekAKI = '${initialData.ekAuthorityKeyIdentifier};'-->
-<!--                    let ekCSN = '${initialData.ekCertificateSerialNumber};'-->
+                //Vertical alignment on data columns
+                $('.vertical').each(function () {
+                    $(this).css({
+                        'line-height': $(this).height() + 'px'
+                    });
+                });
 
-<!--                    $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAKI));-->
-<!--                    $("#ekCertificateSerialNumber").html(parseHexString(ekCSN));-->
-<!--                </c:if>-->
+                //Change link width
+                $("#headingOne, #headingTwo, #headingThree").each(function (e) {
+                    let width = $(this).width();
+                    //Get link width
+                    let linkWidth = $(this).find('a').width();
 
-<!--                //Initilize tooltips-->
-<!--                $('[data-toggle="tooltip"]').tooltip();-->
-
-<!--                //Vertical alignment on data columns-->
-<!--                $('.vertical').each(function () {-->
-<!--                    $(this).css({-->
-<!--                        'line-height': $(this).height() + 'px'-->
-<!--                    });-->
-<!--                });-->
-
-<!--                //Change link width-->
-<!--                $("#headingOne, #headingTwo, #headingThree").each(function (e) {-->
-<!--                    let width = $(this).width();-->
-<!--                    //Get link width-->
-<!--                    let linkWidth = $(this).find('a').width();-->
-
-<!--                    //Change width for the link-->
-<!--                    $(this).find('a').css({-->
-<!--                        "padding-right": (width - linkWidth) + "px"-->
-<!--                    });-->
-<!--                });-->
+                    //Change width for the link
+                    $(this).find('a').css({
+                        "padding-right": (width - linkWidth) + "px"
+                    });
+                });
             });
         </script>
     </section>
@@ -176,18 +168,8 @@
                             <span id="authSerialNumber"></span>
                         </div>
                     </div>
-                    <div>
-                        Temp Test
-                        <th:block th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
-                            issuerID: NOT EMPTY
-                        </th:block>
-                        <th:block th:if="${#strings.isEmpty(initialData.get('issuerID'))}">
-                            issuerID: YES EMPTY
-                        </th:block>
-                        <th:block th:if="${not #strings.isEmpty(initialData.get('missingChainIssuer'))}">
-                            missingChainIssuer: NOT EMPTY
-                        </th:block>
-                    </div>
+
+                    
 <!--                    <c:if test="${param.type!='issued'}">-->
 <!--                        <span class="chainIcon">-->
 <!--                            &lt;!&ndash; Icon with link for missing certificate for the chain &ndash;&gt;-->
