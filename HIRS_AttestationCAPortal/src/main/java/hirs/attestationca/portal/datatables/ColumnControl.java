@@ -1,24 +1,19 @@
 package hirs.attestationca.portal.datatables;
 
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Java representation of a DataTables Column Control.
  */
-@Getter
-@Setter
-//@AllArgsConstructor
-//@NoArgsConstructor
-@ToString
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ColumnControl {
-
-//  todo
-//    /**
-//     * Search parameter.
-//     */
-//    @SerializedName("search")
-//    private ColumnControlSearch search;
+    /**
+     * Search parameter.
+     */
+    private Search search;
 }

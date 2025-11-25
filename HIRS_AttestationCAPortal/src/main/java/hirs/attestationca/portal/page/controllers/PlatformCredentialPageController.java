@@ -85,40 +85,42 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     /**
      * Processes the request to retrieve a list of platform credentials for display on the platform credentials page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of platform credentials
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(final DataTableInput input) {
+    public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of platform credentials");
-        log.debug("Request received a datatable input object for the platform credentials page: {}", input);
+        log.debug("Request received a datatable input object for the platform credentials page: {}",
+                dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = dataTableInput.getOrderColumnName();
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchTerm = input.getSearch().getValue();
-
-        final Set<String> searchableColumns = ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class,
-                input.getColumns());
-
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
         FilteredRecordsList<PlatformCredential> pcFilteredRecordsList = new FilteredRecordsList<>();
 
         org.springframework.data.domain.Page<PlatformCredential> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        if (StringUtils.isBlank(globalSearchTerm)) {
             pagedResult =
                     this.platformCredentialService.findPlatformCredentialsByArchiveFlag(false, pageable);
         } else {
+            final Set<String> searchableColumnNames =
+                    ControllerPagesUtils.findSearchableColumnNames(PlatformCredential.class,
+                            dataTableInput.getColumns());
+
             pagedResult =
-                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                             PlatformCredential.class,
-                            searchableColumns,
-                            searchTerm,
+                            searchableColumnNames,
+                            globalSearchTerm,
                             false, pageable);
         }
 
@@ -127,7 +129,8 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         }
 
         pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        pcFilteredRecordsList.setRecordsTotal(this.platformCredentialService.findPlatformCredentialRepositoryCount());
+        pcFilteredRecordsList.setRecordsTotal(
+                this.platformCredentialService.findPlatformCredentialRepositoryCount());
 
         EndorsementCredential associatedEC;
 
@@ -149,7 +152,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         log.info("Returning the size of the list of platform credentials: {}",
                 pcFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(pcFilteredRecordsList, input);
+        return new DataTableResponse<>(pcFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -166,8 +169,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.info("Received request to download platform credential id {}", id);
 
         try {
-            final DownloadFile downloadFile = this.certificatePageService.downloadCertificate(PlatformCredential.class,
-                    UUID.fromString(id));
+            final DownloadFile downloadFile =
+                    this.certificatePageService.downloadCertificate(PlatformCredential.class,
+                            UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -226,8 +230,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
 
-            PlatformCredential parsedPlatformCredential = this.platformCredentialService.parsePlatformCredential(file,
-                    errorMessages);
+            PlatformCredential parsedPlatformCredential =
+                    this.platformCredentialService.parsePlatformCredential(file,
+                            errorMessages);
 
             if (parsedPlatformCredential != null) {
                 certificatePageService.storeCertificate(

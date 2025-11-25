@@ -54,14 +54,14 @@ public class ReferenceDigestValuePageService {
      * Takes the provided column names, the search term that the user entered and attempts to find
      * reference digest values whose field values matches the provided search term.
      *
-     * @param searchableColumns list of the searchable column name
-     * @param searchTerm        text that was input in the search textbox
-     * @param pageable          pageable
+     * @param searchableColumnNames list of the searchable column names
+     * @param globalSearchTerm      text that was input in the global search textbox
+     * @param pageable              pageable
      * @return page full of reference digest values
      */
-    public Page<ReferenceDigestValue> findReferenceDigestValuesBySearchableColumns(
-            final Set<String> searchableColumns,
-            final String searchTerm,
+    public Page<ReferenceDigestValue> findReferenceDigestValuesByGlobalSearchTerm(
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ReferenceDigestValue> query =
@@ -72,9 +72,9 @@ public class ReferenceDigestValuePageService {
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchTerm)) {
+        if (!StringUtils.isBlank(globalSearchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
-            for (String columnName : searchableColumns) {
+            for (String columnName : searchableColumnNames) {
                 // Get the attribute type from entity root
                 Path<?> fieldPath = referenceDigestValueRoot.get(columnName);
 
@@ -83,22 +83,80 @@ public class ReferenceDigestValuePageService {
                     Predicate predicate =
                             criteriaBuilder.like(
                                     criteriaBuilder.lower(referenceDigestValueRoot.get(columnName)),
-                                    "%" + searchTerm.toLowerCase() + "%");
+                                    "%" + globalSearchTerm.toLowerCase() + "%");
                     predicates.add(predicate);
                 } else if (Integer.class.equals(fieldPath.getJavaType())) {
                     // For Integer fields, use EQUAL if the search term is numeric
                     try {
-                        Integer searchInteger = Integer.valueOf(searchTerm); // Will throw if not a number
+                        Integer searchInteger =
+                                Integer.valueOf(globalSearchTerm); // Will throw if not a number
                         Predicate predicate = criteriaBuilder.equal(fieldPath, searchInteger);
                         predicates.add(predicate);
                     } catch (NumberFormatException e) {
-                        // If the searchTerm is not a valid number, skip this field
+                        // If the globalSearchTerm is not a valid number, skip this field
                     }
                 }
             }
         }
 
         query.where(criteriaBuilder.or(predicates.toArray(new Predicate[0])));
+
+        // Apply pagination
+        TypedQuery<ReferenceDigestValue> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<ReferenceDigestValue> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * @param columnsWithSearchCriteria
+     * @param pageable
+     * @return
+     */
+    public Page<ReferenceDigestValue> findReferenceDigestValuesByColumnSpecificSearchTerm(
+            final Set<DataTablesColumnSearchCriteria> columnsWithSearchCriteria,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ReferenceDigestValue> query =
+                criteriaBuilder.createQuery(ReferenceDigestValue.class);
+        Root<ReferenceDigestValue> referenceDigestValueRoot =
+                query.from(ReferenceDigestValue.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Dynamically loop through columns ... todo... for each searchable column
+        for (DataTablesColumnSearchCriteria dataTablesColumnSearchCriteria : columnsWithSearchCriteria) {
+
+            final String columnName = dataTablesColumnSearchCriteria.getColumnName();
+            final String columnSearchTerm = dataTablesColumnSearchCriteria.getColumnSearchTerm();
+            final String columnSearchType = dataTablesColumnSearchCriteria.getColumnSearchType();
+
+            // Get the attribute type from entity root
+            Path<?> fieldPath = referenceDigestValueRoot.get(columnName);
+
+            // if the field is a string type
+            if (String.class.equals(fieldPath.getJavaType())) {
+                Predicate predicate =
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(referenceDigestValueRoot.get(columnName)),
+                                "%" + columnSearchTerm.toLowerCase() + "%");
+                predicates.add(predicate);
+            } else if (Integer.class.equals(fieldPath.getJavaType())) {
+                // For Integer fields, use EQUAL if the search term is numeric
+                try {
+                    Integer searchInteger =
+                            Integer.valueOf(columnSearchTerm); // Will throw if not a number
+                    Predicate predicate = criteriaBuilder.equal(fieldPath, searchInteger);
+                    predicates.add(predicate);
+                } catch (NumberFormatException e) {
+                    // If the columnSearchTerm is not a valid number, skip this field
+                }
+            }
+        }
 
         // Apply pagination
         TypedQuery<ReferenceDigestValue> typedQuery = entityManager.createQuery(query);

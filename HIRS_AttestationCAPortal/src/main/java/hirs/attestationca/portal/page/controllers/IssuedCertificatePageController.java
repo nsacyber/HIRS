@@ -85,41 +85,42 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * Processes the request to retrieve a list of issued attestation certificates for display on the issued
      * certificates page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of issued certificates
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(final DataTableInput input) {
+    public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of issued attestation certificates");
         log.debug("Request received a datatable input object for the issued attestation"
-                + " certificate page: {}", input);
+                + " certificate page: {}", dataTableInput);
 
-        String orderColumnName = input.getOrderColumnName();
+        String orderColumnName = dataTableInput.getOrderColumnName();
 
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(IssuedAttestationCertificate.class,
-                        input.getColumns());
-
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
         FilteredRecordsList<IssuedAttestationCertificate> issuedCertificateFilteredRecordsList =
                 new FilteredRecordsList<>();
         org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        if (StringUtils.isBlank(globalSearchTerm)) {
             pagedResult = this.issuedAttestationCertificateService.
                     findIssuedCertificatesByArchiveFlag(false, pageable);
         } else {
+            final Set<String> searchableColumnNames =
+                    ControllerPagesUtils.findSearchableColumnNames(IssuedAttestationCertificate.class,
+                            dataTableInput.getColumns());
+
             pagedResult =
-                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                             IssuedAttestationCertificate.class,
-                            searchableColumns,
-                            searchTerm,
+                            searchableColumnNames,
+                            globalSearchTerm,
                             false, pageable);
         }
 
@@ -133,7 +134,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         log.info("Returning the size of the list of issued certificates: "
                 + "{}", issuedCertificateFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(issuedCertificateFilteredRecordsList, input);
+        return new DataTableResponse<>(issuedCertificateFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -212,7 +213,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
+            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages,
+                    errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {

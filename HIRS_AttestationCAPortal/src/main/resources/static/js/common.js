@@ -117,12 +117,21 @@ function setDataTables(id, url, columns, options = {}) {
     processing: true,
     serverSide: true,
     colReorder: true,
-    rowReorder: true,
     select: true,
     responsive: true,
-    columnControl: [
-      { target: 0, content: ["colVisDropdown", "searchDropdown"] },
-    ],
+    layout: {
+      topStart: {
+        buttons: [
+          "pageLength",
+          "colvis",
+          {
+            extend: "collection",
+            text: "Export",
+            buttons: ["copy", "pdf", "excel", "print"],
+          },
+        ],
+      },
+    },
     columnDefs: [{ className: "dt-head-center", targets: "_all" }],
     ajax: {
       url: url,

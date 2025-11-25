@@ -70,15 +70,15 @@ public class ReferenceManifestPageService {
      * Takes the provided column names, the search term that the user entered and attempts to find
      * RIMS whose field values matches the provided search term.
      *
-     * @param searchableColumns list of the searchable column names
-     * @param searchTerm        text that was input in the search textbox
-     * @param archiveFlag       archive flag
-     * @param pageable          pageable
+     * @param searchableColumnNames list of the searchable column names
+     * @param globalSearchTerm      text that was input in the global search textbox
+     * @param archiveFlag           archive flag
+     * @param pageable              pageable
      * @return page full of reference manifests
      */
-    public org.springframework.data.domain.Page<ReferenceManifest> findRIMSBySearchableColumnsAndArchiveFlag(
-            final Set<String> searchableColumns,
-            final String searchTerm,
+    public org.springframework.data.domain.Page<ReferenceManifest> findRIMSByGlobalSearchTermAndArchiveFlag(
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
@@ -89,11 +89,11 @@ public class ReferenceManifestPageService {
 
         // Dynamically add search conditions for each field that should be searchable
         // Dynamically loop through columns and create LIKE conditions for each searchable column
-        for (String columnName : searchableColumns) {
+        for (String columnName : searchableColumnNames) {
             Predicate predicate =
                     criteriaBuilder.like(
                             criteriaBuilder.lower(rimRoot.get(columnName)),
-                            "%" + searchTerm.toLowerCase() + "%");
+                            "%" + globalSearchTerm.toLowerCase() + "%");
             predicates.add(predicate);
         }
 

@@ -66,39 +66,41 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * Processes the request to retrieve a list of supply chain summary records for display
      * on the validation reports page.
      *
-     * @param input the data table query.
+     * @param dataTableInput the data table query.
      * @return the data table response containing the supply chain summary records
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<SupplyChainValidationSummary> getValidationReportsTableData(final DataTableInput input) {
+    public DataTableResponse<SupplyChainValidationSummary> getValidationReportsTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of validation reports");
-        log.debug("Request received a datatable input object for the validation reports page: {}", input);
+        log.debug("Request received a datatable input object for the validation reports page: {}",
+                dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = dataTableInput.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(SupplyChainValidationSummary.class,
-                        input.getColumns());
-
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
         FilteredRecordsList<SupplyChainValidationSummary> reportsFilteredRecordsList =
                 new FilteredRecordsList<>();
 
-        final int currentPage = input.getStart() / input.getLength();
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
 
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
         org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        if (StringUtils.isBlank(globalSearchTerm)) {
             pagedResult = this.validationSummaryPageService.findValidationSummaryReportsByPageable(pageable);
         } else {
+            final Set<String> searchableColumnNames =
+                    ControllerPagesUtils.findSearchableColumnNames(SupplyChainValidationSummary.class,
+                            dataTableInput.getColumns());
+
             pagedResult = this.validationSummaryPageService
-                    .findValidationReportsBySearchableColumnsAndArchiveFlag(
-                            searchableColumns,
-                            searchTerm,
+                    .findValidationReportsByGlobalSearchTermAndArchiveFlag(
+                            searchableColumnNames,
+                            globalSearchTerm,
                             false,
                             pageable);
         }
@@ -113,7 +115,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
         log.info("Returning the size of the list of validation reports: "
                 + "{}", reportsFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(reportsFilteredRecordsList, input);
+        return new DataTableResponse<>(reportsFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -123,7 +125,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param response http response
      */
     @PostMapping("/download")
-    public void downloadValidationReports(final HttpServletRequest request, final HttpServletResponse response)
+    public void downloadValidationReports(final HttpServletRequest request,
+                                          final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download validation summary reports");
         this.validationSummaryPageService.downloadValidationReports(request, response);

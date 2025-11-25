@@ -84,36 +84,39 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     /**
      * Processes the request to retrieve a list of idevid certificates for display on the idevid certificates page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of idevid certificates
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<IDevIDCertificate> getIDevIdCertificatesTableData(final DataTableInput input) {
+    public DataTableResponse<IDevIDCertificate> getIDevIdCertificatesTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of idevid certificates");
-        log.debug("Request received a datatable input object for the idevid certificates page: {}", input);
+        log.debug("Request received a datatable input object for the idevid certificates page: {}",
+                dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = dataTableInput.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns = ControllerPagesUtils.findSearchableColumnsNames(IDevIDCertificate.class,
-                input.getColumns());
-
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
         FilteredRecordsList<IDevIDCertificate> idevidFilteredRecordsList = new FilteredRecordsList<>();
         org.springframework.data.domain.Page<IDevIDCertificate> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        if (StringUtils.isBlank(globalSearchTerm)) {
             pagedResult =
                     this.iDevIdCertificatePageService.findIDevCertificatesByArchiveFlag(false, pageable);
         } else {
-            pagedResult = this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
+            final Set<String> searchableColumnNames =
+                    ControllerPagesUtils.findSearchableColumnNames(IDevIDCertificate.class,
+                            dataTableInput.getColumns());
+
+            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     IDevIDCertificate.class,
-                    searchableColumns,
-                    searchTerm,
+                    searchableColumnNames,
+                    globalSearchTerm,
                     false, pageable);
         }
 
@@ -127,7 +130,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         log.info("Returning the size of the list of IDevId certificates: "
                 + "{}", idevidFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(idevidFilteredRecordsList, input);
+        return new DataTableResponse<>(idevidFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -145,7 +148,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         try {
             final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(IDevIDCertificate.class, UUID.fromString(id));
+                    this.certificatePageService.downloadCertificate(IDevIDCertificate.class,
+                            UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -207,7 +211,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                     this.iDevIdCertificatePageService.parseIDevIDCertificate(file, errorMessages);
 
             if (parsedIDevIDCertificate != null) {
-                certificatePageService.storeCertificate(CertificateType.IDEVID_CERTIFICATES, file.getOriginalFilename(),
+                certificatePageService.storeCertificate(CertificateType.IDEVID_CERTIFICATES,
+                        file.getOriginalFilename(),
                         successMessages, errorMessages, parsedIDevIDCertificate);
             }
 
@@ -240,12 +245,14 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
+            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages,
+                    errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
-            final String errorMessage = "An exception was thrown while attempting to delete the specified idevid "
-                    + "certificate";
+            final String errorMessage =
+                    "An exception was thrown while attempting to delete the specified idevid "
+                            + "certificate";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }

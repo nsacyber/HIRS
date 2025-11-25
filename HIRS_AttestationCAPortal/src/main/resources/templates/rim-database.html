@@ -14,31 +14,35 @@
                         data: "manufacturer",
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
-                    { name: "model", data: "model", orderable: false, searchable: true },
+                    { name: "model", data: "model", orderable: false, searchable: true, columnControl: ["searchDropdown"], },
                     {
                         name: "eventType",
                         data: "eventType",
                         orderable: false,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "pcrIndex",
                         data: "pcrIndex",
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "digestValue",
                         data: "digestValue",
                         orderable: false,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "baseRimId",
                         data: "baseRimId",
                         orderable: false,
-                        searchable: true,
+                        searchable: false,
                         render: function (data, type, full, meta) {
                             return rimDetailsLink(viewName, full.baseRimId);
                         },
@@ -47,7 +51,7 @@
                         name: "supportRimId",
                         data: "supportRimId",
                         orderable: false,
-                        searchable: true,
+                        searchable: false,
                         render: function (data, type, full, meta) {
                             return rimDetailsLink(viewName, full.supportRimId);
                         },

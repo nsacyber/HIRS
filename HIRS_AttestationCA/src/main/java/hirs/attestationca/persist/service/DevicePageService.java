@@ -68,14 +68,14 @@ public class DevicePageService {
      * Takes the provided column names, the search term that the user entered and attempts to find
      * devices whose field values matches the provided search term.
      *
-     * @param searchableColumns list of the searchable column name
-     * @param searchTerm        text that was input in the search textbox
-     * @param pageable          pageable
+     * @param searchableColumnNames list of the searchable column name
+     * @param globalSearchTerm      text that was input in the search textbox
+     * @param pageable              pageable
      * @return page full of devices
      */
-    public Page<Device> findAllDevicesBySearchableColumns(
-            final Set<String> searchableColumns,
-            final String searchTerm,
+    public Page<Device> findAllDevicesByGlobalSearchTerm(
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Device> query =
@@ -86,11 +86,11 @@ public class DevicePageService {
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchTerm)) {
+        if (!StringUtils.isBlank(globalSearchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
-            for (String columnName : searchableColumns) {
+            for (String columnName : searchableColumnNames) {
                 Predicate predicate = criteriaBuilder.like(criteriaBuilder.lower(deviceRoot.get(columnName)),
-                        "%" + searchTerm.toLowerCase() + "%");
+                        "%" + globalSearchTerm.toLowerCase() + "%");
                 predicates.add(predicate);
             }
         }

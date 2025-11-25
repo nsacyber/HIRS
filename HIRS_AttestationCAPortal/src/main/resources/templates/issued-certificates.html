@@ -14,6 +14,7 @@
             data: "deviceName",
             searchable: true,
             orderable: true,
+            columnControl: ["searchDropdown"],
             render: function (data, type, full, meta) {
               // if there's a device, display its name, otherwise
               // display nothing
@@ -37,6 +38,7 @@
             data: "issuer",
             searchable: true,
             orderable: true,
+            columnControl: ["searchDropdown"],
           },
           {
             name: "beginValidity",

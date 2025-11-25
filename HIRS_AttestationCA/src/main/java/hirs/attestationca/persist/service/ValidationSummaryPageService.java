@@ -93,15 +93,15 @@ public class ValidationSummaryPageService {
      * Takes the provided column names, the search term that the user entered and attempts to find
      * validation summaries whose field values matches the provided search term.
      *
-     * @param searchableColumns list of the searchable column name
-     * @param searchTerm        text that was input in the search textbox
-     * @param archiveFlag       archive flag
-     * @param pageable          pageable
+     * @param searchableColumnNames list of the searchable column name
+     * @param globalSearchTerm      text that was input in the global search textbox
+     * @param archiveFlag           archive flag
+     * @param pageable              pageable
      * @return page full of the validation summaries.
      */
-    public Page<SupplyChainValidationSummary> findValidationReportsBySearchableColumnsAndArchiveFlag(
-            final Set<String> searchableColumns,
-            final String searchTerm,
+    public Page<SupplyChainValidationSummary> findValidationReportsByGlobalSearchTermAndArchiveFlag(
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
@@ -113,16 +113,16 @@ public class ValidationSummaryPageService {
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchTerm)) {
+        if (!StringUtils.isBlank(globalSearchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
-            for (String columnName : searchableColumns) {
+            for (String columnName : searchableColumnNames) {
 
                 // if there is no period and this is a non-nested field
                 if (!columnName.contains(".")) {
                     Predicate predicate =
                             criteriaBuilder.like(
                                     criteriaBuilder.lower(supplyChainValidationSummaryRoot.get(columnName)),
-                                    "%" + searchTerm.toLowerCase() + "%");
+                                    "%" + globalSearchTerm.toLowerCase() + "%");
                     predicates.add(predicate);
                 } else { // If there's a period, we are dealing with a nested entity (e.g., "device.id")
                     String[] nestedColumnName = columnName.split("\\.");
@@ -142,7 +142,7 @@ public class ValidationSummaryPageService {
                         // Add predicate for the nested field (e.g. or device.name)
                         Predicate predicate = criteriaBuilder.like(
                                 criteriaBuilder.lower(deviceJoin.get(fieldName)),
-                                "%" + searchTerm.toLowerCase() + "%");
+                                "%" + globalSearchTerm.toLowerCase() + "%");
                         predicates.add(predicate);
                     }
                 }
@@ -172,7 +172,8 @@ public class ValidationSummaryPageService {
      * @param pageable pageable
      * @return page of supply chain validation summaries
      */
-    public Page<SupplyChainValidationSummary> findValidationSummaryReportsByPageable(final Pageable pageable) {
+    public Page<SupplyChainValidationSummary> findValidationSummaryReportsByPageable(
+            final Pageable pageable) {
         return this.supplyChainValidationSummaryRepository.findByArchiveFlagFalse(pageable);
     }
 
@@ -192,7 +193,8 @@ public class ValidationSummaryPageService {
      * @param response http response
      * @throws IOException if there are any issues while trying to download the summary reports
      */
-    public void downloadValidationReports(final HttpServletRequest request, final HttpServletResponse response)
+    public void downloadValidationReports(final HttpServletRequest request,
+                                          final HttpServletResponse response)
             throws IOException {
         String company = "";
         String contractNumber = "";
@@ -203,7 +205,7 @@ public class ValidationSummaryPageService {
         LocalDate startDate = null;
         LocalDate endDate = null;
         ArrayList<LocalDate> createTimes = new ArrayList<>();
-        String[] deviceNames = new String[]{};
+        String[] deviceNames = new String[] {};
 
         final Enumeration<String> parameters = request.getParameterNames();
 

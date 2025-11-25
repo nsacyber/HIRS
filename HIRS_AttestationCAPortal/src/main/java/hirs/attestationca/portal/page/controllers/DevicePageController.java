@@ -2,6 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.Device;
+import hirs.attestationca.persist.service.DataTablesColumnSearchCriteria;
 import hirs.attestationca.persist.service.DevicePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -64,34 +65,40 @@ public class DevicePageController extends PageController<NoPageParams> {
      * Processes the request to retrieve a list of devices and device related information for display on the
      * devices page.
      *
-     * @param input data table input.
+     * @param dataTableInput data table input.
      * @return data table of devices
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<HashMap<String, Object>> getDevicesTableData(final DataTableInput input) {
+    public DataTableResponse<HashMap<String, Object>> getDevicesTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of devices");
         log.debug("Request received a datatable input object for the device page: {}",
-                input);
+                dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = dataTableInput.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(Device.class, input.getColumns());
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
 
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        final Set<DataTablesColumnSearchCriteria> searchableColumnsWithFilters =
+                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<Device> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        if (StringUtils.isBlank(globalSearchTerm) && searchableColumnsWithFilters.isEmpty()) {
             pagedResult = this.devicePageService.findAllDevices(pageable);
         } else {
-            pagedResult = this.devicePageService.findAllDevicesBySearchableColumns(searchableColumns, searchTerm,
-                    pageable);
+            final Set<String> searchableColumnNames =
+                    ControllerPagesUtils.findSearchableColumnNames(Device.class,
+                            dataTableInput.getColumns());
+            pagedResult =
+                    this.devicePageService.findAllDevicesByGlobalSearchTerm(searchableColumnNames,
+                            globalSearchTerm,
+                            pageable);
         }
 
         if (pagedResult.hasContent()) {
@@ -105,6 +112,6 @@ public class DevicePageController extends PageController<NoPageParams> {
                 = this.devicePageService.retrieveDevicesAndAssociatedCertificates(deviceList);
 
         log.info("Returning the size of the list of devices: {}", devicesAndAssociatedCertificates.size());
-        return new DataTableResponse<>(devicesAndAssociatedCertificates, input);
+        return new DataTableResponse<>(devicesAndAssociatedCertificates, dataTableInput);
     }
 }

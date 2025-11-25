@@ -71,18 +71,18 @@ public class CertificatePageService {
      * Takes the provided column names, the search term that the user entered and attempts to find
      * certificates whose field values matches the provided search term.
      *
-     * @param entityClass       generic certificate entity class
-     * @param searchableColumns list of the searchable column names
-     * @param searchTerm        text that was input in the search textbox
-     * @param archiveFlag       archive flag
-     * @param pageable          pageable
-     * @param <T>               generic entity class that extends from certificate
+     * @param entityClass           generic certificate entity class
+     * @param searchableColumnNames list of the searchable column names
+     * @param globalSearchTerm      text that was input in the global search textbox
+     * @param archiveFlag           archive flag
+     * @param pageable              pageable
+     * @param <T>                   generic entity class that extends from certificate
      * @return page full of the generic certificates.
      */
-    public <T extends Certificate> Page<T> findCertificatesBySearchableColumnsAndArchiveFlag(
+    public <T extends Certificate> Page<T> findCertificatesByGlobalSearchTermAndArchiveFlag(
             final Class<T> entityClass,
-            final Set<String> searchableColumns,
-            final String searchTerm,
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
@@ -92,12 +92,12 @@ public class CertificatePageService {
         List<Predicate> predicates = new ArrayList<>();
 
         // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchTerm)) {
+        if (!StringUtils.isBlank(globalSearchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
-            for (String columnName : searchableColumns) {
+            for (String columnName : searchableColumnNames) {
                 Predicate predicate =
                         criteriaBuilder.like(criteriaBuilder.lower(rootCertificate.get(columnName)),
-                                "%" + searchTerm.toLowerCase() + "%");
+                                "%" + globalSearchTerm.toLowerCase() + "%");
                 predicates.add(predicate);
             }
         }
@@ -330,7 +330,8 @@ public class CertificatePageService {
             throw new EntityNotFoundException(errorMessage);
         } else if (!certificateClass.isInstance(certificate)) {
             final String errorMessage =
-                    "Unable to cast the found certificate to a(n) " + certificateClass.getSimpleName() + " object";
+                    "Unable to cast the found certificate to a(n) " + certificateClass.getSimpleName() +
+                            " object";
             log.warn(errorMessage);
             throw new ClassCastException(errorMessage);
         }
@@ -376,7 +377,8 @@ public class CertificatePageService {
             if (CredentialHelper.isMultiPEM(new String(fileBytes, StandardCharsets.UTF_8))) {
                 try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(fileBytes)) {
                     CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                    Collection<? extends java.security.cert.Certificate> c = cf.generateCertificates(certInputStream);
+                    Collection<? extends java.security.cert.Certificate> c =
+                            cf.generateCertificates(certInputStream);
 
                     for (java.security.cert.Certificate certificate : c) {
                         List<String> moreSuccessMessages = new ArrayList<>();
@@ -415,7 +417,8 @@ public class CertificatePageService {
             errorMessages.add(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
-            final String failMessage = String.format("Trust chain certificate format not recognized(%s): ", fileName);
+            final String failMessage =
+                    String.format("Trust chain certificate format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
             errorMessages.add(failMessage + iaEx.getMessage());
             return null;
@@ -449,7 +452,8 @@ public class CertificatePageService {
      *
      * @param platformCredential certificate
      */
-    private void parseAndSaveComponentResults(final PlatformCredential platformCredential) throws IOException {
+    private void parseAndSaveComponentResults(final PlatformCredential platformCredential)
+            throws IOException {
         List<ComponentResult> componentResults = this.componentResultRepository
                 .findByCertificateSerialNumberAndBoardSerialNumber(
                         platformCredential.getSerialNumber().toString(),

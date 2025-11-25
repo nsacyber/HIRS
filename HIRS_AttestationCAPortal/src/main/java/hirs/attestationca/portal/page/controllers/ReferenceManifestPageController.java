@@ -86,36 +86,36 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * Processes the request to retrieve a list of RIMs for display on the RIM page.
      *
-     * @param input data table input
+     * @param dataTableInput data table input
      * @return data table of RIMs
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<ReferenceManifest> getRIMTableData(@Valid final DataTableInput input) {
+    public DataTableResponse<ReferenceManifest> getRIMTableData(@Valid final DataTableInput dataTableInput) {
         log.info("Received request to display list of reference manifests");
         log.debug("Request received a datatable input object for the reference manifest page "
-                + " page: {}", input);
+                + " page: {}", dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = dataTableInput.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(ReferenceManifest.class,
-                        input.getColumns());
-
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
         FilteredRecordsList<ReferenceManifest> rimFilteredRecordsList = new FilteredRecordsList<>();
 
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        if (StringUtils.isBlank(globalSearchTerm)) {
             pagedResult = this.referenceManifestPageService.findAllBaseAndSupportRIMSByPageable(pageable);
         } else {
+            final Set<String> searchableColumnNames =
+                    ControllerPagesUtils.findSearchableColumnNames(ReferenceManifest.class,
+                            dataTableInput.getColumns());
+
             pagedResult = this.referenceManifestPageService.
-                    findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns, searchTerm, false,
+                    findRIMSByGlobalSearchTermAndArchiveFlag(searchableColumnNames, globalSearchTerm, false,
                             pageable);
         }
 
@@ -128,7 +128,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         log.info("Returning the size of the list of reference manifests: {}",
                 rimFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(rimFilteredRecordsList, input);
+        return new DataTableResponse<>(rimFilteredRecordsList, dataTableInput);
     }
 
     /**

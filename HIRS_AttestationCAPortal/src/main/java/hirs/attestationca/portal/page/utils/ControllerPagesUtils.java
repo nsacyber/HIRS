@@ -2,6 +2,7 @@ package hirs.attestationca.portal.page.utils;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.service.DataTablesColumnSearchCriteria;
 import hirs.attestationca.portal.datatables.Column;
 import lombok.extern.log4j.Log4j2;
 
@@ -12,6 +13,7 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -54,6 +56,35 @@ public final class ControllerPagesUtils {
     }
 
     /**
+     * Helper method that attempts to return a set of searchable columns that has a user-defined search value
+     * and logical operator applied to them
+     *
+     * @param columns table columns
+     * @return searchable columns that have a search criteria
+     */
+    public static Set<DataTablesColumnSearchCriteria> findColumnsWithSearchCriteria(
+            final List<Column> columns) {
+        // Identify and return columns that are searchable and have both a user-defined search value
+        // and a logical condition (e.g., "equals", "greater than", etc.) applied through column controls
+        return columns.stream()
+                // Filter to include only columns that are searchable
+                .filter(Column::isSearchable)
+                // Filter to include columns with both a non-empty search value and a defined logic operator
+                .filter(eachColumn -> eachColumn.getColumnControl() != null
+                        && !eachColumn.getColumnControl().getSearch().getValue().isEmpty()
+                        && !eachColumn.getColumnControl().getSearch().getLogic().isEmpty())
+                // Create an object that contains the column name, column specific search value,
+                // logic value and search type
+                .map(eachColumn -> DataTablesColumnSearchCriteria.builder()
+                        .columnName(eachColumn.getName())
+                        .columnSearchLogic(eachColumn.getColumnControl().getSearch().getLogic())
+                        .columnSearchType(eachColumn.getColumnControl().getSearch().getType())
+                        .columnSearchTerm(eachColumn.getColumnControl().getSearch().getValue())
+                        .build()
+                ).collect(Collectors.toSet());
+    }
+
+    /**
      * Helper method that attempts to return a list of searchable column names that
      * matches the names of the provided class' non-static declared fields.
      *
@@ -61,7 +92,7 @@ public final class ControllerPagesUtils {
      * @param columns             table columns
      * @return set of searchable column names
      */
-    public static Set<String> findSearchableColumnsNames(
+    public static Set<String> findSearchableColumnNames(
             final Class<?> pageControllerClass,
             final List<Column> columns) {
         // grab all the provided class' non-static declared fields

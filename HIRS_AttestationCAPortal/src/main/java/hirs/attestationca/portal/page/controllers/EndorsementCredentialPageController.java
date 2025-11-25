@@ -61,8 +61,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @param certificatePageService           certificate page service
      */
     @Autowired
-    public EndorsementCredentialPageController(final EndorsementCredentialPageService endorsementCredentialPageService,
-                                               final CertificatePageService certificatePageService) {
+    public EndorsementCredentialPageController(
+            final EndorsementCredentialPageService endorsementCredentialPageService,
+            final CertificatePageService certificatePageService) {
         super(Page.ENDORSEMENT_KEY_CREDENTIALS);
         this.endorsementCredentialPageService = endorsementCredentialPageService;
         this.certificatePageService = certificatePageService;
@@ -90,34 +91,35 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<EndorsementCredential> getEndorsementCredentialsTableData(final DataTableInput input) {
+    public DataTableResponse<EndorsementCredential> getEndorsementCredentialsTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of endorsement credentials");
         log.debug("Request received a datatable input object for the endorsement "
-                + "credentials page: {}", input);
+                + "credentials page: {}", dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
+        final String orderColumnName = dataTableInput.getOrderColumnName();
         log.debug("Ordering on column: {}", orderColumnName);
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(EndorsementCredential.class,
-                        input.getColumns());
-
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
         FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList = new FilteredRecordsList<>();
 
         org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        if (StringUtils.isBlank(globalSearchTerm)) {
             pagedResult = this.endorsementCredentialPageService.
                     findEndorsementCredentialsByArchiveFlag(false, pageable);
         } else {
-            pagedResult = this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
+            final Set<String> searchableColumnNames =
+                    ControllerPagesUtils.findSearchableColumnNames(EndorsementCredential.class,
+                            dataTableInput.getColumns());
+
+            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     EndorsementCredential.class,
-                    searchableColumns,
-                    searchTerm,
+                    searchableColumnNames,
+                    globalSearchTerm,
                     false, pageable);
         }
 
@@ -131,7 +133,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         log.info("Returning the size of the list of endorsement credentials: {}",
                 ekFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(ekFilteredRecordsList, input);
+        return new DataTableResponse<>(ekFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -143,13 +145,15 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadEndorsementCredential(@RequestParam final String id, final HttpServletResponse response)
+    public void downloadEndorsementCredential(@RequestParam final String id,
+                                              final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download endorsement credential id {}", id);
 
         try {
             final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(EndorsementCredential.class, UUID.fromString(id));
+                    this.certificatePageService.downloadCertificate(EndorsementCredential.class,
+                            UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -178,7 +182,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
+            this.certificatePageService.bulkDownloadCertificates(zipOut,
+                    CertificateType.ENDORSEMENT_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
@@ -197,7 +202,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      */
     @PostMapping("/upload")
     protected RedirectView uploadEndorsementCredential(@RequestParam("file") final MultipartFile[] files,
-                                                       final RedirectAttributes attr) throws URISyntaxException {
+                                                       final RedirectAttributes attr)
+            throws URISyntaxException {
         log.info("Received request to upload one or more endorsement credentials");
 
         Map<String, Object> model = new HashMap<>();
@@ -234,7 +240,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteEndorsementCredential(@RequestParam final String id, final RedirectAttributes attr)
+    public RedirectView deleteEndorsementCredential(@RequestParam final String id,
+                                                    final RedirectAttributes attr)
             throws URISyntaxException {
         log.info("Received request to delete endorsement credential id {}", id);
 
