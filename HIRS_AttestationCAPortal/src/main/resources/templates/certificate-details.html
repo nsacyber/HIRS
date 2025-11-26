@@ -421,7 +421,6 @@
                 </div>
             </div>
 
-
             <!-- Add the different fields based on the certificate type -->
 
             <!-- If this is a certificate of type 'certificateauthority' -->
@@ -437,8 +436,9 @@
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
                         </div>
-                        <div id="revocationLocator" class="col col-md-8"><a
-                                href="${initialData.crlPoints}">[[${initialData.get('crlPoints')}]]</div>
+                        <div id="revocationLocator" class="col col-md-8">
+                            <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -463,100 +463,95 @@
 
             <!-- If this is a certificate of type 'endorsement' -->
             <div th:if="${#strings.equals(param.type, 'endorsement')}">
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>-->
-<!--                        <div id="subjectAltName" class="col col-md-8">-->
-<!--                            <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>-->
-<!--                            <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>-->
-<!--                            <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>-->
-<!--                        <div id="policyReference" class="col col-md-8 vertical">-->
-<!--                            <c:choose>-->
-<!--                                <c:when test="${not empty initialData.policyReference}">-->
-<!--                                    ${initialData.policyReference}-->
-<!--                                </c:when>-->
-<!--                                <c:otherwise>-->
-<!--                                    Not Specified-->
-<!--                                </c:otherwise>-->
-<!--                            </c:choose>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <c:if test="${initialData.crlPoints}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>-->
-<!--                            </div>-->
-<!--                            <div id="revocationLocator" class="col col-md-8"><a-->
-<!--                                    href="${initialData.crlPoints}">${initialData.crlPoints}</div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>-->
-<!--                        <c:choose>-->
-<!--                            <c:when test="${not empty initialData.keyUsage}">-->
-<!--                                <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>-->
-<!--                            </c:when>-->
-<!--                            <c:otherwise>-->
-<!--                                <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>-->
-<!--                            </c:otherwise>-->
-<!--                        </c:choose>-->
-<!--                    </div>-->
-<!--                    <c:choose>-->
-<!--                        <c:when test="${not empty initialData.extendedKeyUsage}">-->
-<!--                            <div class="row">-->
-<!--                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>-->
-<!--                                </div>-->
-<!--                                <div id="extendedKeyUsage" class="col col-md-8 vertical">${initialData.extendedKeyUsage}-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </c:when>-->
-<!--                    </c:choose>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1">-->
-<!--                            <span class="colHeader">-->
-<!--                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"-->
-<!--                                   aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">-->
-<!--                                    TPM Specification-->
-<!--                                </a>-->
-<!--                            </span>-->
-<!--                        </div>-->
-<!--                        <div id="tpmSpecification" class="col col-md-8">-->
-<!--                            <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel"-->
-<!--                                 aria-expanded="false">-->
-<!--                                <div>Family:&nbsp;<span>${initialData.TPMSpecificationFamily}</span></div>-->
-<!--                                <div>Level:&nbsp;<span>${initialData.TPMSpecificationLevel}</span></div>-->
-<!--                                <div>Revision:&nbsp;<span>${initialData.TPMSpecificationRevision}</span></div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1">-->
-<!--                            <span class="colHeader">-->
-<!--                                <a role="button" data-toggle="collapse" class="collapsed"-->
-<!--                                   href="#tpmSecurityAssertionInner" aria-expanded="true" data-placement="top"-->
-<!--                                   aria-controls="tpmSecurityAssertionInner">-->
-<!--                                    TPM Security Assertion-->
-<!--                                </a>-->
-<!--                            </span>-->
-<!--                        </div>-->
-<!--                        <div id="tpmSecurityAssertion" class="col col-md-8">-->
-<!--                            <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"-->
-<!--                                 aria-expanded="false">-->
-<!--                                <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}</span></div>-->
-<!--                                <div>Field-->
-<!--                                    Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span>-->
-<!--                                </div>-->
-<!--                                <div>ek Generation Type:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenType}</span>-->
-<!--                                </div>-->
-<!--                                <div>ek Generation-->
-<!--                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenerationLocation}</span></div>-->
-<!--                                <div>ek Certificate Generation-->
-<!--                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertificateGenerationLocation}</span></div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
+                    <div id="subjectAltName" class="col col-md-8">
+                        <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
+                        <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
+                        <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
+                    <div id="policyReference" class="col col-md-8 vertical">
+                        <div th:if="${not #strings.isEmpty(initialData.get('policyReference'))}">
+                            [[${initialData.get('policyReference')}]]
+                        </div>
+                        <div th:if="${#strings.isEmpty(initialData.get('policyReference'))}">
+                            Not Specified
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
+                        </div>
+                        <div id="revocationLocator" class="col col-md-8">
+                            <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                    <div th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
+                        <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
+                    </div>
+                    <div th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
+                        <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+                    </div>
+                </div>
+                <div th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>
+                        </div>
+                        <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1">
+                        <span class="colHeader">
+                            <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
+                               aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
+                                TPM Specification
+                            </a>
+                        </span>
+                    </div>
+                    <div id="tpmSpecification" class="col col-md-8">
+                        <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel"
+                             aria-expanded="false">
+                            <div>Family:&nbsp;<span>[[${initialData.get('TPMSpecificationFamily')}]]</span></div>
+                            <div>Level:&nbsp;<span>[[${initialData.get('TPMSpecificationLevel')}]]</span></div>
+                            <div>Revision:&nbsp;<span>[[${initialData.get('TPMSpecificationRevision')}]]</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1">
+                        <span class="colHeader">
+                            <a role="button" data-toggle="collapse" class="collapsed"
+                               href="#tpmSecurityAssertionInner" aria-expanded="true" data-placement="top"
+                               aria-controls="tpmSecurityAssertionInner">
+                                TPM Security Assertion
+                            </a>
+                        </span>
+                    </div>
+                    <div id="tpmSecurityAssertion" class="col col-md-8">
+                        <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"
+                             aria-expanded="false">
+                            <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
+                            <div>Field
+                                Upgradeable:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}]]</span>
+                            </div>
+                            <div>ek Generation Type:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenType')}]]</span>
+                            </div>
+                            <div>ek Generation
+                                Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}]]</span></div>
+                            <div>ek Certificate Generation
+                                Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}]]</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- If this is a certificate of type 'platform' -->
@@ -1130,7 +1125,7 @@
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Endorsement Credential</span></div>
                     <div id="endorsementID" class="col col-md-8">
                         <div th:if="${not #strings.isEmpty(initialData.get('endorsementID'))}">
-                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('endorsementID')})}">
+                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('endorsementID')})}">
                                 <img src="/icons/ic_vpn_key_black_24dp.png">
                             </a>
                         </div>
