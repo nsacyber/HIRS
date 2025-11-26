@@ -314,3 +314,17 @@ function formatCertificateDate(dateText) {
 
   return new Date(timestamp).toUTCString();
 }
+
+/**
+ * Formats a given date to a UTC string, or returns an indefinite icon
+ * @param date to format
+ */
+function formatCertificateDate2(dateText) {
+  let date = +dateText; // Convert to numeric
+
+  if (date == 253402300799000) {
+    return "Indefinite";
+  }
+
+  return new Date(date).toUTCString();
+}
