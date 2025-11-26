@@ -4,6 +4,7 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.IDevIdCertificatePageService;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -99,15 +100,28 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+        
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
         FilteredRecordsList<IDevIDCertificate> idevidFilteredRecordsList = new FilteredRecordsList<>();
         org.springframework.data.domain.Page<IDevIDCertificate> pagedResult;
 
-        if (StringUtils.isBlank(globalSearchTerm)) {
+        // if the user has not entered any value in either the global search box or the column search box
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
+            pagedResult = this.iDevIdCertificatePageService.
+                    findIDevCertificatesByArchiveFlag(false, pageable);
+        }
+        // if the search term applied to the individual columns is not empty
+        else if (!columnsWithSearchCriteria.isEmpty()) {
             pagedResult =
-                    this.iDevIdCertificatePageService.findIDevCertificatesByArchiveFlag(false, pageable);
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            IDevIDCertificate.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
         } else {
             final Set<String> searchableColumnNames =
                     ControllerPagesUtils.findSearchableColumnNames(IDevIDCertificate.class,

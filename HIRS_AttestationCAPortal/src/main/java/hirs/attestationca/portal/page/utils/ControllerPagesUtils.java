@@ -2,8 +2,9 @@ package hirs.attestationca.portal.page.utils;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.service.DataTablesColumnSearchCriteria;
+import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.portal.datatables.Column;
+import io.micrometer.common.util.StringUtils;
 import lombok.extern.log4j.Log4j2;
 
 import java.lang.reflect.Field;
@@ -57,25 +58,39 @@ public final class ControllerPagesUtils {
 
     /**
      * Helper method that attempts to return a set of searchable columns that has a user-defined search value
-     * and logical operator applied to them
+     * and logical operator applied to them.
      *
      * @param columns table columns
      * @return searchable columns that have a search criteria
      */
-    public static Set<DataTablesColumnSearchCriteria> findColumnsWithSearchCriteria(
+    public static Set<DataTablesColumn> findColumnsWithSearchCriteria(
             final List<Column> columns) {
         // Identify and return columns that are searchable and have both a user-defined search value
         // and a logical condition (e.g., "equals", "greater than", etc.) applied through column controls
         return columns.stream()
                 // Filter to include only columns that are searchable
                 .filter(Column::isSearchable)
+
+                // Filter to include columns with non-null column controls that come with a column control
+                // logic operator
+                .filter(eachColumn -> eachColumn.getColumnControl() != null &&
+                        !StringUtils.isBlank(eachColumn.getColumnControl().getSearch().getLogic()))
+
                 // Filter to include columns with both a non-empty search value and a defined logic operator
-                .filter(eachColumn -> eachColumn.getColumnControl() != null
-                        && !eachColumn.getColumnControl().getSearch().getValue().isEmpty()
-                        && !eachColumn.getColumnControl().getSearch().getLogic().isEmpty())
+                // the search value can be empty if the logic value is empty or not empty
+                .filter(eachColumn -> {
+                    final String columnSearchLogic = eachColumn.getColumnControl().getSearch().getLogic();
+
+                    // return true, if the logic operator is empty or not empty or if the search value is not
+                    // null or blank. Otherwise, return false
+                    return columnSearchLogic.equalsIgnoreCase("empty") ||
+                            columnSearchLogic.equalsIgnoreCase("notEmpty") ||
+                            !StringUtils.isBlank(eachColumn.getColumnControl().getSearch().getValue());
+                })
+
                 // Create an object that contains the column name, column specific search value,
                 // logic value and search type
-                .map(eachColumn -> DataTablesColumnSearchCriteria.builder()
+                .map(eachColumn -> DataTablesColumn.builder()
                         .columnName(eachColumn.getName())
                         .columnSearchLogic(eachColumn.getColumnControl().getSearch().getLogic())
                         .columnSearchType(eachColumn.getColumnControl().getSearch().getType())

@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.PlatformCredentialPageService;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -101,16 +102,28 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+        
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
         FilteredRecordsList<PlatformCredential> pcFilteredRecordsList = new FilteredRecordsList<>();
-
         org.springframework.data.domain.Page<PlatformCredential> pagedResult;
 
-        if (StringUtils.isBlank(globalSearchTerm)) {
+        // if the user has not entered any value in either the global search box or the column search box
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult =
                     this.platformCredentialService.findPlatformCredentialsByArchiveFlag(false, pageable);
+        }
+        // if the search term applied to the individual columns is not empty
+        else if (!columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            PlatformCredential.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
         } else {
             final Set<String> searchableColumnNames =
                     ControllerPagesUtils.findSearchableColumnNames(PlatformCredential.class,

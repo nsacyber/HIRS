@@ -10,12 +10,14 @@ import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummar
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.attestationca.persist.service.selector.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
@@ -119,10 +121,9 @@ public class ValidationSummaryPageService {
 
                 // if there is no period and this is a non-nested field
                 if (!columnName.contains(".")) {
-                    Predicate predicate =
-                            criteriaBuilder.like(
-                                    criteriaBuilder.lower(supplyChainValidationSummaryRoot.get(columnName)),
-                                    "%" + globalSearchTerm.toLowerCase() + "%");
+                    Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                            supplyChainValidationSummaryRoot.get(columnName), globalSearchTerm,
+                            "contains");
                     predicates.add(predicate);
                 } else { // If there's a period, we are dealing with a nested entity (e.g., "device.id")
                     String[] nestedColumnName = columnName.split("\\.");
@@ -154,6 +155,51 @@ public class ValidationSummaryPageService {
         // Add archiveFlag condition if specified
         query.where(criteriaBuilder.and(likeConditions,
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)));
+
+        // Apply pagination
+        TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<SupplyChainValidationSummary> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * todo
+     *
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param archiveFlag               archive flag
+     * @param pageable                  pageable
+     * @return page full of the validation summaries.
+     */
+    public Page<SupplyChainValidationSummary> findValidationSummaryReportsyColumnSpecificSearchTermAndArchiveFlag(
+            Set<DataTablesColumn> columnsWithSearchCriteria, boolean archiveFlag, Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
+        CriteriaQuery<SupplyChainValidationSummary> query =
+                criteriaBuilder.createQuery(SupplyChainValidationSummary.class);
+        Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot =
+                query.from(SupplyChainValidationSummary.class);
+
+        //
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            // if the field is a string type
+            if (String.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = supplyChainValidationSummaryRoot.get(columnName);
+
+                Predicate predicate =
+                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
+                                columnSearchTerm,
+                                columnSearchLogic);
+
+            }
+        }
 
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);

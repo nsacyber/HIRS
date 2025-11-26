@@ -2,6 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
+import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.ValidationSummaryPageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -81,17 +82,25 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
-        FilteredRecordsList<SupplyChainValidationSummary> reportsFilteredRecordsList =
-                new FilteredRecordsList<>();
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
+        FilteredRecordsList<SupplyChainValidationSummary> reportsFilteredRecordsList =
+                new FilteredRecordsList<>();
         org.springframework.data.domain.Page<SupplyChainValidationSummary> pagedResult;
 
-        if (StringUtils.isBlank(globalSearchTerm)) {
+        // if the user has not entered any value in either the global search box or the column search box
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.validationSummaryPageService.findValidationSummaryReportsByPageable(pageable);
+        }
+        // if the search term applied to the individual columns is not empty
+        else if (!columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.validationSummaryPageService.findValidationSummaryReportsyColumnSpecificSearchTermAndArchiveFlag(
+                            columnsWithSearchCriteria, false, pageable);
         } else {
             final Set<String> searchableColumnNames =
                     ControllerPagesUtils.findSearchableColumnNames(SupplyChainValidationSummary.class,

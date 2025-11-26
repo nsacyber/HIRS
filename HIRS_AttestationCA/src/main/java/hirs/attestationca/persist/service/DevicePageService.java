@@ -9,10 +9,12 @@ import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.service.selector.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
@@ -73,15 +75,13 @@ public class DevicePageService {
      * @param pageable              pageable
      * @return page full of devices
      */
-    public Page<Device> findAllDevicesByGlobalSearchTerm(
+    public Page<Device> findDevicesByGlobalSearchTerm(
             final Set<String> searchableColumnNames,
             final String globalSearchTerm,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Device> query =
-                criteriaBuilder.createQuery(Device.class);
-        Root<Device> deviceRoot =
-                query.from(Device.class);
+        CriteriaQuery<Device> query = criteriaBuilder.createQuery(Device.class);
+        Root<Device> deviceRoot = query.from(Device.class);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -89,13 +89,61 @@ public class DevicePageService {
         if (!StringUtils.isBlank(globalSearchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumnNames) {
-                Predicate predicate = criteriaBuilder.like(criteriaBuilder.lower(deviceRoot.get(columnName)),
-                        "%" + globalSearchTerm.toLowerCase() + "%");
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                        deviceRoot.get(columnName), globalSearchTerm,
+                        "contains");
                 predicates.add(predicate);
             }
         }
 
         query.where(criteriaBuilder.or(predicates.toArray(new Predicate[0])));
+
+        // Apply pagination
+        TypedQuery<Device> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<Device> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * Takes the provided columns that come with a search criteria and attempts to find
+     * devices that match the column's specific search criteria's search value.
+     *
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param pageable                  pageable
+     * @return page full of devices
+     */
+    public Page<Device> findDevicesByColumnSpecificSearchTerm(Set<DataTablesColumn> columnsWithSearchCriteria,
+                                                              Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Device> query = criteriaBuilder.createQuery(Device.class);
+        Root<Device> deviceRoot = query.from(Device.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        //
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            // if the field is a string type
+            if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = deviceRoot.get(columnName);
+
+                Predicate predicate =
+                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
+                                columnSearchTerm,
+                                columnSearchLogic);
+                predicates.add(predicate);
+            }
+        }
+
+        query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
 
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);

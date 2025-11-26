@@ -6,18 +6,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Java representation of the DataTables Column and Column Control.
- * Portions of the `ColumnControl` object and the `Column`
- * object from the `hirs.attestationcaportal` module are used here, as these objects cannot be directly
- * referenced in the `hirs.attestationca` module. This object allows services in `attestationca` to access
- * relevant data from the DataTable in the `attestationcaportal` module.
+ * Custom representation of the Java DataTables Column object in the `hirs.attestationcaportal` module.
+ * Portions of the `ColumnControl` object and the `Column` object from the `hirs.attestationcaportal` module
+ * are used here, as these objects cannot be directly referenced in the `hirs.attestationca` module.
+ * This object allows services in `attestationca` to access relevant data from the DataTable in the
+ * `attestationcaportal` module.
  */
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DataTablesColumnSearchCriteria {
+public class DataTablesColumn {
     /**
      * Column's name.
      */

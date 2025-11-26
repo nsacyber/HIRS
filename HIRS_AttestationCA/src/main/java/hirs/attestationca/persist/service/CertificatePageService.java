@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.attestationca.persist.service.selector.PredicateFactory;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.persist.util.DownloadFile;
 import jakarta.persistence.EntityManager;
@@ -15,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
@@ -87,7 +89,7 @@ public class CertificatePageService {
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
-        Root<T> rootCertificate = query.from(entityClass);
+        Root<T> certificateRoot = query.from(entityClass);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -95,9 +97,9 @@ public class CertificatePageService {
         if (!StringUtils.isBlank(globalSearchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumnNames) {
-                Predicate predicate =
-                        criteriaBuilder.like(criteriaBuilder.lower(rootCertificate.get(columnName)),
-                                "%" + globalSearchTerm.toLowerCase() + "%");
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                        certificateRoot.get(columnName), globalSearchTerm,
+                        "contains");
                 predicates.add(predicate);
             }
         }
@@ -106,10 +108,66 @@ public class CertificatePageService {
 
         // Add archiveFlag condition if specified
         query.where(criteriaBuilder.and(likeConditions,
-                criteriaBuilder.equal(rootCertificate.get("archiveFlag"), archiveFlag)));
+                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)));
 
         // Apply pagination
         TypedQuery<T> typedQuery = this.entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<T> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * Takes the provided columns that come with a search criteria and attempts to find
+     * certificates that match the column's specific search criteria's search value.
+     *
+     * @param entityClass               generic certificate entity class
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param archiveFlag               archive flag
+     * @param pageable                  pageable
+     * @param <T>                       generic entity class that extends from certificate
+     * @return page full of the generic certificates.
+     */
+    public <T extends Certificate> Page<T> findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+            final Class<T> entityClass,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final boolean archiveFlag,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
+        Root<T> certificateRoot = query.from(entityClass);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            // if the field is a string type
+            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = certificateRoot.get(columnName);
+
+                Predicate predicate =
+                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
+                                columnSearchTerm,
+                                columnSearchLogic);
+                predicates.add(predicate);
+            }
+        }
+
+        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+
+        // Add archiveFlag condition if specified
+        query.where(criteriaBuilder.and(otherConditions,
+                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)));
+
+        // Apply pagination
+        TypedQuery<T> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());

@@ -4,6 +4,7 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.CertificateType;
+import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.EndorsementCredentialPageService;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -86,7 +87,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * Processes the request to retrieve a list of endorsement credentials for display on the endorsement credential's
      * page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of endorsement credentials
      */
     @ResponseBody
@@ -101,6 +102,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+        
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
 
@@ -108,9 +112,19 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
 
-        if (StringUtils.isBlank(globalSearchTerm)) {
+        // if the user has not entered any value in either the global search box or the column search box
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.endorsementCredentialPageService.
                     findEndorsementCredentialsByArchiveFlag(false, pageable);
+        }
+        // if the search term applied to the individual columns is not empty
+        else if (!columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            EndorsementCredential.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
         } else {
             final Set<String> searchableColumnNames =
                     ControllerPagesUtils.findSearchableColumnNames(EndorsementCredential.class,

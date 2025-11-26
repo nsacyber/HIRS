@@ -4,7 +4,7 @@ import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.DataTablesColumnSearchCriteria;
+import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.ReferenceDigestValuePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -81,12 +81,13 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
-        FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = new FilteredRecordsList<>();
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-        final Set<DataTablesColumnSearchCriteria> columnsWithSearchCriteria =
-                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
+
+        FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = new FilteredRecordsList<>();
         org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult;
 
         // if the user has not entered any value in either the global search box or the column search box

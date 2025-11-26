@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
+import hirs.attestationca.persist.service.selector.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -80,10 +81,9 @@ public class ReferenceDigestValuePageService {
 
                 // if the field is a string type
                 if (String.class.equals(fieldPath.getJavaType())) {
-                    Predicate predicate =
-                            criteriaBuilder.like(
-                                    criteriaBuilder.lower(referenceDigestValueRoot.get(columnName)),
-                                    "%" + globalSearchTerm.toLowerCase() + "%");
+                    Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                            referenceDigestValueRoot.get(columnName), globalSearchTerm,
+                            "contains");
                     predicates.add(predicate);
                 } else if (Integer.class.equals(fieldPath.getJavaType())) {
                     // For Integer fields, use EQUAL if the search term is numeric
@@ -113,12 +113,15 @@ public class ReferenceDigestValuePageService {
     }
 
     /**
-     * @param columnsWithSearchCriteria
-     * @param pageable
-     * @return
+     * Takes the provided columns that come with a search criteria and attempts to find
+     * reference digest values that match the column's specific search criteria's search value.
+     *
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param pageable                  pageable
+     * @return page full of reference digest values
      */
     public Page<ReferenceDigestValue> findReferenceDigestValuesByColumnSpecificSearchTerm(
-            final Set<DataTablesColumnSearchCriteria> columnsWithSearchCriteria,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ReferenceDigestValue> query =
@@ -128,35 +131,42 @@ public class ReferenceDigestValuePageService {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        // Dynamically loop through columns ... todo... for each searchable column
-        for (DataTablesColumnSearchCriteria dataTablesColumnSearchCriteria : columnsWithSearchCriteria) {
-
-            final String columnName = dataTablesColumnSearchCriteria.getColumnName();
-            final String columnSearchTerm = dataTablesColumnSearchCriteria.getColumnSearchTerm();
-            final String columnSearchType = dataTablesColumnSearchCriteria.getColumnSearchType();
-
-            // Get the attribute type from entity root
-            Path<?> fieldPath = referenceDigestValueRoot.get(columnName);
+        //
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
 
             // if the field is a string type
-            if (String.class.equals(fieldPath.getJavaType())) {
+            if (String.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = referenceDigestValueRoot.get(columnName);
+
                 Predicate predicate =
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(referenceDigestValueRoot.get(columnName)),
-                                "%" + columnSearchTerm.toLowerCase() + "%");
+                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
+                                columnSearchTerm,
+                                columnSearchLogic);
                 predicates.add(predicate);
-            } else if (Integer.class.equals(fieldPath.getJavaType())) {
+            } else if (Integer.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
                 // For Integer fields, use EQUAL if the search term is numeric
                 try {
-                    Integer searchInteger =
-                            Integer.valueOf(columnSearchTerm); // Will throw if not a number
-                    Predicate predicate = criteriaBuilder.equal(fieldPath, searchInteger);
+                    int searchInteger = 0;
+
+                    if (!StringUtils.isBlank(columnSearchTerm)) {
+                        searchInteger = Integer.parseInt(columnSearchTerm); // Will throw if not a number
+                    }
+
+                    Path<Integer> integerFieldPath = referenceDigestValueRoot.get(columnName);
+
+                    Predicate predicate = PredicateFactory.createPredicateForIntegerFields(criteriaBuilder,
+                            integerFieldPath, searchInteger, columnSearchLogic);
                     predicates.add(predicate);
                 } catch (NumberFormatException e) {
                     // If the columnSearchTerm is not a valid number, skip this field
                 }
             }
         }
+
+        query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
 
         // Apply pagination
         TypedQuery<ReferenceDigestValue> typedQuery = entityManager.createQuery(query);

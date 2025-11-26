@@ -2,7 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.Device;
-import hirs.attestationca.persist.service.DataTablesColumnSearchCriteria;
+import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.DevicePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -80,23 +80,29 @@ public class DevicePageController extends PageController<NoPageParams> {
         log.debug("Ordering on column: {}", orderColumnName);
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
 
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
-
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-        final Set<DataTablesColumnSearchCriteria> searchableColumnsWithFilters =
-                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<Device> pagedResult;
 
-        if (StringUtils.isBlank(globalSearchTerm) && searchableColumnsWithFilters.isEmpty()) {
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.devicePageService.findAllDevices(pageable);
+        }
+        // if the search term applied to the individual columns is not empty
+        else if (!columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.devicePageService.findDevicesByColumnSpecificSearchTerm(
+                            columnsWithSearchCriteria, pageable);
         } else {
             final Set<String> searchableColumnNames =
                     ControllerPagesUtils.findSearchableColumnNames(Device.class,
                             dataTableInput.getColumns());
             pagedResult =
-                    this.devicePageService.findAllDevicesByGlobalSearchTerm(searchableColumnNames,
+                    this.devicePageService.findDevicesByGlobalSearchTerm(searchableColumnNames,
                             globalSearchTerm,
                             pageable);
         }
