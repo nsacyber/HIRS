@@ -406,21 +406,21 @@ public class PcClientRimBuilder {
      */
     private Directory createDirectory(final JsonObject jsonObject) {
         Directory directory = this.objectFactory.createDirectory();
-        directory.setName(jsonObject.getString("name", ""));
+        directory.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         Map<QName, String> attributes = directory.getOtherAttributes();
-        String supportRimFormat = jsonObject.getString("supportRIMFormat", "supportRIMFormat missing");
+        String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, "supportRIMFormat missing");
         if (!supportRimFormat.equals("supportRIMFormat missing")) {
             if (supportRimFormat.isEmpty()) {
-                attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, "TCG_EventLog_Assertion");
+                attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, SwidTagConstants.TCG_EVENTLOG_ASSERTION);
             } else {
                 attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, supportRimFormat);
             }
         }
 
         this.addNonNullAttribute(attributes, SwidTagConstants.QNAME_SUPPORT_RIM_TYPE,
-                jsonObject.getString("supportRIMType", ""));
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         this.addNonNullAttribute(attributes, SwidTagConstants.QNAME_SUPPORT_RIM_URI_GLOBAL,
-                jsonObject.getString("supportRIMURIGlobal", ""));
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
         return directory;
     }
 
@@ -431,8 +431,8 @@ public class PcClientRimBuilder {
      */
     private File createFile(final JsonObject jsonObject) throws Exception {
         File file = this.objectFactory.createFile();
-        file.setName(jsonObject.getString("name", ""));
-        file.setSize(new BigInteger(jsonObject.getString("size", "0")));
+        file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
+        file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
         Map<QName, String> attributes = file.getOtherAttributes();
         String fileHash;
         if (rimEventLog.isEmpty()) {
@@ -442,21 +442,21 @@ public class PcClientRimBuilder {
                     HashSwid.get256Hash(rimEventLog));
         }
         this.addNonNullAttribute(attributes, SwidTagConstants.SHA_256_HASH,
-                fileHash, true);
-        String supportRimFormat = jsonObject.getString("supportRIMFormat",
+                fileHash,true);
+        String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
                 "supportRIMFormat missing");
         if (!supportRimFormat.equals("supportRIMFormat missing")) {
             if (supportRimFormat.isEmpty()) {
-                attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, "TCG_EventLog_Assertion");
+                attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, SwidTagConstants.TCG_EVENTLOG_ASSERTION);
             } else {
                 attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, supportRimFormat);
             }
         }
 
         this.addNonNullAttribute(attributes, SwidTagConstants.QNAME_SUPPORT_RIM_TYPE,
-                jsonObject.getString("supportRIMType", ""));
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         this.addNonNullAttribute(attributes, SwidTagConstants.QNAME_SUPPORT_RIM_URI_GLOBAL,
-                jsonObject.getString("supportRIMURIGlobal", ""));
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_URI_GLOBAL, ""));
         return file;
     }
 
