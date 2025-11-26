@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}" xmlns="http://www.w3.org/1999/html">
+      layout:decorate="~{layout}" xmlns="http://www.w3.org/1999/html" xmlns:c="http://www.w3.org/1999/XSL/Transform">
 
 <head>
     <section layout:fragment="script">
@@ -157,7 +157,6 @@
         <div th:if="${#strings.equals(param.type, 'issued')}">
             Issued Attestation Certificates
             <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id={id}(id=${param.id})}">
-<!--            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id={id}(id=${initialData.get('issuer')})}">-->
                 <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
             </a>
         </div>
@@ -194,6 +193,9 @@
                     <div th:if="${not #strings.isEmpty(initialData.get('authInfoAccess'))}">
                         <div>Authority Info Access:&nbsp;<span>
                             <a th:href="@{${initialData.get('authInfoAccess')}}">[[${initialData.get('authInfoAccess')}]]</a>
+<!--                            <a th:href="@{{id}(id=${initialData.get('authInfoAccess')})}">-->
+<!--                                    [[${initialData.get('authInfoAccess')}]]-->
+<!--                            </a>-->
                             </span>
                         </div>
                     </div>
@@ -556,97 +558,91 @@
 
             <!-- If this is a certificate of type 'platform' -->
             <div th:if="${#strings.equals(param.type, 'platform')}">
-<!--                    <c:if test="${not empty initialData.platformType}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>-->
-<!--                            <div id="platformType" class="col col-md-8 vertical">${initialData.platformType}</div>-->
-<!--                        </div>-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>-->
-<!--                            <div id="platformType" class="col col-md-8 vertical">-->
-<!--                                <span>-->
-<!--                                    <c:forEach items="${initialData.chainCertificates}" var="credential"-->
-<!--                                               varStatus="loop">-->
-<!--                                        <c:choose>-->
-<!--                                            <c:when test="${initialData.certificateId==credential.getId().toString()}">-->
-<!--                                                ${loop.index}&nbsp;-->
-<!--                                            </c:when>-->
-<!--                                            <c:otherwise>-->
-<!--                                                <a-->
-<!--                                                        href="${portal}/certificate-details?id=${credential.getId()}&type=platform">${loop.index}</a>&nbsp;-->
-<!--                                            </c:otherwise>-->
-<!--                                        </c:choose>-->
-<!--                                    </c:forEach>-->
-<!--                                </span>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${not empty initialData.CPSuri}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice-->
-<!--                                    Statement URI</span></div>-->
-<!--                            <div id="certificateCPSU" class="col col-md-8 vertical">-->
-<!--                                <a href="${initialData.CPSuri}"> ${initialData.CPSuri}</a>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>-->
-<!--                        <div id="holder" class="col col-md-8">-->
-<!--                            <c:if test="${not empty initialData.holderIssuer}">-->
-<!--                                <div>Holder Certificate Issuer:&nbsp;<span>${initialData.holderIssuer}</span></div>-->
-<!--                            </c:if>-->
-<!--                            <div id="certificateid">-->
-<!--                                <div>Holder Certificate Serial Number:&nbsp;-->
+                <div th:if="${not #strings.isEmpty(initialData.get('platformType'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
+                        <div id="platformType" class="col col-md-8 vertical">[[${initialData.get(platformType)}]]</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
+                        <div id="platformType" class="col col-md-8 vertical">
+                            <span>
+<!--    TODO: fix the following-->
+<!--                                <c:forEach items="${initialData.chainCertificates}" var="credential"-->
+<!--                                           varStatus="loop">-->
 <!--                                    <c:choose>-->
-<!--                                        <c:when test="${not empty initialData.holderId}">-->
-<!--                                            <span>-->
-<!--                                                <c:choose>-->
-<!--                                                    <c:when-->
-<!--                                                            test="${(not empty initialData.platformType) and (initialData.platformType=='Delta')}">-->
-<!--                                                        <a-->
-<!--                                                                href="${portal}/certificate-details?id=${initialData.holderId}&type=platform">-->
-<!--                                                            ${initialData.holderSerialNumber}-->
-<!--                                                        </a>-->
-<!--                                                    </c:when>-->
-<!--                                                    <c:otherwise>-->
-<!--                                                        <a-->
-<!--                                                                href="${portal}/certificate-details?id=${initialData.holderId}&type=endorsement">-->
-<!--                                                            ${initialData.holderSerialNumber}-->
-<!--                                                        </a>-->
-<!--                                                    </c:otherwise>-->
-<!--                                                </c:choose>-->
-<!--                                            </span>-->
+<!--                                        <c:when test="${initialData.certificateId==credential.getId().toString()}">-->
+<!--                                            ${loop.index}&nbsp;-->
 <!--                                        </c:when>-->
 <!--                                        <c:otherwise>-->
-<!--                                            <span>${initialData.holderSerialNumber}</span>-->
+<!--                                            <a-->
+<!--                                                    href="${portal}/certificate-details?id=${credential.getId()}&type=platform">${loop.index}</a>&nbsp;-->
 <!--                                        </c:otherwise>-->
 <!--                                    </c:choose>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Platform Information</span>-->
-<!--                        </div>-->
-<!--                        <div id="subjectAltName" class="col col-md-8">-->
-<!--                            <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>-->
-<!--                            <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>-->
-<!--                            <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>-->
-<!--                            <div id="serial">Serial Number:&nbsp;<span>${initialData.platformSerial}</span></div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification-->
-<!--                                Version</span></div>-->
-<!--                        <div id="majorVersion" class="col col-md-8 vertical">-->
-<!--                            ${initialData.majorVersion}.${initialData.minorVersion}.${initialData.revisionLevel}</div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>-->
-<!--                        <div id="platformClass" class="col col-md-8 vertical">${initialData.platformClass}</div>-->
-<!--                    </div>-->
-<!--                    &lt;!&ndash; TBB Security Assertion&ndash;&gt;-->
+<!--                                </c:forEach>-->
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${not #strings.isEmpty(initialData.get('CPSuri'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice
+                                Statement URI</span></div>
+                        <div id="certificateCPSU" class="col col-md-8 vertical">
+                            <a th:href="@{${initialData.get('CPSuri')}}">[[${initialData.get('CPSuri')}]]</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
+                    <div id="holder" class="col col-md-8">
+                        <div th:if="${not #strings.isEmpty(initialData.get('holderIssuer'))}">
+                            <div>Holder Certificate Issuer:&nbsp;<span>[[${initialData.get('holderIssuer')}]]</span></div>
+                        </div>
+                        <div id="certificateid">
+                            <div>Holder Certificate Serial Number:&nbsp;
+                                <div th:if="${not #strings.isEmpty(initialData.get('holderId'))}">
+                                    <span>
+                                        <div th:if="${not #strings.isEmpty(initialData.get('platformType')) and #strings.equals(initialData.get('platformType'), 'Delta')}">
+                                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=platform(id=${initialData.get('holderId')})}">
+                                                    [[${initialData.get('holderSerialNumber')}]]
+                                            </a>
+                                        </div>
+                                        <div th:if="${#strings.isEmpty(initialData.get('platformType')) or not #strings.equals(initialData.get('platformType'), 'Delta')}">
+                                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('holderId')})}">
+                                                    [[${initialData.get('holderSerialNumber')}]]
+                                            </a>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div th:if="${#strings.isEmpty(initialData.get('holderId'))}">
+                                    <span>[[${initialData.get('holderSerialNumber')}]]</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Platform Information</span>
+                    </div>
+                    <div id="subjectAltName" class="col col-md-8">
+                        <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
+                        <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
+                        <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
+                        <div id="serial">Serial Number:&nbsp;<span>[[${initialData.get('platformSerial')}]]</span></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification
+                            Version</span></div>
+                    <div id="majorVersion" class="col col-md-8 vertical">
+                        [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>
+                    <div id="platformClass" class="col col-md-8 vertical">[[${initialData.get('platformClass')}]]</div>
+                </div>
+                <!-- TBB Security Assertion-->
 <!--                    <c:if test="${not empty initialData.tbbSecurityAssertion}">-->
 <!--                        <div class="row">-->
 <!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">TBB Security Assertion</span>-->
