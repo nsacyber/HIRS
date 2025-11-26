@@ -22,6 +22,7 @@
                 const tcgTpmManufacturer = /*[[${initialData.get('tcgTpmManufacturer')}]]*/ '';
                 const ekAuthorityKeyIdentifier = /*[[${initialData.get('ekAuthorityKeyIdentifier')}]]*/ '';
                 const ekCertificateSerialNumber = /*[[${initialData.get('ekCertificateSerialNumber')}]]*/ '';
+                const platformIdsString = /*[[${initialData.get('platformID')}]]*/ '';
 
                 //Format validity time
                 $("#validity span").each(function () {
@@ -73,6 +74,37 @@
                 if (tcgTpmManufacturer) {
                     $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAKI));
                     $("#ekCertificateSerialNumber").html(parseHexString(ekCSN));
+                }
+
+                // List of platform id links
+                if (platformIdsString) {
+
+                    // Split the string into an array and map each item to an object
+                    let platformIdsStringList = platformIdsString
+                        .split(',')
+                        .map(id => ({ url: `/HIRS_AttestationCAPortal/portal/certificate-details?id=${id.trim()}&type=platform` }));
+
+                    // For each platform cert id, display an icon for a link to that platform cert
+                    const listContainer = document.getElementById('platformCertIdsList');
+
+                    // Iterate through each platform cert id link to create the thymeleaf list of links with clickable icons
+                    platformIdsStringList.forEach(link => {
+                        // Create a list item
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.href = link.url;
+
+                        // Add icon
+                        const img = document.createElement('img');
+                        img.src = '/icons/ic_important_devices_black_24dp.png';
+
+                        // Make the icon link clickable, then add link to the list item
+                        a.appendChild(img);
+                        li.appendChild(a);
+
+                        // Append list item to the container of list items
+                        listContainer.appendChild(li);
+                    });
                 }
 
                 //Initilize tooltips
@@ -1108,18 +1140,7 @@
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Credentials</span></div>
                     <div id="platformID" class="col col-md-8">
                         <div th:if="${not #strings.isEmpty(initialData.get('platformID'))}">
-                            <th:block th:each="pcID : ${pcIDList}">
-                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id=${pcID}&type=platform">
-                                    <img src="$/icons/ic_important_devices_black_24dp.png">
-                                </a>
-                            </th:block>
-
-<!--    TODO: fix the following-->
-    <!--                        <c:forTokens items="${initialData.platformID}" delims="," var="pcID">-->
-    <!--                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=platform(id=${initialData.get('pcID')})}">-->
-    <!--                                <img src="$/icons/ic_important_devices_black_24dp.png">-->
-    <!--                            </a>-->
-    <!--                        </c:forTokens>-->
+                            <ul id="platformCertIdsList" style="list-style-type: none; padding-left: 0;"></ul>
                         </div>
                     </div>
                 </div>
