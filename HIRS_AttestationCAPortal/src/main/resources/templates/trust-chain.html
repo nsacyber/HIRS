@@ -43,19 +43,23 @@
                     {
                         name: "beginValidity",
                         data: "beginValidity",
-                        orderable: false,
+                        type: "date",
+                        orderable: true,
                         searchable: false,
+                        columnControl: ["searchDropdown"],
                         render: function (data, type, full, meta) {
-                            return formatCertificateDate(full.beginValidity);
+                            return formatCertificateDate(data);
                         },
                     },
                     {
                         name: "endValidity",
                         data: "endValidity",
-                        orderable: false,
+                        type: "date",
+                        orderable: true,
                         searchable: false,
+                        columnControl: ["searchDropdown"],
                         render: function (data, type, full, meta) {
-                            return formatCertificateDate(full.endValidity);
+                            return formatCertificateDate(data);
                         },
                     },
                     {
@@ -67,9 +71,9 @@
                             // sets up a hidden input field containing the ID which is
                             // used as a parameter to the REST POST call to delete
                             let html = "";
-                            html += certificateDetailsLink("certificateauthority", full.id, true);
-                            html += certificateDownloadLink(viewName, full.id);
-                            html += certificateDeleteLink(viewName, full.id);
+                            html += certificateDetailsLink("certificateauthority", data, true);
+                            html += certificateDownloadLink(viewName, data);
+                            html += certificateDeleteLink(viewName, data);
                             return html;
                         },
                     },

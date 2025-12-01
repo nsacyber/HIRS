@@ -40,6 +40,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
@@ -119,41 +120,50 @@ public class ValidationSummaryPageService {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumnNames) {
 
-                // if there is no period and this is a non-nested field
+                // If there is no period, we are dealing with a simple field
                 if (!columnName.contains(".")) {
-                    Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                            supplyChainValidationSummaryRoot.get(columnName), globalSearchTerm,
-                            "contains");
-                    predicates.add(predicate);
-                } else { // If there's a period, we are dealing with a nested entity (e.g., "device.id")
-                    String[] nestedColumnName = columnName.split("\\.");
+                    // if the field is a string type
+                    if (String.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
+                        Path<String> stringFieldPath = supplyChainValidationSummaryRoot.get(columnName);
 
-                    // The first part is the name of the related entity (e.g., "device")
-                    String entityName = nestedColumnName[0];
-
-                    // The second part is the field name on the related entity (e.g., "name")
-                    String fieldName = nestedColumnName[1];
+                        Predicate predicate =
+                                PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                                        stringFieldPath,
+                                        globalSearchTerm,
+                                        "contains");
+                        predicates.add(predicate);
+                    }
+                } else { // If there is a period, we are dealing with a nested entity (e.g., "device.name")
+                    // Split the column name to get the main entity and the nested field
+                    final String[] nestedColumnName = columnName.split("\\.");
+                    final String mainField = nestedColumnName[0];  // e.g., "device"
+                    final String nestedField = nestedColumnName[1];  // e.g., "name"
 
                     // Handle the case where the related entity is the "device" field
-                    if (entityName.equals("device")) {
-                        // Join the device entity
+                    if (mainField.equals("device")) {
+                        // Join the main entity (e.g., device)
                         Join<SupplyChainValidationSummary, Device> deviceJoin =
-                                supplyChainValidationSummaryRoot.join("device", JoinType.LEFT);
+                                supplyChainValidationSummaryRoot.join(mainField, JoinType.LEFT);
 
-                        // Add predicate for the nested field (e.g. or device.name)
-                        Predicate predicate = criteriaBuilder.like(
-                                criteriaBuilder.lower(deviceJoin.get(fieldName)),
-                                "%" + globalSearchTerm.toLowerCase() + "%");
-                        predicates.add(predicate);
+                        // Now, check the type of the nested field (e.g., "device.name")
+                        if (String.class.equals(deviceJoin.get(nestedField).getJavaType())) {
+                            Path<String> stringFieldPath = deviceJoin.get(nestedField);
+
+                            Predicate predicate =
+                                    PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                                            stringFieldPath,
+                                            globalSearchTerm, "contains");
+                            predicates.add(predicate);
+                        }
                     }
                 }
             }
         }
 
-        Predicate likeConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
 
         // Add archiveFlag condition if specified
-        query.where(criteriaBuilder.and(likeConditions,
+        query.where(criteriaBuilder.and(otherConditions,
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)));
 
         // Apply pagination
@@ -196,46 +206,61 @@ public class ValidationSummaryPageService {
             final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
             final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
 
-            // if the field is a string type
-            if (String.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = supplyChainValidationSummaryRoot.get(columnName);
+            // If there is no period, we are dealing with a simple field
+            if (!columnName.contains(".")) {
+                // if the field is a string type
+                if (String.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
+                    Path<String> stringFieldPath = supplyChainValidationSummaryRoot.get(columnName);
 
-                // if there is no period and this is a non-nested field
-                if (!columnName.contains(".")) {
                     Predicate predicate =
                             PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
                                     columnSearchTerm,
                                     columnSearchLogic);
-
                     predicates.add(predicate);
-                } else { // If there is a period, we are dealing with a nested entity (e.g., "device.id")
-                    String[] nestedColumnName = columnName.split("\\.");
+                }
+                // if the field is a date type
+                else if (Date.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
+                    Path<Date> dateFieldPath = supplyChainValidationSummaryRoot.get(columnName);
 
-                    // The first part is the name of the related entity (e.g., "device")
-                    String entityName = nestedColumnName[0];
+                    // Parse the string into LocalDate
+                    final LocalDate localDate =
+                            LocalDate.parse(columnSearchTerm, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-                    // The second part is the field name on the related entity (e.g., "name")
-                    String fieldName = nestedColumnName[1];
+                    // Convert LocalDate to java.util.Date
+                    final Date columnSearchDate =
+                            Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-                    // Handle the case where the related entity is the "device" field
-                    if (entityName.equals("device")) {
-                        // Join the device entity
-                        Join<SupplyChainValidationSummary, Device> deviceJoin =
-                                supplyChainValidationSummaryRoot.join("device", JoinType.LEFT);
+                    Predicate predicate = PredicateFactory.createPredicateForDateFields(criteriaBuilder,
+                            dateFieldPath, columnSearchDate,
+                            columnSearchLogic);
+                    predicates.add(predicate);
+                }
+            } else { // If there is a period, we are dealing with a nested entity (e.g., "device.id")
+                // Split the column name to get the main entity and the nested field
+                final String[] nestedColumnName = columnName.split("\\.");
+                final String mainField = nestedColumnName[0];  // e.g., "device"
+                final String nestedField = nestedColumnName[1];  // e.g., "name"
 
-                        // Add predicate for the nested field (e.g. or device.name)
-                        Predicate predicate =
-                                PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                                        deviceJoin.get(fieldName),
-                                        columnSearchTerm,
-                                        columnSearchLogic);
+                // Handle the case where the related entity is the "device" field
+                if (mainField.equals("device")) {
+                    // Join the main entity (e.g., device)
+                    Join<SupplyChainValidationSummary, Device> deviceJoin =
+                            supplyChainValidationSummaryRoot.join(mainField, JoinType.LEFT);
+
+                    // Now, check the type of the nested field (e.g., "device.name")
+                    if (String.class.equals(deviceJoin.get(nestedField).getJavaType())) {
+                        Path<String> stringFieldPath = deviceJoin.get(nestedField);
+
+                        Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                                stringFieldPath,
+                                columnSearchTerm, columnSearchLogic);
                         predicates.add(predicate);
                     }
                 }
             }
         }
 
-        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+        Predicate otherConditions = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 
         query.where(criteriaBuilder.and(otherConditions,
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)));

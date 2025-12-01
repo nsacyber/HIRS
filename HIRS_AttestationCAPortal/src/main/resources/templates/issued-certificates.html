@@ -12,14 +12,9 @@
           {
             name: "deviceName",
             data: "deviceName",
-            columnControl: ["searchDropdown"],
             searchable: true,
             orderable: true,
-            render: function (data, type, full, meta) {
-              // if there's a device, display its name, otherwise
-              // display nothing
-              return full.deviceName;
-            },
+            columnControl: ["searchDropdown"]
           },
           {
             name: "ldevID",
@@ -36,16 +31,17 @@
           {
             name: "issuer",
             data: "issuer",
-            columnControl: ["searchDropdown"],
             searchable: true,
             orderable: true,
+            columnControl: ["searchDropdown"],
           },
           {
             name: "beginValidity",
             data: "beginValidity",
-            columnControl: ["searchDropdown"],
+            type: "date",
             searchable: false,
             orderable: true,
+            columnControl: ["searchDropdown"],
             render: function (data, type, full, meta) {
               return formatCertificateDate(data);
             },
@@ -53,9 +49,10 @@
           {
             name: "endValidity",
             data: "endValidity",
-            columnControl: ["searchDropdown"],
+            type: "date",
             searchable: false,
             orderable: true,
+            columnControl: ["searchDropdown"],
             render: function (data, type, full, meta) {
               return formatCertificateDate(data);
             },
@@ -107,9 +104,9 @@
             render: function (data, type, full, meta) {
               // set up link to details page
               let html = "";
-              html += certificateDetailsLink("issued", full.id, true);
-              html += certificateDownloadLink(viewName, full.id);
-              html += certificateDeleteLink(viewName, full.id);
+              html += certificateDetailsLink("issued", data, true);
+              html += certificateDownloadLink(viewName, data);
+              html += certificateDeleteLink(viewName, data);
               return html;
             },
           },

@@ -35,8 +35,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -97,17 +101,21 @@ public class CertificatePageService {
         if (!StringUtils.isBlank(globalSearchTerm)) {
             // Dynamically loop through columns and create LIKE conditions for each searchable column
             for (String columnName : searchableColumnNames) {
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                        certificateRoot.get(columnName), globalSearchTerm,
-                        "contains");
-                predicates.add(predicate);
+                if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                    Path<String> stringFieldPath = certificateRoot.get(columnName);
+
+                    Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                            stringFieldPath, globalSearchTerm,
+                            "contains");
+                    predicates.add(predicate);
+                }
             }
         }
 
-        Predicate likeConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
 
         // Add archiveFlag condition if specified
-        query.where(criteriaBuilder.and(likeConditions,
+        query.where(criteriaBuilder.and(otherConditions,
                 criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)));
 
         // Apply pagination
@@ -158,9 +166,26 @@ public class CertificatePageService {
                                 columnSearchLogic);
                 predicates.add(predicate);
             }
+            // if the field is a date type
+            else if (Date.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<Date> dateFieldPath = certificateRoot.get(columnName);
+
+                // Parse the string into LocalDate
+                final LocalDate localDate =
+                        LocalDate.parse(columnSearchTerm, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+                // Convert LocalDate to java.util.Date
+                final Date columnSearchDate =
+                        Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+                Predicate predicate = PredicateFactory.createPredicateForDateFields(criteriaBuilder,
+                        dateFieldPath, columnSearchDate,
+                        columnSearchLogic);
+                predicates.add(predicate);
+            }
         }
 
-        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+        Predicate otherConditions = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 
         // Add archiveFlag condition if specified
         query.where(criteriaBuilder.and(otherConditions,

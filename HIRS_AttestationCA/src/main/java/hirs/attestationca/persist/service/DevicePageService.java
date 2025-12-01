@@ -25,8 +25,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -146,6 +150,23 @@ public class DevicePageService {
                         PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
                                 columnSearchTerm,
                                 columnSearchLogic);
+                predicates.add(predicate);
+            }
+            // if the field is a date type
+            else if (Date.class.equals(deviceRoot.get(columnName).getJavaType())) {
+                Path<Date> dateFieldPath = deviceRoot.get(columnName);
+
+                // Parse the string into LocalDate
+                final LocalDate localDate =
+                        LocalDate.parse(columnSearchTerm, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+                // Convert LocalDate to java.util.Date
+                final Date columnSearchDate =
+                        Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+                Predicate predicate = PredicateFactory.createPredicateForDateFields(criteriaBuilder,
+                        dateFieldPath, columnSearchDate,
+                        columnSearchLogic);
                 predicates.add(predicate);
             }
         }

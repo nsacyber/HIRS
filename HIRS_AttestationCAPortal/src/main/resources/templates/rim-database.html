@@ -12,31 +12,37 @@
                     {
                         name: "manufacturer",
                         data: "manufacturer",
-                        columnControl: ["searchDropdown"],
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
-                    { name: "model", data: "model", columnControl: ["searchDropdown"], orderable: true, searchable: true },
+                    {
+                        name: "model",
+                        data: "model",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
                     {
                         name: "eventType",
                         data: "eventType",
-                        columnControl: ["searchDropdown"],
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "pcrIndex",
                         data: "pcrIndex",
-                        columnControl: ["searchDropdown"],
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "digestValue",
                         data: "digestValue",
-                        columnControl: ["searchDropdown"],
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "baseRimId",
@@ -44,7 +50,7 @@
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
-                            return rimDetailsLink(viewName, full.baseRimId);
+                            return rimDetailsLink(viewName, data);
                         },
                     },
                     {
@@ -53,7 +59,7 @@
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
-                            return rimDetailsLink(viewName, full.supportRimId);
+                            return rimDetailsLink(viewName, data);
                         },
                     },
                 ];

@@ -98,10 +98,10 @@ public class ReferenceManifestPageService {
             predicates.add(predicate);
         }
 
-        Predicate likeConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
 
         // Add archiveFlag and rim type condition if specified
-        query.where(criteriaBuilder.and(likeConditions,
+        query.where(criteriaBuilder.and(otherConditions,
                 criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag),
                 criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")));
 
@@ -152,7 +152,7 @@ public class ReferenceManifestPageService {
             }
         }
 
-        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+        Predicate otherConditions = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 
         // Add archiveFlag condition if specified
         query.where(criteriaBuilder.and(otherConditions,

@@ -56,14 +56,14 @@
             },
           },
           {
-            // Note: DB column is create_time, while the
-            // JSON property / java property is createTime.
-            name: "create_time",
-            data: "create_time",
+            data: "createTime",
+            name: "createTime",
+            type: "date",
             searchable: false,
-            orderable: false,
+            orderable: true,
+            columnControl: ["searchDropdown"],
             render: function (data, type, full, meta) {
-              return formatCertificateDate(full.createTime);
+              return formatCertificateDate(data);
             },
           },
           {
@@ -72,7 +72,8 @@
             name: "device.name",
             data: "device.name",
             searchable: true,
-            orderable: true
+            orderable: true,
+            columnControl: ["searchDropdown"],
           },
           {
             data: "id",
@@ -256,10 +257,10 @@
     </form>
 
     <div class="aca-data-table">
-      <table id="reportTable" class="display" width="100%">
+      <table id="reportTable" class="table table-bordered table-striped table-hover">
         <thead>
           <tr>
-            <th rowspan="2">Result</th>
+            <th rowspan=" 2">Result</th>
             <th rowspan="2">Timestamp</th>
             <th rowspan="2">Device</th>
             <th colspan="3">Credential Validations</th>
