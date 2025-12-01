@@ -407,6 +407,7 @@ public class PcClientRimBuilder {
     private Directory createDirectory(final JsonObject jsonObject) {
         Directory directory = this.objectFactory.createDirectory();
         directory.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
+        directory.setLocation(jsonObject.getString(SwidTagConstants.LOCATION, ""));
         Map<QName, String> attributes = directory.getOtherAttributes();
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, "supportRIMFormat missing");
         if (!supportRimFormat.equals("supportRIMFormat missing")) {
@@ -417,6 +418,8 @@ public class PcClientRimBuilder {
             }
         }
 
+        this.addNonNullAttribute(attributes, SwidTagConstants.QNAME_DIR_LOCATION,
+                directory.getLocation());
         this.addNonNullAttribute(attributes, SwidTagConstants.QNAME_SUPPORT_RIM_TYPE,
                 jsonObject.getString(SwidTagConstants.SUPPORT_RIM_TYPE, ""));
         this.addNonNullAttribute(attributes, SwidTagConstants.QNAME_SUPPORT_RIM_URI_GLOBAL,
