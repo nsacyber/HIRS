@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -254,7 +255,7 @@ public class ReferenceManifestValidator {
         if (files.getLength() > 0) {
             for (int i = 0; i < files.getLength(); i++) {
                 Element file = (Element) files.item(i);
-                System.out.println(file.getAttribute("name") + ": " +
+                System.out.println("Expecting " + file.getAttribute("name") + " with hash " +
                         file.getAttributeNS(SwidTagConstants.SHA_256_HASH.getNamespaceURI(),
                                 SwidTagConstants.HASH));
                 isPayloadValid &= validateFile(file);
@@ -351,15 +352,18 @@ public class ReferenceManifestValidator {
      * @return String digest
      */
     private String getHashValue(final String filepath, final String sha) {
+        String errorMessage;
         try {
             byte[] fileBytes = Files.readAllBytes(Paths.get(filepath));
             return getHashValue(fileBytes, sha);
+        } catch (NoSuchFileException e) {
+            errorMessage = String.format("Cannot access %s, verify path and permissions.", filepath);
         } catch (IOException e) {
-            String errorMessage = String.format("Error reading bytes from %s: %s",
-                    filepath, e.getMessage());
+            errorMessage = String.format("Error reading bytes from %s: %s", filepath, e);
             log.warn(errorMessage);
-            return errorMessage;
+            System.out.println(errorMessage);
         }
+        return errorMessage;
     }
 
     /**
