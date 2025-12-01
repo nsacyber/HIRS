@@ -20,11 +20,12 @@
                 const url = viewName + "/list";
                 let columns = [
                     {
-                        data: "supplyChainValidationStatus",
+                        data: "device.supplyChainValidationStatus",
                         searchable: false,
+                        orderable: false,
                         render: function (data, type, full, meta) {
                             let html = "";
-                            switch (full.device.supplyChainValidationStatus) {
+                            switch (data) {
                                 case "PASS":
                                     html = `<img src="${passIcon}" title=${passText}>`;
                                     break;
@@ -42,27 +43,24 @@
                         },
                     },
                     {
-                        name: "name",
-                        data: "name",
+                        name: "device.name",
+                        data: "device.name",
                         searchable: true,
                         orderable: true,
-                        columnControl: ["searchDropdown"],
-                        render: function (data, type, full, meta) {
-                            return full.device.name;
-                        },
+                        columnControl: ["searchDropdown"]
                     },
                     {
-                        data: "id",
+                        data: "device.id",
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
                             //Display issued attestation certificate
-                            if (full.IssuedAttestationCertificate === undefined) return "";
-                            let size = full.IssuedAttestationCertificate.length;
+                            if (full.IssuedAttestationCertificateIds === undefined) return "";
+                            let size = full.IssuedAttestationCertificateIds.length;
                             let html = "";
 
                             for (let i = 0; i < size; i++) {
-                                let id = full.IssuedAttestationCertificate[i].id;
+                                let id = full.IssuedAttestationCertificateIds[i];
                                 html += certificateDetailsLink("issued", id, false);
                             }
 
@@ -70,17 +68,17 @@
                         },
                     },
                     {
-                        data: "id",
+                        data: "device.id",
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
                             //Display platform credential
-                            if (full.PlatformCredential === undefined) return "";
-                            let size = full.PlatformCredential.length;
+                            if (full.PlatformCredentialIds === undefined) return "";
+                            let size = full.PlatformCredentialIds.length;
                             let html = "";
 
                             for (let i = 0; i < size; i++) {
-                                let id = full.PlatformCredential[i].id;
+                                let id = full.PlatformCredentialIds[i];
                                 html +=
                                     certificateDetailsLink("platform", id, false) + "&nbsp;";
                             }
@@ -89,17 +87,17 @@
                         },
                     },
                     {
-                        data: "id",
+                        data: "device.id",
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
                             //Display endorsement credential
-                            if (full.EndorsementCredential === undefined) return "";
-                            let size = full.EndorsementCredential.length;
+                            if (full.EndorsementCredentialIds === undefined) return "";
+                            let size = full.EndorsementCredentialIds.length;
                             let html = "";
 
                             for (let i = 0; i < size; i++) {
-                                let id = full.EndorsementCredential[i].id;
+                                let id = full.EndorsementCredentialIds[i];
                                 html +=
                                     certificateDetailsLink("endorsement", id, false) + "&nbsp;";
                             }

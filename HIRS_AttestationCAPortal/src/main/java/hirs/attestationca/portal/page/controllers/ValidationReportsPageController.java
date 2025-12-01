@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -78,15 +77,12 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         log.debug("Request received a datatable input object for the validation reports page: {}",
                 dataTableInput);
 
-        final String orderColumnName = dataTableInput.getOrderColumnName();
-        log.debug("Ordering on column: {}", orderColumnName);
-
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
         final Set<DataTablesColumn> columnsWithSearchCriteria =
                 ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
+        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
 
         FilteredRecordsList<SupplyChainValidationSummary> reportsFilteredRecordsList =
                 new FilteredRecordsList<>();
@@ -99,7 +95,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         // if the search term applied to the individual columns is not empty
         else if (!columnsWithSearchCriteria.isEmpty()) {
             pagedResult =
-                    this.validationSummaryPageService.findValidationSummaryReportsyColumnSpecificSearchTermAndArchiveFlag(
+                    this.validationSummaryPageService.findValidationSummaryReportsByColumnSpecificSearchTermAndArchiveFlag(
                             columnsWithSearchCriteria, false, pageable);
         } else {
             final Set<String> searchableColumnNames =

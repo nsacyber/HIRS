@@ -12,9 +12,9 @@
           {
             name: "deviceName",
             data: "deviceName",
+            columnControl: ["searchDropdown"],
             searchable: true,
             orderable: true,
-            columnControl: ["searchDropdown"],
             render: function (data, type, full, meta) {
               // if there's a device, display its name, otherwise
               // display nothing
@@ -36,13 +36,14 @@
           {
             name: "issuer",
             data: "issuer",
+            columnControl: ["searchDropdown"],
             searchable: true,
             orderable: true,
-            columnControl: ["searchDropdown"],
           },
           {
             name: "beginValidity",
             data: "beginValidity",
+            columnControl: ["searchDropdown"],
             searchable: false,
             orderable: true,
             render: function (data, type, full, meta) {
@@ -52,6 +53,7 @@
           {
             name: "endValidity",
             data: "endValidity",
+            columnControl: ["searchDropdown"],
             searchable: false,
             orderable: true,
             render: function (data, type, full, meta) {

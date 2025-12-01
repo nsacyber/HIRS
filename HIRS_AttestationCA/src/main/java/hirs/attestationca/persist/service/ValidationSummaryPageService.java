@@ -168,20 +168,27 @@ public class ValidationSummaryPageService {
     }
 
     /**
-     * todo
+     * Takes the provided columns that come with a search criteria and attempts to find
+     * supply chain validation summary reports that match the column's specific search criteria's search
+     * value.
      *
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param archiveFlag               archive flag
      * @param pageable                  pageable
      * @return page full of the validation summaries.
      */
-    public Page<SupplyChainValidationSummary> findValidationSummaryReportsyColumnSpecificSearchTermAndArchiveFlag(
-            Set<DataTablesColumn> columnsWithSearchCriteria, boolean archiveFlag, Pageable pageable) {
+    public Page<SupplyChainValidationSummary>
+    findValidationSummaryReportsByColumnSpecificSearchTermAndArchiveFlag(
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final boolean archiveFlag,
+            final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
         CriteriaQuery<SupplyChainValidationSummary> query =
                 criteriaBuilder.createQuery(SupplyChainValidationSummary.class);
         Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot =
                 query.from(SupplyChainValidationSummary.class);
+
+        List<Predicate> predicates = new ArrayList<>();
 
         //
         for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
@@ -193,13 +200,45 @@ public class ValidationSummaryPageService {
             if (String.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = supplyChainValidationSummaryRoot.get(columnName);
 
-                Predicate predicate =
-                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
-                                columnSearchTerm,
-                                columnSearchLogic);
+                // if there is no period and this is a non-nested field
+                if (!columnName.contains(".")) {
+                    Predicate predicate =
+                            PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
+                                    columnSearchTerm,
+                                    columnSearchLogic);
 
+                    predicates.add(predicate);
+                } else { // If there is a period, we are dealing with a nested entity (e.g., "device.id")
+                    String[] nestedColumnName = columnName.split("\\.");
+
+                    // The first part is the name of the related entity (e.g., "device")
+                    String entityName = nestedColumnName[0];
+
+                    // The second part is the field name on the related entity (e.g., "name")
+                    String fieldName = nestedColumnName[1];
+
+                    // Handle the case where the related entity is the "device" field
+                    if (entityName.equals("device")) {
+                        // Join the device entity
+                        Join<SupplyChainValidationSummary, Device> deviceJoin =
+                                supplyChainValidationSummaryRoot.join("device", JoinType.LEFT);
+
+                        // Add predicate for the nested field (e.g. or device.name)
+                        Predicate predicate =
+                                PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                                        deviceJoin.get(fieldName),
+                                        columnSearchTerm,
+                                        columnSearchLogic);
+                        predicates.add(predicate);
+                    }
+                }
             }
         }
+
+        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+
+        query.where(criteriaBuilder.and(otherConditions,
+                criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)));
 
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);

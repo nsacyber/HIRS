@@ -135,7 +135,7 @@ public class PredicateFactory {
     private static Predicate buildDoesNotContainPredicateForStringFields(
             final CriteriaBuilder criteriaBuilder,
             final Path<String> fieldPath,
-            String searchTerm) {
+            final String searchTerm) {
         return criteriaBuilder.notLike(criteriaBuilder.lower(fieldPath),
                 "%" + searchTerm.toLowerCase() + "%");
     }
@@ -150,7 +150,7 @@ public class PredicateFactory {
      */
     private static Predicate buildDoesNotEqualPredicateForStringFields(final CriteriaBuilder criteriaBuilder,
                                                                        final Path<String> fieldPath,
-                                                                       String searchTerm) {
+                                                                       final String searchTerm) {
         return criteriaBuilder.notEqual(criteriaBuilder.lower(fieldPath), searchTerm.toLowerCase());
     }
 
@@ -181,7 +181,7 @@ public class PredicateFactory {
      */
     private static Predicate buildStartsWithPredicateForStringFields(final CriteriaBuilder criteriaBuilder,
                                                                      final Path<String> fieldPath,
-                                                                     String searchTerm) {
+                                                                     final String searchTerm) {
         return criteriaBuilder.like(criteriaBuilder.lower(fieldPath), searchTerm.toLowerCase() + "%");
     }
 
@@ -195,7 +195,7 @@ public class PredicateFactory {
      */
     private static Predicate buildEndsWithPredicateForStringFields(final CriteriaBuilder criteriaBuilder,
                                                                    final Path<String> fieldPath,
-                                                                   String searchTerm) {
+                                                                   final String searchTerm) {
         return criteriaBuilder.like(criteriaBuilder.lower(fieldPath), "%" + searchTerm.toLowerCase());
     }
 
@@ -228,8 +228,8 @@ public class PredicateFactory {
      * @return a {@link Predicate} that represents the equality check between the field and the search term
      */
     public static Predicate buildEqualsPredicateForIntegerFields(final CriteriaBuilder criteriaBuilder,
-                                                                 Path<Integer> fieldPath,
-                                                                 Integer searchTerm) {
+                                                                 final Path<Integer> fieldPath,
+                                                                 final Integer searchTerm) {
         return criteriaBuilder.equal(fieldPath, searchTerm);
     }
 
@@ -243,8 +243,8 @@ public class PredicateFactory {
      * @return a {@link Predicate} that represents the inequality check between the field and the search term
      */
     public static Predicate buildDoesNotEqualPredicateForIntegerFields(final CriteriaBuilder criteriaBuilder,
-                                                                       Path<Integer> fieldPath,
-                                                                       Integer searchTerm) {
+                                                                       final Path<Integer> fieldPath,
+                                                                       final Integer searchTerm) {
         return criteriaBuilder.notEqual(fieldPath, searchTerm);
     }
 
@@ -258,8 +258,8 @@ public class PredicateFactory {
      * @return a {@link Predicate} that checks if the field is greater than the search term
      */
     public static Predicate buildGreaterThanPredicateForIntegerFields(final CriteriaBuilder criteriaBuilder,
-                                                                      Path<Integer> fieldPath,
-                                                                      Integer searchTerm) {
+                                                                      final Path<Integer> fieldPath,
+                                                                      final Integer searchTerm) {
         return criteriaBuilder.greaterThan(fieldPath, searchTerm);
     }
 
@@ -273,8 +273,8 @@ public class PredicateFactory {
      * @return a {@link Predicate} that checks if the field is less than the search term
      */
     public static Predicate buildLessThanPredicateForIntegerFields(final CriteriaBuilder criteriaBuilder,
-                                                                   Path<Integer> fieldPath,
-                                                                   Integer searchTerm) {
+                                                                   final Path<Integer> fieldPath,
+                                                                   final Integer searchTerm) {
         return criteriaBuilder.lessThan(fieldPath, searchTerm);
     }
 
@@ -290,8 +290,8 @@ public class PredicateFactory {
      */
     public static Predicate buildGreaterThanOrEqualToPredicateForIntegerFields(
             final CriteriaBuilder criteriaBuilder,
-            Path<Integer> fieldPath,
-            Integer searchTerm) {
+            final Path<Integer> fieldPath,
+            final Integer searchTerm) {
         return criteriaBuilder.greaterThanOrEqualTo(fieldPath, searchTerm);
     }
 
@@ -306,8 +306,8 @@ public class PredicateFactory {
      */
     public static Predicate buildLessThanOrEqualToPredicateForIntegerFields(
             final CriteriaBuilder criteriaBuilder,
-            Path<Integer> fieldPath,
-            Integer searchTerm) {
+            final Path<Integer> fieldPath,
+            final Integer searchTerm) {
         return criteriaBuilder.lessThanOrEqualTo(fieldPath, searchTerm);
     }
 
@@ -321,7 +321,7 @@ public class PredicateFactory {
      * @return a {@link Predicate} that ensures the field is not null and not zero
      */
     public static Predicate buildNotEmptyPredicateForIntegerFields(final CriteriaBuilder criteriaBuilder,
-                                                                   Path<Integer> fieldPath) {
+                                                                   final Path<Integer> fieldPath) {
         return criteriaBuilder.and(
                 criteriaBuilder.isNotNull(fieldPath),
                 criteriaBuilder.notEqual(fieldPath, 0)
@@ -338,7 +338,7 @@ public class PredicateFactory {
      * @return a {@link Predicate} that ensures the field is either null or zero
      */
     public static Predicate buildEmptyPredicateForIntegerFields(final CriteriaBuilder criteriaBuilder,
-                                                                Path<Integer> fieldPath) {
+                                                                final Path<Integer> fieldPath) {
         return criteriaBuilder.or(
                 criteriaBuilder.isNull(fieldPath),
                 criteriaBuilder.equal(fieldPath, 0)
@@ -365,67 +365,121 @@ public class PredicateFactory {
                     buildDoesNotEqualPredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
             case "before" -> buildBeforePredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
             case "after" -> buildAfterPredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
-            case "on or before" ->
+            case "onorbefore" ->
                     buildOnOrBeforePredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
-            case "on or after" ->
-                    buildOnOrAfterPredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
-            case "not empty" -> buildNotEmptyPredicateForDateFields(criteriaBuilder, fieldPath);
+            case "onorafter" -> buildOnOrAfterPredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
+            case "notempty" -> buildNotEmptyPredicateForDateFields(criteriaBuilder, fieldPath);
             case "empty" -> buildEmptyPredicateForDateFields(criteriaBuilder, fieldPath);
             default -> throw new IllegalArgumentException("Invalid search logic: " + searchLogic);
         };
     }
 
-    // Predicate for equality check on Date fields
-    private static Predicate buildEqualsPredicateForDateFields(CriteriaBuilder criteriaBuilder,
-                                                               Path<Date> fieldPath,
-                                                               Date searchTerm) {
+    /**
+     * Builds a predicate to check if a Date field is equal to a given search term.
+     *
+     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
+     * @param fieldPath       The path to the Date field in the entity.
+     * @param searchTerm      The Date value to compare the field against.
+     * @return A Predicate representing the equality check for the Date field.
+     */
+    private static Predicate buildEqualsPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
+                                                               final Path<Date> fieldPath,
+                                                               final Date searchTerm) {
         return criteriaBuilder.equal(fieldPath, searchTerm);
     }
 
-    // Predicate for inequality check on Date fields
-    private static Predicate buildDoesNotEqualPredicateForDateFields(CriteriaBuilder criteriaBuilder,
-                                                                     Path<Date> fieldPath,
-                                                                     Date searchTerm) {
+    /**
+     * Builds a predicate to check if a Date field is not equal to a given search term.
+     *
+     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
+     * @param fieldPath       The path to the Date field in the entity.
+     * @param searchTerm      The Date value to compare the field against.
+     * @return A Predicate representing the inequality check for the Date field.
+     */
+    private static Predicate buildDoesNotEqualPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
+                                                                     final Path<Date> fieldPath,
+                                                                     final Date searchTerm) {
         return criteriaBuilder.notEqual(fieldPath, searchTerm);
     }
 
-    // Predicate for checking if the Date is before the search date
-    private static Predicate buildBeforePredicateForDateFields(CriteriaBuilder criteriaBuilder,
-                                                               Path<Date> fieldPath,
-                                                               Date searchTerm) {
+    /**
+     * Builds a predicate to check if a Date field is before a given search term.
+     *
+     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
+     * @param fieldPath       The path to the Date field in the entity.
+     * @param searchTerm      The Date value to compare the field against.
+     * @return A Predicate representing the "before" check for the Date field.
+     */
+    private static Predicate buildBeforePredicateForDateFields(final CriteriaBuilder criteriaBuilder,
+                                                               final Path<Date> fieldPath,
+                                                               final Date searchTerm) {
         return criteriaBuilder.lessThan(fieldPath, searchTerm);
     }
 
-    // Predicate for checking if the Date is after the search date
-    private static Predicate buildAfterPredicateForDateFields(CriteriaBuilder criteriaBuilder,
-                                                              Path<Date> fieldPath,
-                                                              Date searchTerm) {
+    /**
+     * Builds a predicate to check if a Date field is after a given search term.
+     *
+     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
+     * @param fieldPath       The path to the Date field in the entity.
+     * @param searchTerm      The Date value to compare the field against.
+     * @return A Predicate representing the "after" check for the Date field.
+     */
+    private static Predicate buildAfterPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
+                                                              final Path<Date> fieldPath,
+                                                              final Date searchTerm) {
         return criteriaBuilder.greaterThan(fieldPath, searchTerm);
     }
 
-    // Predicate for checking if the Date is on or before the search date
-    private static Predicate buildOnOrBeforePredicateForDateFields(CriteriaBuilder criteriaBuilder,
-                                                                   Path<Date> fieldPath,
-                                                                   Date searchTerm) {
+    /**
+     * Builds a predicate to check if a Date field is on or before a given search term.
+     *
+     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
+     * @param fieldPath       The path to the Date field in the entity.
+     * @param searchTerm      The Date value to compare the field against.
+     * @return A Predicate representing the "on or before" check for the Date field.
+     */
+    private static Predicate buildOnOrBeforePredicateForDateFields(final CriteriaBuilder criteriaBuilder,
+                                                                   final Path<Date> fieldPath,
+                                                                   final Date searchTerm) {
         return criteriaBuilder.lessThanOrEqualTo(fieldPath, searchTerm);
     }
 
-    // Predicate for checking if the Date is on or after the search date
-    private static Predicate buildOnOrAfterPredicateForDateFields(CriteriaBuilder criteriaBuilder,
-                                                                  Path<Date> fieldPath,
-                                                                  Date searchTerm) {
+    /**
+     * Builds a predicate to check if a Date field is on or after a given search term.
+     *
+     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
+     * @param fieldPath       The path to the Date field in the entity.
+     * @param searchTerm      The Date value to compare the field against.
+     * @return A Predicate representing the "on or after" check for the Date field.
+     */
+    private static Predicate buildOnOrAfterPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
+                                                                  final Path<Date> fieldPath,
+                                                                  final Date searchTerm) {
         return criteriaBuilder.greaterThanOrEqualTo(fieldPath, searchTerm);
     }
 
-    // Predicate to check if the Date field is not null
-    private static Predicate buildNotEmptyPredicateForDateFields(CriteriaBuilder criteriaBuilder,
-                                                                 Path<Date> fieldPath) {
+    /**
+     * Builds a predicate to check if a Date field is not null.
+     *
+     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
+     * @param fieldPath       The path to the Date field in the entity.
+     * @return A Predicate representing the "is not null" check for the Date field.
+     */
+    private static Predicate buildNotEmptyPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
+                                                                 final Path<Date> fieldPath) {
         return criteriaBuilder.isNotNull(fieldPath);
     }
 
-    // Predicate to check if the Date field is null
-    private static Predicate buildEmptyPredicateForDateFields(CriteriaBuilder criteriaBuilder,
-                                                              Path<Date> fieldPath) {
+    /**
+     * Builds a predicate to check if a Date field is null.
+     *
+     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
+     * @param fieldPath       The path to the Date field in the entity.
+     * @return A Predicate representing the "is null" check for the Date field.
+     */
+    private static Predicate buildEmptyPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
+                                                              final Path<Date> fieldPath) {
         return criteriaBuilder.isNull(fieldPath);
     }
+
 }

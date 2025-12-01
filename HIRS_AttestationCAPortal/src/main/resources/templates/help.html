@@ -70,7 +70,19 @@
         ];
 
         //Set data tables
-        let dataTable = setDataTables("#loggersTable", url, columns, { searching: false, ordering: false, paging: false, info: false });
+        let dataTable = setDataTables("#loggersTable", url, columns, {
+          colReorder: false,
+          select: false,
+          searching: false,
+          ordering: false,
+          paging: false,
+          info: false,
+          layout: {
+            topStart: {
+              buttons: []  // No buttons will be shown
+            }
+          }
+        });
       });
     </script>
   </section>

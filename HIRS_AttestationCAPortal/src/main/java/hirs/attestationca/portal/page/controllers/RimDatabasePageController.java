@@ -18,7 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -77,15 +76,12 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         log.info("Received request to display list of TPM events");
         log.debug("Request received a datatable input object for the RIM database page: {}", dataTableInput);
 
-        final String orderColumnName = dataTableInput.getOrderColumnName();
-        log.debug("Ordering on column: {}", orderColumnName);
-
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
         final Set<DataTablesColumn> columnsWithSearchCriteria =
                 ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength(), Sort.by(orderColumnName));
+        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
 
         FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = new FilteredRecordsList<>();
         org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult;

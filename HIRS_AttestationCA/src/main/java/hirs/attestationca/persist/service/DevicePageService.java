@@ -127,9 +127,16 @@ public class DevicePageService {
 
         //
         for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
-            final String columnName = columnWithSearchCriteria.getColumnName();
+            String columnName = columnWithSearchCriteria.getColumnName();
             final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
             final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            // since datatables gave us back a nested column name, in order to get the correct
+            // the column name for devices, we need remove the device.name
+            // part of the string (e.g., "device.name" becomes "name").
+            if (columnName.startsWith("device.")) {
+                columnName = columnName.split("device.")[1]; // Take the part after "device."
+            }
 
             // if the field is a string type
             if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
@@ -184,9 +191,11 @@ public class DevicePageService {
     public FilteredRecordsList<HashMap<String, Object>> retrieveDevicesAndAssociatedCertificates(
             final FilteredRecordsList<Device> deviceList) {
         FilteredRecordsList<HashMap<String, Object>> records = new FilteredRecordsList<>();
+
         // hashmap containing the device-certificate relationship
         HashMap<String, Object> deviceCertMap = new HashMap<>();
-        List<UUID> deviceIdList = getDevicesId(deviceList);
+
+        final List<UUID> deviceIdList = getDevicesId(deviceList);
         List<PlatformCredential> platformCredentialList = new ArrayList<>();
         List<EndorsementCredential> endorsementCredentialList = new ArrayList<>();
         List<IssuedAttestationCertificate> issuedCertificateList = new ArrayList<>();
@@ -208,65 +217,64 @@ public class DevicePageService {
                 certificatePropertyMap = new HashMap<>();
 
                 deviceCertMap.put("device", device);
-                String deviceName;
 
                 // loop all the certificates and combine the ones that match the ID
                 for (PlatformCredential pc : platformCredentialList) {
-                    deviceName = deviceRepository.findById(pc.getDeviceId()).get().getName();
-
-                    // set the certificate if it's the same ID
-                    if (device.getName().equals(deviceName)) {
-                        String certificateId = PlatformCredential.class.getSimpleName();
+                    // verify that the platform certificate is associated with this
+                    // device's id
+                    if (device.getId().equals(pc.getDeviceId())) {
+                        final String platformCredentialIdsKey =
+                                PlatformCredential.class.getSimpleName() + "Ids";
 
                         // create a new list for the certificate type if it does not exist
                         // else add it to the current certificate type list
-                        certificateListFromMap = certificatePropertyMap.get(certificateId);
+                        certificateListFromMap = certificatePropertyMap.get(platformCredentialIdsKey);
 
                         if (certificateListFromMap != null) {
-                            certificateListFromMap.add(pc);
+                            certificateListFromMap.add(pc.getId());
                         } else {
-                            certificatePropertyMap.put(certificateId,
-                                    new ArrayList<>(Collections.singletonList(pc)));
+                            certificatePropertyMap.put(platformCredentialIdsKey,
+                                    Collections.singletonList(pc.getId()));
                         }
                     }
                 }
 
                 for (EndorsementCredential ec : endorsementCredentialList) {
-                    deviceName = deviceRepository.findById(ec.getDeviceId()).get().getName();
-
-                    // set the certificate if it's the same ID
-                    if (device.getName().equals(deviceName)) {
-                        String certificateId = EndorsementCredential.class.getSimpleName();
+                    // verify that the endorsement certificate is associated with this
+                    // device's id
+                    if (device.getId().equals(ec.getDeviceId())) {
+                        final String endorsementCredentialIdsKey =
+                                EndorsementCredential.class.getSimpleName() + "Ids";
 
                         // create a new list for the certificate type if it does not exist
                         // else add it to the current certificate type list
-                        certificateListFromMap = certificatePropertyMap.get(certificateId);
+                        certificateListFromMap = certificatePropertyMap.get(endorsementCredentialIdsKey);
 
                         if (certificateListFromMap != null) {
-                            certificateListFromMap.add(ec);
+                            certificateListFromMap.add(ec.getId());
                         } else {
-                            certificatePropertyMap.put(certificateId,
-                                    new ArrayList<>(Collections.singletonList(ec)));
+                            certificatePropertyMap.put(endorsementCredentialIdsKey,
+                                    Collections.singletonList(ec.getId()));
                         }
                     }
                 }
 
                 for (IssuedAttestationCertificate ic : issuedCertificateList) {
-                    deviceName = ic.getDeviceName();
-
-                    // set the certificate if it's the same ID
-                    if (device.getName().equals(deviceName)) {
-                        String certificateId = IssuedAttestationCertificate.class.getSimpleName();
+                    // verify that the issued attestation certificate is associated with this
+                    // device's id
+                    if (device.getName().equals(ic.getDeviceName())) {
+                        final String issuedCertificatesIdsKey =
+                                IssuedAttestationCertificate.class.getSimpleName() + "Ids";
 
                         // create a new list for the certificate type if it does not exist
                         // else add it to the current certificate type list
-                        certificateListFromMap = certificatePropertyMap.get(certificateId);
+                        certificateListFromMap = certificatePropertyMap.get(issuedCertificatesIdsKey);
 
                         if (certificateListFromMap != null) {
-                            certificateListFromMap.add(ic);
+                            certificateListFromMap.add(ic.getId());
                         } else {
-                            certificatePropertyMap.put(certificateId,
-                                    new ArrayList<>(Collections.singletonList(ic)));
+                            certificatePropertyMap.put(issuedCertificatesIdsKey,
+                                    Collections.singletonList(ic.getId()));
                         }
                     }
                 }
