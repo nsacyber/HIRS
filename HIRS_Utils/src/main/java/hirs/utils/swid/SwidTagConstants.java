@@ -64,6 +64,8 @@ public final class SwidTagConstants {
     public static final String HASH = "hash";
     public static final String SUPPORT_RIM_TYPE = "supportRIMType";
     public static final String SUPPORT_RIM_FORMAT = "supportRIMFormat";
+    public static final String ROOT = "root";
+    public static final String LOCATION = "location";
     public static final String TCG_EVENTLOG_ASSERTION = "TCG_EventLog_Assertion";
     public static final String TPM_PCR_ASSERTION = "TPM_PCR_Assertion";
     public static final String SUPPORT_RIM_FORMAT_MISSING = "supportRIMFormat missing";
@@ -152,6 +154,10 @@ public final class SwidTagConstants {
             TCG_NS, SUPPORT_RIM_FORMAT, RIM_PFX);
     public static final QName QNAME_SUPPORT_RIM_URI_GLOBAL = new QName(
             TCG_NS, SUPPORT_RIM_URI_GLOBAL, RIM_PFX);
+    public static final QName QNAME_DIR_LOCATION = new QName(
+            TCG_NS, LOCATION, RIM_PFX);
+    public static final QName QNAME_DIR_ROOT = new QName(
+            TCG_NS, LOCATION, RIM_PFX);
     public static final QName QNAME_N8060_ENVVARPREFIX = new QName(
             NIST_NS, "envVarPrefix", N8060_PFX);
     public static final QName QNAME_N8060_ENVVARSUFFIX = new QName(

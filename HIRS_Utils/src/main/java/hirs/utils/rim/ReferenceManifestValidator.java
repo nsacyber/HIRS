@@ -258,8 +258,23 @@ public class ReferenceManifestValidator {
      * @param signingCertPath to the public key certificate used to sign the rim
      * @return true if valid, false otherwise
      */
-    public boolean validateBaseRim(final String signingCertPath) {
+    public boolean validateRim(final String signingCertPath) {
         boolean isPayloadValid = validatePayload();
+        NodeList files = rim.getElementsByTagName(SwidTagConstants.FILE);
+        if (files.getLength() <= 0) {
+            files = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.FILE);
+        }
+        if (files.getLength() > 0) {
+            for (int i = 0; i < files.getLength(); i++) {
+                Element file = (Element) files.item(i);
+                System.out.println("Expecting " + file.getAttribute("name") + " with hash " +
+                        file.getAttributeNS(SwidTagConstants.SHA_256_HASH.getNamespaceURI(),
+                                SwidTagConstants.HASH));
+                isPayloadValid &= validateFile(file);
+            }
+        } else {
+            return failWithError("No payload found with which to validate.");
+        }
 
         System.out.println(System.lineSeparator() + "Validating base RIM signature...");
         X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);

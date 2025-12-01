@@ -468,6 +468,7 @@ public class SwidTagGateway {
     private Directory createDirectory(final JsonObject jsonObject) {
         Directory directory = objectFactory.createDirectory();
         directory.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
+        directory.setLocation(jsonObject.getString(SwidTagConstants.LOCATION, ""));
         Map<QName, String> attributes = directory.getOtherAttributes();
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
                 SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
