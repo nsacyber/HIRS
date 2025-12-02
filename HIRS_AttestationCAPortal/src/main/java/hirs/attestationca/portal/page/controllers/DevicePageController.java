@@ -2,8 +2,8 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.Device;
-import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.DevicePageService;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -74,10 +74,11 @@ public class DevicePageController extends PageController<NoPageParams> {
         log.info("Received request to display list of devices");
         log.debug("Request received a datatable input object for the device page: {}",
                 dataTableInput);
-        
+
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
         final Set<DataTablesColumn> columnsWithSearchCriteria =
-                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
@@ -95,7 +96,7 @@ public class DevicePageController extends PageController<NoPageParams> {
                             columnsWithSearchCriteria, pageable);
         } else {
             final Set<String> searchableColumnNames =
-                    ControllerPagesUtils.findSearchableColumnNames(Device.class,
+                    ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(Device.class,
                             dataTableInput.getColumns());
             pagedResult =
                     this.devicePageService.findDevicesByGlobalSearchTerm(searchableColumnNames,

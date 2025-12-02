@@ -5,9 +5,9 @@ import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.TrustChainCertificatePageService;
+import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -143,7 +143,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
         final Set<DataTablesColumn> columnsWithSearchCriteria =
-                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
@@ -167,7 +168,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                             pageable);
         } else {
             final Set<String> searchableColumnNames =
-                    ControllerPagesUtils.findSearchableColumnNames(CertificateAuthorityCredential.class,
+                    ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(
+                            CertificateAuthorityCredential.class,
                             dataTableInput.getColumns());
 
             pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(

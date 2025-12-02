@@ -1,4 +1,4 @@
-package hirs.attestationca.persist.service;
+package hirs.attestationca.persist.service.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

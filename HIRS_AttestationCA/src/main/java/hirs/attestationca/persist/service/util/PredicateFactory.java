@@ -1,10 +1,10 @@
-package hirs.attestationca.persist.service.selector;
+package hirs.attestationca.persist.service.util;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 /**
  * A factory class responsible for creating various types of {@link Predicate} objects used for
@@ -29,7 +29,7 @@ import java.util.Date;
  *     "empty"</li>
  * </ul>
  */
-public class PredicateFactory {
+public final class PredicateFactory {
 
     /**
      * Creates a predicate based on the search logic
@@ -58,7 +58,8 @@ public class PredicateFactory {
             case "ends" ->
                     buildEndsWithPredicateForStringFields(criteriaBuilder, fieldPath, columnSearchTerm);
             case "empty" -> buildEmptyPredicateForStringFields(criteriaBuilder, fieldPath);
-            default -> throw new UnsupportedOperationException("Search logic not supported: " + searchLogic);
+            default -> throw new UnsupportedOperationException(
+                    "Search logic not supported for String fields: " + searchLogic);
         };
     }
 
@@ -90,7 +91,35 @@ public class PredicateFactory {
                     buildLessThanOrEqualToPredicateForIntegerFields(criteriaBuilder, fieldPath, searchTerm);
             case "notempty" -> buildNotEmptyPredicateForIntegerFields(criteriaBuilder, fieldPath);
             case "empty" -> buildEmptyPredicateForIntegerFields(criteriaBuilder, fieldPath);
-            default -> throw new IllegalArgumentException("Invalid search logic: " + searchLogic);
+            default -> throw new UnsupportedOperationException(
+                    "Search logic not supported for Integer fields: " + searchLogic);
+        };
+    }
+
+
+    /**
+     * Creates a predicate based on the search logic and search term for Timestamp fields.
+     *
+     * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
+     * @param fieldPath       the {@link Path} representing the Timestamp field to query
+     * @param searchTerm      the search term (of type {@link Timestamp}) to compare against
+     * @param searchLogic     the search logic to apply (e.g., "equals", "before", "after", etc.)
+     * @return a {@link Predicate} corresponding to the specified logic and search term
+     */
+    public static Predicate createPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                              final Path<Timestamp> fieldPath,
+                                                              final Timestamp searchTerm,
+                                                              final String searchLogic) {
+        return switch (searchLogic.toLowerCase()) {
+            case "equal" -> buildEqualsPredicateForTimestampFields(criteriaBuilder, fieldPath, searchTerm);
+            case "notequal" ->
+                    buildDoesNotEqualPredicateForTimestampFields(criteriaBuilder, fieldPath, searchTerm);
+            case "less" -> buildBeforePredicateForTimestampFields(criteriaBuilder, fieldPath, searchTerm);
+            case "greater" -> buildAfterPredicateForTimestampFields(criteriaBuilder, fieldPath, searchTerm);
+            case "notempty" -> buildNotEmptyPredicateForTimestampFields(criteriaBuilder, fieldPath);
+            case "empty" -> buildEmptyPredicateForTimestampFields(criteriaBuilder, fieldPath);
+            default -> throw new UnsupportedOperationException(
+                    "Search logic not supported for Timestamp fields: " + searchLogic);
         };
     }
 
@@ -347,109 +376,86 @@ public class PredicateFactory {
         );
     }
 
-    // Date-based fields
+    // Timestamp-based fields
 
     /**
-     * Creates a predicate based on the search logic and search term for Date fields.
-     *
-     * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
-     * @param fieldPath       the {@link Path} representing the Date field to query
-     * @param searchTerm      the search term (of type {@link Date}) to compare against
-     * @param searchLogic     the search logic to apply (e.g., "equals", "before", "after", etc.)
-     * @return a {@link Predicate} corresponding to the specified logic and search term
-     */
-    public static Predicate createPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
-                                                         final Path<Date> fieldPath,
-                                                         final Date searchTerm, String searchLogic) {
-        return switch (searchLogic.toLowerCase()) {
-            case "equal" -> buildEqualsPredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
-            case "notequal" ->
-                    buildDoesNotEqualPredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
-            case "before" -> buildBeforePredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
-            case "after" -> buildAfterPredicateForDateFields(criteriaBuilder, fieldPath, searchTerm);
-            case "notempty" -> buildNotEmptyPredicateForDateFields(criteriaBuilder, fieldPath);
-            case "empty" -> buildEmptyPredicateForDateFields(criteriaBuilder, fieldPath);
-            default -> throw new IllegalArgumentException("Invalid search logic: " + searchLogic);
-        };
-    }
-
-    /**
-     * Builds a predicate to check if a Date field is equal to a given search term.
+     * Builds a predicate to check if a Timestamp field is equal to a given search term.
      *
      * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Date field in the entity.
-     * @param searchTerm      The Date value to compare the field against.
-     * @return A Predicate representing the equality check for the Date field.
+     * @param fieldPath       The path to the Timestamp field in the entity.
+     * @param searchTerm      The Timestamp value to compare the field against.
+     * @return A Predicate representing the equality check for the Timestamp field.
      */
-    private static Predicate buildEqualsPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
-                                                               final Path<Date> fieldPath,
-                                                               final Date searchTerm) {
+    private static Predicate buildEqualsPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                                    final Path<Timestamp> fieldPath,
+                                                                    final Timestamp searchTerm) {
         return criteriaBuilder.equal(fieldPath, searchTerm);
     }
 
     /**
-     * Builds a predicate to check if a Date field is not equal to a given search term.
+     * Builds a predicate to check if a Timestamp field is not equal to a given search term.
      *
      * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Date field in the entity.
-     * @param searchTerm      The Date value to compare the field against.
-     * @return A Predicate representing the inequality check for the Date field.
+     * @param fieldPath       The path to the Timestamp field in the entity.
+     * @param searchTerm      The Timestamp value to compare the field against.
+     * @return A Predicate representing the inequality check for the Timestamp field.
      */
-    private static Predicate buildDoesNotEqualPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
-                                                                     final Path<Date> fieldPath,
-                                                                     final Date searchTerm) {
+    private static Predicate buildDoesNotEqualPredicateForTimestampFields(
+            final CriteriaBuilder criteriaBuilder,
+            final Path<Timestamp> fieldPath,
+            final Timestamp searchTerm) {
         return criteriaBuilder.notEqual(fieldPath, searchTerm);
     }
 
     /**
-     * Builds a predicate to check if a Date field is before a given search term.
+     * Builds a predicate to check if a Timestamp field is before a given search term.
      *
      * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Date field in the entity.
-     * @param searchTerm      The Date value to compare the field against.
-     * @return A Predicate representing the "before" check for the Date field.
+     * @param fieldPath       The path to the Timestamp field in the entity.
+     * @param searchTerm      The Timestamp value to compare the field against.
+     * @return A Predicate representing the "before" check for the Timestamp field.
      */
-    private static Predicate buildBeforePredicateForDateFields(final CriteriaBuilder criteriaBuilder,
-                                                               final Path<Date> fieldPath,
-                                                               final Date searchTerm) {
+    private static Predicate buildBeforePredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                                    final Path<Timestamp> fieldPath,
+                                                                    final Timestamp searchTerm) {
         return criteriaBuilder.lessThan(fieldPath, searchTerm);
     }
 
     /**
-     * Builds a predicate to check if a Date field is after a given search term.
+     * Builds a predicate to check if a Timestamp field is after a given search term.
      *
      * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Date field in the entity.
-     * @param searchTerm      The Date value to compare the field against.
-     * @return A Predicate representing the "after" check for the Date field.
+     * @param fieldPath       The path to the Timestamp field in the entity.
+     * @param searchTerm      The Timestamp value to compare the field against.
+     * @return A Predicate representing the "after" check for the Timestamp field.
      */
-    private static Predicate buildAfterPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
-                                                              final Path<Date> fieldPath,
-                                                              final Date searchTerm) {
+    private static Predicate buildAfterPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                                   final Path<Timestamp> fieldPath,
+                                                                   final Timestamp searchTerm) {
         return criteriaBuilder.greaterThan(fieldPath, searchTerm);
     }
 
     /**
-     * Builds a predicate to check if a Date field is not null.
+     * Builds a predicate to check if a Timestamp field is not null.
      *
      * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Date field in the entity.
-     * @return A Predicate representing the "is not null" check for the Date field.
+     * @param fieldPath       The path to the Timestamp field in the entity.
+     * @return A Predicate representing the "is not null" check for the Timestamp field.
      */
-    private static Predicate buildNotEmptyPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
-                                                                 final Path<Date> fieldPath) {
+    private static Predicate buildNotEmptyPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                                      final Path<Timestamp> fieldPath) {
         return criteriaBuilder.isNotNull(fieldPath);
     }
 
     /**
-     * Builds a predicate to check if a Date field is null.
+     * Builds a predicate to check if a Timestamp field is null.
      *
      * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Date field in the entity.
-     * @return A Predicate representing the "is null" check for the Date field.
+     * @param fieldPath       The path to the Timestamp field in the entity.
+     * @return A Predicate representing the "is null" check for the Timestamp field.
      */
-    private static Predicate buildEmptyPredicateForDateFields(final CriteriaBuilder criteriaBuilder,
-                                                              final Path<Date> fieldPath) {
+    private static Predicate buildEmptyPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                                   final Path<Timestamp> fieldPath) {
         return criteriaBuilder.isNull(fieldPath);
     }
 }

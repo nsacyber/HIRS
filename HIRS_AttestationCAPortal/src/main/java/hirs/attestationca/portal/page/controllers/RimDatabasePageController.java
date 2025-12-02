@@ -4,8 +4,8 @@ import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.ReferenceDigestValuePageService;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -78,7 +78,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
         final Set<DataTablesColumn> columnsWithSearchCriteria =
-                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
@@ -101,7 +102,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                             columnsWithSearchCriteria, pageable);
         } else {
             final Set<String> searchableColumnNames =
-                    ControllerPagesUtils.findSearchableColumnNames(ReferenceDigestValue.class,
+                    ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceDigestValue.class,
                             dataTableInput.getColumns());
 
             pagedResult = this.referenceDigestValuePageService.findReferenceDigestValuesByGlobalSearchTerm(

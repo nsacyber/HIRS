@@ -28,7 +28,7 @@
                         data: "beginValidity",
                         type: "date",
                         orderable: true,
-                        searchable: false,
+                        searchable: true,
                         columnControl: ["searchDropdown"],
                         render: function (data, type, full, meta) {
                             return formatCertificateDate(data);
@@ -39,7 +39,7 @@
                         data: "endValidity",
                         type: "date",
                         orderable: true,
-                        searchable: false,
+                        searchable: true,
                         columnControl: ["searchDropdown"],
                         render: function (data, type, full, meta) {
                             return formatCertificateDate(data);

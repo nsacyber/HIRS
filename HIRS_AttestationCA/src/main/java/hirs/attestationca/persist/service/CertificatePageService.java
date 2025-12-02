@@ -8,7 +8,9 @@ import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
-import hirs.attestationca.persist.service.selector.PredicateFactory;
+import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
+import hirs.attestationca.persist.service.util.PredicateFactory;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.persist.util.DownloadFile;
 import jakarta.persistence.EntityManager;
@@ -20,7 +22,6 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,12 +36,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -97,18 +97,16 @@ public class CertificatePageService {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(globalSearchTerm)) {
-            // Dynamically loop through columns and create LIKE conditions for each searchable column
-            for (String columnName : searchableColumnNames) {
-                if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
-                    Path<String> stringFieldPath = certificateRoot.get(columnName);
+        // Dynamically loop through columns and create LIKE conditions for each searchable column
+        for (String columnName : searchableColumnNames) {
+            // if the field is a string type
+            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = certificateRoot.get(columnName);
 
-                    Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                            stringFieldPath, globalSearchTerm,
-                            "contains");
-                    predicates.add(predicate);
-                }
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                        stringFieldPath, globalSearchTerm,
+                        "contains");
+                predicates.add(predicate);
             }
         }
 
@@ -151,10 +149,12 @@ public class CertificatePageService {
 
         List<Predicate> predicates = new ArrayList<>();
 
+        // loop through all the datatable columns that have an applied search criteria
         for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
             final String columnName = columnWithSearchCriteria.getColumnName();
             final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
             final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+            final String columnSearchType = columnWithSearchCriteria.getColumnSearchType();
 
             // if the field is a string type
             if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
@@ -167,19 +167,34 @@ public class CertificatePageService {
                 predicates.add(predicate);
             }
             // if the field is a date type
-            else if (Date.class.equals(certificateRoot.get(columnName).getJavaType())) {
-                Path<Date> dateFieldPath = certificateRoot.get(columnName);
+            else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType()) &&
+                    columnSearchType.equalsIgnoreCase("date")) {
 
-                // Parse the string into LocalDate
-                final LocalDate localDate =
-                        LocalDate.parse(columnSearchTerm, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
 
-                // Convert LocalDate to java.util.Date
-                final Date columnSearchDate =
-                        Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                Timestamp columnSearchTimestamp;
 
-                Predicate predicate = PredicateFactory.createPredicateForDateFields(criteriaBuilder,
-                        dateFieldPath, columnSearchDate,
+                // Handle "empty" or "notempty" logic - no need for a real search term, use a default timestamp
+                if (columnSearchLogic.equalsIgnoreCase("empty") ||
+                        columnSearchLogic.equalsIgnoreCase("notempty")) {
+                    // Use a Unix epoch timestamp
+                    columnSearchTimestamp = Timestamp.valueOf("1970-01-01 00:00:00");
+                }
+                // if the search logic is anything else but empty or not empty
+                else {
+                    // Define the DateTimeFormatter matching the input date format
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+                    // Parse the string into LocalDate (no time info here)
+                    LocalDate localDate = LocalDate.parse(columnSearchTerm, formatter);
+
+                    // Convert LocalDate to Timestamp, assuming midnight (00:00:00) as the time
+                    // atStartOfDay() gives 00:00:00
+                    columnSearchTimestamp = Timestamp.valueOf(localDate.atStartOfDay());
+                }
+
+                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
+                        dateFieldPath, columnSearchTimestamp,
                         columnSearchLogic);
                 predicates.add(predicate);
             }

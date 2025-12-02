@@ -2,8 +2,8 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
-import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.ValidationSummaryPageService;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -79,7 +79,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
         final Set<DataTablesColumn> columnsWithSearchCriteria =
-                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
@@ -99,7 +100,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                             columnsWithSearchCriteria, false, pageable);
         } else {
             final Set<String> searchableColumnNames =
-                    ControllerPagesUtils.findSearchableColumnNames(SupplyChainValidationSummary.class,
+                    ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(
+                            SupplyChainValidationSummary.class,
                             dataTableInput.getColumns());
 
             pagedResult = this.validationSummaryPageService

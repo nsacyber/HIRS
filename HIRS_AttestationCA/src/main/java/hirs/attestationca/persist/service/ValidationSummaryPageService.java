@@ -10,7 +10,8 @@ import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummar
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
-import hirs.attestationca.persist.service.selector.PredicateFactory;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
+import hirs.attestationca.persist.service.util.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -23,7 +24,6 @@ import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -34,13 +34,13 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
@@ -115,46 +115,43 @@ public class ValidationSummaryPageService {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(globalSearchTerm)) {
-            // Dynamically loop through columns and create LIKE conditions for each searchable column
-            for (String columnName : searchableColumnNames) {
+        // Dynamically loop through columns and create LIKE conditions for each searchable column
+        for (String columnName : searchableColumnNames) {
 
-                // If there is no period, we are dealing with a simple field
-                if (!columnName.contains(".")) {
-                    // if the field is a string type
-                    if (String.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
-                        Path<String> stringFieldPath = supplyChainValidationSummaryRoot.get(columnName);
+            // If there is no period, we are dealing with a simple field
+            if (!columnName.contains(".")) {
+                // if the field is a string type
+                if (String.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
+                    Path<String> stringFieldPath = supplyChainValidationSummaryRoot.get(columnName);
+
+                    Predicate predicate =
+                            PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                                    stringFieldPath,
+                                    globalSearchTerm,
+                                    "contains");
+                    predicates.add(predicate);
+                }
+            } else { // If there is a period, we are dealing with a nested entity (e.g., "device.name")
+                // Split the column name to get the main entity and the nested field
+                final String[] nestedColumnName = columnName.split("\\.");
+                final String mainField = nestedColumnName[0];  // e.g., "device"
+                final String nestedField = nestedColumnName[1];  // e.g., "name"
+
+                // Handle the case where the related entity is the "device" field
+                if (mainField.equals("device")) {
+                    // Join the main entity (e.g., device)
+                    Join<SupplyChainValidationSummary, Device> deviceJoin =
+                            supplyChainValidationSummaryRoot.join(mainField, JoinType.LEFT);
+
+                    // Now, check the type of the nested field (e.g., "device.name")
+                    if (String.class.equals(deviceJoin.get(nestedField).getJavaType())) {
+                        Path<String> stringFieldPath = deviceJoin.get(nestedField);
 
                         Predicate predicate =
                                 PredicateFactory.createPredicateForStringFields(criteriaBuilder,
                                         stringFieldPath,
-                                        globalSearchTerm,
-                                        "contains");
+                                        globalSearchTerm, "contains");
                         predicates.add(predicate);
-                    }
-                } else { // If there is a period, we are dealing with a nested entity (e.g., "device.name")
-                    // Split the column name to get the main entity and the nested field
-                    final String[] nestedColumnName = columnName.split("\\.");
-                    final String mainField = nestedColumnName[0];  // e.g., "device"
-                    final String nestedField = nestedColumnName[1];  // e.g., "name"
-
-                    // Handle the case where the related entity is the "device" field
-                    if (mainField.equals("device")) {
-                        // Join the main entity (e.g., device)
-                        Join<SupplyChainValidationSummary, Device> deviceJoin =
-                                supplyChainValidationSummaryRoot.join(mainField, JoinType.LEFT);
-
-                        // Now, check the type of the nested field (e.g., "device.name")
-                        if (String.class.equals(deviceJoin.get(nestedField).getJavaType())) {
-                            Path<String> stringFieldPath = deviceJoin.get(nestedField);
-
-                            Predicate predicate =
-                                    PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                                            stringFieldPath,
-                                            globalSearchTerm, "contains");
-                            predicates.add(predicate);
-                        }
                     }
                 }
             }
@@ -200,11 +197,12 @@ public class ValidationSummaryPageService {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        //
+        // loop through all the datatable columns that have an applied search criteria
         for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
             final String columnName = columnWithSearchCriteria.getColumnName();
             final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
             final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+            final String columnSearchType = columnWithSearchCriteria.getColumnSearchType();
 
             // If there is no period, we are dealing with a simple field
             if (!columnName.contains(".")) {
@@ -218,20 +216,35 @@ public class ValidationSummaryPageService {
                                     columnSearchLogic);
                     predicates.add(predicate);
                 }
-                // if the field is a date type
-                else if (Date.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
-                    Path<Date> dateFieldPath = supplyChainValidationSummaryRoot.get(columnName);
+                // if the field is a timestamp type
+                else if (
+                        Timestamp.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())
+                                && columnSearchType.equalsIgnoreCase("date")) {
+                    Path<Timestamp> dateFieldPath = supplyChainValidationSummaryRoot.get(columnName);
 
-                    // Parse the string into LocalDate
-                    final LocalDate localDate =
-                            LocalDate.parse(columnSearchTerm, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    Timestamp columnSearchTimestamp;
 
-                    // Convert LocalDate to java.util.Date
-                    final Date columnSearchDate =
-                            Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                    // Handle "empty" or "notempty" logic - no need for a real search term, use a default timestamp
+                    if (columnSearchLogic.equalsIgnoreCase("empty") ||
+                            columnSearchLogic.equalsIgnoreCase("notempty")) {
+                        // Use a Unix epoch timestamp
+                        columnSearchTimestamp = Timestamp.valueOf("1970-01-01 00:00:00");
+                    }
+                    // if the search logic is anything else but empty or not empty
+                    else {
+                        // Define the DateTimeFormatter matching the input date format
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-                    Predicate predicate = PredicateFactory.createPredicateForDateFields(criteriaBuilder,
-                            dateFieldPath, columnSearchDate,
+                        // Parse the string into LocalDate (no time info here)
+                        LocalDate localDate = LocalDate.parse(columnSearchTerm, formatter);
+
+                        // Convert LocalDate to Timestamp, assuming midnight (00:00:00) as the time
+                        // atStartOfDay() gives 00:00:00
+                        columnSearchTimestamp = Timestamp.valueOf(localDate.atStartOfDay());
+                    }
+
+                    Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
+                            dateFieldPath, columnSearchTimestamp,
                             columnSearchLogic);
                     predicates.add(predicate);
                 }

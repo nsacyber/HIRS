@@ -2,10 +2,9 @@ package hirs.attestationca.portal.page.utils;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.service.DataTablesColumn;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.Column;
 import io.micrometer.common.util.StringUtils;
-import lombok.extern.log4j.Log4j2;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -20,7 +19,6 @@ import java.util.stream.Stream;
 /**
  * Utility class for the Page Controller classes.
  */
-@Log4j2
 public final class ControllerPagesUtils {
     /**
      * This private constructor was created to silence checkstyle error.
@@ -63,7 +61,7 @@ public final class ControllerPagesUtils {
      * @param columns table columns
      * @return searchable columns that have a search criteria
      */
-    public static Set<DataTablesColumn> findColumnsWithSearchCriteria(
+    public static Set<DataTablesColumn> findColumnsWithSearchCriteriaForColumnSpecificSearch(
             final List<Column> columns) {
         // Identify and return columns that are searchable and have both a user-defined search value
         // and a logical condition (e.g., "equals", "greater than", etc.) applied through column controls
@@ -107,16 +105,15 @@ public final class ControllerPagesUtils {
      * @param columns             table columns
      * @return set of searchable column names
      */
-    public static Set<String> findSearchableColumnNames(
+    public static Set<String> findSearchableColumnNamesForGlobalSearch(
             final Class<?> pageControllerClass,
             final List<Column> columns) {
         // grab all the provided class' non-static declared fields
         Set<String> nonStaticFields = getNonStaticFieldNames(pageControllerClass);
 
-        // grab the list of column names that are searchable
         List<String> searchableColumnNames = new ArrayList<>(columns.stream()
-                .filter(Column::isSearchable)
-                .map(Column::getName)
+                .filter(Column::isSearchable) // filter out columns that are searchable
+                .map(Column::getName) // grab each column's name
                 .toList());
 
         Set<String> validSearchableColumnNames = new HashSet<>();
@@ -136,6 +133,7 @@ public final class ControllerPagesUtils {
                 validSearchableColumnNames.add(columnName);
                 continue;
             }
+
             // loop through the non-static field names
             for (String nonStaticField : nonStaticFields) {
                 // if there is a match between the column name and the non-static field

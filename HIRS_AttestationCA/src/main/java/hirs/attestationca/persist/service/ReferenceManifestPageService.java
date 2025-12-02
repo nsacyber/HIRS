@@ -6,7 +6,8 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.selector.PredicateFactory;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
+import hirs.attestationca.persist.service.util.PredicateFactory;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
@@ -89,13 +90,15 @@ public class ReferenceManifestPageService {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        // Dynamically add search conditions for each field that should be searchable
         // Dynamically loop through columns and create LIKE conditions for each searchable column
         for (String columnName : searchableColumnNames) {
-            Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                    rimRoot.get(columnName), globalSearchTerm,
-                    "contains");
-            predicates.add(predicate);
+            // if the field is a string type
+            if (String.class.equals(rimRoot.get(columnName).getJavaType())) {
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                        rimRoot.get(columnName), globalSearchTerm,
+                        "contains");
+                predicates.add(predicate);
+            }
         }
 
         Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
@@ -127,14 +130,16 @@ public class ReferenceManifestPageService {
      * @return page full of reference manifests
      */
     public Page<ReferenceManifest> findRIMSByColumnSpecificSearchTermAndArchiveFlag(
-            Set<DataTablesColumn> columnsWithSearchCriteria, final boolean archiveFlag, Pageable pageable) {
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final boolean archiveFlag,
+            final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
         CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
         Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
 
         List<Predicate> predicates = new ArrayList<>();
 
-        //
+        // loop through all the datatable columns that have an applied search criteria
         for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
             final String columnName = columnWithSearchCriteria.getColumnName();
             final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();

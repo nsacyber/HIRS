@@ -3,9 +3,9 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.CertificateType;
-import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.IssuedAttestationCertificatePageService;
+import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -98,7 +98,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
         final Set<DataTablesColumn> columnsWithSearchCriteria =
-                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
@@ -122,7 +123,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
                             pageable);
         } else {
             final Set<String> searchableColumnNames =
-                    ControllerPagesUtils.findSearchableColumnNames(IssuedAttestationCertificate.class,
+                    ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(
+                            IssuedAttestationCertificate.class,
                             dataTableInput.getColumns());
 
             pagedResult =

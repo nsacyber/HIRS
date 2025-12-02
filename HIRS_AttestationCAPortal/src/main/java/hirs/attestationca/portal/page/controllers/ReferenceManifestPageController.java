@@ -4,8 +4,8 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.service.DataTablesColumn;
 import hirs.attestationca.persist.service.ReferenceManifestPageService;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -98,7 +98,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
         final Set<DataTablesColumn> columnsWithSearchCriteria =
-                ControllerPagesUtils.findColumnsWithSearchCriteria(dataTableInput.getColumns());
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
@@ -120,7 +121,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                                     pageable);
         } else {
             final Set<String> searchableColumnNames =
-                    ControllerPagesUtils.findSearchableColumnNames(ReferenceManifest.class,
+                    ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceManifest.class,
                             dataTableInput.getColumns());
 
             pagedResult = this.referenceManifestPageService.
