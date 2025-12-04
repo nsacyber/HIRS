@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
@@ -88,6 +89,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         if (baseReferenceManifest == null) {
             failedString = "Base Reference Integrity Manifest not found for " + hostName + "\n";
             passed = false;
+            fwStatus = new AppraisalStatus(ERROR, failedString);
         } else if (measurement == null) {
             measurement = (EventLogMeasurements) referenceManifestRepository
                     .findByHexDecHashAndRimTypeUnarchived(baseReferenceManifest.getEventLogHash(),
