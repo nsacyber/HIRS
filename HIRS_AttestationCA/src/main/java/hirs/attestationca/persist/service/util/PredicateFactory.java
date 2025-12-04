@@ -11,7 +11,7 @@ import java.sql.Timestamp;
  * filtering data in JPA Criteria queries.
  *
  * <p>This class provides utility methods to dynamically build predicates based on different search criteria
- * for both {@link String} and {@link Integer} fields. The predicates are used in JPA Criteria API to generate
+ * for {@link String}. {@link Timestamp} and {@link Integer} fields. The predicates are used in JPA Criteria API to generate
  * SQL-based queries with conditions that are applied at runtime based on the user's input.</p>
  *
  * <p>The factory supports a wide range of common search operations such as:</p>
@@ -24,9 +24,11 @@ import java.sql.Timestamp;
  *
  * <p>Examples of supported search logics include:</p>
  * <ul>
- *     <li>For strings: "equals", "contains", "not empty", "empty", "starts", "ends"</li>
- *     <li>For integers: "equals", "greater", "less", "greater or equal", "less or equal", "not empty",
- *     "empty"</li>
+ *     <li>For strings: "equals", "not equals", "contains", "does not contain", "not empty", "empty",
+ *     "starts", "ends"</li>
+ *     <li>For integers: "equals", "not equals", "greater", "less", "greater or equal", "less or equal",
+ *     "not empty", "empty"</li>
+ *     <li>For timestamps: "equals", "not equals", "greater", "less", "empty", "not empty"</li>
  * </ul>
  */
 public final class PredicateFactory {
@@ -206,7 +208,8 @@ public final class PredicateFactory {
      * Builds a predicate that checks if the given field starts with the specified search term.
      *
      * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
-     * @param fieldPath       the {@link Path} representing the field to search within (must be a {@link String})
+     * @param fieldPath       the {@link Path} representing the field to search within
+     *                        (must be a {@link String})
      * @param searchTerm      the value to check for at the beginning of the field (case-insensitive)
      * @return a {@link Predicate} that checks if the field starts with the search term
      */
@@ -220,7 +223,8 @@ public final class PredicateFactory {
      * Builds a predicate that checks if the given field ends with the specified search term.
      *
      * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
-     * @param fieldPath       the {@link Path} representing the field to search within (must be a {@link String})
+     * @param fieldPath       the {@link Path} representing the field to search within
+     *                        (must be a {@link String})
      * @param searchTerm      the value to check for at the end of the field (case-insensitive)
      * @return a {@link Predicate} that checks if the field ends with the search term
      */

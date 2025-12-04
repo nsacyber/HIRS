@@ -176,6 +176,80 @@ public class ReferenceManifestPageService {
     }
 
     /**
+     * Finds RIMS based on both global search and column-specific search criteria.
+     * The method applies the provided global search term across all searchable columns
+     * and also applies column-specific filters based on the individual column search criteria.
+     * The results are returned with pagination support.
+     * <p>
+     * This method combines the logic of two search functionalities:
+     * - Global search: Searches across all specified columns for a matching term.
+     * - Column-specific search: Filters based on individual column search criteria, such as text
+     * or date searches.
+     * <p>
+     *
+     * @param searchableColumnNames     list of the searchable column names
+     * @param globalSearchTerm          text that was input in the global search textbox
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param pageable                  pageable
+     * @return page full of reference manifests
+     */
+    public Page<ReferenceManifest> findRIMSByGlobalAndColumnSpecificSearchTerm(
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final boolean archiveFlag,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
+        CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
+        Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Global Search Predicate
+        for (String columnName : searchableColumnNames) {
+            // if the field is a string type
+            if (String.class.equals(rimRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = rimRoot.get(columnName);
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(
+                        criteriaBuilder, stringFieldPath, globalSearchTerm, "contains");
+                predicates.add(predicate);
+            }
+        }
+
+        // Column-Specific Search Predicates
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            // if the field is a string type
+            if (String.class.equals(rimRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = rimRoot.get(columnName);
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(
+                        criteriaBuilder, stringFieldPath, columnSearchTerm, columnSearchLogic);
+                predicates.add(predicate);
+            }
+        }
+
+        Predicate otherConditions = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+
+        // Add archiveFlag condition if specified
+        query.where(criteriaBuilder.and(otherConditions,
+                criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag),
+                criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")));
+
+        // Apply pagination
+        TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<ReferenceManifest> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
      * Retrieves a page of RIMS using the provided archive flag and pageable value.
      *
      * @param pageable pageable

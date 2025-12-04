@@ -179,6 +179,112 @@ public class ReferenceDigestValuePageService {
     }
 
     /**
+     * Finds certificates based on both global search and column-specific search criteria.
+     * The method applies the provided global search term across all searchable columns
+     * and also applies column-specific filters based on the individual column search criteria.
+     * The results are returned with pagination support.
+     * <p>
+     * This method combines the logic of two search functionalities:
+     * - Global search: Searches across all specified columns for a matching term.
+     * - Column-specific search: Filters based on individual column search criteria, such as text
+     * or date searches.
+     * <p>
+     *
+     * @param searchableColumnNames     list of the searchable column names
+     * @param globalSearchTerm          text that was input in the global search textbox
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param pageable                  pageable
+     * @return
+     */
+    public Page<ReferenceDigestValue> findReferenceDigestValuesByGlobalAndColumnSpecificSearchTerm(
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final Pageable pageable) {
+
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ReferenceDigestValue> query =
+                criteriaBuilder.createQuery(ReferenceDigestValue.class);
+        Root<ReferenceDigestValue> referenceDigestValueRoot = query.from(ReferenceDigestValue.class);
+
+        List<Predicate> globalSearchPredicates = new ArrayList<>();
+
+        // Global Search Predicate
+        for (String columnName : searchableColumnNames) {
+            // if the field is a string type
+            if (String.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = referenceDigestValueRoot.get(columnName);
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(
+                        criteriaBuilder, stringFieldPath, globalSearchTerm, "contains");
+                globalSearchPredicates.add(predicate);
+            }
+            // if the field is an integer type
+            else if (Integer.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
+                try {
+                    Path<Integer> integerFieldPath = referenceDigestValueRoot.get(columnName);
+
+                    Integer searchInteger = Integer.valueOf(globalSearchTerm); // Will throw if not a number
+
+                    // For Integer fields, use EQUAL if the search term is numeric
+                    Predicate predicate = PredicateFactory.createPredicateForIntegerFields(criteriaBuilder,
+                            integerFieldPath, searchInteger, "equal");
+
+                    globalSearchPredicates.add(predicate);
+                } catch (NumberFormatException e) {
+                    // If the globalSearchTerm is not a valid number, skip this field
+                }
+            }
+        }
+
+        Predicate globalSearchPartOfChainedPredicates =
+                criteriaBuilder.or(globalSearchPredicates.toArray(new Predicate[0]));
+
+        List<Predicate> columnSearchPredicates = new ArrayList<>();
+
+        // Column-Specific Search Predicates
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            // if the field is a string type
+            if (String.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = referenceDigestValueRoot.get(columnName);
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(
+                        criteriaBuilder, stringFieldPath, columnSearchTerm, columnSearchLogic);
+                columnSearchPredicates.add(predicate);
+            }
+            // if the field is an integer type
+            else if (Integer.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
+                try {
+                    Integer searchInteger = Integer.parseInt(columnSearchTerm); // Will throw if not a number
+
+                    Path<Integer> integerFieldPath = referenceDigestValueRoot.get(columnName);
+
+                    Predicate predicate = PredicateFactory.createPredicateForIntegerFields(criteriaBuilder,
+                            integerFieldPath, searchInteger, columnSearchLogic);
+                    columnSearchPredicates.add(predicate);
+                } catch (NumberFormatException e) {
+                    // If the columnSearchTerm is not a valid number, skip this field
+                }
+            }
+        }
+
+        query.where(criteriaBuilder.and(globalSearchPartOfChainedPredicates,
+                criteriaBuilder.and(columnSearchPredicates.toArray(new Predicate[0]))));
+
+        // Apply pagination
+        TypedQuery<ReferenceDigestValue> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<ReferenceDigestValue> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
      * Retrieves a page full of reference digest values using the provided pageable value.
      *
      * @param pageable pageable

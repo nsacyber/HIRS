@@ -96,9 +96,17 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         log.debug("Request received a datatable input object for the reference manifest page "
                 + " page: {}", dataTableInput);
 
+        // grab the value that was entered in the global search textbox
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
+
+        // find all columns that have a value that's been entered in column search dropdown
         final Set<DataTablesColumn> columnsWithSearchCriteria =
                 ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
+
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceManifest.class,
                         dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
@@ -107,11 +115,21 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         FilteredRecordsList<ReferenceManifest> rimFilteredRecordsList = new FilteredRecordsList<>();
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult;
 
-        // if the user has not entered any value in either the global search box or the column search box
+        // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.referenceManifestPageService.findAllBaseAndSupportRIMSByPageable(pageable);
         }
-        // if the search term applied to the individual columns is not empty
+        // if a value has been entered in both the global search textbox and in the column search dropdown
+        else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.referenceManifestPageService.findRIMSByGlobalAndColumnSpecificSearchTerm(
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        }
+        // if a value has been entered ONLY in the column search dropdown
         else if (!columnsWithSearchCriteria.isEmpty()) {
             pagedResult =
                     this.referenceManifestPageService.
@@ -119,11 +137,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                                     columnsWithSearchCriteria,
                                     false,
                                     pageable);
-        } else {
-            final Set<String> searchableColumnNames =
-                    ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceManifest.class,
-                            dataTableInput.getColumns());
-
+        }
+        // if a value has been entered ONLY in the global search textbox
+        else {
             pagedResult = this.referenceManifestPageService.
                     findRIMSByGlobalSearchTermAndArchiveFlag(searchableColumnNames,
                             globalSearchTerm,

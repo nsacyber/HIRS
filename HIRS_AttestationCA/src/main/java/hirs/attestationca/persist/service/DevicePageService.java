@@ -10,6 +10,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
+import hirs.attestationca.persist.service.util.PageServiceUtils;
 import hirs.attestationca.persist.service.util.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -26,8 +27,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -74,7 +73,7 @@ public class DevicePageService {
      * devices whose field values matches the provided search term.
      *
      * @param searchableColumnNames list of the searchable column name
-     * @param globalSearchTerm      text that was input in the search textbox
+     * @param globalSearchTerm      text that was input in the global search textbox
      * @param pageable              pageable
      * @return page full of devices
      */
@@ -90,6 +89,14 @@ public class DevicePageService {
 
         // Dynamically loop through columns and create LIKE conditions for each searchable column
         for (String columnName : searchableColumnNames) {
+
+            // since datatables returns us a nested column name, in order to get the correct
+            // the column name for devices, we need remove the device
+            // part of the string (e.g., "device.name" becomes "name").
+            if (columnName.startsWith("device.")) {
+                columnName = columnName.split("device.")[1]; // Take the part after "device."
+            }
+
             // if the field is a string type
             if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
                 Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
@@ -137,7 +144,7 @@ public class DevicePageService {
             final String columnSearchType = columnWithSearchCriteria.getColumnSearchType();
 
             // since datatables returns us a nested column name, in order to get the correct
-            // the column name for devices, we need remove the device.name
+            // the column name for devices, we need remove the device
             // part of the string (e.g., "device.name" becomes "name").
             if (columnName.startsWith("device.")) {
                 columnName = columnName.split("device.")[1]; // Take the part after "device."
@@ -153,31 +160,14 @@ public class DevicePageService {
                                 columnSearchLogic);
                 predicates.add(predicate);
             }
-            // if the field is a date type
+            // if the field is a timestamp type
             else if (Timestamp.class.equals(deviceRoot.get(columnName).getJavaType()) &&
                     columnSearchType.equalsIgnoreCase("date")) {
                 Path<Timestamp> dateFieldPath = deviceRoot.get(columnName);
 
-                Timestamp columnSearchTimestamp;
-
-                // Handle "empty" or "notempty" logic - no need for a real search term, use a default timestamp
-                if (columnSearchLogic.equalsIgnoreCase("empty") ||
-                        columnSearchLogic.equalsIgnoreCase("notempty")) {
-                    // Use a Unix epoch timestamp
-                    columnSearchTimestamp = Timestamp.valueOf("1970-01-01 00:00:00");
-                }
-                //  if the search logic is anything else but empty or not empty
-                else {
-                    // Define the DateTimeFormatter matching the input date format
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-                    // Parse the string into LocalDate (no time info here)
-                    LocalDate localDate = LocalDate.parse(columnSearchTerm, formatter);
-
-                    // Convert LocalDate to Timestamp, assuming midnight (00:00:00) as the time
-                    // atStartOfDay() gives 00:00:00
-                    columnSearchTimestamp = Timestamp.valueOf(localDate.atStartOfDay());
-                }
+                final Timestamp columnSearchTimestamp =
+                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
+                                columnSearchLogic);
 
                 Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
                         dateFieldPath, columnSearchTimestamp,
@@ -198,6 +188,102 @@ public class DevicePageService {
         List<Device> resultList = typedQuery.getResultList();
         return new PageImpl<>(resultList, pageable, totalRows);
     }
+
+
+    /**
+     * Finds devices based on both global search and column-specific search criteria.
+     * The method applies the provided global search term across all searchable columns
+     * and also applies column-specific filters based on the individual column search criteria.
+     * The results are returned with pagination support.
+     * <p>
+     * This method combines the logic of two search functionalities:
+     * - Global search: Searches across all specified columns for a matching term.
+     * - Column-specific search: Filters based on individual column search criteria, such as text or date searches.
+     * <p>
+     *
+     * @param searchableColumnNames     list of the searchable column names
+     * @param globalSearchTerm          The term that the user enters in the global search box.
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param pageable                  pageable
+     * @return A Page containing a list of devices that match both the global search term and the column-specific search criteria,
+     * along with pagination details (total number of rows, current page, etc.).
+     */
+    public Page<Device> findDevicesByGlobalAndColumnSpecificSearchTerm(
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Device> query = criteriaBuilder.createQuery(Device.class);
+        Root<Device> deviceRoot = query.from(Device.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Global Search Predicate
+        for (String columnName : searchableColumnNames) {
+            // since datatables returns us a nested column name, in order to get the correct
+            // the column name for devices, we need remove the device
+            // part of the string (e.g., "device.name" becomes "name").
+            if (columnName.startsWith("device.")) {
+                columnName = columnName.split("device.")[1]; // Take the part after "device."
+            }
+
+            // if the field is a string type
+            if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = deviceRoot.get(columnName);
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(
+                        criteriaBuilder, stringFieldPath, globalSearchTerm, "contains");
+                predicates.add(predicate);
+            }
+        }
+
+        // Column-Specific Search Predicates
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+            final String columnSearchType = columnWithSearchCriteria.getColumnSearchType();
+
+            if (columnName.startsWith("device.")) {
+                columnName = columnName.split("device.")[1];  // Remove "device." prefix
+            }
+
+            // if the field is a string type
+            if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = deviceRoot.get(columnName);
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(
+                        criteriaBuilder, stringFieldPath, columnSearchTerm, columnSearchLogic);
+                predicates.add(predicate);
+            }
+            // if the field is a timestamp type
+            else if (Timestamp.class.equals(deviceRoot.get(columnName).getJavaType()) &&
+                    columnSearchType.equalsIgnoreCase("date")) {
+                Path<Timestamp> dateFieldPath = deviceRoot.get(columnName);
+
+                final Timestamp columnSearchTimestamp =
+                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
+                                columnSearchLogic);
+
+                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(
+                        criteriaBuilder, dateFieldPath, columnSearchTimestamp, columnSearchLogic);
+                predicates.add(predicate);
+            }
+        }
+
+        // Combine global and column-specific predicates using AND logic
+        query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
+
+        // Apply pagination
+        TypedQuery<Device> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<Device> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
 
     /**
      * Retrieves all devices from the database.

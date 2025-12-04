@@ -75,9 +75,17 @@ public class DevicePageController extends PageController<NoPageParams> {
         log.debug("Request received a datatable input object for the device page: {}",
                 dataTableInput);
 
+        // grab the value that was entered in the global search textbox
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
+
+        // find all columns that have a value that's been entered in column search dropdown
         final Set<DataTablesColumn> columnsWithSearchCriteria =
                 ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
+
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(Device.class,
                         dataTableInput.getColumns());
 
         FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
@@ -86,18 +94,27 @@ public class DevicePageController extends PageController<NoPageParams> {
         Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
         org.springframework.data.domain.Page<Device> pagedResult;
 
+        // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.devicePageService.findAllDevices(pageable);
         }
-        // if the search term applied to the individual columns is not empty
+        // if a value has been entered in both the global search textbox and in the column search dropdown
+        else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.devicePageService.findDevicesByGlobalAndColumnSpecificSearchTerm(
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            pageable);
+        }
+        // if a value has been entered ONLY in the column search dropdown
         else if (!columnsWithSearchCriteria.isEmpty()) {
             pagedResult =
                     this.devicePageService.findDevicesByColumnSpecificSearchTerm(
                             columnsWithSearchCriteria, pageable);
-        } else {
-            final Set<String> searchableColumnNames =
-                    ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(Device.class,
-                            dataTableInput.getColumns());
+        }
+        // if a value has been entered ONLY in the global search textbox
+        else {
             pagedResult =
                     this.devicePageService.findDevicesByGlobalSearchTerm(searchableColumnNames,
                             globalSearchTerm,
@@ -114,7 +131,8 @@ public class DevicePageController extends PageController<NoPageParams> {
         FilteredRecordsList<HashMap<String, Object>> devicesAndAssociatedCertificates
                 = this.devicePageService.retrieveDevicesAndAssociatedCertificates(deviceList);
 
-        log.info("Returning the size of the list of devices: {}", devicesAndAssociatedCertificates.size());
+        log.info("Returning the size of the list of devices: {}",
+                devicesAndAssociatedCertificates.size());
         return new DataTableResponse<>(devicesAndAssociatedCertificates, dataTableInput);
     }
 }

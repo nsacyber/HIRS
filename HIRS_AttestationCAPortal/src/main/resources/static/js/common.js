@@ -318,8 +318,8 @@ function rimDownloadLink(pagePath, id) {
 
 /**
  * Formats a given Java date string to a UTC date string, or returns an indefinite value.
- * @param {string} dateText - The Java Date string (ISO 8601 format)
- * @returns {string} Formatted date or "Indefinite" if invalid.
+ * @param dateText - The Java Date string (ISO 8601 format)
+ * @returns Formatted date or "Indefinite" if invalid.
  */
 function formatCertificateDate(dateText) {
   // Check if the dateText is "Indefinite" (handle special case)

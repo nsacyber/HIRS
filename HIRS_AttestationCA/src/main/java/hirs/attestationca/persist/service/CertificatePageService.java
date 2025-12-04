@@ -10,6 +10,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.service.util.CertificateType;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
+import hirs.attestationca.persist.service.util.PageServiceUtils;
 import hirs.attestationca.persist.service.util.PredicateFactory;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.persist.util.DownloadFile;
@@ -37,8 +38,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -166,32 +165,15 @@ public class CertificatePageService {
                                 columnSearchLogic);
                 predicates.add(predicate);
             }
-            // if the field is a date type
+            // if the field is a timestamp type
             else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType()) &&
                     columnSearchType.equalsIgnoreCase("date")) {
 
                 Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
 
-                Timestamp columnSearchTimestamp;
-
-                // Handle "empty" or "notempty" logic - no need for a real search term, use a default timestamp
-                if (columnSearchLogic.equalsIgnoreCase("empty") ||
-                        columnSearchLogic.equalsIgnoreCase("notempty")) {
-                    // Use a Unix epoch timestamp
-                    columnSearchTimestamp = Timestamp.valueOf("1970-01-01 00:00:00");
-                }
-                // if the search logic is anything else but empty or not empty
-                else {
-                    // Define the DateTimeFormatter matching the input date format
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-                    // Parse the string into LocalDate (no time info here)
-                    LocalDate localDate = LocalDate.parse(columnSearchTerm, formatter);
-
-                    // Convert LocalDate to Timestamp, assuming midnight (00:00:00) as the time
-                    // atStartOfDay() gives 00:00:00
-                    columnSearchTimestamp = Timestamp.valueOf(localDate.atStartOfDay());
-                }
+                final Timestamp columnSearchTimestamp =
+                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
+                                columnSearchLogic);
 
                 Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
                         dateFieldPath, columnSearchTimestamp,
@@ -215,6 +197,97 @@ public class CertificatePageService {
         // Wrap the result in a Page object to return pagination info
         List<T> resultList = typedQuery.getResultList();
         return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * Finds certificates based on both global search and column-specific search criteria.
+     * The method applies the provided global search term across all searchable columns
+     * and also applies column-specific filters based on the individual column search criteria.
+     * The results are returned with pagination support.
+     * <p>
+     * This method combines the logic of two search functionalities:
+     * - Global search: Searches across all specified columns for a matching term.
+     * - Column-specific search: Filters based on individual column search criteria, such as text
+     * or date searches.
+     * <p>
+     *
+     * @param entityClass               generic certificate entity class
+     * @param searchableColumnNames     list of the searchable column names
+     * @param globalSearchTerm          text that was input in the global search textbox
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param pageable                  pageable
+     * @param <T>                       generic entity class that extends from certificate
+     * @return page full of the generic certificates.
+     */
+    public <T extends Certificate> Page<T> findCertificatesByGlobalAndColumnSpecificSearchTerm(
+            final Class<T> entityClass,
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final boolean archiveFlag,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
+        Root<T> certificateRoot = query.from(entityClass);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Global Search Predicate
+        for (String columnName : searchableColumnNames) {
+            // if the field is a string type
+            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = certificateRoot.get(columnName);
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(
+                        criteriaBuilder, stringFieldPath, globalSearchTerm, "contains");
+                predicates.add(predicate);
+            }
+        }
+
+        // Column-Specific Search Predicates
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+            final String columnSearchType = columnWithSearchCriteria.getColumnSearchType();
+
+            // if the field is a string type
+            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = certificateRoot.get(columnName);
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(
+                        criteriaBuilder, stringFieldPath, columnSearchTerm, columnSearchLogic);
+                predicates.add(predicate);
+            }
+            // if the field is a timestamp type
+            else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType()) &&
+                    columnSearchType.equalsIgnoreCase("date")) {
+                Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
+
+                final Timestamp columnSearchTimestamp =
+                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
+                                columnSearchLogic);
+
+                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(
+                        criteriaBuilder, dateFieldPath, columnSearchTimestamp, columnSearchLogic);
+                predicates.add(predicate);
+            }
+        }
+
+        Predicate otherConditions = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+
+        // Add archiveFlag condition if specified
+        query.where(criteriaBuilder.and(otherConditions,
+                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)));
+
+        // Apply pagination
+        TypedQuery<T> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<T> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+
     }
 
     /**

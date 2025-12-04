@@ -76,9 +76,17 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         log.info("Received request to display list of TPM events");
         log.debug("Request received a datatable input object for the RIM database page: {}", dataTableInput);
 
+        // grab the value that was entered in the global search textbox
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
+
+        // find all columns that have a value that's been entered in column search dropdown
         final Set<DataTablesColumn> columnsWithSearchCriteria =
                 ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
+
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceDigestValue.class,
                         dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
@@ -87,24 +95,27 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = new FilteredRecordsList<>();
         org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult;
 
-        // if the user has not entered any value in either the global search box or the column search box
+        // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.referenceDigestValuePageService.findAllReferenceDigestValues(pageable);
         }
-//        // if the user has entered a value in both the global search box and column search box
-//        else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
-//
-//        }
-        // if the search term applied to the individual columns is not empty
+        // if a value has been entered in both the global search textbox and in the column search dropdown
+        else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.referenceDigestValuePageService.findReferenceDigestValuesByGlobalAndColumnSpecificSearchTerm(
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            pageable);
+        }
+        // if a value has been entered ONLY in the column search dropdown
         else if (!columnsWithSearchCriteria.isEmpty()) {
             pagedResult =
                     this.referenceDigestValuePageService.findReferenceDigestValuesByColumnSpecificSearchTerm(
                             columnsWithSearchCriteria, pageable);
-        } else {
-            final Set<String> searchableColumnNames =
-                    ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceDigestValue.class,
-                            dataTableInput.getColumns());
-
+        }
+        // if a value has been entered ONLY in the global search textbox
+        else {
             pagedResult = this.referenceDigestValuePageService.findReferenceDigestValuesByGlobalSearchTerm(
                     searchableColumnNames,
                     globalSearchTerm, pageable);
