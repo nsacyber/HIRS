@@ -511,8 +511,8 @@ public class ReferenceManifestDetailsPageService {
             for (TpmPcrEvent attestationEvent : unmatchedAttestationEvents) {
                 matchedEvents = new ArrayList<>();
                 for (TpmPcrEvent referenceEvent : referenceEventValues) {
-                    if ((referenceEvent.getEventType() == attestationEvent.getEventType()) &&
-                            (referenceEvent.getPcrIndex() == attestationEvent.getPcrIndex())) {
+                    if ((referenceEvent.getEventType() == attestationEvent.getEventType())
+                            && (referenceEvent.getPcrIndex() == attestationEvent.getPcrIndex())) {
                         if (eventIsType(attestationEvent.getEventType())) {
                             matcher = variableName.matcher(attestationEvent.getEventContentStr());
                             if (matcher.find()) {
@@ -547,7 +547,7 @@ public class ReferenceManifestDetailsPageService {
      * @param eventType to check for event type
      * @return true if the below types are matched, otherwise false
      */
-    private boolean eventIsType(long eventType) {
+    private boolean eventIsType(final long eventType) {
         return eventType == EvConstants.EV_EFI_VARIABLE_AUTHORITY
                 || eventType == EvConstants.EV_EFI_VARIABLE_BOOT
                 || eventType == EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG

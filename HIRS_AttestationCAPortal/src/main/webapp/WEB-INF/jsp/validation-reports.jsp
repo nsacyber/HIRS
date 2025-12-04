@@ -251,13 +251,15 @@
                 }
               }
 
-              switch (validation_type) {
-                case "FIRMWARE":
-                  html +=
-                    '<a href="${portal}/rim-details?id=' +
-                    curValidation.rimId +
-                    '">';
-                  break;
+              if (curValidation.rimId !== "") {
+                  switch (validation_type) {
+                    case "FIRMWARE":
+                      html +=
+                        '<a href="${portal}/rim-details?id=' +
+                        curValidation.rimId +
+                        '">';
+                      break;
+                  }
               }
 
               switch (curResult) {
