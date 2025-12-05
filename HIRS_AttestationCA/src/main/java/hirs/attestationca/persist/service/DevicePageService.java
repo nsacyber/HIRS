@@ -85,28 +85,12 @@ public class DevicePageService {
         CriteriaQuery<Device> query = criteriaBuilder.createQuery(Device.class);
         Root<Device> deviceRoot = query.from(Device.class);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate combinedGlobalSearchPredicates =
+                createPredicatesForGlobalSearch(searchableColumnNames, criteriaBuilder, deviceRoot,
+                        globalSearchTerm);
 
-        // Dynamically loop through columns and create LIKE conditions for each searchable column
-        for (String columnName : searchableColumnNames) {
-
-            // since datatables returns us a nested column name, in order to get the correct
-            // the column name for devices, we need remove the device
-            // part of the string (e.g., "device.name" becomes "name").
-            if (columnName.startsWith("device.")) {
-                columnName = columnName.split("device.")[1]; // Take the part after "device."
-            }
-
-            // if the field is a string type
-            if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                        deviceRoot.get(columnName), globalSearchTerm,
-                        "contains");
-                predicates.add(predicate);
-            }
-        }
-
-        query.where(criteriaBuilder.or(predicates.toArray(new Predicate[0])));
+        // Define the conditions (predicates) for the query's WHERE clause.
+        query.where(criteriaBuilder.and(combinedGlobalSearchPredicates));
 
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);
@@ -118,6 +102,7 @@ public class DevicePageService {
         List<Device> resultList = typedQuery.getResultList();
         return new PageImpl<>(resultList, pageable, totalRows);
     }
+
 
     /**
      * Takes the provided columns that come with a search criteria and attempts to find
@@ -134,49 +119,12 @@ public class DevicePageService {
         CriteriaQuery<Device> query = criteriaBuilder.createQuery(Device.class);
         Root<Device> deviceRoot = query.from(Device.class);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate combinedColumnSearchPredicates =
+                createPredicatesForColumnSpecificSearch(columnsWithSearchCriteria, criteriaBuilder,
+                        deviceRoot);
 
-        // loop through all the datatable columns that have an applied search criteria
-        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
-            String columnName = columnWithSearchCriteria.getColumnName();
-            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
-            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
-            final String columnSearchType = columnWithSearchCriteria.getColumnSearchType();
-
-            // since datatables returns us a nested column name, in order to get the correct
-            // the column name for devices, we need remove the device
-            // part of the string (e.g., "device.name" becomes "name").
-            if (columnName.startsWith("device.")) {
-                columnName = columnName.split("device.")[1]; // Take the part after "device."
-            }
-
-            // if the field is a string type
-            if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = deviceRoot.get(columnName);
-
-                Predicate predicate =
-                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
-                                columnSearchTerm,
-                                columnSearchLogic);
-                predicates.add(predicate);
-            }
-            // if the field is a timestamp type
-            else if (Timestamp.class.equals(deviceRoot.get(columnName).getJavaType()) &&
-                    columnSearchType.equalsIgnoreCase("date")) {
-                Path<Timestamp> dateFieldPath = deviceRoot.get(columnName);
-
-                final Timestamp columnSearchTimestamp =
-                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
-                                columnSearchLogic);
-
-                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
-                        dateFieldPath, columnSearchTimestamp,
-                        columnSearchLogic);
-                predicates.add(predicate);
-            }
-        }
-
-        query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
+        // Define the conditions (predicates) for the query's WHERE clause.
+        query.where(criteriaBuilder.and(combinedColumnSearchPredicates));
 
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);
@@ -205,8 +153,8 @@ public class DevicePageService {
      * @param globalSearchTerm          The term that the user enters in the global search box.
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param pageable                  pageable
-     * @return A Page containing a list of devices that match both the global search term and the column-specific search criteria,
-     * along with pagination details (total number of rows, current page, etc.).
+     * @return A Page containing a list of devices that match both the global search term and
+     * the column-specific search criteria.
      */
     public Page<Device> findDevicesByGlobalAndColumnSpecificSearchTerm(
             final Set<String> searchableColumnNames,
@@ -217,61 +165,18 @@ public class DevicePageService {
         CriteriaQuery<Device> query = criteriaBuilder.createQuery(Device.class);
         Root<Device> deviceRoot = query.from(Device.class);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate globalSearchPartOfChainedPredicates =
+                createPredicatesForGlobalSearch(searchableColumnNames, criteriaBuilder, deviceRoot,
+                        globalSearchTerm);
 
-        // Global Search Predicate
-        for (String columnName : searchableColumnNames) {
-            // since datatables returns us a nested column name, in order to get the correct
-            // the column name for devices, we need remove the device
-            // part of the string (e.g., "device.name" becomes "name").
-            if (columnName.startsWith("device.")) {
-                columnName = columnName.split("device.")[1]; // Take the part after "device."
-            }
+        final Predicate columnSearchPartOfChainedPredicates =
+                createPredicatesForColumnSpecificSearch(columnsWithSearchCriteria, criteriaBuilder,
+                        deviceRoot);
 
-            // if the field is a string type
-            if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = deviceRoot.get(columnName);
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(
-                        criteriaBuilder, stringFieldPath, globalSearchTerm, "contains");
-                predicates.add(predicate);
-            }
-        }
-
-        // Column-Specific Search Predicates
-        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
-            String columnName = columnWithSearchCriteria.getColumnName();
-            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
-            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
-            final String columnSearchType = columnWithSearchCriteria.getColumnSearchType();
-
-            if (columnName.startsWith("device.")) {
-                columnName = columnName.split("device.")[1];  // Remove "device." prefix
-            }
-
-            // if the field is a string type
-            if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = deviceRoot.get(columnName);
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(
-                        criteriaBuilder, stringFieldPath, columnSearchTerm, columnSearchLogic);
-                predicates.add(predicate);
-            }
-            // if the field is a timestamp type
-            else if (Timestamp.class.equals(deviceRoot.get(columnName).getJavaType()) &&
-                    columnSearchType.equalsIgnoreCase("date")) {
-                Path<Timestamp> dateFieldPath = deviceRoot.get(columnName);
-
-                final Timestamp columnSearchTimestamp =
-                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
-                                columnSearchLogic);
-
-                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(
-                        criteriaBuilder, dateFieldPath, columnSearchTimestamp, columnSearchLogic);
-                predicates.add(predicate);
-            }
-        }
-
+        // Define the conditions (predicates) for the query's WHERE clause.
         // Combine global and column-specific predicates using AND logic
-        query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
+        query.where(criteriaBuilder.and(globalSearchPartOfChainedPredicates,
+                columnSearchPartOfChainedPredicates));
 
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);
@@ -411,6 +316,106 @@ public class DevicePageService {
         records.setRecordsTotal(deviceList.getRecordsTotal());
         records.setRecordsFiltered(deviceList.getRecordsFiltered());
         return records;
+    }
+
+    /**
+     * Helper method that generates a combined predicate for global search across searchable columns.
+     * For each column, if the field is of type `String`, a "contains" condition is created.
+     *
+     * @param searchableColumnNames the columns to be searched globally
+     * @param criteriaBuilder       the criteria builder to construct the predicates
+     * @param deviceRoot            the root entity representing the device
+     * @param globalSearchTerm      the term to search for across columns
+     * @return a combined `Predicate` representing the global search conditions
+     */
+    private Predicate createPredicatesForGlobalSearch(
+            final Set<String> searchableColumnNames,
+            final CriteriaBuilder criteriaBuilder,
+            final Root<Device> deviceRoot,
+            final String globalSearchTerm) {
+
+        List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
+
+        // Dynamically loop through columns and create LIKE conditions for each searchable column
+        for (String columnName : searchableColumnNames) {
+            // since datatables returns us a nested column name, in order to get the correct
+            // the column name for devices, we need remove the device
+            // part of the string (e.g., "device.name" becomes "name").
+            if (columnName.startsWith("device.")) {
+                columnName = columnName.split("device.")[1]; // Take the part after "device."
+            }
+
+            // if the field is a string type
+            if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = deviceRoot.get(columnName);
+
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                        stringFieldPath, globalSearchTerm,
+                        "contains");
+                combinedGlobalSearchPredicates.add(predicate);
+            }
+        }
+
+        return criteriaBuilder.or(combinedGlobalSearchPredicates.toArray(new Predicate[0]));
+    }
+
+
+    /**
+     * Helper method that generates a combined predicate for column-specific search criteria.
+     * It constructs conditions based on the field type (e.g., `String` or `Timestamp`)
+     * and the provided search term and logic for each column.
+     *
+     * @param columnsWithSearchCriteria the columns and their associated search criteria
+     * @param criteriaBuilder           the criteria builder to construct the predicates
+     * @param deviceRoot                the root entity representing the device
+     * @return a combined `Predicate` representing the column-specific search conditions
+     */
+    private Predicate createPredicatesForColumnSpecificSearch(
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final CriteriaBuilder criteriaBuilder,
+            final Root<Device> deviceRoot) {
+        List<Predicate> combinedColumnSearchPredicates = new ArrayList<>();
+
+        // loop through all the datatable columns that have an applied search criteria
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            // since datatables returns us a nested column name, in order to get the correct
+            // the column name for devices, we need remove the device
+            // part of the string (e.g., "device.name" becomes "name").
+            if (columnName.startsWith("device.")) {
+                columnName = columnName.split("device.")[1]; // Take the part after "device."
+            }
+
+
+            // if the field is a string type
+            if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = deviceRoot.get(columnName);
+
+                Predicate predicate =
+                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
+                                columnSearchTerm,
+                                columnSearchLogic);
+                combinedColumnSearchPredicates.add(predicate);
+            }
+            // if the field is a timestamp type
+            else if (Timestamp.class.equals(deviceRoot.get(columnName).getJavaType())) {
+                Path<Timestamp> dateFieldPath = deviceRoot.get(columnName);
+
+                final Timestamp columnSearchTimestamp =
+                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
+                                columnSearchLogic);
+
+                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
+                        dateFieldPath, columnSearchTimestamp,
+                        columnSearchLogic);
+                combinedColumnSearchPredicates.add(predicate);
+            }
+        }
+
+        return criteriaBuilder.and(combinedColumnSearchPredicates.toArray(new Predicate[0]));
     }
 
     /**

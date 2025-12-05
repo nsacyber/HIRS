@@ -94,26 +94,15 @@ public class CertificatePageService {
         CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
         Root<T> certificateRoot = query.from(entityClass);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate combinedGlobalSearchPredicates =
+                createPredicatesForGlobalSearch(searchableColumnNames, criteriaBuilder, certificateRoot,
+                        globalSearchTerm);
 
-        // Dynamically loop through columns and create LIKE conditions for each searchable column
-        for (String columnName : searchableColumnNames) {
-            // if the field is a string type
-            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = certificateRoot.get(columnName);
-
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                        stringFieldPath, globalSearchTerm,
-                        "contains");
-                predicates.add(predicate);
-            }
-        }
-
-        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
-
-        // Add archiveFlag condition if specified
-        query.where(criteriaBuilder.and(otherConditions,
-                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)));
+        // Define the conditions (predicates) for the query's WHERE clause.
+        query.where(criteriaBuilder.and(
+                combinedGlobalSearchPredicates,
+                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)
+        ));
 
         // Apply pagination
         TypedQuery<T> typedQuery = this.entityManager.createQuery(query);
@@ -146,47 +135,15 @@ public class CertificatePageService {
         CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
         Root<T> certificateRoot = query.from(entityClass);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate combinedColumnSearchPredicates =
+                createPredicatesForColumnSpecificSearch(columnsWithSearchCriteria, criteriaBuilder,
+                        certificateRoot);
 
-        // loop through all the datatable columns that have an applied search criteria
-        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
-            final String columnName = columnWithSearchCriteria.getColumnName();
-            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
-            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
-            final String columnSearchType = columnWithSearchCriteria.getColumnSearchType();
-
-            // if the field is a string type
-            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = certificateRoot.get(columnName);
-
-                Predicate predicate =
-                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
-                                columnSearchTerm,
-                                columnSearchLogic);
-                predicates.add(predicate);
-            }
-            // if the field is a timestamp type
-            else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType()) &&
-                    columnSearchType.equalsIgnoreCase("date")) {
-
-                Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
-
-                final Timestamp columnSearchTimestamp =
-                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
-                                columnSearchLogic);
-
-                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
-                        dateFieldPath, columnSearchTimestamp,
-                        columnSearchLogic);
-                predicates.add(predicate);
-            }
-        }
-
-        Predicate otherConditions = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-
-        // Add archiveFlag condition if specified
-        query.where(criteriaBuilder.and(otherConditions,
-                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)));
+        // Define the conditions (predicates) for the query's WHERE clause.
+        query.where(criteriaBuilder.and(
+                combinedColumnSearchPredicates,
+                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)
+        ));
 
         // Apply pagination
         TypedQuery<T> typedQuery = entityManager.createQuery(query);
@@ -230,53 +187,21 @@ public class CertificatePageService {
         CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
         Root<T> certificateRoot = query.from(entityClass);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate globalSearchPartOfChainedPredicates =
+                createPredicatesForGlobalSearch(searchableColumnNames, criteriaBuilder, certificateRoot,
+                        globalSearchTerm);
 
-        // Global Search Predicate
-        for (String columnName : searchableColumnNames) {
-            // if the field is a string type
-            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = certificateRoot.get(columnName);
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(
-                        criteriaBuilder, stringFieldPath, globalSearchTerm, "contains");
-                predicates.add(predicate);
-            }
-        }
+        final Predicate columnSearchPartOfChainedPredicates =
+                createPredicatesForColumnSpecificSearch(columnsWithSearchCriteria, criteriaBuilder,
+                        certificateRoot);
 
-        // Column-Specific Search Predicates
-        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
-            final String columnName = columnWithSearchCriteria.getColumnName();
-            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
-            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
-            final String columnSearchType = columnWithSearchCriteria.getColumnSearchType();
-
-            // if the field is a string type
-            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = certificateRoot.get(columnName);
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(
-                        criteriaBuilder, stringFieldPath, columnSearchTerm, columnSearchLogic);
-                predicates.add(predicate);
-            }
-            // if the field is a timestamp type
-            else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType()) &&
-                    columnSearchType.equalsIgnoreCase("date")) {
-                Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
-
-                final Timestamp columnSearchTimestamp =
-                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
-                                columnSearchLogic);
-
-                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(
-                        criteriaBuilder, dateFieldPath, columnSearchTimestamp, columnSearchLogic);
-                predicates.add(predicate);
-            }
-        }
-
-        Predicate otherConditions = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-
-        // Add archiveFlag condition if specified
-        query.where(criteriaBuilder.and(otherConditions,
-                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)));
+        // Define the conditions (predicates) for the query's WHERE clause.
+        // Combine global and column-specific predicates using AND logic
+        query.where(criteriaBuilder.and(
+                globalSearchPartOfChainedPredicates,
+                columnSearchPartOfChainedPredicates,
+                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)
+        ));
 
         // Apply pagination
         TypedQuery<T> typedQuery = entityManager.createQuery(query);
@@ -600,6 +525,92 @@ public class CertificatePageService {
             errorMessages.add(failMessage + isEx.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Helper method that generates a combined predicate for global search across searchable columns.
+     * For each column, if the field is of type `String`, a "contains" condition is created.
+     *
+     * @param searchableColumnNames the columns to be searched globally
+     * @param criteriaBuilder       the criteria builder to construct the predicates
+     * @param certificateRoot       the root entity representing the certificate
+     * @param globalSearchTerm      the term to search for across columns
+     * @param <T>                   the entity type that extends `Certificate`
+     * @return a combined `Predicate` representing the global search conditions
+     */
+    private <T extends Certificate> Predicate createPredicatesForGlobalSearch(
+            final Set<String> searchableColumnNames,
+            final CriteriaBuilder criteriaBuilder,
+            final Root<T> certificateRoot,
+            final String globalSearchTerm) {
+
+        List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
+
+        // Dynamically loop through columns and create LIKE conditions for each searchable column
+        for (String columnName : searchableColumnNames) {
+            // if the field is a string type
+            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = certificateRoot.get(columnName);
+
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                        stringFieldPath, globalSearchTerm,
+                        "contains");
+                combinedGlobalSearchPredicates.add(predicate);
+            }
+        }
+
+        return criteriaBuilder.or(combinedGlobalSearchPredicates.toArray(new Predicate[0]));
+    }
+
+    /**
+     * Helper method that generates a combined predicate for column-specific search criteria.
+     * It constructs conditions based on the field type (e.g., `String` or `Timestamp`)
+     * and the provided search term and logic for each column.
+     *
+     * @param columnsWithSearchCriteria the columns and their associated search criteria
+     * @param criteriaBuilder           the criteria builder to construct the predicates
+     * @param certificateRoot           the root entity representing the certificate
+     * @param <T>                       the entity type that extends `Certificate`
+     * @return a combined `Predicate` representing the column-specific search conditions
+     */
+    private <T extends Certificate> Predicate createPredicatesForColumnSpecificSearch(
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final CriteriaBuilder criteriaBuilder,
+            final Root<T> certificateRoot) {
+        List<Predicate> combinedColumnSearchPredicates = new ArrayList<>();
+
+        // loop through all the datatable columns that have an applied search criteria
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            // if the field is a string type
+            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = certificateRoot.get(columnName);
+
+                Predicate predicate =
+                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
+                                columnSearchTerm,
+                                columnSearchLogic);
+                combinedColumnSearchPredicates.add(predicate);
+            }
+            // if the field is a timestamp type
+            else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
+
+                final Timestamp columnSearchTimestamp =
+                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
+                                columnSearchLogic);
+
+                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
+                        dateFieldPath, columnSearchTimestamp,
+                        columnSearchLogic);
+                combinedColumnSearchPredicates.add(predicate);
+            }
+        }
+
+        return criteriaBuilder.and(combinedColumnSearchPredicates.toArray(new Predicate[0]));
     }
 
     /**

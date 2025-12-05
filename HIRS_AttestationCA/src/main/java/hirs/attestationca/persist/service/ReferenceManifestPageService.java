@@ -88,25 +88,17 @@ public class ReferenceManifestPageService {
         CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
         Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate combinedGlobalSearchPredicates =
+                createPredicatesForGlobalSearch(searchableColumnNames, criteriaBuilder,
+                        rimRoot,
+                        globalSearchTerm);
 
-        // Dynamically loop through columns and create LIKE conditions for each searchable column
-        for (String columnName : searchableColumnNames) {
-            // if the field is a string type
-            if (String.class.equals(rimRoot.get(columnName).getJavaType())) {
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                        rimRoot.get(columnName), globalSearchTerm,
-                        "contains");
-                predicates.add(predicate);
-            }
-        }
-
-        Predicate otherConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
-
-        // Add archiveFlag and rim type condition if specified
-        query.where(criteriaBuilder.and(otherConditions,
+        // Define the conditions (predicates) for the query's WHERE clause.
+        query.where(criteriaBuilder.and(
+                combinedGlobalSearchPredicates,
                 criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag),
-                criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")));
+                criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")
+        ));
 
         // Apply pagination
         TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
@@ -137,32 +129,16 @@ public class ReferenceManifestPageService {
         CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
         Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate combinedColumnSearchPredicates =
+                createPredicatesForColumnSpecificSearch(columnsWithSearchCriteria, criteriaBuilder,
+                        rimRoot);
 
-        // loop through all the datatable columns that have an applied search criteria
-        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
-            final String columnName = columnWithSearchCriteria.getColumnName();
-            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
-            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
-
-            // if the field is a string type
-            if (String.class.equals(rimRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = rimRoot.get(columnName);
-
-                Predicate predicate =
-                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
-                                columnSearchTerm,
-                                columnSearchLogic);
-                predicates.add(predicate);
-            }
-        }
-
-        Predicate otherConditions = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-
-        // Add archiveFlag condition if specified
-        query.where(criteriaBuilder.and(otherConditions,
+        // Define the conditions (predicates) for the query's WHERE clause.
+        query.where(criteriaBuilder.and(
+                combinedColumnSearchPredicates,
                 criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag),
-                criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")));
+                criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")
+        ));
 
         // Apply pagination
         TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
@@ -203,40 +179,22 @@ public class ReferenceManifestPageService {
         CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
         Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate globalSearchPartOfChainedPredicates =
+                createPredicatesForGlobalSearch(searchableColumnNames, criteriaBuilder, rimRoot,
+                        globalSearchTerm);
 
-        // Global Search Predicate
-        for (String columnName : searchableColumnNames) {
-            // if the field is a string type
-            if (String.class.equals(rimRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = rimRoot.get(columnName);
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(
-                        criteriaBuilder, stringFieldPath, globalSearchTerm, "contains");
-                predicates.add(predicate);
-            }
-        }
+        final Predicate columnSearchPartOfChainedPredicates =
+                createPredicatesForColumnSpecificSearch(columnsWithSearchCriteria, criteriaBuilder,
+                        rimRoot);
 
-        // Column-Specific Search Predicates
-        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
-            final String columnName = columnWithSearchCriteria.getColumnName();
-            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
-            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
-
-            // if the field is a string type
-            if (String.class.equals(rimRoot.get(columnName).getJavaType())) {
-                Path<String> stringFieldPath = rimRoot.get(columnName);
-                Predicate predicate = PredicateFactory.createPredicateForStringFields(
-                        criteriaBuilder, stringFieldPath, columnSearchTerm, columnSearchLogic);
-                predicates.add(predicate);
-            }
-        }
-
-        Predicate otherConditions = criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-
-        // Add archiveFlag condition if specified
-        query.where(criteriaBuilder.and(otherConditions,
+        // Define the conditions (predicates) for the query's WHERE clause.
+        // Combine global and column-specific predicates using AND logic
+        query.where(criteriaBuilder.and(
+                globalSearchPartOfChainedPredicates,
+                columnSearchPartOfChainedPredicates,
                 criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag),
-                criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")));
+                criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")
+        ));
 
         // Apply pagination
         TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
@@ -452,6 +410,79 @@ public class ReferenceManifestPageService {
             errorMessages.add(failMessage + exception.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Helper method that generates a combined predicate for global search across searchable columns.
+     * For each column, if the field is of type `String`, a "contains" condition is created. If the field
+     * is of type 'Integer', an "equals" condition is created.
+     *
+     * @param searchableColumnNames the columns to be searched globally
+     * @param criteriaBuilder       the criteria builder to construct the predicates
+     * @param referenceManifestRoot the root entity representing reference manifest
+     * @param globalSearchTerm      the term to search for across columns
+     * @return a combined `Predicate` representing the global search conditions
+     */
+    private Predicate createPredicatesForGlobalSearch(
+            final Set<String> searchableColumnNames,
+            final CriteriaBuilder criteriaBuilder,
+            final Root<ReferenceManifest> referenceManifestRoot,
+            final String globalSearchTerm) {
+
+        List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
+
+        // Dynamically loop through columns and create LIKE conditions for each searchable column
+        for (String columnName : searchableColumnNames) {
+            // if the field is a string type
+            if (String.class.equals(referenceManifestRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = referenceManifestRoot.get(columnName);
+
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                        stringFieldPath, globalSearchTerm,
+                        "contains");
+                combinedGlobalSearchPredicates.add(predicate);
+            }
+        }
+
+        return criteriaBuilder.or(combinedGlobalSearchPredicates.toArray(new Predicate[0]));
+    }
+
+
+    /**
+     * Helper method that generates a combined predicate for column-specific search criteria.
+     * It constructs conditions based on the field type (e.g., `String` or `Integer`)
+     * and the provided search term and logic for each column.
+     *
+     * @param columnsWithSearchCriteria the columns and their associated search criteria
+     * @param criteriaBuilder           the criteria builder to construct the predicates
+     * @param referenceManifestRoot     the root entity representing the reference manifest
+     * @return a combined `Predicate` representing the column-specific search conditions
+     */
+    private Predicate createPredicatesForColumnSpecificSearch(
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final CriteriaBuilder criteriaBuilder,
+            final Root<ReferenceManifest> referenceManifestRoot) {
+        List<Predicate> combinedColumnSearchPredicates = new ArrayList<>();
+
+        // loop through all the datatable columns that have an applied search criteria
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            // if the field is a string type
+            if (String.class.equals(referenceManifestRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = referenceManifestRoot.get(columnName);
+
+                Predicate predicate =
+                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
+                                columnSearchTerm,
+                                columnSearchLogic);
+                combinedColumnSearchPredicates.add(predicate);
+            }
+        }
+
+        return criteriaBuilder.and(combinedColumnSearchPredicates.toArray(new Predicate[0]));
     }
 
     private Map<String, SupportReferenceManifest> updateSupportRimInfo(
