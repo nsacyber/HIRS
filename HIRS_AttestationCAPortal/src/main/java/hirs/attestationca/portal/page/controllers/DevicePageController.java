@@ -97,24 +97,21 @@ public class DevicePageController extends PageController<NoPageParams> {
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.devicePageService.findAllDevices(pageable);
-        }
-        // if a value has been entered in both the global search textbox and in the column search dropdown
-        else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
                     this.devicePageService.findDevicesByGlobalAndColumnSpecificSearchTerm(
                             searchableColumnNames,
                             globalSearchTerm,
                             columnsWithSearchCriteria,
                             pageable);
-        }
-        // if a value has been entered ONLY in the column search dropdown
-        else if (!columnsWithSearchCriteria.isEmpty()) {
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
             pagedResult =
                     this.devicePageService.findDevicesByColumnSpecificSearchTerm(
                             columnsWithSearchCriteria, pageable);
-        }
-        // if a value has been entered ONLY in the global search textbox
-        else {
+        } else {
+            // if a value has been entered ONLY in the global search textbox
             pagedResult =
                     this.devicePageService.findDevicesByGlobalSearchTerm(searchableColumnNames,
                             globalSearchTerm,

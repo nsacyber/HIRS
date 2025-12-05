@@ -118,9 +118,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.referenceManifestPageService.findAllBaseAndSupportRIMSByPageable(pageable);
-        }
-        // if a value has been entered in both the global search textbox and in the column search dropdown
-        else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
                     this.referenceManifestPageService.findRIMSByGlobalAndColumnSpecificSearchTerm(
                             searchableColumnNames,
@@ -128,18 +127,16 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                             columnsWithSearchCriteria,
                             false,
                             pageable);
-        }
-        // if a value has been entered ONLY in the column search dropdown
-        else if (!columnsWithSearchCriteria.isEmpty()) {
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
             pagedResult =
                     this.referenceManifestPageService.
                             findRIMSByColumnSpecificSearchTermAndArchiveFlag(
                                     columnsWithSearchCriteria,
                                     false,
                                     pageable);
-        }
-        // if a value has been entered ONLY in the global search textbox
-        else {
+        } else {
+            // if a value has been entered ONLY in the global search textbox
             pagedResult = this.referenceManifestPageService.
                     findRIMSByGlobalSearchTermAndArchiveFlag(searchableColumnNames,
                             globalSearchTerm,

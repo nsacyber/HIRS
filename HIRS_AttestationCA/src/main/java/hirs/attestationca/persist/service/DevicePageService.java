@@ -333,6 +333,7 @@ public class DevicePageService {
             final CriteriaBuilder criteriaBuilder,
             final Root<Device> deviceRoot,
             final String globalSearchTerm) {
+        final String stringFieldGlobalSearchLogic = "contains";
 
         List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
 
@@ -345,13 +346,11 @@ public class DevicePageService {
                 columnName = columnName.split("device.")[1]; // Take the part after "device."
             }
 
-            // if the field is a string type
             if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = deviceRoot.get(columnName);
 
                 Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                        stringFieldPath, globalSearchTerm,
-                        "contains");
+                        stringFieldPath, globalSearchTerm, stringFieldGlobalSearchLogic);
                 combinedGlobalSearchPredicates.add(predicate);
             }
         }
@@ -389,8 +388,6 @@ public class DevicePageService {
                 columnName = columnName.split("device.")[1]; // Take the part after "device."
             }
 
-
-            // if the field is a string type
             if (String.class.equals(deviceRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = deviceRoot.get(columnName);
 
@@ -399,9 +396,7 @@ public class DevicePageService {
                                 columnSearchTerm,
                                 columnSearchLogic);
                 combinedColumnSearchPredicates.add(predicate);
-            }
-            // if the field is a timestamp type
-            else if (Timestamp.class.equals(deviceRoot.get(columnName).getJavaType())) {
+            } else if (Timestamp.class.equals(deviceRoot.get(columnName).getJavaType())) {
                 Path<Timestamp> dateFieldPath = deviceRoot.get(columnName);
 
                 final Timestamp columnSearchTimestamp =

@@ -118,9 +118,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.iDevIdCertificatePageService.
                     findIDevCertificatesByArchiveFlag(false, pageable);
-        }
-        // if a value has been entered in both the global search textbox and in the column search dropdown
-        else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
                     this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
                             IDevIDCertificate.class,
@@ -129,18 +128,16 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                             columnsWithSearchCriteria,
                             false,
                             pageable);
-        }
-        // if a value has been entered ONLY in the column search dropdown
-        else if (!columnsWithSearchCriteria.isEmpty()) {
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
             pagedResult =
                     this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
                             IDevIDCertificate.class,
                             columnsWithSearchCriteria,
                             false,
                             pageable);
-        }
-        // if a value has been entered ONLY in the global search textbox
-        else {
+        } else {
+            // if a value has been entered ONLY in the global search textbox
             pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     IDevIDCertificate.class,
                     searchableColumnNames,

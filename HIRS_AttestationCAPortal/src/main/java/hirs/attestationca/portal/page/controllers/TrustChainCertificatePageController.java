@@ -167,9 +167,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             pagedResult =
                     this.trustChainCertificatePageService.
                             findCACredentialsByArchiveFlag(false, pageable);
-        }
-        // if a value has been entered in both the global search textbox and in the column search dropdown
-        else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
                     this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
                             CertificateAuthorityCredential.class,
@@ -178,19 +177,17 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                             columnsWithSearchCriteria,
                             false,
                             pageable);
-        }
-        // if a value has been entered ONLY in the column search dropdown
-        else if (!columnsWithSearchCriteria.isEmpty()) {
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
             pagedResult =
                     this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
                             CertificateAuthorityCredential.class,
                             columnsWithSearchCriteria,
                             false,
                             pageable);
-        }
-        // if a value has been entered ONLY in the global search textbox
-        else {
+        } else {
             pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+                    // if a value has been entered ONLY in the global search textbox
                     CertificateAuthorityCredential.class,
                     searchableColumnNames,
                     globalSearchTerm,

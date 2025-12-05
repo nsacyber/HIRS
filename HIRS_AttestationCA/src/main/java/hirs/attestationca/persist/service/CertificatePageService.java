@@ -173,6 +173,7 @@ public class CertificatePageService {
      * @param globalSearchTerm          text that was input in the global search textbox
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param pageable                  pageable
+     * @param archiveFlag               archive flag
      * @param <T>                       generic entity class that extends from certificate
      * @return page full of the generic certificates.
      */
@@ -426,8 +427,8 @@ public class CertificatePageService {
             throw new EntityNotFoundException(errorMessage);
         } else if (!certificateClass.isInstance(certificate)) {
             final String errorMessage =
-                    "Unable to cast the found certificate to a(n) " + certificateClass.getSimpleName() +
-                            " object";
+                    "Unable to cast the found certificate to a(n) " + certificateClass.getSimpleName()
+                            + " object";
             log.warn(errorMessage);
             throw new ClassCastException(errorMessage);
         }
@@ -543,18 +544,17 @@ public class CertificatePageService {
             final CriteriaBuilder criteriaBuilder,
             final Root<T> certificateRoot,
             final String globalSearchTerm) {
+        final String stringFieldGlobalSearchLogic = "contains";
 
         List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
 
         // Dynamically loop through columns and create LIKE conditions for each searchable column
         for (String columnName : searchableColumnNames) {
-            // if the field is a string type
             if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = certificateRoot.get(columnName);
 
                 Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                        stringFieldPath, globalSearchTerm,
-                        "contains");
+                        stringFieldPath, globalSearchTerm, stringFieldGlobalSearchLogic);
                 combinedGlobalSearchPredicates.add(predicate);
             }
         }
@@ -584,8 +584,7 @@ public class CertificatePageService {
             final String columnName = columnWithSearchCriteria.getColumnName();
             final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
             final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
-
-            // if the field is a string type
+            
             if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = certificateRoot.get(columnName);
 
@@ -594,9 +593,7 @@ public class CertificatePageService {
                                 columnSearchTerm,
                                 columnSearchLogic);
                 combinedColumnSearchPredicates.add(predicate);
-            }
-            // if the field is a timestamp type
-            else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType())) {
+            } else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType())) {
                 Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
 
                 final Timestamp columnSearchTimestamp =

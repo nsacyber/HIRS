@@ -24,7 +24,7 @@ public class DataTablesColumn {
     private String columnName;
 
     /**
-     * Search term applied to this column
+     * Search term applied to this column.
      */
     private String columnSearchTerm;
 

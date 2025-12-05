@@ -11,8 +11,9 @@ import java.sql.Timestamp;
  * filtering data in JPA Criteria queries.
  *
  * <p>This class provides utility methods to dynamically build predicates based on different search criteria
- * for {@link String}. {@link Timestamp} and {@link Integer} fields. The predicates are used in JPA Criteria API to generate
- * SQL-based queries with conditions that are applied at runtime based on the user's input.</p>
+ * for {@link String}. {@link Timestamp} and {@link Integer} fields. The predicates are used in JPA Criteria
+ * API to generate SQL-based queries with conditions that are applied at runtime based on the user's input.
+ * </p>
  *
  * <p>The factory supports a wide range of common search operations such as:</p>
  * <ul>
@@ -34,7 +35,13 @@ import java.sql.Timestamp;
 public final class PredicateFactory {
 
     /**
-     * Creates a predicate based on the search logic
+     * Private constructor was created to silence checkstyle error.
+     */
+    private PredicateFactory() {
+    }
+
+    /**
+     * Creates a predicate based on the search logic and search term for String fields.
      *
      * @param criteriaBuilder  the {@link CriteriaBuilder} used to construct the predicate
      * @param fieldPath        The path to the entity field
@@ -97,7 +104,6 @@ public final class PredicateFactory {
                     "Search logic not supported for Integer fields: " + searchLogic);
         };
     }
-
 
     /**
      * Creates a predicate based on the search logic and search term for Timestamp fields.
@@ -385,10 +391,11 @@ public final class PredicateFactory {
     /**
      * Builds a predicate to check if a Timestamp field is equal to a given search term.
      *
-     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Timestamp field in the entity.
-     * @param searchTerm      The Timestamp value to compare the field against.
-     * @return A Predicate representing the equality check for the Timestamp field.
+     * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
+     * @param fieldPath       the {@link Path} representing the Timestamp field to check
+     *                        (must be an {@link Timestamp})
+     * @param searchTerm      the value to compare the field against
+     * @return a {@link Predicate} representing the equality check for the Timestamp field.
      */
     private static Predicate buildEqualsPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
                                                                     final Path<Timestamp> fieldPath,
@@ -399,10 +406,11 @@ public final class PredicateFactory {
     /**
      * Builds a predicate to check if a Timestamp field is not equal to a given search term.
      *
-     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Timestamp field in the entity.
-     * @param searchTerm      The Timestamp value to compare the field against.
-     * @return A Predicate representing the inequality check for the Timestamp field.
+     * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
+     * @param fieldPath       the {@link Path} representing the Timestamp field to check
+     *                        (must be an {@link Timestamp})
+     * @param searchTerm      the value to compare the field against
+     * @return a {@link Predicate} representing the inequality check for the Timestamp field.
      */
     private static Predicate buildDoesNotEqualPredicateForTimestampFields(
             final CriteriaBuilder criteriaBuilder,
@@ -414,52 +422,56 @@ public final class PredicateFactory {
     /**
      * Builds a predicate to check if a Timestamp field is before a given search term.
      *
-     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Timestamp field in the entity.
-     * @param searchTerm      The Timestamp value to compare the field against.
-     * @return A Predicate representing the "before" check for the Timestamp field.
+     * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
+     * @param fieldPath       the {@link Path} representing the Timestamp field to check
+     *                        (must be an {@link Timestamp})
+     * @param searchTerm      the value to compare the field against
+     * @return a {@link Predicate} representing the "before" check for the Timestamp field.
      */
-    private static Predicate buildBeforePredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
-                                                                    final Path<Timestamp> fieldPath,
-                                                                    final Timestamp searchTerm) {
+    public static Predicate buildBeforePredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                                   final Path<Timestamp> fieldPath,
+                                                                   final Timestamp searchTerm) {
         return criteriaBuilder.lessThan(fieldPath, searchTerm);
     }
 
     /**
      * Builds a predicate to check if a Timestamp field is after a given search term.
      *
-     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Timestamp field in the entity.
-     * @param searchTerm      The Timestamp value to compare the field against.
-     * @return A Predicate representing the "after" check for the Timestamp field.
+     * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
+     * @param fieldPath       the {@link Path} representing the Timestamp field to check
+     *                        (must be an {@link Timestamp})
+     * @param searchTerm      the value to compare the field against
+     * @return a {@link Predicate} representing the "after" check for the Timestamp field.
      */
-    private static Predicate buildAfterPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
-                                                                   final Path<Timestamp> fieldPath,
-                                                                   final Timestamp searchTerm) {
+    public static Predicate buildAfterPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                                  final Path<Timestamp> fieldPath,
+                                                                  final Timestamp searchTerm) {
         return criteriaBuilder.greaterThan(fieldPath, searchTerm);
     }
 
     /**
      * Builds a predicate to check if a Timestamp field is not null.
      *
-     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Timestamp field in the entity.
-     * @return A Predicate representing the "is not null" check for the Timestamp field.
+     * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
+     * @param fieldPath       the {@link Path} representing the Timestamp field to check
+     *                        (must be an {@link Timestamp})
+     * @return a {@link Predicate} that ensures the field is not null
      */
-    private static Predicate buildNotEmptyPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
-                                                                      final Path<Timestamp> fieldPath) {
+    public static Predicate buildNotEmptyPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                                     final Path<Timestamp> fieldPath) {
         return criteriaBuilder.isNotNull(fieldPath);
     }
 
     /**
      * Builds a predicate to check if a Timestamp field is null.
      *
-     * @param criteriaBuilder The CriteriaBuilder used to construct the query.
-     * @param fieldPath       The path to the Timestamp field in the entity.
-     * @return A Predicate representing the "is null" check for the Timestamp field.
+     * @param criteriaBuilder the {@link CriteriaBuilder} used to construct the predicate
+     * @param fieldPath       the {@link Path} representing the Timestamp field to check
+     *                        (must be an {@link Timestamp})
+     * @return a {@link Predicate} that ensures the field is null
      */
-    private static Predicate buildEmptyPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
-                                                                   final Path<Timestamp> fieldPath) {
+    public static Predicate buildEmptyPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
+                                                                  final Path<Timestamp> fieldPath) {
         return criteriaBuilder.isNull(fieldPath);
     }
 }

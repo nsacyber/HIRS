@@ -71,8 +71,8 @@ public final class ControllerPagesUtils {
 
                 // Filter to include columns with non-null column controls that come with a column control
                 // logic operator
-                .filter(eachColumn -> eachColumn.getColumnControl() != null &&
-                        !StringUtils.isBlank(eachColumn.getColumnControl().getSearch().getLogic()))
+                .filter(eachColumn -> eachColumn.getColumnControl() != null
+                        && !StringUtils.isBlank(eachColumn.getColumnControl().getSearch().getLogic()))
 
                 // Filter to include columns with both a non-empty search value and a defined logic operator
                 // the search value can be empty if the logic value is empty or not empty
@@ -81,9 +81,9 @@ public final class ControllerPagesUtils {
 
                     // return true, if the logic operator is empty or not empty or if the search value is not
                     // null or blank. Otherwise, return false
-                    return columnSearchLogic.equalsIgnoreCase("empty") ||
-                            columnSearchLogic.equalsIgnoreCase("notEmpty") ||
-                            !StringUtils.isBlank(eachColumn.getColumnControl().getSearch().getValue());
+                    return columnSearchLogic.equalsIgnoreCase("empty")
+                            || columnSearchLogic.equalsIgnoreCase("notEmpty")
+                            || !StringUtils.isBlank(eachColumn.getColumnControl().getSearch().getValue());
                 })
 
                 // Create an object that contains the column name, column specific search value,

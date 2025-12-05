@@ -64,8 +64,13 @@
                     },
                 ];
 
-                //Set data tables
-                setDataTables("#digestValueTable", url, columns);
+                let table = setDataTables("#digestValueTable", url, columns);
+
+                // if the clear all button is clicked on...
+                $('#clearSearchBtn').on('click', function () {
+                    //... clear the global search textbox and the column control search dropdowns
+                    table.search('').columns().columnControl.searchClear().draw();
+                });
             });
         </script>
     </section>
@@ -76,6 +81,7 @@
 
     <div class="content" layout:fragment="content">
         <div class="aca-data-table">
+            <button id="clearSearchBtn" type="button" class="btn btn-secondary buttons-collection">Clear Search</button>
             <table id="digestValueTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>

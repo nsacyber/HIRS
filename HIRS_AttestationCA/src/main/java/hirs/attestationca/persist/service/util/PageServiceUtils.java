@@ -8,6 +8,13 @@ import java.time.format.DateTimeFormatter;
  * Utility class for the Page Service classes.
  */
 public final class PageServiceUtils {
+
+    /**
+     * Private constructor was created to silence checkstyle error.
+     */
+    private PageServiceUtils() {
+    }
+
     /**
      * Helper method that converts the string value entered in the column search dropdown into a timestamp.
      *
@@ -20,13 +27,12 @@ public final class PageServiceUtils {
         Timestamp columnSearchTimestamp;
 
         // Handle "empty" or "notempty" logic - no need for a real search term, use a default timestamp
-        if (columnSearchLogic.equalsIgnoreCase("empty") ||
-                columnSearchLogic.equalsIgnoreCase("notempty")) {
+        if (columnSearchLogic.equalsIgnoreCase("empty")
+                || columnSearchLogic.equalsIgnoreCase("notempty")) {
             // Use a Unix epoch timestamp
             columnSearchTimestamp = Timestamp.valueOf("1970-01-01 00:00:00");
-        }
-        //  if the search logic is anything else but empty or not empty
-        else {
+        } else {   //  if the search logic is anything else but empty or not empty
+            
             // Define the DateTimeFormatter matching the input date format
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

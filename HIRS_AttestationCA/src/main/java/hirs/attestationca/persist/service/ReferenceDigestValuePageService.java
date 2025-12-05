@@ -246,22 +246,21 @@ public class ReferenceDigestValuePageService {
             final CriteriaBuilder criteriaBuilder,
             final Root<ReferenceDigestValue> referenceDigestValueRoot,
             final String globalSearchTerm) {
+        final String stringFieldGlobalSearchLogic = "contains";
+        final String integerFieldGlobalSearchLogic = "equal";
 
         List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
 
         // Dynamically loop through columns and create LIKE conditions for each searchable column
         for (String columnName : searchableColumnNames) {
-            // if the field is a string type
             if (String.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = referenceDigestValueRoot.get(columnName);
 
                 Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
                         stringFieldPath, globalSearchTerm,
-                        "contains");
+                        stringFieldGlobalSearchLogic);
                 combinedGlobalSearchPredicates.add(predicate);
-            }
-            // if the field is an integer type
-            else if (Integer.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
+            } else if (Integer.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
                 try {
                     Path<Integer> integerFieldPath = referenceDigestValueRoot.get(columnName);
 
@@ -269,7 +268,7 @@ public class ReferenceDigestValuePageService {
 
                     // For Integer fields, use EQUAL if the search term is numeric
                     Predicate predicate = PredicateFactory.createPredicateForIntegerFields(criteriaBuilder,
-                            integerFieldPath, searchInteger, "equal");
+                            integerFieldPath, searchInteger, integerFieldGlobalSearchLogic);
 
                     combinedGlobalSearchPredicates.add(predicate);
                 } catch (NumberFormatException e) {
@@ -304,7 +303,6 @@ public class ReferenceDigestValuePageService {
             final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
             final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
 
-            // if the field is a string type
             if (String.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = referenceDigestValueRoot.get(columnName);
 
@@ -313,9 +311,7 @@ public class ReferenceDigestValuePageService {
                                 columnSearchTerm,
                                 columnSearchLogic);
                 combinedColumnSearchPredicates.add(predicate);
-            }
-            // if the field is an integer type
-            else if (Integer.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
+            } else if (Integer.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
                 try {
                     Integer searchInteger = Integer.parseInt(columnSearchTerm); // Will throw if not a number
 

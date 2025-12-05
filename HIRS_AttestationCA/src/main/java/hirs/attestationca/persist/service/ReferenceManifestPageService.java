@@ -167,6 +167,7 @@ public class ReferenceManifestPageService {
      * @param globalSearchTerm          text that was input in the global search textbox
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param pageable                  pageable
+     * @param archiveFlag               archive flag
      * @return page full of reference manifests
      */
     public Page<ReferenceManifest> findRIMSByGlobalAndColumnSpecificSearchTerm(
@@ -428,18 +429,17 @@ public class ReferenceManifestPageService {
             final CriteriaBuilder criteriaBuilder,
             final Root<ReferenceManifest> referenceManifestRoot,
             final String globalSearchTerm) {
+        final String stringFieldGlobalSearchLogic = "contains";
 
         List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
 
         // Dynamically loop through columns and create LIKE conditions for each searchable column
         for (String columnName : searchableColumnNames) {
-            // if the field is a string type
             if (String.class.equals(referenceManifestRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = referenceManifestRoot.get(columnName);
 
                 Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                        stringFieldPath, globalSearchTerm,
-                        "contains");
+                        stringFieldPath, globalSearchTerm, stringFieldGlobalSearchLogic);
                 combinedGlobalSearchPredicates.add(predicate);
             }
         }
@@ -470,7 +470,6 @@ public class ReferenceManifestPageService {
             final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
             final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
 
-            // if the field is a string type
             if (String.class.equals(referenceManifestRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = referenceManifestRoot.get(columnName);
 

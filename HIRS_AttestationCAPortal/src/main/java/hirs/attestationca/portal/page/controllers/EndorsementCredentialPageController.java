@@ -120,9 +120,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.endorsementCredentialPageService.
                     findEndorsementCredentialsByArchiveFlag(false, pageable);
-        }
-        // if a value has been entered in both the global search textbox and in the column search dropdown
-        else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
                     this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
                             EndorsementCredential.class,
@@ -131,18 +130,16 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                             columnsWithSearchCriteria,
                             false,
                             pageable);
-        }
-        // if a value has been entered ONLY in the column search dropdown
-        else if (!columnsWithSearchCriteria.isEmpty()) {
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
             pagedResult =
                     this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
                             EndorsementCredential.class,
                             columnsWithSearchCriteria,
                             false,
                             pageable);
-        }
-        // if a value has been entered ONLY in the global search textbox
-        else {
+        } else {
+            // if a value has been entered ONLY in the global search textbox
             pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     EndorsementCredential.class,
                     searchableColumnNames,

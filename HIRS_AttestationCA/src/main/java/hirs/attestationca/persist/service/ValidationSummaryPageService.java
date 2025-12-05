@@ -191,6 +191,7 @@ public class ValidationSummaryPageService {
      * @param searchableColumnNames     list of the searchable column names
      * @param globalSearchTerm          The term that the user enters in the global search box.
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param archiveFlag               archive flag
      * @param pageable                  pageable
      * @return A Page containing a list of validation summaries that match both the global search term and
      * the column-specific search criteria.
@@ -408,6 +409,7 @@ public class ValidationSummaryPageService {
             final CriteriaBuilder criteriaBuilder,
             final Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot,
             final String globalSearchTerm) {
+        final String stringFieldGlobalSearchLogic = "contains";
 
         List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
 
@@ -415,21 +417,18 @@ public class ValidationSummaryPageService {
         for (String columnName : searchableColumnNames) {
             // If there is no period, we are dealing with a simple field
             if (!columnName.contains(".")) {
-                // if the field is a string type
                 if (String.class.equals(supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
                     Path<String> stringFieldPath = supplyChainValidationSummaryRoot.get(columnName);
 
                     Predicate predicate =
                             PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                                    stringFieldPath,
-                                    globalSearchTerm,
-                                    "contains");
+                                    stringFieldPath, globalSearchTerm, stringFieldGlobalSearchLogic);
                     combinedGlobalSearchPredicates.add(predicate);
                 }
             } else { // If there is a period, we are dealing with a nested field (e.g., "device.id")
                 Predicate predicateForNestedField =
                         createPredicateForNestedField(criteriaBuilder, supplyChainValidationSummaryRoot,
-                                columnName, globalSearchTerm, "contains");
+                                columnName, globalSearchTerm, stringFieldGlobalSearchLogic);
                 combinedGlobalSearchPredicates.add(predicateForNestedField);
             }
         }
@@ -471,9 +470,7 @@ public class ValidationSummaryPageService {
                                     columnSearchTerm,
                                     columnSearchLogic);
                     combinedColumnSearchPredicates.add(predicate);
-                }
-                // if the field is a timestamp type
-                else if (Timestamp.class.equals(
+                } else if (Timestamp.class.equals(
                         supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
                     Path<Timestamp> dateFieldPath = supplyChainValidationSummaryRoot.get(columnName);
 
