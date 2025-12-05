@@ -116,6 +116,22 @@ function setDataTables(id, url, columns, options = {}) {
   let defaultConfig = {
     processing: true,
     serverSide: true,
+    colReorder: true,
+    select: true,
+    responsive: true,
+    layout: {
+      topStart: {
+        buttons: [
+          "pageLength",
+          "colvis",
+          {
+            extend: "collection",
+            text: "Export",
+            buttons: ["copy", "pdf", "excel", "print"],
+          },
+        ],
+      },
+    },
     columnDefs: [{ className: "dt-head-center", targets: "_all" }],
     ajax: {
       url: url,
@@ -301,15 +317,24 @@ function rimDownloadLink(pagePath, id) {
 }
 
 /**
- * Formats a given date to a UTC string, or returns an indefinite icon
- * @param dateText date to format
+ * Formats a given Java date string to a UTC date string, or returns an indefinite value.
+ * @param dateText - The Java Date string (ISO 8601 format)
+ * @returns Formatted date or "Indefinite" if invalid.
  */
 function formatCertificateDate(dateText) {
-  const timestamp = Date.parse(dateText); // Convert to numeric
+  // Check if the dateText is "Indefinite" (handle special case)
+  if (dateText === "Indefinite") {
+    return dateText;
+  }
 
-  if (timestamp == 253402300799000) {
+  // Use Moment.js to parse the ISO 8601 date string
+  const momentDate = moment(dateText); // `dateText` should be an ISO 8601 string
+
+  // If the date is invalid, return "Indefinite"
+  if (!momentDate.isValid()) {
     return "Indefinite";
   }
 
-  return new Date(timestamp).toUTCString();
+  // Format the date (you can adjust the format as needed)
+  return momentDate.utc().format("ddd, DD MMM YYYY HH:mm:ss [GMT]");
 }

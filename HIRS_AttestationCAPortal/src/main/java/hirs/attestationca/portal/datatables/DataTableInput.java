@@ -11,12 +11,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Represents a data table input in a jQuery DataTable.
+ * Java representation of a Datatable input object.
  */
 @Getter
 @NoArgsConstructor
@@ -115,67 +113,6 @@ public class DataTableInput {
     public void setColumns(final List<Column> columns) {
         this.columns.clear();
         this.columns.addAll(columns);
-    }
-
-    /**
-     * @return a {@link Map} of {@link Column} indexed by name
-     */
-    public Map<String, Column> getColumnsAsMap() {
-        Map<String, Column> map = new HashMap<String, Column>();
-        for (Column column : columns) {
-            map.put(column.getData(), column);
-        }
-        return map;
-    }
-
-    /**
-     * Find a column by its name.
-     *
-     * @param columnName the name of the column
-     * @return the given Column, or <code>null</code> if not found
-     */
-    public Column getColumn(final String columnName) {
-        if (columnName == null) {
-            return null;
-        }
-        for (Column column : columns) {
-            if (columnName.equals(column.getData())) {
-                return column;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Add a new column.
-     *
-     * @param columnName  the name of the column
-     * @param searchable  whether the column is searchable or not
-     * @param orderable   whether the column is orderable or not
-     * @param searchValue if any, the search value to apply
-     */
-    public void addColumn(final String columnName, final boolean searchable,
-                          final boolean orderable, final String searchValue) {
-        this.columns.add(new Column(columnName, "", searchable, orderable,
-                new Search(searchValue, false)));
-    }
-
-    /**
-     * Add an order on the given column.
-     *
-     * @param columnName the name of the column
-     * @param ascending  whether the sorting is ascending or descending
-     */
-    public void addOrder(final String columnName, final boolean ascending) {
-        if (columnName == null) {
-            return;
-        }
-        for (int i = 0; i < columns.size(); i++) {
-            if (!columnName.equals(columns.get(i).getData())) {
-                continue;
-            }
-            order.add(new Order(i, ascending));
-        }
     }
 
     /**

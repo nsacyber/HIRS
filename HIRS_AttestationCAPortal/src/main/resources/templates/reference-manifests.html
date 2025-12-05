@@ -14,31 +14,37 @@
                         name: "tagId",
                         data: "tagId",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "rimType",
                         data: "rimType",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "platformManufacturer",
                         data: "platformManufacturer",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "platformModel",
                         data: "platformModel",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "swidTagVersion",
                         data: "swidTagVersion",
+                        type: "text",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         data: "id",
@@ -49,15 +55,22 @@
                             // sets up a hidden input field containing the ID which is
                             // used as a parameter to the REST POST call to delete
                             let html = "";
-                            html += rimDetailsLink(rimDBViewName, full.id);
-                            html += rimDownloadLink(viewName, full.id);
-                            html += rimDeleteLink(viewName, full.id);
+                            html += rimDetailsLink(rimDBViewName, data);
+                            html += rimDownloadLink(viewName, data);
+                            html += rimDeleteLink(viewName, data);
 
                             return html;
                         }
                     }
                 ];
-                setDataTables("#referenceManifestTable", url, columns);
+
+                let table = setDataTables("#referenceManifestTable", url, columns);
+
+                // if the clear all button is clicked on...
+                $('#clearSearchBtn').on('click', function () {
+                    //... clear the global search textbox and the column control search dropdowns
+                    table.search('').columns().columnControl.searchClear().draw();
+                });
             });
         </script>
     </section>
@@ -83,7 +96,8 @@
         </div>
         <br />
         <div class="aca-data-table">
-            <table id="referenceManifestTable" class="display" width="100%">
+            <button id="clearSearchBtn" type="button" class="btn btn-secondary buttons-collection">Clear Search</button>
+            <table id="referenceManifestTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
                         <th>Tag Id</th>

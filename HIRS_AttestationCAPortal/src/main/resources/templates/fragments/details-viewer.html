@@ -1,6 +1,6 @@
 <th:block th:fragment="detailsViewer(id, label, customButton, bodyContent)">
     <!-- Details viewer icon anchor -->
-    <a th:href="'#' + ${id}" data-toggle="modal" th:title="${label}">
+    <a th:href="'#' + ${id}" data-bs-toggle="modal" th:title="${label}">
         <img th:src="@{/icons/ic_assignment_black_24dp.png}" alt="Details Viewer Icon" />
     </a>
 

@@ -56,17 +56,14 @@
             },
           },
           {
-            // Note: DB column is create_time, while the
-            // JSON property / java property is createTime. Need to sort
-            // on the field createTime, but the column's
-            // date source is create_time.
-            name: "create_time",
-            data: "create_time",
+            data: "createTime",
             name: "createTime",
-            searchable: false,
-            orderable: false,
+            type: "date",
+            searchable: true,
+            orderable: true,
+            columnControl: ["searchDropdown"],
             render: function (data, type, full, meta) {
-              return formatCertificateDate(full.createTime);
+              return formatCertificateDate(data);
             },
           },
           {
@@ -75,7 +72,8 @@
             name: "device.name",
             data: "device.name",
             searchable: true,
-            orderable: true
+            orderable: true,
+            columnControl: ["searchDropdown"],
           },
           {
             data: "id",
@@ -105,6 +103,13 @@
 
         //Set data tables
         let dataTable = setDataTables("#reportTable", url, columns);
+
+        // if the clear all button is clicked on...
+        $('#clearSearchBtn').on('click', function () {
+          //... clear the global search textbox and the column control search dropdowns
+          dataTable.search('').columns().columnControl.searchClear().draw();
+        });
+
         dataTable.order([1, "desc"]).draw(); //order by createTime
 
         $("#download").submit(function (e) {
@@ -259,10 +264,11 @@
     </form>
 
     <div class="aca-data-table">
-      <table id="reportTable" class="display" width="100%">
+      <button id="clearSearchBtn" type="button" class="btn btn-secondary buttons-collection">Clear Search</button>
+      <table id="reportTable" class="table table-bordered table-striped table-hover">
         <thead>
           <tr>
-            <th rowspan="2">Result</th>
+            <th rowspan=" 2">Result</th>
             <th rowspan="2">Timestamp</th>
             <th rowspan="2">Device</th>
             <th colspan="3">Credential Validations</th>

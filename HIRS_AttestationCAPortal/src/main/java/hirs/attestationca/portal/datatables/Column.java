@@ -4,19 +4,15 @@ package hirs.attestationca.portal.datatables;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
- * Java representation of a jQuery DataTables Column.
+ * Java representation of a DataTables Column.
  */
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 public class Column {
 
     /**
@@ -56,4 +52,10 @@ public class Column {
      */
     @NotNull
     private Search search;
+
+    /**
+     * Column control for this specific column.
+     */
+    @NotNull
+    private ColumnControl columnControl;
 }
