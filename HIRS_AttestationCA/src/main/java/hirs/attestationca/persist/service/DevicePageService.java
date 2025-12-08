@@ -10,7 +10,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCred
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
-import hirs.attestationca.persist.service.util.PageServiceUtils;
 import hirs.attestationca.persist.service.util.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -26,7 +25,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -395,17 +393,6 @@ public class DevicePageService {
                         PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
                                 columnSearchTerm,
                                 columnSearchLogic);
-                combinedColumnSearchPredicates.add(predicate);
-            } else if (Timestamp.class.equals(deviceRoot.get(columnName).getJavaType())) {
-                Path<Timestamp> dateFieldPath = deviceRoot.get(columnName);
-
-                final Timestamp columnSearchTimestamp =
-                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
-                                columnSearchLogic);
-
-                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
-                        dateFieldPath, columnSearchTimestamp,
-                        columnSearchLogic);
                 combinedColumnSearchPredicates.add(predicate);
             }
         }

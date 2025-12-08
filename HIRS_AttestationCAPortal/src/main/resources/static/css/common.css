@@ -37,6 +37,7 @@ body {
 .page-title {
   font-size: 40px;
   width: 75%;
+  color: white;
 }
 .aca-subtitle {
   font-size: 70%;
@@ -91,6 +92,7 @@ body {
 
 .aca-data-table {
   text-align: center;
+  padding-bottom: 50px;
 }
 
 /* Page messages */

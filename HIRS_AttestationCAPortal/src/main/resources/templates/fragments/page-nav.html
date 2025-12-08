@@ -7,10 +7,10 @@
                         th:class="'nav-item ' + ${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '') ">
                         <a th:href="@{'/HIRS_AttestationCAPortal/portal/' + ${p?.prefixPath} + ${p?.viewName}}"
                             class="nav-link">
-                            <span th:text="${p?.title}">Page Title</span>
-                            <span class="d-none d-md-inline pull-right">
+                            <span class="">
                                 <img th:src="@{/icons/{icon}_white_24dp.png(icon=${p?.icon})}" alt="" />
                             </span>
+                            <span th:text="${p?.title}">Page Title</span>
                         </a>
                     </li>
                 </ul>

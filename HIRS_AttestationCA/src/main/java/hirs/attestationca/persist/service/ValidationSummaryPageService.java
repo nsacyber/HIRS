@@ -41,6 +41,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -472,16 +473,21 @@ public class ValidationSummaryPageService {
                     combinedColumnSearchPredicates.add(predicate);
                 } else if (Timestamp.class.equals(
                         supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
-                    Path<Timestamp> dateFieldPath = supplyChainValidationSummaryRoot.get(columnName);
+                    try {
+                        Path<Timestamp> dateFieldPath = supplyChainValidationSummaryRoot.get(columnName);
 
-                    final Timestamp columnSearchTimestamp =
-                            PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
-                                    columnSearchLogic);
+                        final Timestamp columnSearchTimestamp =
+                                PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
+                                        columnSearchLogic);
 
-                    Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
-                            dateFieldPath, columnSearchTimestamp,
-                            columnSearchLogic);
-                    combinedColumnSearchPredicates.add(predicate);
+                        Predicate predicate =
+                                PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
+                                        dateFieldPath, columnSearchTimestamp,
+                                        columnSearchLogic);
+                        combinedColumnSearchPredicates.add(predicate);
+                    } catch (DateTimeParseException dateTimeParseException) {
+                        // ignore the exception since the user most likely has not entered a complete date
+                    }
                 }
             } else { // If there is a period, we are dealing with a nested field (e.g., "device.id")
                 Predicate predicateForNestedField =

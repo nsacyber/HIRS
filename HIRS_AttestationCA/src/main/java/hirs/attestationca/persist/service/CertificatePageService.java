@@ -38,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.sql.Timestamp;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -584,7 +585,7 @@ public class CertificatePageService {
             final String columnName = columnWithSearchCriteria.getColumnName();
             final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
             final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
-            
+
             if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
                 Path<String> stringFieldPath = certificateRoot.get(columnName);
 
@@ -594,16 +595,21 @@ public class CertificatePageService {
                                 columnSearchLogic);
                 combinedColumnSearchPredicates.add(predicate);
             } else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType())) {
-                Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
+                try {
+                    Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
 
-                final Timestamp columnSearchTimestamp =
-                        PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
-                                columnSearchLogic);
+                    final Timestamp columnSearchTimestamp =
+                            PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
+                                    columnSearchLogic);
 
-                Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
-                        dateFieldPath, columnSearchTimestamp,
-                        columnSearchLogic);
-                combinedColumnSearchPredicates.add(predicate);
+                    Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
+                            dateFieldPath, columnSearchTimestamp,
+                            columnSearchLogic);
+                    combinedColumnSearchPredicates.add(predicate);
+                } catch (DateTimeParseException
+                        dateTimeParseException) {
+                    // ignore the exception since the user most likely has not entered a complete date
+                }
             }
         }
 
