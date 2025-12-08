@@ -610,9 +610,9 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         //Test TBBSecurityAssertion
         TBBSecurityAssertion tbbSec = platformCert.getTBBSecurityAssertion();
         Assertions.assertNotNull(tbbSec);
-        Assertions.assertEquals("3.1", tbbSec.getCcInfo().getVersion().getString());
-        Assertions.assertEquals("1.2.3.4.5.6", tbbSec.getCcInfo().getProfileOid().getId());
-        Assertions.assertEquals("140-2", tbbSec.getFipsLevel().getVersion().getString());
+        Assertions.assertEquals("3.1", tbbSec.getCcInfo().getCcVersion());
+        Assertions.assertEquals("1.2.3.4.5.6", tbbSec.getCcInfo().getProfileOid());
+        Assertions.assertEquals("140-2", tbbSec.getFipsLevel().getFipsVersion());
         Assertions.assertEquals("https://www.intel.com/isocertification.pdf",
                 tbbSec.getIso9000Uri().getString());
     }
@@ -680,9 +680,9 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
         //Test TBBSecurityAssertion
         TBBSecurityAssertion tbbSec = platformCert.getTBBSecurityAssertion();
         Assertions.assertNotNull(tbbSec);
-        Assertions.assertEquals("3.1", tbbSec.getCcInfo().getVersion().getString());
-        Assertions.assertEquals("1.2.3.4.5.6", tbbSec.getCcInfo().getProfileOid().getId());
-        Assertions.assertEquals("140-2", tbbSec.getFipsLevel().getVersion().getString());
+        Assertions.assertEquals("3.1", tbbSec.getCcInfo().getCcVersion());
+        Assertions.assertEquals("1.2.3.4.5.6", tbbSec.getCcInfo().getProfileOid());
+        Assertions.assertEquals("140-2", tbbSec.getFipsLevel().getFipsVersion());
         Assertions.assertEquals("https://www.intel.com/isocertification.pdf",
                 tbbSec.getIso9000Uri().getString());
 
