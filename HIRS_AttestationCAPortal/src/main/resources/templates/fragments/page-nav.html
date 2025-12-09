@@ -1,13 +1,18 @@
 <th:block th:fragment="pageNav(page, pages)">
     <nav class="navbar sidebar" role="navigation" th:if="${page?.hasMenu}">
         <div class="container-fluid">
-            <div id="sidebar-navbar">
+            <!-- todo create a toggler button to collapse sidebar horiontally
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-navbar"
+                aria-controls="sidebar-navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button> -->
+            <div id="sidebar-navbar" class="">
                 <ul class="navbar-nav">
                     <li th:each="p : ${pages}" th:if="${p?.inMenu}"
                         th:class="'nav-item ' + ${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '') ">
                         <a th:href="@{'/HIRS_AttestationCAPortal/portal/' + ${p?.prefixPath} + ${p?.viewName}}"
                             class="nav-link">
-                            <span class="">
+                            <span>
                                 <img th:src="@{/icons/{icon}_white_24dp.png(icon=${p?.icon})}" alt="" />
                             </span>
                             <span th:text="${p?.title}">Page Title</span>

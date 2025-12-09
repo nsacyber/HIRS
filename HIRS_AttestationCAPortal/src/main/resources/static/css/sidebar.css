@@ -1,31 +1,32 @@
 /* General Transition for sidebar and main */
-nav.sidebar,
-.main {
-  transition: margin 200ms ease-out;
-}
 
 nav.sidebar {
   background-color: darkslategray;
   color: white;
-  border: 0;
-  border-radius: 0;
-  margin-bottom: 0;
   display: flex;
+  border: 0; /* Remove border from all sides */
+  padding: 0; /* Remove padding from all sides */
+  margin: 0; /* Remove margin from all sides */
   flex-direction: column; /* Stack items vertically */
   justify-content: flex-start; /* Ensure the first item is at the top */
 }
 
-#sidebar-navbar > ul {
-  gap: 12px; /* Space between items */
+#sidebar-navbar > ul > li > a {
+  text-align: start; /* Align text to the left */
+  padding: 12px; /* Add padding for better spacing */
 }
 
-#sidebar-navbar > ul > li {
-  text-align: start;
+#sidebar-navbar > ul li:first-child {
+  padding-top: 0; /* Remove top padding for the first list item */
 }
 
 /* Sidebar menu links */
 #sidebar-navbar > ul > li > a {
   color: white;
+}
+
+#sidebar-navbar > ul > li > a > span > img {
+  margin-right: 5px;
 }
 
 #sidebar-navbar > ul > li > a:hover,
