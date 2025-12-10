@@ -65,12 +65,6 @@
                 ];
 
                 let table = setDataTables("#referenceManifestTable", url, columns);
-
-                // if the clear all button is clicked on...
-                $('#clearSearchBtn').on('click', function () {
-                    //... clear the global search textbox and the column control search dropdowns
-                    table.search('').columns().columnControl.searchClear().draw();
-                });
             });
         </script>
     </section>
@@ -96,7 +90,6 @@
         </div>
         <br />
         <div class="aca-data-table">
-            <button id="clearSearchBtn" type="button" class="btn btn-secondary buttons-collection">Clear Search</button>
             <table id="referenceManifestTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>

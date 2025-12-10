@@ -104,12 +104,6 @@
         //Set data tables
         let dataTable = setDataTables("#reportTable", url, columns);
 
-        // if the clear all button is clicked on...
-        $('#clearSearchBtn').on('click', function () {
-          //... clear the global search textbox and the column control search dropdowns
-          dataTable.search('').columns().columnControl.searchClear().draw();
-        });
-
         dataTable.order([1, "desc"]).draw(); //order by createTime
 
         $("#download").submit(function (e) {
@@ -264,7 +258,6 @@
     </form>
 
     <div class="aca-data-table">
-      <button id="clearSearchBtn" type="button" class="btn btn-secondary buttons-collection">Clear Search</button>
       <table id="reportTable" class="table table-bordered table-striped table-hover">
         <thead>
           <tr>

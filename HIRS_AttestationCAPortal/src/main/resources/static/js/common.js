@@ -3,6 +3,7 @@ const iconPath = "/icons";
 /**
  * Converts a byte to HEX.
  * @param arr byte array
+ * @returns a hex string
  */
 function byteToHexString(arr) {
   let str = "";
@@ -15,6 +16,7 @@ function byteToHexString(arr) {
 /**
  * Parses hex string for display.
  * @param hexString hex string
+ * @returns a parsed hex string
  */
 function parseHexString(hexString) {
   let str = hexString.toUpperCase();
@@ -28,6 +30,7 @@ function parseHexString(hexString) {
 /**
  * Parses the HEX string value to display as byte hex string.
  * @param hexString hex string
+ * @returns a parsed byte hex string
  */
 function parseSerialNumber(hexString) {
   let str = hexString.toUpperCase();
@@ -111,6 +114,7 @@ function handleRimDeleteRequest(id) {
  * @param columns table columns definition
  * @param options if configured will override the default configs set by datatable (options include the ability to disable the global search bar, the
  * global paginator, the ordering ability, etc.)
+ * @returns a datatable with a combination of the default and customized configurations
  */
 function setDataTables(id, url, columns, options = {}) {
   let defaultConfig = {
@@ -127,7 +131,51 @@ function setDataTables(id, url, columns, options = {}) {
           {
             extend: "collection",
             text: "Export",
-            buttons: ["copy", "pdf", "excel", "print"],
+            buttons: [
+              {
+                extend: "copy",
+                exportOptions: {
+                  columns: ":visible",
+                },
+              },
+              {
+                extend: "csv",
+                exportOptions: {
+                  columns: ":visible",
+                },
+              },
+              {
+                extend: "excel",
+                exportOptions: {
+                  columns: ":visible",
+                },
+              },
+              {
+                extend: "pdfHtml5",
+                exportOptions: {
+                  columns: ":visible",
+                },
+                orientation: "landscape",
+                pageSize: "LEGAL",
+              },
+              {
+                extend: "print",
+                exportOptions: {
+                  columns: ":visible",
+                },
+                customize: function (win) {
+                  $(win.document.body).find("table").css({
+                    "font-size": "10pt", // Scale down the font size
+                  });
+                },
+              },
+            ],
+          },
+          {
+            text: "Clear All Search",
+            action: function (e, dt, node, config) {
+              dt.search("").columns().columnControl.searchClear().draw();
+            },
           },
         ],
       },
@@ -156,6 +204,7 @@ function setDataTables(id, url, columns, options = {}) {
  * @param id of the certificate
  * @param sameType boolean indicating if the details is the same
  *       certificate type.
+ * @returns a HTML string of a certificate detail link
  */
 function certificateDetailsLink(type, id, sameType) {
   const href = "certificate-details?id=" + id + "&type=" + type;
@@ -204,6 +253,7 @@ function certificateDetailsLink(type, id, sameType) {
  * type and ID with the corresponding icon.
  * @param pagePath path to the link
  * @param id of the rim
+ * @returns a HTML string of a RIM detail link
  */
 function rimDetailsLink(pagePath, id) {
   const href = pagePath + "/rim-details?id=" + id;
@@ -226,6 +276,7 @@ function rimDetailsLink(pagePath, id) {
  * Create a certificate delete link for the specified ID
  * @param pagePath path to the link
  * @param id of the certificate
+ * @returns a HTML string of the certificate delete link
  */
 function certificateDeleteLink(pagePath, id) {
   const icon = iconPath + "/ic_delete_black_24dp.png";
@@ -253,6 +304,7 @@ function certificateDeleteLink(pagePath, id) {
  * Create a RIM delete link for the specified ID
  * @param pagePath path to the link
  * @param id of the RIM
+ * @returns a HTML string of the RIM delete link
  */
 function rimDeleteLink(pagePath, id) {
   const icon = iconPath + "/ic_delete_black_24dp.png";
