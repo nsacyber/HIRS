@@ -243,11 +243,15 @@ public class DevicePageService {
 
                 deviceCertMap.put("device", device);
 
+                String deviceName;
+
                 // loop all the certificates and combine the ones that match the ID
                 for (PlatformCredential pc : platformCredentialList) {
+                    deviceName = deviceRepository.findById(pc.getDeviceId()).get().getName();
+
                     // verify that the platform certificate is associated with this
-                    // device's id
-                    if (device.getId().equals(pc.getDeviceId())) {
+                    // device
+                    if (device.getName().equals(deviceName)) {
                         final String platformCredentialIdsKey =
                                 PlatformCredential.class.getSimpleName() + "Ids";
 
@@ -265,9 +269,12 @@ public class DevicePageService {
                 }
 
                 for (EndorsementCredential ec : endorsementCredentialList) {
+
+                    deviceName = deviceRepository.findById(ec.getDeviceId()).get().getName();
+
                     // verify that the endorsement certificate is associated with this
-                    // device's id
-                    if (device.getId().equals(ec.getDeviceId())) {
+                    // device
+                    if (device.getName().equals(deviceName)) {
                         final String endorsementCredentialIdsKey =
                                 EndorsementCredential.class.getSimpleName() + "Ids";
 
