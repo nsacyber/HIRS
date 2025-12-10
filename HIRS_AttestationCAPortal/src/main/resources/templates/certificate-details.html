@@ -7,10 +7,12 @@
         <script th:inline="javascript">
             $(document).ready(function () {
 
-                //param parameters
+                // param parameters
                 const type = /*[[${ param.type }]]*/ '';
 
-                //initialData parameters
+                // initialData parameters
+                // 'initialData' is a HashMap with the certificate information, added as an object to
+                // the MAV of CertificateDetailsPageController
                 const signature = JSON.parse(/*[[${initialData.get('signature')}]]*/ '');
                 const serialNumber = /*[[${initialData.get('serialNumber')}]]*/ '';
                 const authorityKeyIdentifier = /*[[${initialData.get('authKeyId')}]]*/ '';
@@ -24,7 +26,7 @@
                 const ekCertificateSerialNumber = /*[[${initialData.get('ekCertificateSerialNumber')}]]*/ '';
                 const platformIdsString = /*[[${initialData.get('platformID')}]]*/ '';
 
-                //Format validity time
+                // Format validity time
                 $("#validity span").each(function () {
                     let dateText = $(this).text();
                     return $(this).text(formatCertificateDate2(dateText));
@@ -643,53 +645,57 @@
                     <div id="platformClass" class="col col-md-8 vertical">[[${initialData.get('platformClass')}]]</div>
                 </div>
                 <!-- TBB Security Assertion-->
-<!--                    <c:if test="${not empty initialData.tbbSecurityAssertion}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">TBB Security Assertion</span>-->
-<!--                            </div>-->
-<!--                            <div id="tbbsecurity" class="col col-md-8">-->
-<!--                                <div class="tbbsecurityLine">-->
-<!--                                    <span class="fieldHeader">Version:</span>-->
-<!--                                    <span-->
-<!--                                            class="fieldValue">${initialData.tbbSecurityAssertion.getVersion()}&nbsp;(v${initialData.tbbSecurityAssertion.getVersion().getValue()-->
-<!--                                        + 1})</span>-->
-<!--                                </div>-->
-<!--                                <div class="tbbsecurityLine">-->
-<!--                                    <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>-->
-<!--                                    <span-->
-<!--                                            class="fieldValue">${fn:toUpperCase(initialData.tbbSecurityAssertion.getRtmType().getValue())}</span>-->
-<!--                                </div>-->
-<!--                                &lt;!&ndash; CCINFO &ndash;&gt;-->
-<!--                                <c:if test="${not empty initialData.tbbSecurityAssertion.getCcInfo()}">-->
+                <div th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TBB Security Assertion</span>
+                        </div>
+                        <div id="tbbsecurity" class="col col-md-8">
+                            <div class="tbbsecurityLine">
+                                <span class="fieldHeader">Version:</span>
+                                <span class="fieldValue">
+                                    [[${initialData.get('tbbSecurityAssertion').getVersion()}]]&nbsp;
+                                    (v[[${initialData.get('tbbSecurityAssertion').getVersion().getValue() + 1}]])
+                                </span>
+                            </div>
+                            <div class="tbbsecurityLine">
+                                <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>
+<!--                                <span-->
+<!--                                    class="fieldValue">-->
+<!--    TODO: add double brackets and figure out why enum 'value' with lombok getter isn't working-->
+<!--                                    ${initialData.get('tbbSecurityAssertion').getRtmType().getValue()}</span>-->
+                            </div>
+                            <!-- CCINFO -->
+                            <div th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getCcInfo())}">
+<!--                                TODO: find a way to test this since it doesn't hit this case currently-->
 <!--                                    <c:set var="ccinfo" value="${initialData.tbbSecurityAssertion.getCcInfo()}" />-->
-<!--                                    <div class="panel panel-default">-->
-<!--                                        <div class="panel-heading" role="tab" id="headingOne">-->
-<!--                                            <h4 class="panel-title">-->
-<!--                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"-->
-<!--                                                   class="collapsed" href="#ccinfocollapse" aria-expanded="false"-->
-<!--                                                   aria-controls="ccinfocollapse">-->
-<!--                                                    Common Criteria Measures Information-->
-<!--                                                </a>-->
-<!--                                            </h4>-->
-<!--                                        </div>-->
-<!--                                        <div id="ccinfocollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                             aria-labelledby="headingOne">-->
-<!--                                            <div class="panel-body">-->
-<!--                                                <div id="ccinfo" class="row">-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Version:</span>-->
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingOne">
+                                        <h4 class="panel-title">
+                                            <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                               class="collapsed" href="#ccinfocollapse" aria-expanded="false"
+                                               aria-controls="ccinfocollapse">
+                                                Common Criteria Measures Information
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="ccinfocollapse" class="panel-collapse collapse" role="tabpanel"
+                                         aria-labelledby="headingOne">
+                                        <div class="panel-body">
+                                            <div id="ccinfo" class="row">
+                                                <div class="tbbsecurityLine">
+                                                    <span class="fieldHeader">Version:</span>
 <!--                                                        <span class="fieldValue">${ccinfo.getVersion()}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Assurance Level:</span>-->
+                                                </div>
+                                                <div class="tbbsecurityLine">
+                                                    <span class="fieldHeader">Assurance Level:</span>
 <!--                                                        <span-->
 <!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getAssuranceLevel().getValue())}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Evaluation Status:</span>-->
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getEvaluationStatus().getValue())}</span>-->
-<!--                                                    </div>-->
+                                                </div>
+                                                <div class="tbbsecurityLine">
+                                                    <span class="fieldHeader">Evaluation Status:</span>
+<!--                                                    <span-->
+<!--                                                            class="fieldValue">${fn:toUpperCase(ccinfo.getEvaluationStatus().getValue())}</span>-->
+                                                </div>
 <!--                                                    <div class="tbbsecurityLine">-->
 <!--                                                        <c:choose>-->
 <!--                                                            <c:when test="${ccinfo.getPlus()=='TRUE'}">-->
@@ -769,38 +775,39 @@
 <!--                                                            </div>-->
 <!--                                                        </c:if>-->
 <!--                                                    </c:if>-->
-<!--                                                </div>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </c:if>-->
-<!--                                &lt;!&ndash; FIPS Level &ndash;&gt;-->
-<!--                                <c:if test="${not empty initialData.tbbSecurityAssertion.getFipsLevel()}">-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                            <!-- FIPS Level -->
+                            <div th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getFipsLevel())}">
+<!--                                TODO: find a way to test this since it doesn't hit this case currently-->
 <!--                                    <c:set var="fipslevel" value="${initialData.tbbSecurityAssertion.getFipsLevel()}" />-->
-<!--                                    <div class="panel panel-default">-->
-<!--                                        <div class="panel-heading" role="tab" id="headingThree">-->
-<!--                                            <h4 class="panel-title">-->
-<!--                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"-->
-<!--                                                   class="collapsed" href="#fipscollapse" aria-expanded="false"-->
-<!--                                                   aria-controls="fipscollapse">-->
-<!--                                                    FIPS Level-->
-<!--                                                </a>-->
-<!--                                            </h4>-->
-<!--                                        </div>-->
-<!--                                        <div id="fipscollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                             aria-labelledby="headingTwo">-->
-<!--                                            <div class="panel-body">-->
-<!--                                                <div id="fipsLevel" class="row">-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Version:</span>-->
-<!--                                                        <span class="fieldValue">${fipslevel.getVersion()}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Level:</span>-->
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingThree">
+                                        <h4 class="panel-title">
+                                            <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                               class="collapsed" href="#fipscollapse" aria-expanded="false"
+                                               aria-controls="fipscollapse">
+                                                FIPS Level
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="fipscollapse" class="panel-collapse collapse" role="tabpanel"
+                                         aria-labelledby="headingTwo">
+                                        <div class="panel-body">
+                                            <div id="fipsLevel" class="row">
+                                                <div class="tbbsecurityLine">
+                                                    <span class="fieldHeader">Version:</span>
+<!--                                                    <span class="fieldValue">${fipslevel.getVersion()}</span>-->
+                                                </div>
+                                                <div class="tbbsecurityLine">
+                                                    <span class="fieldHeader">Level:</span>
 <!--                                                        <span-->
 <!--                                                                class="fieldValue">${fn:toUpperCase(fipslevel.getLevel().getValue())}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
+                                                </div>
+                                                <div class="tbbsecurityLine">
 <!--                                                        <c:choose>-->
 <!--                                                            <c:when test="${fipslevel.getPlus()=='TRUE'}">-->
 <!--                                                                <span class="label label-success">Plus</span>-->
@@ -809,58 +816,58 @@
 <!--                                                                <span class="label label-danger">Not Plus</span>-->
 <!--                                                            </c:otherwise>-->
 <!--                                                        </c:choose>-->
-<!--                                                    </div>-->
-<!--                                                </div>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </c:if>-->
-<!--                                &lt;!&ndash; ISO9000 isCertified and URI &ndash;&gt;-->
-<!--                                <div class="panel panel-default">-->
-<!--                                    <div class="panel-heading" role="tab" id="headingThree">-->
-<!--                                        <h4 class="panel-title">-->
-<!--                                            <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"-->
-<!--                                               class="collapsed" href="#iso9000collapse" aria-expanded="false"-->
-<!--                                               aria-controls="iso9000collapse">-->
-<!--                                                ISO 9000-->
-<!--                                            </a>-->
-<!--                                        </h4>-->
-<!--                                    </div>-->
-<!--                                    <div id="iso9000collapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                         aria-labelledby="headingThree">-->
-<!--                                        <div class="panel-body">-->
-<!--                                            <div id="iso9000" class="row">-->
-<!--                                                <div class="tbbsecurityLine">-->
-<!--                                                    <c:choose>-->
-<!--                                                        <c:when-->
-<!--                                                                test="${initialData.tbbSecurityAssertion.getIso9000Certified()=='TRUE'}">-->
-<!--                                                            <span class="label label-success">ISO 9000 Certified</span>-->
-<!--                                                        </c:when>-->
-<!--                                                        <c:otherwise>-->
-<!--                                                            <span class="label label-danger">ISO 9000 Not-->
-<!--                                                                Certified</span>-->
-<!--                                                        </c:otherwise>-->
-<!--                                                    </c:choose>-->
-<!--                                                </div>-->
-<!--                                                <c:if-->
-<!--                                                        test="${not empty initialData.tbbSecurityAssertion.getIso9000Uri()}">-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">URI:</span>-->
-<!--                                                        <span class="fieldValue">-->
-<!--                                                            <a-->
-<!--                                                                    href="${initialData.tbbSecurityAssertion.getIso9000Uri()}">-->
-<!--                                                                ${initialData.tbbSecurityAssertion.getIso9000Uri()}-->
-<!--                                                            </a>-->
-<!--                                                        </span>-->
-<!--                                                    </div>-->
-<!--                                                </c:if>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- ISO9000 isCertified and URI -->
+                            <div class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="headingThree">
+                                    <h4 class="panel-title">
+                                        <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                           class="collapsed" href="#iso9000collapse" aria-expanded="false"
+                                           aria-controls="iso9000collapse">
+                                            ISO 9000
+                                        </a>
+                                    </h4>
+                                </div>
+                                <div id="iso9000collapse" class="panel-collapse collapse" role="tabpanel"
+                                     aria-labelledby="headingThree">
+                                    <div class="panel-body">
+                                        <div id="iso9000" class="row">
+                                            <div class="tbbsecurityLine">
+                                                <div th:if="${#strings.equals(initialData.get('tbbSecurityAssertion').getIso9000Certified(), 'TRUE')}">
+                                                    <span class="label label-success">ISO 9000 Certified</span>
+                                                </div>
+                                                <div th:if="${not #strings.equals(initialData.get('tbbSecurityAssertion').getIso9000Certified(), 'TRUE')}">
+                                                    <span class="label label-danger">ISO 9000 Not Certified</span>
+                                                </div>
+                                            </div>
+                                            <div th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getIso9000Uri())}">
+                                                <div class="tbbsecurityLine">
+                                                    <span class="fieldHeader">URI:</span>
+                                                    <span class="fieldValue">
+                                                        HEEEEREEEEE
+
+                                                        <a th:href="@{${initialData.get('tbbSecurityAssertion').getIso9000Uri()}}">
+                                                            [[${initialData.get('tbbSecurityAssertion').getIso9000Uri()}]]
+                                                        </a>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div th:if="${#strings.isEmpty(initialData.get('tbbSecurityAssertion').getIso9000Uri())}">
+                                                NOT AROUNDD
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 <!--                    &lt;!&ndash; For PC 2.0 &ndash;&gt;-->
 <!--                    <c:if test="${fn:contains(initialData.credentialType, 'TCG')}">-->
 <!--                        <div class="row">-->
