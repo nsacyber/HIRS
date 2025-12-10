@@ -92,7 +92,14 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
+        int pageSize = dataTableInput.getLength();
+
+        // If pageSize is -1 (Show All), set a very large page size
+        if (pageSize == -1) {
+            pageSize = Integer.MAX_VALUE;
+        }
+
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
 
         FilteredRecordsList<SupplyChainValidationSummary> reportsFilteredRecordsList =
                 new FilteredRecordsList<>();

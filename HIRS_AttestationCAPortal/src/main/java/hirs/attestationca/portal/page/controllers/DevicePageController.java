@@ -88,10 +88,17 @@ public class DevicePageController extends PageController<NoPageParams> {
                 ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(Device.class,
                         dataTableInput.getColumns());
 
-        FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        int pageSize = dataTableInput.getLength();
 
-        Pageable pageable = PageRequest.of(currentPage, dataTableInput.getLength());
+        // If pageSize is -1 (Show All), set a very large page size
+        if (pageSize == -1) {
+            pageSize = Integer.MAX_VALUE;
+        }
+
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
+
+        FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
         org.springframework.data.domain.Page<Device> pagedResult;
 
         // if no value has been entered in the global search textbox and in the column search dropdown

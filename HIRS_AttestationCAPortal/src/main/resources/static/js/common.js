@@ -123,6 +123,19 @@ function setDataTables(id, url, columns, options = {}) {
     colReorder: true,
     select: true,
     responsive: true,
+    pageLength: 10, // Default number of rows per page
+    lengthMenu: [
+      [10, 25, 50, 75, 100, 250, -1],
+      [
+        "10 rows",
+        "25 rows",
+        "50 rows",
+        "75 rows",
+        "100 rows",
+        "250 rows",
+        "Show All Rows",
+      ],
+    ],
     layout: {
       topStart: {
         buttons: [
@@ -172,7 +185,7 @@ function setDataTables(id, url, columns, options = {}) {
             ],
           },
           {
-            text: "Clear All Search",
+            text: "Clear All",
             action: function (e, dt, node, config) {
               dt.search("").columns().columnControl.searchClear().draw();
             },
