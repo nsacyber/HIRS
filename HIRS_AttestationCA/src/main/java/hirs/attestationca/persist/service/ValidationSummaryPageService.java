@@ -410,8 +410,6 @@ public class ValidationSummaryPageService {
             final CriteriaBuilder criteriaBuilder,
             final Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot,
             final String globalSearchTerm) {
-        final String stringFieldGlobalSearchLogic = "contains";
-
         List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
 
         // Dynamically loop through columns and create LIKE conditions for each searchable column
@@ -423,13 +421,32 @@ public class ValidationSummaryPageService {
 
                     Predicate predicate =
                             PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                                    stringFieldPath, globalSearchTerm, stringFieldGlobalSearchLogic);
+                                    stringFieldPath, globalSearchTerm,
+                                    PredicateFactory.STRING_FIELD_GLOBAL_SEARCH_LOGIC);
                     combinedGlobalSearchPredicates.add(predicate);
+                } else if (Timestamp.class.equals(
+                        supplyChainValidationSummaryRoot.get(columnName).getJavaType())) {
+                    try {
+                        Path<Timestamp> dateFieldPath = supplyChainValidationSummaryRoot.get(columnName);
+
+                        final Timestamp columnSearchTimestamp =
+                                PageServiceUtils.convertColumnSearchTermIntoTimeStamp(globalSearchTerm,
+                                        PredicateFactory.DATE_FIELD_GLOBAL_SEARCH_LOGIC);
+
+                        Predicate predicate =
+                                PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
+                                        dateFieldPath, columnSearchTimestamp,
+                                        PredicateFactory.DATE_FIELD_GLOBAL_SEARCH_LOGIC);
+                        combinedGlobalSearchPredicates.add(predicate);
+                    } catch (DateTimeParseException dateTimeParseException) {
+                        // ignore the exception since the user most likely has not entered a complete date
+                    }
                 }
             } else { // If there is a period, we are dealing with a nested field (e.g., "device.id")
                 Predicate predicateForNestedField =
                         createPredicateForNestedField(criteriaBuilder, supplyChainValidationSummaryRoot,
-                                columnName, globalSearchTerm, stringFieldGlobalSearchLogic);
+                                columnName, globalSearchTerm,
+                                PredicateFactory.STRING_FIELD_GLOBAL_SEARCH_LOGIC);
                 combinedGlobalSearchPredicates.add(predicateForNestedField);
             }
         }

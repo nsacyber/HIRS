@@ -1,9 +1,11 @@
 package hirs.attestationca.persist.service.util;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 /**
@@ -21,6 +23,8 @@ import java.sql.Timestamp;
  *     emptiness checks</li>
  *     <li>Integer-based operations: equality, comparison (greater than, less than, etc.),
  *     and emptiness checks</li>
+ *     <li>Timestamp-based operations:equality,  comparison (greater than, less than, etc.),
+ *  *     and emptiness checks</li>
  * </ul>
  *
  * <p>Examples of supported search logics include:</p>
@@ -33,6 +37,21 @@ import java.sql.Timestamp;
  * </ul>
  */
 public final class PredicateFactory {
+
+    /**
+     * Default search logic operator for string fields used in global searches.
+     */
+    public static final String STRING_FIELD_GLOBAL_SEARCH_LOGIC = "contains";
+
+    /**
+     * Default search logic operator for timestamp/date fields used in global searches.
+     */
+    public static final String DATE_FIELD_GLOBAL_SEARCH_LOGIC = "equal";
+
+    /**
+     * Default search logic operator for integer fields used in global searches.
+     */
+    public static final String INTEGER_FIELD_GLOBAL_SEARCH_LOGIC = "equal";
 
     /**
      * Private constructor was created to silence checkstyle error.
@@ -400,7 +419,11 @@ public final class PredicateFactory {
     private static Predicate buildEqualsPredicateForTimestampFields(final CriteriaBuilder criteriaBuilder,
                                                                     final Path<Timestamp> fieldPath,
                                                                     final Timestamp searchTerm) {
-        return criteriaBuilder.equal(fieldPath, searchTerm);
+        // Truncate both the database field and the search term to date only (removing time)
+        Expression<Date> truncatedDbDatePath = criteriaBuilder.function("DATE", Date.class, fieldPath);
+        Date truncatedSearchDate = new Date(searchTerm.getTime());  // Truncate search term to date only
+
+        return criteriaBuilder.equal(truncatedDbDatePath, truncatedSearchDate);
     }
 
     /**
@@ -416,7 +439,12 @@ public final class PredicateFactory {
             final CriteriaBuilder criteriaBuilder,
             final Path<Timestamp> fieldPath,
             final Timestamp searchTerm) {
-        return criteriaBuilder.notEqual(fieldPath, searchTerm);
+
+        // Truncate both the database field and the search term to date only (removing time)
+        Expression<Date> truncatedDbDatePath = criteriaBuilder.function("DATE", Date.class, fieldPath);
+        Date truncatedSearchDate = new Date(searchTerm.getTime());  // Truncate search term to date only
+
+        return criteriaBuilder.notEqual(truncatedDbDatePath, truncatedSearchDate);
     }
 
     /**

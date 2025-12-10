@@ -338,8 +338,6 @@ public class DevicePageService {
             final CriteriaBuilder criteriaBuilder,
             final Root<Device> deviceRoot,
             final String globalSearchTerm) {
-        final String stringFieldGlobalSearchLogic = "contains";
-
         List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
 
         // Dynamically loop through columns and create LIKE conditions for each searchable column
@@ -355,7 +353,7 @@ public class DevicePageService {
                 Path<String> stringFieldPath = deviceRoot.get(columnName);
 
                 Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                        stringFieldPath, globalSearchTerm, stringFieldGlobalSearchLogic);
+                        stringFieldPath, globalSearchTerm, PredicateFactory.STRING_FIELD_GLOBAL_SEARCH_LOGIC);
                 combinedGlobalSearchPredicates.add(predicate);
             }
         }

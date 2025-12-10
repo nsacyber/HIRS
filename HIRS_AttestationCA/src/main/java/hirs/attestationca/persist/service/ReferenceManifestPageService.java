@@ -429,8 +429,6 @@ public class ReferenceManifestPageService {
             final CriteriaBuilder criteriaBuilder,
             final Root<ReferenceManifest> referenceManifestRoot,
             final String globalSearchTerm) {
-        final String stringFieldGlobalSearchLogic = "contains";
-
         List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
 
         // Dynamically loop through columns and create LIKE conditions for each searchable column
@@ -439,7 +437,7 @@ public class ReferenceManifestPageService {
                 Path<String> stringFieldPath = referenceManifestRoot.get(columnName);
 
                 Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
-                        stringFieldPath, globalSearchTerm, stringFieldGlobalSearchLogic);
+                        stringFieldPath, globalSearchTerm, PredicateFactory.STRING_FIELD_GLOBAL_SEARCH_LOGIC);
                 combinedGlobalSearchPredicates.add(predicate);
             }
         }
