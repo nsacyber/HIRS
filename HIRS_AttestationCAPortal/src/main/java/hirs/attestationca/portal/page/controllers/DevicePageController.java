@@ -6,6 +6,7 @@ import hirs.attestationca.persist.service.DevicePageService;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
+import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
@@ -75,6 +76,9 @@ public class DevicePageController extends PageController<NoPageParams> {
         log.debug("Request received a datatable input object for the device page: {}",
                 dataTableInput);
 
+        // grab the column to which ordering has been applied
+        final Order orderColumn = dataTableInput.getOrderColumn();
+
         // grab the value that was entered in the global search textbox
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
@@ -89,54 +93,113 @@ public class DevicePageController extends PageController<NoPageParams> {
                         dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-        int pageSize = dataTableInput.getLength();
 
         // If pageSize is -1 (Show All), set a very large page size
-        if (pageSize == -1) {
-            pageSize = Integer.MAX_VALUE;
-        }
+        // otherwise keep the original page size
+        final int pageSize = dataTableInput.getLength() != -1 ?
+                dataTableInput.getLength() : Integer.MAX_VALUE;
 
         Pageable pageable = PageRequest.of(currentPage, pageSize);
 
-        FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
-        org.springframework.data.domain.Page<Device> pagedResult;
+        FilteredRecordsList<Device> deviceList;
 
-        // if no value has been entered in the global search textbox and in the column search dropdown
-        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult = this.devicePageService.findAllDevices(pageable);
-        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
-            // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.devicePageService.findDevicesByGlobalAndColumnSpecificSearchTerm(
+        if (orderColumn == null) {
+            deviceList =
+                    getFilteredDeviceList(globalSearchTerm,
+                            columnsWithSearchCriteria,
                             searchableColumnNames,
+                            pageable);
+        } else {
+            //todo silentcoder
+            deviceList =
+                    getOrderedFilteredDeviceList(orderColumn,
                             globalSearchTerm,
                             columnsWithSearchCriteria,
-                            pageable);
-        } else if (!columnsWithSearchCriteria.isEmpty()) {
-            // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.devicePageService.findDevicesByColumnSpecificSearchTerm(
-                            columnsWithSearchCriteria, pageable);
-        } else {
-            // if a value has been entered ONLY in the global search textbox
-            pagedResult =
-                    this.devicePageService.findDevicesByGlobalSearchTerm(searchableColumnNames,
-                            globalSearchTerm,
+                            searchableColumnNames,
                             pageable);
         }
-
-        if (pagedResult.hasContent()) {
-            deviceList.addAll(pagedResult.getContent());
-        }
-
-        deviceList.setRecordsFiltered(pagedResult.getTotalElements());
-        deviceList.setRecordsTotal(this.devicePageService.findDeviceRepositoryCount());
 
         FilteredRecordsList<HashMap<String, Object>> devicesAndAssociatedCertificates
                 = this.devicePageService.retrieveDevicesAndAssociatedCertificates(deviceList);
 
-        log.info("Returning the size of the list of devices: {}",
-                devicesAndAssociatedCertificates.size());
+        log.info("Returning the size of the list of devices: {}"
+                , devicesAndAssociatedCertificates.size());
         return new DataTableResponse<>(devicesAndAssociatedCertificates, dataTableInput);
     }
+
+    /**
+     * Helper method that retrieves a filtered and paginated list of devices based on the provided search criteria.
+     * The method allows filtering based on a global search term and column-specific search criteria,
+     * and returns the result in a paginated format.
+     *
+     * <p>
+     * The method handles four cases:
+     * <ol>
+     *     <li>If no global search term and no column-specific search criteria are provided,
+     *         all devices are returned.</li>
+     *     <li>If both a global search term and column-specific search criteria are provided,
+     *         it performs filtering on both.</li>
+     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
+     *         criteria.</li>
+     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     * </ol>
+     * </p>
+     *
+     * @param globalSearchTerm          A global search term that will be used to filter the devices by the
+     *                                  searchable fields.
+     * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
+     * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
+     * @param pageable                  pageable
+     * @return A {@link FilteredRecordsList<Device>} containing the filtered and paginated list of devices,
+     * along with the total number of records and the number of records matching the filter criteria.
+     */
+    private FilteredRecordsList<Device> getFilteredDeviceList(final String globalSearchTerm,
+                                                              final Set<DataTablesColumn> columnsWithSearchCriteria,
+                                                              final Set<String> searchableColumnNames,
+                                                              final Pageable pageable) {
+        org.springframework.data.domain.Page<Device> pagedResult;
+
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
+            pagedResult = this.devicePageService.findAllDevices(pageable);
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            pagedResult = this.devicePageService.findDevicesByGlobalAndColumnSpecificSearchTerm(
+                    searchableColumnNames, globalSearchTerm, columnsWithSearchCriteria, pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.devicePageService.findDevicesByColumnSpecificSearchTerm(columnsWithSearchCriteria,
+                            pageable);
+        } else {
+            pagedResult = this.devicePageService.findDevicesByGlobalSearchTerm(
+                    searchableColumnNames, globalSearchTerm, pageable);
+        }
+
+        FilteredRecordsList<Device> deviceList = new FilteredRecordsList<>();
+        if (pagedResult.hasContent()) {
+            deviceList.addAll(pagedResult.getContent());
+        }
+        deviceList.setRecordsFiltered(pagedResult.getTotalElements());
+        deviceList.setRecordsTotal(this.devicePageService.findDeviceRepositoryCount());
+
+        return deviceList;
+    }
+
+    /**
+     * TODO
+     *
+     * @param orderColumn
+     * @param globalSearchTerm
+     * @param columnsWithSearchCriteria
+     * @param searchableColumnNames
+     * @param pageable
+     * @return
+     */
+    private FilteredRecordsList<Device> getOrderedFilteredDeviceList(final Order orderColumn,
+                                                                     final String globalSearchTerm,
+                                                                     final Set<DataTablesColumn> columnsWithSearchCriteria,
+                                                                     final Set<String> searchableColumnNames,
+                                                                     final Pageable pageable) {
+
+        return null;
+    }
+
 }

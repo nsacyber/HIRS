@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.datatables;
 
+import io.micrometer.common.util.StringUtils;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -7,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -24,13 +24,13 @@ public class DataTableInput {
     private static final int DEFAULT_LENGTH = 10;
 
     /**
-     * Order parameter.
+     * Order in the DataTable.
      */
     @NotEmpty
     private final List<Order> order = new ArrayList<>();
 
     /**
-     * Per-column search parameter.
+     * Columns in the DataTable.
      */
     @NotEmpty
     private final List<Column> columns = new ArrayList<>();
@@ -116,27 +116,19 @@ public class DataTableInput {
     }
 
     /**
-     * Gets the order column name, given the order ordinal value.
+     * Retrieves the column to which ordering is applied.
      *
-     * @return the order column name
+     * @return the order object for the applied column, or null if no ordering is applied.
      */
-    public String getOrderColumnName() {
-        // attempt to get the column property based on the order index.
-        String orderColumnName = "id";
+    public Order getOrderColumn() {
         List<Order> orders = getOrder();
-        if (!CollectionUtils.isEmpty(orders)) {
-            int orderColumnIndex = orders.get(0).getColumn();
 
-            final Column column = getColumns().get(orderColumnIndex);
-
-            // use the column's name as the order field for hibernate if set,
-            // otherwise, use the columns' data field
-            if (StringUtils.isNotEmpty(column.getName())) {
-                orderColumnName = column.getName();
-            } else {
-                orderColumnName = column.getData();
-            }
+        // Return the first order if it exists and is associated with a valid column
+        if (!CollectionUtils.isEmpty(orders) && !StringUtils.isBlank(orders.get(0).getName())) {
+            return orders.get(0);
         }
-        return orderColumnName;
+
+        // Return null if no valid order is found
+        return null;
     }
 }

@@ -6,6 +6,7 @@ import hirs.attestationca.persist.service.ValidationSummaryPageService;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
+import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
@@ -77,6 +78,9 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         log.debug("Request received a datatable input object for the validation reports page: {}",
                 dataTableInput);
 
+        // grab the column to which ordering has been applied
+        final Order orderColumn = dataTableInput.getOrderColumn();
+
         // grab the value that was entered in the global search textbox
         final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
@@ -92,12 +96,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         dataTableInput.getColumns());
 
         final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-        int pageSize = dataTableInput.getLength();
 
         // If pageSize is -1 (Show All), set a very large page size
-        if (pageSize == -1) {
-            pageSize = Integer.MAX_VALUE;
-        }
+        // otherwise keep the original page size
+        final int pageSize = dataTableInput.getLength() != -1 ?
+                dataTableInput.getLength() : Integer.MAX_VALUE;
 
         Pageable pageable = PageRequest.of(currentPage, pageSize);
 
