@@ -14,48 +14,57 @@
                         data: "manufacturer",
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
-                    { name: "model", data: "model", orderable: false, searchable: true },
+                    {
+                        name: "model",
+                        data: "model",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
                     {
                         name: "eventType",
                         data: "eventType",
-                        orderable: false,
+                        orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "pcrIndex",
                         data: "pcrIndex",
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "digestValue",
                         data: "digestValue",
-                        orderable: false,
+                        orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "baseRimId",
                         data: "baseRimId",
                         orderable: false,
-                        searchable: true,
+                        searchable: false,
                         render: function (data, type, full, meta) {
-                            return rimDetailsLink(viewName, full.baseRimId);
+                            return rimDetailsLink(viewName, data);
                         },
                     },
                     {
                         name: "supportRimId",
                         data: "supportRimId",
                         orderable: false,
-                        searchable: true,
+                        searchable: false,
                         render: function (data, type, full, meta) {
-                            return rimDetailsLink(viewName, full.supportRimId);
+                            return rimDetailsLink(viewName, data);
                         },
                     },
                 ];
 
-                //Set data tables
-                setDataTables("#digestValueTable", url, columns);
+                let table = setDataTables("#digestValueTable", url, columns);
             });
         </script>
     </section>
@@ -64,9 +73,9 @@
 <body>
     <h1 layout:fragment="pageHeaderTitle">RIM Database</h1>
 
-    <div class="content" layout:fragment="content">
+    <div layout:fragment="content">
         <div class="aca-data-table">
-            <table id="digestValueTable" class="display" width="100%">
+            <table id="digestValueTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
                         <th>Manufacturer</th>

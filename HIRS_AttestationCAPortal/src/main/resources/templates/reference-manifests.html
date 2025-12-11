@@ -14,31 +14,37 @@
                         name: "tagId",
                         data: "tagId",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "rimType",
                         data: "rimType",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "platformManufacturer",
                         data: "platformManufacturer",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "platformModel",
                         data: "platformModel",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "swidTagVersion",
                         data: "swidTagVersion",
+                        type: "text",
                         orderable: true,
-                        searchable: true
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         data: "id",
@@ -49,15 +55,16 @@
                             // sets up a hidden input field containing the ID which is
                             // used as a parameter to the REST POST call to delete
                             let html = "";
-                            html += rimDetailsLink(rimDBViewName, full.id);
-                            html += rimDownloadLink(viewName, full.id);
-                            html += rimDeleteLink(viewName, full.id);
+                            html += rimDetailsLink(rimDBViewName, data);
+                            html += rimDownloadLink(viewName, data);
+                            html += rimDeleteLink(viewName, data);
 
                             return html;
                         }
                     }
                 ];
-                setDataTables("#referenceManifestTable", url, columns);
+
+                let table = setDataTables("#referenceManifestTable", url, columns);
             });
         </script>
     </section>
@@ -65,7 +72,7 @@
 
 <body>
     <h1 layout:fragment="pageHeaderTitle">Reference Integrity Manifests</h1>
-    <div class="content" layout:fragment="content">
+    <div layout:fragment="content">
         <div class="aca-input-box-header">
             <form method="post" th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}"
                 enctype="multipart/form-data">
@@ -83,7 +90,7 @@
         </div>
         <br />
         <div class="aca-data-table">
-            <table id="referenceManifestTable" class="display" width="100%">
+            <table id="referenceManifestTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
                         <th>Tag Id</th>

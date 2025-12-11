@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.service.ReferenceManifestPageService;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -20,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -86,36 +86,68 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * Processes the request to retrieve a list of RIMs for display on the RIM page.
      *
-     * @param input data table input
+     * @param dataTableInput data table input
      * @return data table of RIMs
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<ReferenceManifest> getRIMTableData(@Valid final DataTableInput input) {
+    public DataTableResponse<ReferenceManifest> getRIMTableData(@Valid final DataTableInput dataTableInput) {
         log.info("Received request to display list of reference manifests");
         log.debug("Request received a datatable input object for the reference manifest page "
-                + " page: {}", input);
+                + " page: {}", dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: {}", orderColumnName);
+        // grab the value that was entered in the global search textbox
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(ReferenceManifest.class,
-                        input.getColumns());
+        // find all columns that have a value that's been entered in column search dropdown
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceManifest.class,
+                        dataTableInput.getColumns());
+
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        int pageSize = dataTableInput.getLength();
+
+        // If pageSize is -1 (Show All), set a very large page size
+        if (pageSize == -1) {
+            pageSize = Integer.MAX_VALUE;
+        }
+
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
 
         FilteredRecordsList<ReferenceManifest> rimFilteredRecordsList = new FilteredRecordsList<>();
-
         org.springframework.data.domain.Page<ReferenceManifest> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        // if no value has been entered in the global search textbox and in the column search dropdown
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.referenceManifestPageService.findAllBaseAndSupportRIMSByPageable(pageable);
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
+            pagedResult =
+                    this.referenceManifestPageService.findRIMSByGlobalAndColumnSpecificSearchTerm(
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
+            pagedResult =
+                    this.referenceManifestPageService.
+                            findRIMSByColumnSpecificSearchTermAndArchiveFlag(
+                                    columnsWithSearchCriteria,
+                                    false,
+                                    pageable);
         } else {
+            // if a value has been entered ONLY in the global search textbox
             pagedResult = this.referenceManifestPageService.
-                    findRIMSBySearchableColumnsAndArchiveFlag(searchableColumns, searchTerm, false,
+                    findRIMSByGlobalSearchTermAndArchiveFlag(searchableColumnNames,
+                            globalSearchTerm,
+                            false,
                             pageable);
         }
 
@@ -128,7 +160,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         log.info("Returning the size of the list of reference manifests: {}",
                 rimFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(rimFilteredRecordsList, input);
+        return new DataTableResponse<>(rimFilteredRecordsList, dataTableInput);
     }
 
     /**

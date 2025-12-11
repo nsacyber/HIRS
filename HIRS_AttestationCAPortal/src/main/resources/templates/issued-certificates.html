@@ -14,11 +14,7 @@
             data: "deviceName",
             searchable: true,
             orderable: true,
-            render: function (data, type, full, meta) {
-              // if there's a device, display its name, otherwise
-              // display nothing
-              return full.deviceName;
-            },
+            columnControl: ["searchDropdown"]
           },
           {
             name: "ldevID",
@@ -37,12 +33,15 @@
             data: "issuer",
             searchable: true,
             orderable: true,
+            columnControl: ["searchDropdown"],
           },
           {
             name: "beginValidity",
             data: "beginValidity",
-            searchable: false,
+            type: "date",
+            searchable: true,
             orderable: true,
+            columnControl: ["searchDropdown"],
             render: function (data, type, full, meta) {
               return formatCertificateDate(data);
             },
@@ -50,8 +49,10 @@
           {
             name: "endValidity",
             data: "endValidity",
-            searchable: false,
+            type: "date",
+            searchable: true,
             orderable: true,
+            columnControl: ["searchDropdown"],
             render: function (data, type, full, meta) {
               return formatCertificateDate(data);
             },
@@ -103,16 +104,15 @@
             render: function (data, type, full, meta) {
               // set up link to details page
               let html = "";
-              html += certificateDetailsLink("issued", full.id, true);
-              html += certificateDownloadLink(viewName, full.id);
-              html += certificateDeleteLink(viewName, full.id);
+              html += certificateDetailsLink("issued", data, true);
+              html += certificateDownloadLink(viewName, data);
+              html += certificateDeleteLink(viewName, data);
               return html;
             },
           },
         ];
 
-        //Set data tables
-        setDataTables("#issuedTable", url, columns);
+        let table = setDataTables("#issuedTable", url, columns);
       });
     </script>
   </section>
@@ -121,7 +121,7 @@
 <body>
   <h1 layout:fragment="pageHeaderTitle">Issued Certificates </h1>
 
-  <div class="content" layout:fragment="content">
+  <div layout:fragment="content">
     <div class="aca-input-box-header">
       Issued Credentials
       <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}">
@@ -130,7 +130,7 @@
     </div>
     <br />
     <div class="aca-data-table">
-      <table id="issuedTable" class="display" style="width: 100%">
+      <table id="issuedTable" class="table table-bordered table-striped table-hover">
         <thead>
           <tr>
             <th rowspan="2">Hostname</th>
@@ -138,7 +138,7 @@
             <th rowspan="2">Issuer</th>
             <th rowspan="2">Valid (begin)</th>
             <th rowspan="2">Valid (end)</th>
-            <th colspan="2">Credentials</th>
+            <th colspan="2" class="text-center">Credentials</th>
             <th rowspan="2">Options</th>
           </tr>
           <tr>

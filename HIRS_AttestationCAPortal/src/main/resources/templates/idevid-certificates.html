@@ -14,29 +14,35 @@
                         data: "issuer",
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "subject",
                         data: "subject",
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "beginValidity",
                         data: "beginValidity",
-                        orderable: false,
-                        searchable: false,
+                        type: "date",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                         render: function (data, type, full, meta) {
-                            return formatCertificateDate(full.beginValidity);
+                            return formatCertificateDate(data);
                         },
                     },
                     {
                         name: "endValidity",
                         data: "endValidity",
-                        orderable: false,
-                        searchable: false,
+                        type: "date",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                         render: function (data, type, full, meta) {
-                            return formatCertificateDate(full.endValidity);
+                            return formatCertificateDate(data);
                         },
                     },
                     {
@@ -48,16 +54,15 @@
                             // sets up a hidden input field containing the ID which is
                             // used as a parameter to the REST POST call to delete
                             let html = "";
-                            html += certificateDetailsLink("idevid", full.id, true);
-                            html += certificateDownloadLink(viewName, full.id);
-                            html += certificateDeleteLink(viewName, full.id);
+                            html += certificateDetailsLink("idevid", data, true);
+                            html += certificateDownloadLink(viewName, data);
+                            html += certificateDeleteLink(viewName, data);
                             return html;
                         },
                     },
                 ];
 
-                //Set data tables
-                setDataTables("#idevidCertificateTable", url, columns);
+                let table = setDataTables("#idevidCertificateTable", url, columns);
             });
         </script>
     </section>
@@ -66,7 +71,7 @@
 <body>
     <h1 layout:fragment="pageHeaderTitle">IDevID Certificates</h1>
 
-    <div class="content" layout:fragment="content">
+    <div layout:fragment="content">
         <div class="aca-input-box-header">
             <form method="POST"
                 th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/upload}"
@@ -88,7 +93,7 @@
         <br />
 
         <div class="aca-data-table">
-            <table id="idevidCertificateTable" class="display" width="100%">
+            <table id="idevidCertificateTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
                         <th>Issuer</th>

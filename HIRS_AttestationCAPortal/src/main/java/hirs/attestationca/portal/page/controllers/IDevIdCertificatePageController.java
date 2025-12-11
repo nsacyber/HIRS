@@ -3,8 +3,9 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.IDevIdCertificatePageService;
+import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -19,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -84,36 +84,71 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     /**
      * Processes the request to retrieve a list of idevid certificates for display on the idevid certificates page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of idevid certificates
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<IDevIDCertificate> getIDevIdCertificatesTableData(final DataTableInput input) {
+    public DataTableResponse<IDevIDCertificate> getIDevIdCertificatesTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of idevid certificates");
-        log.debug("Request received a datatable input object for the idevid certificates page: {}", input);
+        log.debug("Request received a datatable input object for the idevid certificates page: {}",
+                dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: {}", orderColumnName);
+        // grab the value that was entered in the global search textbox
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns = ControllerPagesUtils.findSearchableColumnsNames(IDevIDCertificate.class,
-                input.getColumns());
+        // find all columns that have a value that's been entered in column search dropdown
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(IDevIDCertificate.class,
+                        dataTableInput.getColumns());
+
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        int pageSize = dataTableInput.getLength();
+
+        // If pageSize is -1 (Show All), set a very large page size
+        if (pageSize == -1) {
+            pageSize = Integer.MAX_VALUE;
+        }
+
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
 
         FilteredRecordsList<IDevIDCertificate> idevidFilteredRecordsList = new FilteredRecordsList<>();
         org.springframework.data.domain.Page<IDevIDCertificate> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        // if no value has been entered in the global search textbox and in the column search dropdown
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
+            pagedResult = this.iDevIdCertificatePageService.
+                    findIDevCertificatesByArchiveFlag(false, pageable);
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
-                    this.iDevIdCertificatePageService.findIDevCertificatesByArchiveFlag(false, pageable);
+                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                            IDevIDCertificate.class,
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            IDevIDCertificate.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
         } else {
-            pagedResult = this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
+            // if a value has been entered ONLY in the global search textbox
+            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     IDevIDCertificate.class,
-                    searchableColumns,
-                    searchTerm,
+                    searchableColumnNames,
+                    globalSearchTerm,
                     false, pageable);
         }
 
@@ -127,7 +162,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         log.info("Returning the size of the list of IDevId certificates: "
                 + "{}", idevidFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(idevidFilteredRecordsList, input);
+        return new DataTableResponse<>(idevidFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -145,7 +180,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         try {
             final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(IDevIDCertificate.class, UUID.fromString(id));
+                    this.certificatePageService.downloadCertificate(IDevIDCertificate.class,
+                            UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -207,7 +243,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                     this.iDevIdCertificatePageService.parseIDevIDCertificate(file, errorMessages);
 
             if (parsedIDevIDCertificate != null) {
-                certificatePageService.storeCertificate(CertificateType.IDEVID_CERTIFICATES, file.getOriginalFilename(),
+                certificatePageService.storeCertificate(CertificateType.IDEVID_CERTIFICATES,
+                        file.getOriginalFilename(),
                         successMessages, errorMessages, parsedIDevIDCertificate);
             }
 
@@ -240,12 +277,14 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
+            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages,
+                    errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
-            final String errorMessage = "An exception was thrown while attempting to delete the specified idevid "
-                    + "certificate";
+            final String errorMessage =
+                    "An exception was thrown while attempting to delete the specified idevid "
+                            + "certificate";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }

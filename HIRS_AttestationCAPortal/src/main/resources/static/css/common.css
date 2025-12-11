@@ -5,8 +5,9 @@ body {
   height: 100%;
   overflow: hidden;
 }
-body {
-  padding-top: 100px;
+
+hr {
+  color: gray; /* Set the color of the horizontal line to a lighter shade */
 }
 
 #header {
@@ -39,10 +40,7 @@ body {
 
 .page-title {
   font-size: 40px;
-  width: 75%;
-}
-.aca-subtitle {
-  font-size: 70%;
+  color: white;
 }
 
 .subtitle {
@@ -72,6 +70,7 @@ body {
   text-align: center;
   margin: 25px 0;
 }
+
 /* not in bootstrap.css */
 .btn-secondary {
   color: #292b2c;
@@ -94,6 +93,7 @@ body {
 
 .aca-data-table {
   text-align: center;
+  padding-bottom: 50px;
 }
 
 /* Page messages */
@@ -170,14 +170,10 @@ body {
 /**********************************
 ***** Specific page styling *******
 ***********************************/
+
 /*index page*/
 #index-page .col {
   border: 0px solid black;
-}
-
-#index-page [class*="col-"] {
-  margin-bottom: -99999px;
-  padding-bottom: 99999px;
 }
 
 #index-page .row {
@@ -190,6 +186,7 @@ body {
 
 .index-left-side {
   background: #d5f2e0;
+  height: 100%;
 }
 
 .index-left-side h1 {
@@ -209,6 +206,19 @@ body {
 .index-left-side h4,
 .index-right-side h4 {
   padding-left: 30px;
+}
+
+div.row h3 a {
+  text-decoration: none; /* Remove underline from links specifically the links in the index.html page*/
+}
+
+div.row h3 a:hover {
+  color: darkblue;
+  text-decoration: underline; /* Add underline on hover for links specifically the links in the index.html page*/
+}
+
+div.row h3 {
+  margin: 10px; /* Add margin around h3 inside div with class row */
 }
 
 /*trust chain*/

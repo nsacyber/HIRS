@@ -31,29 +31,35 @@
                         data: "issuer",
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "subject",
                         data: "subject",
                         orderable: true,
                         searchable: true,
+                        columnControl: ["searchDropdown"],
                     },
                     {
                         name: "beginValidity",
                         data: "beginValidity",
-                        orderable: false,
-                        searchable: false,
+                        type: "date",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                         render: function (data, type, full, meta) {
-                            return formatCertificateDate(full.beginValidity);
+                            return formatCertificateDate(data);
                         },
                     },
                     {
                         name: "endValidity",
                         data: "endValidity",
-                        orderable: false,
-                        searchable: false,
+                        type: "date",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
                         render: function (data, type, full, meta) {
-                            return formatCertificateDate(full.endValidity);
+                            return formatCertificateDate(data);
                         },
                     },
                     {
@@ -65,15 +71,15 @@
                             // sets up a hidden input field containing the ID which is
                             // used as a parameter to the REST POST call to delete
                             let html = "";
-                            html += certificateDetailsLink("certificateauthority", full.id, true);
-                            html += certificateDownloadLink(viewName, full.id);
-                            html += certificateDeleteLink(viewName, full.id);
+                            html += certificateDetailsLink("certificateauthority", data, true);
+                            html += certificateDownloadLink(viewName, data);
+                            html += certificateDeleteLink(viewName, data);
                             return html;
                         },
                     },
                 ];
-                //Set data tables
-                setDataTables("#trustChainTable", url, columns);
+
+                let table = setDataTables("#trustChainTable", url, columns);
             });
         </script>
     </section>
@@ -81,7 +87,7 @@
 
 <body>
     <h1 layout:fragment="pageHeaderTitle">Trust Chain Management</h1>
-    <div class="content" layout:fragment="content">
+    <div layout:fragment="content">
         <!-- Details icon and dialog for HIRS ACA Root certificate -->
         <span class="aca-input-box-header">HIRS Attestation Certificate Chain</span>
         <th:block th:replace="fragments/details-viewer
@@ -166,7 +172,7 @@
         <br>
 
         <div class="aca-data-table">
-            <table id="trustChainTable" class="display" width="100%">
+            <table id="trustChainTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
                         <th>Issuer</th>
