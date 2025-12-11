@@ -775,9 +775,9 @@
 <!--                                                            </div>-->
 <!--                                                        </c:if>-->
 <!--                                                    </c:if>-->
-                                                </div>
                                             </div>
                                         </div>
+                                    </div>
                                 </div>
                             </div> <!-- Close CCINFO -->
                             <!-- FIPS Level -->
@@ -866,7 +866,6 @@
                 <!-- For PC 2.0 -->                  jamo3
                 <!-- Credential Type is TCG -->
                 <div th:if="${#strings.contains(initialData.get('credentialType'), 'TCG')}">
-
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform
                                 Configuration</span></div>
@@ -875,14 +874,14 @@
                                 <!-- Component Identifier -->
                                 <div class="panel panel-default">
                                     <div class="panel-heading" role="tab" id="headingOne">
-<!--                                            <h4 class="panel-title">-->
-<!--                                                <a role="button" data-toggle="collapse"-->
-<!--                                                   data-parent="#platformConfiguration" class="collapsed"-->
-<!--                                                   href="#componentIdentifiercollapse" aria-expanded="true"-->
-<!--                                                   aria-controls="componentIdentifiercollapse">-->
-<!--                                                    Components-->
-<!--                                                </a>-->
-<!--                                            </h4>-->
+                                        <h4 class="panel-title">
+                                            <a role="button" data-toggle="collapse"
+                                               data-parent="#platformConfiguration" class="collapsed"
+                                               href="#componentIdentifiercollapse" aria-expanded="true"
+                                               aria-controls="componentIdentifiercollapse">
+                                                Components
+                                            </a>
+                                        </h4>
                                     </div>
                                     <div id="componentIdentifiercollapse" class="panel-collapse collapse in"
                                          role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
@@ -987,23 +986,22 @@
 <!--    TODO: check: deleted an extra /div-->
                                 </div>
                             </div>
-
                             <div th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI'))}">
-<!--                        &lt;!&ndash; Components Identifier URI &ndash;&gt;-->
-<!--                        <div class="panel panel-default">-->
-<!--                            <div class="panel-heading" role="tab" id="headingTwo">-->
-<!--                                <h4 class="panel-title">-->
-<!--                                    <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"-->
-<!--                                       class="collapsed" href="#componentIdentifierURIcollapse" aria-expanded="false"-->
-<!--                                       aria-controls="componentIdentifierURIcollapse">-->
-<!--                                        Components Identifier URI-->
-<!--                                    </a>-->
-<!--                                </h4>-->
-<!--                            </div>-->
-<!--                            <div id="componentIdentifierURIcollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                 aria-labelledby="headingTwo">-->
-<!--                                <div class="panel-body">-->
-<!--                                    <div id="componentIdentifierURI" class="row">-->
+                                <!-- Components Identifier URI -->
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingTwo">
+                                        <h4 class="panel-title">
+                                            <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
+                                               class="collapsed" href="#componentIdentifierURIcollapse" aria-expanded="false"
+                                               aria-controls="componentIdentifierURIcollapse">
+                                                Components Identifier URI
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="componentIdentifierURIcollapse" class="panel-collapse collapse" role="tabpanel"
+                                        aria-labelledby="headingTwo">
+                                        <div class="panel-body">
+                                            <div id="componentIdentifierURI" class="row">
 <!--                                        <span class="fieldHeader">URI:</span>-->
 <!--                                        <a href="${initialData.componentsIdentifierURI.getUniformResourceIdentifier()}">-->
 <!--                                            ${initialData.componentsIdentifierURI.getUniformResourceIdentifier()}-->
@@ -1017,28 +1015,27 @@
 <!--                                            <span class="fieldHeader">Hash Value:</span>-->
 <!--                                            <span>${initialData.componentsIdentifierURI.getHashValue()}</span>-->
 <!--                                        </c:if>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-
                             <div th:if="${not #strings.isEmpty(initialData.get('platformProperties'))}">
-<!--                        &lt;!&ndash; Platform Properties &ndash;&gt;-->
-<!--                        <div class="panel panel-default">-->
-<!--                            <div class="panel-heading" role="tab" id="headingThree">-->
-<!--                                <h4 class="panel-title">-->
-<!--                                    <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"-->
-<!--                                       class="collapsed" href="#platformPropertiescollapse" aria-expanded="false"-->
-<!--                                       aria-controls="platformPropertiescollapse">-->
-<!--                                        Platform Properties-->
-<!--                                    </a>-->
-<!--                                </h4>-->
-<!--                            </div>-->
-<!--                            <div id="platformPropertiescollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                 aria-labelledby="headingThree">-->
-<!--                                <div class="panel-body">-->
-<!--                                    <div id="platformProperties" class="row">-->
+                                <!-- Platform Properties -->
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingThree">
+                                        <h4 class="panel-title">
+                                            <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
+                                               class="collapsed" href="#platformPropertiescollapse" aria-expanded="false"
+                                               aria-controls="platformPropertiescollapse">
+                                                Platform Properties
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="platformPropertiescollapse" class="panel-collapse collapse" role="tabpanel"
+                                         aria-labelledby="headingThree">
+                                        <div class="panel-body">
+                                            <div id="platformProperties" class="row">
 <!--                                        <c:forEach items="${initialData.platformProperties}" var="property">-->
 <!--                                            <div class="component col col-md-4">-->
 <!--                                                <div class="panel panel-default">-->
@@ -1053,28 +1050,28 @@
 <!--                                                </div>-->
 <!--                                            </div>-->
 <!--                                        </c:forEach>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI'))}">
-<!--                        &lt;!&ndash; Platform Properties URI &ndash;&gt;-->
-<!--                        <div class="panel panel-default">-->
-<!--                            <div class="panel-heading" role="tab" id="headingFour">-->
-<!--                                <h4 class="panel-title">-->
-<!--                                    <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"-->
-<!--                                       class="collapsed" href="#platformPropertiesURIcollapse" aria-expanded="false"-->
-<!--                                       aria-controls="platformPropertiesURIcollapse">-->
-<!--                                        Platform Properties URI-->
-<!--                                    </a>-->
-<!--                                </h4>-->
-<!--                            </div>-->
-<!--                            <div id="platformPropertiesURIcollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                 aria-labelledby="headingFour">-->
-<!--                                <div class="panel-body">-->
-<!--                                    <div id="platformPropertiesURI" class="row">-->
-<!--                                        <span class="fieldHeader">URI:</span>-->
+                                <!-- Platform Properties URI -->
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingFour">
+                                        <h4 class="panel-title">
+                                            <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
+                                               class="collapsed" href="#platformPropertiesURIcollapse" aria-expanded="false"
+                                               aria-controls="platformPropertiesURIcollapse">
+                                                Platform Properties URI
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="platformPropertiesURIcollapse" class="panel-collapse collapse" role="tabpanel"
+                                         aria-labelledby="headingFour">
+                                        <div class="panel-body">
+                                            <div id="platformPropertiesURI" class="row">
+                                                <span class="fieldHeader">URI:</span>
 <!--                                        <a href="${initialData.platformPropertiesURI.getUniformResourceIdentifier()}">-->
 <!--                                            ${initialData.platformPropertiesURI.getUniformResourceIdentifier()}-->
 <!--                                        </a>-->
@@ -1086,10 +1083,10 @@
 <!--                                            <span class="fieldHeader">Hash Value:</span>-->
 <!--                                            <span>${initialData.platformPropertiesURI.getHashValue()}</span>-->
 <!--                                        </c:if>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div> <!-- Close platformConfiguration -->
                     </div> <!-- Close row -->
