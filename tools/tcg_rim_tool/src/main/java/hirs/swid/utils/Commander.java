@@ -69,10 +69,11 @@ public class Commander {
             description = "Use the JKS keystore installed in /opt/rimtool/data.")
     @Getter
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel"}, validateWith = FileArgumentValidator.class,
-            description = "The TCG eventlog file to use as a support RIM.")
+    @Parameter(names = {"-l", "--rimel"}, validateWith = DirectoryArgumentValidator.class,
+            description = "Validate the support RIM in addition to the RIM signature. "
+                    + "A <directory> path can be given to search under for the support RIM.")
     @Getter
-    private String rimEventLog = "";
+    private String rimEventLog = null;
     @Parameter(names = {"--timestamp"}, order = 10, variableArity = true,
             description = "Add a timestamp to the signature. "
                     + "Currently only RFC3339 and RFC3852 are supported:\n"

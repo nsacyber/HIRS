@@ -68,7 +68,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
         boolean valid = false;
         ReferenceManifestValidator validator = new ReferenceManifestValidator();
         validator.setRim(verifyFile);
-        validator.setRimEventLog(rimel);
+        validator.setSupportRimDirectory(rimel);
         validator.setTrustStoreFile(trustStore);
         HexFormat hexTool = HexFormat.of();
 
