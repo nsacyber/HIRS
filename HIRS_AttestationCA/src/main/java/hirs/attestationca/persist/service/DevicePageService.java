@@ -195,27 +195,7 @@ public class DevicePageService {
      * @return a page of all devices
      */
     public Page<Device> findAllDevices(final Pageable pageable) {
-        return deviceRepository.findAll(pageable);
-    }
-
-    /**
-     * Retrieves all devices sorted by device name in ascending order.
-     *
-     * @param pageable pageable
-     * @return a page of all devices sorted by device name in ascending order
-     */
-    public Page<Device> findAllDevicesOrderedByDeviceNameAsc(final Pageable pageable) {
-        return deviceRepository.findAllByOrderByNameAsc(pageable);
-    }
-
-    /**
-     * Retrieves all devices sorted by device name in descending order.
-     *
-     * @param pageable pageable
-     * @return a page of all devices sorted by device name in descending order
-     */
-    public Page<Device> findAllDevicesOrderedByDeviceNameDesc(final Pageable pageable) {
-        return deviceRepository.findAllByOrderByNameDesc(pageable);
+        return this.deviceRepository.findAll(pageable);
     }
 
     /**

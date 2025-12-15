@@ -17,7 +17,6 @@ import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -93,15 +92,72 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                 ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceDigestValue.class,
                         dataTableInput.getColumns());
 
-        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-        // If pageSize is -1 (Show All), set a very large page size
-        // otherwise keep the original page size
-        final int pageSize = dataTableInput.getLength() != -1 ?
-                dataTableInput.getLength() : Integer.MAX_VALUE;
+        Pageable pageable = ControllerPagesUtils.getPageable(
+                dataTableInput.getStart(),
+                dataTableInput.getLength(),
+                orderColumn);
 
-        Pageable pageable = PageRequest.of(currentPage, pageSize);
+        FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = getFilteredRDVList(
+                globalSearchTerm,
+                columnsWithSearchCriteria,
+                searchableColumnNames,
+                pageable);
 
-        FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = new FilteredRecordsList<>();
+        // might be able to get rid of this, maybe write a query that looks for not updated
+        SupportReferenceManifest support;
+        for (ReferenceDigestValue rdv : rdvFilteredRecordsList) {
+            // We are updating the base rim ID field if necessary and
+            if (rdv.getBaseRimId() == null
+                    && this.referenceDigestValuePageService.doesRIMExist(rdv.getSupportRimId())) {
+                support = (SupportReferenceManifest) this.referenceDigestValuePageService.findRIMById(
+                        rdv.getSupportRimId());
+                rdv.setBaseRimId(support.getAssociatedRim());
+                try {
+                    this.referenceDigestValuePageService.saveReferenceDigestValue(rdv);
+                } catch (DBManagerException dbMEx) {
+                    log.error("Failed to update TPM Event with Base RIM ID");
+                }
+            }
+        }
+
+        log.info("Returning the size of the filtered list of reference digest values: "
+                + "{}", rdvFilteredRecordsList.getRecordsFiltered());
+        return new DataTableResponse<>(rdvFilteredRecordsList, dataTableInput);
+    }
+
+    /**
+     * Helper method that retrieves a filtered and paginated list of reference digest values based on the
+     * provided search criteria.
+     * The method allows filtering based on a global search term and column-specific search criteria,
+     * and returns the result in a paginated format.
+     *
+     * <p>
+     * The method handles four cases:
+     * <ol>
+     *     <li>If no global search term and no column-specific search criteria are provided,
+     *         all reference digest values are returned.</li>
+     *     <li>If both a global search term and column-specific search criteria are provided,
+     *         it performs filtering on both.</li>
+     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
+     *         criteria.</li>
+     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     * </ol>
+     * </p>
+     *
+     * @param globalSearchTerm          A global search term that will be used to filter the endorsement
+     *                                  credentials by the searchable fields.
+     * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
+     * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
+     * @param pageable                  pageable
+     * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
+     * reference digest values , along with the total number of records and the number of records matching the
+     * filter criteria.
+     */
+    private FilteredRecordsList<ReferenceDigestValue> getFilteredRDVList(
+            final String globalSearchTerm,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final Set<String> searchableColumnNames,
+            final Pageable pageable) {
         org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult;
 
         // if no value has been entered in the global search textbox and in the column search dropdown
@@ -127,6 +183,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                     globalSearchTerm, pageable);
         }
 
+        FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = new FilteredRecordsList<>();
+
         if (pagedResult.hasContent()) {
             rdvFilteredRecordsList.addAll(pagedResult.getContent());
         }
@@ -135,25 +193,6 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         rdvFilteredRecordsList.setRecordsTotal(
                 this.referenceDigestValuePageService.findReferenceDigestValueRepositoryCount());
 
-        // might be able to get rid of this, maybe write a query that looks for not updated
-        SupportReferenceManifest support;
-        for (ReferenceDigestValue rdv : rdvFilteredRecordsList) {
-            // We are updating the base rim ID field if necessary and
-            if (rdv.getBaseRimId() == null
-                    && this.referenceDigestValuePageService.doesRIMExist(rdv.getSupportRimId())) {
-                support = (SupportReferenceManifest) this.referenceDigestValuePageService.findRIMById(
-                        rdv.getSupportRimId());
-                rdv.setBaseRimId(support.getAssociatedRim());
-                try {
-                    this.referenceDigestValuePageService.saveReferenceDigestValue(rdv);
-                } catch (DBManagerException dbMEx) {
-                    log.error("Failed to update TPM Event with Base RIM ID");
-                }
-            }
-        }
-
-        log.info("Returning the size of the list of reference digest values: "
-                + "{}", rdvFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(rdvFilteredRecordsList, dataTableInput);
+        return rdvFilteredRecordsList;
     }
 }

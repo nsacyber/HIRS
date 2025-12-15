@@ -20,7 +20,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -113,64 +112,22 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                 ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(PlatformCredential.class,
                         dataTableInput.getColumns());
 
-        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        Pageable pageable = ControllerPagesUtils.getPageable(
+                dataTableInput.getStart(),
+                dataTableInput.getLength(),
+                orderColumn);
 
-        // If pageSize is -1 (Show All), set a very large page size
-        // otherwise keep the original page size
-        final int pageSize = dataTableInput.getLength() != -1 ?
-                dataTableInput.getLength() : Integer.MAX_VALUE;
-
-        Pageable pageable = PageRequest.of(currentPage, pageSize);
-
-        FilteredRecordsList<PlatformCredential> pcFilteredRecordsList = new FilteredRecordsList<>();
-        org.springframework.data.domain.Page<PlatformCredential> pagedResult;
-
-        // if no value has been entered in the global search textbox and in the column search dropdown
-        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult =
-                    this.platformCredentialService.findPlatformCredentialsByArchiveFlag(false, pageable);
-        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
-            // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
-                            PlatformCredential.class,
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
-        } else if (!columnsWithSearchCriteria.isEmpty()) {
-            // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
-                            PlatformCredential.class,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
-        } else {
-            // if a value has been entered ONLY in the global search textbox
-            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
-                    PlatformCredential.class,
-                    searchableColumnNames,
-                    globalSearchTerm,
-                    false, pageable);
-        }
-
-        if (pagedResult.hasContent()) {
-            pcFilteredRecordsList.addAll(pagedResult.getContent());
-        }
-
-        pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        pcFilteredRecordsList.setRecordsTotal(
-                this.platformCredentialService.findPlatformCredentialRepositoryCount());
-
-        EndorsementCredential associatedEC;
-
+        FilteredRecordsList<PlatformCredential> pcFilteredRecordsList =
+                getFilteredPlatformCredentialList(
+                        globalSearchTerm,
+                        columnsWithSearchCriteria,
+                        searchableColumnNames,
+                        pageable);
 
         // loop all the platform credentials
         for (PlatformCredential pc : pcFilteredRecordsList) {
             // find the EC using the PC's "holder serial number"
-            associatedEC = this.platformCredentialService
+            EndorsementCredential associatedEC = this.platformCredentialService
                     .findECBySerialNumber(pc.getHolderSerialNumber());
 
             if (associatedEC != null) {
@@ -181,7 +138,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             pc.setEndorsementCredential(associatedEC);
         }
 
-        log.info("Returning the size of the list of platform credentials: {}",
+        log.info("Returning the size of the filtered list of platform credentials: {}",
                 pcFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(pcFilteredRecordsList, dataTableInput);
     }
@@ -315,5 +272,85 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Helper method that retrieves a filtered and paginated list of endorsement credentials based on the
+     * provided search criteria.
+     * The method allows filtering based on a global search term and column-specific search criteria,
+     * and returns the result in a paginated format.
+     *
+     * <p>
+     * The method handles four cases:
+     * <ol>
+     *     <li>If no global search term and no column-specific search criteria are provided,
+     *         all platform credentials are returned.</li>
+     *     <li>If both a global search term and column-specific search criteria are provided,
+     *         it performs filtering on both.</li>
+     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
+     *         criteria.</li>
+     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     * </ol>
+     * </p>
+     *
+     * @param globalSearchTerm          A global search term that will be used to filter the platform
+     *                                  credentials by the searchable fields.
+     * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
+     * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
+     * @param pageable                  pageable
+     * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
+     * platform credentials, along with the total number of records and the number of records matching the
+     * filter criteria.
+     */
+    private FilteredRecordsList<PlatformCredential> getFilteredPlatformCredentialList(
+            final String globalSearchTerm,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final Set<String> searchableColumnNames,
+            final Pageable pageable) {
+        org.springframework.data.domain.Page<PlatformCredential> pagedResult;
+
+        // if no value has been entered in the global search textbox and in the column search dropdown
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.platformCredentialService.findPlatformCredentialsByArchiveFlag(false, pageable);
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                            PlatformCredential.class,
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            PlatformCredential.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else {
+            // if a value has been entered ONLY in the global search textbox
+            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+                    PlatformCredential.class,
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    false, pageable);
+        }
+
+        FilteredRecordsList<PlatformCredential> pcFilteredRecordsList = new FilteredRecordsList<>();
+
+        if (pagedResult.hasContent()) {
+            pcFilteredRecordsList.addAll(pagedResult.getContent());
+        }
+
+        pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        pcFilteredRecordsList.setRecordsTotal(
+                this.platformCredentialService.findPlatformCredentialRepositoryCount());
+
+
+        return pcFilteredRecordsList;
     }
 }

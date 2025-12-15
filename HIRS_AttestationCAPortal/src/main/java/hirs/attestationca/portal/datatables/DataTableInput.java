@@ -26,7 +26,6 @@ public class DataTableInput {
     /**
      * Order in the DataTable.
      */
-    @NotEmpty
     private final List<Order> order = new ArrayList<>();
 
     /**

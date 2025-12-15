@@ -19,7 +19,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -112,22 +111,19 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                 ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(IDevIDCertificate.class,
                         dataTableInput.getColumns());
 
-        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-
-        // If pageSize is -1 (Show All), set a very large page size
-        // otherwise keep the original page size
-        final int pageSize = dataTableInput.getLength() != -1 ?
-                dataTableInput.getLength() : Integer.MAX_VALUE;
-
-        Pageable pageable = PageRequest.of(currentPage, pageSize);
+        Pageable pageable = ControllerPagesUtils.getPageable(
+                dataTableInput.getStart(),
+                dataTableInput.getLength(),
+                orderColumn);
 
         FilteredRecordsList<IDevIDCertificate> idevidFilteredRecordsList =
-                getFilteredIDevIdCertificateList(globalSearchTerm,
+                getFilteredIDevIdCertificateList(
+                        globalSearchTerm,
                         columnsWithSearchCriteria,
                         searchableColumnNames,
                         pageable);
 
-        log.info("Returning the size of the list of IDevId certificates: "
+        log.info("Returning the size of the filtered list of IDevId certificates: "
                 + "{}", idevidFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(idevidFilteredRecordsList, dataTableInput);
     }
@@ -279,8 +275,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the idevid certificates by the
-     *                                  searchable fields.
+     * @param globalSearchTerm          A global search term that will be used to filter the idevid certificates
+     *                                  by the searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable

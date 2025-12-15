@@ -19,7 +19,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -98,7 +97,6 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         log.debug("Request received a datatable input object for the endorsement "
                 + "credentials page: {}", dataTableInput);
 
-        //todo silentcoder
         // grab the column to which ordering has been applied
         final Order orderColumn = dataTableInput.getOrderColumn();
 
@@ -115,22 +113,19 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                 ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(EndorsementCredential.class,
                         dataTableInput.getColumns());
 
-        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-
-        // If pageSize is -1 (Show All), set a very large page size
-        // otherwise keep the original page size
-        final int pageSize = dataTableInput.getLength() != -1 ?
-                dataTableInput.getLength() : Integer.MAX_VALUE;
-
-        Pageable pageable = PageRequest.of(currentPage, pageSize);
+        Pageable pageable = ControllerPagesUtils.getPageable(
+                dataTableInput.getStart(),
+                dataTableInput.getLength(),
+                orderColumn);
 
         FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList =
-                getFilteredEndorsementCredentialList(globalSearchTerm,
+                getFilteredEndorsementCredentialList(
+                        globalSearchTerm,
                         columnsWithSearchCriteria,
                         searchableColumnNames,
                         pageable);
 
-        log.info("Returning the size of the list of endorsement credentials: {}",
+        log.info("Returning the size of the filtered list of endorsement credentials: {}",
                 ekFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(ekFilteredRecordsList, dataTableInput);
     }
@@ -286,8 +281,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the endorsement credentials by the
-     *                                  searchable fields.
+     * @param globalSearchTerm          A global search term that will be used to filter the endorsement
+     *                                  credentials by the searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable

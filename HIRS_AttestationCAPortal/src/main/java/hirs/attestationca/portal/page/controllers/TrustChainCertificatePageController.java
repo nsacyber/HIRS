@@ -23,7 +23,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -159,60 +158,19 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                         CertificateAuthorityCredential.class,
                         dataTableInput.getColumns());
 
-        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
-
-        // If pageSize is -1 (Show All), set a very large page size
-        // otherwise keep the original page size
-        final int pageSize = dataTableInput.getLength() != -1 ?
-                dataTableInput.getLength() : Integer.MAX_VALUE;
-
-        Pageable pageable = PageRequest.of(currentPage, pageSize);
+        Pageable pageable = ControllerPagesUtils.getPageable(
+                dataTableInput.getStart(),
+                dataTableInput.getLength(),
+                orderColumn);
 
         FilteredRecordsList<CertificateAuthorityCredential> caFilteredRecordsList =
-                new FilteredRecordsList<>();
-        org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult;
+                getFilteredTrustChainsList(
+                        globalSearchTerm,
+                        columnsWithSearchCriteria,
+                        searchableColumnNames,
+                        pageable);
 
-        // if no value has been entered in the global search textbox and in the column search dropdown
-        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult =
-                    this.trustChainCertificatePageService.
-                            findCACredentialsByArchiveFlag(false, pageable);
-        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
-            // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
-                            CertificateAuthorityCredential.class,
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
-        } else if (!columnsWithSearchCriteria.isEmpty()) {
-            // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
-                            CertificateAuthorityCredential.class,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
-        } else {
-            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
-                    // if a value has been entered ONLY in the global search textbox
-                    CertificateAuthorityCredential.class,
-                    searchableColumnNames,
-                    globalSearchTerm,
-                    false, pageable);
-        }
-
-        if (pagedResult.hasContent()) {
-            caFilteredRecordsList.addAll(pagedResult.getContent());
-        }
-
-        caFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        caFilteredRecordsList.setRecordsTotal(
-                this.trustChainCertificatePageService.findTrustChainCertificateRepoCount());
-
-        log.info("Returning the size of the list of trust chain certificates: "
+        log.info("Returning the size of the filtered list of trust chain certificates: "
                 + " {}", caFilteredRecordsList.getRecordsFiltered());
         return new DataTableResponse<>(caFilteredRecordsList, dataTableInput);
     }
@@ -382,5 +340,86 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.TRUST_CHAIN, new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Helper method that retrieves a filtered and paginated list of trust chain certificates based on the
+     * provided search criteria.
+     * The method allows filtering based on a global search term and column-specific search criteria,
+     * and returns the result in a paginated format.
+     *
+     * <p>
+     * The method handles four cases:
+     * <ol>
+     *     <li>If no global search term and no column-specific search criteria are provided,
+     *         all trust chain certificates are returned.</li>
+     *     <li>If both a global search term and column-specific search criteria are provided,
+     *         it performs filtering on both.</li>
+     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
+     *         criteria.</li>
+     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     * </ol>
+     * </p>
+     *
+     * @param globalSearchTerm          A global search term that will be used to filter the trust chain
+     *                                  certificates by the searchable fields.
+     * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
+     * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
+     * @param pageable                  pageable
+     * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
+     * trust chain certificates, along with the total number of records and the number of records matching the
+     * filter criteria.
+     */
+    private FilteredRecordsList<CertificateAuthorityCredential> getFilteredTrustChainsList(
+            final String globalSearchTerm,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final Set<String> searchableColumnNames,
+            final Pageable pageable) {
+        org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult;
+
+        // if no value has been entered in the global search textbox and in the column search dropdown
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.trustChainCertificatePageService.
+                            findCACredentialsByArchiveFlag(false, pageable);
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                            CertificateAuthorityCredential.class,
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            CertificateAuthorityCredential.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else {
+            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+                    // if a value has been entered ONLY in the global search textbox
+                    CertificateAuthorityCredential.class,
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    false, pageable);
+        }
+
+        FilteredRecordsList<CertificateAuthorityCredential> caFilteredRecordsList =
+                new FilteredRecordsList<>();
+
+        if (pagedResult.hasContent()) {
+            caFilteredRecordsList.addAll(pagedResult.getContent());
+        }
+
+        caFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        caFilteredRecordsList.setRecordsTotal(
+                this.trustChainCertificatePageService.findTrustChainCertificateRepoCount());
+
+        return caFilteredRecordsList;
     }
 }
