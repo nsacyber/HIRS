@@ -112,7 +112,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
                 ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(PlatformCredential.class,
                         dataTableInput.getColumns());
 
-        Pageable pageable = ControllerPagesUtils.getPageable(
+        Pageable pageable = ControllerPagesUtils.createPageableObject(
                 dataTableInput.getStart(),
                 dataTableInput.getLength(),
                 orderColumn);

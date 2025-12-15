@@ -44,11 +44,9 @@ public final class ControllerPagesUtils {
      * @param orderColumn An {@link Order} object containing the column name and direction for sorting
      * @return A {@link Pageable} object containing the pagination and sorting configuration.
      */
-    public static Pageable getPageable(final int pageStart,
-                                       final int pageEnd,
-                                       final Order orderColumn) {
-        Pageable pageable;
-
+    public static Pageable createPageableObject(final int pageStart,
+                                                final int pageEnd,
+                                                final Order orderColumn) {
         // Calculate the current page number based on the starting index and page size
         final int currentPage = pageStart / pageEnd;
 
@@ -64,13 +62,11 @@ public final class ControllerPagesUtils {
             Sort sort = Sort.by(new Sort.Order(sortDirection, orderColumn.getName()));
 
             // Create the Pageable object with sorting
-            pageable = PageRequest.of(currentPage, pageSize, sort);
-        } else {
-            // Create the Pageable object without sorting if no order column is provided
-            pageable = PageRequest.of(currentPage, pageSize);
+            return PageRequest.of(currentPage, pageSize, sort);
         }
 
-        return pageable;
+        // Create the Pageable object without sorting if no order column is provided
+        return PageRequest.of(currentPage, pageSize);
     }
 
     /**

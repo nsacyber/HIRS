@@ -111,7 +111,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                 ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(IDevIDCertificate.class,
                         dataTableInput.getColumns());
 
-        Pageable pageable = ControllerPagesUtils.getPageable(
+        Pageable pageable = ControllerPagesUtils.createPageableObject(
                 dataTableInput.getStart(),
                 dataTableInput.getLength(),
                 orderColumn);

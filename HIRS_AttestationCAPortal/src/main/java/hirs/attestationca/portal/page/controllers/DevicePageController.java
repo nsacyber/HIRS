@@ -97,7 +97,7 @@ public class DevicePageController extends PageController<NoPageParams> {
             orderColumn.setName(orderColumn.getName().split("device.")[1]);
         }
 
-        Pageable pageable = ControllerPagesUtils.getPageable(
+        Pageable pageable = ControllerPagesUtils.createPageableObject(
                 dataTableInput.getStart(),
                 dataTableInput.getLength(),
                 orderColumn);

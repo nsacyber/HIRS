@@ -112,7 +112,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                 ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceManifest.class,
                         dataTableInput.getColumns());
 
-        Pageable pageable = ControllerPagesUtils.getPageable(
+        Pageable pageable = ControllerPagesUtils.createPageableObject(
                 dataTableInput.getStart(),
                 dataTableInput.getLength(),
                 orderColumn);

@@ -92,7 +92,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
                 ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceDigestValue.class,
                         dataTableInput.getColumns());
 
-        Pageable pageable = ControllerPagesUtils.getPageable(
+        Pageable pageable = ControllerPagesUtils.createPageableObject(
                 dataTableInput.getStart(),
                 dataTableInput.getLength(),
                 orderColumn);

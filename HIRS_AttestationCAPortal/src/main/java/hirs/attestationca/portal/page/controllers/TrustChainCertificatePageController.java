@@ -158,7 +158,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                         CertificateAuthorityCredential.class,
                         dataTableInput.getColumns());
 
-        Pageable pageable = ControllerPagesUtils.getPageable(
+        Pageable pageable = ControllerPagesUtils.createPageableObject(
                 dataTableInput.getStart(),
                 dataTableInput.getLength(),
                 orderColumn);

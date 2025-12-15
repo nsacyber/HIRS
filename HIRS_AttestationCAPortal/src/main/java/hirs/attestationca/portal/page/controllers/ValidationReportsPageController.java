@@ -94,7 +94,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                         SupplyChainValidationSummary.class,
                         dataTableInput.getColumns());
 
-        Pageable pageable = ControllerPagesUtils.getPageable(
+        Pageable pageable = ControllerPagesUtils.createPageableObject(
                 dataTableInput.getStart(),
                 dataTableInput.getLength(),
                 orderColumn);
