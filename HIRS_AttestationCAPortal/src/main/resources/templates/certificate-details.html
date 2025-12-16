@@ -3,6 +3,7 @@
       layout:decorate="~{layout}" xmlns="http://www.w3.org/1999/html" xmlns:c="http://www.w3.org/1999/XSL/Transform">
 
 <head>
+    <link rel="stylesheet" th:href="@{/css/certificate_details.css}" />
     <section layout:fragment="script">
         <script th:inline="javascript">
             $(document).ready(function () {
@@ -172,13 +173,13 @@
     <section layout:fragment="content">
         <div id="certificate-details-page" class="container-fluid">
 
-            <!-- Display the issuer, and provide a link to the issuer details if provided -->
+            <!-- Display issuer, and provide a link to issuer details if provided -->
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Issuer</span></div>
                 <div id="issuer" class="col col-md-8">
                     <div>Distinguished Name:&nbsp;<span>
                         <th:block th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
-                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id=${initialData.get('issuerID')}&type=certificateauthority}">
+                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=certificateauthority(id=${initialData.get('issuerID')})}">
                                 [[${initialData.get('issuer')}]]
                             </a>
                         </th:block>
@@ -194,18 +195,14 @@
                     <div th:if="${not #strings.isEmpty(initialData.get('authInfoAccess'))}">
                         <div>Authority Info Access:&nbsp;<span>
                             <a th:href="@{${initialData.get('authInfoAccess')}}">[[${initialData.get('authInfoAccess')}]]</a>
-<!--                            <a th:href="@{{id}(id=${initialData.get('authInfoAccess')})}">-->
-<!--                                    [[${initialData.get('authInfoAccess')}]]-->
-<!--                            </a>-->
                             </span>
                         </div>
                     </div>
                     <div th:if="${not #strings.isEmpty(initialData.get('authSerialNumber'))}">
-                        <div>Authority Serial Number:&nbsp;
+                        <div>Authority Serial Number:
                             <span id="authSerialNumber"></span>
                         </div>
                     </div>
-
                     <div th:if="${not #strings.equals(param.type, 'issued')}">
                         <span class="chainIcon">
                             <!-- Icon with link for missing certificate for the chain -->
@@ -226,7 +223,7 @@
                 </div>
             </div> <!-- Close certificate issuer -->
 
-            <!-- Display the certificate subject -->
+            <!-- Display certificate subject -->
             <div th:if="${not #strings.isEmpty(initialData.get('subject'))}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject</span></div>
@@ -234,7 +231,7 @@
                 </div>
             </div> <!-- Close certificate subject -->
 
-            <!-- Display the certificate serial number -->
+            <!-- Display certificate serial number -->
             <div th:if="${not #strings.isEmpty(initialData.get('serialNumber'))}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certificate Serial Number</span></div>
@@ -242,7 +239,7 @@
                 </div>
             </div> <!-- Close certificate serial number -->
 
-            <!-- Display the certificate hardware serial number -->
+            <!-- Display certificate hardware serial number -->
             <div th:if="${not #strings.isEmpty(initialData.get('hwSerialNum'))}">
                 <div class="row">
                     <div th:if="${not #strings.isEmpty(initialData.get('ekCertificateDigest'))}">
@@ -281,7 +278,7 @@
                 </div>
             </div> <!-- Close certificate hardware serial number -->
 
-            <!-- Display the certificate tcg tpm manufacturer -->
+            <!-- Display certificate tcg tpm manufacturer -->
             <div th:if="${not #strings.isEmpty(initialData.get('tcgTpmManufacturer'))}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
@@ -309,7 +306,7 @@
                 </div>
             </div>  <!-- Close certificate tcg tpm manufacturer -->
 
-            <!-- Display the certificate validity dates -->
+            <!-- Display certificate validity dates -->
             <div th:if="${not #strings.isEmpty(initialData.get('beginValidity'))}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
@@ -321,7 +318,7 @@
                 </div>
             </div> <!-- Close certificate validity dates -->
 
-            <!-- Display the certificate signature -->
+            <!-- Display certificate signature -->
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
                 <div id="signatureSection" class="col col-md-8">
@@ -359,7 +356,7 @@
                 </div>
             </div> <!-- Close certificate signature -->
 
-            <!-- Display the certificate public key -->
+            <!-- Display certificate public key -->
             <div th:if="${not #strings.isEmpty(initialData.get('encodedPublicKey'))}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Public Key</span></div>
@@ -408,16 +405,15 @@
                 </div>
             </div> <!-- Close certificate public key -->
 
-            <!-- Display the certificate version -->
+            <!-- Display certificate version -->
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>
-                <div id="credentialVersion" class="col col-md-8 vertical">[[${initialData.get('x509Version')}]]
-<!--    TODO fix the following line-->
-<!--                    (v  double-bracket-here  ${initialData.get('x509Version') + 1}]])</ div>-->
+                <!-- per spec, version is 1 more than encoded value -->
+                <div id="credentialVersion" class="col col-md-8 vertical">[[${{initialData.get('x509Version') + 1}}]]
                 </div>
             </div>
 
-            <!-- Display the certificate type -->
+            <!-- Display certificate type -->
             <div th:if="${not #strings.isEmpty(initialData.get('credentialType'))}">
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
@@ -558,34 +554,34 @@
                 </div>
             </div> <!-- Close certificate of type 'endorsement' -->
 
-            <!-- If this is a certificate of type 'platform' -->        jamo1
+            <!-- If this is a certificate of type 'platform' -->
             <div th:if="${#strings.equals(param.type, 'platform')}">
+                <!-- Platform Type -->
                 <div th:if="${not #strings.isEmpty(initialData.get('platformType'))}">
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
-                        <div id="platformType" class="col col-md-8 vertical">[[${initialData.get(platformType)}]]</div>
+                        <div id="platformType" class="col col-md-8 vertical">[[${initialData.get('platformType')}]]</div>
                     </div>
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
-                        <div id="platformType" class="col col-md-8 vertical">
+                        <div id="platformChain" class="col col-md-8 vertical">
                             <span>
-<!--    TODO: fix the following-->
-<!--                                <c:forEach items="${initialData.chainCertificates}" var="credential"-->
-<!--                                           varStatus="loop">-->
-<!--                                    <c:choose>-->
-<!--                                        <c:when test="${initialData.certificateId==credential.getId().toString()}">-->
-<!--                                            ${loop.index}&nbsp;-->
-<!--                                        </c:when>-->
-<!--                                        <c:otherwise>-->
-<!--                                            <a-->
-<!--                                                    href="${portal}/certificate-details?id=${credential.getId()}&type=platform">${loop.index}</a>&nbsp;-->
-<!--                                        </c:otherwise>-->
-<!--                                    </c:choose>-->
-<!--                                </c:forEach>-->
+                                <div th:each="credential, loop : ${initialData.get('chainCertificates')}">
+                                    <div th:if="${#strings.equals(initialData.get('certificateId'), credential.getId().toString())}">
+                                        [[${loop.index}]]&nbsp;
+                                    </div>
+                                    <div th:if="${not #strings.equals(initialData.get('certificateId'), credential.getId().toString())}">
+                                        <a
+                                           th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=platform(id=${credential.getId()})}">
+                                                [[${loop.index}]]
+                                        </a>&nbsp;
+                                    </div>
+                                </div>
                             </span>
                         </div>
                     </div>
                 </div>
+                <!-- Certification Practice Statement URI -->
                 <div th:if="${not #strings.isEmpty(initialData.get('CPSuri'))}">
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice
@@ -595,6 +591,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- Holder -->
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
                     <div id="holder" class="col col-md-8">
@@ -624,6 +621,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- System Platform Information -->
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Platform Information</span>
                     </div>
@@ -634,17 +632,19 @@
                         <div id="serial">Serial Number:&nbsp;<span>[[${initialData.get('platformSerial')}]]</span></div>
                     </div>
                 </div>
+                <!-- TCG Platform Specification -->
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification
                             Version</span></div>
                     <div id="majorVersion" class="col col-md-8 vertical">
                         [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
                 </div>
+                <!-- Platform Class -->
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>
                     <div id="platformClass" class="col col-md-8 vertical">[[${initialData.get('platformClass')}]]</div>
                 </div>
-                <!-- TBB Security Assertion-->
+                <!-- TBB Security Assertion -->
                 <div th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion'))}">
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">TBB Security Assertion</span>
@@ -653,169 +653,169 @@
                             <div class="tbbsecurityLine">
                                 <span class="fieldHeader">Version:</span>
                                 <span class="fieldValue">
-                                    [[${initialData.get('tbbSecurityAssertion').getVersion()}]]&nbsp;
-                                    (v[[${initialData.get('tbbSecurityAssertion').getVersion().getValue() + 1}]])
+                                    <!-- per spec, version is 1 more than encoded value -->
+                                    [[${initialData.get('tbbSecurityAssertion').getVersion().getValue() + 1}]]
                                 </span>
                             </div>
                             <div class="tbbsecurityLine">
                                 <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>
-<!--                                <span-->
-<!--                                    class="fieldValue">-->
-<!--    TODO: add double brackets and figure out why enum 'value' with lombok getter isn't working-->
+                                <span
+                                    class="fieldValue">
+
+<!--    TODO: add double brackets and figure out: -->
+<!--        enum 'value' with lombok getter isn't working-->
+<!--        it's because rtmType=null but now find out why it is null?-->
+<!--        TBBSecurityAssertion(version=0, ccInfo=null, fipsLevel=null, rtmType=null, iso9000Certified=FALSE, iso9000Uri=null)-->
+
 <!--                                    ${initialData.get('tbbSecurityAssertion').getRtmType().getValue()}</span>-->
+
                             </div>
                             <!-- CCINFO -->
                             <div th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getCcInfo())}">
-<!--    TODO: test this since it doesn't hit this case currently-->
-<!--                                    <c:set var="ccinfo" value="${initialData.tbbSecurityAssertion.getCcInfo()}" />-->
-                                <div class="panel panel-default">
-                                    <div class="panel-heading" role="tab" id="headingOne">
-                                        <h4 class="panel-title">
-                                            <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
-                                               class="collapsed" href="#ccinfocollapse" aria-expanded="false"
-                                               aria-controls="ccinfocollapse">
-                                                Common Criteria Measures Information
-                                            </a>
-                                        </h4>
-                                    </div>
-                                    <div id="ccinfocollapse" class="panel-collapse collapse" role="tabpanel"
-                                         aria-labelledby="headingOne">
-                                        <div class="panel-body">
-                                            <div id="ccinfo" class="row">
-                                                <div class="tbbsecurityLine">
-                                                    <span class="fieldHeader">Version:</span>
-<!--                                                        <span class="fieldValue">${ccinfo.getVersion()}</span>-->
-                                                </div>
-                                                <div class="tbbsecurityLine">
-                                                    <span class="fieldHeader">Assurance Level:</span>
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getAssuranceLevel().getValue())}</span>-->
-                                                </div>
-                                                <div class="tbbsecurityLine">
-                                                    <span class="fieldHeader">Evaluation Status:</span>
-<!--                                                    <span-->
-<!--                                                            class="fieldValue">${fn:toUpperCase(ccinfo.getEvaluationStatus().getValue())}</span>-->
-                                                </div>
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <c:choose>-->
-<!--                                                            <c:when test="${ccinfo.getPlus()=='TRUE'}">-->
-<!--                                                                <span class="label label-success">Plus</span>-->
-<!--                                                            </c:when>-->
-<!--                                                            <c:otherwise>-->
-<!--                                                                <span class="label label-danger">Not Plus</span>-->
-<!--                                                            </c:otherwise>-->
-<!--                                                        </c:choose>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Strength of Function:</span>-->
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getStrengthOfFunction().getValue())}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <c:if test="${not empty ccinfo.getProfileOid()}">-->
-<!--                                                        <div class="tbbsecurityLine">-->
-<!--                                                            <span class="fieldHeader">Profile OID:</span>-->
-<!--                                                            <span class="fieldValue">${ccinfo.getProfileOid()}</span>-->
-<!--                                                        </div>-->
-<!--                                                    </c:if>-->
-<!--                                                    <c:if test="${not empty ccinfo.getProfileUri()}">-->
-<!--                                                        <div class="tbbsecurityLine">-->
-<!--                                                            <span class="fieldHeader">Profile URI:</span>-->
-<!--                                                            <span class="fieldValue">-->
-<!--                                                                <a-->
-<!--                                                                        href="${ccinfo.getProfileUri().getUniformResourceIdentifier()}">-->
-<!--                                                                    ${ccinfo.getProfileUri().getUniformResourceIdentifier()}-->
-<!--                                                                </a>-->
-<!--                                                            </span>-->
-<!--                                                        </div>-->
-<!--                                                        <c:if-->
-<!--                                                                test="${not empty ccinfo.getProfileUri().getHashAlgorithm()}">-->
-<!--                                                            <div class="tbbsecurityLine">-->
-<!--                                                                <span class="fieldHeader">Profile Hash Algorithm:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${ccinfo.getProfileUri().getHashAlgorithm()}</span>-->
-<!--                                                            </div>-->
-<!--                                                        </c:if>-->
-<!--                                                        <c:if test="${not empty ccinfo.getProfileUri().getHashValue()}">-->
-<!--                                                            <div class="tbbsecurityLine">-->
-<!--                                                                <span class="fieldHeader">Profile Hash Value:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${ccinfo.getProfileUri().getHashValue()}</span>-->
-<!--                                                            </div>-->
-<!--                                                        </c:if>-->
-<!--                                                    </c:if>-->
-<!--                                                    <c:if test="${not empty ccinfo.getTargetOid()}">-->
-<!--                                                        <div class="tbbsecurityLine">-->
-<!--                                                            <span class="fieldHeader">Target OID:</span>-->
-<!--                                                            <span class="fieldValue">${ccinfo.getTargetOid()}</span>-->
-<!--                                                        </div>-->
-<!--                                                    </c:if>-->
-<!--                                                    <c:if test="${not empty ccinfo.getTargetUri()}">-->
-<!--                                                        <div class="tbbsecurityLine">-->
-<!--                                                            <span class="fieldHeader">Target URI:</span>-->
-<!--                                                            <span class="fieldValue">-->
-<!--                                                                <a-->
-<!--                                                                        href="${ccinfo.getTargetUri().getUniformResourceIdentifier()}">-->
-<!--                                                                    ${ccinfo.getTargetUri().getUniformResourceIdentifier()}-->
-<!--                                                                </a>-->
-<!--                                                            </span>-->
-<!--                                                        </div>-->
-<!--                                                        <c:if-->
-<!--                                                                test="${not empty ccinfo.getTargetUri().getHashAlgorithm()}">-->
-<!--                                                            <div class="tbbsecurityLine">-->
-<!--                                                                <span class="fieldHeader">Target Hash Algorithm:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${ccinfo.getTargetUri().getHashAlgorithm()}</span>-->
-<!--                                                            </div>-->
-<!--                                                        </c:if>-->
-<!--                                                        <c:if test="${not empty ccinfo.getTargetUri().getHashValue()}">-->
-<!--                                                            <div class="tbbsecurityLine">-->
-<!--                                                                <span class="fieldHeader">Target Hash Value:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${ccinfo.getTargetUri().getHashValue()}</span>-->
-<!--                                                            </div>-->
-<!--                                                        </c:if>-->
-<!--                                                    </c:if>-->
-                                            </div>
+<!--    TODO: test this since it doesn't hit this case currently as ccInfo is null-->
+                                <div th:with="ccinfo=${initialData.get('tbbSecurityAssertion').getCcInfo()}">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingOne">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                                   class="collapsed" href="#ccinfocollapse" aria-expanded="false"
+                                                   aria-controls="ccinfocollapse">
+                                                    Common Criteria Measures Information
+                                                </a>
+                                            </h4>
                                         </div>
-                                    </div>
-                                </div>
+                                        <div id="ccinfocollapse" class="panel-collapse collapse" role="tabpanel"
+                                             aria-labelledby="headingOne">
+                                            <div class="panel-body">
+                                                <div id="ccinfo" class="row">
+                                                    <div class="tbbsecurityLine">
+                                                        <span class="fieldHeader">Version:</span>
+                                                            <span class="fieldValue">[[${ccinfo.getVersion()}]]</span>
+                                                    </div>
+                                                    <div class="tbbsecurityLine">
+                                                        <span class="fieldHeader">Assurance Level:</span>
+                                                            <span
+                                                                class="fieldValue">[[${#strings.toUpperCase(ccinfo.getAssuranceLevel().getValue())}]]</span>
+                                                    </div>
+                                                    <div class="tbbsecurityLine">
+                                                        <span class="fieldHeader">Evaluation Status:</span>
+                                                        <span
+                                                                class="fieldValue">[[${#strings.toUpperCase(ccinfo.getEvaluationStatus().getValue())}]]</span>
+                                                    </div>
+                                                    <div class="tbbsecurityLine">
+                                                        <div th:if="${#strings.equals(ccinfo.getPlus(), 'TRUE')}">
+                                                            <span class="label label-success">Plus</span>
+                                                        </div>
+                                                        <div th:if="${not #strings.equals(ccinfo.getPlus(), 'TRUE')}">
+                                                            <span class="label label-danger">Not Plus</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tbbsecurityLine">
+                                                        <span class="fieldHeader">Strength of Function:</span>
+                                                        <span
+                                                            class="fieldValue">[[${#strings.toUpperCase(ccinfo.getStrengthOfFunction().getValue())}]]</span>
+                                                    </div>
+                                                    <div th:if="${not #strings.isEmpty(ccinfo.getProfileOid())}">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Profile OID:</span>
+                                                            <span class="fieldValue">[[${ccinfo.getProfileOid()}]]</span>
+                                                        </div>
+                                                    </div>
+                                                    <div th:if="${not #strings.isEmpty(ccinfo.getProfileUri())}">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Profile URI:</span>
+                                                            <span class="fieldValue">
+                                                                <a th:href="@{${ccinfo.getProfileUri().getUniformResourceIdentifier()}}">
+                                                                    [[${ccinfo.getProfileUri().getUniformResourceIdentifier()}]]
+                                                                </a>
+                                                            </span>
+                                                        </div>
+                                                        <div th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashAlgorithm())}">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Profile Hash Algorithm:</span>
+                                                                <span
+                                                                    class="fieldValue">[[${ccinfo.getProfileUri().getHashAlgorithm()}]]</span>
+                                                            </div>
+                                                        </div>
+                                                        <div th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashValue())}">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Profile Hash Value:</span>
+                                                                <span
+                                                                    class="fieldValue">[[${ccinfo.getProfileUri().getHashValue()}]]</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div th:if="${not #strings.isEmpty(ccinfo.getTargetOid())}">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Target OID:</span>
+                                                            <span class="fieldValue">[[${ccinfo.getTargetOid()}]]</span>
+                                                        </div>
+                                                    </div>
+                                                    <div th:if="${not #strings.isEmpty(ccinfo.getTargetUri())}">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Target URI:</span>
+                                                            <span class="fieldValue">
+                                                                <a th:href="@{${ccinfo.getTargetUri().getUniformResourceIdentifier()}}">
+                                                                    [[${ccinfo.getTargetUri().getUniformResourceIdentifier()}]]
+                                                                </a>
+                                                            </span>
+                                                        </div>
+                                                        <div th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashAlgorithm())}">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Target Hash Algorithm:</span>
+                                                                <span
+                                                                    class="fieldValue">[[${ccinfo.getTargetUri().getHashAlgorithm()}]]</span>
+                                                            </div>
+                                                        </div>
+                                                        <div th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashValue())}">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Target Hash Value:</span>
+                                                                <span
+                                                                    class="fieldValue">[[${ccinfo.getTargetUri().getHashValue()}]]</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> <!-- Close id="ccinfocollapse" -->
+                                    </div> <!-- Close class="panel panel-default" -->
+                                </div> <!-- Close with="ccinfo=... -->
                             </div> <!-- Close CCINFO -->
                             <!-- FIPS Level -->
                             <div th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getFipsLevel())}">
 <!--    TODO: test this since it doesn't hit this case currently-->
-<!--                                    <c:set var="fipslevel" value="${initialData.tbbSecurityAssertion.getFipsLevel()}" />-->
-                                <div class="panel panel-default">
-                                    <div class="panel-heading" role="tab" id="headingThree">
-                                        <h4 class="panel-title">
-                                            <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
-                                               class="collapsed" href="#fipscollapse" aria-expanded="false"
-                                               aria-controls="fipscollapse">
-                                                FIPS Level
-                                            </a>
-                                        </h4>
-                                    </div>
-                                    <div id="fipscollapse" class="panel-collapse collapse" role="tabpanel"
-                                         aria-labelledby="headingTwo">
-                                        <div class="panel-body">
-                                            <div id="fipsLevel" class="row">
-                                                <div class="tbbsecurityLine">
-                                                    <span class="fieldHeader">Version:</span>
-<!--                                                    <span class="fieldValue">${fipslevel.getVersion()}</span>-->
-                                                </div>
-                                                <div class="tbbsecurityLine">
-                                                    <span class="fieldHeader">Level:</span>
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${fn:toUpperCase(fipslevel.getLevel().getValue())}</span>-->
-                                                </div>
-                                                <div class="tbbsecurityLine">
-<!--                                                        <c:choose>-->
-<!--                                                            <c:when test="${fipslevel.getPlus()=='TRUE'}">-->
-<!--                                                                <span class="label label-success">Plus</span>-->
-<!--                                                            </c:when>-->
-<!--                                                            <c:otherwise>-->
-<!--                                                                <span class="label label-danger">Not Plus</span>-->
-<!--                                                            </c:otherwise>-->
-<!--                                                        </c:choose>-->
+                                <div th:with="fipslevel=${initialData.get('tbbSecurityAssertion').getFipsLevel()}">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingThree">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                                   class="collapsed" href="#fipscollapse" aria-expanded="false"
+                                                   aria-controls="fipscollapse">
+                                                    FIPS Level
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="fipscollapse" class="panel-collapse collapse" role="tabpanel"
+                                             aria-labelledby="headingTwo">
+                                            <div class="panel-body">
+                                                <div id="fipsLevel" class="row">
+                                                    <div class="tbbsecurityLine">
+                                                        <span class="fieldHeader">Version:</span>
+                                                        <span class="fieldValue">[[${fipslevel.getVersion()}]]</span>
+                                                    </div>
+                                                    <div class="tbbsecurityLine">
+                                                        <span class="fieldHeader">Level:</span>
+                                                        <span
+                                                            class="fieldValue">[[${#strings.toUpperCase(fipslevel.getLevel().getValue())}]]</span>
+                                                    </div>
+                                                    <div class="tbbsecurityLine">
+                                                        <div th:if="${#strings.equals(fipslevel.getPlus(), 'TRUE')}">
+                                                            <span class="label label-success">Plus</span>
+                                                        </div>
+                                                        <div th:if="${not #strings.equals(fipslevel.getPlus(), 'TRUE')}">
+                                                            <span class="label label-danger">Not Plus</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -863,13 +863,15 @@
                         </div> <!-- Close div id="tbbsecurity" -->
                     </div> <!-- Close row -->
                 </div> <!-- Close TBB Security Assertion -->
-                <!-- For PC 2.0 -->                  jamo3
+                <!-- For PC 2.0 -->
                 <!-- Credential Type is TCG -->
                 <div th:if="${#strings.contains(initialData.get('credentialType'), 'TCG')}">
                     <div class="row">
+                        <!-- TCG Platform Configuration -->
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform
                                 Configuration</span></div>
                         <div id="platformConfiguration" class="col col-md-8">
+                            <!-- TCG Platform Configuration: Components-->
                             <div th:if="${not #strings.isEmpty(initialData.get('componentResults'))}">
                                 <!-- Component Identifier -->
                                 <div class="panel panel-default">
@@ -887,105 +889,93 @@
                                          role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
                                         <div class="panel-body">
                                             <div id="componentIdentifier" class="row">
-<!--                                                    <c:forEach items="${initialData.componentResults}" var="component">-->
-<!--                                                        <div class="component col col-md-4">-->
-<!--                                                            <div class="panel panel-default">-->
-<!--                                                                <c:choose>-->
-<!--                                                                    <c:when-->
-<!--                                                                            test="${component.isFailedValidation() =='TRUE'}">-->
-<!--                                                                        <div class="panel-heading"-->
-<!--                                                                             style="background-color: red; color: white">-->
-<!--                                                                        </div>-->
-<!--                                                                    </c:when>-->
-<!--                                                                    <c:otherwise>-->
-<!--                                                                        <div class="panel-heading">-->
-<!--                                                                        </div>-->
-<!--                                                                    </c:otherwise>-->
-<!--                                                                </c:choose>-->
-<!--                                                                <c:choose>-->
-<!--                                                                    <c:when test="${component.isVersion2()=='TRUE'}">-->
-<!--                                                                        <span data-toggle="tooltip" data-placement="top"-->
-<!--                                                                              title="${component.getComponentClassToolTipStr()}">${component.getComponentClassStr()}</span>-->
-<!--                                                                    </c:when>-->
-<!--                                                                    <c:otherwise>-->
-<!--                                                                        <span data-toggle="tooltip" data-placement="top"-->
-<!--                                                                              title="Component Class">Platform-->
-<!--                                                                            Components</span>-->
-<!--                                                                    </c:otherwise>-->
-<!--                                                                </c:choose>-->
-<!--                                                            </div>-->
-<!--                                                            <div class="panel-body">-->
-<!--                                                                <span class="fieldHeader">Manufacturer:</span>-->
+<!--    TODO: test this-->
+                                                <div th:each="component, loop : ${initialData.get('componentResults')}">
+                                                    <div class="component col col-md-4">-->
+                                                        <div class="panel panel-default">
+                                                            <div th:if="${#strings.equals(component.isFailedValidation(), 'TRUE')}">
+                                                                <div class="panel-heading"
+                                                                    style="background-color: red; color: white">
+                                                                </div>
+                                                            </div>
+                                                            <div th:if="${not #strings.equals(component.isFailedValidation(), 'TRUE')}">
+                                                                <div class="panel-heading">
+                                                                </div>
+                                                            </div>
+                                                            <div th:if="${#strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                <span data-toggle="tooltip" data-placement="top"
+                                                                    th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
+                                                            </div>
+                                                            <div th:if="${not #strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                <span data-toggle="tooltip" data-placement="top">
+<!--                                                                    th:title="Component Class">Platform Components</span>-->
+                                                                    jamo TESTING HEREEEEEEEE</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="panel-body">
+                                                            <span class="fieldHeader">Manufacturer:</span>
+                                                            <span
+                                                                    class="fieldValue">[[${component.getManufacturer()}]]</span><br />
+                                                            <span class="fieldHeader">Model:</span>
+                                                            <span
+                                                                class="fieldValue">[[${component.getModel()}]]</span><br />
+                                                            jamo
+<!--                                                            <c:if-->
+<!--                                                                    test="${not empty fn:trim(component.getSerialNumber())}">-->
+<!--                                                                <span class="fieldHeader">Serial Number:</span>-->
 <!--                                                                <span-->
-<!--                                                                        class="fieldValue">${component.getManufacturer()}</span><br />-->
-<!--                                                                <span class="fieldHeader">Model:</span>-->
+<!--                                                                        class="fieldValue">${component.getSerialNumber()}</span><br />-->
+<!--                                                            </c:if>-->
+<!--                                                            <c:if-->
+<!--                                                                    test="${not empty fn:trim(component.getRevisionNumber())}">-->
+<!--                                                                <span class="fieldHeader">Revision:</span>-->
 <!--                                                                <span-->
-<!--                                                                        class="fieldValue">${component.getModel()}</span><br />-->
-<!--                                                                <c:if-->
-<!--                                                                        test="${not empty fn:trim(component.getSerialNumber())}">-->
-<!--                                                                    <span class="fieldHeader">Serial Number:</span>-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldValue">${component.getSerialNumber()}</span><br />-->
-<!--                                                                </c:if>-->
-<!--                                                                <c:if-->
-<!--                                                                        test="${not empty fn:trim(component.getRevisionNumber())}">-->
-<!--                                                                    <span class="fieldHeader">Revision:</span>-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldValue">${component.getRevisionNumber()}</span><br />-->
-<!--                                                                </c:if>-->
-<!--                                                                <c:forEach items="${component.getComponentAddresses()}"-->
-<!--                                                                           var="address">-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldHeader">${address.getAddressTypeString()}-->
-<!--                                                                        address:</span>-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldValue">${address.getAddressValueString()}</span><br />-->
-<!--                                                                </c:forEach>-->
-<!--                                                                <c:choose>-->
-<!--                                                                    <c:when-->
-<!--                                                                            test="${component.isFieldReplaceable()=='TRUE'}">-->
-<!--                                                                        <span-->
-<!--                                                                                class="label label-success">Replaceable</span><br />-->
-<!--                                                                    </c:when>-->
-<!--                                                                    <c:otherwise>-->
-<!--                                                                        <span-->
-<!--                                                                                class="label label-danger">Irreplaceable</span><br />-->
-<!--                                                                    </c:otherwise>-->
-<!--                                                                </c:choose>-->
-<!--                                                                <c:if test="${component.isVersion2()}">-->
-<!--                                                                    <c:if test="${not empty component.getIssuerDN()}">-->
-<!--                                                                        <span class="fieldHeader">Platform Certificate-->
-<!--                                                                            Issuer:</span>-->
-<!--                                                                        <span-->
-<!--                                                                                class="fieldValue">${component.getIssuerDN()}</span><br />-->
-<!--                                                                        <span class="fieldHeader">Platform Certificate-->
-<!--                                                                            Serial Number:</span>-->
-<!--                                                                        <span-->
-<!--                                                                                class="fieldValue">${component.getCertificateSerialNumber()}</span><br />-->
-<!--                                                                        <span class="fieldHeader">Platform Certificate-->
-<!--                                                                            URI:</span>-->
-<!--                                                                    </c:if>-->
-<!--                                                                    <span class="fieldValue">-->
-<!--                                                                        <a-->
-<!--                                                                                href="${component.getUniformResourceIdentifier()}">-->
-<!--                                                                            ${component.getUniformResourceIdentifier()}-->
-<!--                                                                        </a>-->
-<!--                                                                    </span><br />-->
-<!--                                                                    <span class="fieldHeader">Status:</span>-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldValue">${component.getAttributeStatus()}</span><br />-->
-<!--                                                                </c:if>-->
-<!--                                                            </div>-->
-<!--                                                        </div>-->
+<!--                                                                        class="fieldValue">${component.getRevisionNumber()}</span><br />-->
+<!--                                                            </c:if>-->
 
-<!--    TODO: check: swapped forEach and div around-->
-                        <!--                             </c:forEach>-->
-                                            </div>
-                                        </div>
-                                    </div>
-<!--    TODO: check: deleted an extra /div-->
-                                </div>
-                            </div>
+                                                            <div th:each="address, loop : ${component.getComponentAddresses()}">
+                                                                <span
+                                                                    class="fieldHeader">[[${address.getAddressTypeString()}]]
+                                                                    address:</span>
+                                                                <span
+                                                                    class="fieldValue">[[${address.getAddressValueString()}]]</span><br />
+                                                            </div>
+                                                            <div th:if="${#strings.equals(component.isFieldReplaceable(), 'TRUE')}">
+                                                                <span class="label label-success">Replaceable</span><br />
+                                                            </div>
+                                                            <div th:if="${not #strings.equals(component.isFieldReplaceable(), 'TRUE')}">
+                                                                <span class="label label-danger">Irreplaceable</span><br />
+                                                            </div>
+                                                            <div th:if="${not #strings.isEmpty(component.isVersion2())}">
+                                                                <div th:if="${not #strings.isEmpty(component.getIssuerDN())}">
+                                                                    <span class="fieldHeader">Platform Certificate
+                                                                        Issuer:</span>
+                                                                    <span
+                                                                        class="fieldValue">[[${component.getIssuerDN()}]]</span><br />
+                                                                    <span class="fieldHeader">Platform Certificate
+                                                                        Serial Number:</span>
+                                                                    <span
+                                                                        class="fieldValue">[[${component.getCertificateSerialNumber()}]]</span><br />
+                                                                    <span class="fieldHeader">Platform Certificate
+                                                                        URI:</span>
+                                                                </div>
+                                                                <span class="fieldValue">
+                                                                    <a th:href="@{${component.getUniformResourceIdentifier()}}">
+                                                                        [[${component.getUniformResourceIdentifier()}]]
+                                                                    </a>
+                                                                </span><br />
+                                                                <span class="fieldHeader">Status:</span>
+                                                                <span
+                                                                    class="fieldValue">[[${component.getAttributeStatus()}]]</span><br />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div> <!-- Close loop through each element in 'componentResults')-->
+                                            </div> <!-- Close id="componentIdentifier" -->
+                                        </div> <!-- Close class="panel-body" -->
+                                    </div> <!-- Close id="componentIdentifiercollapse" -->
+                                </div> <!-- Close class="panel panel-default" -->
+                            </div> <!-- Close if 'componentResults' is not empty -->
                             <div th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI'))}">
                                 <!-- Components Identifier URI -->
                                 <div class="panel panel-default">
@@ -1002,26 +992,25 @@
                                         aria-labelledby="headingTwo">
                                         <div class="panel-body">
                                             <div id="componentIdentifierURI" class="row">
-<!--                                        <span class="fieldHeader">URI:</span>-->
-<!--                                        <a href="${initialData.componentsIdentifierURI.getUniformResourceIdentifier()}">-->
-<!--                                            ${initialData.componentsIdentifierURI.getUniformResourceIdentifier()}-->
-<!--                                        </a>-->
-<!--                                        <c:if-->
-<!--                                                test="${not empty initialData.componentsIdentifierURI.getHashAlgorithm()}">-->
-<!--                                            <span class="fieldHeader">Hash Algorithm:</span>-->
-<!--                                            <span>${initialData.componentsIdentifierURI.getHashAlgorithm()}</span>-->
-<!--                                        </c:if>-->
-<!--                                        <c:if test="${not empty initialData.componentsIdentifierURI.getHashValue()}">-->
-<!--                                            <span class="fieldHeader">Hash Value:</span>-->
-<!--                                            <span>${initialData.componentsIdentifierURI.getHashValue()}</span>-->
-<!--                                        </c:if>-->
+                                                <span class="fieldHeader">URI:</span>
+                                                <a th:href="@{${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}}">
+                                                    [[${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}]]
+                                                </a>
+                                                <div th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashAlgorithm())}">
+                                                    <span class="fieldHeader">Hash Algorithm:</span>
+                                                    <span>[[${initialData.get(componentsIdentifierURI).getHashAlgorithm()}]]</span>
+                                                </div>
+                                                <div th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashValue())}">
+                                                    <span class="fieldHeader">Hash Value:</span>
+                                                    <span>[[${initialData.get(componentsIdentifierURI).getHashValue()}]]</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            <!-- TCG Platform Configuration: Platform Properties -->
                             <div th:if="${not #strings.isEmpty(initialData.get('platformProperties'))}">
-                                <!-- Platform Properties -->
                                 <div class="panel panel-default">
                                     <div class="panel-heading" role="tab" id="headingThree">
                                         <h4 class="panel-title">
@@ -1088,10 +1077,10 @@
                                     </div>
                                 </div>
                             </div>
-                        </div> <!-- Close platformConfiguration -->
+                        </div> <!-- Close id="platformConfiguration" -->
                     </div> <!-- Close row -->
                 </div> <!-- Close Credential Type is TCG -->
-            </div> <!-- Close certificate of type 'platform' --> jamo2
+            </div> <!-- Close certificate of type 'platform' -->
 
             <!-- If this is a certificate of type 'issued' -->
             <div th:if="${#strings.equals(param.type, 'issued')}">
