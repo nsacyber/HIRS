@@ -177,6 +177,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
+        List<String> successMessages = new ArrayList<>();
 
         final Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
         final Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
@@ -218,7 +219,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             }
         }
 
-        this.referenceManifestPageService.storeRIMS(baseRims, supportRims);
+        this.referenceManifestPageService.storeRIMS(successMessages, baseRims, supportRims);
+
+        messages.addSuccessMessages(successMessages);
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, attr);
