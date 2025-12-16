@@ -4,8 +4,9 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.PlatformCredentialPageService;
+import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -20,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -85,41 +85,72 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     /**
      * Processes the request to retrieve a list of platform credentials for display on the platform credentials page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of platform credentials
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(final DataTableInput input) {
+    public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of platform credentials");
-        log.debug("Request received a datatable input object for the platform credentials page: {}", input);
+        log.debug("Request received a datatable input object for the platform credentials page: {}",
+                dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
+        // grab the value that was entered in the global search textbox
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
-        log.debug("Ordering on column: {}", orderColumnName);
+        // find all columns that have a value that's been entered in column search dropdown
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
-        final String searchTerm = input.getSearch().getValue();
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(PlatformCredential.class,
+                        dataTableInput.getColumns());
 
-        final Set<String> searchableColumns = ControllerPagesUtils.findSearchableColumnsNames(PlatformCredential.class,
-                input.getColumns());
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        int pageSize = dataTableInput.getLength();
 
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        // If pageSize is -1 (Show All), set a very large page size
+        if (pageSize == -1) {
+            pageSize = Integer.MAX_VALUE;
+        }
+
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
 
         FilteredRecordsList<PlatformCredential> pcFilteredRecordsList = new FilteredRecordsList<>();
-
         org.springframework.data.domain.Page<PlatformCredential> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        // if no value has been entered in the global search textbox and in the column search dropdown
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult =
                     this.platformCredentialService.findPlatformCredentialsByArchiveFlag(false, pageable);
-        } else {
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
-                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
                             PlatformCredential.class,
-                            searchableColumns,
-                            searchTerm,
-                            false, pageable);
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            PlatformCredential.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else {
+            // if a value has been entered ONLY in the global search textbox
+            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+                    PlatformCredential.class,
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    false, pageable);
         }
 
         if (pagedResult.hasContent()) {
@@ -127,29 +158,29 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         }
 
         pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        pcFilteredRecordsList.setRecordsTotal(this.platformCredentialService.findPlatformCredentialRepositoryCount());
+        pcFilteredRecordsList.setRecordsTotal(
+                this.platformCredentialService.findPlatformCredentialRepositoryCount());
 
         EndorsementCredential associatedEC;
 
-        if (!pcFilteredRecordsList.isEmpty()) {
-            // loop all the platform credentials
-            for (PlatformCredential pc : pcFilteredRecordsList) {
-                // find the EC using the PC's "holder serial number"
-                associatedEC = this.platformCredentialService
-                        .findECBySerialNumber(pc.getHolderSerialNumber());
 
-                if (associatedEC != null) {
-                    log.debug("EC ID for holder s/n {} = {}", pc
-                            .getHolderSerialNumber(), associatedEC.getId());
-                }
+        // loop all the platform credentials
+        for (PlatformCredential pc : pcFilteredRecordsList) {
+            // find the EC using the PC's "holder serial number"
+            associatedEC = this.platformCredentialService
+                    .findECBySerialNumber(pc.getHolderSerialNumber());
 
-                pc.setEndorsementCredential(associatedEC);
+            if (associatedEC != null) {
+                log.debug("EC ID for holder s/n {} = {}", pc
+                        .getHolderSerialNumber(), associatedEC.getId());
             }
+
+            pc.setEndorsementCredential(associatedEC);
         }
 
         log.info("Returning the size of the list of platform credentials: {}",
                 pcFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(pcFilteredRecordsList, input);
+        return new DataTableResponse<>(pcFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -166,8 +197,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         log.info("Received request to download platform credential id {}", id);
 
         try {
-            final DownloadFile downloadFile = this.certificatePageService.downloadCertificate(PlatformCredential.class,
-                    UUID.fromString(id));
+            final DownloadFile downloadFile =
+                    this.certificatePageService.downloadCertificate(PlatformCredential.class,
+                            UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -226,8 +258,9 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
 
-            PlatformCredential parsedPlatformCredential = this.platformCredentialService.parsePlatformCredential(file,
-                    errorMessages);
+            PlatformCredential parsedPlatformCredential =
+                    this.platformCredentialService.parsePlatformCredential(file,
+                            errorMessages);
 
             if (parsedPlatformCredential != null) {
                 certificatePageService.storeCertificate(

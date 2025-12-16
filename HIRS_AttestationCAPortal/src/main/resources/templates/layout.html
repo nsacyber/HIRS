@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Title -->
+    <title th:text="${page?.title}">Default Title</title>
+
+    <!-- Favicons -->
+    <link rel="icon" th:href="@{/icons/hirs.ico}" type="image/x-icon">
+    <link rel="shortcut icon" th:href="@{/icons/hirs.ico}" type="image/x-icon">
+
+    <!-- Styles -->
+    <link rel="stylesheet" th:href="@{/css/normalize.css}" />
+    <link rel="stylesheet" th:href="@{/lib/bootstrap-5.3.8/css/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/lib/datatables-2.3.5/css/datatables.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}" />
+
+    <!-- Page-specific styles -->
+    <section layout:fragment="style"></section>
+
+    <!-- Scripts -->
+    <script th:src="@{/lib/jquery/jquery-3.7.1.min.js}"></script>
+    <script th:src="@{/lib/jquery.spring-friendly/jquery.spring-friendly.js}"></script>
+    <script th:src="@{/lib/datatables-2.3.5/js/datatables.min.js}"></script>
+    <script th:src="@{/lib/bootstrap-5.3.8/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/moment.min.js}"></script>
+    <script th:src="@{/js/date.js}"></script>
+    <script th:src="@{/js/common.js}"></script>
+
+    <!-- Page-specific scripts -->
+    <section layout:fragment="script"></section>
+</head>
+
+<body>
+    <!-- Header -->
+    <nav id="header" class="navbar">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-3">
+                    <a class="navbar-brand" th:href="@{/}">
+                        <img th:src="@{/images/hirs92.png}" alt="Logo" />
+                    </a>
+                </div>
+                <div class="col page-title">
+                    Attestation Certificate Authority
+                    <div class="subtitle" th:if="${page?.subtitle}" th:text="${page?.subtitle}"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content container -->
+    <div id="content" class="container-fluid">
+
+        <!-- Side navigation fragment -->
+        <div th:replace="fragments/page-nav :: pageNav(page = ${page}, pages = ${pages})"></div>
+
+        <!-- Main content area with dynamic class -->
+        <div th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
+            <!--Successful/Unsuccessful/Info messages replace this fragment-->
+            <div th:replace="fragments/page-messages :: pageMessages(messages = ${messages})"></div>
+
+            <div class="page-header">
+                <h1 layout:fragment="pageHeaderTitle">Page Header Title</h1>
+                <hr>
+            </div>
+
+            <div layout:fragment="content">
+                <!-- Page-specific content goes here -->
+            </div>
+
+            <div class="extra-spacer"></div>
+            <div class="spacer"></div>
+        </div>
+    </div>
+</body>
+
+</html>

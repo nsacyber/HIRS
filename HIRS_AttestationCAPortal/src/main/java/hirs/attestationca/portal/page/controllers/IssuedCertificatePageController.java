@@ -3,8 +3,9 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.IssuedAttestationCertificatePageService;
+import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -19,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -85,42 +85,75 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * Processes the request to retrieve a list of issued attestation certificates for display on the issued
      * certificates page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of issued certificates
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(final DataTableInput input) {
+    public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of issued attestation certificates");
         log.debug("Request received a datatable input object for the issued attestation"
-                + " certificate page: {}", input);
+                + " certificate page: {}", dataTableInput);
 
-        String orderColumnName = input.getOrderColumnName();
+        // grab the value that was entered in the global search textbox
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
-        log.debug("Ordering on column: {}", orderColumnName);
+        // find all columns that have a value that's been entered in column search dropdown
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(IssuedAttestationCertificate.class,
-                        input.getColumns());
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(
+                        IssuedAttestationCertificate.class,
+                        dataTableInput.getColumns());
 
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        int pageSize = dataTableInput.getLength();
+
+        // If pageSize is -1 (Show All), set a very large page size
+        if (pageSize == -1) {
+            pageSize = Integer.MAX_VALUE;
+        }
+
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
 
         FilteredRecordsList<IssuedAttestationCertificate> issuedCertificateFilteredRecordsList =
                 new FilteredRecordsList<>();
         org.springframework.data.domain.Page<IssuedAttestationCertificate> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        // if no value has been entered in the global search textbox and in the column search dropdown
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.issuedAttestationCertificateService.
                     findIssuedCertificatesByArchiveFlag(false, pageable);
-        } else {
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
-                    this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
+                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
                             IssuedAttestationCertificate.class,
-                            searchableColumns,
-                            searchTerm,
-                            false, pageable);
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            IssuedAttestationCertificate.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else {
+            // if a value has been entered ONLY in the global search textbox
+            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+                    IssuedAttestationCertificate.class,
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    false,
+                    pageable);
         }
 
         if (pagedResult.hasContent()) {
@@ -133,7 +166,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         log.info("Returning the size of the list of issued certificates: "
                 + "{}", issuedCertificateFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(issuedCertificateFilteredRecordsList, input);
+        return new DataTableResponse<>(issuedCertificateFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -212,7 +245,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
+            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages,
+                    errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {

@@ -5,6 +5,7 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.service.ReferenceDigestValuePageService;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
@@ -17,7 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -65,36 +65,64 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
      * Processes the request to retrieve a list of reference digest values for display
      * on the rim database page.
      *
-     * @param input the data tables input
+     * @param dataTableInput the data tables input
      * @return the data tables response, including the result set and paging
      * information
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<ReferenceDigestValue> getRDVTableData(@Valid final DataTableInput input) {
+    public DataTableResponse<ReferenceDigestValue> getRDVTableData(
+            @Valid final DataTableInput dataTableInput) {
         log.info("Received request to display list of TPM events");
-        log.debug("Request received a datatable input object for the RIM database page: {}", input);
+        log.debug("Request received a datatable input object for the RIM database page: {}", dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: {}", orderColumnName);
+        // grab the value that was entered in the global search textbox
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(ReferenceDigestValue.class,
-                        input.getColumns());
+        // find all columns that have a value that's been entered in column search dropdown
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
+
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(ReferenceDigestValue.class,
+                        dataTableInput.getColumns());
+
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        int pageSize = dataTableInput.getLength();
+
+        // If pageSize is -1 (Show All), set a very large page size
+        if (pageSize == -1) {
+            pageSize = Integer.MAX_VALUE;
+        }
+
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
 
         FilteredRecordsList<ReferenceDigestValue> rdvFilteredRecordsList = new FilteredRecordsList<>();
-
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
         org.springframework.data.domain.Page<ReferenceDigestValue> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
+        // if no value has been entered in the global search textbox and in the column search dropdown
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult = this.referenceDigestValuePageService.findAllReferenceDigestValues(pageable);
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
+            pagedResult =
+                    this.referenceDigestValuePageService.findReferenceDigestValuesByGlobalAndColumnSpecificSearchTerm(
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
+            pagedResult =
+                    this.referenceDigestValuePageService.findReferenceDigestValuesByColumnSpecificSearchTerm(
+                            columnsWithSearchCriteria, pageable);
         } else {
-            pagedResult = this.referenceDigestValuePageService.findReferenceDigestValuesBySearchableColumns(
-                    searchableColumns,
-                    searchTerm, pageable);
+            // if a value has been entered ONLY in the global search textbox
+            pagedResult = this.referenceDigestValuePageService.findReferenceDigestValuesByGlobalSearchTerm(
+                    searchableColumnNames,
+                    globalSearchTerm, pageable);
         }
 
         if (pagedResult.hasContent()) {
@@ -124,6 +152,6 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
         log.info("Returning the size of the list of reference digest values: "
                 + "{}", rdvFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(rdvFilteredRecordsList, input);
+        return new DataTableResponse<>(rdvFilteredRecordsList, dataTableInput);
     }
 }

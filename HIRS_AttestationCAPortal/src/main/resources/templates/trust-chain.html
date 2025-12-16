@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+            $(document).ready(function () {
+                const viewName = /*[[${ page.viewName }]]*/ '';
+                const url = viewName + "/list";
+                const acaCertDataSignature = JSON.parse(/*[[${ acaCertData.signature }]]*/'');
+                const acaPublicKey = JSON.parse(/*[[${ acaCertData.encodedPublicKey }]]*/'');
+
+                // Setup HIRS ACA Root Certificate items
+                $("#signature").html(byteToHexString(acaCertDataSignature));
+                $("#publicKey").html(byteToHexString(acaPublicKey));
+
+                // Format validity time
+                $("#validity span").each(function () {
+                    $(this).text(new Date(+$(this).text()).toUTCString());
+                });
+                // Format serial number
+                $("#serialNumber span").each(function () {
+                    $(this).text(parseSerialNumber($(this).text()));
+                });
+
+                // Setup Trusted Certificate list
+                let columns = [
+                    {
+                        name: "issuer",
+                        data: "issuer",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "subject",
+                        data: "subject",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "beginValidity",
+                        data: "beginValidity",
+                        type: "date",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                        render: function (data, type, full, meta) {
+                            return formatCertificateDate(data);
+                        },
+                    },
+                    {
+                        name: "endValidity",
+                        data: "endValidity",
+                        type: "date",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                        render: function (data, type, full, meta) {
+                            return formatCertificateDate(data);
+                        },
+                    },
+                    {
+                        data: "id",
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, full, meta) {
+                            // Set up a delete icon with link to handleDeleteRequest().
+                            // sets up a hidden input field containing the ID which is
+                            // used as a parameter to the REST POST call to delete
+                            let html = "";
+                            html += certificateDetailsLink("certificateauthority", data, true);
+                            html += certificateDownloadLink(viewName, data);
+                            html += certificateDeleteLink(viewName, data);
+                            return html;
+                        },
+                    },
+                ];
+
+                let table = setDataTables("#trustChainTable", url, columns);
+            });
+        </script>
+    </section>
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">Trust Chain Management</h1>
+    <div layout:fragment="content">
+        <!-- Details icon and dialog for HIRS ACA Root certificate -->
+        <span class="aca-input-box-header">HIRS Attestation Certificate Chain</span>
+        <th:block th:replace="fragments/details-viewer
+                :: detailsViewer('aca-cert-viewer',
+                'HIRS Attestation Root Certificate', ${null}, ~{this :: aca-cert-viewer-modal})">
+            <th:block th:fragment="aca-cert-viewer-modal"> <!-- aca-cert-viewer-modal start -->
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-2 col-md-offset-1">
+                            <span class="colHeader">Issuer</span>
+                        </div>
+                        <div id="issuer" class="col col-md-8">
+                            <span th:text="${acaCertData.issuer}"></span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 col-md-offset-1">
+                            <span class="colHeader">Subject</span>
+                        </div>
+                        <div id="subject" class="col col-md-8"><span th:text="${acaCertData.subject}"></span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 col-md-offset-1">
+                            <span class="colHeader">Serial Number</span>
+                        </div>
+                        <div id="serialNumber" class="col col-md-8">
+                            <span th:text="${acaCertData.serialNumber}"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 col-md-offset-1">
+                            <span class="colHeader">Validity</span>
+                        </div>
+                        <div id="validity" class="col col-md-8">
+                            <div>
+                                Not Before:&nbsp;<span th:text="${acaCertData.beginValidity}"></span>
+                            </div>
+                            <div>Not After:&nbsp;<span th:text="${acaCertData.endValidity}"></span></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 col-md-offset-1">
+                            <span class="colHeader">Signature</span>
+                        </div>
+                        <div id="signature" class="col col-md-8"></div>
+                        <span th:text="${signature}"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 col-md-offset-1">
+                            <span class="colHeader">Public Key</span>
+                        </div>
+                        <div id="publicKey" class="col col-md-8"></div>
+                        <span th:text="${publicKey}"></span>
+                    </div>
+                    <div class="spacer"></div>
+                </div>
+            </th:block>
+        </th:block> <!-- aca-cert-viewer-modal end -->
+
+        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download-aca-cert-chain}">
+            <img th:src="@{/icons/ic_file_download_black_24dp.png}" title="Download ACA Certificate Chain">
+        </a>
+
+        <div class="aca-input-box-header">
+            <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload}"
+                enctype="multipart/form-data">
+                Trust Chain CA Certificates
+                <th:block th:replace="fragments/file-chooser
+                        :: fileChooser('tc-editor',
+                        'Import Trust Chain Certificates', ~{this :: bodyContent})">
+                    <th:block th:fragment="bodyContent">
+                        <input id="importFile" type="file" name="file" multiple="multiple" />
+                    </th:block>
+                </th:block>
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-download}">
+                    <img th:src="@{/icons/ic_file_download_black_24dp.png}"
+                        title="Download All Trust Chain Certificates">
+                </a>
+            </form>
+        </div>
+
+        <br>
+
+        <div class="aca-data-table">
+            <table id="trustChainTable" class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Issuer</th>
+                        <th>Subject</th>
+                        <th>Valid (begin)</th>
+                        <th>Valid (end)</th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
