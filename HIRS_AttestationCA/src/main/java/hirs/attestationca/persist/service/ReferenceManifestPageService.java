@@ -316,8 +316,9 @@ public class ReferenceManifestPageService {
     /**
      * Stores the base and support reference manifests to the reference manifest repository.
      *
-     * @param baseRims    list of base reference manifests
-     * @param supportRims list of support reference manifests
+     * @param successMessages contains any success messages that will be displayed on the page
+     * @param baseRims        list of base reference manifests
+     * @param supportRims     list of support reference manifests
      */
     public void storeRIMS(final List<String> successMessages,
                           final List<BaseReferenceManifest> baseRims,
