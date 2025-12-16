@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+            $(document).ready(function () {
+                const viewName = /*[[${ page.viewName }]]*/ '';
+                const url = viewName + "/list";
+                const rimDBViewName = "rim-database";
+                let columns = [
+                    {
+                        name: "tagId",
+                        data: "tagId",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "rimType",
+                        data: "rimType",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "platformManufacturer",
+                        data: "platformManufacturer",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "platformModel",
+                        data: "platformModel",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "swidTagVersion",
+                        data: "swidTagVersion",
+                        type: "text",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        data: "id",
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, full, meta) {
+                            // Set up a delete icon with link to handleDeleteRequest().
+                            // sets up a hidden input field containing the ID which is
+                            // used as a parameter to the REST POST call to delete
+                            let html = "";
+                            html += rimDetailsLink(rimDBViewName, data);
+                            html += rimDownloadLink(viewName, data);
+                            html += rimDeleteLink(viewName, data);
+
+                            return html;
+                        }
+                    }
+                ];
+
+                let table = setDataTables("#referenceManifestTable", url, columns);
+            });
+        </script>
+    </section>
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">Reference Integrity Manifests</h1>
+    <div layout:fragment="content">
+        <div class="aca-input-box-header">
+            <form method="post" th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}"
+                enctype="multipart/form-data">
+                Reference Integrity Manifests
+                <th:block th:replace="fragments/file-chooser :: fileChooser('referenceManifestsEditor',
+                 'Import RIMs', ~{this :: bodyContent})">
+                    <th:block th:fragment="bodyContent">
+                        <input id="importFile" type="file" name="file" multiple="multiple" />
+                    </th:block>
+                </th:block>
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}">
+                    <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download All RIMs">
+                </a>
+            </form>
+        </div>
+        <br />
+        <div class="aca-data-table">
+            <table id="referenceManifestTable" class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Tag Id</th>
+                        <th>Type</th>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Version</th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

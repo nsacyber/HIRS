@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit test class for PolicySettings.
@@ -21,7 +20,6 @@ public class PolicySettingsTest {
         assertFalse(policy.isPcValidationEnabled());
         assertFalse(policy.isPcAttributeValidationEnabled());
         assertFalse(policy.isExpiredCertificateValidationEnabled());
-        assertFalse(policy.isReplaceEC());
     }
 
     /**
@@ -34,12 +32,10 @@ public class PolicySettingsTest {
         policy.setPcValidationEnabled(false);
         policy.setPcAttributeValidationEnabled(false);
         policy.setExpiredCertificateValidationEnabled(false);
-        policy.setReplaceEC(true);
         assertFalse(policy.isEcValidationEnabled());
         assertFalse(policy.isPcValidationEnabled());
         assertFalse(policy.isPcAttributeValidationEnabled());
         assertFalse(policy.isExpiredCertificateValidationEnabled());
-        assertTrue(policy.isReplaceEC());
     }
 
     /**

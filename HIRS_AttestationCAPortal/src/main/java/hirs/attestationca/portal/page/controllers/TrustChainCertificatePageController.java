@@ -5,8 +5,9 @@ import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.TrustChainCertificatePageService;
+import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
@@ -23,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -130,40 +130,74 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * Processes the request to retrieve a list of trust chain certificates that will be
      * displayed on the trust chain certificates page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of trust chain certificates
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<CertificateAuthorityCredential> getTrustChainCertificatesTableData(
-            final DataTableInput input) {
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of trust chain certificates");
         log.debug("Request received a datatable input object for the trust chain certificates page: {}",
-                input);
+                dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: {}", orderColumnName);
+        // grab the value that was entered in the global search textbox
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(CertificateAuthorityCredential.class,
-                        input.getColumns());
+        // find all columns that have a value that's been entered in column search dropdown
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(
+                        CertificateAuthorityCredential.class,
+                        dataTableInput.getColumns());
+
+        final int currentPage = dataTableInput.getStart() / dataTableInput.getLength();
+        int pageSize = dataTableInput.getLength();
+
+        // If pageSize is -1 (Show All), set a very large page size
+        if (pageSize == -1) {
+            pageSize = Integer.MAX_VALUE;
+        }
+
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
 
         FilteredRecordsList<CertificateAuthorityCredential> caFilteredRecordsList =
                 new FilteredRecordsList<>();
-
         org.springframework.data.domain.Page<CertificateAuthorityCredential> pagedResult;
 
-        if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.trustChainCertificatePageService.findCACredentialsByArchiveFlag(false, pageable);
+        // if no value has been entered in the global search textbox and in the column search dropdown
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
+            pagedResult =
+                    this.trustChainCertificatePageService.
+                            findCACredentialsByArchiveFlag(false, pageable);
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                            CertificateAuthorityCredential.class,
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            CertificateAuthorityCredential.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
         } else {
-            pagedResult = this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
+            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+                    // if a value has been entered ONLY in the global search textbox
                     CertificateAuthorityCredential.class,
-                    searchableColumns,
-                    searchTerm,
+                    searchableColumnNames,
+                    globalSearchTerm,
                     false, pageable);
         }
 
@@ -177,7 +211,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         log.info("Returning the size of the list of trust chain certificates: "
                 + " {}", caFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(caFilteredRecordsList, input);
+        return new DataTableResponse<>(caFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -189,7 +223,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadTrustChainCertificate(@RequestParam final String id, final HttpServletResponse response)
+    public void downloadTrustChainCertificate(@RequestParam final String id,
+                                              final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download trust chain certificate {}", id);
 
@@ -223,7 +258,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         try (OutputStream outputStream = response.getOutputStream()) {
             // PEM file of the leaf certificate, intermediate certificate and root certificate (in that order)
             final String fullChainPEM = ControllerPagesUtils.convertCertificateArrayToPem(
-                    new CertificateAuthorityCredential[]{certificateAuthorityCredentials.get(0),
+                    new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(0),
                             certificateAuthorityCredentials.get(1),
                             certificateAuthorityCredentials.get(2)});
 
@@ -259,7 +294,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN, singleFileName);
+            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
+                    singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
                     + "trust chain certificates", exception);
@@ -277,7 +313,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      */
     @PostMapping("/upload")
     protected RedirectView uploadTrustChainCertificate(@RequestParam("file") final MultipartFile[] files,
-                                                       final RedirectAttributes attr) throws URISyntaxException {
+                                                       final RedirectAttributes attr)
+            throws URISyntaxException {
 
         log.info("Received request to upload one or more trust chain certificates");
 
@@ -289,7 +326,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             List<String> successMessages = new ArrayList<>();
 
             CertificateAuthorityCredential parsedTrustChainCertificate =
-                    this.certificatePageService.parseTrustChainCertificate(file, successMessages, errorMessages);
+                    this.certificatePageService.parseTrustChainCertificate(file, successMessages,
+                            errorMessages);
 
             if (parsedTrustChainCertificate != null) {
                 certificatePageService.storeCertificate(
@@ -316,7 +354,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteTrustChainCertificate(@RequestParam final String id, final RedirectAttributes attr)
+    public RedirectView deleteTrustChainCertificate(@RequestParam final String id,
+                                                    final RedirectAttributes attr)
             throws URISyntaxException {
         log.info("Received request to delete trust chain certificate id {}", id);
 
@@ -327,7 +366,8 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
+            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages,
+                    errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {

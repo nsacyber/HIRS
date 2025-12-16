@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+            $(document).ready(function () {
+                const viewName = /*[[${ page.viewName }]]*/ '';
+                const url = viewName + "/list";
+                let columns = [
+                    {
+                        name: "manufacturer",
+                        data: "manufacturer",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "model",
+                        data: "model",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "eventType",
+                        data: "eventType",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "pcrIndex",
+                        data: "pcrIndex",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "digestValue",
+                        data: "digestValue",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "baseRimId",
+                        data: "baseRimId",
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, full, meta) {
+                            return rimDetailsLink(viewName, data);
+                        },
+                    },
+                    {
+                        name: "supportRimId",
+                        data: "supportRimId",
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, full, meta) {
+                            return rimDetailsLink(viewName, data);
+                        },
+                    },
+                ];
+
+                let table = setDataTables("#digestValueTable", url, columns);
+            });
+        </script>
+    </section>
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">RIM Database</h1>
+
+    <div layout:fragment="content">
+        <div class="aca-data-table">
+            <table id="digestValueTable" class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Event Type</th>
+                        <th>PCR Index</th>
+                        <th>Digest Value</th>
+                        <th>Base RIM</th>
+                        <th>Support RIM</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

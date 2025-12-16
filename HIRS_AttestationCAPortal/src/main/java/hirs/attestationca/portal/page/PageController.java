@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page;
 
-import hirs.utils.BannerConfiguration;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.client.utils.URIBuilder;
@@ -13,7 +12,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Optional;
@@ -33,24 +31,19 @@ public abstract class PageController<P extends PageParams> {
     public static final String INITIAL_DATA = "initialData";
 
     /**
-     * Reserved attribute used by page.tag to identify a page's general
+     * Reserved attribute used by layout.html to identify a page's general
      * information.
      */
     public static final String PAGE_ATTRIBUTE = "page";
 
     /**
-     * Reserved attribute used by page.tag to identify the page collection used
+     * Reserved attribute used by layout.html to identify the page collection used
      * for navigation.
      */
     public static final String PAGES_ATTRIBUTE = "pages";
 
     /**
-     * Reserved attribute used by page.tag to identify the banner information.
-     */
-    public static final String BANNER_ATTRIBUTE = "banner";
-
-    /**
-     * Reserved attribute used by page.tag to identify the messages the page
+     * Reserved attribute used by layout.html to identify the messages the page
      * should display.
      */
     public static final String MESSAGES_ATTRIBUTE = "messages";
@@ -95,14 +88,6 @@ public abstract class PageController<P extends PageParams> {
         // add other pages for navigation
         modelMap.addAttribute(PAGES_ATTRIBUTE, Page.values());
 
-        // add banner information
-        try {
-            BannerConfiguration banner = new BannerConfiguration();
-            modelMap.addAttribute(BANNER_ATTRIBUTE, banner);
-        } catch (IOException ex) {
-            modelMap.addAttribute(BANNER_ATTRIBUTE, null);
-        }
-
         return new ModelAndView(newPage.getViewName(), modelMap);
     }
 
@@ -119,7 +104,6 @@ public abstract class PageController<P extends PageParams> {
             final P params,
             final Map<String, ?> model,
             final RedirectAttributes attr) throws URISyntaxException {
-
         return redirectTo(page, params, model, attr);
     }
 

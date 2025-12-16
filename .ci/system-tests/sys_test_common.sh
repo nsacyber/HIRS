@@ -27,39 +27,39 @@ fi
 # clear all policy settings
 setPolicyNone() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=0, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
-           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
+           firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
            saveProtobufToLogOnFailedValEnabled=1, saveProtobufToLogNeverEnabled=0, saveProtobufToLogAlwaysEnabled=0;"
 }
 
 # Policy Settings for tests ...
 setPolicyEkOnly() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=0,
-           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
+          firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
           saveProtobufToLogOnFailedValEnabled=1, saveProtobufToLogNeverEnabled=0, saveProtobufToLogAlwaysEnabled=0;"
 }
 
 setPolicyEkPc_noAttCheck() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=0, pcValidationEnabled=1,
-           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
+           firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
            saveProtobufToLogOnFailedValEnabled=1, saveProtobufToLogNeverEnabled=0, saveProtobufToLogAlwaysEnabled=0;"
 }
 
 setPolicyEkPc() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
-           utcValidationEnabled=0, firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
+           firmwareValidationEnabled=0, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=0, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
            saveProtobufToLogOnFailedValEnabled=1, saveProtobufToLogNeverEnabled=0, saveProtobufToLogAlwaysEnabled=0;"
 }
 
 setPolicyEkPcFw() {
 docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicySettings set ecValidationEnabled=1, pcAttributeValidationEnabled=1, pcValidationEnabled=1,
-           utcValidationEnabled=0, firmwareValidationEnabled=1, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=1, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
+           firmwareValidationEnabled=1, expiredCertificateValidationEnabled=0, ignoreGptEnabled=0, ignoreImaEnabled=1, ignoretBootEnabled=0, ignorePcieVpdEnabled=0,
            saveProtobufToLogOnFailedValEnabled=1, saveProtobufToLogNeverEnabled=0, saveProtobufToLogAlwaysEnabled=0;"
 }
 
 # Clear all ACA DB items excluding policy
 clearAcaDb() {
 docker exec -i $aca_container mysql -u root -proot -e "use hirs_db; set foreign_key_checks=0; truncate Appraiser;
- truncate Certificate;truncate Certificate_Certificate;truncate CertificatesUsedToValidate;truncate ComponentAttributeResult;
+ truncate Certificate;truncate Issued_Attestation_Platform_Join_Table;truncate CertificatesUsedToValidate;truncate ComponentAttributeResult;
  truncate ComponentInfo;truncate ComponentResult;truncate Device;truncate DeviceInfoReport;truncate PortalInfo;
  truncate ReferenceDigestValue;truncate ReferenceManifest;truncate Report;truncate SupplyChainValidation;
  truncate SupplyChainValidationSummary;truncate SupplyChainValidationSummary_SupplyChainValidation;

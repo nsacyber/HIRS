@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Error'">Error</title>
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">Error Occurred</h1>
+
+    <section layout:fragment="content">
+        <div class="text-center">
+            <div>
+                <strong>Status Code: </strong>
+                <span th:text="${status}">Status Code</span>
+            </div>
+            <div>
+                <strong>Originating URL: </strong>
+                <span th:text="${path}">URL</span>
+            </div>
+            <br>
+            <p>Click <a th:href="@{/}">here</a> to go to the home page.</p>
+        </div>
+    </section>
+</body>
+
+</html>
