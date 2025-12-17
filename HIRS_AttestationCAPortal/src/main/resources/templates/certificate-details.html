@@ -890,83 +890,89 @@
                                         <div class="panel-body">
                                             <div id="componentIdentifier" class="row">
 <!--    TODO: test this-->
+                                                <!-- 'componentResults' is List<ComponentResult> from CertificateStringMapBuilder-->
                                                 <div th:each="component, loop : ${initialData.get('componentResults')}">
-                                                    <div class="component col col-md-4">-->
+                                                    <div class="component col col-md-4">
                                                         <div class="panel panel-default">
                                                             <div th:if="${#strings.equals(component.isFailedValidation(), 'TRUE')}">
-                                                                <div class="panel-heading"
-                                                                    style="background-color: red; color: white">
+                                                                <div class="panel-heading" style="background-color: red; color: white">
+                                                                    <div th:if="${#strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                        <span data-toggle="tooltip" data-placement="top"
+                                                                            th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
+                                                                    </div>
+                                                                    <div th:if="${not #strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                        <span data-toggle="tooltip" data-placement="top"
+                                                                        title="Component Class">Platform Components</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div th:if="${not #strings.equals(component.isFailedValidation(), 'TRUE')}">
                                                                 <div class="panel-heading">
+                                                                    <div th:if="${#strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                        <span data-toggle="tooltip" data-placement="top"
+                                                                        th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
+                                                                    </div>
+                                                                    <div th:if="${not #strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                        <span data-toggle="tooltip" data-placement="top"
+                                                                        title="Component Class">Platform Components</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                            <div th:if="${#strings.equals(component.isVersion2(), 'TRUE')}">
-                                                                <span data-toggle="tooltip" data-placement="top"
-                                                                    th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
-                                                            </div>
-                                                            <div th:if="${not #strings.equals(component.isVersion2(), 'TRUE')}">
-                                                                <span data-toggle="tooltip" data-placement="top">
-<!--                                                                    th:title="Component Class">Platform Components</span>-->
-                                                                    jamo TESTING HEREEEEEEEE</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="panel-body">
-                                                            <span class="fieldHeader">Manufacturer:</span>
-                                                            <span
-                                                                    class="fieldValue">[[${component.getManufacturer()}]]</span><br />
-                                                            <span class="fieldHeader">Model:</span>
-                                                            <span
-                                                                class="fieldValue">[[${component.getModel()}]]</span><br />
-                                                            jamo
-<!--                                                            <c:if-->
-<!--                                                                    test="${not empty fn:trim(component.getSerialNumber())}">-->
-<!--                                                                <span class="fieldHeader">Serial Number:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${component.getSerialNumber()}</span><br />-->
-<!--                                                            </c:if>-->
-<!--                                                            <c:if-->
-<!--                                                                    test="${not empty fn:trim(component.getRevisionNumber())}">-->
-<!--                                                                <span class="fieldHeader">Revision:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${component.getRevisionNumber()}</span><br />-->
-<!--                                                            </c:if>-->
+                                                            <div class="panel-body">
+                                                                <span class="fieldHeader">Manufacturer:</span>
+                                                                <span
+                                                                        class="fieldValue">[[${component.getManufacturer()}]]</span><br />
+                                                                <span class="fieldHeader">Model:</span>
+                                                                <span
+                                                                    class="fieldValue">[[${component.getModel()}]]</span><br />
+    <!--                                                            <c:if-->
+    <!--                                                                    test="${not empty fn:trim(component.getSerialNumber())}">-->
+    <!--                                                                <span class="fieldHeader">Serial Number:</span>-->
+    <!--                                                                <span-->
+    <!--                                                                        class="fieldValue">${component.getSerialNumber()}</span><br />-->
+    <!--                                                            </c:if>-->
+    <!--                                                            <c:if-->
+    <!--                                                                    test="${not empty fn:trim(component.getRevisionNumber())}">-->
+    <!--                                                                <span class="fieldHeader">Revision:</span>-->
+    <!--                                                                <span-->
+    <!--                                                                        class="fieldValue">${component.getRevisionNumber()}</span><br />-->
+    <!--                                                            </c:if>-->
 
-                                                            <div th:each="address, loop : ${component.getComponentAddresses()}">
-                                                                <span
-                                                                    class="fieldHeader">[[${address.getAddressTypeString()}]]
-                                                                    address:</span>
-                                                                <span
-                                                                    class="fieldValue">[[${address.getAddressValueString()}]]</span><br />
-                                                            </div>
-                                                            <div th:if="${#strings.equals(component.isFieldReplaceable(), 'TRUE')}">
-                                                                <span class="label label-success">Replaceable</span><br />
-                                                            </div>
-                                                            <div th:if="${not #strings.equals(component.isFieldReplaceable(), 'TRUE')}">
-                                                                <span class="label label-danger">Irreplaceable</span><br />
-                                                            </div>
-                                                            <div th:if="${not #strings.isEmpty(component.isVersion2())}">
-                                                                <div th:if="${not #strings.isEmpty(component.getIssuerDN())}">
-                                                                    <span class="fieldHeader">Platform Certificate
-                                                                        Issuer:</span>
+                                                                <div th:each="address, loop : ${component.getComponentAddresses()}">
                                                                     <span
-                                                                        class="fieldValue">[[${component.getIssuerDN()}]]</span><br />
-                                                                    <span class="fieldHeader">Platform Certificate
-                                                                        Serial Number:</span>
+                                                                        class="fieldHeader">[[${address.getAddressTypeString()}]]
+                                                                        address:</span>
                                                                     <span
-                                                                        class="fieldValue">[[${component.getCertificateSerialNumber()}]]</span><br />
-                                                                    <span class="fieldHeader">Platform Certificate
-                                                                        URI:</span>
+                                                                        class="fieldValue">[[${address.getAddressValueString()}]]</span><br />
                                                                 </div>
-                                                                <span class="fieldValue">
-                                                                    <a th:href="@{${component.getUniformResourceIdentifier()}}">
-                                                                        [[${component.getUniformResourceIdentifier()}]]
-                                                                    </a>
-                                                                </span><br />
-                                                                <span class="fieldHeader">Status:</span>
-                                                                <span
-                                                                    class="fieldValue">[[${component.getAttributeStatus()}]]</span><br />
+                                                                <div th:if="${#strings.equals(component.isFieldReplaceable(), 'TRUE')}">
+                                                                    <span class="label label-success">Replaceable</span><br />
+                                                                </div>
+                                                                <div th:if="${not #strings.equals(component.isFieldReplaceable(), 'TRUE')}">
+                                                                    <span class="label label-danger">Irreplaceable</span><br />
+                                                                </div>
+                                                                <div th:if="${not #strings.isEmpty(component.isVersion2())}">
+                                                                    <div th:if="${not #strings.isEmpty(component.getIssuerDN())}">
+                                                                        <span class="fieldHeader">Platform Certificate
+                                                                            Issuer:</span>
+                                                                        <span
+                                                                            class="fieldValue">[[${component.getIssuerDN()}]]</span><br />
+                                                                        <span class="fieldHeader">Platform Certificate
+                                                                            Serial Number:</span>
+                                                                        <span
+                                                                            class="fieldValue">[[${component.getCertificateSerialNumber()}]]</span><br />
+                                                                        <span class="fieldHeader">Platform Certificate
+                                                                            URI:</span>
+                                                                    </div>
+                                                                    <span class="fieldValue">
+                                                                        <a th:href="@{${component.getUniformResourceIdentifier()}}">
+                                                                            [[${component.getUniformResourceIdentifier()}]]
+                                                                        </a>
+                                                                    </span><br />
+                                                                    <span class="fieldHeader">Status:</span>
+                                                                    <span
+                                                                        class="fieldValue">[[${component.getAttributeStatus()}]]</span><br />
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
