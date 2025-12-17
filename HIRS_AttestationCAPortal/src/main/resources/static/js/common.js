@@ -186,7 +186,11 @@ function setDataTables(id, url, columns, options = {}) {
           {
             text: "Clear All",
             action: function (e, dt, node, config) {
+              // Clear search and reset column controls
               dt.search("").columns().columnControl.searchClear().draw();
+
+              // Reset the ordering to default
+              dt.order([]).draw();
             },
           },
         ],
