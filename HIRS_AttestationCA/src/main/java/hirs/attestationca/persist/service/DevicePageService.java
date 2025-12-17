@@ -15,6 +15,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -90,6 +91,16 @@ public class DevicePageService {
         // Define the conditions (predicates) for the query's WHERE clause.
         query.where(criteriaBuilder.and(combinedGlobalSearchPredicates));
 
+        // Apply sorting if present in the Pageable
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                Path<Object> path = deviceRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+            query.orderBy(orders);
+        }
+
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
@@ -123,6 +134,16 @@ public class DevicePageService {
 
         // Define the conditions (predicates) for the query's WHERE clause.
         query.where(criteriaBuilder.and(combinedColumnSearchPredicates));
+
+        // Apply sorting if present in the Pageable
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                Path<Object> path = deviceRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+            query.orderBy(orders);
+        }
 
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);
@@ -175,6 +196,16 @@ public class DevicePageService {
         // Combine global and column-specific predicates using AND logic
         query.where(criteriaBuilder.and(globalSearchPartOfChainedPredicates,
                 columnSearchPartOfChainedPredicates));
+
+        // Apply sorting if present in the Pageable
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                Path<Object> path = deviceRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+            query.orderBy(orders);
+        }
 
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);

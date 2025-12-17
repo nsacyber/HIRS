@@ -19,6 +19,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -126,6 +127,22 @@ public class ValidationSummaryPageService {
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)
         ));
 
+        // Apply sorting if present in the Pageable
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                Path<Object> path;
+
+                if (order.getProperty().startsWith("device.")) {
+                    path = null; //todo
+                } else {
+                    path = supplyChainValidationSummaryRoot.get(order.getProperty());
+                }
+
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+            query.orderBy(orders);
+        }
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
@@ -164,6 +181,23 @@ public class ValidationSummaryPageService {
 
         query.where(criteriaBuilder.and(combinedColumnSearchPredicates,
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)));
+
+        // Apply sorting if present in the Pageable
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                Path<Object> path;
+
+                if (order.getProperty().startsWith("device.")) {
+                    path = null; //todo
+                } else {
+                    path = supplyChainValidationSummaryRoot.get(order.getProperty());
+                }
+
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+            query.orderBy(orders);
+        }
 
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
@@ -225,6 +259,23 @@ public class ValidationSummaryPageService {
                 columnSearchPartOfChainedPredicates,
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)
         ));
+
+        // Apply sorting if present in the Pageable
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                Path<Object> path;
+
+                if (order.getProperty().startsWith("device.")) {
+                    path = null; //todo
+                } else {
+                    path = supplyChainValidationSummaryRoot.get(order.getProperty());
+                }
+
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+            query.orderBy(orders);
+        }
 
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);

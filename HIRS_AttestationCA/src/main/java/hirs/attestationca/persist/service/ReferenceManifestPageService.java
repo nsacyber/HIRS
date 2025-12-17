@@ -16,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -100,6 +101,16 @@ public class ReferenceManifestPageService {
                 criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")
         ));
 
+        // Apply sorting if present in the Pageable
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                Path<Object> path = rimRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+            query.orderBy(orders);
+        }
+
         // Apply pagination
         TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
@@ -139,6 +150,16 @@ public class ReferenceManifestPageService {
                 criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag),
                 criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")
         ));
+
+        // Apply sorting if present in the Pageable
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                Path<Object> path = rimRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+            query.orderBy(orders);
+        }
 
         // Apply pagination
         TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
@@ -196,6 +217,16 @@ public class ReferenceManifestPageService {
                 criteriaBuilder.equal(rimRoot.get("archiveFlag"), archiveFlag),
                 criteriaBuilder.notEqual(rimRoot.get("rimType"), "Measurement")
         ));
+
+        // Apply sorting if present in the Pageable
+        if (pageable.getSort().isSorted()) {
+            List<Order> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                Path<Object> path = rimRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+            query.orderBy(orders);
+        }
 
         // Apply pagination
         TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
