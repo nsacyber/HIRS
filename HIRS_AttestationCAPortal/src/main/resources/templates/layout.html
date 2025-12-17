@@ -31,6 +31,22 @@
     <script th:src="@{/js/date.js}"></script>
     <script th:src="@{/js/common.js}"></script>
 
+    <!-- Toast initialization script -->
+    <script>
+        $(document).ready(function () {
+            const disappearDelayTime = 10000; // Time in milliseconds before the toast disappears
+
+            // Triggering all toasts to show if present
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function (toastElement) {
+                const toast = new bootstrap.Toast(toastElement, {
+                    delay: disappearDelayTime
+                });
+                toast.show();
+            });
+        });
+    </script>
+
     <!-- Page-specific scripts -->
     <section layout:fragment="script"></section>
 </head>
@@ -61,8 +77,8 @@
 
         <!-- Main content area with dynamic class -->
         <div th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
-            <!--Successful/Unsuccessful/Info messages replace this fragment-->
-            <div th:replace="fragments/page-messages :: pageMessages(messages = ${messages})"></div>
+            <!-- Toast messages fragment -->
+            <div th:replace="fragments/toast-messages :: toastMessages(messages = ${messages})"></div>
 
             <div class="page-header">
                 <h1 layout:fragment="pageHeaderTitle">Page Header Title</h1>

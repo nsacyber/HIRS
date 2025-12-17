@@ -294,7 +294,8 @@ public class ReferenceManifestPageService {
      * @param successMessages contains any success messages that will be displayed on the page
      * @param errorMessages   contains any error messages that will be displayed on the page
      */
-    public void deleteRIM(final UUID uuid, final List<String> successMessages,
+    public void deleteRIM(final UUID uuid,
+                          final List<String> successMessages,
                           final List<String> errorMessages) {
         ReferenceManifest referenceManifest = this.findSpecifiedRIM(uuid);
 
@@ -315,18 +316,22 @@ public class ReferenceManifestPageService {
     /**
      * Stores the base and support reference manifests to the reference manifest repository.
      *
-     * @param baseRims    list of base reference manifests
-     * @param supportRims list of support reference manifests
+     * @param successMessages contains any success messages that will be displayed on the page
+     * @param baseRims        list of base reference manifests
+     * @param supportRims     list of support reference manifests
      */
-    public void storeRIMS(final List<BaseReferenceManifest> baseRims,
+    public void storeRIMS(final List<String> successMessages,
+                          final List<BaseReferenceManifest> baseRims,
                           final List<SupportReferenceManifest> supportRims) {
 
         // save the base rims in the repo if they don't already exist in the repo
         baseRims.forEach((baseRIM) -> {
             if (this.referenceManifestRepository.findByHexDecHashAndRimType(
                     baseRIM.getHexDecHash(), baseRIM.getRimType()) == null) {
-                log.info("Storing swidtag {}", baseRIM.getFileName());
+                final String successMessage = "Stored swidtag " + baseRIM.getFileName() + " successfully";
                 this.referenceManifestRepository.save(baseRIM);
+                log.info(successMessage);
+                successMessages.add(successMessage);
             }
         });
 
@@ -334,8 +339,11 @@ public class ReferenceManifestPageService {
         supportRims.forEach((supportRIM) -> {
             if (this.referenceManifestRepository.findByHexDecHashAndRimType(
                     supportRIM.getHexDecHash(), supportRIM.getRimType()) == null) {
-                log.info("Storing event log {}", supportRIM.getFileName());
+                final String successMessage =
+                        "Stored event log " + supportRIM.getFileName() + " successfully";
                 this.referenceManifestRepository.save(supportRIM);
+                log.info(successMessage);
+                successMessages.add(successMessage);
             }
         });
 
