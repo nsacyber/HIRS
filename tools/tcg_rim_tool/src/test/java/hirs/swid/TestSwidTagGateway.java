@@ -89,7 +89,7 @@ public class TestSwidTagGateway {
                 .getResourceAsStream(baseUserCert);
         assertTrue(compareFileBytesToExpectedFile(defaultOutput));
         validator.setRim(defaultOutput);
-        assertTrue(validator.validateRim(signingCertFile));
+        assertTrue(validator.validateBaseRim(signingCertFile));
     }
 
     /**
@@ -110,7 +110,7 @@ public class TestSwidTagGateway {
                 .getResourceAsStream(baseUserCertEmbed);
         assertTrue(compareFileBytesToExpectedFile(defaultOutput));
         validator.setRim(defaultOutput);
-        assertTrue(validator.validateRim(signingCertFile));
+        assertTrue(validator.validateBaseRim(signingCertFile));
     }
 
     /**
@@ -127,7 +127,7 @@ public class TestSwidTagGateway {
                 .getResourceAsStream(baseDefaultCert);
         assertTrue(compareFileBytesToExpectedFile(defaultOutput));
         validator.setRim(defaultOutput);
-        assertTrue(validator.validateRim(signingCertFile));
+        assertTrue(validator.validateBaseRim(signingCertFile));
     }
 
     /**
@@ -146,7 +146,7 @@ public class TestSwidTagGateway {
                 .getResourceAsStream(baseRfc3339Timestamp);
         assertTrue(compareFileBytesToExpectedFile(defaultOutput));
         validator.setRim(defaultOutput);
-        assertTrue(validator.validateRim(signingCertFile));
+        assertTrue(validator.validateBaseRim(signingCertFile));
     }
 
     /**
@@ -165,7 +165,7 @@ public class TestSwidTagGateway {
                 .getResourceAsStream(baseRfc3852Timestamp);
         assertTrue(compareFileBytesToExpectedFile(defaultOutput));
         validator.setRim(defaultOutput);
-        assertTrue(validator.validateRim(signingCertFile));
+        assertTrue(validator.validateBaseRim(signingCertFile));
     }
 
     /**
@@ -177,7 +177,7 @@ public class TestSwidTagGateway {
                 .getResource(baseUserCert)).getPath();
         System.out.println("Validating file at " + filepath);
         validator.setRim(defaultOutput);
-        assertTrue(validator.validateRim(signingCertFile));
+        assertTrue(validator.validateBaseRim(signingCertFile));
     }
 
     /**

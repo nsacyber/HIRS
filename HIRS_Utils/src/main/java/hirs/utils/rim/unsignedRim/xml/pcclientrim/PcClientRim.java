@@ -122,7 +122,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
             measurements.add(measurement);
         }
 
-        if (validator.validateRim(certificateFile)) {
+        if (validator.validateBaseRim(certificateFile)) {
             valid = true;
         } else {
             throw new RuntimeException("Failed to verify " + verifyFile);

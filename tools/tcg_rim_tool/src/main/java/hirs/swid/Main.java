@@ -65,7 +65,7 @@ public class Main {
                     validator.setSupportRimDirectory(rimel);
                 }
                 validator.setTrustStoreFile(trustStore);
-                if (validator.validateRim(certificateFile)) {
+                if (validator.validateBaseRim(certificateFile)) {
                     System.out.println("Successfully verified " + verifyFile);
                 } else {
                     exitWithErrorCode("Failed to verify " + verifyFile);
