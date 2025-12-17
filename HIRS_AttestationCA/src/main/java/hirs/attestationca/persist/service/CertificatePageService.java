@@ -107,14 +107,7 @@ public class CertificatePageService {
         ));
 
         // Apply sorting if present in the Pageable
-        if (pageable.getSort().isSorted()) {
-            List<Order> orders = new ArrayList<>();
-            pageable.getSort().forEach(order -> {
-                Path<Object> path = certificateRoot.get(order.getProperty());
-                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
-            });
-            query.orderBy(orders);
-        }
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable));
 
         // Apply pagination
         TypedQuery<T> typedQuery = this.entityManager.createQuery(query);
@@ -158,14 +151,7 @@ public class CertificatePageService {
         ));
 
         // Apply sorting if present in the Pageable
-        if (pageable.getSort().isSorted()) {
-            List<Order> orders = new ArrayList<>();
-            pageable.getSort().forEach(order -> {
-                Path<Object> path = certificateRoot.get(order.getProperty());
-                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
-            });
-            query.orderBy(orders);
-        }
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable));
 
         // Apply pagination
         TypedQuery<T> typedQuery = entityManager.createQuery(query);
@@ -227,14 +213,7 @@ public class CertificatePageService {
         ));
 
         // Apply sorting if present in the Pageable
-        if (pageable.getSort().isSorted()) {
-            List<Order> orders = new ArrayList<>();
-            pageable.getSort().forEach(order -> {
-                Path<Object> path = certificateRoot.get(order.getProperty());
-                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
-            });
-            query.orderBy(orders);
-        }
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable));
 
         // Apply pagination
         TypedQuery<T> typedQuery = entityManager.createQuery(query);
@@ -606,6 +585,31 @@ public class CertificatePageService {
         }
 
         return criteriaBuilder.or(combinedGlobalSearchPredicates.toArray(new Predicate[0]));
+    }
+
+    /**
+     * Helper method that generates a list of sorting orders based on the provided {@link Pageable} object.
+     * This method checks if sorting is enabled in the {@link Pageable} and applies the necessary sorting
+     * to the query using the CriteriaBuilder and Certificate Root.
+     *
+     * @param criteriaBuilder the CriteriaBuilder used to create the sort expressions.
+     * @param certificateRoot the Root of the entity (Certificate) to which the sorting should be applied.
+     * @param pageable        the {@link Pageable} object that contains the sort information.
+     * @param <T>             the type of the entity that extends Certificate.
+     * @return a list of {@link Order} objects, which can be applied to a CriteriaQuery for sorting.
+     */
+    private <T extends Certificate> List<Order> getSortingOrders(final CriteriaBuilder criteriaBuilder,
+                                                                 final Root<T> certificateRoot,
+                                                                 final Pageable pageable) {
+        List<Order> orders = new ArrayList<>();
+
+        if (pageable.getSort().isSorted()) {
+            pageable.getSort().forEach(order -> {
+                Path<Object> path = certificateRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+        }
+        return orders;
     }
 
     /**

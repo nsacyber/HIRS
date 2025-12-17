@@ -128,21 +128,8 @@ public class ValidationSummaryPageService {
         ));
 
         // Apply sorting if present in the Pageable
-        if (pageable.getSort().isSorted()) {
-            List<Order> orders = new ArrayList<>();
-            pageable.getSort().forEach(order -> {
-                Path<Object> path;
+        query.orderBy(getSortingOrders(criteriaBuilder, supplyChainValidationSummaryRoot, pageable));
 
-                if (order.getProperty().startsWith("device.")) {
-                    path = null; //todo
-                } else {
-                    path = supplyChainValidationSummaryRoot.get(order.getProperty());
-                }
-
-                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
-            });
-            query.orderBy(orders);
-        }
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
@@ -183,21 +170,7 @@ public class ValidationSummaryPageService {
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)));
 
         // Apply sorting if present in the Pageable
-        if (pageable.getSort().isSorted()) {
-            List<Order> orders = new ArrayList<>();
-            pageable.getSort().forEach(order -> {
-                Path<Object> path;
-
-                if (order.getProperty().startsWith("device.")) {
-                    path = null; //todo
-                } else {
-                    path = supplyChainValidationSummaryRoot.get(order.getProperty());
-                }
-
-                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
-            });
-            query.orderBy(orders);
-        }
+        query.orderBy(getSortingOrders(criteriaBuilder, supplyChainValidationSummaryRoot, pageable));
 
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
@@ -261,21 +234,7 @@ public class ValidationSummaryPageService {
         ));
 
         // Apply sorting if present in the Pageable
-        if (pageable.getSort().isSorted()) {
-            List<Order> orders = new ArrayList<>();
-            pageable.getSort().forEach(order -> {
-                Path<Object> path;
-
-                if (order.getProperty().startsWith("device.")) {
-                    path = null; //todo
-                } else {
-                    path = supplyChainValidationSummaryRoot.get(order.getProperty());
-                }
-
-                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
-            });
-            query.orderBy(orders);
-        }
+        query.orderBy(getSortingOrders(criteriaBuilder, supplyChainValidationSummaryRoot, pageable));
 
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
@@ -443,6 +402,37 @@ public class ValidationSummaryPageService {
                 .append(System.lineSeparator());
         bufferedWriter.append(reportData.toString());
         bufferedWriter.flush();
+    }
+
+    /**
+     * Helper method that generates a list of sorting orders based on the provided {@link Pageable} object.
+     * This method checks if sorting is enabled in the {@link Pageable} and applies the necessary sorting
+     * to the query using the CriteriaBuilder and Supply Chain Validation Summary Root.
+     *
+     * @param criteriaBuilder                  the CriteriaBuilder used to create the sort expressions.
+     * @param supplyChainValidationSummaryRoot the validation summary root to which the sorting should be applied.
+     * @param pageable                         the {@link Pageable} object that contains the sort information.
+     * @return a list of {@link Order} objects, which can be applied to a CriteriaQuery for sorting.
+     */
+    private List<Order> getSortingOrders(final CriteriaBuilder criteriaBuilder,
+                                         final Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot,
+                                         final Pageable pageable) {
+        List<Order> orders = new ArrayList<>();
+
+        if (pageable.getSort().isSorted()) {
+            pageable.getSort().forEach(order -> {
+                Path<Object> path;
+
+                if (order.getProperty().startsWith("device.")) {
+                    path = null; //todo
+                } else {
+                    path = supplyChainValidationSummaryRoot.get(order.getProperty());
+                }
+
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+        }
+        return orders;
     }
 
     /**
