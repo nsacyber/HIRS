@@ -1,41 +1,39 @@
 <div th:fragment="toastMessages(messages)">
-    <div id="" th:if="${not #lists.isEmpty(messages)}">
-        <!-- Loop through success messages and render a toast for each one -->
-        <div class="toast-container position-absolute top-0 end-0 p-3">
-            <div th:each="successMsg : ${messages.successMessages}" class="toast" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-success text-white">
-                    <img alt="Success icon" th:src="@{/icons/ic_done_white_24dp.png}" />
-                    <strong class="me-auto ms-2">Success</strong>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-                <div th:text="${successMsg}" class="toast-body bg-success bg-opacity-75 text-white"></div>
+    <!-- Loop through success messages and render a toast for each one -->
+    <div th:if="${not #lists.isEmpty(messages)}" class="toast-container position-absolute top-0 end-0 p-3">
+        <div id="toast-successMessage" th:each="successMsg : ${messages.successMessages}" class="toast" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <img alt="Success icon" th:src="@{/icons/ic_done_white_24dp.png}" />
+                <strong class="me-auto ms-2">Success</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
             </div>
+            <div th:text="${successMsg}" class="toast-body bg-success bg-opacity-75 text-white"></div>
+        </div>
 
-            <!-- Loop through info messages and render a toast for each one -->
-            <div th:each="infoMsg : ${messages.infoMessages}" class="toast" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-primary text-white">
-                    <img alt="Info icon" th:src="@{/icons}/ic_priority_high_white_24dp.png" />
-                    <strong class="me-auto ms-2">Info</strong>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-                <div th:text="${infoMsg}" class="toast-body bg-primary bg-opacity-75 text-white"></div>
+        <!-- Loop through info messages and render a toast for each one -->
+        <div id="toast-infoMessage" th:each="infoMsg : ${messages.infoMessages}" class="toast" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-primary text-white">
+                <img alt="Info icon" th:src="@{/icons/ic_info_24dp.png}" />
+                <strong class="me-auto ms-2">Info</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
             </div>
+            <div th:text="${infoMsg}" class="toast-body bg-primary bg-opacity-75 text-white"></div>
+        </div>
 
-            <!-- Loop through error messages and render a toast for each one -->
-            <div th:each="errorMsg : ${messages.errorMessages}" class="toast" role="alert" aria-live="assertive"
-                aria-atomic="true">
-                <div class="toast-header bg-danger text-white">
-                    <img alt="Error icon" th:src="@{/icons/ic_priority_high_white_24dp.png}" />
-                    <strong class="me-auto ms-2">Error</strong>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-                <div th:text="${errorMsg}" class="toast-body bg-danger bg-opacity-75 text-white"></div>
+        <!-- Loop through error messages and render a toast for each one -->
+        <div id="toast-errorMessage" th:each="errorMsg : ${messages.errorMessages}" class="toast" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-danger text-white">
+                <img alt="Error icon" th:src="@{/icons/ic_priority_high_white_24dp.png}" />
+                <strong class="me-auto ms-2">Error</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
             </div>
+            <div th:text="${errorMsg}" class="toast-body bg-danger bg-opacity-75 text-white"></div>
         </div>
     </div>
 </div>
