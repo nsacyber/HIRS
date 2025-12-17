@@ -11,8 +11,10 @@ import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -51,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -246,42 +249,15 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method validates the rim with a public key cert.
+     * This method validates a base RIM in two parts:
+     * 1. validate the support RIM(s) in the Payload
+     * 2. validate the XML signature over the entire document
      *
      * @param signingCertPath to the public key certificate used to sign the rim
-     * @return true if both the file element and signature are valid, false otherwise
+     * @return true if valid, false otherwise
      */
-    public boolean validateRim(final String signingCertPath) {
-        boolean isPayloadValid = true;
-
-        if (hasSupportRim) {
-            System.out.println("Validating support RIM...");
-            NodeList files = rim.getElementsByTagName(SwidTagConstants.FILE);
-            if (files.getLength() <= 0) {
-                files = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.FILE);
-            }
-            if (files.getLength() > 0) {
-                for (int i = 0; i < files.getLength(); i++) {
-                    Element file = (Element) files.item(i);
-                    String filename = file.getAttribute("name");
-                    System.out.println(filename + ": "
-                            + file.getAttributeNS(SwidTagConstants.SHA_256_HASH.getNamespaceURI(),
-                                    SwidTagConstants.HASH));
-                    if (!supportRimDirectory.isEmpty()) {
-                        Element overrideSupportRim = createOverrideSupportRim(file, filename);
-                        if (overrideSupportRim == null) {
-                            failWithError("Unable to override support RIM.");
-                        } else {
-                            isPayloadValid &= validateFile(overrideSupportRim);
-                        }
-                    } else {
-                        isPayloadValid &= validateFile(file);
-                    }
-                }
-            } else {
-                return failWithError("No payload found with which to validate.");
-            }
-        }
+    public boolean validateBaseRim(final String signingCertPath) {
+        boolean isPayloadValid = validatePayload();
 
         System.out.println("Validating RIM signature...");
         X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
@@ -301,6 +277,44 @@ public class ReferenceManifestValidator {
     }
 
     /**
+     * This method validates the support RIM(s) contained within the Payload
+     * of a base RIM.
+     *
+     * @return true if all are valid, false otherwise
+     */
+    private boolean validatePayload() {
+        boolean isPayloadValid = true;
+
+        if (hasSupportRim) {
+            System.out.println("Validating support RIM...");
+            NodeList files = rim.getElementsByTagName(SwidTagConstants.FILE);
+            if (files.getLength() <= 0) {
+                files = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.FILE);
+            }
+            if (files.getLength() > 0) {
+                for (int i = 0; i < files.getLength(); i++) {
+                    Element file = (Element) files.item(i);
+                    String filename = file.getAttribute("name");
+                    if (!supportRimDirectory.isEmpty()) {
+                        Element overrideSupportRim = createOverrideSupportRim(file, filename);
+                        if (overrideSupportRim == null) {
+                            failWithError("Unable to override support RIM.");
+                        } else {
+                            isPayloadValid &= validateFile(overrideSupportRim);
+                        }
+                    } else {
+                        isPayloadValid &= validateFile(file);
+                    }
+                }
+            } else {
+                return failWithError("No payload found with which to validate.");
+            }
+        }
+
+        return isPayloadValid;
+    }
+
+    /**
      * This method creates a <File name="..." hash="..." /> from a File object.
      *
      * @param oldFile from which to create the new <File> element
@@ -308,7 +322,7 @@ public class ReferenceManifestValidator {
      * @return the new <File> element
      */
     private Element createOverrideSupportRim(final Element oldFile, final String supportRimName) {
-        Element overrideSupportRim = oldFile;
+        Element overrideSupportRim = (Element) oldFile.cloneNode(false);
         File searchDir = new File(supportRimDirectory);
         File[] matches = searchDir.listFiles(new FilenameFilter() {
             @Override
@@ -354,52 +368,79 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method validates a hirs.swid.xjc.File from an indirect payload.
+     * This method hashes the file reference by a File element
+     * and compares the result to its declared value.
      *
-     * @param file file extracted from element
-     * @return true if the provided file is valid, false otherwise
+     * @param file containing the declared filepath and hash
+     * @return true if they match, false if not
      */
     private boolean validateFile(final Element file) {
-        String filepath = file.getAttribute(SwidTagConstants.NAME);
-        if (areHashesEqual(file, filepath, "SHA256")) {
-            log.info("Support RIM hash under SHA256 has been verified for {}", filepath);
-            return true;
-        } else if (areHashesEqual(file, filepath, "SHA384")) {
-            log.info("Support RIM hash under SHA384 has been verified for {}", filepath);
+        Attr nameAttribute = file.getAttributeNode(SwidTagConstants.NAME);
+        String filepath = nameAttribute.getValue();
+        Attr hashAttribute = findHashAttribute(file);
+        String hashAlgorithm, declaredHash;
+        if (hashAttribute != null) {
+            hashAlgorithm = parseAlgorithmFromUri(hashAttribute.getNamespaceURI());
+            declaredHash = hashAttribute.getValue();
+        } else {
+            String errorMessage = String.format("File %s does not have a hash attribute!", filepath);
+            log.error(errorMessage);
+            return false;
+        }
+
+        String calculatedHash;
+        try {
+            calculatedHash = getHashValue(filepath, hashAlgorithm);
+        } catch (NoSuchFileException e) {
+            log.error(e.getMessage());
+            return false;
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+
+        if (calculatedHash.equals(declaredHash)) {
+            System.out.println(String.format("%s: %s confirmed", filepath, calculatedHash));
             return true;
         } else {
-            return failWithError("Support RIM " + filepath + " hash does not match Base RIM!");
+            log.error(String.format("Expected %s but got %s from %s instead.",
+                    declaredHash, calculatedHash, filepath));
+            return false;
         }
     }
 
     /**
-     * This method hashes a file and compares the result to a declared value.
+     * This method iterates through an element's attributes to locate its hash.
      *
-     * @param file containing the declared hash
-     * @param filepath to be hashed
-     * @param sha hashing algorithm
-     * @return true if they match, false if not
+     * @param element to search for the hash attribute
+     * @return the attribute if found, null otherwise
      */
-    private boolean areHashesEqual(final Element file, final String filepath, final String sha) {
-        String calculatedHash = getHashValue(filepath, sha);
-        String declaredHash = "";
-        String hashAttribute;
-        switch (sha) {
-            case "SHA256":
-                hashAttribute = SwidTagConstants.SHA_256_HASH.getPrefix() + ":"
-                        + SwidTagConstants.SHA_256_HASH.getLocalPart();
-                break;
-            case "SHA384":
-                hashAttribute = SwidTagConstants.SHA_384_HASH.getPrefix() + ":"
-                        + SwidTagConstants.SHA_384_HASH.getLocalPart();
-                break;
-            default:
-                log.warn(String.format("%s is not a supported hash algorithm.", sha));
-                return false;
+    private Attr findHashAttribute(final Element element) {
+        NamedNodeMap attributeNodes = element.getAttributes();
+        for (int i = 0; i < attributeNodes.getLength(); i++) {
+            Attr attribute = (Attr) attributeNodes.item(i);
+            if (attribute.getName().contains(SwidTagConstants.HASH)) {
+                return attribute;
+            }
         }
-        declaredHash = file.getAttribute(hashAttribute);
 
-        return calculatedHash.equals(declaredHash);
+        return null;
+    }
+
+    /**
+     * This method converts an algorithm namespace to a simpler string
+     * that can be used for hash calculations.
+     *
+     * @param uri to be parsed
+     * @return algorithm string
+     */
+    private String parseAlgorithmFromUri(final String uri) {
+        switch (uri) {
+            case "http://www.w3.org/2001/04/xmlenc#sha256":
+                return SwidTagConstants.SHA_256_HASH.getPrefix();
+            default:
+                return "";
+        }
     }
 
     /**
@@ -409,15 +450,16 @@ public class ReferenceManifestValidator {
      * @param sha      the algorithm to use
      * @return String digest
      */
-    private String getHashValue(final String filepath, final String sha) {
+    private String getHashValue(final String filepath, final String sha) throws IOException {
         try {
             byte[] fileBytes = Files.readAllBytes(Paths.get(filepath));
             return getHashValue(fileBytes, sha);
+        } catch (NoSuchFileException e) {
+            throw new NoSuchFileException("Unable to locate " + filepath);
         } catch (IOException e) {
             String errorMessage = String.format("Error reading bytes from %s: %s",
                     filepath, e.getMessage());
-            log.warn(errorMessage);
-            return errorMessage;
+            throw new IOException(errorMessage);
         }
     }
 
