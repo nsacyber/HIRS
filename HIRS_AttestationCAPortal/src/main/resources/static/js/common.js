@@ -383,6 +383,7 @@ function rimDownloadLink(pagePath, id) {
 /**
  * Formats a given date to a UTC string, or returns Indefinite (802.1AR)
  * @param date to format
+ * @returns a string representing a date in RFC 7231 format, or "Indefinite"
  */
 function formatCertificateDate(dateText) {
   const timestamp = Date.parse(dateText); // Convert to numeric
