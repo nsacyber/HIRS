@@ -659,21 +659,15 @@
                                 </span>
                             </div>
                             <div class="tbbsecurityLine">
-                                <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>
-                                <span
-                                    class="fieldValue">
-
-<!--    TODO: add double brackets and figure out: -->
-<!--        enum 'value' with lombok getter isn't working-->
-<!--        it's because rtmType=null but now find out why it is null?-->
-<!--        TBBSecurityAssertion(version=0, ccInfo=null, fipsLevel=null, rtmType=null, iso9000Certified=FALSE, iso9000Uri=null)-->
-
-<!--                                    ${initialData.get('tbbSecurityAssertion').getRtmType().getValue()}</span>-->
-
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getRtmType()) and not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getRtmType().getValue())}">
+                                    <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>
+                                    <span
+                                        class="fieldValue">
+                                        [[${#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getRtmType().getValue())}]]</span>
+                                </th:block>
                             </div>
                             <!-- CCINFO -->
                             <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getCcInfo())}">
-<!--    TODO: test this since it doesn't hit this case currently as ccInfo is null-->
                                 <th:block th:with="ccinfo=${initialData.get('tbbSecurityAssertion').getCcInfo()}">
                                     <div class="panel panel-default">
                                         <div class="panel-heading" role="tab" id="headingOne">
@@ -704,10 +698,10 @@
                                                                 class="fieldValue">[[${#strings.toUpperCase(ccinfo.getEvaluationStatus().getValue())}]]</span>
                                                     </div>
                                                     <div class="tbbsecurityLine">
-                                                        <th:block th:if="${#strings.equals(ccinfo.getPlus(), 'TRUE')}">
+                                                        <th:block th:if="${#strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
                                                             <span class="label label-success">Plus</span>
                                                         </th:block>
-                                                        <th:block th:if="${not #strings.equals(ccinfo.getPlus(), 'TRUE')}">
+                                                        <th:block th:if="${not #strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
                                                             <span class="label label-danger">Not Plus</span>
                                                         </th:block>
                                                     </div>
@@ -784,7 +778,6 @@
                             </th:block> <!-- Close CCINFO -->
                             <!-- FIPS Level -->
                             <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getFipsLevel())}">
-<!--    TODO: test this since it doesn't hit this case currently-->
                                 <th:block th:with="fipslevel=${initialData.get('tbbSecurityAssertion').getFipsLevel()}">
                                     <div class="panel panel-default">
                                         <div class="panel-heading" role="tab" id="headingThree">
@@ -810,10 +803,10 @@
                                                             class="fieldValue">[[${#strings.toUpperCase(fipslevel.getLevel().getValue())}]]</span>
                                                     </div>
                                                     <div class="tbbsecurityLine">
-                                                        <th:block th:if="${#strings.equals(fipslevel.getPlus(), 'TRUE')}">
+                                                        <th:block th:if="${#strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
                                                             <span class="label label-success">Plus</span>
                                                         </th:block>
-                                                        <th:block th:if="${not #strings.equals(fipslevel.getPlus(), 'TRUE')}">
+                                                        <th:block th:if="${not #strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
                                                             <span class="label label-danger">Not Plus</span>
                                                         </th:block>
                                                     </div>
@@ -839,10 +832,10 @@
                                     <div class="panel-body">
                                         <div id="iso9000" class="row">
                                             <div class="tbbsecurityLine">
-                                                <th:block th:if="${#strings.equals(initialData.get('tbbSecurityAssertion').getIso9000Certified(), 'TRUE')}">
+                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
                                                     <span class="label label-success">ISO 9000 Certified</span>
                                                 </th:block>
-                                                <th:block th:if="${not #strings.equals(initialData.get('tbbSecurityAssertion').getIso9000Certified(), 'TRUE')}">
+                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
                                                     <span class="label label-danger">ISO 9000 Not Certified</span>
                                                 </th:block>
                                             </div>
@@ -850,7 +843,6 @@
                                                 <div class="tbbsecurityLine">
                                                     <span class="fieldHeader">URI:</span>
                                                     <span class="fieldValue">
-<!--    TODO: test this since it doesn't hit this case currently-->
                                                         <a th:href="@{${initialData.get('tbbSecurityAssertion').getIso9000Uri()}}">
                                                             [[${initialData.get('tbbSecurityAssertion').getIso9000Uri()}]]
                                                         </a>
@@ -890,30 +882,29 @@
                                          role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
                                         <div class="panel-body">
                                             <div id="componentIdentifier" class="row">
-<!--    TODO: test this-->
                                                 <!-- 'componentResults' is List<ComponentResult> from CertificateStringMapBuilder-->
                                                 <th:block th:each="component, loop : ${initialData.get('componentResults')}">
                                                     <div class="component col col-md-4">
                                                         <div class="panel panel-default">
-                                                            <th:block th:if="${#strings.equals(component.isFailedValidation(), 'TRUE')}">
+                                                            <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
                                                                 <div class="panel-heading" style="background-color: red; color: white">
-                                                                    <th:block th:if="${#strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                    <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
                                                                         <span data-toggle="tooltip" data-placement="top"
                                                                             th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
                                                                     </th:block>
-                                                                    <th:block th:if="${not #strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                    <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
                                                                         <span data-toggle="tooltip" data-placement="top"
                                                                         title="Component Class">Platform Components</span>
                                                                     </th:block>
                                                                 </div>
                                                             </th:block>
-                                                            <th:block th:if="${not #strings.equals(component.isFailedValidation(), 'TRUE')}">
+                                                            <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
                                                                 <div class="panel-heading">
-                                                                    <th:block th:if="${#strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                    <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
                                                                         <span data-toggle="tooltip" data-placement="top"
                                                                         th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
                                                                     </th:block>
-                                                                    <th:block th:if="${not #strings.equals(component.isVersion2(), 'TRUE')}">
+                                                                    <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
                                                                         <span data-toggle="tooltip" data-placement="top"
                                                                         title="Component Class">Platform Components</span>
                                                                     </th:block>
@@ -926,19 +917,16 @@
                                                                 <span class="fieldHeader">Model:</span>
                                                                 <span
                                                                     class="fieldValue">[[${component.getModel()}]]</span><br />
-    <!--                                                            <c:if-->
-    <!--                                                                    test="${not empty fn:trim(component.getSerialNumber())}">-->
-    <!--                                                                <span class="fieldHeader">Serial Number:</span>-->
-    <!--                                                                <span-->
-    <!--                                                                        class="fieldValue">${component.getSerialNumber()}</span><br />-->
-    <!--                                                            </c:if>-->
-    <!--                                                            <c:if-->
-    <!--                                                                    test="${not empty fn:trim(component.getRevisionNumber())}">-->
-    <!--                                                                <span class="fieldHeader">Revision:</span>-->
-    <!--                                                                <span-->
-    <!--                                                                        class="fieldValue">${component.getRevisionNumber()}</span><br />-->
-    <!--                                                            </c:if>-->
-
+                                                                <th:block th:if="${not #strings.isEmpty(#strings.trim(component.getSerialNumber()))}">
+                                                                    <span class="fieldHeader">Serial Number:</span>
+                                                                    <span
+                                                                            class="fieldValue">[[${component.getSerialNumber()}]]</span><br />
+                                                                </th:block>
+                                                                <th:block th:if="${not #strings.isEmpty(#strings.trim(component.getRevisionNumber()))}">
+                                                                    <span class="fieldHeader">Revision:</span>
+                                                                    <span
+                                                                            class="fieldValue">[[${component.getRevisionNumber()}]]</span><br />
+                                                                </th:block>
                                                                 <th:block th:each="address, loop : ${component.getComponentAddresses()}">
                                                                     <span
                                                                         class="fieldHeader">[[${address.getAddressTypeString()}]]
@@ -946,10 +934,10 @@
                                                                     <span
                                                                         class="fieldValue">[[${address.getAddressValueString()}]]</span><br />
                                                                 </th:block>
-                                                                <th:block th:if="${#strings.equals(component.isFieldReplaceable(), 'TRUE')}">
+                                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
                                                                     <span class="label label-success">Replaceable</span><br />
                                                                 </th:block>
-                                                                <th:block th:if="${not #strings.equals(component.isFieldReplaceable(), 'TRUE')}">
+                                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
                                                                     <span class="label label-danger">Irreplaceable</span><br />
                                                                 </th:block>
                                                                 <th:block th:if="${not #strings.isEmpty(component.isVersion2())}">
@@ -1005,11 +993,11 @@
                                                 </a>
                                                 <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashAlgorithm())}">
                                                     <span class="fieldHeader">Hash Algorithm:</span>
-                                                    <span>[[${initialData.get(componentsIdentifierURI).getHashAlgorithm()}]]</span>
+                                                    <span>[[${initialData.get('componentsIdentifierURI').getHashAlgorithm()}]]</span>
                                                 </th:block>
                                                 <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashValue())}">
                                                     <span class="fieldHeader">Hash Value:</span>
-                                                    <span>[[${initialData.get(componentsIdentifierURI).getHashValue()}]]</span>
+                                                    <span>[[${initialData.get('componentsIdentifierURI').getHashValue()}]]</span>
                                                 </th:block>
                                             </div>
                                         </div>
@@ -1032,20 +1020,20 @@
                                          aria-labelledby="headingThree">
                                         <div class="panel-body">
                                             <div id="platformProperties" class="row">
-<!--                                        <c:forEach items="${initialData.platformProperties}" var="property">-->
-<!--                                            <div class="component col col-md-4">-->
-<!--                                                <div class="panel panel-default">-->
-<!--                                                    <div class="panel-body">-->
-<!--                                                        <span class="fieldHeader">Name:</span>-->
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${property.getPropertyName()}</span><br />-->
-<!--                                                        <span class="fieldHeader">Value:</span>-->
-<!--                                                        <span class="fieldValue"-->
-<!--                                                              style="word-wrap: break-word">${property.getPropertyValue()}</span><br />-->
-<!--                                                    </div>-->
-<!--                                                </div>-->
-<!--                                            </div>-->
-<!--                                        </c:forEach>-->
+                                                <th:block th:each="property, loop : ${initialData.get('platformProperties')}">
+                                                    <div class="component col col-md-4">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-body">
+                                                                <span class="fieldHeader">Name:</span>
+                                                                <span
+                                                                        class="fieldValue">[[${property.getPropertyName()}]]</span><br />
+                                                                <span class="fieldHeader">Value:</span>
+                                                                <span class="fieldValue"
+                                                                      style="word-wrap: break-word">[[${property.getPropertyValue()}]]</span><br />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </th:block>
                                             </div>
                                         </div>
                                     </div>
@@ -1068,17 +1056,17 @@
                                         <div class="panel-body">
                                             <div id="platformPropertiesURI" class="row">
                                                 <span class="fieldHeader">URI:</span>
-<!--                                        <a href="${initialData.platformPropertiesURI.getUniformResourceIdentifier()}">-->
-<!--                                            ${initialData.platformPropertiesURI.getUniformResourceIdentifier()}-->
-<!--                                        </a>-->
-<!--                                        <c:if test="${not empty initialData.platformPropertiesURI.getHashAlgorithm()}">-->
-<!--                                            <span class="fieldHeader">Hash Algorithm:</span>-->
-<!--                                            <span>${initialData.platformPropertiesURI.getHashAlgorithm()}</span>-->
-<!--                                        </c:if>-->
-<!--                                        <c:if test="${not empty initialData.platformPropertiesURI.getHashValue()}">-->
-<!--                                            <span class="fieldHeader">Hash Value:</span>-->
-<!--                                            <span>${initialData.platformPropertiesURI.getHashValue()}</span>-->
-<!--                                        </c:if>-->
+                                                <a th:href="@{${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}}">
+                                                    [[${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}]]
+                                                </a>
+                                                <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI').getHashAlgorithm())}">
+                                                    <span class="fieldHeader">Hash Algorithm:</span>
+                                                    <span>[[${initialData.get('platformPropertiesURI').getHashAlgorithm()}]]</span>
+                                                </th:block>
+                                                <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI').getHashValue())}">
+                                                    <span class="fieldHeader">Hash Value:</span>
+                                                    <span>[[${initialData.get('platformPropertiesURI').getHashValue()}]]</span>
+                                                </th:block>
                                             </div>
                                         </div>
                                     </div>
