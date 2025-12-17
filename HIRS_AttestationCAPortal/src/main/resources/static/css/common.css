@@ -96,65 +96,6 @@ hr {
   padding-bottom: 50px;
 }
 
-/* Page messages */
-#page-messages-container {
-  padding-top: 15px;
-}
-
-#page-messages {
-  margin: 0px;
-}
-
-.page-message {
-  line-height: 24px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.page-messageIcon {
-  height: 24px;
-  width: 24px;
-  padding: 2px;
-  display: inline-block;
-  border-radius: 15px;
-  margin-right: 10px;
-}
-
-.page-messageIcon img {
-  height: 20px;
-  width: 20px;
-  vertical-align: baseline; /* overrides bootstrap.css */
-}
-
-#page-successMessage {
-  color: green;
-}
-
-#page-successMessage .page-messageIcon {
-  background-color: green;
-}
-
-#page-errorMessage {
-  color: red;
-}
-
-#page-errorMessage .page-messageIcon {
-  background-color: red;
-}
-
-#page-infoMessage {
-  color: blue;
-}
-
-#page-infoMessage .page-messageIcon {
-  background-color: blue;
-}
-
-#page-infoMessage img {
-  transform: rotate(180deg);
-}
-
 /* Modal */
 .modal-custom-button {
   display: inline-block;
