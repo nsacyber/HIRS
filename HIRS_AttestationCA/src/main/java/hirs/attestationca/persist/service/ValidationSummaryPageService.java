@@ -422,10 +422,22 @@ public class ValidationSummaryPageService {
         if (pageable.getSort().isSorted()) {
             pageable.getSort().forEach(order -> {
                 Path<Object> path;
+                String property = order.getProperty();
 
-                if (order.getProperty().startsWith("device.")) {
-                    path = null; //todo
+                // handle nested properties like "device.name"
+                if (property.startsWith("device.")) {
+                    final String[] nestedColumnName = property.split("\\.");
+                    final String mainField = nestedColumnName[0]; // device prefix
+                    final String nestedField = nestedColumnName[1]; // property associated with device
+
+                    // Handle the case where the related entity is the "device" field
+                    Join<SupplyChainValidationSummary, Device> join =
+                            supplyChainValidationSummaryRoot.join(mainField, JoinType.LEFT);
+
+                    // Now, resolve the nested property on the joined entity (Device)
+                    path = join.get(nestedField);  // Access the nested field on the "device" entity
                 } else {
+                    // handle simple properties that exist in the validation summary entity
                     path = supplyChainValidationSummaryRoot.get(order.getProperty());
                 }
 
