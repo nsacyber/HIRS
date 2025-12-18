@@ -65,11 +65,7 @@ public class Main {
                     validator.setSupportRimDirectory(rimel);
                 }
                 validator.setTrustStoreFile(trustStore);
-                if (validator.validateBaseRim(certificateFile)) {
-                    System.out.println("Successfully verified " + verifyFile);
-                } else {
-                    exitWithErrorCode("Failed to verify " + verifyFile);
-                }
+                validator.validateBaseRim(certificateFile);
             } else {
                 gateway = new SwidTagGateway();
                 if (commander.isVerbose()) {

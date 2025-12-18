@@ -259,7 +259,7 @@ public class ReferenceManifestValidator {
     public boolean validateBaseRim(final String signingCertPath) {
         boolean isPayloadValid = validatePayload();
 
-        System.out.println("Validating RIM signature...");
+        System.out.println(System.lineSeparator() + "Validating base RIM signature...");
         X509Certificate signingCert = parseCertificatesFromPem(signingCertPath).get(0);
         if (signingCert == null) {
             return failWithError("Unable to parse the signing cert from " + signingCertPath);
@@ -273,7 +273,13 @@ public class ReferenceManifestValidator {
 
         boolean isSignatureValid = validateXmlSignature(signingCert.getPublicKey(),
                 retrievedSubjectKeyIdentifier);
-        return isSignatureValid && isPayloadValid;
+        if (isSignatureValid && isPayloadValid) {
+            System.out.println(System.lineSeparator() + "Overall base RIM validation passed.");
+            return true;
+        } else {
+            System.out.println(System.lineSeparator() + "Overall base RIM validation failed.");
+            return false;
+        }
     }
 
     /**
@@ -286,7 +292,7 @@ public class ReferenceManifestValidator {
         boolean isPayloadValid = true;
 
         if (hasSupportRim) {
-            System.out.println("Validating support RIM...");
+            System.out.println(System.lineSeparator() + "Validating support RIM...");
             NodeList files = rim.getElementsByTagName(SwidTagConstants.FILE);
             if (files.getLength() <= 0) {
                 files = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.FILE);
@@ -298,7 +304,7 @@ public class ReferenceManifestValidator {
                     if (!supportRimDirectory.isEmpty()) {
                         Element overrideSupportRim = createOverrideSupportRim(file, filename);
                         if (overrideSupportRim == null) {
-                            failWithError("Unable to override support RIM.");
+                            isPayloadValid = false;
                         } else {
                             isPayloadValid &= validateFile(overrideSupportRim);
                         }
@@ -309,6 +315,8 @@ public class ReferenceManifestValidator {
             } else {
                 return failWithError("No payload found with which to validate.");
             }
+        } else {
+            System.out.println(System.lineSeparator() + "Skipping support RIM validation.");
         }
 
         return isPayloadValid;
@@ -495,6 +503,9 @@ public class ReferenceManifestValidator {
             XMLSignature signature = sigFactory.unmarshalXMLSignature(context);
             boolean isValid = signature.validate(context);
             if (isValid) {
+                String successMessage = "XML signature verified.";
+                log.info(successMessage);
+                System.out.println(successMessage);
                 return true;
             } else {
                 whySignatureInvalid(signature, context);
