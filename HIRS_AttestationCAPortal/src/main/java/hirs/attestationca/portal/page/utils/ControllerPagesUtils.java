@@ -4,7 +4,11 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.Column;
+import hirs.attestationca.portal.datatables.Order;
 import io.micrometer.common.util.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -24,6 +28,45 @@ public final class ControllerPagesUtils {
      * This private constructor was created to silence checkstyle error.
      */
     private ControllerPagesUtils() {
+    }
+
+    /**
+     * Helper method that creates a {@link Pageable} object for paginating and optionally sorting a dataset
+     * based on DataTables input.
+     * <p>
+     * This method calculates the current page and page size, then constructs a {@link Pageable} object that
+     * includes both pagination and sorting (if applicable) based on the provided inputs.
+     * If no ordering is provided, the method will return a pageable object with just the default pagination
+     * settings.
+     *
+     * @param pageStart   The starting index of the data from the DataTables input (typically for pagination).
+     * @param pageEnd     The number of items to display per page (page size) from the DataTables input.
+     * @param orderColumn An {@link Order} object containing the column name and direction for sorting
+     * @return A {@link Pageable} object containing the pagination and sorting configuration.
+     */
+    public static Pageable createPageableObject(final int pageStart,
+                                                final int pageEnd,
+                                                final Order orderColumn) {
+        // Calculate the current page number based on the starting index and page size
+        final int currentPage = pageStart / pageEnd;
+
+        // If pageSize is -1 (Show All), set a very large page size, otherwise keep the original page size
+        final int pageSize = pageEnd != -1 ? pageEnd : Integer.MAX_VALUE;
+
+        if (orderColumn != null) {
+            // Convert the direction string to a Sort.Direction enum (ascending or descending)
+            Sort.Direction sortDirection =
+                    "desc".equalsIgnoreCase(orderColumn.getDir()) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+            // Create a Sort object based on the column name and direction
+            Sort sort = Sort.by(new Sort.Order(sortDirection, orderColumn.getName()));
+
+            // Create the Pageable object with sorting
+            return PageRequest.of(currentPage, pageSize, sort);
+        }
+
+        // Create the Pageable object without sorting if no order column is provided
+        return PageRequest.of(currentPage, pageSize);
     }
 
     /**

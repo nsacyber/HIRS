@@ -123,7 +123,6 @@ function setDataTables(id, url, columns, options = {}) {
     colReorder: true,
     select: true,
     responsive: true,
-    pageLength: 10, // Default number of rows per page
     lengthMenu: [
       [10, 25, 50, 75, 100, 250, -1],
       [
@@ -187,7 +186,11 @@ function setDataTables(id, url, columns, options = {}) {
           {
             text: "Clear All",
             action: function (e, dt, node, config) {
+              // Clear search and reset column controls
               dt.search("").columns().columnControl.searchClear().draw();
+
+              // Reset the ordering to default
+              dt.order([]).draw();
             },
           },
         ],

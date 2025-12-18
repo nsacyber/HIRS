@@ -32,7 +32,6 @@ public final class PageServiceUtils {
             // Use a Unix epoch timestamp
             columnSearchTimestamp = Timestamp.valueOf("1970-01-01 00:00:00");
         } else {   //  if the search logic is anything else but empty or not empty
-            
             // Define the DateTimeFormatter matching the input date format
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

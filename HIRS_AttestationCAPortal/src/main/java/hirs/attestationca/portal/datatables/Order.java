@@ -8,49 +8,31 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Represents a column ordering in regard to a jQuery DataTable.
+ * Java representation of a Datatable's column's Ordering Status.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Order {
 
-
     /**
-     * Column to which ordering should be applied. This is an index reference
-     * to the columns array of information that is also submitted to the server.
+     * Index of the column to which ordering is applied.
      */
     @NotNull
     @Min(0)
     private int column;
+
     /**
-     * Ordering direction for this column. It will be asc or desc to indicate ascending ordering or
-     * descending ordering, respectively.
+     * The sorting direction for this column. Allowed values are "asc" for ascending or "desc" for descending.
      */
     @NotNull
     @Pattern(regexp = "(desc|asc)")
     private String dir;
 
     /**
-     * Constructor.
-     *
-     * @param column      the column index
-     * @param isAscending true if ascending order
+     * The name of the column to which ordering is applied.
      */
-    public Order(final int column, final boolean isAscending) {
-        this.column = column;
-        if (isAscending) {
-            this.dir = "asc";
-        } else {
-            this.dir = "desc";
-        }
-    }
-
-    /**
-     * @return true if ascending order, false otherwise.
-     */
-    public boolean isAscending() {
-        return dir.equalsIgnoreCase("asc");
-    }
+    @NotNull
+    private String name;
 }
 
