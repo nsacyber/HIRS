@@ -10,6 +10,7 @@
                 const url = viewName + "/list";
                 const acaCertDataSignature = JSON.parse(/*[[${ acaCertData.signature }]]*/'');
                 const acaPublicKey = JSON.parse(/*[[${ acaCertData.encodedPublicKey }]]*/'');
+                const certificateType = "certificateauthority";
 
                 // Setup HIRS ACA Root Certificate items
                 $("#signature").html(byteToHexString(acaCertDataSignature));
@@ -19,12 +20,24 @@
                 $("#validity span").each(function () {
                     $(this).text(new Date(+$(this).text()).toUTCString());
                 });
+
                 // Format serial number
                 $("#serialNumber span").each(function () {
                     $(this).text(parseSerialNumber($(this).text()));
                 });
 
-                // Setup Trusted Certificate list
+                // When the "deleteConfirmationModal" modal is about to be shown:
+                // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
+                // - Set the value of the hidden input field with ID 'trustChainToDeleteId' to the retrieved trust chain certificate ID
+                $('#deleteConfirmationModal').on('show.bs.modal', function (event) {
+                    const deleteLinkButton = $(event.relatedTarget);  // Link that triggered the modal
+                    const trustChainCertificateId = deleteLinkButton.data('id');  // Extract the ID from the data-id attribute
+
+                    // Set the value of the hidden input to the ID
+                    $(this).find('#trustChainToDeleteId').val(trustChainCertificateId);
+                });
+
+                // Setup Trusted Certificate table columns
                 let columns = [
                     {
                         name: "issuer",
@@ -68,7 +81,7 @@
                         searchable: false,
                         render: function (data, type, full, meta) {
                             let html = "";
-                            html += certificateDetailsLink("certificateauthority", data, true);
+                            html += certificateDetailsLink(certificateType, data, true);
                             html += certificateDownloadLink(viewName, data);
                             html += certificateDeleteLink(viewName, data);
                             return html;
@@ -182,19 +195,23 @@
             </table>
         </div>
 
-        <!-- Modal Template: This will be triggered on link click (delete) -->
+        <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
         <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/delete}">
             <div
-                th:replace="fragments/modal :: modal(id='deleteConfirmationModal', label='Confirm Deletion Of Trust Chain Certificate', bodyContent=~{this::#deleteConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+                th:replace="fragments/modal :: modal(id='deleteConfirmationModal', label='Confirm Deletion Of Trust Chain Certificate', 
+                bodyContent=~{this::#deleteTrustChainConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+
                 <!-- Modal Body Content -->
-                <div id="deleteConfirmationBody">
-                    <p>Are you sure you want to delete this certificate?</p>
+                <div id="deleteTrustChainConfirmationBody">
+                    <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this Trust Chain
+                            certificate?</strong></p>
                 </div>
+
                 <!-- Define custom footer buttons here -->
                 <div id="deleteConfirmationFooterButtons">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <!-- The form that will submit the certificate ID for deletion -->
-                    <input type="hidden" name="id" value="">
+                    <!-- The trust chain certificate ID is stored in this hidden field -->
+                    <input type="hidden" name="id" id="trustChainToDeleteId" value="">
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </div>
             </div>

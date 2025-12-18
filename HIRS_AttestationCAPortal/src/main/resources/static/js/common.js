@@ -283,22 +283,17 @@ function rimDetailsLink(pagePath, id) {
  */
 function certificateDeleteLink(pagePath, id) {
   const icon = iconPath + "/svg/trash.svg";
-  const formURL = pagePath + "/delete";
+
+  // Concatenate the pagePath and modal name dynamically
+  const modalTarget = `#deleteConfirmationModal`;
 
   const html =
-    '<a href="#deleteConfirmationModal" ' +
+    `<a href="${modalTarget}" ` +
     'data-bs-toggle="modal" ' +
-    'data-bs-target="#deleteConfirmationModal" ' +
-    'data-id="' +
-    id +
-    '" ' +
-    'data-form-url="' +
-    formURL +
-    '" ' +
+    `data-bs-target="${modalTarget}" ` +
+    `data-id="${id}" ` +
     'aria-label="Delete certificate">' +
-    '<img src="' +
-    icon +
-    '" alt="Delete" title="Delete">' +
+    `<img src="${icon}" alt="Delete" title="Delete Certificate">` +
     "</a>";
   return html;
 }
