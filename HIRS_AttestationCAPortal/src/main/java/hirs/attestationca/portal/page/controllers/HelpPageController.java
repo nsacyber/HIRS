@@ -104,7 +104,7 @@ public class HelpPageController extends PageController<NoPageParams> {
         mainHIRSLoggersFilteredRecordsList.setRecordsTotal(1);
         mainHIRSLoggersFilteredRecordsList.setRecordsFiltered(1);
 
-        log.info("Returning the size of the list of main HIRS loggers: "
+        log.info("Returning the size of the filtered list of main HIRS loggers: "
                 + "{}", mainHIRSLoggersFilteredRecordsList.getRecordsFiltered());
 
         return new DataTableResponse<>(mainHIRSLoggersFilteredRecordsList, dataTableInput);

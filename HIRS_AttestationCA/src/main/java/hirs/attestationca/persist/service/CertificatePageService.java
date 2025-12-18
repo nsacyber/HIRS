@@ -19,6 +19,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -105,6 +107,9 @@ public class CertificatePageService {
                 criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)
         ));
 
+        // Apply sorting if present in the Pageable
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable.getSort()));
+
         // Apply pagination
         TypedQuery<T> typedQuery = this.entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
@@ -145,6 +150,9 @@ public class CertificatePageService {
                 combinedColumnSearchPredicates,
                 criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)
         ));
+
+        // Apply sorting if present in the Pageable
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<T> typedQuery = entityManager.createQuery(query);
@@ -204,6 +212,9 @@ public class CertificatePageService {
                 columnSearchPartOfChainedPredicates,
                 criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)
         ));
+
+        // Apply sorting if present in the Pageable
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<T> typedQuery = entityManager.createQuery(query);
@@ -578,6 +589,31 @@ public class CertificatePageService {
     }
 
     /**
+     * Helper method that generates a list of sorting orders based on the provided {@link Pageable} object.
+     * This method checks if sorting is enabled in the {@link Pageable} and applies the necessary sorting
+     * to the query using the CriteriaBuilder and Certificate Root.
+     *
+     * @param criteriaBuilder the CriteriaBuilder used to create the sort expressions.
+     * @param certificateRoot the Root of the entity (Certificate) to which the sorting should be applied.
+     * @param pageableSort    the {@link Sort} object that contains the sort information.
+     * @param <T>             the type of the entity that extends Certificate.
+     * @return a list of {@link Order} objects, which can be applied to a CriteriaQuery for sorting.
+     */
+    private <T extends Certificate> List<Order> getSortingOrders(final CriteriaBuilder criteriaBuilder,
+                                                                 final Root<T> certificateRoot,
+                                                                 final Sort pageableSort) {
+        List<Order> orders = new ArrayList<>();
+
+        if (pageableSort.isSorted()) {
+            pageableSort.forEach(order -> {
+                Path<Object> path = certificateRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+        }
+        return orders;
+    }
+
+    /**
      * Helper method that generates a combined predicate for column-specific search criteria.
      * It constructs conditions based on the field type (e.g., `String` or `Timestamp`)
      * and the provided search term and logic for each column.
@@ -714,4 +750,3 @@ public class CertificatePageService {
         }
     }
 }
-
