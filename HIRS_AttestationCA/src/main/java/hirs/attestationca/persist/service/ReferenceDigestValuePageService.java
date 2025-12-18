@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -81,7 +82,7 @@ public class ReferenceDigestValuePageService {
         query.where(criteriaBuilder.and(combinedGlobalSearchPredicates));
 
         // Apply sorting if present in the Pageable
-        query.orderBy(getSortingOrders(criteriaBuilder, referenceDigestValueRoot, pageable));
+        query.orderBy(getSortingOrders(criteriaBuilder, referenceDigestValueRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<ReferenceDigestValue> typedQuery = entityManager.createQuery(query);
@@ -120,7 +121,7 @@ public class ReferenceDigestValuePageService {
         query.where(criteriaBuilder.and(combinedColumnSearchPredicates));
 
         // Apply sorting if present in the Pageable
-        query.orderBy(getSortingOrders(criteriaBuilder, referenceDigestValueRoot, pageable));
+        query.orderBy(getSortingOrders(criteriaBuilder, referenceDigestValueRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<ReferenceDigestValue> typedQuery = entityManager.createQuery(query);
@@ -178,7 +179,7 @@ public class ReferenceDigestValuePageService {
                 columnSearchPartOfChainedPredicates));
 
         // Apply sorting if present in the Pageable
-        query.orderBy(getSortingOrders(criteriaBuilder, referenceDigestValueRoot, pageable));
+        query.orderBy(getSortingOrders(criteriaBuilder, referenceDigestValueRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<ReferenceDigestValue> typedQuery = entityManager.createQuery(query);
@@ -247,16 +248,16 @@ public class ReferenceDigestValuePageService {
      *
      * @param criteriaBuilder          the CriteriaBuilder used to create the sort expressions.
      * @param referenceDigestValueRoot the RDV Root to which the sorting should be applied.
-     * @param pageable                 the {@link Pageable} object that contains the sort information.
+     * @param pageableSort             the {@link Sort} object that contains the sort information.
      * @return a list of {@link Order} objects, which can be applied to a CriteriaQuery for sorting.
      */
     private List<Order> getSortingOrders(final CriteriaBuilder criteriaBuilder,
                                          final Root<ReferenceDigestValue> referenceDigestValueRoot,
-                                         final Pageable pageable) {
+                                         final Sort pageableSort) {
         List<Order> orders = new ArrayList<>();
 
-        if (pageable.getSort().isSorted()) {
-            pageable.getSort().forEach(order -> {
+        if (pageableSort.isSorted()) {
+            pageableSort.forEach(order -> {
                 Path<Object> path = referenceDigestValueRoot.get(order.getProperty());
                 orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
             });

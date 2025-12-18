@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,7 +108,7 @@ public class CertificatePageService {
         ));
 
         // Apply sorting if present in the Pageable
-        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable));
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<T> typedQuery = this.entityManager.createQuery(query);
@@ -151,7 +152,7 @@ public class CertificatePageService {
         ));
 
         // Apply sorting if present in the Pageable
-        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable));
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<T> typedQuery = entityManager.createQuery(query);
@@ -213,7 +214,7 @@ public class CertificatePageService {
         ));
 
         // Apply sorting if present in the Pageable
-        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable));
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<T> typedQuery = entityManager.createQuery(query);
@@ -594,17 +595,17 @@ public class CertificatePageService {
      *
      * @param criteriaBuilder the CriteriaBuilder used to create the sort expressions.
      * @param certificateRoot the Root of the entity (Certificate) to which the sorting should be applied.
-     * @param pageable        the {@link Pageable} object that contains the sort information.
+     * @param pageableSort    the {@link Sort} object that contains the sort information.
      * @param <T>             the type of the entity that extends Certificate.
      * @return a list of {@link Order} objects, which can be applied to a CriteriaQuery for sorting.
      */
     private <T extends Certificate> List<Order> getSortingOrders(final CriteriaBuilder criteriaBuilder,
                                                                  final Root<T> certificateRoot,
-                                                                 final Pageable pageable) {
+                                                                 final Sort pageableSort) {
         List<Order> orders = new ArrayList<>();
 
-        if (pageable.getSort().isSorted()) {
-            pageable.getSort().forEach(order -> {
+        if (pageableSort.isSorted()) {
+            pageableSort.forEach(order -> {
                 Path<Object> path = certificateRoot.get(order.getProperty());
                 orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
             });
