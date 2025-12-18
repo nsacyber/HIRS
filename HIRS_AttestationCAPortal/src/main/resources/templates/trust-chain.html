@@ -67,9 +67,6 @@
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
-                            // Set up a delete icon with link to handleDeleteRequest().
-                            // sets up a hidden input field containing the ID which is
-                            // used as a parameter to the REST POST call to delete
                             let html = "";
                             html += certificateDetailsLink("certificateauthority", data, true);
                             html += certificateDownloadLink(viewName, data);
@@ -90,9 +87,10 @@
     <div layout:fragment="content">
         <!-- Details icon and dialog for HIRS ACA Root certificate -->
         <span class="aca-input-box-header">HIRS Attestation Certificate Chain</span>
-        <th:block th:replace="fragments/details-viewer
-                :: detailsViewer('aca-cert-viewer',
-                'HIRS Attestation Root Certificate', ${null}, ~{this :: aca-cert-viewer-modal})">
+        <th:block
+            th:replace="fragments/details-viewer
+                :: detailsViewer(id='aca-cert-viewer',
+                label='HIRS Attestation Root Certificate', customButtons=${null}, bodyContent=~{this :: aca-cert-viewer-modal})">
             <th:block th:fragment="aca-cert-viewer-modal"> <!-- aca-cert-viewer-modal start -->
                 <div class="container-fluid">
                     <div class="row">
@@ -155,9 +153,8 @@
             <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload}"
                 enctype="multipart/form-data">
                 Trust Chain CA Certificates
-                <th:block th:replace="fragments/file-chooser
-                        :: fileChooser('tc-editor',
-                        'Import Trust Chain Certificates', ~{this :: bodyContent})">
+                <th:block
+                    th:replace="fragments/file-chooser :: fileChooser(id='tc-editor', label='Import Trust Chain Certificates', bodyContent=~{this :: bodyContent})">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" type="file" name="file" multiple="multiple" />
                     </th:block>
@@ -184,6 +181,24 @@
                 </thead>
             </table>
         </div>
+
+        <!-- Modal Template: This will be triggered on link click (delete) -->
+        <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/delete}">
+            <div
+                th:replace="fragments/modal :: modal(id='deleteConfirmationModal', label='Confirm Deletion Of Trust Chain Certificate', bodyContent=~{this::#deleteConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+                <!-- Modal Body Content -->
+                <div id="deleteConfirmationBody">
+                    <p>Are you sure you want to delete this certificate?</p>
+                </div>
+                <!-- Define custom footer buttons here -->
+                <div id="deleteConfirmationFooterButtons">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <!-- The form that will submit the certificate ID for deletion -->
+                    <input type="hidden" name="id" value="">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </form>
     </div>
 </body>
 

@@ -46,18 +46,6 @@ function parseSerialNumber(hexString) {
 }
 
 /**
- * Handles user request to delete a cert. Prompts user to confirm.
- * Upon confirmation, submits the delete form which is required to make
- * a POST call to delete the credential.
- * @param id certificate id
- */
-function handleDeleteRequest(id) {
-  if (confirm("Delete certificate?")) {
-    $("#deleteForm" + id).submit();
-  }
-}
-
-/**
  * Sends a POST request to the backend every time the user decides to change the
  * selected logger's log level to a different log level.
  * @param loggerName logger name
@@ -294,24 +282,24 @@ function rimDetailsLink(pagePath, id) {
  * @returns a HTML string of the certificate delete link
  */
 function certificateDeleteLink(pagePath, id) {
-  const icon = iconPath + "/ic_delete_black_24dp.png";
+  const icon = iconPath + "/svg/trash.svg";
   const formURL = pagePath + "/delete";
 
   const html =
-    '<a href="#!" onclick="handleDeleteRequest(\'' +
+    '<a href="#deleteConfirmationModal" ' +
+    'data-bs-toggle="modal" ' +
+    'data-bs-target="#deleteConfirmationModal" ' +
+    'data-id="' +
     id +
-    "')\">" +
+    '" ' +
+    'data-form-url="' +
+    formURL +
+    '" ' +
+    'aria-label="Delete certificate">' +
     '<img src="' +
     icon +
-    '" title="Delete"></a>' +
-    '<form id="deleteForm' +
-    id +
-    '" action="' +
-    formURL +
-    '" method="post">' +
-    '<input name="id" type="hidden" value="' +
-    id +
-    '"></form>';
+    '" alt="Delete" title="Delete">' +
+    "</a>";
   return html;
 }
 
@@ -391,7 +379,8 @@ function rimDownloadLink(pagePath, id) {
 function formatCertificateDate(dateText) {
   const timestamp = Date.parse(dateText); // Convert to numeric
 
-  if (timestamp == 253402300799000) { // Handle special case: Indefinite per 802.1AR
+  if (timestamp == 253402300799000) {
+    // Handle special case: Indefinite per 802.1AR
     return "Indefinite";
   }
 

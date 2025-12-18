@@ -51,9 +51,6 @@
                         orderable: false,
                         searchable: false,
                         render: function (data, type, full, meta) {
-                            // Set up a delete icon with link to handleDeleteRequest().
-                            // sets up a hidden input field containing the ID which is
-                            // used as a parameter to the REST POST call to delete
                             let html = "";
                             html += rimDetailsLink(rimDBViewName, data);
                             html += rimDownloadLink(viewName, data);
@@ -77,8 +74,8 @@
             <form method="post" th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}"
                 enctype="multipart/form-data">
                 Reference Integrity Manifests
-                <th:block th:replace="fragments/file-chooser :: fileChooser('referenceManifestsEditor',
-                 'Import RIMs', ~{this :: bodyContent})">
+                <th:block
+                    th:replace="fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', label='Import RIMs', bodyContent=~{this :: bodyContent})">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" type="file" name="file" multiple="multiple" />
                     </th:block>

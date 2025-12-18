@@ -24,8 +24,8 @@
                         </a>
 
                         <!-- modal fragment -->
-                        <div th:replace="fragments/modal :: modal( id='ecPolicyModal', label='Edit Endorsement
-                            Credential Validation Policy Settings', bodyContent=~{this::#ecPolicyBody})">
+                        <div
+                            th:replace="fragments/modal :: modal( id='ecPolicyModal', label='Edit Endorsement Credential Validation Policy Settings', bodyContent=~{this::#ecPolicyBody}, customFooterButtons= ${null})">
                             <!-- Define the content of the modal -->
                             <div id="ecPolicyBody">
                                 <div class="radio">
@@ -61,7 +61,7 @@
 
                         <!-- modal fragment -->
                         <div
-                            th:replace="fragments/modal :: modal( id='pcPolicyModal',  label='Edit Platform Credential Validation Policy Settings', bodyContent=~{this::#pcPolicyBody})">
+                            th:replace="fragments/modal :: modal( id='pcPolicyModal',  label='Edit Platform Credential Validation Policy Settings', bodyContent=~{this::#pcPolicyBody}, customFooterButtons=${null})">
                             <!-- Define the content of the modal -->
                             <div id="pcPolicyBody">
                                 <div class="radio">
@@ -98,7 +98,7 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='pcAttrPolicyModal',  label='Edit Platform Credential Attribute Validation Policy Settings', bodyContent=~{this::#pcAttrPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='pcAttrPolicyModal',  label='Edit Platform Credential Attribute Validation Policy Settings', bodyContent=~{this::#pcAttrPolicyBody}, customFooterButtons=${null})">
                                     <!-- Define the content of the modal -->
                                     <div id="pcAttrPolicyBody">
                                         <div class="radio">
@@ -135,7 +135,7 @@
 
                                     <!-- modal fragment -->
                                     <div
-                                        th:replace="fragments/modal :: modal( id='revisionIgnoredPolicyModal',  label='Edit Ignore Component Revision Policy Settings', bodyContent=~{this::#revisionIgnoredPolicyBody})">
+                                        th:replace="fragments/modal :: modal( id='revisionIgnoredPolicyModal',  label='Edit Ignore Component Revision Policy Settings', bodyContent=~{this::#revisionIgnoredPolicyBody}, customFooterButtons=${null})">
                                         <!-- Define the content of the modal -->
                                         <div id="revisionIgnoredPolicyBody">
                                             <div class="radio">
@@ -172,7 +172,7 @@
 
                                     <!-- modal fragment -->
                                     <div
-                                        th:replace="fragments/modal :: modal( id='ignorePcieVpdPolicyModal',  label='Edit Ignore PCIE VPD Policy Settings', bodyContent=~{this::#pcieVpdIgnoredPolicyBody})">
+                                        th:replace="fragments/modal :: modal( id='ignorePcieVpdPolicyModal',  label='Edit Ignore PCIE VPD Policy Settings', bodyContent=~{this::#pcieVpdIgnoredPolicyBody}, customFooterButtons= ${null})">
                                         <!-- Define the content of the modal -->
                                         <div id="pcieVpdIgnoredPolicyBody">
                                             <div class="radio">
@@ -216,7 +216,7 @@
 
                         <!-- modal fragment -->
                         <div
-                            th:replace="fragments/modal :: modal( id='fwPolicyModal',  label='Edit Firmware Validation Policy Settings', bodyContent=~{this::#firmwarePolicyBody})">
+                            th:replace="fragments/modal :: modal( id='fwPolicyModal',  label='Edit Firmware Validation Policy Settings', bodyContent=~{this::#firmwarePolicyBody}, customFooterButtons=${null})">
                             <!-- Define the content of the modal -->
                             <div id="firmwarePolicyBody">
                                 <div class="radio">
@@ -249,7 +249,7 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='ignoreImaPolicyModal',  label='Edit Ignore IMA Policy Settings', bodyContent=~{this::#imaIgnoredPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='ignoreImaPolicyModal',  label='Edit Ignore IMA Policy Settings', bodyContent=~{this::#imaIgnoredPolicyBody}, customFooterButtons=${null})">
                                     <!-- Define the content of the modal -->
                                     <div id="imaIgnoredPolicyBody">
                                         <div class="radio">
@@ -283,7 +283,7 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='ignoreTbootPolicyModal',  label='Edit Ignore Tboot Policy Settings', bodyContent=~{this::#tbootIgnoredPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='ignoreTbootPolicyModal',  label='Edit Ignore Tboot Policy Settings', bodyContent=~{this::#tbootIgnoredPolicyBody}, customFooterButtons=${null})">
 
                                     <!-- Define the content of the modal -->
                                     <div id="tbootIgnoredPolicyBody">
@@ -317,7 +317,7 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='ignoreGptPolicyModal',  label='Edit Ignore GPT Policy Settings', bodyContent=~{this::#gptIgnoredPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='ignoreGptPolicyModal',  label='Edit Ignore GPT Policy Settings', bodyContent=~{this::#gptIgnoredPolicyBody}, customFooterButtons=${null})">
 
                                     <!-- Define the content of the modal -->
                                     <div id="gptIgnoredPolicyBody">
@@ -352,7 +352,7 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='ignoreOSPolicyModal',  label='Edit Ignore OS Events Policy Settings', bodyContent=~{this::#osIgnoredPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='ignoreOSPolicyModal',  label='Edit Ignore OS Events Policy Settings', bodyContent=~{this::#osIgnoredPolicyBody}, customFooterButtons=${null})">
                                     <!-- Define the content of the modal -->
                                     <div id="osIgnoredPolicyBody">
                                         <div class="radio">
@@ -394,7 +394,7 @@
 
                         <!-- modal fragment -->
                         <div
-                            th:replace="fragments/modal :: modal( id='issuedCertificatePolicyModal',  label='Edit Issued Attestation Certificate Policy Settings', bodyContent=~{this::#genAttestCertPolicyBody})">
+                            th:replace="fragments/modal :: modal( id='issuedCertificatePolicyModal',  label='Edit Issued Attestation Certificate Policy Settings', bodyContent=~{this::#genAttestCertPolicyBody}, customFooterButtons=${null})">
                             <!-- Define the content of the modal -->
                             <div id="genAttestCertPolicyBody">
                                 <div class="radio">
@@ -432,7 +432,7 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='issuedCertificatePolicyExpirationModal',  label='Edit Generate Certificate Expiration Policy Settings', bodyContent=~{this::#expCertPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='issuedCertificatePolicyExpirationModal',  label='Edit Generate Certificate Expiration Policy Settings', bodyContent=~{this::#expCertPolicyBody}, customFooterButtons=${null})">
                                     <!-- Define the content of the modal -->
                                     <div id="expCertPolicyBody">
                                         <div class="radio">
@@ -480,7 +480,7 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='issuedCertificatePolicyRenewalModal',  label='Edit Generate Certificate Renewal Policy Settings', bodyContent=~{this::#thresholdCertPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='issuedCertificatePolicyRenewalModal',  label='Edit Generate Certificate Renewal Policy Settings', bodyContent=~{this::#thresholdCertPolicyBody}, customFooterButtons=${null})">
                                     <!-- Define the content of the modal -->
                                     <div id="thresholdCertPolicyBody">
                                         <div class="radio">
@@ -535,7 +535,7 @@
 
                         <!-- modal fragment -->
                         <div
-                            th:replace="fragments/modal :: modal( id='LDevIDCertificatePolicyModal',  label='Edit LDevID Certificate Generation Policy Settings', bodyContent=~{this::#genLDevIDCertPolicyBody})">
+                            th:replace="fragments/modal :: modal( id='LDevIDCertificatePolicyModal',  label='Edit LDevID Certificate Generation Policy Settings', bodyContent=~{this::#genLDevIDCertPolicyBody}, customFooterButtons=${null})">
                             <!-- Define the content of the modal -->
                             <div id="genLDevIDCertPolicyBody">
                                 <div class="radio">
@@ -570,7 +570,7 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='LDevIDCertificateExpirationPolicyModal',  label='Edit LDevID Certificate Expiration Policy Settings', bodyContent=~{this::#expirationLvedvIdCertPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='LDevIDCertificateExpirationPolicyModal',  label='Edit LDevID Certificate Expiration Policy Settings', bodyContent=~{this::#expirationLvedvIdCertPolicyBody}, customFooterButtons=${null})">
                                     <!-- Define the content of the modal -->
                                     <div id="expirationLvedvIdCertPolicyBody">
                                         <div class="radio">
@@ -618,7 +618,7 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="fragments/modal :: modal( id='LDevIDCertificateRenewalPolicyModal',  label='Edit LDevID Certificate Renewal Policy Settings', bodyContent=~{this::#thresholdLvedvIdCertPolicyBody})">
+                                    th:replace="fragments/modal :: modal( id='LDevIDCertificateRenewalPolicyModal',  label='Edit LDevID Certificate Renewal Policy Settings', bodyContent=~{this::#thresholdLvedvIdCertPolicyBody}, customFooterButtons=${null})">
 
                                     <!-- Define the content of the modal -->
                                     <div id="thresholdLvedvIdCertPolicyBody">
@@ -673,7 +673,7 @@
 
                         <!-- modal fragment -->
                         <div
-                            th:replace="fragments/modal :: modal( id='protobufLogPolicyModal',  label='Edit Saving ProtoBuf To ACA Log Policy Settings', bodyContent=~{this::#protobufLogPolicyBody})">
+                            th:replace="fragments/modal :: modal( id='protobufLogPolicyModal',  label='Edit Saving ProtoBuf To ACA Log Policy Settings', bodyContent=~{this::#protobufLogPolicyBody}, customFooterButtons=${null})">
                             <!-- Define the content of the modal -->
                             <div id="protobufLogPolicyBody">
                                 <div class="radio">

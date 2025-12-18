@@ -1,5 +1,5 @@
-<div class="modal fade" th:fragment="modal(id,label,bodyContent)" th:id="${id}">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+<div class="modal fade" th:fragment="modal(id, label, bodyContent, customFooterButtons)" th:id="${id}">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h1 id="modal-title" th:text="${label}">Modal Title</h1>
@@ -10,8 +10,15 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <!-- Insert custom footer buttons if they are provided -->
+                <th:block th:if="${customFooterButtons != null}">
+                    <div th:insert="${customFooterButtons}"></div>
+                </th:block>
+                <!-- Default footer buttons if no custom footer buttons are provided -->
+                <th:block th:unless="${customFooterButtons != null}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </th:block>
             </div>
         </div>
     </div>
