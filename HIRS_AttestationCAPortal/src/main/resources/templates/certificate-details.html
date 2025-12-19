@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}" xmlns="http://www.w3.org/1999/html" xmlns:c="http://www.w3.org/1999/XSL/Transform">
+      layout:decorate="~{layout}">
 
 <head>
     <link rel="stylesheet" th:href="@{/css/certificate_details.css}" />
@@ -8,135 +8,141 @@
         <script th:inline="javascript">
             $(document).ready(function () {
 
-                // param parameters
-                const type = /*[[${ param.type }]]*/ '';
+                const initialData = [[${initialData}]];
+                if(initialData) {
 
-                // initialData parameters
-                // 'initialData' is a HashMap with the certificate information, added as an object to
-                // the MAV of CertificateDetailsPageController
-                const signature = /*[[${initialData.get('signature') ? JSON.parse(initialData.get('signature')) : ''}]]*/ '';
-                const serialNumber = /*[[${initialData.get('serialNumber')}]]*/ '';
-                const authorityKeyIdentifier = /*[[${initialData.get('authKeyId')}]]*/ '';
-                const authoritySerialNumber = /*[[${initialData.get('authSerialNumber')}]]*/ '';
-                const publicKey = /*[[${initialData.get('publicKeyValue')}]]*/ '';
-                const encPublicKey = /*[[${initialData.get('encodedPublicKey')}]]*/ '';
-                const subjectKeyIdentifier = /*[[${initialData.get('subjectKeyIdentifier')}]]*/ '';
-                const hwSerialNum = /*[[${initialData.get('hwSerialNum')}]]*/ '';
-                const tcgTpmManufacturer = /*[[${initialData.get('tcgTpmManufacturer')}]]*/ '';
-                const ekAuthorityKeyIdentifier = /*[[${initialData.get('ekAuthorityKeyIdentifier')}]]*/ '';
-                const ekCertificateSerialNumber = /*[[${initialData.get('ekCertificateSerialNumber')}]]*/ '';
-                const platformIdsString = /*[[${initialData.get('platformID')}]]*/ '';
+                    // initialData parameters
+                    // 'initialData' is a HashMap with the certificate information, added as an object to
+                    // the MAV of CertificateDetailsPageController
+                    const signature = initialData.get('signature');
+                    const serialNumber = initialData.get('serialNumber');
+                    const authorityKeyIdentifier = initialData.get('authKeyId');
+                    const authoritySerialNumber = initialData.get('authSerialNumber');
+                    const publicKey = initialData.get('publicKeyValue');
+                    const encPublicKey = initialData.get('encodedPublicKey');
+                    const subjectKeyIdentifier = initialData.get('subjectKeyIdentifier');
+                    const hwSerialNum = initialData.get('hwSerialNum');
+                    const tcgTpmManufacturer = initialData.get('tcgTpmManufacturer');
+                    const ekAuthorityKeyIdentifier = initialData.get('ekAuthorityKeyIdentifier');
+                    const ekCertificateSerialNumber = initialData.get('ekCertificateSerialNumber');
+                    const platformIdsString = initialData.get('platformID');
 
-                // Format validity time
-                if(dateText) {
+                    // param parameters
+                    const type = /*[[${ param.type }]]*/ '';
+
+                    // Format validity time
                     $("#validity span").each(function () {
                         let dateText = $(this).text();
-                        return $(this).text(formatCertificateDate2(dateText));
+                        if(dateText) {
+                            return $(this).text(formatCertificateDate2(dateText));
+                        }
                     });
-                }
 
-                // Signature: convert byte array to string
-                if (authoritySerialNumber) {
-                    $("#signature").html(byteToHexString(signature));
-                }
-
-                // Serial number: convert hex string to byte hex string
-                if(serialNumber) {
-                    $("#serialNumber").html(parseSerialNumber(serialNumber));
-                }
-
-                // Authority key ID: convert hex string to byte hex string
-                if (authorityKeyIdentifier) {
-                    $("#authorityKeyIdentifier").html(parseSerialNumber(authorityKeyIdentifier));
-                } else {
-                    $("#authorityKeyIdentifier").html("Not Specified");
-                }
-
-                // Authority serial number: convert hex string to byte hex string
-                if (authoritySerialNumber) {
-                    $("#authSerialNumber").html(parseSerialNumber(authoritySerialNumber));
-                }
-
-                // Public key and encoded public key
-                if (publicKey) {
-                    $("#encodedPublicKey").html(parseHexString(publicKey));
-                } else {
-                    if (encPublicKey) {
-                        $("#encodedPublicKey").html(byteToHexString(encPublicKey));
+                    // Signature: convert byte array to string
+                    if (signature) {
+                        const signatureParsed = JSON.parse(signature);
+                        $("#signature").html(byteToHexString(signatureParsed));
                     }
-                }
 
-                // Subject key identifier
-                if (subjectKeyIdentifier) {
-                    //Change subject byte to hex only for CACertificate
-                    if (type === "certificateauthority") {
-                        $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
+                    // Serial number: convert hex string to byte hex string
+                    if(serialNumber) {
+                        $("#serialNumber").html(parseSerialNumber(serialNumber));
                     }
-                }
 
-                // Hw serial number
-                if (hwSerialNum) {
-                    $("#hwSerialNum").html(parseHexString(hwSerialNum));
-                }
+                    // Authority key ID: convert hex string to byte hex string
+                    if (authorityKeyIdentifier) {
+                        $("#authorityKeyIdentifier").html(parseSerialNumber(authorityKeyIdentifier));
+                    } else {
+                        $("#authorityKeyIdentifier").html("Not Specified");
+                    }
 
-                // Tcg tpm manufacturer / ekAuthorityKeyIdentifier / ekCertificateSerialNumber
-                if (tcgTpmManufacturer) {
-                    $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAuthorityKeyIdentifier));
-                    $("#ekCertificateSerialNumber").html(parseHexString(ekCertificateSerialNumber));
-                }
+                    // Authority serial number: convert hex string to byte hex string
+                    if (authoritySerialNumber) {
+                        $("#authSerialNumber").html(parseSerialNumber(authoritySerialNumber));
+                    }
 
-                // List of platform id links
-                if (platformIdsString) {
+                    // Public key and encoded public key
+                    if (publicKey) {
+                        $("#encodedPublicKey").html(parseHexString(publicKey));
+                    } else {
+                        if (encPublicKey) {
+                            $("#encodedPublicKey").html(byteToHexString(encPublicKey));
+                        }
+                    }
 
-                    // Split the string into an array and map each item to an object
-                    let platformIdsStringList = platformIdsString
-                        .split(',')
-                        .map(id => ({ url: `/HIRS_AttestationCAPortal/portal/certificate-details?id=${id.trim()}&type=platform` }));
+                    // Subject key identifier
+                    if (subjectKeyIdentifier) {
+                        //Change subject byte to hex only for CACertificate
+                        if (type === "certificateauthority") {
+                            $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
+                        }
+                    }
 
-                    // For each platform cert id, display an icon for a link to that platform cert
-                    const listContainer = document.getElementById('platformCertIdsList');
+                    // Hw serial number
+                    if (hwSerialNum) {
+                        $("#hwSerialNum").html(parseHexString(hwSerialNum));
+                    }
 
-                    // Iterate through each platform cert id link to create the thymeleaf list of links with clickable icons
-                    platformIdsStringList.forEach(link => {
-                        // Create a list item
-                        const li = document.createElement('li');
-                        const a = document.createElement('a');
-                        a.href = link.url;
+                    // Tcg tpm manufacturer / ekAuthorityKeyIdentifier / ekCertificateSerialNumber
+                    if (tcgTpmManufacturer) {
+                        $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAuthorityKeyIdentifier));
+                        $("#ekCertificateSerialNumber").html(parseHexString(ekCertificateSerialNumber));
+                    }
 
-                        // Add icon
-                        const img = document.createElement('img');
-                        img.src = '/icons/ic_important_devices_black_24dp.png';
+                    // List of platform id links
+                    if (platformIdsString) {
 
-                        // Make the icon link clickable, then add link to the list item
-                        a.appendChild(img);
-                        li.appendChild(a);
+                        // Split the string into an array and map each item to an object
+                        let platformIdsStringList = platformIdsString
+                            .split(',')
+                            .map(id => ({ url: `/HIRS_AttestationCAPortal/portal/certificate-details?id=${id.trim()}&type=platform` }));
 
-                        // Append list item to the container of list items
-                        listContainer.appendChild(li);
+                        // For each platform cert id, display an icon for a link to that platform cert
+                        const listContainer = document.getElementById('platformCertIdsList');
+
+                        // Iterate through each platform cert id link to create the thymeleaf list of links with clickable icons
+                        platformIdsStringList.forEach(link => {
+                            // Create a list item
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.href = link.url;
+
+                            // Add icon
+                            const img = document.createElement('img');
+                            img.src = '/icons/ic_important_devices_black_24dp.png';
+
+                            // Make the icon link clickable, then add link to the list item
+                            a.appendChild(img);
+                            li.appendChild(a);
+
+                            // Append list item to the container of list items
+                            listContainer.appendChild(li);
+                        });
+                    }
+
+                    //Initilize tooltips
+                    $('[data-toggle="tooltip"]').tooltip();
+
+                    //Vertical alignment on data columns
+                    $('.vertical').each(function () {
+                        $(this).css({
+                            'line-height': $(this).height() + 'px'
+                        });
                     });
-                }
 
-                //Initilize tooltips
-                $('[data-toggle="tooltip"]').tooltip();
+                    //Change link width
+                    $("#headingOne, #headingTwo, #headingThree").each(function (e) {
+                        let width = $(this).width();
+                        //Get link width
+                        let linkWidth = $(this).find('a').width();
 
-                //Vertical alignment on data columns
-                $('.vertical').each(function () {
-                    $(this).css({
-                        'line-height': $(this).height() + 'px'
+                        //Change width for the link
+                        $(this).find('a').css({
+                            "padding-right": (width - linkWidth) + "px"
+                        });
                     });
-                });
 
-                //Change link width
-                $("#headingOne, #headingTwo, #headingThree").each(function (e) {
-                    let width = $(this).width();
-                    //Get link width
-                    let linkWidth = $(this).find('a').width();
-
-                    //Change width for the link
-                    $(this).find('a').css({
-                        "padding-right": (width - linkWidth) + "px"
-                    });
-                });
+                } //end if
             });
         </script>
     </section>
