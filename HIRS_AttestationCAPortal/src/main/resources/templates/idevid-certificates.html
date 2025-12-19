@@ -12,12 +12,12 @@
                 const certificateType = "idevid";
 
 
-                // When the "deleteConfirmationModal" modal is about to be shown:
+                // When the "deleteCertificateConfirmationModal" modal is about to be shown:
                 // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
                 // - Set the value of the hidden input field with ID 'devCertToDeleteId' to the retrieved iDevID certificate ID
-                $('#deleteConfirmationModal').on('show.bs.modal', function (event) {
-                    const deleteLinkButton = $(event.relatedTarget);  // Link that triggered the modal
-                    const iDevIdCertifcateId = deleteLinkButton.data('id');  // Extract the iDevID certificate ID from the data-id attribute
+                $('#deleteCertificateConfirmationModal').on('show.bs.modal', function (event) {
+                    const deleteCertLinkButton = $(event.relatedTarget);  // Link that triggered the modal
+                    const iDevIdCertifcateId = deleteCertLinkButton.data('id');  // Extract the iDevID certificate ID from the data-id attribute
 
                     // Set the value of the hidden input to the ID
                     $(this).find('#devCertToDeleteId').val(iDevIdCertifcateId);
@@ -69,7 +69,7 @@
                             let html = "";
                             html += certificateDetailsLink(certificateType, data, true);
                             html += certificateDownloadLink(viewName, data);
-                            html += certificateDeleteLink(viewName, data);
+                            html += generateCertificateDeleteLink(data);
                             return html;
                         },
                     },
@@ -122,7 +122,7 @@
         <form method="POST"
             th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/delete}">
             <div
-                th:replace="fragments/modal :: modal(id='deleteConfirmationModal', label='Confirm Deletion Of IDevID Certificate', 
+                th:replace="fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of IDevID Certificate', 
                 bodyContent=~{this::#deleteDevIdConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
 
                 <!-- Modal Body Content -->

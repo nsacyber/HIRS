@@ -14,6 +14,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
@@ -149,10 +150,15 @@ public class HelpPageService {
     /**
      * Sets the selected logger to the user provided log level.
      *
-     * @param loggerName name of the logger
-     * @param logLevel   log level
+     * @param loggerName      name of the logger
+     * @param logLevel        log level
+     * @param successMessages
+     * @param errorMessages
      */
-    public void setLoggerLevel(final String loggerName, final String logLevel) {
+    public void setLoggerLevel(final String loggerName,
+                               final String logLevel,
+                               final List<String> successMessages,
+                               final List<String> errorMessages) {
         final LogLevel newLogLevel = LogLevel.valueOf(logLevel);
 
         // if a user attempts to change the log level of a logger that is not a part of the HIRS application
@@ -162,6 +168,7 @@ public class HelpPageService {
                     + "the selected logger [%s]'s log level. ", loggerName);
 
             log.error(errorMessage);
+            errorMessages.add(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
 

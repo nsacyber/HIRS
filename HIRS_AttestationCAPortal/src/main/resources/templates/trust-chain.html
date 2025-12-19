@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout}">
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <section layout:fragment="script">
@@ -26,12 +26,12 @@
                     $(this).text(parseSerialNumber($(this).text()));
                 });
 
-                // When the "deleteConfirmationModal" modal is about to be shown:
+                // When the "deleteCertificateConfirmationModal" modal is about to be shown:
                 // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
                 // - Set the value of the hidden input field with ID 'trustChainToDeleteId' to the retrieved trust chain certificate ID
-                $('#deleteConfirmationModal').on('show.bs.modal', function (event) {
-                    const deleteLinkButton = $(event.relatedTarget);  // Link that triggered the modal
-                    const trustChainCertificateId = deleteLinkButton.data('id');  // Extract the ID from the data-id attribute
+                $('#deleteCertificateConfirmationModal').on('show.bs.modal', function (event) {
+                    const deleteCertLinkButton = $(event.relatedTarget);  // Link that triggered the modal
+                    const trustChainCertificateId = deleteCertLinkButton.data('id');  // Extract the ID from the data-id attribute
 
                     // Set the value of the hidden input to the ID
                     $(this).find('#trustChainToDeleteId').val(trustChainCertificateId);
@@ -83,7 +83,7 @@
                             let html = "";
                             html += certificateDetailsLink(certificateType, data, true);
                             html += certificateDownloadLink(viewName, data);
-                            html += certificateDeleteLink(viewName, data);
+                            html += generateCertificateDeleteLink(data);
                             return html;
                         },
                     },
@@ -96,127 +96,127 @@
 </head>
 
 <body>
-    <h1 layout:fragment="pageHeaderTitle">Trust Chain Management</h1>
-    <div layout:fragment="content">
-        <!-- Details icon and dialog for HIRS ACA Root certificate -->
-        <span class="aca-input-box-header">HIRS Attestation Certificate Chain</span>
-        <th:block
+<h1 layout:fragment="pageHeaderTitle">Trust Chain Management</h1>
+<div layout:fragment="content">
+    <!-- Details icon and dialog for HIRS ACA Root certificate -->
+    <span class="aca-input-box-header">HIRS Attestation Certificate Chain</span>
+    <th:block
             th:replace="fragments/details-viewer
                 :: detailsViewer(id='aca-cert-viewer',
                 label='HIRS Attestation Root Certificate', customButtons=${null}, bodyContent=~{this :: aca-cert-viewer-modal})">
-            <th:block th:fragment="aca-cert-viewer-modal"> <!-- aca-cert-viewer-modal start -->
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-md-2 col-md-offset-1">
-                            <span class="colHeader">Issuer</span>
-                        </div>
-                        <div id="issuer" class="col col-md-8">
-                            <span th:text="${acaCertData.issuer}"></span>
-                        </div>
+        <th:block th:fragment="aca-cert-viewer-modal"> <!-- aca-cert-viewer-modal start -->
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-2 col-md-offset-1">
+                        <span class="colHeader">Issuer</span>
                     </div>
-                    <div class="row">
-                        <div class="col-md-2 col-md-offset-1">
-                            <span class="colHeader">Subject</span>
-                        </div>
-                        <div id="subject" class="col col-md-8"><span th:text="${acaCertData.subject}"></span></div>
+                    <div class="col col-md-8" id="issuer">
+                        <span th:text="${acaCertData.issuer}"></span>
                     </div>
-                    <div class="row">
-                        <div class="col-md-2 col-md-offset-1">
-                            <span class="colHeader">Serial Number</span>
-                        </div>
-                        <div id="serialNumber" class="col col-md-8">
-                            <span th:text="${acaCertData.serialNumber}"></p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-2 col-md-offset-1">
-                            <span class="colHeader">Validity</span>
-                        </div>
-                        <div id="validity" class="col col-md-8">
-                            <div>
-                                Not Before:&nbsp;<span th:text="${acaCertData.beginValidity}"></span>
-                            </div>
-                            <div>Not After:&nbsp;<span th:text="${acaCertData.endValidity}"></span></div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-2 col-md-offset-1">
-                            <span class="colHeader">Signature</span>
-                        </div>
-                        <div id="signature" class="col col-md-8"></div>
-                        <span th:text="${signature}"></span>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-2 col-md-offset-1">
-                            <span class="colHeader">Public Key</span>
-                        </div>
-                        <div id="publicKey" class="col col-md-8"></div>
-                        <span th:text="${publicKey}"></span>
-                    </div>
-                    <div class="spacer"></div>
                 </div>
-            </th:block>
-        </th:block> <!-- aca-cert-viewer-modal end -->
-
-        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download-aca-cert-chain}">
-            <img th:src="@{/icons/ic_file_download_black_24dp.png}" title="Download ACA Certificate Chain">
-        </a>
-
-        <div class="aca-input-box-header">
-            <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload}"
-                enctype="multipart/form-data">
-                Trust Chain CA Certificates
-                <th:block
-                    th:replace="fragments/file-chooser :: fileChooser(id='tc-editor', label='Import Trust Chain Certificates', bodyContent=~{this :: bodyContent})">
-                    <th:block th:fragment="bodyContent">
-                        <input id="importFile" type="file" name="file" multiple="multiple" />
-                    </th:block>
-                </th:block>
-                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-download}">
-                    <img th:src="@{/icons/ic_file_download_black_24dp.png}"
-                        title="Download All Trust Chain Certificates">
-                </a>
-            </form>
-        </div>
-
-        <br>
-
-        <div class="aca-data-table">
-            <table id="trustChainTable" class="table table-bordered table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>Issuer</th>
-                        <th>Subject</th>
-                        <th>Valid (begin)</th>
-                        <th>Valid (end)</th>
-                        <th>Options</th>
-                    </tr>
-                </thead>
-            </table>
-        </div>
-
-        <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
-        <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/delete}">
-            <div
-                th:replace="fragments/modal :: modal(id='deleteConfirmationModal', label='Confirm Deletion Of Trust Chain Certificate', 
-                bodyContent=~{this::#deleteTrustChainConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
-
-                <!-- Modal Body Content -->
-                <div id="deleteTrustChainConfirmationBody">
-                    <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this Trust Chain
-                            certificate?</strong></p>
+                <div class="row">
+                    <div class="col-md-2 col-md-offset-1">
+                        <span class="colHeader">Subject</span>
+                    </div>
+                    <div class="col col-md-8" id="subject"><span th:text="${acaCertData.subject}"></span></div>
                 </div>
-
-                <!-- Define custom footer buttons here -->
-                <div id="deleteConfirmationFooterButtons">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <!-- The trust chain certificate ID is stored in this hidden field -->
-                    <input type="hidden" name="id" id="trustChainToDeleteId" value="">
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                <div class="row">
+                    <div class="col-md-2 col-md-offset-1">
+                        <span class="colHeader">Serial Number</span>
+                    </div>
+                    <div class="col col-md-8" id="serialNumber">
+                        <span th:text="${acaCertData.serialNumber}"></span>
+                    </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-2 col-md-offset-1">
+                        <span class="colHeader">Validity</span>
+                    </div>
+                    <div class="col col-md-8" id="validity">
+                        <div>
+                            Not Before:&nbsp;<span th:text="${acaCertData.beginValidity}"></span>
+                        </div>
+                        <div>Not After:&nbsp;<span th:text="${acaCertData.endValidity}"></span></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2 col-md-offset-1">
+                        <span class="colHeader">Signature</span>
+                    </div>
+                    <div class="col col-md-8" id="signature"></div>
+                    <span th:text="${signature}"></span>
+                </div>
+                <div class="row">
+                    <div class="col-md-2 col-md-offset-1">
+                        <span class="colHeader">Public Key</span>
+                    </div>
+                    <div class="col col-md-8" id="publicKey"></div>
+                    <span th:text="${publicKey}"></span>
+                </div>
+                <div class="spacer"></div>
             </div>
+        </th:block>
+    </th:block> <!-- aca-cert-viewer-modal end -->
+
+    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download-aca-cert-chain}">
+        <img th:src="@{/icons/ic_file_download_black_24dp.png}" title="Download ACA Certificate Chain">
+    </a>
+
+    <div class="aca-input-box-header">
+        <form enctype="multipart/form-data" method="POST"
+              th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload}">
+            Trust Chain CA Certificates
+            <th:block
+                    th:replace="fragments/file-chooser :: fileChooser(id='tc-editor', label='Import Trust Chain Certificates', bodyContent=~{this :: bodyContent})">
+                <th:block th:fragment="bodyContent">
+                    <input id="importFile" multiple="multiple" name="file" type="file"/>
+                </th:block>
+            </th:block>
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-download}">
+                <img th:src="@{/icons/ic_file_download_black_24dp.png}"
+                     title="Download All Trust Chain Certificates">
+            </a>
         </form>
     </div>
+
+    <br>
+
+    <div class="aca-data-table">
+        <table class="table table-bordered table-striped table-hover" id="trustChainTable">
+            <thead>
+            <tr>
+                <th>Issuer</th>
+                <th>Subject</th>
+                <th>Valid (begin)</th>
+                <th>Valid (end)</th>
+                <th>Options</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+
+    <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
+    <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/delete}">
+        <div
+                th:replace="fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Trust Chain Certificate', 
+                bodyContent=~{this::#deleteTrustChainConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+
+            <!-- Modal Body Content -->
+            <div id="deleteTrustChainConfirmationBody">
+                <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this Trust Chain
+                    certificate?</strong></p>
+            </div>
+
+            <!-- Define custom footer buttons here -->
+            <div id="deleteConfirmationFooterButtons">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                <!-- The trust chain certificate ID is stored in this hidden field -->
+                <input id="trustChainToDeleteId" name="id" type="hidden" value="">
+                <button class="btn btn-danger" type="submit">Delete</button>
+            </div>
+        </div>
+    </form>
+</div>
 </body>
 
 </html>

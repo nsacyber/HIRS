@@ -83,26 +83,13 @@ function handleLogLevelChange(loggerName, newLogLevel) {
 }
 
 /**
- * Handles user request to delete a cert. Prompts user to confirm.
- * Upon confirmation, submits the delete form which is required to make
- * a POST call to delete the reference integrity manifest.
- * @param id RIM ID
- */
-function handleRimDeleteRequest(id) {
-  if (confirm("Delete RIM?")) {
-    $("#deleteForm" + id).submit();
-  }
-}
-
-/**
- * Set the data tables using the columns definition, the ajax URL,
- * the table ID
- * @param id data table ID
- * @param url url for the AJAX call
- * @param columns table columns definition
- * @param options if configured will override the default configs set by datatable (options include the ability to disable the global search bar, the
- * global paginator, the ordering ability, etc.)
- * @returns a datatable with a combination of the default and customized configurations
+ * Initializes a data table with the specified configuration options, including columns, AJAX URL, and table-specific settings.
+ *
+ * @param {string} id - The ID of the data table element.
+ * @param {string} url - The URL for the AJAX request to fetch data for the table.
+ * @param {Array} columns - An array of column definitions for the data table (e.g., column names, data properties).
+ * @param {Object} [options] - Optional configuration object to override default DataTable settings (e.g., disabling search, pagination, or ordering).
+ * @returns {DataTable} A DataTable instance with the provided configurations (both default and custom options).
  */
 function setDataTables(id, url, columns, options = {}) {
   let defaultConfig = {
@@ -211,30 +198,30 @@ function setDataTables(id, url, columns, options = {}) {
  */
 function certificateDetailsLink(type, id, sameType) {
   const href = "certificate-details?id=" + id + "&type=" + type;
-  let icon = iconPath;
+  let fullIconPath = iconPath;
   let title = "";
 
   //If the details is the same certificate type use assignment icon,
   //otherwise use the icon for the certificate type.
   if (sameType) {
     title = "Details";
-    icon += "/ic_assignment_black_24dp.png";
+    fullIconPath += "/ic_assignment_black_24dp.png";
   } else {
     switch (type) {
       case "issued":
-        icon += "/ic_library_books_black_24dp.png";
+        fullIconPath += "/ic_library_books_black_24dp.png";
         title = "View Issued Attestation Certificate Details";
         break;
       case "platform":
-        icon += "/ic_important_devices_black_24dp.png";
+        fullIconPath += "/ic_important_devices_black_24dp.png";
         title = "View Platform Certificate Details";
         break;
       case "endorsement":
-        icon += "/ic_vpn_key_black_24dp.png";
+        fullIconPath += "/ic_vpn_key_black_24dp.png";
         title = "View Endorsement Certificate Details";
         break;
       case "idevid":
-        icon += "/ic_vpn_key_black_24dp.png";
+        fullIconPath += "/ic_vpn_key_black_24dp.png";
         title = "View IDevID Certificate Details";
         break;
     }
@@ -244,7 +231,7 @@ function certificateDetailsLink(type, id, sameType) {
     href +
     ">" +
     '<img src="' +
-    icon +
+    fullIconPath +
     '" title="' +
     title +
     '"></a>';
@@ -260,7 +247,7 @@ function certificateDetailsLink(type, id, sameType) {
  */
 function rimDetailsLink(pagePath, id) {
   const href = pagePath + "/rim-details?id=" + id;
-  const icon = iconPath + "/ic_assignment_black_24dp.png";
+  const fullIconPath = iconPath + "/ic_assignment_black_24dp.png";
   const title = "Details";
 
   const html =
@@ -268,7 +255,7 @@ function rimDetailsLink(pagePath, id) {
     href +
     ">" +
     '<img src="' +
-    icon +
+    fullIconPath +
     '" title="' +
     title +
     '"></a>';
@@ -276,53 +263,46 @@ function rimDetailsLink(pagePath, id) {
 }
 
 /**
- * Create a certificate delete link for the specified ID
- * @param pagePath path to the link
- * @param id of the certificate
- * @returns a HTML string of the certificate delete link
+ * Generates an HTML string for a certificate delete link based on the given certificate ID.
+ *
+ * @param {string} certificateId - The ID of the certificate to delete. This should be a string that uniquely identifies the certificate.
+ * @returns {string} A string of HTML representing a delete link for the certificate.
  */
-function certificateDeleteLink(pagePath, id) {
-  const icon = iconPath + "/svg/trash.svg";
-
-  // Concatenate the pagePath and modal name dynamically
-  const modalTarget = `#deleteConfirmationModal`;
+function generateCertificateDeleteLink(certificateId) {
+  const fullIconPath = iconPath + "/svg/trash.svg";
+  const modalTargetId = `#deleteCertificateConfirmationModal`;
 
   const html =
-    `<a href="${modalTarget}" ` +
+    `<a href="${modalTargetId}" ` +
     'data-bs-toggle="modal" ' +
-    `data-bs-target="${modalTarget}" ` +
-    `data-id="${id}" ` +
-    'aria-label="Delete certificate">' +
-    `<img src="${icon}" alt="Delete" title="Delete Certificate">` +
+    `data-bs-target="${modalTargetId}" ` +
+    `data-id="${certificateId}" ` +
+    'aria-label="Delete Certificate Link">' +
+    `<img src="${fullIconPath}" alt="Delete Certificate Link" title="Delete Certificate">` +
     "</a>";
+
   return html;
 }
 
 /**
- * Create a RIM delete link for the specified ID
- * @param pagePath path to the link
- * @param id of the RIM
- * @returns a HTML string of the RIM delete link
+ * Generates an HTML string for a RIM delete link based on the given RIM ID.
+ *
+ * @param {string} rimId - The ID of the RIM entry to delete. This should be a string that uniquely identifies the RIM.
+ * @returns {string} A string of HTML representing a delete link for the RIM.
  */
-function rimDeleteLink(pagePath, id) {
-  const icon = iconPath + "/ic_delete_black_24dp.png";
-  const formURL = pagePath + "/delete";
+function generateRIMDeleteLink(rimId) {
+  const fullIconPath = iconPath + "/svg/trash.svg";
+  const modalTargetId = `#deleteRIMConfirmationModal`;
 
   const html =
-    '<a href="#!" onclick="handleRimDeleteRequest(\'' +
-    id +
-    "')\">" +
-    '<img src="' +
-    icon +
-    '" title="Delete"></a>' +
-    '<form id="deleteForm' +
-    id +
-    '" action="' +
-    formURL +
-    '" method="post">' +
-    '<input name="id" type="hidden" value="' +
-    id +
-    '"></form>';
+    `<a href="${modalTargetId}" ` +
+    'data-bs-toggle="modal" ' +
+    `data-bs-target="${modalTargetId}" ` +
+    `data-id="${rimId}" ` +
+    'aria-label="Delete RIM Link">' +
+    `<img src="${fullIconPath}" alt="Delete RIM Link" title="Delete RIM">` +
+    "</a>";
+
   return html;
 }
 
@@ -333,14 +313,14 @@ function rimDeleteLink(pagePath, id) {
  */
 function certificateDownloadLink(pagePath, id) {
   const href = pagePath + "/download?id=" + id;
-  const icon = iconPath + "/ic_file_download_black_24dp.png";
+  const fullIconPath = iconPath + "/ic_file_download_black_24dp.png";
 
   const html =
     '<a href="' +
     href +
     '">' +
     '<img src="' +
-    icon +
+    fullIconPath +
     '" title="Download Certificate"></a>';
 
   return html;

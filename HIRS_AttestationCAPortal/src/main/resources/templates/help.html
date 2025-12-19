@@ -6,9 +6,13 @@
   <section layout:fragment="script">
     <script th:inline="javascript">
       $(document).ready(function () {
+        const viewName = /*[[${ page.viewName }]]*/ '';
+        const url = viewName + "/list-main-logger";
+
         const levels = ["ERROR", "WARN", "INFO", "DEBUG"];
         const mainLoggerName = "hirs.attestationca";
         const mainLoggerPath = "var/log/hirs/HIRS_AttestationCA_Portal.log";
+
         // Mapping log levels to button colors
         const logLevelColors = {
           ERROR: "btn-danger", // Red for ERROR
@@ -17,8 +21,19 @@
           DEBUG: "btn-primary", // Blue for DEBUG
         };
 
-        let url = "/HIRS_AttestationCAPortal/portal/help/list-main-logger";
+        // When the "deleteCertificateConfirmationModal" modal is about to be shown:
+        // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
+        // - Set the value of the hidden input field with ID 'ekToDeleteId' to the retrieved endorsement key certificate ID
+        $('#deleteCertificateConfirmationModal').on('show.bs.modal', function (event) {
+          //todo
+          // const deleteCertLinkButton = $(event.relatedTarget);  // Link that triggered the modal
+          // const endorsementKeyCertificateId = deleteCertLinkButton.data('id');  // Extract the endorsement certificate ID from the data-id attribute
 
+          // // Set the value of the hidden input to the ID
+          // $(this).find('#ekToDeleteId').val(endorsementKeyCertificateId);
+        });
+
+        // Setup Help Page's Logger table columns
         let columns = [
           {
             name: "loggerName",
@@ -69,8 +84,7 @@
           },
         ];
 
-        //Set data tables
-        let dataTable = setDataTables("#loggersTable", url, columns, {
+        const customConfiguration = {
           colReorder: false,
           select: false,
           searching: false,
@@ -82,7 +96,10 @@
               buttons: []  // No buttons will be shown
             }
           }
-        });
+        }
+
+        //Set data tables
+        let dataTable = setDataTables("#loggersTable", url, columns, customConfiguration);
       });
     </script>
   </section>
@@ -121,6 +138,28 @@
         </thead>
       </table>
     </div>
+
+    <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
+    <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/help/setLogLevel}">
+      <div
+        th:replace="fragments/modal :: modal(id='changeLogLevelConfirmationModal', label='Confirm Log Level Change', 
+                bodyContent=~{this::#logLvlChangeConfirmationBody}, customFooterButtons=~{this::#logLvlChangeConfirmationFooterButtons})">
+
+        <!-- Modal Body Content -->
+        <div id="logLvlChangeConfirmationBody">
+          <p class="text-center text-danger fs-4"><strong>Are you sure you want to change the log level to ?</strong>
+          </p>
+        </div>
+
+        <!-- Define custom footer buttons here -->
+        <div id="logLvlChangeConfirmationFooterButtons">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <!-- -->
+          <input type="hidden" name="id" id="pcToDeleteId" value="">
+          <button type="submit" class="btn btn-primary">Delete</button>
+        </div>
+      </div>
+    </form>
   </div>
 </body>
 
