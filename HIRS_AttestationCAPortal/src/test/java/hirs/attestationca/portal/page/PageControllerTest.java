@@ -164,19 +164,19 @@ public abstract class PageControllerTest {
      */
     @Test
     public final void doTestPagesExist() throws Exception {
-//        // Add prefix path for page verification
-//        String pagePath = PRE_PREFIX_PATH + page.getPrefixPath() + getPage().getViewName();
-//        if (page.getPrefixPath() == null) {
-//            pagePath = PRE_PREFIX_PATH + getPage().getViewName();
-//        }
-//
-//        getMockMvc()
-//                .perform(MockMvcRequestBuilders.get(pagePath))
-//                .andExpect(status().isOk())
-//                .andExpect(view().name(page.getViewName()))
-//                .andExpect(model().attribute(PageController.PAGE_ATTRIBUTE, equalTo(page)))
-//                .andExpect(model().attribute(
-//                        PageController.PAGES_ATTRIBUTE, equalTo(Page.values()))
-//                );
+        // Add prefix path for page verification
+        String pagePath = PRE_PREFIX_PATH + page.getPrefixPath() + getPage().getViewName();
+        if (page.getPrefixPath() == null) {
+            pagePath = PRE_PREFIX_PATH + getPage().getViewName();
+        }
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders.get(pagePath))
+                .andExpect(status().isOk())
+                .andExpect(view().name(page.getViewName()))
+                .andExpect(model().attribute(PageController.PAGE_ATTRIBUTE, equalTo(page)))
+                .andExpect(model().attribute(
+                        PageController.PAGES_ATTRIBUTE, equalTo(Page.values()))
+                );
     }
 }

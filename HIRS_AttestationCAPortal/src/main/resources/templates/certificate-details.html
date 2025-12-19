@@ -14,7 +14,7 @@
                 // initialData parameters
                 // 'initialData' is a HashMap with the certificate information, added as an object to
                 // the MAV of CertificateDetailsPageController
-                const signature = JSON.parse(/*[[${initialData.get('signature')}]]*/ '');
+                const signature = /*[[${initialData.get('signature') ? JSON.parse(initialData.get('signature')) : ''}]]*/ '';
                 const serialNumber = /*[[${initialData.get('serialNumber')}]]*/ '';
                 const authorityKeyIdentifier = /*[[${initialData.get('authKeyId')}]]*/ '';
                 const authoritySerialNumber = /*[[${initialData.get('authSerialNumber')}]]*/ '';
@@ -28,16 +28,22 @@
                 const platformIdsString = /*[[${initialData.get('platformID')}]]*/ '';
 
                 // Format validity time
-                $("#validity span").each(function () {
-                    let dateText = $(this).text();
-                    return $(this).text(formatCertificateDate2(dateText));
-                });
+                if(dateText) {
+                    $("#validity span").each(function () {
+                        let dateText = $(this).text();
+                        return $(this).text(formatCertificateDate2(dateText));
+                    });
+                }
 
                 // Signature: convert byte array to string
-                $("#signature").html(byteToHexString(signature));
+                if (authoritySerialNumber) {
+                    $("#signature").html(byteToHexString(signature));
+                }
 
                 // Serial number: convert hex string to byte hex string
-                $("#serialNumber").html(parseSerialNumber(serialNumber));
+                if(serialNumber) {
+                    $("#serialNumber").html(parseSerialNumber(serialNumber));
+                }
 
                 // Authority key ID: convert hex string to byte hex string
                 if (authorityKeyIdentifier) {
@@ -75,8 +81,8 @@
 
                 // Tcg tpm manufacturer / ekAuthorityKeyIdentifier / ekCertificateSerialNumber
                 if (tcgTpmManufacturer) {
-                    $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAKI));
-                    $("#ekCertificateSerialNumber").html(parseHexString(ekCSN));
+                    $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAuthorityKeyIdentifier));
+                    $("#ekCertificateSerialNumber").html(parseHexString(ekCertificateSerialNumber));
                 }
 
                 // List of platform id links

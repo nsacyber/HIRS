@@ -182,15 +182,15 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
      */
     @Test
     public void testInitPage() throws Exception {
-//        // Get error message
-//        getMockMvc()
-//                .perform(MockMvcRequestBuilders.get(pagePath)
-//                        .param("id", ID)
-//                        .param("type", "certificateauthority"))
-//                .andExpect(status().isOk())
-//                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
-//                        hasItem("Unable to find certificate with ID: " + ID))))
-//                .andReturn();
+        // Get error message
+        getMockMvc()
+                .perform(MockMvcRequestBuilders.get(pagePath)
+                        .param("id", ID)
+                        .param("type", "certificateauthority"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
+                        hasItem("Unable to find certificate with ID: " + ID))))
+                .andReturn();
     }
 
     /**
