@@ -8,7 +8,7 @@
         <script th:inline="javascript">
             $(document).ready(function () {
 
-                const initialData = [[${initialData}]];
+                const initialData = /*[[initialData]]*/;
                 if(initialData) {
 
                     // initialData parameters
@@ -196,1044 +196,1045 @@
                 Unknown Certificate
             </th:block>
         </th:block>
-
     </h1>
 
     <section layout:fragment="content">
         <div id="certificate-details-page" class="container-fluid">
 
-            <!-- Display issuer, and provide a link to issuer details if provided -->
-            <div class="row">
-                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Issuer</span></div>
-                <div id="issuer" class="col col-md-8">
-                    <div>Distinguished Name:&nbsp;<span>
-                        <th:block th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
-                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=certificateauthority(id=${initialData.get('issuerID')})}">
+            <th:block th:if="${not #strings.isEmpty(initialData)}">
+                <!-- Display issuer, and provide a link to issuer details if provided -->
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Issuer</span></div>
+                    <div id="issuer" class="col col-md-8">
+                        <div>Distinguished Name:&nbsp;<span>
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
+                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=certificateauthority(id=${initialData.get('issuerID')})}">
+                                    [[${initialData.get('issuer')}]]
+                                </a>
+                            </th:block>
+                            <th:block th:if="${#strings.isEmpty(initialData.get('issuerID'))}">
                                 [[${initialData.get('issuer')}]]
-                            </a>
-                        </th:block>
-                        <th:block th:if="${#strings.isEmpty(initialData.get('issuerID'))}">
-                            [[${initialData.get('issuer')}]]
-                        </th:block>
-                        </span>
-                    </div>
-                    <div>Authority Key Identifier:&nbsp;<span>
-                        <span id="authorityKeyIdentifier"></span>
-                        </span>
-                    </div>
-                    <th:block th:if="${not #strings.isEmpty(initialData.get('authInfoAccess'))}">
-                        <div>Authority Info Access:&nbsp;<span>
-                            <a th:href="@{${initialData.get('authInfoAccess')}}">[[${initialData.get('authInfoAccess')}]]</a>
+                            </th:block>
                             </span>
                         </div>
-                    </th:block>
-                    <th:block th:if="${not #strings.isEmpty(initialData.get('authSerialNumber'))}">
-                        <div>Authority Serial Number:
-                            <span id="authSerialNumber"></span>
+                        <div>Authority Key Identifier:&nbsp;<span>
+                            <span id="authorityKeyIdentifier"></span>
+                            </span>
                         </div>
-                    </th:block>
-                    <th:block th:if="${not #strings.equals(param.type, 'issued')}">
-                        <span class="chainIcon">
-                            <!-- Icon with link for missing certificate for the chain -->
-                            <th:block th:if="${not #strings.equals(initialData.get('isSelfSigned'), 'false')}">
-                                <img src="/icons/ic_all_inclusive_black_24dp.png" title="Self sign certificate.">
-                            </th:block>
-                            <th:block th:if="${#strings.equals(initialData.get('isSelfSigned'), 'false')}">
-                                <th:block th:if="${#strings.isEmpty(initialData.get('missingChainIssuer'))}">
-                                    <img src="/icons/ic_checkbox_marked_circle_black_green_24dp.png"
-                                             title="All certificates in the chain were found.">
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('authInfoAccess'))}">
+                            <div>Authority Info Access:&nbsp;<span>
+                                <a th:href="@{${initialData.get('authInfoAccess')}}">[[${initialData.get('authInfoAccess')}]]</a>
+                                </span>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('authSerialNumber'))}">
+                            <div>Authority Serial Number:
+                                <span id="authSerialNumber"></span>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${not #strings.equals(param.type, 'issued')}">
+                            <span class="chainIcon">
+                                <!-- Icon with link for missing certificate for the chain -->
+                                <th:block th:if="${not #strings.equals(initialData.get('isSelfSigned'), 'false')}">
+                                    <img src="/icons/ic_all_inclusive_black_24dp.png" title="Self sign certificate.">
                                 </th:block>
-                                <th:block th:if="${not #strings.isEmpty(initialData.get('missingChainIssuer'))}">
-                                    <img src="/icons/ic_error_red_24dp.png" th:title="${initialData.get('missingChainIssuer')}" >
+                                <th:block th:if="${#strings.equals(initialData.get('isSelfSigned'), 'false')}">
+                                    <th:block th:if="${#strings.isEmpty(initialData.get('missingChainIssuer'))}">
+                                        <img src="/icons/ic_checkbox_marked_circle_black_green_24dp.png"
+                                                 title="All certificates in the chain were found.">
+                                    </th:block>
+                                    <th:block th:if="${not #strings.isEmpty(initialData.get('missingChainIssuer'))}">
+                                        <img src="/icons/ic_error_red_24dp.png" th:title="${initialData.get('missingChainIssuer')}" >
+                                    </th:block>
                                 </th:block>
-                            </th:block>
-                        </span>
-                    </th:block>
-                </div>
-            </div> <!-- Close certificate issuer -->
+                            </span>
+                        </th:block>
+                    </div>
+                </div> <!-- Close certificate issuer -->
 
-            <!-- Display certificate subject -->
-            <th:block th:if="${not #strings.isEmpty(initialData.get('subject'))}">
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject</span></div>
-                    <div id="subject" class="col col-md-8">[[${initialData.get('subject')}]]</div>
-                </div>
-            </th:block> <!-- Close certificate subject -->
+                <!-- Display certificate subject -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('subject'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject</span></div>
+                        <div id="subject" class="col col-md-8">[[${initialData.get('subject')}]]</div>
+                    </div>
+                </th:block> <!-- Close certificate subject -->
 
-            <!-- Display certificate serial number -->
-            <th:block th:if="${not #strings.isEmpty(initialData.get('serialNumber'))}">
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certificate Serial Number</span></div>
-                    <div id="serialNumber" class="col col-md-8 vertical"></div>
-                </div>
-            </th:block> <!-- Close certificate serial number -->
+                <!-- Display certificate serial number -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('serialNumber'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certificate Serial Number</span></div>
+                        <div id="serialNumber" class="col col-md-8 vertical"></div>
+                    </div>
+                </th:block> <!-- Close certificate serial number -->
 
-            <!-- Display certificate hardware serial number -->
-            <th:block th:if="${not #strings.isEmpty(initialData.get('hwSerialNum'))}">
-                <div class="row">
-                    <th:block th:if="${not #strings.isEmpty(initialData.get('ekCertificateDigest'))}">
+                <!-- Display certificate hardware serial number -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('hwSerialNum'))}">
+                    <div class="row">
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('ekCertificateDigest'))}">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
+                                                                        title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware
+                                    Module Name</span></div>
+                            <div class="col col-md-8">
+                                <div><span class="help-text"
+                                           title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.get('hwType')}">Hardware
+                                        Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span>
+                                </div>
+                                <div><span class="help-text"
+                                           title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate public key. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware
+                                        Serial Number</span>:</div>
+                                <ul>
+                                    <li>EK Certificate Public Key:&nbsp;<span
+                                            id="hwSerialNum">[[${initialData.get('hwSerialNum')}]]</span></li>
+                                </ul>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${#strings.isEmpty(initialData.get('ekCertificateDigest'))}">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
+                                                                        title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific context.">Hardware
+                                    Module Name</span></div>
+                            <div class="col col-md-8">
+                                <div><span class="help-text"
+                                           title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.get('hwType')}">Hardware
+                                        Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span>
+                                </div>
+                                <div><span class="help-text"
+                                           title="Used for identifying the device's hardware module. This field may have manufacturer-specific context.">Hardware
+                                        Serial Number</span>:&nbsp;<span
+                                        id="hwSerialNum">[[${initialData.get('hwSerialNum')}]]</span></div>
+                            </div>
+                        </th:block>
+                    </div>
+                </th:block> <!-- Close certificate hardware serial number -->
+
+                <!-- Display certificate tcg tpm manufacturer -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('tcgTpmManufacturer'))}">
+                    <div class="row">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
                                                                     title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware
                                 Module Name</span></div>
                         <div class="col col-md-8">
                             <div><span class="help-text"
                                        title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.get('hwType')}">Hardware
-                                    Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span>
-                            </div>
+                                    Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span></div>
                             <div><span class="help-text"
-                                       title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate public key. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware
-                                    Serial Number</span>:</div>
-                            <ul>
-                                <li>EK Certificate Public Key:&nbsp;<span
-                                        id="hwSerialNum">[[${initialData.get('hwSerialNum')}]]</span></li>
-                            </ul>
-                        </div>
-                    </th:block>
-                    <th:block th:if="${#strings.isEmpty(initialData.get('ekCertificateDigest'))}">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
-                                                                    title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific context.">Hardware
-                                Module Name</span></div>
-                        <div class="col col-md-8">
-                            <div><span class="help-text"
-                                       title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.get('hwType')}">Hardware
-                                    Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span>
-                            </div>
-                            <div><span class="help-text"
-                                       title="Used for identifying the device's hardware module. This field may have manufacturer-specific context.">Hardware
-                                    Serial Number</span>:&nbsp;<span
-                                    id="hwSerialNum">[[${initialData.get('hwSerialNum')}]]</span></div>
-                        </div>
-                    </th:block>
-                </div>
-            </th:block> <!-- Close certificate hardware serial number -->
-
-            <!-- Display certificate tcg tpm manufacturer -->
-            <th:block th:if="${not #strings.isEmpty(initialData.get('tcgTpmManufacturer'))}">
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
-                                                                title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware
-                            Module Name</span></div>
-                    <div class="col col-md-8">
-                        <div><span class="help-text"
-                                   title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.get('hwType')}">Hardware
-                                Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span></div>
-                        <div><span class="help-text"
-                                   title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware
-                                Serial Number</span>:
-                            <ul>
-                                <li>TCG TPM Manufacturer Code:&nbsp;<span
-                                        id="tcgTpmManufacturer">[[${initialData.get('tcgTpmManufacturer')}]]</span></li>
-                                <li>EK Authority Key Identifier:&nbsp;<span
-                                        id="ekAuthorityKeyIdentifier">[[${initialData.get('ekAuthorityKeyIdentifier')}]]</span>
-                                </li>
-                                <li>EK CertificateSerialNumber:&nbsp;<span
-                                        id="ekCertificateSerialNumber">[[${initialData.get('ekCertificateSerialNumber')}]]</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </th:block>  <!-- Close certificate tcg tpm manufacturer -->
-
-            <!-- Display certificate validity dates -->
-            <th:block th:if="${not #strings.isEmpty(initialData.get('beginValidity'))}">
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
-                    <div id="validity" class="col col-md-8">
-<!--    TODO: check why had to create a second time function (formatCertificateDate2) for Format validity time -->
-                        <div>Not Before:&nbsp;<span>[[${initialData.get('beginValidity')}]]</span></div>
-                        <div>Not After:&nbsp;<span>[[${initialData.get('endValidity')}]]</span></div>
-                    </div>
-                </div>
-            </th:block> <!-- Close certificate validity dates -->
-
-            <!-- Display certificate signature -->
-            <div class="row">
-                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
-                <div id="signatureSection" class="col col-md-8">
-                    <div class="panel-body">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <a role="button" data-toggle="collapse" class="collapsed"
-                                   href="#signatureComponentcollapse" aria-expanded="true" data-placement="top"
-                                   aria-controls="signatureComponentcollapse">
-                                    Signature
-                                </a>
-                            </div>
-                            <div id="signatureComponentcollapse" class="panel-body collapse" role="tabpanel"
-                                 aria-labelledby="headingOne" aria-expanded="false">
-                                <div id="signature" class="fieldValue"></div>
-                            </div>
-                        </div>
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <a role="button" data-toggle="collapse" class="collapsed" href="#signatureSizecollapse"
-                                   aria-expanded="true" data-placement="top" aria-controls="signatureSizecollapse">
-                                    Algorithm
-                                </a>
-                            </div>
-                            <div id="signatureSizecollapse" class="panel-body collapse" role="tabpanel"
-                                 aria-labelledby="headingOne" aria-expanded="false">
-                                <div>
-                                    <span class="fieldValue">
-                                        [[${initialData.get('signatureAlgorithm')}]]
-                                    </span>
-                                </div>
+                                       title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware
+                                    Serial Number</span>:
+                                <ul>
+                                    <li>TCG TPM Manufacturer Code:&nbsp;<span
+                                            id="tcgTpmManufacturer">[[${initialData.get('tcgTpmManufacturer')}]]</span></li>
+                                    <li>EK Authority Key Identifier:&nbsp;<span
+                                            id="ekAuthorityKeyIdentifier">[[${initialData.get('ekAuthorityKeyIdentifier')}]]</span>
+                                    </li>
+                                    <li>EK CertificateSerialNumber:&nbsp;<span
+                                            id="ekCertificateSerialNumber">[[${initialData.get('ekCertificateSerialNumber')}]]</span>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div> <!-- Close certificate signature -->
+                </th:block>  <!-- Close certificate tcg tpm manufacturer -->
 
-            <!-- Display certificate public key -->
-            <th:block th:if="${not #strings.isEmpty(initialData.get('encodedPublicKey'))}">
+                <!-- Display certificate validity dates -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('beginValidity'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
+                        <div id="validity" class="col col-md-8">
+    <!--    TODO: check why had to create a second time function (formatCertificateDate2) for Format validity time -->
+                            <div>Not Before:&nbsp;<span>[[${initialData.get('beginValidity')}]]</span></div>
+                            <div>Not After:&nbsp;<span>[[${initialData.get('endValidity')}]]</span></div>
+                        </div>
+                    </div>
+                </th:block> <!-- Close certificate validity dates -->
+
+                <!-- Display certificate signature -->
                 <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Public Key</span></div>
-                    <div id="publicKeySection" class="col col-md-8">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
+                    <div id="signatureSection" class="col col-md-8">
                         <div class="panel-body">
                             <div class="panel panel-default">
                                 <div class="panel-heading">
-                                    <a role="button" data-toggle="collapse" class="collapsed" href="#publicKeycollapse"
-                                       aria-expanded="true" data-placement="top" aria-controls="publicKeycollapse">
-                                        Public Key
+                                    <a role="button" data-toggle="collapse" class="collapsed"
+                                       href="#signatureComponentcollapse" aria-expanded="true" data-placement="top"
+                                       aria-controls="signatureComponentcollapse">
+                                        Signature
                                     </a>
                                 </div>
-                                <div id="publicKeycollapse" class="panel-body collapse" role="tabpanel"
+                                <div id="signatureComponentcollapse" class="panel-body collapse" role="tabpanel"
                                      aria-labelledby="headingOne" aria-expanded="false">
-<!--    TODO: look at below-->
-<!--                : original code had the same outcome for if/else, is this correct?:-->
-<!--                                    <th:block th:if="${not #strings.isEmpty(initialData.get('publicKeyValue'))}">-->
-<!--                                        <div id="encodedPublicKey" class="fieldValue"></div>-->
-<!--                                    </div>-->
-<!--                                    <th:block th:if="${#strings.isEmpty(initialData.get('publicKeyValue'))}">-->
-<!--                                        <div id="encodedPublicKey" class="fieldValue"></div>-->
-<!--                                    </div>-->
-
-                                    <div id="encodedPublicKey" class="fieldValue"></div>
+                                    <div id="signature" class="fieldValue"></div>
                                 </div>
                             </div>
                             <div class="panel panel-default">
                                 <div class="panel-heading">
-                                    <a role="button" data-toggle="collapse" class="collapsed"
-                                       href="#publicKeySizecollapse" aria-expanded="true" data-placement="top"
-                                       aria-controls="publicKeySizecollapse">
+                                    <a role="button" data-toggle="collapse" class="collapsed" href="#signatureSizecollapse"
+                                       aria-expanded="true" data-placement="top" aria-controls="signatureSizecollapse">
                                         Algorithm
                                     </a>
                                 </div>
-                                <div id="publicKeySizecollapse" class="panel-body collapse" role="tabpanel"
-                                     aria-expanded="false">
+                                <div id="signatureSizecollapse" class="panel-body collapse" role="tabpanel"
+                                     aria-labelledby="headingOne" aria-expanded="false">
                                     <div>
                                         <span class="fieldValue">
-                                            [[${initialData.get('publicKeyAlgorithm')}]] / [[${initialData.get('publicKeySize')}]]
+                                            [[${initialData.get('signatureAlgorithm')}]]
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </th:block> <!-- Close certificate public key -->
+                </div> <!-- Close certificate signature -->
 
-            <!-- Display certificate version -->
-            <th:block th:if="${not #strings.isEmpty(initialData.get('x509Version'))}">
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>
-                    <!-- per spec, version is 1 more than encoded value -->
-                    <div id="credentialVersion" class="col col-md-8 vertical">[[${{initialData.get('x509Version') + 1}}]]
-                    </div>
-                </div>
-            </th:block>
+                <!-- Display certificate public key -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('encodedPublicKey'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Public Key</span></div>
+                        <div id="publicKeySection" class="col col-md-8">
+                            <div class="panel-body">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <a role="button" data-toggle="collapse" class="collapsed" href="#publicKeycollapse"
+                                           aria-expanded="true" data-placement="top" aria-controls="publicKeycollapse">
+                                            Public Key
+                                        </a>
+                                    </div>
+                                    <div id="publicKeycollapse" class="panel-body collapse" role="tabpanel"
+                                         aria-labelledby="headingOne" aria-expanded="false">
+    <!--    TODO: look at below-->
+    <!--                : original code had the same outcome for if/else, is this correct?:-->
+    <!--                                    <th:block th:if="${not #strings.isEmpty(initialData.get('publicKeyValue'))}">-->
+    <!--                                        <div id="encodedPublicKey" class="fieldValue"></div>-->
+    <!--                                    </div>-->
+    <!--                                    <th:block th:if="${#strings.isEmpty(initialData.get('publicKeyValue'))}">-->
+    <!--                                        <div id="encodedPublicKey" class="fieldValue"></div>-->
+    <!--                                    </div>-->
 
-            <!-- Display certificate type -->
-            <th:block th:if="${not #strings.isEmpty(initialData.get('credentialType'))}">
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
-                    <div id="credentialType" class="col col-md-8 vertical">[[${initialData.get('credentialType')}]]</div>
-                </div>
-            </th:block>
-
-            <!-- Add the different fields based on the certificate type -->
-
-            <!-- If this is a certificate of type 'certificateauthority' -->
-            <th:block th:if="${#strings.equals(param.type, 'certificateauthority')}">
-                <th:block th:if="${not #strings.isEmpty(initialData.get('subjectKeyIdentifier'))}">
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject Key
-                                        Identifier</span></div>
-                        <div id="subjectKeyIdentifier" class="col col-md-8 vertical"></div>
-                    </div>
-                </th:block>
-                <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
-                        </div>
-                        <div id="revocationLocator" class="col col-md-8">
-                            <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
-                        </div>
-                    </div>
-                </th:block>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
-                    <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
-                        <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
-                    </th:block>
-                    <th:block th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
-                        <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
-                    </th:block>
-                </div>
-                <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>
-                        </div>
-                        <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]
-                        </div>
-                    </div>
-                </th:block>
-            </th:block> <!-- Close certificate of type 'certificateauthority' -->
-
-            <!-- If this is a certificate of type 'endorsement' -->
-            <th:block th:if="${#strings.equals(param.type, 'endorsement')}">
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
-                    <div id="subjectAltName" class="col col-md-8">
-                        <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
-                        <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
-                        <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
-                    <div id="policyReference" class="col col-md-8 vertical">
-                        <th:block th:if="${not #strings.isEmpty(initialData.get('policyReference'))}">
-                            [[${initialData.get('policyReference')}]]
-                        </th:block>
-                        <th:block th:if="${#strings.isEmpty(initialData.get('policyReference'))}">
-                            Not Specified
-                        </th:block>
-                    </div>
-                </div>
-                <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
-                        </div>
-                        <div id="revocationLocator" class="col col-md-8">
-                            <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
-                        </div>
-                    </div>
-                </th:block>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
-                    <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
-                        <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
-                    </th:block>
-                    <th:block th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
-                        <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
-                    </th:block>
-                </div>
-                <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>
-                        </div>
-                        <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]
-                        </div>
-                    </div>
-                </th:block>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1">
-                        <span class="colHeader">
-                            <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
-                               aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
-                                TPM Specification
-                            </a>
-                        </span>
-                    </div>
-                    <div id="tpmSpecification" class="col col-md-8">
-                        <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel"
-                             aria-expanded="false">
-                            <div>Family:&nbsp;<span>[[${initialData.get('TPMSpecificationFamily')}]]</span></div>
-                            <div>Level:&nbsp;<span>[[${initialData.get('TPMSpecificationLevel')}]]</span></div>
-                            <div>Revision:&nbsp;<span>[[${initialData.get('TPMSpecificationRevision')}]]</span></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1">
-                        <span class="colHeader">
-                            <a role="button" data-toggle="collapse" class="collapsed"
-                               href="#tpmSecurityAssertionInner" aria-expanded="true" data-placement="top"
-                               aria-controls="tpmSecurityAssertionInner">
-                                TPM Security Assertion
-                            </a>
-                        </span>
-                    </div>
-                    <div id="tpmSecurityAssertion" class="col col-md-8">
-                        <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"
-                             aria-expanded="false">
-                            <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
-                            <div>Field
-                                Upgradeable:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}]]</span>
+                                        <div id="encodedPublicKey" class="fieldValue"></div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <a role="button" data-toggle="collapse" class="collapsed"
+                                           href="#publicKeySizecollapse" aria-expanded="true" data-placement="top"
+                                           aria-controls="publicKeySizecollapse">
+                                            Algorithm
+                                        </a>
+                                    </div>
+                                    <div id="publicKeySizecollapse" class="panel-body collapse" role="tabpanel"
+                                         aria-expanded="false">
+                                        <div>
+                                            <span class="fieldValue">
+                                                [[${initialData.get('publicKeyAlgorithm')}]] / [[${initialData.get('publicKeySize')}]]
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div>ek Generation Type:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenType')}]]</span>
-                            </div>
-                            <div>ek Generation
-                                Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}]]</span></div>
-                            <div>ek Certificate Generation
-                                Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}]]</span></div>
                         </div>
                     </div>
-                </div>
-            </th:block> <!-- Close certificate of type 'endorsement' -->
+                </th:block> <!-- Close certificate public key -->
 
-            <!-- If this is a certificate of type 'platform' -->
-            <th:block th:if="${#strings.equals(param.type, 'platform')}">
-                <!-- Platform Type -->
-                <th:block th:if="${not #strings.isEmpty(initialData.get('platformType'))}">
+                <!-- Display certificate version -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('x509Version'))}">
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
-                        <div id="platformType" class="col col-md-8 vertical">[[${initialData.get('platformType')}]]</div>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>
+                        <!-- per spec, version is 1 more than encoded value -->
+                        <div id="credentialVersion" class="col col-md-8 vertical">[[${{initialData.get('x509Version') + 1}}]]
+                        </div>
+                    </div>
+                </th:block>
+
+                <!-- Display certificate type -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('credentialType'))}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
+                        <div id="credentialType" class="col col-md-8 vertical">[[${initialData.get('credentialType')}]]</div>
+                    </div>
+                </th:block>
+
+                <!-- Add the different fields based on the certificate type -->
+
+                <!-- If this is a certificate of type 'certificateauthority' -->
+                <th:block th:if="${#strings.equals(param.type, 'certificateauthority')}">
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('subjectKeyIdentifier'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject Key
+                                            Identifier</span></div>
+                            <div id="subjectKeyIdentifier" class="col col-md-8 vertical"></div>
+                        </div>
+                    </th:block>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
+                            </div>
+                            <div id="revocationLocator" class="col col-md-8">
+                                <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
+                            </div>
+                        </div>
+                    </th:block>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
+                        </th:block>
+                        <th:block th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+                        </th:block>
+                    </div>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>
+                            </div>
+                            <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]
+                            </div>
+                        </div>
+                    </th:block>
+                </th:block> <!-- Close certificate of type 'certificateauthority' -->
+
+                <!-- If this is a certificate of type 'endorsement' -->
+                <th:block th:if="${#strings.equals(param.type, 'endorsement')}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
+                        <div id="subjectAltName" class="col col-md-8">
+                            <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
+                            <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
+                            <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
+                        </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
-                        <div id="platformChain" class="col col-md-8 vertical">
-                            <span>
-                                <th:block th:each="credential, loop : ${initialData.get('chainCertificates')}">
-                                    <th:block th:if="${#strings.equals(initialData.get('certificateId'), credential.getId().toString())}">
-                                        [[${loop.index}]]&nbsp;
-                                    </th:block>
-                                    <th:block th:if="${not #strings.equals(initialData.get('certificateId'), credential.getId().toString())}">
-                                        <a
-                                           th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=platform(id=${credential.getId()})}">
-                                                [[${loop.index}]]
-                                        </a>&nbsp;
-                                    </th:block>
-                                </th:block>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
+                        <div id="policyReference" class="col col-md-8 vertical">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('policyReference'))}">
+                                [[${initialData.get('policyReference')}]]
+                            </th:block>
+                            <th:block th:if="${#strings.isEmpty(initialData.get('policyReference'))}">
+                                Not Specified
+                            </th:block>
+                        </div>
+                    </div>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
+                            </div>
+                            <div id="revocationLocator" class="col col-md-8">
+                                <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
+                            </div>
+                        </div>
+                    </th:block>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
+                        </th:block>
+                        <th:block th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+                        </th:block>
+                    </div>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>
+                            </div>
+                            <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]
+                            </div>
+                        </div>
+                    </th:block>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
+                                   aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
+                                    TPM Specification
+                                </a>
                             </span>
                         </div>
-                    </div>
-                </th:block>
-                <!-- Certification Practice Statement URI -->
-                <th:block th:if="${not #strings.isEmpty(initialData.get('CPSuri'))}">
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice
-                                Statement URI</span></div>
-                        <div id="certificateCPSU" class="col col-md-8 vertical">
-                            <a th:href="@{${initialData.get('CPSuri')}}">[[${initialData.get('CPSuri')}]]</a>
-                        </div>
-                    </div>
-                </th:block>
-                <!-- Holder -->
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
-                    <div id="holder" class="col col-md-8">
-                        <th:block th:if="${not #strings.isEmpty(initialData.get('holderIssuer'))}">
-                            <div>Holder Certificate Issuer:&nbsp;<span>[[${initialData.get('holderIssuer')}]]</span></div>
-                        </th:block>
-                        <div id="certificateid">
-                            <div>Holder Certificate Serial Number:&nbsp;
-                                <th:block th:if="${not #strings.isEmpty(initialData.get('holderId'))}">
-                                    <span>
-                                        <th:block th:if="${not #strings.isEmpty(initialData.get('platformType')) and #strings.equals(initialData.get('platformType'), 'Delta')}">
-                                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=platform(id=${initialData.get('holderId')})}">
-                                                    [[${initialData.get('holderSerialNumber')}]]
-                                            </a>
-                                        </th:block>
-                                        <th:block th:if="${#strings.isEmpty(initialData.get('platformType')) or not #strings.equals(initialData.get('platformType'), 'Delta')}">
-                                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('holderId')})}">
-                                                    [[${initialData.get('holderSerialNumber')}]]
-                                            </a>
-                                        </th:block>
-                                    </span>
-                                </th:block>
-                                <th:block th:if="${#strings.isEmpty(initialData.get('holderId'))}">
-                                    <span>[[${initialData.get('holderSerialNumber')}]]</span>
-                                </th:block>
+                        <div id="tpmSpecification" class="col col-md-8">
+                            <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel"
+                                 aria-expanded="false">
+                                <div>Family:&nbsp;<span>[[${initialData.get('TPMSpecificationFamily')}]]</span></div>
+                                <div>Level:&nbsp;<span>[[${initialData.get('TPMSpecificationLevel')}]]</span></div>
+                                <div>Revision:&nbsp;<span>[[${initialData.get('TPMSpecificationRevision')}]]</span></div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- System Platform Information -->
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Platform Information</span>
-                    </div>
-                    <div id="subjectAltName" class="col col-md-8">
-                        <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
-                        <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
-                        <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
-                        <div id="serial">Serial Number:&nbsp;<span>[[${initialData.get('platformSerial')}]]</span></div>
-                    </div>
-                </div>
-                <!-- TCG Platform Specification -->
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification
-                            Version</span></div>
-                    <div id="majorVersion" class="col col-md-8 vertical">
-                        [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
-                </div>
-                <!-- Platform Class -->
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>
-                    <div id="platformClass" class="col col-md-8 vertical">[[${initialData.get('platformClass')}]]</div>
-                </div>
-                <!-- TBB Security Assertion -->
-                <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion'))}">
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TBB Security Assertion</span>
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-toggle="collapse" class="collapsed"
+                                   href="#tpmSecurityAssertionInner" aria-expanded="true" data-placement="top"
+                                   aria-controls="tpmSecurityAssertionInner">
+                                    TPM Security Assertion
+                                </a>
+                            </span>
                         </div>
-                        <div id="tbbsecurity" class="col col-md-8">
-                            <div class="tbbsecurityLine">
-                                <span class="fieldHeader">Version:</span>
-                                <span class="fieldValue">
-                                    <!-- per spec, version is 1 more than encoded value -->
-                                    [[${initialData.get('tbbSecurityAssertion').getVersion().getValue() + 1}]]
+                        <div id="tpmSecurityAssertion" class="col col-md-8">
+                            <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"
+                                 aria-expanded="false">
+                                <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
+                                <div>Field
+                                    Upgradeable:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}]]</span>
+                                </div>
+                                <div>ek Generation Type:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenType')}]]</span>
+                                </div>
+                                <div>ek Generation
+                                    Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}]]</span></div>
+                                <div>ek Certificate Generation
+                                    Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}]]</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block> <!-- Close certificate of type 'endorsement' -->
+
+                <!-- If this is a certificate of type 'platform' -->
+                <th:block th:if="${#strings.equals(param.type, 'platform')}">
+                    <!-- Platform Type -->
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('platformType'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
+                            <div id="platformType" class="col col-md-8 vertical">[[${initialData.get('platformType')}]]</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
+                            <div id="platformChain" class="col col-md-8 vertical">
+                                <span>
+                                    <th:block th:each="credential, loop : ${initialData.get('chainCertificates')}">
+                                        <th:block th:if="${#strings.equals(initialData.get('certificateId'), credential.getId().toString())}">
+                                            [[${loop.index}]]&nbsp;
+                                        </th:block>
+                                        <th:block th:if="${not #strings.equals(initialData.get('certificateId'), credential.getId().toString())}">
+                                            <a
+                                               th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=platform(id=${credential.getId()})}">
+                                                    [[${loop.index}]]
+                                            </a>&nbsp;
+                                        </th:block>
+                                    </th:block>
                                 </span>
                             </div>
-                            <div class="tbbsecurityLine">
-                                <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getRtmType()) and not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getRtmType().getValue())}">
-                                    <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>
-                                    <span
-                                        class="fieldValue">
-                                        [[${#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getRtmType().getValue())}]]</span>
-                                </th:block>
+                        </div>
+                    </th:block>
+                    <!-- Certification Practice Statement URI -->
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('CPSuri'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice
+                                    Statement URI</span></div>
+                            <div id="certificateCPSU" class="col col-md-8 vertical">
+                                <a th:href="@{${initialData.get('CPSuri')}}">[[${initialData.get('CPSuri')}]]</a>
                             </div>
-                            <!-- CCINFO -->
-                            <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getCcInfo())}">
-                                <th:block th:with="ccinfo=${initialData.get('tbbSecurityAssertion').getCcInfo()}">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading" role="tab" id="headingOne">
-                                            <h4 class="panel-title">
-                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
-                                                   class="collapsed" href="#ccinfocollapse" aria-expanded="false"
-                                                   aria-controls="ccinfocollapse">
-                                                    Common Criteria Measures Information
-                                                </a>
-                                            </h4>
-                                        </div>
-                                        <div id="ccinfocollapse" class="panel-collapse collapse" role="tabpanel"
-                                             aria-labelledby="headingOne">
-                                            <div class="panel-body">
-                                                <div id="ccinfo" class="row">
-                                                    <div class="tbbsecurityLine">
-                                                        <span class="fieldHeader">Version:</span>
-                                                            <span class="fieldValue">[[${ccinfo.getVersion()}]]</span>
-                                                    </div>
-                                                    <div class="tbbsecurityLine">
-                                                        <span class="fieldHeader">Assurance Level:</span>
-                                                            <span
-                                                                class="fieldValue">[[${#strings.toUpperCase(ccinfo.getAssuranceLevel().getValue())}]]</span>
-                                                    </div>
-                                                    <div class="tbbsecurityLine">
-                                                        <span class="fieldHeader">Evaluation Status:</span>
-                                                        <span
-                                                                class="fieldValue">[[${#strings.toUpperCase(ccinfo.getEvaluationStatus().getValue())}]]</span>
-                                                    </div>
-                                                    <div class="tbbsecurityLine">
-                                                        <th:block th:if="${#strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
-                                                            <span class="label label-success">Plus</span>
-                                                        </th:block>
-                                                        <th:block th:if="${not #strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
-                                                            <span class="label label-danger">Not Plus</span>
-                                                        </th:block>
-                                                    </div>
-                                                    <div class="tbbsecurityLine">
-                                                        <span class="fieldHeader">Strength of Function:</span>
-                                                        <span
-                                                            class="fieldValue">[[${#strings.toUpperCase(ccinfo.getStrengthOfFunction().getValue())}]]</span>
-                                                    </div>
-                                                    <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileOid())}">
-                                                        <div class="tbbsecurityLine">
-                                                            <span class="fieldHeader">Profile OID:</span>
-                                                            <span class="fieldValue">[[${ccinfo.getProfileOid()}]]</span>
-                                                        </div>
-                                                    </th:block>
-                                                    <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri())}">
-                                                        <div class="tbbsecurityLine">
-                                                            <span class="fieldHeader">Profile URI:</span>
-                                                            <span class="fieldValue">
-                                                                <a th:href="@{${ccinfo.getProfileUri().getUniformResourceIdentifier()}}">
-                                                                    [[${ccinfo.getProfileUri().getUniformResourceIdentifier()}]]
-                                                                </a>
-                                                            </span>
-                                                        </div>
-                                                        <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashAlgorithm())}">
-                                                            <div class="tbbsecurityLine">
-                                                                <span class="fieldHeader">Profile Hash Algorithm:</span>
-                                                                <span
-                                                                    class="fieldValue">[[${ccinfo.getProfileUri().getHashAlgorithm()}]]</span>
-                                                            </div>
-                                                        </th:block>
-                                                        <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashValue())}">
-                                                            <div class="tbbsecurityLine">
-                                                                <span class="fieldHeader">Profile Hash Value:</span>
-                                                                <span
-                                                                    class="fieldValue">[[${ccinfo.getProfileUri().getHashValue()}]]</span>
-                                                            </div>
-                                                        </th:block>
-                                                    </th:block>
-                                                    <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetOid())}">
-                                                        <div class="tbbsecurityLine">
-                                                            <span class="fieldHeader">Target OID:</span>
-                                                            <span class="fieldValue">[[${ccinfo.getTargetOid()}]]</span>
-                                                        </div>
-                                                    </th:block>
-                                                    <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri())}">
-                                                        <div class="tbbsecurityLine">
-                                                            <span class="fieldHeader">Target URI:</span>
-                                                            <span class="fieldValue">
-                                                                <a th:href="@{${ccinfo.getTargetUri().getUniformResourceIdentifier()}}">
-                                                                    [[${ccinfo.getTargetUri().getUniformResourceIdentifier()}]]
-                                                                </a>
-                                                            </span>
-                                                        </div>
-                                                        <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashAlgorithm())}">
-                                                            <div class="tbbsecurityLine">
-                                                                <span class="fieldHeader">Target Hash Algorithm:</span>
-                                                                <span
-                                                                    class="fieldValue">[[${ccinfo.getTargetUri().getHashAlgorithm()}]]</span>
-                                                            </div>
-                                                        </th:block>
-                                                        <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashValue())}">
-                                                            <div class="tbbsecurityLine">
-                                                                <span class="fieldHeader">Target Hash Value:</span>
-                                                                <span
-                                                                    class="fieldValue">[[${ccinfo.getTargetUri().getHashValue()}]]</span>
-                                                            </div>
-                                                        </th:block>
-                                                    </th:block>
-                                                </div>
-                                            </div>
-                                        </div> <!-- Close id="ccinfocollapse" -->
-                                    </div> <!-- Close class="panel panel-default" -->
-                                </th:block> <!-- Close with="ccinfo=... -->
-                            </th:block> <!-- Close CCINFO -->
-                            <!-- FIPS Level -->
-                            <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getFipsLevel())}">
-                                <th:block th:with="fipslevel=${initialData.get('tbbSecurityAssertion').getFipsLevel()}">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading" role="tab" id="headingThree">
-                                            <h4 class="panel-title">
-                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
-                                                   class="collapsed" href="#fipscollapse" aria-expanded="false"
-                                                   aria-controls="fipscollapse">
-                                                    FIPS Level
-                                                </a>
-                                            </h4>
-                                        </div>
-                                        <div id="fipscollapse" class="panel-collapse collapse" role="tabpanel"
-                                             aria-labelledby="headingTwo">
-                                            <div class="panel-body">
-                                                <div id="fipsLevel" class="row">
-                                                    <div class="tbbsecurityLine">
-                                                        <span class="fieldHeader">Version:</span>
-                                                        <span class="fieldValue">[[${fipslevel.getVersion()}]]</span>
-                                                    </div>
-                                                    <div class="tbbsecurityLine">
-                                                        <span class="fieldHeader">Level:</span>
-                                                        <span
-                                                            class="fieldValue">[[${#strings.toUpperCase(fipslevel.getLevel().getValue())}]]</span>
-                                                    </div>
-                                                    <div class="tbbsecurityLine">
-                                                        <th:block th:if="${#strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
-                                                            <span class="label label-success">Plus</span>
-                                                        </th:block>
-                                                        <th:block th:if="${not #strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
-                                                            <span class="label label-danger">Not Plus</span>
-                                                        </th:block>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </th:block>
-                            </th:block> <!-- Close FIPS Level -->
-                            <!-- ISO9000 isCertified and URI -->
-                            <div class="panel panel-default">
-                                <div class="panel-heading" role="tab" id="headingThree">
-                                    <h4 class="panel-title">
-                                        <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
-                                           class="collapsed" href="#iso9000collapse" aria-expanded="false"
-                                           aria-controls="iso9000collapse">
-                                            ISO 9000
-                                        </a>
-                                    </h4>
-                                </div>
-                                <div id="iso9000collapse" class="panel-collapse collapse" role="tabpanel"
-                                     aria-labelledby="headingThree">
-                                    <div class="panel-body">
-                                        <div id="iso9000" class="row">
-                                            <div class="tbbsecurityLine">
-                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
-                                                    <span class="label label-success">ISO 9000 Certified</span>
-                                                </th:block>
-                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
-                                                    <span class="label label-danger">ISO 9000 Not Certified</span>
-                                                </th:block>
-                                            </div>
-                                            <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getIso9000Uri())}">
-                                                <div class="tbbsecurityLine">
-                                                    <span class="fieldHeader">URI:</span>
-                                                    <span class="fieldValue">
-                                                        <a th:href="@{${initialData.get('tbbSecurityAssertion').getIso9000Uri()}}">
-                                                            [[${initialData.get('tbbSecurityAssertion').getIso9000Uri()}]]
-                                                        </a>
-                                                    </span>
-                                                </div>
-                                            </th:block>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> <!-- Close ISO9000 isCertified and URI -->
-                        </div> <!-- Close div id="tbbsecurity" -->
-                    </div> <!-- Close row -->
-                </th:block> <!-- Close TBB Security Assertion -->
-                <!-- For PC 2.0 -->
-                <!-- Credential Type is TCG -->
-                <th:block th:if="${#strings.contains(initialData.get('credentialType'), 'TCG')}">
+                        </div>
+                    </th:block>
+                    <!-- Holder -->
                     <div class="row">
-                        <!-- TCG Platform Configuration -->
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform
-                                Configuration</span></div>
-                        <div id="platformConfiguration" class="col col-md-8">
-                            <!-- TCG Platform Configuration: Components-->
-                            <th:block th:if="${not #strings.isEmpty(initialData.get('componentResults'))}">
-                                <!-- Component Identifier -->
-                                <div class="panel panel-default">
-                                    <div class="panel-heading" role="tab" id="headingOne">
-                                        <h4 class="panel-title">
-                                            <a role="button" data-toggle="collapse"
-                                               data-parent="#platformConfiguration" class="collapsed"
-                                               href="#componentIdentifiercollapse" aria-expanded="true"
-                                               aria-controls="componentIdentifiercollapse">
-                                                Components
-                                            </a>
-                                        </h4>
-                                    </div>
-                                    <div id="componentIdentifiercollapse" class="panel-collapse collapse in"
-                                         role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
-                                        <div class="panel-body">
-                                            <div id="componentIdentifier" class="row">
-                                                <!-- 'componentResults' is List<ComponentResult> from CertificateStringMapBuilder-->
-                                                <th:block th:each="component, loop : ${initialData.get('componentResults')}">
-                                                    <div class="component col col-md-4">
-                                                        <div class="panel panel-default">
-                                                            <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
-                                                                <div class="panel-heading" style="background-color: red; color: white">
-                                                                    <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
-                                                                        <span data-toggle="tooltip" data-placement="top"
-                                                                            th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
-                                                                    </th:block>
-                                                                    <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
-                                                                        <span data-toggle="tooltip" data-placement="top"
-                                                                        title="Component Class">Platform Components</span>
-                                                                    </th:block>
-                                                                </div>
-                                                            </th:block>
-                                                            <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
-                                                                <div class="panel-heading">
-                                                                    <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
-                                                                        <span data-toggle="tooltip" data-placement="top"
-                                                                        th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
-                                                                    </th:block>
-                                                                    <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
-                                                                        <span data-toggle="tooltip" data-placement="top"
-                                                                        title="Component Class">Platform Components</span>
-                                                                    </th:block>
-                                                                </div>
-                                                            </th:block>
-                                                            <div class="panel-body">
-                                                                <span class="fieldHeader">Manufacturer:</span>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
+                        <div id="holder" class="col col-md-8">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('holderIssuer'))}">
+                                <div>Holder Certificate Issuer:&nbsp;<span>[[${initialData.get('holderIssuer')}]]</span></div>
+                            </th:block>
+                            <div id="certificateid">
+                                <div>Holder Certificate Serial Number:&nbsp;
+                                    <th:block th:if="${not #strings.isEmpty(initialData.get('holderId'))}">
+                                        <span>
+                                            <th:block th:if="${not #strings.isEmpty(initialData.get('platformType')) and #strings.equals(initialData.get('platformType'), 'Delta')}">
+                                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=platform(id=${initialData.get('holderId')})}">
+                                                        [[${initialData.get('holderSerialNumber')}]]
+                                                </a>
+                                            </th:block>
+                                            <th:block th:if="${#strings.isEmpty(initialData.get('platformType')) or not #strings.equals(initialData.get('platformType'), 'Delta')}">
+                                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('holderId')})}">
+                                                        [[${initialData.get('holderSerialNumber')}]]
+                                                </a>
+                                            </th:block>
+                                        </span>
+                                    </th:block>
+                                    <th:block th:if="${#strings.isEmpty(initialData.get('holderId'))}">
+                                        <span>[[${initialData.get('holderSerialNumber')}]]</span>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- System Platform Information -->
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Platform Information</span>
+                        </div>
+                        <div id="subjectAltName" class="col col-md-8">
+                            <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
+                            <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
+                            <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
+                            <div id="serial">Serial Number:&nbsp;<span>[[${initialData.get('platformSerial')}]]</span></div>
+                        </div>
+                    </div>
+                    <!-- TCG Platform Specification -->
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification
+                                Version</span></div>
+                        <div id="majorVersion" class="col col-md-8 vertical">
+                            [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
+                    </div>
+                    <!-- Platform Class -->
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>
+                        <div id="platformClass" class="col col-md-8 vertical">[[${initialData.get('platformClass')}]]</div>
+                    </div>
+                    <!-- TBB Security Assertion -->
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">TBB Security Assertion</span>
+                            </div>
+                            <div id="tbbsecurity" class="col col-md-8">
+                                <div class="tbbsecurityLine">
+                                    <span class="fieldHeader">Version:</span>
+                                    <span class="fieldValue">
+                                        <!-- per spec, version is 1 more than encoded value -->
+                                        [[${initialData.get('tbbSecurityAssertion').getVersion().getValue() + 1}]]
+                                    </span>
+                                </div>
+                                <div class="tbbsecurityLine">
+                                    <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getRtmType()) and not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getRtmType().getValue())}">
+                                        <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>
+                                        <span
+                                            class="fieldValue">
+                                            [[${#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getRtmType().getValue())}]]</span>
+                                    </th:block>
+                                </div>
+                                <!-- CCINFO -->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getCcInfo())}">
+                                    <th:block th:with="ccinfo=${initialData.get('tbbSecurityAssertion').getCcInfo()}">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading" role="tab" id="headingOne">
+                                                <h4 class="panel-title">
+                                                    <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                                       class="collapsed" href="#ccinfocollapse" aria-expanded="false"
+                                                       aria-controls="ccinfocollapse">
+                                                        Common Criteria Measures Information
+                                                    </a>
+                                                </h4>
+                                            </div>
+                                            <div id="ccinfocollapse" class="panel-collapse collapse" role="tabpanel"
+                                                 aria-labelledby="headingOne">
+                                                <div class="panel-body">
+                                                    <div id="ccinfo" class="row">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Version:</span>
+                                                                <span class="fieldValue">[[${ccinfo.getVersion()}]]</span>
+                                                        </div>
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Assurance Level:</span>
                                                                 <span
-                                                                        class="fieldValue">[[${component.getManufacturer()}]]</span><br />
-                                                                <span class="fieldHeader">Model:</span>
-                                                                <span
-                                                                    class="fieldValue">[[${component.getModel()}]]</span><br />
-                                                                <th:block th:if="${not #strings.isEmpty(#strings.trim(component.getSerialNumber()))}">
-                                                                    <span class="fieldHeader">Serial Number:</span>
-                                                                    <span
-                                                                            class="fieldValue">[[${component.getSerialNumber()}]]</span><br />
-                                                                </th:block>
-                                                                <th:block th:if="${not #strings.isEmpty(#strings.trim(component.getRevisionNumber()))}">
-                                                                    <span class="fieldHeader">Revision:</span>
-                                                                    <span
-                                                                            class="fieldValue">[[${component.getRevisionNumber()}]]</span><br />
-                                                                </th:block>
-                                                                <th:block th:each="address, loop : ${component.getComponentAddresses()}">
-                                                                    <span
-                                                                        class="fieldHeader">[[${address.getAddressTypeString()}]]
-                                                                        address:</span>
-                                                                    <span
-                                                                        class="fieldValue">[[${address.getAddressValueString()}]]</span><br />
-                                                                </th:block>
-                                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
-                                                                    <span class="label label-success">Replaceable</span><br />
-                                                                </th:block>
-                                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
-                                                                    <span class="label label-danger">Irreplaceable</span><br />
-                                                                </th:block>
-                                                                <th:block th:if="${not #strings.isEmpty(component.isVersion2())}">
-                                                                    <th:block th:if="${not #strings.isEmpty(component.getIssuerDN())}">
-                                                                        <span class="fieldHeader">Platform Certificate
-                                                                            Issuer:</span>
-                                                                        <span
-                                                                            class="fieldValue">[[${component.getIssuerDN()}]]</span><br />
-                                                                        <span class="fieldHeader">Platform Certificate
-                                                                            Serial Number:</span>
-                                                                        <span
-                                                                            class="fieldValue">[[${component.getCertificateSerialNumber()}]]</span><br />
-                                                                        <span class="fieldHeader">Platform Certificate
-                                                                            URI:</span>
-                                                                    </th:block>
-                                                                    <span class="fieldValue">
-                                                                        <a th:href="@{${component.getUniformResourceIdentifier()}}">
-                                                                            [[${component.getUniformResourceIdentifier()}]]
-                                                                        </a>
-                                                                    </span><br />
-                                                                    <span class="fieldHeader">Status:</span>
-                                                                    <span
-                                                                        class="fieldValue">[[${component.getAttributeStatus()}]]</span><br />
-                                                                </th:block>
+                                                                    class="fieldValue">[[${#strings.toUpperCase(ccinfo.getAssuranceLevel().getValue())}]]</span>
+                                                        </div>
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Evaluation Status:</span>
+                                                            <span
+                                                                    class="fieldValue">[[${#strings.toUpperCase(ccinfo.getEvaluationStatus().getValue())}]]</span>
+                                                        </div>
+                                                        <div class="tbbsecurityLine">
+                                                            <th:block th:if="${#strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
+                                                                <span class="label label-success">Plus</span>
+                                                            </th:block>
+                                                            <th:block th:if="${not #strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
+                                                                <span class="label label-danger">Not Plus</span>
+                                                            </th:block>
+                                                        </div>
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Strength of Function:</span>
+                                                            <span
+                                                                class="fieldValue">[[${#strings.toUpperCase(ccinfo.getStrengthOfFunction().getValue())}]]</span>
+                                                        </div>
+                                                        <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileOid())}">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Profile OID:</span>
+                                                                <span class="fieldValue">[[${ccinfo.getProfileOid()}]]</span>
                                                             </div>
+                                                        </th:block>
+                                                        <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri())}">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Profile URI:</span>
+                                                                <span class="fieldValue">
+                                                                    <a th:href="@{${ccinfo.getProfileUri().getUniformResourceIdentifier()}}">
+                                                                        [[${ccinfo.getProfileUri().getUniformResourceIdentifier()}]]
+                                                                    </a>
+                                                                </span>
+                                                            </div>
+                                                            <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashAlgorithm())}">
+                                                                <div class="tbbsecurityLine">
+                                                                    <span class="fieldHeader">Profile Hash Algorithm:</span>
+                                                                    <span
+                                                                        class="fieldValue">[[${ccinfo.getProfileUri().getHashAlgorithm()}]]</span>
+                                                                </div>
+                                                            </th:block>
+                                                            <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashValue())}">
+                                                                <div class="tbbsecurityLine">
+                                                                    <span class="fieldHeader">Profile Hash Value:</span>
+                                                                    <span
+                                                                        class="fieldValue">[[${ccinfo.getProfileUri().getHashValue()}]]</span>
+                                                                </div>
+                                                            </th:block>
+                                                        </th:block>
+                                                        <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetOid())}">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Target OID:</span>
+                                                                <span class="fieldValue">[[${ccinfo.getTargetOid()}]]</span>
+                                                            </div>
+                                                        </th:block>
+                                                        <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri())}">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Target URI:</span>
+                                                                <span class="fieldValue">
+                                                                    <a th:href="@{${ccinfo.getTargetUri().getUniformResourceIdentifier()}}">
+                                                                        [[${ccinfo.getTargetUri().getUniformResourceIdentifier()}]]
+                                                                    </a>
+                                                                </span>
+                                                            </div>
+                                                            <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashAlgorithm())}">
+                                                                <div class="tbbsecurityLine">
+                                                                    <span class="fieldHeader">Target Hash Algorithm:</span>
+                                                                    <span
+                                                                        class="fieldValue">[[${ccinfo.getTargetUri().getHashAlgorithm()}]]</span>
+                                                                </div>
+                                                            </th:block>
+                                                            <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashValue())}">
+                                                                <div class="tbbsecurityLine">
+                                                                    <span class="fieldHeader">Target Hash Value:</span>
+                                                                    <span
+                                                                        class="fieldValue">[[${ccinfo.getTargetUri().getHashValue()}]]</span>
+                                                                </div>
+                                                            </th:block>
+                                                        </th:block>
+                                                    </div>
+                                                </div>
+                                            </div> <!-- Close id="ccinfocollapse" -->
+                                        </div> <!-- Close class="panel panel-default" -->
+                                    </th:block> <!-- Close with="ccinfo=... -->
+                                </th:block> <!-- Close CCINFO -->
+                                <!-- FIPS Level -->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getFipsLevel())}">
+                                    <th:block th:with="fipslevel=${initialData.get('tbbSecurityAssertion').getFipsLevel()}">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading" role="tab" id="headingThree">
+                                                <h4 class="panel-title">
+                                                    <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                                       class="collapsed" href="#fipscollapse" aria-expanded="false"
+                                                       aria-controls="fipscollapse">
+                                                        FIPS Level
+                                                    </a>
+                                                </h4>
+                                            </div>
+                                            <div id="fipscollapse" class="panel-collapse collapse" role="tabpanel"
+                                                 aria-labelledby="headingTwo">
+                                                <div class="panel-body">
+                                                    <div id="fipsLevel" class="row">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Version:</span>
+                                                            <span class="fieldValue">[[${fipslevel.getVersion()}]]</span>
+                                                        </div>
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">Level:</span>
+                                                            <span
+                                                                class="fieldValue">[[${#strings.toUpperCase(fipslevel.getLevel().getValue())}]]</span>
+                                                        </div>
+                                                        <div class="tbbsecurityLine">
+                                                            <th:block th:if="${#strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
+                                                                <span class="label label-success">Plus</span>
+                                                            </th:block>
+                                                            <th:block th:if="${not #strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
+                                                                <span class="label label-danger">Not Plus</span>
+                                                            </th:block>
                                                         </div>
                                                     </div>
-                                                </th:block> <!-- Close loop through each element in 'componentResults')-->
-                                            </div> <!-- Close id="componentIdentifier" -->
-                                        </div> <!-- Close class="panel-body" -->
-                                    </div> <!-- Close id="componentIdentifiercollapse" -->
-                                </div> <!-- Close class="panel panel-default" -->
-                            </th:block> <!-- Close if 'componentResults' is not empty -->
-                            <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI'))}">
-                                <!-- Components Identifier URI -->
-                                <div class="panel panel-default">
-                                    <div class="panel-heading" role="tab" id="headingTwo">
-                                        <h4 class="panel-title">
-                                            <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
-                                               class="collapsed" href="#componentIdentifierURIcollapse" aria-expanded="false"
-                                               aria-controls="componentIdentifierURIcollapse">
-                                                Components Identifier URI
-                                            </a>
-                                        </h4>
-                                    </div>
-                                    <div id="componentIdentifierURIcollapse" class="panel-collapse collapse" role="tabpanel"
-                                        aria-labelledby="headingTwo">
-                                        <div class="panel-body">
-                                            <div id="componentIdentifierURI" class="row">
-                                                <span class="fieldHeader">URI:</span>
-                                                <a th:href="@{${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}}">
-                                                    [[${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}]]
-                                                </a>
-                                                <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashAlgorithm())}">
-                                                    <span class="fieldHeader">Hash Algorithm:</span>
-                                                    <span>[[${initialData.get('componentsIdentifierURI').getHashAlgorithm()}]]</span>
-                                                </th:block>
-                                                <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashValue())}">
-                                                    <span class="fieldHeader">Hash Value:</span>
-                                                    <span>[[${initialData.get('componentsIdentifierURI').getHashValue()}]]</span>
-                                                </th:block>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </th:block>
-                            <!-- TCG Platform Configuration: Platform Properties -->
-                            <th:block th:if="${not #strings.isEmpty(initialData.get('platformProperties'))}">
+                                    </th:block>
+                                </th:block> <!-- Close FIPS Level -->
+                                <!-- ISO9000 isCertified and URI -->
                                 <div class="panel panel-default">
                                     <div class="panel-heading" role="tab" id="headingThree">
                                         <h4 class="panel-title">
-                                            <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
-                                               class="collapsed" href="#platformPropertiescollapse" aria-expanded="false"
-                                               aria-controls="platformPropertiescollapse">
-                                                Platform Properties
+                                            <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                               class="collapsed" href="#iso9000collapse" aria-expanded="false"
+                                               aria-controls="iso9000collapse">
+                                                ISO 9000
                                             </a>
                                         </h4>
                                     </div>
-                                    <div id="platformPropertiescollapse" class="panel-collapse collapse" role="tabpanel"
+                                    <div id="iso9000collapse" class="panel-collapse collapse" role="tabpanel"
                                          aria-labelledby="headingThree">
                                         <div class="panel-body">
-                                            <div id="platformProperties" class="row">
-                                                <th:block th:each="property, loop : ${initialData.get('platformProperties')}">
-                                                    <div class="component col col-md-4">
-                                                        <div class="panel panel-default">
-                                                            <div class="panel-body">
-                                                                <span class="fieldHeader">Name:</span>
-                                                                <span
-                                                                        class="fieldValue">[[${property.getPropertyName()}]]</span><br />
-                                                                <span class="fieldHeader">Value:</span>
-                                                                <span class="fieldValue"
-                                                                      style="word-wrap: break-word">[[${property.getPropertyValue()}]]</span><br />
-                                                            </div>
-                                                        </div>
+                                            <div id="iso9000" class="row">
+                                                <div class="tbbsecurityLine">
+                                                    <th:block th:if="${#strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
+                                                        <span class="label label-success">ISO 9000 Certified</span>
+                                                    </th:block>
+                                                    <th:block th:if="${not #strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
+                                                        <span class="label label-danger">ISO 9000 Not Certified</span>
+                                                    </th:block>
+                                                </div>
+                                                <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getIso9000Uri())}">
+                                                    <div class="tbbsecurityLine">
+                                                        <span class="fieldHeader">URI:</span>
+                                                        <span class="fieldValue">
+                                                            <a th:href="@{${initialData.get('tbbSecurityAssertion').getIso9000Uri()}}">
+                                                                [[${initialData.get('tbbSecurityAssertion').getIso9000Uri()}]]
+                                                            </a>
+                                                        </span>
                                                     </div>
                                                 </th:block>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </th:block>
-                            <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI'))}">
-                                <!-- Platform Properties URI -->
-                                <div class="panel panel-default">
-                                    <div class="panel-heading" role="tab" id="headingFour">
-                                        <h4 class="panel-title">
-                                            <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
-                                               class="collapsed" href="#platformPropertiesURIcollapse" aria-expanded="false"
-                                               aria-controls="platformPropertiesURIcollapse">
-                                                Platform Properties URI
-                                            </a>
-                                        </h4>
-                                    </div>
-                                    <div id="platformPropertiesURIcollapse" class="panel-collapse collapse" role="tabpanel"
-                                         aria-labelledby="headingFour">
-                                        <div class="panel-body">
-                                            <div id="platformPropertiesURI" class="row">
-                                                <span class="fieldHeader">URI:</span>
-                                                <a th:href="@{${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}}">
-                                                    [[${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}]]
+                                </div> <!-- Close ISO9000 isCertified and URI -->
+                            </div> <!-- Close div id="tbbsecurity" -->
+                        </div> <!-- Close row -->
+                    </th:block> <!-- Close TBB Security Assertion -->
+                    <!-- For PC 2.0 -->
+                    <!-- Credential Type is TCG -->
+                    <th:block th:if="${#strings.contains(initialData.get('credentialType'), 'TCG')}">
+                        <div class="row">
+                            <!-- TCG Platform Configuration -->
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform
+                                    Configuration</span></div>
+                            <div id="platformConfiguration" class="col col-md-8">
+                                <!-- TCG Platform Configuration: Components-->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('componentResults'))}">
+                                    <!-- Component Identifier -->
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingOne">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse"
+                                                   data-parent="#platformConfiguration" class="collapsed"
+                                                   href="#componentIdentifiercollapse" aria-expanded="true"
+                                                   aria-controls="componentIdentifiercollapse">
+                                                    Components
                                                 </a>
-                                                <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI').getHashAlgorithm())}">
-                                                    <span class="fieldHeader">Hash Algorithm:</span>
-                                                    <span>[[${initialData.get('platformPropertiesURI').getHashAlgorithm()}]]</span>
-                                                </th:block>
-                                                <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI').getHashValue())}">
-                                                    <span class="fieldHeader">Hash Value:</span>
-                                                    <span>[[${initialData.get('platformPropertiesURI').getHashValue()}]]</span>
-                                                </th:block>
+                                            </h4>
+                                        </div>
+                                        <div id="componentIdentifiercollapse" class="panel-collapse collapse in"
+                                             role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">
+                                            <div class="panel-body">
+                                                <div id="componentIdentifier" class="row">
+                                                    <!-- 'componentResults' is List<ComponentResult> from CertificateStringMapBuilder-->
+                                                    <th:block th:each="component, loop : ${initialData.get('componentResults')}">
+                                                        <div class="component col col-md-4">
+                                                            <div class="panel panel-default">
+                                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
+                                                                    <div class="panel-heading" style="background-color: red; color: white">
+                                                                        <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
+                                                                            <span data-toggle="tooltip" data-placement="top"
+                                                                                th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
+                                                                        </th:block>
+                                                                        <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
+                                                                            <span data-toggle="tooltip" data-placement="top"
+                                                                            title="Component Class">Platform Components</span>
+                                                                        </th:block>
+                                                                    </div>
+                                                                </th:block>
+                                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
+                                                                    <div class="panel-heading">
+                                                                        <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
+                                                                            <span data-toggle="tooltip" data-placement="top"
+                                                                            th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
+                                                                        </th:block>
+                                                                        <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
+                                                                            <span data-toggle="tooltip" data-placement="top"
+                                                                            title="Component Class">Platform Components</span>
+                                                                        </th:block>
+                                                                    </div>
+                                                                </th:block>
+                                                                <div class="panel-body">
+                                                                    <span class="fieldHeader">Manufacturer:</span>
+                                                                    <span
+                                                                            class="fieldValue">[[${component.getManufacturer()}]]</span><br />
+                                                                    <span class="fieldHeader">Model:</span>
+                                                                    <span
+                                                                        class="fieldValue">[[${component.getModel()}]]</span><br />
+                                                                    <th:block th:if="${not #strings.isEmpty(#strings.trim(component.getSerialNumber()))}">
+                                                                        <span class="fieldHeader">Serial Number:</span>
+                                                                        <span
+                                                                                class="fieldValue">[[${component.getSerialNumber()}]]</span><br />
+                                                                    </th:block>
+                                                                    <th:block th:if="${not #strings.isEmpty(#strings.trim(component.getRevisionNumber()))}">
+                                                                        <span class="fieldHeader">Revision:</span>
+                                                                        <span
+                                                                                class="fieldValue">[[${component.getRevisionNumber()}]]</span><br />
+                                                                    </th:block>
+                                                                    <th:block th:each="address, loop : ${component.getComponentAddresses()}">
+                                                                        <span
+                                                                            class="fieldHeader">[[${address.getAddressTypeString()}]]
+                                                                            address:</span>
+                                                                        <span
+                                                                            class="fieldValue">[[${address.getAddressValueString()}]]</span><br />
+                                                                    </th:block>
+                                                                    <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
+                                                                        <span class="label label-success">Replaceable</span><br />
+                                                                    </th:block>
+                                                                    <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
+                                                                        <span class="label label-danger">Irreplaceable</span><br />
+                                                                    </th:block>
+                                                                    <th:block th:if="${not #strings.isEmpty(component.isVersion2())}">
+                                                                        <th:block th:if="${not #strings.isEmpty(component.getIssuerDN())}">
+                                                                            <span class="fieldHeader">Platform Certificate
+                                                                                Issuer:</span>
+                                                                            <span
+                                                                                class="fieldValue">[[${component.getIssuerDN()}]]</span><br />
+                                                                            <span class="fieldHeader">Platform Certificate
+                                                                                Serial Number:</span>
+                                                                            <span
+                                                                                class="fieldValue">[[${component.getCertificateSerialNumber()}]]</span><br />
+                                                                            <span class="fieldHeader">Platform Certificate
+                                                                                URI:</span>
+                                                                        </th:block>
+                                                                        <span class="fieldValue">
+                                                                            <a th:href="@{${component.getUniformResourceIdentifier()}}">
+                                                                                [[${component.getUniformResourceIdentifier()}]]
+                                                                            </a>
+                                                                        </span><br />
+                                                                        <span class="fieldHeader">Status:</span>
+                                                                        <span
+                                                                            class="fieldValue">[[${component.getAttributeStatus()}]]</span><br />
+                                                                    </th:block>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </th:block> <!-- Close loop through each element in 'componentResults')-->
+                                                </div> <!-- Close id="componentIdentifier" -->
+                                            </div> <!-- Close class="panel-body" -->
+                                        </div> <!-- Close id="componentIdentifiercollapse" -->
+                                    </div> <!-- Close class="panel panel-default" -->
+                                </th:block> <!-- Close if 'componentResults' is not empty -->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI'))}">
+                                    <!-- Components Identifier URI -->
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingTwo">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
+                                                   class="collapsed" href="#componentIdentifierURIcollapse" aria-expanded="false"
+                                                   aria-controls="componentIdentifierURIcollapse">
+                                                    Components Identifier URI
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="componentIdentifierURIcollapse" class="panel-collapse collapse" role="tabpanel"
+                                            aria-labelledby="headingTwo">
+                                            <div class="panel-body">
+                                                <div id="componentIdentifierURI" class="row">
+                                                    <span class="fieldHeader">URI:</span>
+                                                    <a th:href="@{${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}}">
+                                                        [[${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}]]
+                                                    </a>
+                                                    <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashAlgorithm())}">
+                                                        <span class="fieldHeader">Hash Algorithm:</span>
+                                                        <span>[[${initialData.get('componentsIdentifierURI').getHashAlgorithm()}]]</span>
+                                                    </th:block>
+                                                    <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashValue())}">
+                                                        <span class="fieldHeader">Hash Value:</span>
+                                                        <span>[[${initialData.get('componentsIdentifierURI').getHashValue()}]]</span>
+                                                    </th:block>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </th:block>
+                                <!-- TCG Platform Configuration: Platform Properties -->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('platformProperties'))}">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingThree">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
+                                                   class="collapsed" href="#platformPropertiescollapse" aria-expanded="false"
+                                                   aria-controls="platformPropertiescollapse">
+                                                    Platform Properties
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="platformPropertiescollapse" class="panel-collapse collapse" role="tabpanel"
+                                             aria-labelledby="headingThree">
+                                            <div class="panel-body">
+                                                <div id="platformProperties" class="row">
+                                                    <th:block th:each="property, loop : ${initialData.get('platformProperties')}">
+                                                        <div class="component col col-md-4">
+                                                            <div class="panel panel-default">
+                                                                <div class="panel-body">
+                                                                    <span class="fieldHeader">Name:</span>
+                                                                    <span
+                                                                            class="fieldValue">[[${property.getPropertyName()}]]</span><br />
+                                                                    <span class="fieldHeader">Value:</span>
+                                                                    <span class="fieldValue"
+                                                                          style="word-wrap: break-word">[[${property.getPropertyValue()}]]</span><br />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </th:block>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th:block>
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI'))}">
+                                    <!-- Platform Properties URI -->
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingFour">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
+                                                   class="collapsed" href="#platformPropertiesURIcollapse" aria-expanded="false"
+                                                   aria-controls="platformPropertiesURIcollapse">
+                                                    Platform Properties URI
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="platformPropertiesURIcollapse" class="panel-collapse collapse" role="tabpanel"
+                                             aria-labelledby="headingFour">
+                                            <div class="panel-body">
+                                                <div id="platformPropertiesURI" class="row">
+                                                    <span class="fieldHeader">URI:</span>
+                                                    <a th:href="@{${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}}">
+                                                        [[${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}]]
+                                                    </a>
+                                                    <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI').getHashAlgorithm())}">
+                                                        <span class="fieldHeader">Hash Algorithm:</span>
+                                                        <span>[[${initialData.get('platformPropertiesURI').getHashAlgorithm()}]]</span>
+                                                    </th:block>
+                                                    <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI').getHashValue())}">
+                                                        <span class="fieldHeader">Hash Value:</span>
+                                                        <span>[[${initialData.get('platformPropertiesURI').getHashValue()}]]</span>
+                                                    </th:block>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th:block>
+                            </div> <!-- Close id="platformConfiguration" -->
+                        </div> <!-- Close row -->
+                    </th:block> <!-- Close Credential Type is TCG -->
+                </th:block> <!-- Close certificate of type 'platform' -->
+
+                <!-- If this is a certificate of type 'issued' -->
+                <th:block th:if="${#strings.equals(param.type, 'issued')}">
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
+                        <div id="subjectAltName" class="col col-md-8">
+                            <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
+                            <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
+                            <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
+                            <div id="serial">Serial Number:&nbsp;<span>[[${initialData.get('platformSerial')}]]</span></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
+                        <div id="policyReference" class="col col-md-8 vertical">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('policyReference'))}">
+                                [[${initialData.get('policyReference')}]]
                             </th:block>
-                        </div> <!-- Close id="platformConfiguration" -->
-                    </div> <!-- Close row -->
-                </th:block> <!-- Close Credential Type is TCG -->
-            </th:block> <!-- Close certificate of type 'platform' -->
-
-            <!-- If this is a certificate of type 'issued' -->
-            <th:block th:if="${#strings.equals(param.type, 'issued')}">
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
-                    <div id="subjectAltName" class="col col-md-8">
-                        <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
-                        <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
-                        <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
-                        <div id="serial">Serial Number:&nbsp;<span>[[${initialData.get('platformSerial')}]]</span></div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
-                    <div id="policyReference" class="col col-md-8 vertical">
-                        <th:block th:if="${not #strings.isEmpty(initialData.get('policyReference'))}">
-                            [[${initialData.get('policyReference')}]]
-                        </th:block>
-                        <th:block th:if="${#strings.isEmpty(initialData.get('policyReference'))}">
-                            Not Specified
-                        </th:block>
-                    </div>
-                </div>
-                <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span></div>
-                        <div id="revocationLocator" class="col col-md-8">
-                            <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
+                            <th:block th:if="${#strings.isEmpty(initialData.get('policyReference'))}">
+                                Not Specified
+                            </th:block>
                         </div>
                     </div>
-                </th:block>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Endorsement Credential</span></div>
-                    <div id="endorsementID" class="col col-md-8">
-                        <th:block th:if="${not #strings.isEmpty(initialData.get('endorsementID'))}">
-                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('endorsementID')})}">
-                                <img src="/icons/ic_vpn_key_black_24dp.png">
-                            </a>
-                        </th:block>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Credentials</span></div>
-                    <div id="platformID" class="col col-md-8">
-                        <th:block th:if="${not #strings.isEmpty(initialData.get('platformID'))}">
-                            <ul id="platformCertIdsList" style="list-style-type: none; padding-left: 0;"></ul>
-                        </th:block>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification Version</span>
-                    </div>
-                    <div id="majorVersion" class="col col-md-8 vertical">
-                        [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
-                </div>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification
-                            Version</span></div>
-                    <div id="majorVersion" class="col col-md-8 vertical">
-                        [[${initialData.get('tcgMajorVersion')}]].[[${initialData.get('tcgMinorVersion')}]].[[${initialData.get('tcgRevisionLevel')}]]</div>
-                </div>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1">
-                        <span class="colHeader">
-                            <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
-                               aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
-                                TPM Specification
-                            </a>
-                        </span>
-                    </div>
-                    <div id="tpmSpecification" class="col col-md-8">
-                        <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
-                            <div>Family:&nbsp;<span>[[${initialData.get('TPMSpecificationFamily')}]]</span></div>
-                            <div>Level:&nbsp;<span>[[${initialData.get('TPMSpecificationLevel')}]]</span></div>
-                            <div>Revision:&nbsp;<span>[[${initialData.get('TPMSpecificationRevision')}]]</span></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1">
-                        <span class="colHeader">
-                            <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"
-                               aria-expanded="true" data-placement="top" aria-controls="tpmSecurityAssertionInner">
-                                TPM Security Assertion
-                            </a>
-                        </span>
-                    </div>
-                    <div id="tpmSecurityAssertion" class="col col-md-8">
-                        <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"
-                             aria-expanded="false">
-                            <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
-                            <div>Field Upgradeable:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}]]</span>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span></div>
+                            <div id="revocationLocator" class="col col-md-8">
+                                <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
                             </div>
-                            <div>ek Generation Type:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenType')}]]</span></div>
-                            <div>ek Generation Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}]]</span>
-                            </div>
-                            <div>ek Certificate Generation
-                                Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}]]</span></div>
+                        </div>
+                    </th:block>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Endorsement Credential</span></div>
+                        <div id="endorsementID" class="col col-md-8">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('endorsementID'))}">
+                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('endorsementID')})}">
+                                    <img src="/icons/ic_vpn_key_black_24dp.png">
+                                </a>
+                            </th:block>
                         </div>
                     </div>
-                </div>
-            </th:block> <!-- Close certificate of type 'issued' -->
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Credentials</span></div>
+                        <div id="platformID" class="col col-md-8">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('platformID'))}">
+                                <ul id="platformCertIdsList" style="list-style-type: none; padding-left: 0;"></ul>
+                            </th:block>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification Version</span>
+                        </div>
+                        <div id="majorVersion" class="col col-md-8 vertical">
+                            [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification
+                                Version</span></div>
+                        <div id="majorVersion" class="col col-md-8 vertical">
+                            [[${initialData.get('tcgMajorVersion')}]].[[${initialData.get('tcgMinorVersion')}]].[[${initialData.get('tcgRevisionLevel')}]]</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
+                                   aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
+                                    TPM Specification
+                                </a>
+                            </span>
+                        </div>
+                        <div id="tpmSpecification" class="col col-md-8">
+                            <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                <div>Family:&nbsp;<span>[[${initialData.get('TPMSpecificationFamily')}]]</span></div>
+                                <div>Level:&nbsp;<span>[[${initialData.get('TPMSpecificationLevel')}]]</span></div>
+                                <div>Revision:&nbsp;<span>[[${initialData.get('TPMSpecificationRevision')}]]</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"
+                                   aria-expanded="true" data-placement="top" aria-controls="tpmSecurityAssertionInner">
+                                    TPM Security Assertion
+                                </a>
+                            </span>
+                        </div>
+                        <div id="tpmSecurityAssertion" class="col col-md-8">
+                            <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"
+                                 aria-expanded="false">
+                                <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
+                                <div>Field Upgradeable:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}]]</span>
+                                </div>
+                                <div>ek Generation Type:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenType')}]]</span></div>
+                                <div>ek Generation Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}]]</span>
+                                </div>
+                                <div>ek Certificate Generation
+                                    Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}]]</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block> <!-- Close certificate of type 'issued' -->
 
-            <!-- If this is a certificate of type 'idevid' -->
-            <th:block th:if="${#strings.equals(param.type, 'idevid')}">
-                <th:block th:if="${not #strings.isEmpty(initialData.get('tpmPolicies'))}">
-                    <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
-                                                                    title="TPM verification policies, as defined in the TCG specification &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">TPM
-                                Policies</span></div>
-                        <div id="tpmPolicies" class="col col-md-8 vertical">[[${initialData.get('tpmPolicies')}]]</div>
-                    </div>
-                </th:block>
-                <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
-                    <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
-                        <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
+                <!-- If this is a certificate of type 'idevid' -->
+                <th:block th:if="${#strings.equals(param.type, 'idevid')}">
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('tpmPolicies'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
+                                                                        title="TPM verification policies, as defined in the TCG specification &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">TPM
+                                    Policies</span></div>
+                            <div id="tpmPolicies" class="col col-md-8 vertical">[[${initialData.get('tpmPolicies')}]]</div>
+                        </div>
                     </th:block>
-                    <th:block th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
-                        <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
-                    </th:block>
-                </div>
-                <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
                     <div class="row">
-                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span></div>
-                        <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]</div>
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
+                        </th:block>
+                        <th:block th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+                        </th:block>
                     </div>
-                </th:block>
-            </th:block> <!-- Close certificate of type 'idevid' -->
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
+                        <div class="row">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span></div>
+                            <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]</div>
+                        </div>
+                    </th:block>
+                </th:block> <!-- Close certificate of type 'idevid' -->
+            </th:block>
         </div> <!-- Close id="certificate-details-page" -->
     </section> <!-- Close section layout -->
 </body>
