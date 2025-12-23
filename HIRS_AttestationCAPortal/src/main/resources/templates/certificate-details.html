@@ -40,8 +40,8 @@
 
                     // Signature: convert byte array to string
                     if (signature) {
-                        const signatureParsed = JSON.parse(signature);
-                        $("#signature").html(byteToHexString(signatureParsed));
+<!--                        const signatureParsed = JSON.parse(signature);-->
+                        $("#signature").html(byteToHexString(JSON.parse(signature)));
                     }
 
                     // Serial number: convert hex string to byte hex string
@@ -85,8 +85,12 @@
 
                     // Tcg tpm manufacturer / ekAuthorityKeyIdentifier / ekCertificateSerialNumber
                     if (tcgTpmManufacturer) {
-                        $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAuthorityKeyIdentifier));
-                        $("#ekCertificateSerialNumber").html(parseHexString(ekCertificateSerialNumber));
+                        if (ekAuthorityKeyIdentifier) {
+                            $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAuthorityKeyIdentifier));
+                        }
+                        if (ekCertificateSerialNumber) {
+                            $("#ekCertificateSerialNumber").html(parseHexString(ekCertificateSerialNumber));
+                        }
                     }
 
                     // List of platform id links
@@ -119,30 +123,29 @@
                             listContainer.appendChild(li);
                         });
                     }
+                } //end if initialData
 
-                    //Initilize tooltips
-                    $('[data-toggle="tooltip"]').tooltip();
+                //Initilize tooltips
+                $('[data-toggle="tooltip"]').tooltip();
 
-                    //Vertical alignment on data columns
-                    $('.vertical').each(function () {
-                        $(this).css({
-                            'line-height': $(this).height() + 'px'
-                        });
+                //Vertical alignment on data columns
+                $('.vertical').each(function () {
+                    $(this).css({
+                        'line-height': $(this).height() + 'px'
                     });
+                });
 
-                    //Change link width
-                    $("#headingOne, #headingTwo, #headingThree").each(function (e) {
-                        let width = $(this).width();
-                        //Get link width
-                        let linkWidth = $(this).find('a').width();
+                //Change link width
+                $("#headingOne, #headingTwo, #headingThree").each(function (e) {
+                    let width = $(this).width();
+                    //Get link width
+                    let linkWidth = $(this).find('a').width();
 
-                        //Change width for the link
-                        $(this).find('a').css({
-                            "padding-right": (width - linkWidth) + "px"
-                        });
+                    //Change width for the link
+                    $(this).find('a').css({
+                        "padding-right": (width - linkWidth) + "px"
                     });
-
-                } //end if
+                });
             });
         </script>
     </section>
@@ -150,36 +153,50 @@
 
 <body>
     <h1 layout:fragment="pageHeaderTitle">
-        <th:block th:if="${#strings.equals(param.type, 'certificateauthority')}">
-            Certificate Authority
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download?id={id}(id=${param.id})}">
-                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
-            </a>
+
+        <th:block th:if="${not #strings.isEmpty(param.type)}">
+            <th:block th:if="${not #strings.isEmpty(param.id)}">
+                <th:block th:if="${#strings.equals(param.type, 'certificateauthority')}">
+                    Certificate Authority
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download?id={id}(id=${param.id})}">
+                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                    </a>
+                </th:block>
+                <th:block th:if="${#strings.equals(param.type, 'endorsement')}">
+                    Endorsement Certificate
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials/download?id={id}(id=${param.id})}">
+                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                    </a>
+                </th:block>
+                <th:block th:if="${#strings.equals(param.type, 'platform')}">
+                    Platform Certificate
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials/download?id={id}(id=${param.id})}">
+                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                    </a>
+                </th:block>
+                <th:block th:if="${#strings.equals(param.type, 'issued')}">
+                    Issued Attestation Certificates
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id={id}(id=${param.id})}">
+                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                    </a>
+                </th:block>
+                <th:block th:if="${#strings.equals(param.type, 'idevid')}">
+                    IDevID Certificate
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/download?id={id}(id=${param.id})}">
+                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                    </a>
+                </th:block>
+            </th:block>
+
+            <th:block th:if="${not (#strings.equals(param.type, 'certificateauthority')
+                                or #strings.equals(param.type, 'endorsement')
+                                or #strings.equals(param.type, 'platform')
+                                or #strings.equals(param.type, 'issued')
+                                or #strings.equals(param.type, 'idevid'))}">
+                Unknown Certificate
+            </th:block>
         </th:block>
-        <th:block th:if="${#strings.equals(param.type, 'endorsement')}">
-            Endorsement Certificate
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials/download?id={id}(id=${param.id})}">
-                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
-            </a>
-        </th:block>
-        <th:block th:if="${#strings.equals(param.type, 'platform')}">
-            Platform Certificate
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials/download?id={id}(id=${param.id})}">
-                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
-            </a>
-        </th:block>
-        <th:block th:if="${#strings.equals(param.type, 'issued')}">
-            Issued Attestation Certificates
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id={id}(id=${param.id})}">
-                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
-            </a>
-        </th:block>
-        <th:block th:if="${#strings.equals(param.type, 'idevid')}">
-            IDevID Certificate
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/download?id={id}(id=${param.id})}">
-                <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
-            </a>
-        </th:block>
+
     </h1>
 
     <section layout:fragment="content">
