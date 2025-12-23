@@ -148,8 +148,8 @@ public class HelpPageController extends PageController<NoPageParams> {
             final String errorMessage =
                     "An exception was thrown while attempting to set the logging level for the"
                             + " selected logger";
-            messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);

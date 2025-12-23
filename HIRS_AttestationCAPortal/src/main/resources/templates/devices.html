@@ -61,7 +61,7 @@
 
                             for (let i = 0; i < size; i++) {
                                 let id = full.IssuedAttestationCertificateIds[i];
-                                html += certificateDetailsLink("issued", id, false);
+                                html += generateCertificateDetailsLink("issued", id, false);
                             }
 
                             return html;
@@ -80,7 +80,7 @@
                             for (let i = 0; i < size; i++) {
                                 let id = full.PlatformCredentialIds[i];
                                 html +=
-                                    certificateDetailsLink("platform", id, false) + "&nbsp;";
+                                    generateCertificateDetailsLink("platform", id, false) + "&nbsp;";
                             }
 
                             return html;
@@ -99,7 +99,7 @@
                             for (let i = 0; i < size; i++) {
                                 let id = full.EndorsementCredentialIds[i];
                                 html +=
-                                    certificateDetailsLink("endorsement", id, false) + "&nbsp;";
+                                    generateCertificateDetailsLink("endorsement", id, false) + "&nbsp;";
                             }
 
                             return html;

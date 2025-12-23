@@ -83,7 +83,7 @@
               ) {
                 let id = full.endorsementCredential.id;
                 html +=
-                  certificateDetailsLink("endorsement", id, false) + "&nbsp;";
+                  generateCertificateDetailsLink("endorsement", id, false) + "&nbsp;";
               }
               return html;
             },
@@ -104,7 +104,7 @@
                 for (let i = 0; i < size; i++) {
                   let id = full.platformCredentials[i].id;
                   html +=
-                    certificateDetailsLink("platform", id, false) + "&nbsp;";
+                    generateCertificateDetailsLink("platform", id, false) + "&nbsp;";
                 }
               }
               return html;
@@ -117,8 +117,8 @@
             render: function (data, type, full, meta) {
               // set up link to details page
               let html = "";
-              html += certificateDetailsLink("issued", data, true);
-              html += certificateDownloadLink(viewName, data);
+              html += generateCertificateDetailsLink("issued", data, true);
+              html += generateCertificateDownloadLink(viewName, data);
               html += generateCertificateDeleteLink(data);
               return html;
             },

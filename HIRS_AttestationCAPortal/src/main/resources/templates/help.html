@@ -13,7 +13,7 @@
         const mainLoggerName = "hirs.attestationca";
         const mainLoggerPath = "var/log/hirs/HIRS_AttestationCA_Portal.log";
 
-        // Mapping log levels to button colors
+        // Define log levels to button color mapping
         const logLevelColors = {
           ERROR: "btn-danger", // Red for ERROR
           WARN: "btn-warning", // Yellow for WARN
@@ -21,16 +21,39 @@
           DEBUG: "btn-primary", // Blue for DEBUG
         };
 
-        // When the "deleteCertificateConfirmationModal" modal is about to be shown:
-        // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
-        // - Set the value of the hidden input field with ID 'ekToDeleteId' to the retrieved endorsement key certificate ID
-        $('#deleteCertificateConfirmationModal').on('show.bs.modal', function (event) {
-          //todo
-          // const deleteCertLinkButton = $(event.relatedTarget);  // Link that triggered the modal
-          // const endorsementKeyCertificateId = deleteCertLinkButton.data('id');  // Extract the endorsement certificate ID from the data-id attribute
+        // Define log level to text color class mapping
+        const logLevelTextColors = {
+          ERROR: "text-danger", // Red for ERROR
+          WARN: "text-warning", // Yellow for WARN
+          INFO: "text-info",    // Light Blue for INFO
+          DEBUG: "text-primary", // Blue for DEBUG
+        };
 
-          // // Set the value of the hidden input to the ID
-          // $(this).find('#ekToDeleteId').val(endorsementKeyCertificateId);
+        // When the "logLevelChangeConfirmationModal" modal is about to be shown:
+        // - Retrieve the new log level and logger name from the button that triggered the modal (via data-loggerName and data-newLogLevel attributes)
+        // - Set the value of the hidden input field 'logLevel' to the retrieved logger level
+        // - Set the value of the hidden input field 'loggerName' to the retrieved logger name
+        // - Set the value of the hidden input field 'currentLogLevel' to the retrieved current log level
+        $('#logLevelChangeConfirmationModal').on('show.bs.modal', function (event) {
+          const changeLogLevelLinkButton = $(event.relatedTarget);  // Link that triggered the modal
+          const loggerName = changeLogLevelLinkButton.data('loggername');  // Extract the logger name from the data-loggerName attribute
+          const newLogLevel = changeLogLevelLinkButton.data('newloglevel');  // Extract the logger level from the data-newLogLevel attribute
+          const currentLogLevel = changeLogLevelLinkButton.data('currentloglevel'); // Extract the actual log level from the data-currentLogLevel attribute
+
+          // Set the value of the hidden input to the ID
+          $(this).find('#loggerName').val(loggerName);
+          $(this).find('#logLevel').val(newLogLevel);
+          $(this).find('#currentLogLevel').val(currentLogLevel);
+
+          // Update the text in the modal body
+          $('#currentLogLevelText').text(currentLogLevel);
+          $('#newLogLevelText').text(newLogLevel);
+
+          // Apply the text color class to the new log level and the current log level text
+          const newLogLevelTextColorClass = logLevelTextColors[newLogLevel] || 'text-muted'; // Default to 'text-muted' if no match
+          const currentLogLevelTextColorClass = logLevelTextColors[currentLogLevel] || 'text-muted'; // Default to 'text-muted' if no match
+          $('#currentLogLevelText').removeClass().addClass(currentLogLevelTextColorClass);  // Apply text color class to current log level text
+          $('#newLogLevelText').removeClass().addClass(newLogLevelTextColorClass);  // Apply text color class to new log level text
         });
 
         // Setup Help Page's Logger table columns
@@ -54,26 +77,20 @@
           },
           {
             name: "changeLogLevel",
-            data: null,
+            data: "logLevel",
             render: function (data, type, row) {
+              const currentLogLevel = data;
+
               // Start the btn-group div to wrap all the buttons
               let buttonsHtml = '<div class="btn-group" role="group">';
 
               // Loop through the log levels and generate buttons
-              levels.forEach(function (logLevel) {
-                let logLevelColor = logLevelColors[logLevel] || "btn-secondary"; // Default to gray if color not found
+              levels.forEach(function (eachLogLevel) {
+                let logLevelColor = logLevelColors[eachLogLevel] || "btn-secondary"; // Default to gray if color not found
 
                 // Append button HTML for the current log level
-                buttonsHtml +=
-                  '<button type="button" class="btn ' +
-                  logLevelColor +
-                  ' btn-sm" onclick="handleLogLevelChange(\'' +
-                  row.loggerName +
-                  "', '" +
-                  logLevel +
-                  "')\">" +
-                  logLevel +
-                  "</button>";
+                // Use the generateLogLevelChangeButton function to generate the button with color
+                buttonsHtml += generateLogLevelChangeButton(row.loggerName, currentLogLevel, eachLogLevel, logLevelColor);
               });
 
               // Close the btn-group div
@@ -139,27 +156,31 @@
       </table>
     </div>
 
-    <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
+    <!-- This modal will be triggered when the user selects one of the four log level buttons on the log level change table -->
     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/help/setLogLevel}">
       <div
-        th:replace="fragments/modal :: modal(id='changeLogLevelConfirmationModal', label='Confirm Log Level Change', 
+        th:replace="fragments/modal :: modal(id='logLevelChangeConfirmationModal', label='Confirm Log Level Change', 
                 bodyContent=~{this::#logLvlChangeConfirmationBody}, customFooterButtons=~{this::#logLvlChangeConfirmationFooterButtons})">
 
         <!-- Modal Body Content -->
         <div id="logLvlChangeConfirmationBody">
-          <p class="text-center text-danger fs-4"><strong>Are you sure you want to change the log level to ?</strong>
+          <p class="text-center fs-5"> <strong>Are you sure you want to change the log level from <span
+                id="currentLogLevelText"></span> to <span id="newLogLevelText"></span>?</strong>
           </p>
         </div>
 
         <!-- Define custom footer buttons here -->
         <div id="logLvlChangeConfirmationFooterButtons">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <!-- -->
-          <input type="hidden" name="id" id="pcToDeleteId" value="">
-          <button type="submit" class="btn btn-primary">Delete</button>
+          <!-- The logger name, current log level and log level are stored in the hidden fields -->
+          <input type="hidden" name="currentLogLevel" id="currentLogLevel" value="">
+          <input type="hidden" name="loggerName" id="loggerName" value="">
+          <input type="hidden" name="logLevel" id="logLevel" value="">
+          <button type="submit" class="btn btn-primary">Change Log Level</button>
         </div>
       </div>
     </form>
+
   </div>
 </body>
 

@@ -1,9 +1,9 @@
 const iconPath = "/icons";
 
 /**
- * Converts a byte to HEX.
- * @param arr byte array
- * @returns a hex string
+ * Converts a byte array to a HEX string.
+ * @param {Uint8Array | number[]} arr - The byte array to convert.
+ * @returns {string} The HEX string representation of the byte array.
  */
 function byteToHexString(arr) {
   let str = "";
@@ -14,9 +14,9 @@ function byteToHexString(arr) {
 }
 
 /**
- * Parses hex string for display.
- * @param hexString hex string
- * @returns a parsed hex string
+ * Parses a hex string for display.
+ * @param {string} hexString - The hex string to parse.
+ * @returns {string} The parsed hex string.
  */
 function parseHexString(hexString) {
   let str = hexString.toUpperCase();
@@ -28,9 +28,9 @@ function parseHexString(hexString) {
 }
 
 /**
- * Parses the HEX string value to display as byte hex string.
- * @param hexString hex string
- * @returns a parsed byte hex string
+ * Parses a HEX string to display as a byte hex string.
+ * @param {string} hexString - The HEX string to parse.
+ * @returns {string} The parsed byte hex string.
  */
 function parseSerialNumber(hexString) {
   let str = hexString.toUpperCase();
@@ -46,52 +46,15 @@ function parseSerialNumber(hexString) {
 }
 
 /**
- * Sends a POST request to the backend every time the user decides to change the
- * selected logger's log level to a different log level.
- * @param loggerName logger name
- * @param logLevel new log level
- */
-function handleLogLevelChange(loggerName, newLogLevel) {
-  if (
-    confirm(
-      `Are you sure you want to change the log level for ${loggerName} to ${newLogLevel}?`
-    )
-  ) {
-    // Construct the URL with the query parameters
-    const url =
-      "help/setLogLevel?loggerName=" +
-      encodeURIComponent(loggerName) +
-      "&logLevel=" +
-      encodeURIComponent(newLogLevel);
-
-    // Make the POST request to change the log level
-    $.ajax({
-      url: url, // Use the constructed URL with query parameters
-      type: "POST",
-      success: function (response) {
-        // show a success message
-        alert(
-          `Logger ${loggerName}'s level changed to ${newLogLevel} successfully!`
-        );
-        $("#loggersTable").DataTable().ajax.reload(); // Reload DataTable to reflect the change
-      },
-      error: function (xhr, status, error) {
-        alert("Error changing log level: " + error);
-      },
-    });
-  }
-}
-
-/**
- * Initializes a data table with the specified configuration options, including columns, AJAX URL, and table-specific settings.
+ * Initializes a DataTable with the specified configuration, including columns, AJAX URL, and additional settings.
  *
- * @param {string} id - The ID of the data table element.
- * @param {string} url - The URL for the AJAX request to fetch data for the table.
- * @param {Array} columns - An array of column definitions for the data table (e.g., column names, data properties).
- * @param {Object} [options] - Optional configuration object to override default DataTable settings (e.g., disabling search, pagination, or ordering).
- * @returns {DataTable} A DataTable instance with the provided configurations (both default and custom options).
+ * @param {string} id - The ID of the DataTable element.
+ * @param {string} url - The URL for the AJAX request to fetch table data.
+ * @param {Array} columns - An array of column definitions (e.g., column names and data properties).
+ * @param {Object} [customConfig] - Optional configuration object to customize the DataTable settings (e.g., disable search, pagination, or ordering).
+ * @returns {DataTable} A DataTable instance with the provided configurations.
  */
-function setDataTables(id, url, columns, options = {}) {
+function setDataTables(id, url, columns, customConfig = {}) {
   let defaultConfig = {
     processing: true,
     serverSide: true,
@@ -121,24 +84,28 @@ function setDataTables(id, url, columns, options = {}) {
             buttons: [
               {
                 extend: "copy",
+                text: '<img src="/icons/svg/copy-20dp.svg" alt="CSV"> Copy',
                 exportOptions: {
                   columns: ":visible",
                 },
               },
               {
                 extend: "csv",
+                text: '<img src="/icons/svg/filetype-csv-20dp.svg" alt="CSV"> CSV',
                 exportOptions: {
                   columns: ":visible",
                 },
               },
               {
                 extend: "excel",
+                text: '<img src="/icons/svg/file-earmark-spreadsheet-20dp.svg" alt="XLS"> Excel',
                 exportOptions: {
                   columns: ":visible",
                 },
               },
               {
                 extend: "pdfHtml5",
+                text: '<img src="/icons/svg/filetype-pdf-20dp.svg" alt="PDF"> PDF',
                 exportOptions: {
                   columns: ":visible",
                 },
@@ -147,6 +114,7 @@ function setDataTables(id, url, columns, options = {}) {
               },
               {
                 extend: "print",
+                text: '<img src="/icons/svg/printer-20dp.svg" alt="Print"> Print',
                 exportOptions: {
                   columns: ":visible",
                 },
@@ -164,7 +132,7 @@ function setDataTables(id, url, columns, options = {}) {
               // Clear search and reset column controls
               dt.search("").columns().columnControl.searchClear().draw();
 
-              // Reset the ordering to default
+              // Reset ordering
               dt.order([]).draw();
             },
           },
@@ -182,22 +150,55 @@ function setDataTables(id, url, columns, options = {}) {
   };
 
   // Merge user options over default config
-  const config = { ...defaultConfig, ...options };
+  const finalConfiguration = { ...defaultConfig, ...customConfig };
 
-  return new DataTable(id, config);
+  return new DataTable(id, finalConfiguration);
 }
 
 /**
- * Create a certificate details like for the specified certificate
- * type and ID with the corresponding icon.
- * @param type of certificate
- * @param id of the certificate
- * @param sameType boolean indicating if the details is the same
- *       certificate type.
- * @returns a HTML string of a certificate detail link
+ * Generates an HTML button that triggers a modal to change the log level for a specific logger.
+ * The button is styled according to the provided log level color and displays the new log level.
+ *
+ * @param {string} loggerName - The name of the logger whose log level is being changed.
+ * @param {string} currentLogLevel - The current log level of the logger.
+ * @param {string} newLogLevel - The new log level that the button represents (this will be displayed on the button).
+ * @param {string} logLevelColor - The CSS class that determines the button's color (e.g., `btn-primary`, `btn-danger`).
+ * @returns {string} An HTML string representing the button that triggers the log level change modal.
  */
-function certificateDetailsLink(type, id, sameType) {
-  const href = "certificate-details?id=" + id + "&type=" + type;
+function generateLogLevelChangeButton(
+  loggerName,
+  currentLogLevel,
+  newLogLevel,
+  logLevelColor
+) {
+  const modalTargetId = `#logLevelChangeConfirmationModal`;
+
+  // Generate the modal trigger button for the specified log level
+  const html =
+    `<button type="button" ` +
+    `class="btn ${logLevelColor} btn-sm" ` + // Use dynamic color
+    `data-bs-toggle="modal" ` +
+    `data-bs-target="${modalTargetId}" ` +
+    `data-currentLogLevel="${currentLogLevel}" ` +
+    `data-loggerName="${loggerName}" ` +
+    `data-newLogLevel="${newLogLevel}" ` +
+    `aria-label="Change Log Level Link">` +
+    newLogLevel + // Display the log level text inside the button
+    `</button>`;
+  return html;
+}
+
+/**
+ * Generates an HTML string for a certificate detail link based on the
+ * specified certificate type and certificate ID.
+ *
+ * @param {string} type - The type of the certificate.
+ * @param {string} certificateId - The unique identifier for the certificate.
+ * @param {boolean} sameType - Indicates whether the details belong to the same certificate type.
+ * @returns {string} An HTML string representing the certificate detail link.
+ */
+function generateCertificateDetailsLink(type, certificateId, sameType) {
+  const href = "certificate-details?id=" + certificateId + "&type=" + type;
   let fullIconPath = iconPath;
   let title = "";
 
@@ -226,50 +227,46 @@ function certificateDetailsLink(type, id, sameType) {
         break;
     }
   }
-  const html =
-    "<a href=" +
-    href +
-    ">" +
-    '<img src="' +
-    fullIconPath +
-    '" title="' +
-    title +
-    '"></a>';
+
+  const html = `
+  <a href="${href}">
+    <img src="${fullIconPath}" class="options-icons" title="${title}">
+  </a>
+`;
+
   return html;
 }
 
 /**
- * Create a RIM details like for the specified rim.
- * type and ID with the corresponding icon.
- * @param pagePath path to the link
- * @param id of the rim
- * @returns a HTML string of a RIM detail link
+ * Generates an HTML string for a RIM detail link based on the specified
+ * page path and the RIM ID.
+ *
+ * @param {string} pagePath - The prefix needed to find path to the details REST endpoint for RIMS.
+ * @param {string} rimId - The unique identifier for the RIM.
+ * @returns {string} An HTML string representing the RIM detail link.
  */
-function rimDetailsLink(pagePath, id) {
-  const href = pagePath + "/rim-details?id=" + id;
+function generateRimDetailsLink(pagePath, rimId) {
+  const href = pagePath + "/rim-details?id=" + rimId;
   const fullIconPath = iconPath + "/ic_assignment_black_24dp.png";
   const title = "Details";
 
-  const html =
-    "<a href=" +
-    href +
-    ">" +
-    '<img src="' +
-    fullIconPath +
-    '" title="' +
-    title +
-    '"></a>';
+  const html = `
+  <a href="${href}">
+    <img src="${fullIconPath}" class="options-icons" title="${title}">
+  </a>
+`;
+
   return html;
 }
 
 /**
  * Generates an HTML string for a certificate delete link based on the given certificate ID.
  *
- * @param {string} certificateId - The ID of the certificate to delete. This should be a string that uniquely identifies the certificate.
- * @returns {string} A string of HTML representing a delete link for the certificate.
+ * @param {string} certificateId - The ID of the certificate to delete.
+ * @returns {string} An HTML string representing a delete link for the certificate.
  */
 function generateCertificateDeleteLink(certificateId) {
-  const fullIconPath = iconPath + "/svg/trash.svg";
+  const fullIconPath = iconPath + "/svg/trash-24dp.svg";
   const modalTargetId = `#deleteCertificateConfirmationModal`;
 
   const html =
@@ -278,7 +275,7 @@ function generateCertificateDeleteLink(certificateId) {
     `data-bs-target="${modalTargetId}" ` +
     `data-id="${certificateId}" ` +
     'aria-label="Delete Certificate Link">' +
-    `<img src="${fullIconPath}" alt="Delete Certificate Link" title="Delete Certificate">` +
+    `<img src="${fullIconPath}" class="options-icons" alt="Delete Certificate Link" title="Delete Certificate">` +
     "</a>";
 
   return html;
@@ -287,11 +284,11 @@ function generateCertificateDeleteLink(certificateId) {
 /**
  * Generates an HTML string for a RIM delete link based on the given RIM ID.
  *
- * @param {string} rimId - The ID of the RIM entry to delete. This should be a string that uniquely identifies the RIM.
- * @returns {string} A string of HTML representing a delete link for the RIM.
+ * @param {string} rimId - The ID of the RIM entry to delete.
+ * @returns {string} An HTML string representing a delete link for the RIM.
  */
 function generateRIMDeleteLink(rimId) {
-  const fullIconPath = iconPath + "/svg/trash.svg";
+  const fullIconPath = iconPath + "/svg/trash-24dp.svg";
   const modalTargetId = `#deleteRIMConfirmationModal`;
 
   const html =
@@ -300,56 +297,56 @@ function generateRIMDeleteLink(rimId) {
     `data-bs-target="${modalTargetId}" ` +
     `data-id="${rimId}" ` +
     'aria-label="Delete RIM Link">' +
-    `<img src="${fullIconPath}" alt="Delete RIM Link" title="Delete RIM">` +
+    `<img src="${fullIconPath}" class="options-icons" alt="Delete RIM Link" title="Delete RIM">` +
     "</a>";
 
   return html;
 }
 
 /**
- * Create a certificate download link for the specified ID
- * @param pagePath path to the link
- * @param id of the certificate
+ * Generates a download link for the specified certificate ID.
+ *
+ * @param {string} pagePath - The prefix needed to find path to the download REST endpoint for certificates.
+ * @param {string} certificateId - The unique identifier for the certificate.
+ * @returns {string} An HTML string representing a download link for the certificate.
  */
-function certificateDownloadLink(pagePath, id) {
-  const href = pagePath + "/download?id=" + id;
+function generateCertificateDownloadLink(pagePath, certificateId) {
+  const href = pagePath + "/download?id=" + certificateId;
   const fullIconPath = iconPath + "/ic_file_download_black_24dp.png";
 
-  const html =
-    '<a href="' +
-    href +
-    '">' +
-    '<img src="' +
-    fullIconPath +
-    '" title="Download Certificate"></a>';
+  const html = `
+  <a href="${href}">
+    <img src="${fullIconPath}" class="options-icons" title="Download Certificate">
+  </a>
+`;
 
   return html;
 }
 
 /**
- * Create a rim download link for the specified ID
- * @param pagePath path to the link
- * @param id of the rim
+ * Generates a download link for the specified RIM ID.
+ *
+ * @param {string} pagePath - The prefix needed to find path to the download REST endpoint for RIMS.
+ * @param {string} rimId - The unique identifier for the RIM.
+ * @returns {string} An HTML string representing a download link for the RIM.
  */
-function rimDownloadLink(pagePath, id) {
+function generateRimDownloadLink(pagePath, rimId) {
   const icon = iconPath + "/ic_file_download_black_24dp.png";
-  const href = pagePath + "/download?id=" + id;
+  const href = pagePath + "/download?id=" + rimId;
 
-  const html =
-    '<a href="' +
-    href +
-    '">' +
-    '<img src="' +
-    icon +
-    '" title="Download Reference Integrity Manifest"></a>';
+  const html = `
+  <a href="${href}">
+    <img src="${icon}" class="options-icons" title="Download Reference Integrity Manifest">
+  </a>
+`;
 
   return html;
 }
 
 /**
- * Formats a given date to a UTC string, or returns Indefinite (802.1AR)
- * @param date to format
- * @returns a string representing a date in RFC 7231 format, or "Indefinite"
+ * Formats a given date to a UTC string, or returns "Indefinite" (802.1AR).
+ * @param {string | Date} dateText - The date to format.
+ * @returns {string} The formatted date in RFC 7231 format, or "Indefinite".
  */
 function formatCertificateDate(dateText) {
   const timestamp = Date.parse(dateText); // Convert to numeric

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org">
+    xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <section layout:fragment="script">
@@ -65,8 +65,8 @@
                         searchable: false,
                         render: function (data, type, full, meta) {
                             let html = "";
-                            html += rimDetailsLink(rimDBViewName, data);
-                            html += rimDownloadLink(viewName, data);
+                            html += generateRimDetailsLink(rimDBViewName, data);
+                            html += generateRimDownloadLink(viewName, data);
                             html += generateRIMDeleteLink(data);
 
                             return html;
@@ -81,64 +81,64 @@
 </head>
 
 <body>
-<h1 layout:fragment="pageHeaderTitle">Reference Integrity Manifests</h1>
+    <h1 layout:fragment="pageHeaderTitle">Reference Integrity Manifests</h1>
 
-<div layout:fragment="content">
-    <div class="aca-input-box-header">
-        <form enctype="multipart/form-data" method="post"
-              th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}">
-            Reference Integrity Manifests
-            <th:block
+    <div layout:fragment="content">
+        <div class="aca-input-box-header">
+            <form enctype="multipart/form-data" method="post"
+                th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}">
+                Reference Integrity Manifests
+                <th:block
                     th:replace="fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', label='Import RIMs', bodyContent=~{this :: bodyContent})">
-                <th:block th:fragment="bodyContent">
-                    <input id="importFile" multiple="multiple" name="file" type="file"/>
+                    <th:block th:fragment="bodyContent">
+                        <input id="importFile" multiple="multiple" name="file" type="file" />
+                    </th:block>
                 </th:block>
-            </th:block>
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}">
-                <img alt="Download All RIMs" th:src="@{/icons/ic_file_download_black_24dp.png}">
-            </a>
-        </form>
-    </div>
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}">
+                    <img alt="Download All RIMs" th:src="@{/icons/ic_file_download_black_24dp.png}">
+                </a>
+            </form>
+        </div>
 
-    <br/>
+        <br />
 
-    <div class="aca-data-table">
-        <table class="table table-bordered table-striped table-hover" id="referenceManifestTable">
-            <thead>
-            <tr>
-                <th>Tag Id</th>
-                <th>Type</th>
-                <th>Manufacturer</th>
-                <th>Model</th>
-                <th>Version</th>
-                <th>Options</th>
-            </tr>
-            </thead>
-        </table>
-    </div>
+        <div class="aca-data-table">
+            <table class="table table-bordered table-striped table-hover" id="referenceManifestTable">
+                <thead>
+                    <tr>
+                        <th>Tag Id</th>
+                        <th>Type</th>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Version</th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
 
-    <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
-    <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/delete}">
-        <div
+        <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
+        <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/delete}">
+            <div
                 th:replace="fragments/modal :: modal(id='deleteRIMConfirmationModal', label='Confirm Deletion Of Reference Integrity Manifest', 
                 bodyContent=~{this::#deleteRIMConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
 
-            <!-- Modal Body Content -->
-            <div id="deleteRIMConfirmationBody">
-                <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this Reference
-                    Integrity Manifest?</strong></p>
-            </div>
+                <!-- Modal Body Content -->
+                <div id="deleteRIMConfirmationBody">
+                    <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this Reference
+                            Integrity Manifest?</strong></p>
+                </div>
 
-            <!-- Define custom footer buttons here -->
-            <div id="deleteConfirmationFooterButtons">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
-                <!-- The reference integrity manifest ID is stored in this hidden field -->
-                <input id="rimToDeleteId" name="id" type="hidden" value="">
-                <button class="btn btn-danger" type="submit">Delete</button>
+                <!-- Define custom footer buttons here -->
+                <div id="deleteConfirmationFooterButtons">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <!-- The reference integrity manifest ID is stored in this hidden field -->
+                    <input id="rimToDeleteId" name="id" type="hidden" value="">
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </div>
             </div>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 </body>
 
 </html>

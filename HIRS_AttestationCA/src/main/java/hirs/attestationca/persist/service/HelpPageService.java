@@ -152,8 +152,8 @@ public class HelpPageService {
      *
      * @param loggerName      name of the logger
      * @param logLevel        log level
-     * @param successMessages
-     * @param errorMessages
+     * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages   contains any error messages that will be displayed on the page
      */
     public void setLoggerLevel(final String loggerName,
                                final String logLevel,
@@ -163,7 +163,6 @@ public class HelpPageService {
 
         // if a user attempts to change the log level of a logger that is not a part of the HIRS application
         if (!loggerName.startsWith(MAIN_HIRS_LOGGER_NAME)) {
-
             final String errorMessage = String.format("An illegal attempt has been made to change "
                     + "the selected logger [%s]'s log level. ", loggerName);
 
@@ -174,6 +173,9 @@ public class HelpPageService {
 
         loggersEndpoint.configureLogLevel(loggerName, newLogLevel);
 
-        log.info("The logger [{}]'s level has been changed to [{}]", loggerName, newLogLevel);
+        final String successMessage =
+                String.format("The logger [%s]'s level has been changed to [%s]", loggerName, newLogLevel);
+        log.info(successMessage);
+        successMessages.add(successMessage);
     }
 }
