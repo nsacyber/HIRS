@@ -8,6 +8,10 @@ import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
+import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
+import hirs.attestationca.persist.service.util.PageServiceUtils;
+import hirs.attestationca.persist.service.util.PredicateFactory;
 import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.persist.util.DownloadFile;
 import jakarta.persistence.EntityManager;
@@ -15,15 +19,17 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +39,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.sql.Timestamp;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -71,42 +79,36 @@ public class CertificatePageService {
      * Takes the provided column names, the search term that the user entered and attempts to find
      * certificates whose field values matches the provided search term.
      *
-     * @param entityClass       generic certificate entity class
-     * @param searchableColumns list of the searchable column names
-     * @param searchTerm        text that was input in the search textbox
-     * @param archiveFlag       archive flag
-     * @param pageable          pageable
-     * @param <T>               generic entity class that extends from certificate
+     * @param entityClass           generic certificate entity class
+     * @param searchableColumnNames list of the searchable column names
+     * @param globalSearchTerm      text that was input in the global search textbox
+     * @param archiveFlag           archive flag
+     * @param pageable              pageable
+     * @param <T>                   generic entity class that extends from certificate
      * @return page full of the generic certificates.
      */
-    public <T extends Certificate> Page<T> findCertificatesBySearchableColumnsAndArchiveFlag(
+    public <T extends Certificate> Page<T> findCertificatesByGlobalSearchTermAndArchiveFlag(
             final Class<T> entityClass,
-            final Set<String> searchableColumns,
-            final String searchTerm,
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
-        Root<T> rootCertificate = query.from(entityClass);
+        Root<T> certificateRoot = query.from(entityClass);
 
-        List<Predicate> predicates = new ArrayList<>();
+        final Predicate combinedGlobalSearchPredicates =
+                createPredicatesForGlobalSearch(searchableColumnNames, criteriaBuilder, certificateRoot,
+                        globalSearchTerm);
 
-        // Dynamically add search conditions for each field that should be searchable
-        if (!StringUtils.isBlank(searchTerm)) {
-            // Dynamically loop through columns and create LIKE conditions for each searchable column
-            for (String columnName : searchableColumns) {
-                Predicate predicate =
-                        criteriaBuilder.like(criteriaBuilder.lower(rootCertificate.get(columnName)),
-                                "%" + searchTerm.toLowerCase() + "%");
-                predicates.add(predicate);
-            }
-        }
+        // Define the conditions (predicates) for the query's WHERE clause.
+        query.where(criteriaBuilder.and(
+                combinedGlobalSearchPredicates,
+                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)
+        ));
 
-        Predicate likeConditions = criteriaBuilder.or(predicates.toArray(new Predicate[0]));
-
-        // Add archiveFlag condition if specified
-        query.where(criteriaBuilder.and(likeConditions,
-                criteriaBuilder.equal(rootCertificate.get("archiveFlag"), archiveFlag)));
+        // Apply sorting if present in the Pageable
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<T> typedQuery = this.entityManager.createQuery(query);
@@ -117,6 +119,113 @@ public class CertificatePageService {
         // Wrap the result in a Page object to return pagination info
         List<T> resultList = typedQuery.getResultList();
         return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * Takes the provided columns that come with a search criteria and attempts to find
+     * certificates that match the column's specific search criteria's search value.
+     *
+     * @param entityClass               generic certificate entity class
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param archiveFlag               archive flag
+     * @param pageable                  pageable
+     * @param <T>                       generic entity class that extends from certificate
+     * @return page full of the generic certificates.
+     */
+    public <T extends Certificate> Page<T> findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+            final Class<T> entityClass,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final boolean archiveFlag,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
+        Root<T> certificateRoot = query.from(entityClass);
+
+        final Predicate combinedColumnSearchPredicates =
+                createPredicatesForColumnSpecificSearch(columnsWithSearchCriteria, criteriaBuilder,
+                        certificateRoot);
+
+        // Define the conditions (predicates) for the query's WHERE clause.
+        query.where(criteriaBuilder.and(
+                combinedColumnSearchPredicates,
+                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)
+        ));
+
+        // Apply sorting if present in the Pageable
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable.getSort()));
+
+        // Apply pagination
+        TypedQuery<T> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<T> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+    }
+
+    /**
+     * Finds certificates based on both global search and column-specific search criteria.
+     * The method applies the provided global search term across all searchable columns
+     * and also applies column-specific filters based on the individual column search criteria.
+     * The results are returned with pagination support.
+     * <p>
+     * This method combines the logic of two search functionalities:
+     * - Global search: Searches across all specified columns for a matching term.
+     * - Column-specific search: Filters based on individual column search criteria, such as text
+     * or date searches.
+     * <p>
+     *
+     * @param entityClass               generic certificate entity class
+     * @param searchableColumnNames     list of the searchable column names
+     * @param globalSearchTerm          text that was input in the global search textbox
+     * @param columnsWithSearchCriteria columns that have a search criteria applied to them
+     * @param pageable                  pageable
+     * @param archiveFlag               archive flag
+     * @param <T>                       generic entity class that extends from certificate
+     * @return page full of the generic certificates.
+     */
+    public <T extends Certificate> Page<T> findCertificatesByGlobalAndColumnSpecificSearchTerm(
+            final Class<T> entityClass,
+            final Set<String> searchableColumnNames,
+            final String globalSearchTerm,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final boolean archiveFlag,
+            final Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<T> query = criteriaBuilder.createQuery(entityClass);
+        Root<T> certificateRoot = query.from(entityClass);
+
+        final Predicate globalSearchPartOfChainedPredicates =
+                createPredicatesForGlobalSearch(searchableColumnNames, criteriaBuilder, certificateRoot,
+                        globalSearchTerm);
+
+        final Predicate columnSearchPartOfChainedPredicates =
+                createPredicatesForColumnSpecificSearch(columnsWithSearchCriteria, criteriaBuilder,
+                        certificateRoot);
+
+        // Define the conditions (predicates) for the query's WHERE clause.
+        // Combine global and column-specific predicates using AND logic
+        query.where(criteriaBuilder.and(
+                globalSearchPartOfChainedPredicates,
+                columnSearchPartOfChainedPredicates,
+                criteriaBuilder.equal(certificateRoot.get("archiveFlag"), archiveFlag)
+        ));
+
+        // Apply sorting if present in the Pageable
+        query.orderBy(getSortingOrders(criteriaBuilder, certificateRoot, pageable.getSort()));
+
+        // Apply pagination
+        TypedQuery<T> typedQuery = entityManager.createQuery(query);
+        int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
+        typedQuery.setFirstResult((int) pageable.getOffset());
+        typedQuery.setMaxResults(pageable.getPageSize());
+
+        // Wrap the result in a Page object to return pagination info
+        List<T> resultList = typedQuery.getResultList();
+        return new PageImpl<>(resultList, pageable, totalRows);
+
     }
 
     /**
@@ -330,7 +439,8 @@ public class CertificatePageService {
             throw new EntityNotFoundException(errorMessage);
         } else if (!certificateClass.isInstance(certificate)) {
             final String errorMessage =
-                    "Unable to cast the found certificate to a(n) " + certificateClass.getSimpleName() + " object";
+                    "Unable to cast the found certificate to a(n) " + certificateClass.getSimpleName()
+                            + " object";
             log.warn(errorMessage);
             throw new ClassCastException(errorMessage);
         }
@@ -376,7 +486,8 @@ public class CertificatePageService {
             if (CredentialHelper.isMultiPEM(new String(fileBytes, StandardCharsets.UTF_8))) {
                 try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(fileBytes)) {
                     CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                    Collection<? extends java.security.cert.Certificate> c = cf.generateCertificates(certInputStream);
+                    Collection<? extends java.security.cert.Certificate> c =
+                            cf.generateCertificates(certInputStream);
 
                     for (java.security.cert.Certificate certificate : c) {
                         List<String> moreSuccessMessages = new ArrayList<>();
@@ -415,7 +526,8 @@ public class CertificatePageService {
             errorMessages.add(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
-            final String failMessage = String.format("Trust chain certificate format not recognized(%s): ", fileName);
+            final String failMessage =
+                    String.format("Trust chain certificate format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
             errorMessages.add(failMessage + iaEx.getMessage());
             return null;
@@ -426,6 +538,132 @@ public class CertificatePageService {
             errorMessages.add(failMessage + isEx.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Helper method that generates a combined predicate for global search across searchable columns.
+     * For each column, if the field is of type `String`, a "contains" condition is created.
+     *
+     * @param searchableColumnNames the columns to be searched globally
+     * @param criteriaBuilder       the criteria builder to construct the predicates
+     * @param certificateRoot       the root entity representing the certificate
+     * @param globalSearchTerm      the term to search for across columns
+     * @param <T>                   the entity type that extends `Certificate`
+     * @return a combined `Predicate` representing the global search conditions
+     */
+    private <T extends Certificate> Predicate createPredicatesForGlobalSearch(
+            final Set<String> searchableColumnNames,
+            final CriteriaBuilder criteriaBuilder,
+            final Root<T> certificateRoot,
+            final String globalSearchTerm) {
+        List<Predicate> combinedGlobalSearchPredicates = new ArrayList<>();
+
+        // Dynamically loop through columns and create LIKE conditions for each searchable column
+        for (String columnName : searchableColumnNames) {
+            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = certificateRoot.get(columnName);
+
+                Predicate predicate = PredicateFactory.createPredicateForStringFields(criteriaBuilder,
+                        stringFieldPath, globalSearchTerm, PredicateFactory.STRING_FIELD_GLOBAL_SEARCH_LOGIC);
+                combinedGlobalSearchPredicates.add(predicate);
+            } else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                try {
+                    Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
+
+                    final Timestamp columnSearchTimestamp =
+                            PageServiceUtils.convertColumnSearchTermIntoTimeStamp(globalSearchTerm,
+                                    PredicateFactory.DATE_FIELD_GLOBAL_SEARCH_LOGIC);
+
+                    Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
+                            dateFieldPath, columnSearchTimestamp,
+                            PredicateFactory.DATE_FIELD_GLOBAL_SEARCH_LOGIC);
+                    combinedGlobalSearchPredicates.add(predicate);
+                } catch (DateTimeParseException
+                        dateTimeParseException) {
+                    // ignore the exception since the user most likely has not entered a complete date
+                }
+            }
+        }
+
+        return criteriaBuilder.or(combinedGlobalSearchPredicates.toArray(new Predicate[0]));
+    }
+
+    /**
+     * Helper method that generates a list of sorting orders based on the provided {@link Pageable} object.
+     * This method checks if sorting is enabled in the {@link Pageable} and applies the necessary sorting
+     * to the query using the CriteriaBuilder and Certificate Root.
+     *
+     * @param criteriaBuilder the CriteriaBuilder used to create the sort expressions.
+     * @param certificateRoot the Root of the entity (Certificate) to which the sorting should be applied.
+     * @param pageableSort    the {@link Sort} object that contains the sort information.
+     * @param <T>             the type of the entity that extends Certificate.
+     * @return a list of {@link Order} objects, which can be applied to a CriteriaQuery for sorting.
+     */
+    private <T extends Certificate> List<Order> getSortingOrders(final CriteriaBuilder criteriaBuilder,
+                                                                 final Root<T> certificateRoot,
+                                                                 final Sort pageableSort) {
+        List<Order> orders = new ArrayList<>();
+
+        if (pageableSort.isSorted()) {
+            pageableSort.forEach(order -> {
+                Path<Object> path = certificateRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+        }
+        return orders;
+    }
+
+    /**
+     * Helper method that generates a combined predicate for column-specific search criteria.
+     * It constructs conditions based on the field type (e.g., `String` or `Timestamp`)
+     * and the provided search term and logic for each column.
+     *
+     * @param columnsWithSearchCriteria the columns and their associated search criteria
+     * @param criteriaBuilder           the criteria builder to construct the predicates
+     * @param certificateRoot           the root entity representing the certificate
+     * @param <T>                       the entity type that extends `Certificate`
+     * @return a combined `Predicate` representing the column-specific search conditions
+     */
+    private <T extends Certificate> Predicate createPredicatesForColumnSpecificSearch(
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final CriteriaBuilder criteriaBuilder,
+            final Root<T> certificateRoot) {
+        List<Predicate> combinedColumnSearchPredicates = new ArrayList<>();
+
+        // loop through all the datatable columns that have an applied search criteria
+        for (DataTablesColumn columnWithSearchCriteria : columnsWithSearchCriteria) {
+            final String columnName = columnWithSearchCriteria.getColumnName();
+            final String columnSearchTerm = columnWithSearchCriteria.getColumnSearchTerm();
+            final String columnSearchLogic = columnWithSearchCriteria.getColumnSearchLogic();
+
+            if (String.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                Path<String> stringFieldPath = certificateRoot.get(columnName);
+
+                Predicate predicate =
+                        PredicateFactory.createPredicateForStringFields(criteriaBuilder, stringFieldPath,
+                                columnSearchTerm,
+                                columnSearchLogic);
+                combinedColumnSearchPredicates.add(predicate);
+            } else if (Timestamp.class.equals(certificateRoot.get(columnName).getJavaType())) {
+                try {
+                    Path<Timestamp> dateFieldPath = certificateRoot.get(columnName);
+
+                    final Timestamp columnSearchTimestamp =
+                            PageServiceUtils.convertColumnSearchTermIntoTimeStamp(columnSearchTerm,
+                                    columnSearchLogic);
+
+                    Predicate predicate = PredicateFactory.createPredicateForTimestampFields(criteriaBuilder,
+                            dateFieldPath, columnSearchTimestamp,
+                            columnSearchLogic);
+                    combinedColumnSearchPredicates.add(predicate);
+                } catch (DateTimeParseException
+                        dateTimeParseException) {
+                    // ignore the exception since the user most likely has not entered a complete date
+                }
+            }
+        }
+
+        return criteriaBuilder.and(combinedColumnSearchPredicates.toArray(new Predicate[0]));
     }
 
     /**
@@ -449,7 +687,8 @@ public class CertificatePageService {
      *
      * @param platformCredential certificate
      */
-    private void parseAndSaveComponentResults(final PlatformCredential platformCredential) throws IOException {
+    private void parseAndSaveComponentResults(final PlatformCredential platformCredential)
+            throws IOException {
         List<ComponentResult> componentResults = this.componentResultRepository
                 .findByCertificateSerialNumberAndBoardSerialNumber(
                         platformCredential.getSerialNumber().toString(),
@@ -511,4 +750,3 @@ public class CertificatePageService {
         }
     }
 }
-

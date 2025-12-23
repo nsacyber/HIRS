@@ -66,7 +66,8 @@ public class HelpPageController extends PageController<NoPageParams> {
      */
     @GetMapping("/hirs-logs-download")
     public void downloadHIRSLogs(final HttpServletResponse response) throws IOException {
-        log.info("Received request to download a zip file of all the HIRS Attestation application's log files");
+        log.info(
+                "Received request to download a zip file of all the HIRS Attestation application's log files");
 
         final String zipFileName = "HIRS_AttestationCAPortal_Logs.zip";
 
@@ -85,15 +86,16 @@ public class HelpPageController extends PageController<NoPageParams> {
     /**
      * Processes the request to retrieve the main HIRS logger for display on the help page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of just the main HIRS logger
      */
     @ResponseBody
     @GetMapping(value = "/list-main-logger", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<HIRSLogger> getMainHIRSLogger(final DataTableInput input) {
+    public DataTableResponse<HIRSLogger> getMainHIRSLogger(final DataTableInput dataTableInput) {
 
         log.info("Received request to display the main HIRS logger");
-        log.debug("Request received a datatable input object for listing the main HIRS logger: {}", input);
+        log.debug("Request received a datatable input object for listing the main HIRS logger: {}",
+                dataTableInput);
 
         FilteredRecordsList<HIRSLogger> mainHIRSLoggersFilteredRecordsList = new FilteredRecordsList<>();
 
@@ -102,10 +104,10 @@ public class HelpPageController extends PageController<NoPageParams> {
         mainHIRSLoggersFilteredRecordsList.setRecordsTotal(1);
         mainHIRSLoggersFilteredRecordsList.setRecordsFiltered(1);
 
-        log.info("Returning the size of the list of main HIRS loggers: "
+        log.info("Returning the size of the filtered list of main HIRS loggers: "
                 + "{}", mainHIRSLoggersFilteredRecordsList.getRecordsFiltered());
 
-        return new DataTableResponse<>(mainHIRSLoggersFilteredRecordsList, input);
+        return new DataTableResponse<>(mainHIRSLoggersFilteredRecordsList, dataTableInput);
     }
 
     /**

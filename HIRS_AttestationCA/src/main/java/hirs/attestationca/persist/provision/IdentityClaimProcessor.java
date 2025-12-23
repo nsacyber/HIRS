@@ -673,8 +673,8 @@ public class IdentityClaimProcessor extends AbstractProcessor {
                             referenceManifestRepository.save(bRim);
                             referenceManifestRepository.save(sBaseRim);
                         } else {
-                            log.warn("Could not locate support RIM associated with " +
-                                    "base RIM " + bRim.getId());
+                            log.warn("Could not locate support RIM associated with "
+                                    + "base RIM " + bRim.getId());
                         }
                     }
                 }
