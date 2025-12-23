@@ -15,6 +15,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -90,6 +92,9 @@ public class DevicePageService {
         // Define the conditions (predicates) for the query's WHERE clause.
         query.where(criteriaBuilder.and(combinedGlobalSearchPredicates));
 
+        // Apply sorting if present in the Pageable
+        query.orderBy(getSortingOrders(criteriaBuilder, deviceRoot, pageable.getSort()));
+
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
@@ -123,6 +128,9 @@ public class DevicePageService {
 
         // Define the conditions (predicates) for the query's WHERE clause.
         query.where(criteriaBuilder.and(combinedColumnSearchPredicates));
+
+        // Apply sorting if present in the Pageable
+        query.orderBy(getSortingOrders(criteriaBuilder, deviceRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);
@@ -176,6 +184,9 @@ public class DevicePageService {
         query.where(criteriaBuilder.and(globalSearchPartOfChainedPredicates,
                 columnSearchPartOfChainedPredicates));
 
+        // Apply sorting if present in the Pageable
+        query.orderBy(getSortingOrders(criteriaBuilder, deviceRoot, pageable.getSort()));
+
         // Apply pagination
         TypedQuery<Device> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
@@ -192,10 +203,10 @@ public class DevicePageService {
      * Retrieves all devices from the database.
      *
      * @param pageable pageable
-     * @return page of devices
+     * @return a page of all devices
      */
     public Page<Device> findAllDevices(final Pageable pageable) {
-        return deviceRepository.findAll(pageable);
+        return this.deviceRepository.findAll(pageable);
     }
 
     /**
@@ -321,6 +332,30 @@ public class DevicePageService {
         records.setRecordsTotal(deviceList.getRecordsTotal());
         records.setRecordsFiltered(deviceList.getRecordsFiltered());
         return records;
+    }
+
+    /**
+     * Helper method that generates a list of sorting orders based on the provided {@link Pageable} object.
+     * This method checks if sorting is enabled in the {@link Pageable} and applies the necessary sorting
+     * to the query using the CriteriaBuilder and Device Root.
+     *
+     * @param criteriaBuilder the CriteriaBuilder used to create the sort expressions.
+     * @param deviceRoot      the Device Root to which the sorting should be applied.
+     * @param pageableSort    the {@link Sort} object that contains the sort information.
+     * @return a list of {@link Order} objects, which can be applied to a CriteriaQuery for sorting.
+     */
+    private List<Order> getSortingOrders(final CriteriaBuilder criteriaBuilder,
+                                         final Root<Device> deviceRoot,
+                                         final Sort pageableSort) {
+        List<Order> orders = new ArrayList<>();
+
+        if (pageableSort.isSorted()) {
+            pageableSort.forEach(order -> {
+                Path<Object> path = deviceRoot.get(order.getProperty());
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+        }
+        return orders;
     }
 
     /**

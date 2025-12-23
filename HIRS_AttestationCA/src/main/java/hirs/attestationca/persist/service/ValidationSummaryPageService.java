@@ -19,6 +19,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -126,6 +128,10 @@ public class ValidationSummaryPageService {
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)
         ));
 
+        // Apply sorting if present in the Pageable
+        query.orderBy(
+                getSortingOrders(criteriaBuilder, supplyChainValidationSummaryRoot, pageable.getSort()));
+
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
@@ -164,6 +170,10 @@ public class ValidationSummaryPageService {
 
         query.where(criteriaBuilder.and(combinedColumnSearchPredicates,
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)));
+
+        // Apply sorting if present in the Pageable
+        query.orderBy(
+                getSortingOrders(criteriaBuilder, supplyChainValidationSummaryRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
@@ -225,6 +235,10 @@ public class ValidationSummaryPageService {
                 columnSearchPartOfChainedPredicates,
                 criteriaBuilder.equal(supplyChainValidationSummaryRoot.get("archiveFlag"), archiveFlag)
         ));
+
+        // Apply sorting if present in the Pageable
+        query.orderBy(
+                getSortingOrders(criteriaBuilder, supplyChainValidationSummaryRoot, pageable.getSort()));
 
         // Apply pagination
         TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
@@ -392,6 +406,49 @@ public class ValidationSummaryPageService {
                 .append(System.lineSeparator());
         bufferedWriter.append(reportData.toString());
         bufferedWriter.flush();
+    }
+
+    /**
+     * Helper method that generates a list of sorting orders based on the provided {@link Pageable} object.
+     * This method checks if sorting is enabled in the {@link Pageable} and applies the necessary sorting
+     * to the query using the CriteriaBuilder and Supply Chain Validation Summary Root.
+     *
+     * @param criteriaBuilder                  the CriteriaBuilder used to create the sort expressions.
+     * @param supplyChainValidationSummaryRoot the validation summary root to which the sorting should be applied.
+     * @param pageableSort                     the {@link Sort} object that contains the sort information.
+     * @return a list of {@link Order} objects, which can be applied to a CriteriaQuery for sorting.
+     */
+    private List<Order> getSortingOrders(final CriteriaBuilder criteriaBuilder,
+                                         final Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot,
+                                         final Sort pageableSort) {
+        List<Order> orders = new ArrayList<>();
+
+        if (pageableSort.isSorted()) {
+            pageableSort.forEach(order -> {
+                Path<Object> path;
+                String property = order.getProperty();
+
+                // handle nested properties like "device.name"
+                if (property.startsWith("device.")) {
+                    final String[] nestedColumnName = property.split("\\.");
+                    final String mainField = nestedColumnName[0]; // device prefix
+                    final String nestedField = nestedColumnName[1]; // property associated with device
+
+                    // Handle the case where the related entity is the "device" field
+                    Join<SupplyChainValidationSummary, Device> join =
+                            supplyChainValidationSummaryRoot.join(mainField, JoinType.LEFT);
+
+                    // Now, resolve the nested property on the joined entity (Device)
+                    path = join.get(nestedField);  // Access the nested field on the "device" entity
+                } else {
+                    // handle simple properties that exist in the validation summary entity
+                    path = supplyChainValidationSummaryRoot.get(order.getProperty());
+                }
+
+                orders.add(order.isAscending() ? criteriaBuilder.asc(path) : criteriaBuilder.desc(path));
+            });
+        }
+        return orders;
     }
 
     /**
