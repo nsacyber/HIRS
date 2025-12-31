@@ -14,18 +14,18 @@
                     // initialData parameters
                     // 'initialData' is a HashMap with the certificate information, added as an object to
                     // the MAV of CertificateDetailsPageController
-                    const signature = initialData.get('signature');
-                    const serialNumber = initialData.get('serialNumber');
-                    const authorityKeyIdentifier = initialData.get('authKeyId');
-                    const authoritySerialNumber = initialData.get('authSerialNumber');
-                    const publicKey = initialData.get('publicKeyValue');
-                    const encPublicKey = initialData.get('encodedPublicKey');
-                    const subjectKeyIdentifier = initialData.get('subjectKeyIdentifier');
-                    const hwSerialNum = initialData.get('hwSerialNum');
-                    const tcgTpmManufacturer = initialData.get('tcgTpmManufacturer');
-                    const ekAuthorityKeyIdentifier = initialData.get('ekAuthorityKeyIdentifier');
-                    const ekCertificateSerialNumber = initialData.get('ekCertificateSerialNumber');
-                    const platformIdsString = initialData.get('platformID');
+                    const signature = initialData['signature'];
+                    const serialNumber = initialData['serialNumber'];
+                    const authorityKeyIdentifier = initialData['authKeyId'];
+                    const authoritySerialNumber = initialData['authSerialNumber'];
+                    const publicKey = initialData['publicKeyValue'];
+                    const encPublicKey = initialData['encodedPublicKey'];
+                    const subjectKeyIdentifier = initialData['subjectKeyIdentifier'];
+                    const hwSerialNum = initialData['hwSerialNum'];
+                    const tcgTpmManufacturer = initialData['tcgTpmManufacturer'];
+                    const ekAuthorityKeyIdentifier = initialData['ekAuthorityKeyIdentifier'];
+                    const ekCertificateSerialNumber = initialData['ekCertificateSerialNumber'];
+                    const platformIdsString = initialData['platformID'];
 
                     // param parameters
                     const type = /*[[${ param.type }]]*/ '';
@@ -126,7 +126,7 @@
                 } //end if initialData
 
                 //Initilize tooltips
-                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-bs-toggle="tooltip"]').tooltip();
 
                 //Vertical alignment on data columns
                 $('.vertical').each(function () {
@@ -354,8 +354,8 @@
                         <div class="panel-body">
                             <div class="panel panel-default">
                                 <div class="panel-heading">
-                                    <a role="button" data-toggle="collapse" class="collapsed"
-                                       href="#signatureComponentcollapse" aria-expanded="true" data-placement="top"
+                                    <a role="button" data-bs-toggle="collapse" class="collapsed"
+                                       href="#signatureComponentcollapse" aria-expanded="true" data-bs-placement="top"
                                        aria-controls="signatureComponentcollapse">
                                         Signature
                                     </a>
@@ -367,8 +367,8 @@
                             </div>
                             <div class="panel panel-default">
                                 <div class="panel-heading">
-                                    <a role="button" data-toggle="collapse" class="collapsed" href="#signatureSizecollapse"
-                                       aria-expanded="true" data-placement="top" aria-controls="signatureSizecollapse">
+                                    <a role="button" data-bs-toggle="collapse" class="collapsed" href="#signatureSizecollapse"
+                                       aria-expanded="true" data-bs-placement="top" aria-controls="signatureSizecollapse">
                                         Algorithm
                                     </a>
                                 </div>
@@ -393,8 +393,8 @@
                             <div class="panel-body">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
-                                        <a role="button" data-toggle="collapse" class="collapsed" href="#publicKeycollapse"
-                                           aria-expanded="true" data-placement="top" aria-controls="publicKeycollapse">
+                                        <a role="button" data-bs-toggle="collapse" class="collapsed" href="#publicKeycollapse"
+                                           aria-expanded="true" data-bs-placement="top" aria-controls="publicKeycollapse">
                                             Public Key
                                         </a>
                                     </div>
@@ -414,8 +414,8 @@
                                 </div>
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
-                                        <a role="button" data-toggle="collapse" class="collapsed"
-                                           href="#publicKeySizecollapse" aria-expanded="true" data-placement="top"
+                                        <a role="button" data-bs-toggle="collapse" class="collapsed"
+                                           href="#publicKeySizecollapse" aria-expanded="true" data-bs-placement="top"
                                            aria-controls="publicKeySizecollapse">
                                             Algorithm
                                         </a>
@@ -541,8 +541,8 @@
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colHeader">
-                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
-                                   aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
+                                <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
+                                   aria-expanded="true" data-bs-placement="top" aria-controls="tpmSpecificationInner">
                                     TPM Specification
                                 </a>
                             </span>
@@ -559,8 +559,8 @@
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colHeader">
-                                <a role="button" data-toggle="collapse" class="collapsed"
-                                   href="#tpmSecurityAssertionInner" aria-expanded="true" data-placement="top"
+                                <a role="button" data-bs-toggle="collapse" class="collapsed"
+                                   href="#tpmSecurityAssertionInner" aria-expanded="true" data-bs-placement="top"
                                    aria-controls="tpmSecurityAssertionInner">
                                     TPM Security Assertion
                                 </a>
@@ -701,7 +701,7 @@
                                         <div class="panel panel-default">
                                             <div class="panel-heading" role="tab" id="headingOne">
                                                 <h4 class="panel-title">
-                                                    <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                                    <a role="button" data-bs-toggle="collapse" data-bs-parent="#tbbsecurity"
                                                        class="collapsed" href="#ccinfocollapse" aria-expanded="false"
                                                        aria-controls="ccinfocollapse">
                                                         Common Criteria Measures Information
@@ -811,7 +811,7 @@
                                         <div class="panel panel-default">
                                             <div class="panel-heading" role="tab" id="headingThree">
                                                 <h4 class="panel-title">
-                                                    <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                                    <a role="button" data-bs-toggle="collapse" data-bs-parent="#tbbsecurity"
                                                        class="collapsed" href="#fipscollapse" aria-expanded="false"
                                                        aria-controls="fipscollapse">
                                                         FIPS Level
@@ -849,7 +849,7 @@
                                 <div class="panel panel-default">
                                     <div class="panel-heading" role="tab" id="headingThree">
                                         <h4 class="panel-title">
-                                            <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"
+                                            <a role="button" data-bs-toggle="collapse" data-bs-parent="#tbbsecurity"
                                                class="collapsed" href="#iso9000collapse" aria-expanded="false"
                                                aria-controls="iso9000collapse">
                                                 ISO 9000
@@ -899,8 +899,8 @@
                                     <div class="panel panel-default">
                                         <div class="panel-heading" role="tab" id="headingOne">
                                             <h4 class="panel-title">
-                                                <a role="button" data-toggle="collapse"
-                                                   data-parent="#platformConfiguration" class="collapsed"
+                                                <a role="button" data-bs-toggle="collapse"
+                                                   data-bs-parent="#platformConfiguration" class="collapsed"
                                                    href="#componentIdentifiercollapse" aria-expanded="true"
                                                    aria-controls="componentIdentifiercollapse">
                                                     Components
@@ -918,11 +918,11 @@
                                                                 <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
                                                                     <div class="panel-heading" style="background-color: red; color: white">
                                                                         <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
-                                                                            <span data-toggle="tooltip" data-placement="top"
+                                                                            <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                                                 th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
                                                                         </th:block>
                                                                         <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
-                                                                            <span data-toggle="tooltip" data-placement="top"
+                                                                            <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                                             title="Component Class">Platform Components</span>
                                                                         </th:block>
                                                                     </div>
@@ -930,11 +930,11 @@
                                                                 <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
                                                                     <div class="panel-heading">
                                                                         <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
-                                                                            <span data-toggle="tooltip" data-placement="top"
+                                                                            <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                                             th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
                                                                         </th:block>
                                                                         <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
-                                                                            <span data-toggle="tooltip" data-placement="top"
+                                                                            <span data-bs-toggle="tooltip" data-bs-placement="top"
                                                                             title="Component Class">Platform Components</span>
                                                                         </th:block>
                                                                     </div>
@@ -1005,7 +1005,7 @@
                                     <div class="panel panel-default">
                                         <div class="panel-heading" role="tab" id="headingTwo">
                                             <h4 class="panel-title">
-                                                <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
+                                                <a role="button" data-bs-toggle="collapse" data-bs-parent="#platformConfiguration"
                                                    class="collapsed" href="#componentIdentifierURIcollapse" aria-expanded="false"
                                                    aria-controls="componentIdentifierURIcollapse">
                                                     Components Identifier URI
@@ -1038,7 +1038,7 @@
                                     <div class="panel panel-default">
                                         <div class="panel-heading" role="tab" id="headingThree">
                                             <h4 class="panel-title">
-                                                <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
+                                                <a role="button" data-bs-toggle="collapse" data-bs-parent="#platformConfiguration"
                                                    class="collapsed" href="#platformPropertiescollapse" aria-expanded="false"
                                                    aria-controls="platformPropertiescollapse">
                                                     Platform Properties
@@ -1073,7 +1073,7 @@
                                     <div class="panel panel-default">
                                         <div class="panel-heading" role="tab" id="headingFour">
                                             <h4 class="panel-title">
-                                                <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"
+                                                <a role="button" data-bs-toggle="collapse" data-bs-parent="#platformConfiguration"
                                                    class="collapsed" href="#platformPropertiesURIcollapse" aria-expanded="false"
                                                    aria-controls="platformPropertiesURIcollapse">
                                                     Platform Properties URI
@@ -1169,8 +1169,8 @@
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colHeader">
-                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
-                                   aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">
+                                <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
+                                   aria-expanded="true" data-bs-placement="top" aria-controls="tpmSpecificationInner">
                                     TPM Specification
                                 </a>
                             </span>
@@ -1186,8 +1186,8 @@
                     <div class="row">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colHeader">
-                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"
-                                   aria-expanded="true" data-placement="top" aria-controls="tpmSecurityAssertionInner">
+                                <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"
+                                   aria-expanded="true" data-bs-placement="top" aria-controls="tpmSecurityAssertionInner">
                                     TPM Security Assertion
                                 </a>
                             </span>
