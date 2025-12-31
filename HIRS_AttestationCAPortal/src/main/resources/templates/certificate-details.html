@@ -698,19 +698,25 @@
                                 <!-- CCINFO -->
                                 <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getCcInfo())}">
                                     <th:block th:with="ccinfo=${initialData.get('tbbSecurityAssertion').getCcInfo()}">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading" role="tab" id="headingOne">
-                                                <h4 class="panel-title">
-                                                    <a role="button" data-bs-toggle="collapse" data-bs-parent="#tbbsecurity"
-                                                       class="collapsed" href="#ccinfocollapse" aria-expanded="false"
-                                                       aria-controls="ccinfocollapse">
+                                        <div class="accordion" id="tbbsecurityAccordion">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="headingOne">
+                                                    <button class="accordion-button collapsed"
+                                                            type="button"
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#ccinfocollapse"
+                                                            aria-expanded="false"
+                                                            aria-controls="ccinfocollapse">
                                                         Common Criteria Measures Information
-                                                    </a>
-                                                </h4>
+                                                    </button>
+                                                </h2>
                                             </div>
-                                            <div id="ccinfocollapse" class="panel-collapse collapse" role="tabpanel"
-                                                 aria-labelledby="headingOne">
-                                                <div class="panel-body">
+                                            <div id="ccinfocollapse"
+                                                 class="accordion-collapse collapse"
+                                                 aria-labelledby="headingOne"
+                                                 data-bs-parent="#tbbsecurityAccordion">
+
+                                            <div class="accordion-body">
                                                     <div id="ccinfo" class="row">
                                                         <div class="tbbsecurityLine">
                                                             <span class="fieldHeader">Version:</span>
