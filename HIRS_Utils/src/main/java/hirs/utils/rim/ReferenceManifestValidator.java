@@ -48,12 +48,12 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -70,6 +70,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class handles validation functions of RIM files.
@@ -331,32 +333,37 @@ public class ReferenceManifestValidator {
      */
     private Element createOverrideSupportRim(final Element oldFile, final String supportRimName) {
         Element overrideSupportRim = (Element) oldFile.cloneNode(false);
-        File searchDir = new File(supportRimDirectory);
-        File[] matches = searchDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(final File file, final String s) {
-                return s.equals(supportRimName);
-            }
-        });
-        if (matches != null) {
-            if (matches.length > 1) {
-                String errorMessage = String.format("Found multiple matches for %s under %s, "
-                        + "please ensure only one is present: ", supportRimName, supportRimDirectory);
-                for (int i = 0; i < matches.length; i++) {
-                    errorMessage += System.lineSeparator() + matches[i].getPath();
-                }
-                log.warn(errorMessage);
-                return null;
-            } else if (matches.length == 1) {
-                overrideSupportRim.setAttribute(SwidTagConstants.NAME, matches[0].getPath());
-                return overrideSupportRim;
-            } else {
-                log.error(String.format("Unable to find %s under %s.", supportRimName, supportRimDirectory));
-                return null;
-            }
-        } else {
-            log.error(String.format("Problem occurred searching in %s.", supportRimDirectory));
+        Path searchDir = Paths.get(supportRimDirectory);
+        List<Path> fileMatches;
+        try (Stream<Path> walk = Files.walk(searchDir)) {
+            fileMatches = walk
+                    .filter(Files::isRegularFile)
+                    .filter(Files::isReadable)
+                    .filter(path -> path.getFileName().toString().equals(supportRimName))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            String errorMessage = String.format("Error accessing %s: %s",
+                    supportRimDirectory, e.getMessage());
+            log.error(errorMessage);
             return null;
+        }
+        if (fileMatches.size() < 1) {
+            String errorMessage = String.format("%s was not found under %s, "
+                    + "check that it exists and is readable.",
+                    supportRimName, supportRimDirectory);
+            log.error(errorMessage);
+            return null;
+        } else if (fileMatches.size() > 1) {
+            String errorMessage = String.format("%s was found %d times under %s, "
+                    + "it is unclear which to use.",
+                    supportRimName, fileMatches.size(), supportRimDirectory);
+            log.error(errorMessage);
+            return null;
+        } else {
+            log.info(supportRimName + " found.");
+            overrideSupportRim.setAttribute(SwidTagConstants.NAME,
+                    fileMatches.get(0).toString());
+            return overrideSupportRim;
         }
     }
 
@@ -386,7 +393,8 @@ public class ReferenceManifestValidator {
         Attr nameAttribute = file.getAttributeNode(SwidTagConstants.NAME);
         String filepath = nameAttribute.getValue();
         Attr hashAttribute = findHashAttribute(file);
-        String hashAlgorithm, declaredHash;
+        String hashAlgorithm;
+        String declaredHash;
         if (hashAttribute != null) {
             hashAlgorithm = parseAlgorithmFromUri(hashAttribute.getNamespaceURI());
             declaredHash = hashAttribute.getValue();
