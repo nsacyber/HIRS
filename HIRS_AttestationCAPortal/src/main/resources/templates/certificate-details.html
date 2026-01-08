@@ -8,7 +8,9 @@
         <script th:inline="javascript">
             $(document).ready(function () {
 
-                const initialData = /*[[initialData]]*/;
+                const initialData = /*[[${initialData}]]*/ {};
+                console.log(initialData);
+
                 if(initialData) {
 
                     // initialData parameters
@@ -40,25 +42,28 @@
 
                     // Signature: convert byte array to string
                     if (signature) {
-<!--                        const signatureParsed = JSON.parse(signature);-->
-                        $("#signature").html(byteToHexString(JSON.parse(signature)));
+                        const signatureDiv = document.getElementById('signature');
+                        signatureDiv.innerHTML = byteToHexString(JSON.parse(signature));
                     }
 
                     // Serial number: convert hex string to byte hex string
                     if(serialNumber) {
-                        $("#serialNumber").html(parseSerialNumber(serialNumber));
+                        const serialNumberDiv = document.getElementById('serialNumber');
+                        serialNumberDiv.innerHTML = parseSerialNumber(serialNumber);
                     }
 
                     // Authority key ID: convert hex string to byte hex string
+                    const authorityKeyIdentifierDiv = document.getElementById('authorityKeyIdentifier');
                     if (authorityKeyIdentifier) {
-                        $("#authorityKeyIdentifier").html(parseSerialNumber(authorityKeyIdentifier));
+                        authorityKeyIdentifierDiv.innerHTML = parseSerialNumber(authorityKeyIdentifier);
                     } else {
-                        $("#authorityKeyIdentifier").html("Not Specified");
+                        authorityKeyIdentifierDiv.innerHTML = "Not Specified";
                     }
 
                     // Authority serial number: convert hex string to byte hex string
                     if (authoritySerialNumber) {
-                        $("#authSerialNumber").html(parseSerialNumber(authoritySerialNumber));
+                        const authoritySerialNumberDiv = document.getElementById('authSerialNumber');
+                        authoritySerialNumberDiv.innerHTML = parseSerialNumber(authoritySerialNumber);
                     }
 
                     // Public key and encoded public key
