@@ -15,41 +15,21 @@
                     // initialData parameters
                     // 'initialData' is a HashMap with the certificate information, added as an object to
                     // the MAV of CertificateDetailsPageController
-                    const signature = /*[[${initialData.signature}]]*/ '';
-                    const serialNumber =  /*[[${initialData.serialNumber}]]*/ '';
-                    const authorityKeyIdentifier = /*[[${initialData.authKeyId}]]*/ '';
-                    const authoritySerialNumber = /*[[${initialData.authSerialNumber}]]*/ '';
-                    const publicKey = /*[[${initialData.publicKeyValue}]]*/ '';
-                    const encPublicKey = /*[[${initialData.encodedPublicKey}]]*/ '';
-                    const subjectKeyIdentifier = /*[[${initialData.subjectKeyIdentifier}]]*/ '';
-                    const hwSerialNum = /*[[${initialData.hwSerialNum}]]*/ '';
-                    const tcgTpmManufacturer = /*[[${initialData.tcgTpmManufacturer}]]*/ '';
-                    const ekAuthorityKeyIdentifier = /*[[${initialData.ekAuthorityKeyIdentifier}]]*/ '';
-                    const ekCertificateSerialNumber = /*[[${initialData.ekCertificateSerialNumber}]]*/ '';
-                    const platformIdsString = /*[[${initialData.platformID}]]*/ '';
+                    const certificateSerialNumber =  /*[[${initialData.get('serialNumber')}]]*/ '';
+                    const signature = /*[[${initialData.get('signature')}]]*/ '';
+                    const authorityKeyIdentifier = /*[[${initialData.get('authKeyId')}]]*/ '';
+                    const authoritySerialNumber = /*[[${initialData.get('authSerialNumber')}]]*/ '';
+                    const publicKey = /*[[${initialData.get('publicKeyValue')}]]*/ '';
+                    const encPublicKey = /*[[${initialData.get('encodedPublicKey')}]]*/ '';
+                    const subjectKeyIdentifier = /*[[${initialData.get('subjectKeyIdentifier')}]]*/ '';
+                    const hwSerialNum = /*[[${initialData.get('hwSerialNum')}]]*/ '';
+                    const tcgTpmManufacturer = /*[[${initialData.get('tcgTpmManufacturer')}]]*/ '';
+                    const ekAuthorityKeyIdentifier = /*[[${initialData.get('ekAuthorityKeyIdentifier')}]]*/ '';
+                    const ekCertificateSerialNumber = /*[[${initialData.get('ekCertificateSerialNumber')}]]*/ '';
+                    const platformIdsString = /*[[${initialData.get('platformID')}]]*/ '';
 
                     // param parameters
                     const type = /*[[${ param.type }]]*/ '';
-
-                    // Format validity time
-                    $("#validity span").each(function () {
-                        let dateText = $(this).text();
-                        if(dateText) {
-                            return $(this).text(formatCertificateDate2(dateText));
-                        }
-                    });
-
-                    // Signature: convert byte array to string
-                    if (signature) {
-                        const signatureDiv = document.getElementById('signature');
-                        signatureDiv.innerHTML = byteToHexString(JSON.parse(signature));
-                    }
-
-                    // Serial number: convert hex string to byte hex string
-                    if(serialNumber) {
-                        const serialNumberDiv = document.getElementById('serialNumber');
-                        serialNumberDiv.innerHTML = parseSerialNumber(serialNumber);
-                    }
 
                     // Authority key ID: convert hex string to byte hex string
                     const authorityKeyIdentifierDiv = document.getElementById('authorityKeyIdentifier');
@@ -63,6 +43,41 @@
                     if (authoritySerialNumber) {
                         const authoritySerialNumberDiv = document.getElementById('authSerialNumber');
                         authoritySerialNumberDiv.innerHTML = parseSerialNumber(authoritySerialNumber);
+                    }
+
+                    // Serial number: convert hex string to byte hex string
+                    if(certificateSerialNumber) {
+                        const serialNumberDiv = document.getElementById('serialNumber');
+                        serialNumberDiv.innerHTML = parseSerialNumber(certificateSerialNumber);
+                    }
+
+                    // Hw serial number
+                    if (hwSerialNum) {
+                        $("#hwSerialNum").html(parseHexString(hwSerialNum));
+                    }
+
+                    // Tcg tpm manufacturer / ekAuthorityKeyIdentifier / ekCertificateSerialNumber
+                    if (tcgTpmManufacturer) {
+                        if (ekAuthorityKeyIdentifier) {
+                            $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAuthorityKeyIdentifier));
+                        }
+                        if (ekCertificateSerialNumber) {
+                            $("#ekCertificateSerialNumber").html(parseHexString(ekCertificateSerialNumber));
+                        }
+                    }
+
+                    // Format validity time
+                    $("#validity span").each(function () {
+                        let dateText = $(this).text();
+                        if(dateText) {
+                            return $(this).text(formatCertificateDate2(dateText));
+                        }
+                    });
+
+                    // Signature: convert byte array to string
+                    if (signature) {
+                        const signatureDiv = document.getElementById('signature');
+                        signatureDiv.innerHTML = byteToHexString(JSON.parse(signature));
                     }
 
                     // Public key and encoded public key
@@ -79,21 +94,6 @@
                         //Change subject byte to hex only for CACertificate
                         if (type === "certificateauthority") {
                             $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
-                        }
-                    }
-
-                    // Hw serial number
-                    if (hwSerialNum) {
-                        $("#hwSerialNum").html(parseHexString(hwSerialNum));
-                    }
-
-                    // Tcg tpm manufacturer / ekAuthorityKeyIdentifier / ekCertificateSerialNumber
-                    if (tcgTpmManufacturer) {
-                        if (ekAuthorityKeyIdentifier) {
-                            $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAuthorityKeyIdentifier));
-                        }
-                        if (ekCertificateSerialNumber) {
-                            $("#ekCertificateSerialNumber").html(parseHexString(ekCertificateSerialNumber));
                         }
                     }
 
@@ -457,7 +457,7 @@
                                     </h2>
                                     <div id="publicKeySizecollapse"
                                          class="accordion-collapse collapse"
-                                         aria-expanded="false">
+                                         aria-expanded="false"
                                          aria-labelledby="headingTwo"
                                          data-bs-parent="#publicKeyAccordion">
                                         <div>
