@@ -125,6 +125,7 @@ public class CertificateDetailsPageController extends PageController<Certificate
                 mav.addObject(MESSAGES_ATTRIBUTE, messages);
             } else {
                 mav.addObject(INITIAL_DATA, data);
+                mav.addObject("initialDataNotNull", "notNull");
             }
         }
 

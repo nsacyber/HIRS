@@ -8,26 +8,25 @@
         <script th:inline="javascript">
             $(document).ready(function () {
 
-                const initialData = /*[[${initialData}]]*/ {};
-                console.log(initialData);
+                const initialDataNotNull = /*[[${initialDataNotNull}]]*/ '';
 
-                if(initialData) {
+                if(initialDataNotNull) {
 
                     // initialData parameters
                     // 'initialData' is a HashMap with the certificate information, added as an object to
                     // the MAV of CertificateDetailsPageController
-                    const signature = initialData['signature'];
-                    const serialNumber = initialData['serialNumber'];
-                    const authorityKeyIdentifier = initialData['authKeyId'];
-                    const authoritySerialNumber = initialData['authSerialNumber'];
-                    const publicKey = initialData['publicKeyValue'];
-                    const encPublicKey = initialData['encodedPublicKey'];
-                    const subjectKeyIdentifier = initialData['subjectKeyIdentifier'];
-                    const hwSerialNum = initialData['hwSerialNum'];
-                    const tcgTpmManufacturer = initialData['tcgTpmManufacturer'];
-                    const ekAuthorityKeyIdentifier = initialData['ekAuthorityKeyIdentifier'];
-                    const ekCertificateSerialNumber = initialData['ekCertificateSerialNumber'];
-                    const platformIdsString = initialData['platformID'];
+                    const signature = /*[[${initialData.signature}]]*/ '';
+                    const serialNumber =  /*[[${initialData.serialNumber}]]*/ '';
+                    const authorityKeyIdentifier = /*[[${initialData.authKeyId}]]*/ '';
+                    const authoritySerialNumber = /*[[${initialData.authSerialNumber}]]*/ '';
+                    const publicKey = /*[[${initialData.publicKeyValue}]]*/ '';
+                    const encPublicKey = /*[[${initialData.encodedPublicKey}]]*/ '';
+                    const subjectKeyIdentifier = /*[[${initialData.subjectKeyIdentifier}]]*/ '';
+                    const hwSerialNum = /*[[${initialData.hwSerialNum}]]*/ '';
+                    const tcgTpmManufacturer = /*[[${initialData.tcgTpmManufacturer}]]*/ '';
+                    const ekAuthorityKeyIdentifier = /*[[${initialData.ekAuthorityKeyIdentifier}]]*/ '';
+                    const ekCertificateSerialNumber = /*[[${initialData.ekCertificateSerialNumber}]]*/ '';
+                    const platformIdsString = /*[[${initialData.platformID}]]*/ '';
 
                     // param parameters
                     const type = /*[[${ param.type }]]*/ '';
