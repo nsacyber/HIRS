@@ -53,16 +53,19 @@
 
                     // Hw serial number
                     if (hwSerialNum) {
-                        $("#hwSerialNum").html(parseHexString(hwSerialNum));
+                        const hwSerialNumDiv = document.getElementById('hwSerialNum');
+                        hwSerialNumDiv.innerHTML = parseHexString(hwSerialNum);
                     }
 
                     // Tcg tpm manufacturer / ekAuthorityKeyIdentifier / ekCertificateSerialNumber
                     if (tcgTpmManufacturer) {
                         if (ekAuthorityKeyIdentifier) {
-                            $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAuthorityKeyIdentifier));
+                            const ekAuthorityKeyIdentifierDiv = document.getElementById('ekAuthorityKeyIdentifier');
+                            ekAuthorityKeyIdentifierDiv.innerHTML = parseHexString(ekAuthorityKeyIdentifier);
                         }
                         if (ekCertificateSerialNumber) {
-                            $("#ekCertificateSerialNumber").html(parseHexString(ekCertificateSerialNumber));
+                            const ekCertificateSerialNumberDiv = document.getElementById('ekCertificateSerialNumber');
+                            ekCertificateSerialNumberDiv.innerHTML = parseHexString(ekCertificateSerialNumber);
                         }
                     }
 
@@ -82,18 +85,21 @@
 
                     // Public key and encoded public key
                     if (publicKey) {
-                        $("#encodedPublicKey").html(parseHexString(publicKey));
+                        const encodedPublicKeyDiv = document.getElementById('encodedPublicKey');
+                        encodedPublicKeyDiv.innerHTML = parseHexString(publicKey);
                     } else {
                         if (encPublicKey) {
-                            $("#encodedPublicKey").html(byteToHexString(encPublicKey));
+                            const encodedPublicKeyDiv = document.getElementById('encodedPublicKey');
+                            encodedPublicKeyDiv.innerHTML = byteToHexString(JSON.parse(encPublicKey));
                         }
                     }
 
                     // Subject key identifier
                     if (subjectKeyIdentifier) {
                         //Change subject byte to hex only for CACertificate
-                        if (type === "certificateauthority") {
-                            $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));
+                        if (type.toString() === "certificateauthority") {
+                            const subjectKeyIdentifierDiv = document.getElementById('subjectKeyIdentifier');
+                            subjectKeyIdentifierDiv.innerHTML = byteToHexString(JSON.parse(subjectKeyIdentifier));
                         }
                     }
 
