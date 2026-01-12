@@ -26,6 +26,12 @@
                 // Setup IDevID Certificates table columns
                 let columns = [
                     {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: DataTable.render.select()
+                    },
+                    {
                         name: "issuer",
                         data: "issuer",
                         orderable: true,
@@ -108,6 +114,7 @@
             <table id="idevidCertificateTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Issuer</th>
                         <th>Subject</th>
                         <th>Valid (begin)</th>

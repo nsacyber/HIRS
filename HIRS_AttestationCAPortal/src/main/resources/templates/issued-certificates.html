@@ -23,6 +23,12 @@
         // Setup Issued Certificates table columns
         let columns = [
           {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: DataTable.render.select()
+          },
+          {
             name: "deviceName",
             data: "deviceName",
             searchable: true,
@@ -146,6 +152,7 @@
       <table id="issuedTable" class="table table-bordered table-striped table-hover">
         <thead>
           <tr>
+            <th rowspan="2"></th>
             <th rowspan="2">Hostname</th>
             <th rowspan="2">Type</th>
             <th rowspan="2">Issuer</th>

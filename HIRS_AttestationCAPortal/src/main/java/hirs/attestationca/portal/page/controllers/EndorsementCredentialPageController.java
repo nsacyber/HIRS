@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -260,6 +261,45 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Processes the request to delete multiple endorsement credentials.
+     *
+     * @param ids                the list of UUIDs of the endorsement credentials to be deleted
+     * @param redirectAttributes used to pass data back to the original page after the operation
+     * @return a redirect to the endorsement credential page
+     * @throws URISyntaxException if the URI is malformed
+     */
+    @PostMapping("/bulk-delete")
+    public RedirectView bulkDeleteEndorsementCredentials(@RequestParam final List<String> ids,
+                                                         final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        log.info("Received request to delete multiple endorsement credentials");
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
+
+        try {
+            // convert the list of string ids to a set of uuids
+            final Set<UUID> uuids = ids.stream().map(UUID::fromString).collect(Collectors.toSet());
+
+            this.certificatePageService.bulkDeleteCertificates(uuids, successMessages,
+                    errorMessages);
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while attempting to delete"
+                    + " multiple endorsement credentials";
+            messages.addErrorMessage(errorMessage);
+            log.error(errorMessage, exception);
+        }
+
+        model.put(MESSAGES_ATTRIBUTE, messages);
+        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**

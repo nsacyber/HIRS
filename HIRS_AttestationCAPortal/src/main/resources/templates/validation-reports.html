@@ -19,6 +19,12 @@
         const url = viewName + "/list";
         let columns = [
           {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: DataTable.render.select()
+          },
+          {
             name: "overallValidationResult",
             data: "overallValidationResult",
             searchable: false,
@@ -263,6 +269,7 @@
       <table id="reportTable" class="table table-bordered table-striped table-hover">
         <thead>
           <tr>
+            <th rowspan="2"></th>
             <th rowspan="2">Result</th>
             <th rowspan="2">Timestamp</th>
             <th rowspan="2">Device</th>

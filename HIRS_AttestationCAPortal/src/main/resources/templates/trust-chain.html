@@ -40,6 +40,12 @@
                 // Setup Trusted Certificate table columns
                 let columns = [
                     {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: DataTable.render.select()
+                    },
+                    {
                         name: "issuer",
                         data: "issuer",
                         orderable: true,
@@ -185,6 +191,7 @@
             <table class="table table-bordered table-striped table-hover" id="trustChainTable">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Issuer</th>
                         <th>Subject</th>
                         <th>Valid (begin)</th>

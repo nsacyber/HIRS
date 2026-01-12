@@ -24,6 +24,12 @@
                 // Setup Reference Integrity Manifests table columns
                 let columns = [
                     {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: DataTable.render.select()
+                    },
+                    {
                         name: "tagId",
                         data: "tagId",
                         orderable: true,
@@ -106,6 +112,7 @@
             <table class="table table-bordered table-striped table-hover" id="referenceManifestTable">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Tag Id</th>
                         <th>Type</th>
                         <th>Manufacturer</th>

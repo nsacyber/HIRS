@@ -20,6 +20,12 @@
                 const url = viewName + "/list";
                 let columns = [
                     {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: DataTable.render.select()
+                    },
+                    {
                         data: "device.supplyChainValidationStatus",
                         searchable: false,
                         orderable: false,
@@ -121,6 +127,7 @@
             <table id="deviceTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
+                        <th rowspan="2"></th>
                         <th rowspan="2">Validation Status</th>
                         <th rowspan="2">Hostname</th>
                         <th colspan="3" class="text-center">Credentials</th>

@@ -392,6 +392,22 @@ public class CertificatePageService {
     }
 
     /**
+     * Bulks deletes the provided certificates from the database.
+     *
+     * @param uuids           the list of certificate uuids to delete
+     * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages   contains any error messages that will be displayed on the page
+     */
+    public void bulkDeleteCertificates(final Set<UUID> uuids,
+                                       final List<String> successMessages,
+                                       final List<String> errorMessages) {
+        // loop through the provided certificate ids and delete each certificate
+        for (UUID eachUUID : uuids) {
+            deleteCertificate(eachUUID, successMessages, errorMessages);
+        }
+    }
+
+    /**
      * Packages a collection of certificates into a zip file for download.
      *
      * @param zipOut          zip outputs stream

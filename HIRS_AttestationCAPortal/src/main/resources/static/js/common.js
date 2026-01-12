@@ -59,7 +59,11 @@ function setDataTables(id, url, columns, customConfig = {}) {
     processing: true,
     serverSide: true,
     colReorder: true,
-    select: true,
+    select: {
+      style: "multi",
+      selector: "td:first-child",
+      headerCheckbox: "select-page",
+    },
     responsive: true,
     lengthMenu: [
       [10, 25, 50, 75, 100, 250, -1],
@@ -127,6 +131,23 @@ function setDataTables(id, url, columns, customConfig = {}) {
             ],
           },
           {
+            text: "Delete Selected",
+            action: function (e, dt, node, config) {
+              // Get selected rows
+              const selectedRows = dt.rows({ selected: true });
+
+              if (selectedRows.count() > 0) {
+                //todo: implement delete functionality
+                alert(`Delete ${selectedRows.count()} selected row(s)?`);
+              }
+            },
+            attr: {
+              id: "deleteSelectedButton",
+              disabled: true, // Initially disable the button
+              class: "btn btn-danger", // Bootstrap class for red button
+            },
+          },
+          {
             text: "Clear All",
             action: function (e, dt, node, config) {
               // Clear search and reset column controls
@@ -147,6 +168,7 @@ function setDataTables(id, url, columns, customConfig = {}) {
       },
     },
     columns: columns,
+    order: [], // Ensure no initial ordering
   };
 
   // Merge user options over default config
