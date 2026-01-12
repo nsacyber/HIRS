@@ -325,6 +325,22 @@ public class ReferenceManifestPageService {
     }
 
     /**
+     * Deletes the specified RIM using the provided UUID.
+     *
+     * @param uuids           the set of UUIDs of the RIMs to be deleted
+     * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages   contains any error messages that will be displayed on the page
+     */
+    public void bulkDeleteRIMs(final Set<UUID> uuids,
+                               final List<String> successMessages,
+                               final List<String> errorMessages) {
+        // loop through the provided RIM ids and delete each RIM
+        for (UUID eachUUID : uuids) {
+            deleteRIM(eachUUID, successMessages, errorMessages);
+        }
+    }
+
+    /**
      * Stores the base and support reference manifests to the reference manifest repository.
      *
      * @param successMessages contains any success messages that will be displayed on the page

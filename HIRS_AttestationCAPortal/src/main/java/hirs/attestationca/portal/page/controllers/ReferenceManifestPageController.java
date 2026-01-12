@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -278,6 +279,45 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, attr);
+    }
+
+    /**
+     * Processes the request to delete multiple RIMs.
+     *
+     * @param ids                the list of UUIDs of the RIMs to be deleted
+     * @param redirectAttributes used to pass data back to the original page after the operation
+     * @return a redirect to the trust chain certificate page
+     * @throws URISyntaxException if the URI is malformed
+     */
+    @PostMapping("/bulk-delete")
+    public RedirectView bulkDeleteRIMs(@RequestParam final List<String> ids,
+                                       final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        log.info("Received request to delete multiple RIMs");
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
+
+        try {
+            // convert the list of string ids to a set of uuids
+            final Set<UUID> uuids = ids.stream().map(UUID::fromString).collect(Collectors.toSet());
+
+            this.referenceManifestPageService.bulkDeleteRIMs(uuids, successMessages,
+                    errorMessages);
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while attempting to delete"
+                    + " multiple RIMs";
+            messages.addErrorMessage(errorMessage);
+            log.error(errorMessage, exception);
+        }
+
+        model.put(MESSAGES_ATTRIBUTE, messages);
+        return redirectTo(Page.TRUST_CHAIN, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
