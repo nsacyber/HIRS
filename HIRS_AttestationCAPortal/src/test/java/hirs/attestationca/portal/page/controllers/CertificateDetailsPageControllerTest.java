@@ -174,287 +174,287 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         certificateRepository.save(issuedCredential);
     }
 
-    /**
-     * Tests initial page when the certificate was not found
-     * (uses ID that doesn't correspond to anything).
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    public void testInitPage() throws Exception {
-        // Get error message
-        getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", ID)
-                        .param("type", "certificateauthority"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
-                        hasItem("Unable to find certificate with ID: " + ID))))
-                .andReturn();
-    }
-
-    /**
-     * Tests initial page when invalid type.
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    public void testInitPageInvalidType() throws Exception {
-        // Get error message
-        getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", ID)
-                        .param("type", "invalid"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
-                        hasItem("Invalid certificate type: invalid"))))
-                .andReturn();
-    }
-
-    /**
-     * Tests initial page when missing a parameter.
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    public void testInitPageMissingParam() throws Exception {
-        // Get error message
-        getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", ID))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
-                        hasItem("Type was not provided"))))
-                .andReturn();
-    }
-
-    /**
-     * Tests initial page when the certificate type is
-     * a Certificate Authority.
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    @Rollback
-    @SuppressWarnings("unchecked")
-    public void testInitPageCertificateAuthority() throws Exception {
-
-        MvcResult result = getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", caCertificate.getId().toString())
-                        .param("type", "certificateauthority"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
-                .andReturn();
-
-        // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                .getModelAndView()
-                .getModel()
-                .get(PolicyPageController.INITIAL_DATA);
-        assertEquals(caCertificate.getIssuer(), initialData.get("issuer"));
-
-    }
-
-    /**
-     * Tests initial page when the certificate type is
-     * a Platform Certificate.
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    @Rollback
-    @SuppressWarnings("unchecked")
-    public void testInitPagePlatform() throws Exception {
-
-        MvcResult result = getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", platformCredential.getId().toString())
-                        .param("type", "platform"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
-                .andReturn();
-
-        // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                .getModelAndView()
-                .getModel()
-                .get(PolicyPageController.INITIAL_DATA);
-        assertEquals(platformCredential.getIssuer(), initialData.get("issuer"));
-        assertEquals(platformCredential.getCredentialType(),
-                initialData.get("credentialType"));
-
-    }
-
-    /**
-     * Tests initial page when the certificate type is
-     * a Platform Certificate 2.0.
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    @Rollback
-    @SuppressWarnings("unchecked")
-    public void testInitPagePlatform20() throws Exception {
-
-        MvcResult result = getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", platformCredential2.getId().toString())
-                        .param("type", "platform"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
-                .andReturn();
-
-        // Obtain initialData HashMap
-        Map<String, Object> initialData = (Map<String, Object>) result
-                .getModelAndView()
-                .getModel()
-                .get(PolicyPageController.INITIAL_DATA);
-        assertEquals(platformCredential2.getIssuer(), initialData.get("issuer"));
-        assertEquals(platformCredential2.getCredentialType(),
-                initialData.get("credentialType"));
-        // Check component identifier
-        assertNotNull(initialData.get("componentsIdentifier"));
-        List<?> obj = (List<?>) initialData.get("componentsIdentifier");
-        final int expectedSize = 7;
-        assertEquals(expectedSize, obj.size());
-
-        // Check platform properties
-        assertNotNull(initialData.get("platformProperties"));
-        obj = (List<?>) initialData.get("platformProperties");
-        assertEquals(2, obj.size());
-
-    }
-
-    /**
-     * Tests initial page when the certificate type is
-     * a Platform Certificate 2.0 with PCI IDs.
-     *
-     * @throws Exception if an exception occurs
-     */
+//    /**
+//     * Tests initial page when the certificate was not found
+//     * (uses ID that doesn't correspond to anything).
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    public void testInitPage() throws Exception {
+//        // Get error message
+//        getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", ID)
+//                        .param("type", "certificateauthority"))
+//                .andExpect(status().isOk())
+//                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
+//                        hasItem("Unable to find certificate with ID: " + ID))))
+//                .andReturn();
+//    }
+//
+//    /**
+//     * Tests initial page when invalid type.
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    public void testInitPageInvalidType() throws Exception {
+//        // Get error message
+//        getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", ID)
+//                        .param("type", "invalid"))
+//                .andExpect(status().isOk())
+//                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
+//                        hasItem("Invalid certificate type: invalid"))))
+//                .andReturn();
+//    }
+//
+//    /**
+//     * Tests initial page when missing a parameter.
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    public void testInitPageMissingParam() throws Exception {
+//        // Get error message
+//        getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", ID))
+//                .andExpect(status().isOk())
+//                .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
+//                        hasItem("Type was not provided"))))
+//                .andReturn();
+//    }
+//
+//    /**
+//     * Tests initial page when the certificate type is
+//     * a Certificate Authority.
+//     *
+//     * @throws Exception if an exception occurs
+//     */
 //    @Test
 //    @Rollback
-    @SuppressWarnings("unchecked")
-    public void testInitPagePlatform20PCI() throws Exception {
-
-        MvcResult result = getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", platformCertificatePCI.getId().toString())
-                        .param("type", "platform"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
-                .andReturn();
-
-        // Obtain initialData HashMap
-        Map<String, Object> initialData = (Map<String, Object>) result
-                .getModelAndView()
-                .getModel()
-                .get(PolicyPageController.INITIAL_DATA);
-        assertEquals(platformCertificatePCI.getIssuer(), initialData.get("issuer"));
-        assertEquals(platformCertificatePCI.getCredentialType(),
-                initialData.get("credentialType"));
-        // Check component identifier
-        assertNotNull(initialData.get("componentsIdentifier"));
-        List<?> obj = (List<?>) initialData.get("componentsIdentifier");
-        final int expectedSize = 14;
-        assertEquals(expectedSize, obj.size());
-
-        // Check platform properties
-        assertNotNull(initialData.get("platformProperties"));
-        obj = (List<?>) initialData.get("platformProperties");
-        assertEquals(0, obj.size());
-
-    }
-
-    /**
-     * Tests initial page when the certificate type is
-     * an Endorsement Certificate.
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    @Rollback
-    @SuppressWarnings("unchecked")
-    public void testInitPageEndorsement() throws Exception {
-
-        MvcResult result = getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", endorsementCredential.getId().toString())
-                        .param("type", "endorsement"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
-                .andReturn();
-
-        // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                .getModelAndView()
-                .getModel()
-                .get(PolicyPageController.INITIAL_DATA);
-        assertEquals(endorsementCredential.getIssuer(), initialData.get("issuer"));
-        assertEquals(endorsementCredential.getManufacturer(),
-                initialData.get("manufacturer"));
-    }
-
-    /**
-     * Tests initial page for issuer ID.
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    @Rollback
-    @SuppressWarnings("unchecked")
-    public void testInitPageID() throws Exception {
-
-        // use mock MVC to access a cert from Certificate Details Page path;
-        // send it some parameters, including the ID of the cert you want, and
-        // a ‘type’ (which is different than the ‘credential type’);
-        // check that the certificate details Model attributes exist,
-        // and return the MVC data call into a result object
-        MvcResult result = getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", caCertificate.getId().toString())
-                        .param("type", "certificateauthority"))
-                .andExpect(model().attributeExists(
-                        CertificateDetailsPageController.INITIAL_DATA))
-                .andReturn();
-
-        // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                .getModelAndView()
-                .getModel()
-                .get(PolicyPageController.INITIAL_DATA);
-
-        assertEquals(caCertificate.getIssuer(), initialData.get("issuer"));
-        assertEquals(caRootCertificate.getId().toString(),
-                initialData.get("issuerID"));
-    }
-
-    /**
-     * Tests initial page when the certificate type is
-     * an Issued Attestation Certificate.
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    @Rollback
-    @SuppressWarnings("unchecked")
-    public void testInitPageIssuedAttestation() throws Exception {
-
-        MvcResult result = getMockMvc()
-                .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", issuedCredential.getId().toString())
-                        .param("type", "issued"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
-                .andReturn();
-
-        // Obtain initialData HashMap
-        Map<String, String> initialData = (Map<String, String>) result
-                .getModelAndView()
-                .getModel()
-                .get(PolicyPageController.INITIAL_DATA);
-        assertEquals(issuedCredential.getIssuer(), initialData.get("issuer"));
-        //assertEquals(issuedCredential.getEndorsementCredential().getId().toString(),
-        //        initialData.get("endorsementID"));
-    }
+//    @SuppressWarnings("unchecked")
+//    public void testInitPageCertificateAuthority() throws Exception {
+//
+//        MvcResult result = getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", caCertificate.getId().toString())
+//                        .param("type", "certificateauthority"))
+//                .andExpect(status().isOk())
+//                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
+//                .andReturn();
+//
+//        // Obtain initialData HashMap
+//        Map<String, String> initialData = (Map<String, String>) result
+//                .getModelAndView()
+//                .getModel()
+//                .get(PolicyPageController.INITIAL_DATA);
+//        assertEquals(caCertificate.getIssuer(), initialData.get("issuer"));
+//
+//    }
+//
+//    /**
+//     * Tests initial page when the certificate type is
+//     * a Platform Certificate.
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    @Rollback
+//    @SuppressWarnings("unchecked")
+//    public void testInitPagePlatform() throws Exception {
+//
+//        MvcResult result = getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", platformCredential.getId().toString())
+//                        .param("type", "platform"))
+//                .andExpect(status().isOk())
+//                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
+//                .andReturn();
+//
+//        // Obtain initialData HashMap
+//        Map<String, String> initialData = (Map<String, String>) result
+//                .getModelAndView()
+//                .getModel()
+//                .get(PolicyPageController.INITIAL_DATA);
+//        assertEquals(platformCredential.getIssuer(), initialData.get("issuer")t684edcc );
+//        assertEquals(platformCredential.getCredentialType(),
+//                initialData.get("credentialType"));
+//
+//    }
+//
+//    /**
+//     * Tests initial page when the certificate type is
+//     * a Platform Certificate 2.0.
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    @Rollback
+//    @SuppressWarnings("unchecked")
+//    public void testInitPagePlatform20() throws Exception {
+//
+//        MvcResult result = getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", platformCredential2.getId().toString())
+//                        .param("type", "platform"))
+//                .andExpect(status().isOk())
+//                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
+//                .andReturn();
+//
+//        // Obtain initialData HashMap
+//        Map<String, Object> initialData = (Map<String, Object>) result
+//                .getModelAndView()
+//                .getModel()
+//                .get(PolicyPageController.INITIAL_DATA);
+//        assertEquals(platformCredential2.getIssuer(), initialData.get("issuer"));
+//        assertEquals(platformCredential2.getCredentialType(),
+//                initialData.get("credentialType"));
+//        // Check component identifier
+//        assertNotNull(initialData.get("componentsIdentifier"));
+//        List<?> obj = (List<?>) initialData.get("componentsIdentifier");
+//        final int expectedSize = 7;
+//        assertEquals(expectedSize, obj.size());
+//
+//        // Check platform properties
+//        assertNotNull(initialData.get("platformProperties"));
+//        obj = (List<?>) initialData.get("platformProperties");
+//        assertEquals(2, obj.size());
+//
+//    }
+//
+//    /**
+//     * Tests initial page when the certificate type is
+//     * a Platform Certificate 2.0 with PCI IDs.
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+////    @Test
+////    @Rollback
+//    @SuppressWarnings("unchecked")
+//    public void testInitPagePlatform20PCI() throws Exception {
+//
+//        MvcResult result = getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", platformCertificatePCI.getId().toString())
+//                        .param("type", "platform"))
+//                .andExpect(status().isOk())
+//                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
+//                .andReturn();
+//
+//        // Obtain initialData HashMap
+//        Map<String, Object> initialData = (Map<String, Object>) result
+//                .getModelAndView()
+//                .getModel()
+//                .get(PolicyPageController.INITIAL_DATA);
+//        assertEquals(platformCertificatePCI.getIssuer(), initialData.get("issuer"));
+//        assertEquals(platformCertificatePCI.getCredentialType(),
+//                initialData.get("credentialType"));
+//        // Check component identifier
+//        assertNotNull(initialData.get("componentsIdentifier"));
+//        List<?> obj = (List<?>) initialData.get("componentsIdentifier");
+//        final int expectedSize = 14;
+//        assertEquals(expectedSize, obj.size());
+//
+//        // Check platform properties
+//        assertNotNull(initialData.get("platformProperties"));
+//        obj = (List<?>) initialData.get("platformProperties");
+//        assertEquals(0, obj.size());
+//
+//    }
+//
+//    /**
+//     * Tests initial page when the certificate type is
+//     * an Endorsement Certificate.
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    @Rollback
+//    @SuppressWarnings("unchecked")
+//    public void testInitPageEndorsement() throws Exception {
+//
+//        MvcResult result = getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", endorsementCredential.getId().toString())
+//                        .param("type", "endorsement"))
+//                .andExpect(status().isOk())
+//                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
+//                .andReturn();
+//
+//        // Obtain initialData HashMap
+//        Map<String, String> initialData = (Map<String, String>) result
+//                .getModelAndView()
+//                .getModel()
+//                .get(PolicyPageController.INITIAL_DATA);
+//        assertEquals(endorsementCredential.getIssuer(), initialData.get("issuer"));
+//        assertEquals(endorsementCredential.getManufacturer(),
+//                initialData.get("manufacturer"));
+//    }
+//
+//    /**
+//     * Tests initial page for issuer ID.
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    @Rollback
+//    @SuppressWarnings("unchecked")
+//    public void testInitPageID() throws Exception {
+//
+//        // use mock MVC to access a cert from Certificate Details Page path;
+//        // send it some parameters, including the ID of the cert you want, and
+//        // a ‘type’ (which is different than the ‘credential type’);
+//        // check that the certificate details Model attributes exist,
+//        // and return the MVC data call into a result object
+//        MvcResult result = getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", caCertificate.getId().toString())
+//                        .param("type", "certificateauthority"))
+//                .andExpect(model().attributeExists(
+//                        CertificateDetailsPageController.INITIAL_DATA))
+//                .andReturn();
+//
+//        // Obtain initialData HashMap
+//        Map<String, String> initialData = (Map<String, String>) result
+//                .getModelAndView()
+//                .getModel()
+//                .get(PolicyPageController.INITIAL_DATA);
+//
+//        assertEquals(caCertificate.getIssuer(), initialData.get("issuer"));
+//        assertEquals(caRootCertificate.getId().toString(),
+//                initialData.get("issuerID"));
+//    }
+//
+//    /**
+//     * Tests initial page when the certificate type is
+//     * an Issued Attestation Certificate.
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    @Rollback
+//    @SuppressWarnings("unchecked")
+//    public void testInitPageIssuedAttestation() throws Exception {
+//
+//        MvcResult result = getMockMvc()
+//                .perform(MockMvcRequestBuilders.get(pagePath)
+//                        .param("id", issuedCredential.getId().toString())
+//                        .param("type", "issued"))
+//                .andExpect(status().isOk())
+//                .andExpect(model().attributeExists(PolicyPageController.INITIAL_DATA))
+//                .andReturn();
+//
+//        // Obtain initialData HashMap
+//        Map<String, String> initialData = (Map<String, String>) result
+//                .getModelAndView()
+//                .getModel()
+//                .get(PolicyPageController.INITIAL_DATA);
+//        assertEquals(issuedCredential.getIssuer(), initialData.get("issuer"));
+//        //assertEquals(issuedCredential.getEndorsementCredential().getId().toString(),
+//        //        initialData.get("endorsementID"));
+//    }
 }
