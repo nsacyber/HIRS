@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CertificateDetailsPageControllerTest extends PageControllerTest {
 
     // Random UUID for certificate search.
-    private static final String ID = "046b6c7f-0b8a-43b9-b35d-6489e6daee91";
+    private static final String NONEXISTENT_ID = "046b6c7f-0b8a-43b9-b35d-6489e6daee91";
 
     private static final String TEST_CA_CERTIFICATE
             = "/certificates/fakestmtpmekint02.pem";
@@ -181,20 +181,20 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
      * @throws Exception if an exception occurs
      */
     @Test
-    public void testInitPage() throws Exception {
+    public void testInitPageInvalidCert() throws Exception {
         // Get error message
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", ID)
+                        .param("id", NONEXISTENT_ID)
                         .param("type", "certificateauthority"))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
-                        hasItem("Unable to find certificate with ID: " + ID))))
+                        hasItem("Unable to find certificate with ID: " + NONEXISTENT_ID))))
                 .andReturn();
     }
 
     /**
-     * Tests initial page when invalid type.
+     * Tests initial page when invalid type (bad ID doesn't matter)
      *
      * @throws Exception if an exception occurs
      */
@@ -203,7 +203,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         // Get error message
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", ID)
+                        .param("id", NONEXISTENT_ID)
                         .param("type", "invalid"))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
@@ -212,7 +212,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Tests initial page when missing a parameter.
+     * Tests initial page when missing a parameter (missing the type; bad ID doesn't matter)
      *
      * @throws Exception if an exception occurs
      */
@@ -221,7 +221,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         // Get error message
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath)
-                        .param("id", ID))
+                        .param("id", NONEXISTENT_ID))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute(PageController.MESSAGES_ATTRIBUTE, hasProperty("errorMessages",
                         hasItem("Type was not provided"))))

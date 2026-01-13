@@ -8,9 +8,10 @@
         <script th:inline="javascript">
             $(document).ready(function () {
 
-                const initialDataNotNull = /*[[${initialDataNotNull}]]*/ '';
+                const initialDataExists = /*[[${initialDataExists}]]*/ '';
+                console.log("initialDataExists: " + initialDataExists);
 
-                if(initialDataNotNull) {
+                if(initialDataExists) {
 
                     // initialData parameters
                     // 'initialData' is a HashMap with the certificate information, added as an object to
@@ -210,8 +211,7 @@
 
     <section layout:fragment="content">
         <div id="certificate-details-page" class="container-fluid">
-
-            <th:block th:if="${not #strings.isEmpty(initialData)}">
+            <th:block th:if="${initialDataExists}">
                 <!-- Display issuer, and provide a link to issuer details if provided -->
                 <div class="row">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Issuer</span></div>
