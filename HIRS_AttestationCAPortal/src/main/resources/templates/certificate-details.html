@@ -9,7 +9,6 @@
             $(document).ready(function () {
 
                 const initialDataExists = /*[[${initialDataExists}]]*/ '';
-                console.log("initialDataExists: " + initialDataExists);
 
                 if(initialDataExists) {
 
@@ -88,11 +87,9 @@
                     if (publicKey) {
                         const encodedPublicKeyDiv = document.getElementById('encodedPublicKey');
                         encodedPublicKeyDiv.innerHTML = parseHexString(publicKey);
-                    } else {
-                        if (encPublicKey) {
-                            const encodedPublicKeyDiv = document.getElementById('encodedPublicKey');
-                            encodedPublicKeyDiv.innerHTML = byteToHexString(JSON.parse(encPublicKey));
-                        }
+                    } else if (encPublicKey) {
+                        const encodedPublicKeyDiv = document.getElementById('encodedPublicKey');
+                        encodedPublicKeyDiv.innerHTML = byteToHexString(JSON.parse(encPublicKey));
                     }
 
                     // Subject key identifier
@@ -170,31 +167,31 @@
                 <th:block th:if="${#strings.equals(param.type, 'certificateauthority')}">
                     Certificate Authority
                     <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download?id={id}(id=${param.id})}">
-                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download Trust Chain Certificate">
                     </a>
                 </th:block>
                 <th:block th:if="${#strings.equals(param.type, 'endorsement')}">
                     Endorsement Certificate
                     <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials/download?id={id}(id=${param.id})}">
-                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download Endorsement Certificate">
                     </a>
                 </th:block>
                 <th:block th:if="${#strings.equals(param.type, 'platform')}">
                     Platform Certificate
                     <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials/download?id={id}(id=${param.id})}">
-                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download Platform Certificate">
                     </a>
                 </th:block>
                 <th:block th:if="${#strings.equals(param.type, 'issued')}">
                     Issued Attestation Certificates
                     <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id={id}(id=${param.id})}">
-                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download Issued Certificate">
                     </a>
                 </th:block>
                 <th:block th:if="${#strings.equals(param.type, 'idevid')}">
                     IDevID Certificate
                     <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/download?id={id}(id=${param.id})}">
-                        <img src="/icons/ic_file_download_black_24dp.png" title="Download Certificate">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download IDevID Certificate">
                     </a>
                 </th:block>
             </th:block>
@@ -210,7 +207,7 @@
     </h1>
 
     <section layout:fragment="content">
-        <div id="certificate-details-page" class="container-fluid">
+        <div id="certificate-details-page" class="container-fluid certificate-details-container">
             <th:block th:if="${initialDataExists}">
                 <!-- Display issuer, and provide a link to issuer details if provided -->
                 <div class="row">
@@ -246,15 +243,17 @@
                             <span class="chainIcon">
                                 <!-- Icon with link for missing certificate for the chain -->
                                 <th:block th:if="${not #strings.equals(initialData.get('isSelfSigned'), 'false')}">
-                                    <img src="/icons/ic_all_inclusive_black_24dp.png" title="Self sign certificate.">
+                                    <img th:src="@{/icons/ic_all_inclusive_black_24dp.png}" alt="Black Infinity Icon"
+                                         title="Self sign certificate.">
                                 </th:block>
                                 <th:block th:if="${#strings.equals(initialData.get('isSelfSigned'), 'false')}">
                                     <th:block th:if="${#strings.isEmpty(initialData.get('missingChainIssuer'))}">
-                                        <img src="/icons/ic_checkbox_marked_circle_black_green_24dp.png"
-                                                 title="All certificates in the chain were found.">
+                                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}"
+                                             alt="Green Checkbox Icon" title="All certificates in the chain were found.">
                                     </th:block>
                                     <th:block th:if="${not #strings.isEmpty(initialData.get('missingChainIssuer'))}">
-                                        <img src="/icons/ic_error_red_24dp.png" th:title="${initialData.get('missingChainIssuer')}" >
+                                        <img th:src="@{/icons/ic_error_red_24dp.png}" alt="Red Error Icon"
+                                             th:title="${initialData.get('missingChainIssuer')}" >
                                     </th:block>
                                 </th:block>
                             </span>
@@ -362,7 +361,7 @@
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
                     <div id="signatureSection" class="col col-md-8">
                         <div id="signatureAccordion" class="accordion">
-                            <div class="accordion-item border rounded overflow-hidden">
+                            <div class="accordion-item border rounded mb-2 overflow-hidden">
                                 <h2 id="headingOne" class="accordion-header">
                                     <button
                                         class="accordion-button collapsed"
@@ -380,10 +379,12 @@
                                      aria-labelledby="headingOne"
                                      aria-expanded="false"
                                      data-bs-parent="#signatureAccordion">
-                                    <div id="signature" class="fieldValue"></div>
+                                    <div class="accordion-body">
+                                        <div id="signature" class="fieldValue"></div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="accordion-item border rounded overflow-hidden">
+                            <div class="accordion-item border rounded mb-2 overflow-hidden">
                                 <h2 id="headingTwo" class="accordion-header">
                                     <button
                                          class="accordion-button collapsed"
@@ -402,9 +403,11 @@
                                      aria-expanded="false"
                                      data-bs-parent="#signatureAccordion">
                                     <div>
-                                        <span class="fieldValue">
-                                            [[${initialData.get('signatureAlgorithm')}]]
-                                        </span>
+                                        <div class="accordion-body">
+                                            <span class="fieldValue">
+                                                [[${initialData.get('signatureAlgorithm')}]]
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -418,7 +421,7 @@
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Public Key</span></div>
                         <div id="publicKeySection" class="col col-md-8">
                             <div id="publicKeyAccordion" class="accordion">
-                                <div class="accordion-item">
+                                <div class="accordion-item mb-2">
                                     <h2 id="headingOne" class="accordion-header">
                                         <button
                                                 class="accordion-button collapsed"
@@ -445,10 +448,12 @@
     <!--                                        <div id="encodedPublicKey" class="fieldValue"></div>-->
     <!--                                    </div>-->
 
-                                        <div id="encodedPublicKey" class="fieldValue"></div>
+                                        <div class="accordion-body">
+                                            <div id="encodedPublicKey" class="fieldValue"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="accordion-item">
+                                <div class="accordion-item mb-2">
                                     <h2 id="headingTwo" class="accordion-header">
                                         <button
                                                 class="accordion-button collapsed"
@@ -466,7 +471,7 @@
                                          aria-expanded="false"
                                          aria-labelledby="headingTwo"
                                          data-bs-parent="#publicKeyAccordion">
-                                        <div>
+                                         <div class="accordion-body">
                                             <span class="fieldValue">
                                                 [[${initialData.get('publicKeyAlgorithm')}]] / [[${initialData.get('publicKeySize')}]]
                                             </span>
@@ -592,7 +597,7 @@
                             </span>
                         </div>
                         <div id="tpmSpecification" class="col col-md-8">
-                            <div id="tpmSpecificationInner" class="card-body collapse" role="tabpanel"
+                            <div id="tpmSpecificationInner" class="accordion-body card-body collapse" role="tabpanel"
                                  aria-expanded="false">
                                 <div>Family:&nbsp;<span>[[${initialData.get('TPMSpecificationFamily')}]]</span></div>
                                 <div>Level:&nbsp;<span>[[${initialData.get('TPMSpecificationLevel')}]]</span></div>
@@ -611,7 +616,7 @@
                             </span>
                         </div>
                         <div id="tpmSecurityAssertion" class="col col-md-8">
-                            <div id="tpmSecurityAssertionInner" class="card-body collapse" role="tabpanel"
+                            <div id="tpmSecurityAssertionInner" class="accordion-body card-body collapse" role="tabpanel"
                                  aria-expanded="false">
                                 <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
                                 <div>Field
@@ -743,7 +748,7 @@
                                 <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getCcInfo())}">
                                     <th:block th:with="ccinfo=${initialData.get('tbbSecurityAssertion').getCcInfo()}">
                                         <div id="tbbSecurityCcInfoAccordion" class="accordion">
-                                            <div class="accordion-item border rounded overflow-hidden">
+                                            <div class="accordion-item border rounded mb-2 overflow-hidden">
                                                 <h2 id="headingOne" class="accordion-header">
                                                     <button class="accordion-button collapsed"
                                                             type="button"
@@ -858,7 +863,7 @@
                                 <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getFipsLevel())}">
                                     <th:block th:with="fipslevel=${initialData.get('tbbSecurityAssertion').getFipsLevel()}">
                                         <div id="tbbSecurityFipsAccordion" class="accordion">
-                                            <div class="accordion-item border rounded overflow-hidden">
+                                            <div class="accordion-item border rounded mb-2 overflow-hidden">
                                                 <h2 id="headingTwo" class="accordion-header">
                                                     <button
                                                          class="accordion-button collapsed"
@@ -874,7 +879,7 @@
                                                      class="accordion-collapse collapse"
                                                      aria-labelledby="headingTwo"
                                                      data-bs-parent="#tbbSecurityFipsAccordion">
-                                                    <div class="card-body">
+                                                    <div class="accordion-body card-body">
                                                         <div id="fipsLevel" class="row">
                                                             <div class="tbbsecurityLine">
                                                                 <span class="fieldHeader">Version:</span>
@@ -902,7 +907,7 @@
                                 </th:block> <!-- Close FIPS Level -->
                                 <!-- ISO9000 isCertified and URI -->
                                 <div id="tbbsecurityIso9000Accordion" class="accordion">
-                                    <div class="accordion-item border rounded overflow-hidden">
+                                    <div class="accordion-item border rounded mb-2 overflow-hidden">
                                         <h2 id="headingThree" class="accordion-header">
                                             <button
                                                  class="accordion-button collapsed"
@@ -919,7 +924,7 @@
                                              class="accordion-collapse collapse"
                                              aria-labelledby="headingThree"
                                              data-bs-parent="#tbbsecurityIso9000Accordion">
-                                            <div class="card-body">
+                                            <div class="accordion-body card-body">
                                                 <div id="iso9000" class="row">
                                                     <div class="tbbsecurityLine">
                                                         <th:block th:if="${#strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
@@ -959,10 +964,10 @@
                                 <th:block th:if="${not #strings.isEmpty(initialData.get('componentResults'))}">
                                     <!-- Component Identifier -->
                                     <div id="componentsAccordion" class="accordion">
-                                        <div class="accordion-item border rounded overflow-hidden">
+                                        <div class="accordion-item border rounded mb-2 overflow-hidden">
                                             <h2 id="headingOne" class="accordion-header">
                                                 <button
-                                                     class="accordion-button collapsed"
+                                                     class="accordion-button"
                                                      type="button"
                                                      data-bs-toggle="collapse"
                                                      data-bs-target="#componentIdentifiercollapse"
@@ -972,7 +977,7 @@
                                                 </button>
                                             </h2>
                                             <div id="componentIdentifiercollapse"
-                                                 class="accordion-collapse collapse in"
+                                                 class="accordion-collapse collapse in show"
                                                  aria-labelledby="headingOne"
                                                  aria-expanded="true"
                                                  data-bs-parent="#platformConfiguration">
@@ -1018,7 +1023,7 @@
                                                                         <span
                                                                             class="fieldValue">[[${component.getModel()}]]</span><br />
                                                                         <th:block th:if="${not #strings.isEmpty(#strings.trim(component.getSerialNumber()))}">
-                                                                            <span class="fieldHeader">Serial Number:</span>
+                                                                            <span class="fieldHeader">SN:</span>
                                                                             <span
                                                                                     class="fieldValue">[[${component.getSerialNumber()}]]</span><br />
                                                                         </th:block>
@@ -1029,16 +1034,19 @@
                                                                         </th:block>
                                                                         <th:block th:each="address, loop : ${component.getComponentAddresses()}">
                                                                             <span
-                                                                                class="fieldHeader">[[${address.getAddressTypeString()}]]
+                                                                                class="fieldHeader">[[${#strings.capitalize(address.getAddressTypeString())}]]
                                                                                 address:</span>
                                                                             <span
                                                                                 class="fieldValue">[[${address.getAddressValueString()}]]</span><br />
                                                                         </th:block>
+                                                                        <span class="fieldHeader">Replaceable:</span>
                                                                         <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
-                                                                            <span class="badge text-bg-success">Replaceable</span><br />
+                                                                            <span
+                                                                                    class="fieldValue">True</span><br />
                                                                         </th:block>
                                                                         <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
-                                                                            <span class="badge bg-danger">Irreplaceable</span><br />
+                                                                            <span
+                                                                                    class="fieldValue">False</span><br />
                                                                         </th:block>
                                                                         <th:block th:if="${not #strings.isEmpty(component.isVersion2())}">
                                                                             <th:block th:if="${not #strings.isEmpty(component.getIssuerDN())}">
@@ -1054,13 +1062,22 @@
                                                                                     URI:</span>
                                                                             </th:block>
                                                                             <span class="fieldValue">
-                                                                                <a th:href="@{${component.getUniformResourceIdentifier()}}">
-                                                                                    [[${component.getUniformResourceIdentifier()}]]
-                                                                                </a>
-                                                                            </span><br />
+                                                                                <th:block th:if="${not #strings.isEmpty(component.getUniformResourceIdentifier())}">
+                                                                                    <a th:href="@{${component.getUniformResourceIdentifier()}}">
+                                                                                        [[${component.getUniformResourceIdentifier()}]]
+                                                                                    </a><br />
+                                                                                </th:block>
+                                                                            </span>
+                                                                            <!-- Component Status: added(0), modified (1), removed(2)-->
                                                                             <span class="fieldHeader">Status:</span>
-                                                                            <span
-                                                                                class="fieldValue">[[${component.getAttributeStatus()}]]</span><br />
+                                                                            <th:block th:if="${not #strings.isEmpty(component.getAttributeStatus())}">
+                                                                                <span
+                                                                                        class="fieldValue">[[${component.getAttributeStatus()}]]</span><br />
+                                                                            </th:block>
+                                                                            <th:block th:if="${#strings.isEmpty(component.getAttributeStatus())}">
+                                                                                <span
+                                                                                    class="fieldValue">Not Specified</span><br />
+                                                                            </th:block>
                                                                         </th:block>
                                                                     </div>
                                                                 </div>
@@ -1075,7 +1092,7 @@
                                 <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI'))}">
                                     <!-- Components Identifier URI -->
                                     <div id="componentsIdUriAccordion" class="accordion">
-                                        <div class="accordion-item border rounded overflow-hidden">
+                                        <div class="accordion-item border rounded mb-2 overflow-hidden">
                                             <h4 id="headingTwo" class="accordion-header">
                                                 <button
                                                      class="accordion-button collapsed"
@@ -1114,7 +1131,7 @@
                                 <!-- TCG Platform Configuration: Platform Properties -->
                                 <th:block th:if="${not #strings.isEmpty(initialData.get('platformProperties'))}">
                                     <div id="platformPropertiesAccordion" class="accordion">
-                                        <div class="accordion-item border rounded overflow-hidden">
+                                        <div class="accordion-item border rounded mb-2 overflow-hidden">
                                             <h2 id="headingThree" class="accordion-header">
                                                 <button
                                                      class="accordion-button collapsed"
@@ -1155,7 +1172,7 @@
                                 <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI'))}">
                                     <!-- Platform Properties URI -->
                                     <div class="accordion" id="platformPropertiesUriAccordion">
-                                        <div class="accordion-item border rounded overflow-hidden">
+                                        <div class="accordion-item border rounded mb-2 overflow-hidden">
                                             <h4 id="headingFour" class="accordion-header">
                                                 <button
                                                      class="accordion-button collapsed"
@@ -1231,7 +1248,7 @@
                         <div id="endorsementID" class="col col-md-8">
                             <th:block th:if="${not #strings.isEmpty(initialData.get('endorsementID'))}">
                                 <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('endorsementID')})}">
-                                    <img src="/icons/ic_vpn_key_black_24dp.png">
+                                    <img th:src="@{/icons/ic_vpn_key_black_24dp.png}" alt="Key Icon" title="Endorsement Certificate">
                                 </a>
                             </th:block>
                         </div>

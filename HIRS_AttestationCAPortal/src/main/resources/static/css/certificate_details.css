@@ -16,6 +16,9 @@
     font-weight: bold;
     margin: auto 0;
 }
+.certificate-details-container {
+    margin: 50px;
+}
 
 #platformID {
     display: inline;

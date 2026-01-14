@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import static hirs.utils.specificationLookups.PlatformClass.getPlatClassFromId;
+
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
  * information on a web page, as X509 cert classes do not serialize to JSON
@@ -395,7 +397,13 @@ public final class CertificateStringMapBuilder {
             data.put("version", certificate.getVersion());
             data.put("platformSerial", certificate.getPlatformSerial());
             data.put("chassisSerialNumber", certificate.getChassisSerialNumber());
-            data.put("platformClass", certificate.getPlatformClass());
+            String platformClassStr = certificate.getPlatformClass().replaceAll("[^0-9]","");
+            if(platformClassStr.isEmpty()) {
+                data.put("platformClass", certificate.getPlatformClass());
+            }
+            else {
+                data.put("platformClass", getPlatClassFromId(Integer.parseInt(platformClassStr)));
+            }
             data.put("majorVersion",
                     Integer.toString(certificate.getMajorVersion()));
             data.put("minorVersion",
