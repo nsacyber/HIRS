@@ -108,7 +108,7 @@
         ];
 
         //Set data tables
-        let dataTable = setDataTables("#reportTable", url, columns);
+        let dataTable = setDataTables(viewName, "#reportTable", url, columns);
 
         dataTable.order([1, "desc"]).draw(); //order by createTime
 

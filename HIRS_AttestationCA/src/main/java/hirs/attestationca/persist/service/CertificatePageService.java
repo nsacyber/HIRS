@@ -392,7 +392,7 @@ public class CertificatePageService {
     }
 
     /**
-     * Bulks deletes the provided certificates from the database.
+     * Bulks deletes the provided list of certificates from the database.
      *
      * @param uuids           the list of certificate uuids to delete
      * @param successMessages contains any success messages that will be displayed on the page

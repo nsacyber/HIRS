@@ -325,7 +325,7 @@ public class ReferenceManifestPageService {
     }
 
     /**
-     * Deletes the specified RIM using the provided UUID.
+     * Bulks deletes the provided list of RIMs from the database.
      *
      * @param uuids           the set of UUIDs of the RIMs to be deleted
      * @param successMessages contains any success messages that will be displayed on the page
