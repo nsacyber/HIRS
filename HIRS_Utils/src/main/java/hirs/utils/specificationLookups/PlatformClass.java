@@ -6,6 +6,12 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Enum to lookup values for platform class specified by section 4 of the following registry.
+ * @see <a href="https://trustedcomputinggroup.org/wp-content/uploads/Registry-of-Reserved-TPM-2.0-
+ *               Handles-and-Localities-Version-1.2-Revision-1.00_pub.pdf">
+ *     Registry of Reserved TPM 2.0 Handles and Localities</a>
+ */
 @Getter
 @AllArgsConstructor
 public enum PlatformClass {

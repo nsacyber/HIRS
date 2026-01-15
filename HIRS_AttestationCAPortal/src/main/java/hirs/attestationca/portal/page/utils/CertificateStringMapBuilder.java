@@ -106,7 +106,7 @@ public final class CertificateStringMapBuilder {
                     try {
                         KeyFactory ecFactory = KeyFactory.getInstance("EC");
                         publicKey = ecFactory.generatePublic(keySpec);
-                    } catch (Exception ignore) {}
+                    } catch (Exception ignore) { }
                     // If no EC then RSA
                     if (publicKey == null) {
                         KeyFactory rsaFactory = KeyFactory.getInstance("RSA");
@@ -400,12 +400,10 @@ public final class CertificateStringMapBuilder {
             try {
                 String platformClassStr = certificate.getPlatformClass().replaceAll("[^0-9]", "");
                 data.put("platformClass", getPlatClassFromId(Integer.parseInt(platformClassStr)));
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 if ((certificate.getPlatformClass() == null) || (certificate.getPlatformClass().isEmpty())) {
                     data.put("platformClass", "Not Specified");
-                }
-                else {
+                } else {
                     data.put("platformClass", certificate.getPlatformClass() + " (unable to perform lookup");
                 }
             }

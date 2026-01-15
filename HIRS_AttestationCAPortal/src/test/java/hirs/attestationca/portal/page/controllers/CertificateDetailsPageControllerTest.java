@@ -194,7 +194,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Tests initial page when invalid type (bad ID doesn't matter)
+     * Tests initial page when invalid type (bad ID doesn't matter).
      *
      * @throws Exception if an exception occurs
      */
@@ -212,7 +212,7 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Tests initial page when missing a parameter (missing the type; bad ID doesn't matter)
+     * Tests initial page when missing a parameter (missing the type; bad ID doesn't matter).
      *
      * @throws Exception if an exception occurs
      */
