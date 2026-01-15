@@ -263,7 +263,7 @@ function generateLogLevelChangeButton(
   // Generate the modal trigger button for the specified log level
   const html =
     `<button type="button" ` +
-    `class="btn ${logLevelColor} btn-sm" ` + // Use dynamic color
+    `class="btn ${logLevelColor} btn-sm action-icons" ` + // Use dynamic color
     `data-bs-toggle="modal" ` +
     `data-bs-target="${modalTargetId}" ` +
     `data-currentLogLevel="${currentLogLevel}" ` +
@@ -317,7 +317,7 @@ function generateCertificateDetailsLink(type, certificateId, sameType) {
 
   const html = `
   <a href="${href}">
-    <img src="${fullIconPath}" class="options-icons" title="${title}">
+    <img src="${fullIconPath}" class="action-icons" title="${title}">
   </a>
 `;
 
@@ -339,7 +339,7 @@ function generateRimDetailsLink(pagePath, rimId) {
 
   const html = `
   <a href="${href}">
-    <img src="${fullIconPath}" class="options-icons" title="${title}">
+    <img src="${fullIconPath}" class="action-icons" title="${title}">
   </a>
 `;
 
@@ -362,7 +362,7 @@ function generateCertificateDeleteLink(certificateId) {
     `data-bs-target="${modalTargetId}" ` +
     `data-id="${certificateId}" ` +
     'aria-label="Delete Certificate Link">' +
-    `<img src="${fullIconPath}" class="options-icons" alt="Delete Certificate Link" title="Delete Certificate">` +
+    `<img src="${fullIconPath}" class="action-icons" alt="Delete Certificate Link" title="Delete Certificate">` +
     "</a>";
 
   return html;
@@ -384,7 +384,7 @@ function generateRIMDeleteLink(rimId) {
     `data-bs-target="${modalTargetId}" ` +
     `data-id="${rimId}" ` +
     'aria-label="Delete RIM Link">' +
-    `<img src="${fullIconPath}" class="options-icons" alt="Delete RIM Link" title="Delete RIM">` +
+    `<img src="${fullIconPath}" class="action-icons" alt="Delete RIM Link" title="Delete RIM">` +
     "</a>";
 
   return html;
@@ -403,7 +403,7 @@ function generateCertificateDownloadLink(pagePath, certificateId) {
 
   const html = `
   <a href="${href}">
-    <img src="${fullIconPath}" class="options-icons" title="Download Certificate">
+    <img src="${fullIconPath}" class="action-icons" title="Download Certificate">
   </a>
 `;
 
@@ -423,7 +423,7 @@ function generateRimDownloadLink(pagePath, rimId) {
 
   const html = `
   <a href="${href}">
-    <img src="${icon}" class="options-icons" title="Download Reference Integrity Manifest">
+    <img src="${icon}" class="action-icons" title="Download Reference Integrity Manifest">
   </a>
 `;
 
