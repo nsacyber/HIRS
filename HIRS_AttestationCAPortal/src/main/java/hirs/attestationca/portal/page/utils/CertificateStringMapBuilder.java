@@ -397,12 +397,17 @@ public final class CertificateStringMapBuilder {
             data.put("version", certificate.getVersion());
             data.put("platformSerial", certificate.getPlatformSerial());
             data.put("chassisSerialNumber", certificate.getChassisSerialNumber());
-            String platformClassStr = certificate.getPlatformClass().replaceAll("[^0-9]","");
-            if(platformClassStr.isEmpty()) {
-                data.put("platformClass", certificate.getPlatformClass());
-            }
-            else {
+            try {
+                String platformClassStr = certificate.getPlatformClass().replaceAll("[^0-9]", "");
                 data.put("platformClass", getPlatClassFromId(Integer.parseInt(platformClassStr)));
+            }
+            catch (Exception e) {
+                if ((certificate.getPlatformClass() == null) || (certificate.getPlatformClass().isEmpty())) {
+                    data.put("platformClass", "Not Specified");
+                }
+                else {
+                    data.put("platformClass", certificate.getPlatformClass() + " (unable to perform lookup");
+                }
             }
             data.put("majorVersion",
                     Integer.toString(certificate.getMajorVersion()));

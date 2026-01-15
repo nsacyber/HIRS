@@ -69,11 +69,12 @@
                         }
                     }
 
-                    // Format validity time
+                    // Format validity time (assume input of Unix timestamp in milliseconds, ex. 1514782800000)
                     $("#validity span").each(function () {
                         let dateText = $(this).text();
                         if(dateText) {
-                            return $(this).text(formatCertificateDate2(dateText));
+                            const dateObject = new Date(parseInt(dateText));
+                            return $(this).text(formatCertificateDate(dateObject.toISOString()));
                         }
                     });
 
@@ -421,7 +422,7 @@
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Public Key</span></div>
                         <div id="publicKeySection" class="col col-md-8">
                             <div id="publicKeyAccordion" class="accordion">
-                                <div class="accordion-item mb-2">
+                                <div class="accordion-item border rounded mb-2 overflow-hidden">
                                     <h2 id="headingOne" class="accordion-header">
                                         <button
                                                 class="accordion-button collapsed"
@@ -439,21 +440,12 @@
                                          aria-labelledby="headingOne"
                                          aria-expanded="false"
                                          data-bs-parent="#publicKeyAccordion">
-    <!--    TODO: look at below-->
-    <!--                : original code had the same outcome for if/else, is this correct?:-->
-    <!--                                    <th:block th:if="${not #strings.isEmpty(initialData.get('publicKeyValue'))}">-->
-    <!--                                        <div id="encodedPublicKey" class="fieldValue"></div>-->
-    <!--                                    </div>-->
-    <!--                                    <th:block th:if="${#strings.isEmpty(initialData.get('publicKeyValue'))}">-->
-    <!--                                        <div id="encodedPublicKey" class="fieldValue"></div>-->
-    <!--                                    </div>-->
-
                                         <div class="accordion-body">
                                             <div id="encodedPublicKey" class="fieldValue"></div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="accordion-item mb-2">
+                                <div class="accordion-item border rounded mb-2 overflow-hidden">
                                     <h2 id="headingTwo" class="accordion-header">
                                         <button
                                                 class="accordion-button collapsed"
