@@ -287,7 +287,7 @@
                                     Module Name</span></div>
                             <div class="col col-md-8">
                                 <div><span class="help-text"
-                                           title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.get('hwType')}">Hardware
+                                           th:title="|Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.get('hwType')}|">Hardware
                                         Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span>
                                 </div>
                                 <div><span class="help-text"
@@ -305,7 +305,7 @@
                                     Module Name</span></div>
                             <div class="col col-md-8">
                                 <div><span class="help-text"
-                                           title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.get('hwType')}">Hardware
+                                           th:title="|Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.get('hwType')}|">Hardware
                                         Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span>
                                 </div>
                                 <div><span class="help-text"
@@ -325,7 +325,7 @@
                                 Module Name</span></div>
                         <div class="col col-md-8">
                             <div><span class="help-text"
-                                       title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.get('hwType')}">Hardware
+                                       th:title="|Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.get('hwType')}|">Hardware
                                     Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span></div>
                             <div><span class="help-text"
                                        title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware
