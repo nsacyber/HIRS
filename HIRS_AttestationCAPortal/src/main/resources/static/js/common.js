@@ -386,7 +386,7 @@ function rimDownloadLink(pagePath, id) {
 
 /**
  * Formats a given date to a UTC string, or returns Indefinite (802.1AR)
- * @param dateText expected to be a ISO 8601 date-time format
+ * @param dateText expected to be an ISO 8601 date-time format
  * @returns a string representing a date in RFC 7231 format, or "Indefinite"
  * example 2018-01-01T05:00:00.000Z -> Mon, 01 Jan 2018 05:00:00 GMT
  * example 2017-06-19T09:45:41.000+00:00 -> Mon, 19 Jun 2017 09:45:41 GMT
