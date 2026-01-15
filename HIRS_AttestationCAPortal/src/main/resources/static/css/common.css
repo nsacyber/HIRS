@@ -109,11 +109,11 @@ hr {
 }
 
 /* Options Icons Stying*/
-a:has(.options-icons) {
-  text-decoration: none; /* Remove underline from <a> tags containing .options-icons */
+a:has(.action-icons) {
+  text-decoration: none; /* Remove underline from <a> tags containing .action-icons */
 }
 
-.options-icons:hover {
+.action-icons:hover {
   opacity: 0.5; /* Change opacity on hover */
   cursor: pointer; /* Change cursor to pointer on hover */
   transition: opacity 0.3s ease; /* Smooth transition for opacity */
