@@ -68,6 +68,8 @@ function initializeDataTableButtonSetup(pageName) {
     "reference-manifests",
   ];
 
+  // this configuration contains the default buttons: "Page Length", "Clear All", "Export", "Column Visibility"
+  // for all the DataTables
   let dataTableButtons = [
     "pageLength",
     "colvis",
@@ -124,8 +126,23 @@ function initializeDataTableButtonSetup(pageName) {
       text: "Delete Selected",
       action: function (e, dt, node, config) {
         const selectedRows = dt.rows({ selected: true });
+        const modalTargetId = "#deleteMultipleConfirmationModal";
         if (selectedRows.count() > 0) {
-          alert(`Delete ${selectedRows.count()} selected row(s)?`);
+          // Get an array of IDs of the selected rows (assuming 'id' is the name of the column with IDs)
+          const selectedIds = selectedRows
+            .data()
+            .toArray()
+            .map((row) => row.id);
+
+          console.log("Selected IDs for deletion:", selectedIds); // Debugging log
+
+          // Store the selected IDs in the hidden input field inside the modal as a JSON string or comma-separated list
+          $("#selectedRecordsToDeleteIds").val(selectedIds.join(",")); // Storing as a comma-separated string
+
+          $("#numRecordsToDelete").text(selectedIds.length); // Update the modal text with the number of records to delete
+
+          // If there are selected rows, show the modal
+          $(modalTargetId).modal("show");
         }
       },
       attr: {

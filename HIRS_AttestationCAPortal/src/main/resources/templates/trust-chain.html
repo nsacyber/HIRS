@@ -202,7 +202,7 @@
             </table>
         </div>
 
-        <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
+        <!-- This modal will be triggered when the user hits the delete link on one of the table rows on the Trust Chain Certificate page -->
         <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/delete}">
             <div
                 th:replace="fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Trust Chain Certificate', 
@@ -219,6 +219,31 @@
                     <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
                     <!-- The trust chain certificate ID is stored in this hidden field -->
                     <input id="trustChainToDeleteId" name="id" type="hidden" value="">
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </div>
+            </div>
+        </form>
+
+
+        <!-- This modal will be triggered when the user hits the Delete Selected button on the Trust Chain Certificate page-->
+        <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-delete}">
+            <div
+                th:replace="fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Trust Chain Certificates', 
+                bodyContent=~{this::#deleteMultipleTrustChainsConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})">
+
+                <!-- Modal Body Content -->
+                <div id="deleteMultipleTrustChainsConfirmationBody">
+                    <p class="text-center text-danger fs-4">
+                        <strong>Are you sure you want to delete <span id="numRecordsToDelete"></span> Trust Chain
+                            certificate(s)?</strong>
+                    </p>
+                </div>
+
+                <!-- Define custom footer buttons here -->
+                <div id="deleteMultipleConfirmationFooterButtons">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <!-- The list of trust chain certificate ids are stored in this hidden field -->
+                    <input id="selectedRecordsToDeleteIds" name="ids" type="hidden" value="">
                     <button class="btn btn-danger" type="submit">Delete</button>
                 </div>
             </div>
