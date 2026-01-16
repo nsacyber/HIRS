@@ -14,6 +14,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
@@ -149,24 +150,32 @@ public class HelpPageService {
     /**
      * Sets the selected logger to the user provided log level.
      *
-     * @param loggerName name of the logger
-     * @param logLevel   log level
+     * @param loggerName      name of the logger
+     * @param logLevel        log level
+     * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages   contains any error messages that will be displayed on the page
      */
-    public void setLoggerLevel(final String loggerName, final String logLevel) {
+    public void setLoggerLevel(final String loggerName,
+                               final String logLevel,
+                               final List<String> successMessages,
+                               final List<String> errorMessages) {
         final LogLevel newLogLevel = LogLevel.valueOf(logLevel);
 
         // if a user attempts to change the log level of a logger that is not a part of the HIRS application
         if (!loggerName.startsWith(MAIN_HIRS_LOGGER_NAME)) {
-
             final String errorMessage = String.format("An illegal attempt has been made to change "
                     + "the selected logger [%s]'s log level. ", loggerName);
 
             log.error(errorMessage);
+            errorMessages.add(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
 
         loggersEndpoint.configureLogLevel(loggerName, newLogLevel);
 
-        log.info("The logger [{}]'s level has been changed to [{}]", loggerName, newLogLevel);
+        final String successMessage =
+                String.format("The logger [%s]'s level has been changed to [%s]", loggerName, newLogLevel);
+        log.info(successMessage);
+        successMessages.add(successMessage);
     }
 }

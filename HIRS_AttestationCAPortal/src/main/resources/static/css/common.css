@@ -108,6 +108,17 @@ hr {
   width: 900px;
 }
 
+/* Options Icons Stying*/
+a:has(.action-icons) {
+  text-decoration: none; /* Remove underline from <a> tags containing .action-icons */
+}
+
+.action-icons:hover {
+  opacity: 0.5; /* Change opacity on hover */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  transition: opacity 0.3s ease; /* Smooth transition for opacity */
+}
+
 /**********************************
 ***** Specific page styling *******
 ***********************************/
