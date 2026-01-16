@@ -1,12 +1,12 @@
 /* certificate-details-page */
-.row {
+.certrow {
     display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     flex-wrap: wrap;
 }
-.row > [class*='col-'] {
+.certrow > [class*='col-'] {
     display: flex;
     flex-direction: column;
     padding: 10px;

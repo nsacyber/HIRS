@@ -211,7 +211,7 @@
         <div id="certificate-details-page" class="container-fluid certificate-details-container">
             <th:block th:if="${initialDataExists}">
                 <!-- Display issuer, and provide a link to issuer details if provided -->
-                <div class="row">
+                <div class="certrow">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Issuer</span></div>
                     <div id="issuer" class="col col-md-8">
                         <div>Distinguished Name:&nbsp;<span>
@@ -264,7 +264,7 @@
 
                 <!-- Display certificate subject -->
                 <th:block th:if="${not #strings.isEmpty(initialData.get('subject'))}">
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject</span></div>
                         <div id="subject" class="col col-md-8">[[${initialData.get('subject')}]]</div>
                     </div>
@@ -272,7 +272,7 @@
 
                 <!-- Display certificate serial number -->
                 <th:block th:if="${not #strings.isEmpty(initialData.get('serialNumber'))}">
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certificate Serial Number</span></div>
                         <div id="serialNumber" class="col col-md-8 vertical"></div>
                     </div>
@@ -280,7 +280,7 @@
 
                 <!-- Display certificate hardware serial number -->
                 <th:block th:if="${not #strings.isEmpty(initialData.get('hwSerialNum'))}">
-                    <div class="row">
+                    <div class="certrow">
                         <th:block th:if="${not #strings.isEmpty(initialData.get('ekCertificateDigest'))}">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
                                                                         title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware
@@ -319,7 +319,7 @@
 
                 <!-- Display certificate tcg tpm manufacturer -->
                 <th:block th:if="${not #strings.isEmpty(initialData.get('tcgTpmManufacturer'))}">
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
                                                                     title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware
                                 Module Name</span></div>
@@ -347,7 +347,7 @@
 
                 <!-- Display certificate validity dates -->
                 <th:block th:if="${not #strings.isEmpty(initialData.get('beginValidity'))}">
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
                         <div id="validity" class="col col-md-8">
     <!--    TODO: check why had to create a second time function (formatCertificateDate2) for Format validity time -->
@@ -358,7 +358,7 @@
                 </th:block> <!-- Close certificate validity dates -->
 
                 <!-- Display certificate signature -->
-                <div class="row">
+                <div class="certrow">
                     <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
                     <div id="signatureSection" class="col col-md-8">
                         <div id="signatureAccordion" class="accordion">
@@ -418,7 +418,7 @@
 
                 <!-- Display certificate public key -->
                 <th:block th:if="${not #strings.isEmpty(initialData.get('encodedPublicKey'))}">
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Public Key</span></div>
                         <div id="publicKeySection" class="col col-md-8">
                             <div id="publicKeyAccordion" class="accordion">
@@ -477,7 +477,7 @@
 
                 <!-- Display certificate version -->
                 <th:block th:if="${not #strings.isEmpty(initialData.get('x509Version'))}">
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>
                         <!-- per spec, version is 1 more than encoded value -->
                         <div id="credentialVersion" class="col col-md-8 vertical">[[${{initialData.get('x509Version') + 1}}]]
@@ -487,7 +487,7 @@
 
                 <!-- Display certificate type -->
                 <th:block th:if="${not #strings.isEmpty(initialData.get('credentialType'))}">
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
                         <div id="credentialType" class="col col-md-8 vertical">[[${initialData.get('credentialType')}]]</div>
                     </div>
@@ -498,14 +498,14 @@
                 <!-- If this is a certificate of type 'certificateauthority' -->
                 <th:block th:if="${#strings.equals(param.type, 'certificateauthority')}">
                     <th:block th:if="${not #strings.isEmpty(initialData.get('subjectKeyIdentifier'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject Key
                                             Identifier</span></div>
                             <div id="subjectKeyIdentifier" class="col col-md-8 vertical"></div>
                         </div>
                     </th:block>
                     <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
                             </div>
                             <div id="revocationLocator" class="col col-md-8">
@@ -513,7 +513,7 @@
                             </div>
                         </div>
                     </th:block>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
                         <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
                             <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
@@ -523,7 +523,7 @@
                         </th:block>
                     </div>
                     <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>
                             </div>
                             <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]
@@ -534,7 +534,7 @@
 
                 <!-- If this is a certificate of type 'endorsement' -->
                 <th:block th:if="${#strings.equals(param.type, 'endorsement')}">
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
                         <div id="subjectAltName" class="col col-md-8">
                             <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
@@ -542,7 +542,7 @@
                             <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
                         <div id="policyReference" class="col col-md-8 vertical">
                             <th:block th:if="${not #strings.isEmpty(initialData.get('policyReference'))}">
@@ -554,7 +554,7 @@
                         </div>
                     </div>
                     <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
                             </div>
                             <div id="revocationLocator" class="col col-md-8">
@@ -562,7 +562,7 @@
                             </div>
                         </div>
                     </th:block>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
                         <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
                             <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
@@ -572,14 +572,14 @@
                         </th:block>
                     </div>
                     <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>
                             </div>
                             <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]
                             </div>
                         </div>
                     </th:block>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colHeader">
                                 <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
@@ -597,7 +597,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colHeader">
                                 <a role="button" data-bs-toggle="collapse" class="collapsed"
@@ -629,11 +629,11 @@
                 <th:block th:if="${#strings.equals(param.type, 'platform')}">
                     <!-- Platform Type -->
                     <th:block th:if="${not #strings.isEmpty(initialData.get('platformType'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
                             <div id="platformType" class="col col-md-8 vertical">[[${initialData.get('platformType')}]]</div>
                         </div>
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
                             <div id="platformChain" class="col col-md-8 vertical">
                                 <span>
@@ -654,7 +654,7 @@
                     </th:block>
                     <!-- Certification Practice Statement URI -->
                     <th:block th:if="${not #strings.isEmpty(initialData.get('CPSuri'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice
                                     Statement URI</span></div>
                             <div id="certificateCPSU" class="col col-md-8 vertical">
@@ -663,7 +663,7 @@
                         </div>
                     </th:block>
                     <!-- Holder -->
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
                         <div id="holder" class="col col-md-8">
                             <th:block th:if="${not #strings.isEmpty(initialData.get('holderIssuer'))}">
@@ -693,7 +693,7 @@
                         </div>
                     </div>
                     <!-- System Platform Information -->
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Platform Information</span>
                         </div>
                         <div id="subjectAltName" class="col col-md-8">
@@ -704,20 +704,20 @@
                         </div>
                     </div>
                     <!-- TCG Platform Specification -->
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification
                                 Version</span></div>
                         <div id="majorVersion" class="col col-md-8 vertical">
                             [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
                     </div>
                     <!-- Platform Class -->
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>
                         <div id="platformClass" class="col col-md-8 vertical">[[${initialData.get('platformClass')}]]</div>
                     </div>
                     <!-- TBB Security Assertion -->
                     <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">TBB Security Assertion</span>
                             </div>
                             <div id="tbbsecurity" class="col col-md-8">
@@ -756,7 +756,7 @@
                                                      aria-labelledby="headingOne"
                                                      data-bs-parent="#tbbSecurityCcInfoAccordion">
                                                     <div class="accordion-body">
-                                                        <div id="ccinfo" class="row">
+                                                        <div id="ccinfo" class="certrow">
                                                             <div class="tbbsecurityLine">
                                                                 <span class="fieldHeader">Version:</span>
                                                                     <span class="fieldValue">[[${ccinfo.getVersion()}]]</span>
@@ -872,7 +872,7 @@
                                                      aria-labelledby="headingTwo"
                                                      data-bs-parent="#tbbSecurityFipsAccordion">
                                                     <div class="accordion-body card-body">
-                                                        <div id="fipsLevel" class="row">
+                                                        <div id="fipsLevel" class="certrow">
                                                             <div class="tbbsecurityLine">
                                                                 <span class="fieldHeader">Version:</span>
                                                                 <span class="fieldValue">[[${fipslevel.getVersion()}]]</span>
@@ -917,7 +917,7 @@
                                              aria-labelledby="headingThree"
                                              data-bs-parent="#tbbsecurityIso9000Accordion">
                                             <div class="accordion-body card-body">
-                                                <div id="iso9000" class="row">
+                                                <div id="iso9000" class="certrow">
                                                     <div class="tbbsecurityLine">
                                                         <th:block th:if="${#strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
                                                             <span class="badge text-bg-success">ISO 9000 Certified</span>
@@ -947,7 +947,7 @@
                     <!-- For PC 2.0 -->
                     <!-- Credential Type is TCG -->
                     <th:block th:if="${#strings.contains(initialData.get('credentialType'), 'TCG')}">
-                        <div class="row">
+                        <div class="certrow">
                             <!-- TCG Platform Configuration -->
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform
                                     Configuration</span></div>
@@ -974,7 +974,7 @@
                                                  aria-expanded="true"
                                                  data-bs-parent="#platformConfiguration">
                                                 <div class="accordion-body">
-                                                    <div id="componentIdentifier" class="row">
+                                                    <div id="componentIdentifier" class="certrow">
                                                         <!-- 'componentResults' is List<ComponentResult> from CertificateStringMapBuilder-->
                                                         <th:block th:each="component, loop : ${initialData.get('componentResults')}">
                                                             <div class="component col col-md-4">
@@ -1064,7 +1064,7 @@
                                                                             <span class="fieldHeader">Status:</span>
                                                                             <th:block th:if="${not #strings.isEmpty(component.getAttributeStatus())}">
                                                                                 <span
-                                                                                        class="fieldValue">[[${component.getAttributeStatus()}]]</span><br />
+                                                                                        class="fieldValue" th:text="${#strings.capitalize(#strings.toLowerCase(component.getAttributeStatus()))}"></span><br />
                                                                             </th:block>
                                                                             <th:block th:if="${#strings.isEmpty(component.getAttributeStatus())}">
                                                                                 <span
@@ -1101,7 +1101,7 @@
                                                  aria-labelledby="headingTwo"
                                                  data-bs-parent="#platformConfiguration">
                                                 <div class="accordion-body">
-                                                    <div id="componentIdentifierURI" class="row">
+                                                    <div id="componentIdentifierURI" class="certrow">
                                                         <span class="fieldHeader">URI:</span>
                                                         <a th:href="@{${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}}">
                                                             [[${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}]]
@@ -1140,7 +1140,7 @@
                                                  aria-labelledby="headingThree"
                                                  data-bs-parent="#platformConfiguration">
                                                 <div class="accordion-body">
-                                                    <div id="platformProperties" class="row">
+                                                    <div id="platformProperties" class="certrow">
                                                         <th:block th:each="property, loop : ${initialData.get('platformProperties')}">
                                                             <div class="component col col-md-4">
                                                                 <div class="card">
@@ -1181,7 +1181,7 @@
                                                  aria-labelledby="headingFour"
                                                  data-bs-parent="#platformConfiguration">
                                                 <div class="accordion-body">
-                                                    <div id="platformPropertiesURI" class="row">
+                                                    <div id="platformPropertiesURI" class="certrow">
                                                         <span class="fieldHeader">URI:</span>
                                                         <a th:href="@{${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}}">
                                                             [[${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}]]
@@ -1207,7 +1207,7 @@
 
                 <!-- If this is a certificate of type 'issued' -->
                 <th:block th:if="${#strings.equals(param.type, 'issued')}">
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
                         <div id="subjectAltName" class="col col-md-8">
                             <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
@@ -1216,7 +1216,7 @@
                             <div id="serial">Serial Number:&nbsp;<span>[[${initialData.get('platformSerial')}]]</span></div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
                         <div id="policyReference" class="col col-md-8 vertical">
                             <th:block th:if="${not #strings.isEmpty(initialData.get('policyReference'))}">
@@ -1228,14 +1228,14 @@
                         </div>
                     </div>
                     <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span></div>
                             <div id="revocationLocator" class="col col-md-8">
                                 <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
                             </div>
                         </div>
                     </th:block>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Endorsement Credential</span></div>
                         <div id="endorsementID" class="col col-md-8">
                             <th:block th:if="${not #strings.isEmpty(initialData.get('endorsementID'))}">
@@ -1245,7 +1245,7 @@
                             </th:block>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Credentials</span></div>
                         <div id="platformID" class="col col-md-8">
                             <th:block th:if="${not #strings.isEmpty(initialData.get('platformID'))}">
@@ -1253,19 +1253,19 @@
                             </th:block>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification Version</span>
                         </div>
                         <div id="majorVersion" class="col col-md-8 vertical">
                             [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
                     </div>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification
                                 Version</span></div>
                         <div id="majorVersion" class="col col-md-8 vertical">
                             [[${initialData.get('tcgMajorVersion')}]].[[${initialData.get('tcgMinorVersion')}]].[[${initialData.get('tcgRevisionLevel')}]]</div>
                     </div>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colHeader">
                                 <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
@@ -1282,7 +1282,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1">
                             <span class="colHeader">
                                 <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"
@@ -1310,14 +1310,14 @@
                 <!-- If this is a certificate of type 'idevid' -->
                 <th:block th:if="${#strings.equals(param.type, 'idevid')}">
                     <th:block th:if="${not #strings.isEmpty(initialData.get('tpmPolicies'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
                                                                         title="TPM verification policies, as defined in the TCG specification &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">TPM
                                     Policies</span></div>
                             <div id="tpmPolicies" class="col col-md-8 vertical">[[${initialData.get('tpmPolicies')}]]</div>
                         </div>
                     </th:block>
-                    <div class="row">
+                    <div class="certrow">
                         <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
                         <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
                             <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
@@ -1327,7 +1327,7 @@
                         </th:block>
                     </div>
                     <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
-                        <div class="row">
+                        <div class="certrow">
                             <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span></div>
                             <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]</div>
                         </div>
