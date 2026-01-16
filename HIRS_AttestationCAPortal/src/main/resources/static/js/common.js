@@ -197,8 +197,8 @@ function generateLogLevelChangeButton(
  * @param {boolean} sameType - Indicates whether the details belong to the same certificate type.
  * @returns {string} An HTML string representing the certificate detail link.
  */
-function generateCertificateDetailsLink(type, certificateId, sameType) {
-  const href = "/HIRS_AttestationCAPortal/portal/certificate-details?id=" + id + "&type=" + type;
+function generateCertificateDetailsLink(certificateType, certificateId, sameType) {
+  const href = "/HIRS_AttestationCAPortal/portal/certificate-details?id=" + certificateId + "&type=" + certificateType;
   let fullIconPath = iconPath;
   let title = "";
 
@@ -208,7 +208,7 @@ function generateCertificateDetailsLink(type, certificateId, sameType) {
     title = "Details";
     fullIconPath += "/ic_assignment_black_24dp.png";
   } else {
-    switch (type) {
+    switch (certificateType) {
       case "issued":
         fullIconPath += "/ic_library_books_black_24dp.png";
         title = "View Issued Attestation Certificate Details";
