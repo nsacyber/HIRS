@@ -197,8 +197,8 @@ function generateLogLevelChangeButton(
  * @param {boolean} sameType - Indicates whether the details belong to the same certificate type.
  * @returns {string} An HTML string representing the certificate detail link.
  */
-function generateCertificateDetailsLink(type, certificateId, sameType) {
-  const href = "certificate-details?id=" + certificateId + "&type=" + type;
+function generateCertificateDetailsLink(certificateType, certificateId, sameType) {
+  const href = "/HIRS_AttestationCAPortal/portal/certificate-details?id=" + certificateId + "&type=" + certificateType;
   let fullIconPath = iconPath;
   let title = "";
 
@@ -208,7 +208,7 @@ function generateCertificateDetailsLink(type, certificateId, sameType) {
     title = "Details";
     fullIconPath += "/ic_assignment_black_24dp.png";
   } else {
-    switch (type) {
+    switch (certificateType) {
       case "issued":
         fullIconPath += "/ic_library_books_black_24dp.png";
         title = "View Issued Attestation Certificate Details";
@@ -344,9 +344,11 @@ function generateRimDownloadLink(pagePath, rimId) {
 }
 
 /**
- * Formats a given date to a UTC string, or returns "Indefinite" (802.1AR).
- * @param {string | Date} dateText - The date to format.
- * @returns {string} The formatted date in RFC 7231 format, or "Indefinite".
+ * Formats a given date to a UTC string, or returns Indefinite (802.1AR)
+ * @param dateText expected to be an ISO 8601 date-time format
+ * @returns a string representing a date in RFC 7231 format, or "Indefinite"
+ * example 2018-01-01T05:00:00.000Z -> Mon, 01 Jan 2018 05:00:00 GMT
+ * example 2017-06-19T09:45:41.000+00:00 -> Mon, 19 Jun 2017 09:45:41 GMT
  */
 function formatCertificateDate(dateText) {
   const timestamp = Date.parse(dateText); // Convert to numeric

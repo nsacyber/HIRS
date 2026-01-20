@@ -15,6 +15,7 @@
     <suppress files="SwidTagConstants.java" checks="LineLength"/>
     <suppress files="SwidTagConstants.java" checks="JavadocVariable"/>
     <suppress files="IanaHashAlg.java" checks="JavadocVariable"/>
+    <suppress files="PlatformClass.java" checks="JavadocVariable"/>
     <suppress files="Swid.java" checks="JavadocVariable"/>
     <suppress files="CoRim.java" checks="JavadocVariable"/>
     <suppress files="CoRimItems.java" checks="JavadocVariable"/>
