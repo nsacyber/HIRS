@@ -310,11 +310,6 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                     // there may be subfields that are expected, so continue parsing
                     parseSingle((ASN1Primitive) obj2, false, null);
                 }
-            } else {
-                // parse the elements of the sequence individually
-                for (ASN1Encodable component : seq) {
-                    parseSingle((ASN1Primitive) component, false, null);
-                }
             }
             // The next two are special sequences that have already been matched with an OID.
         } else if (addToMapping && key.equals(TPM_SPECIFICATION)
