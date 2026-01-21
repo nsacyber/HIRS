@@ -326,7 +326,7 @@ public class ReferenceManifestPageService {
     }
 
     /**
-     * Bulks deletes the provided list of RIMs from the database.
+     * Bulk deletes the provided list of RIMs from the database.
      *
      * @param ids             the list of ids of the RIMs to be deleted
      * @param successMessages contains any success messages that will be displayed on the page

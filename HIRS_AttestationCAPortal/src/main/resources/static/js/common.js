@@ -128,18 +128,17 @@ function initializeDataTableButtonSetup(pageName) {
         const selectedRows = dt.rows({ selected: true });
         const modalTargetId = "#deleteMultipleConfirmationModal";
         if (selectedRows.count() > 0) {
-          // Get an array of IDs of the selected rows (assuming 'id' is the name of the column with IDs)
+          // Get an array of IDs of the selected rows
           const selectedIds = selectedRows
             .data()
             .toArray()
             .map((row) => row.id);
 
-          console.log("Selected IDs for deletion:", selectedIds); // Debugging log
-
           // Store the selected IDs in the hidden input field inside the modal as a comma-separated list
-          $("#selectedRecordsToDeleteIds").val(selectedIds.join(",")); // Storing as a comma-separated string
+          $("#selectedRecordsToDeleteIds").val(selectedIds.join(","));
 
-          $("#numRecordsToDelete").text(selectedIds.length); // Update the modal text with the number of records to delete
+          // Update the modal text with the number of records to delete
+          $("#numRecordsToDelete").text(selectedIds.length);
 
           // If there are selected rows, show the modal
           $(modalTargetId).modal("show");
