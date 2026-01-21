@@ -1,12 +1,12 @@
 /* certificate-details-page */
-.row {
+.certrow {
     display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     flex-wrap: wrap;
 }
-.row > [class*='col-'] {
+.certrow > [class*='col-'] {
     display: flex;
     flex-direction: column;
     padding: 10px;
@@ -15,6 +15,9 @@
 .colHeader{
     font-weight: bold;
     margin: auto 0;
+}
+.certificate-details-container {
+    margin: 50px;
 }
 
 #platformID {
@@ -36,7 +39,7 @@
 }
 
 .fieldHeader {
-    width: 100px;
+    width: 110px;
     display: inline-block;
 }
 
