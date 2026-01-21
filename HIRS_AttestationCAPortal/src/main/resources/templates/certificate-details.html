@@ -1,1180 +1,1340 @@
-<!--<my:page>-->
-<!--    <jsp:attribute name="style">-->
-<!--        <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css" />-->
-<!--    </jsp:attribute>-->
-<!--    <jsp:attribute name="pageHeaderTitle">-->
-<!--        <c:choose>-->
-<!--            <c:when test="${param.type=='certificateauthority'}">-->
-<!--                Certificate Authority-->
-<!--                <a href="${portal}/certificate-request/trust-chain/download?id=${param.id}">-->
-<!--                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">-->
-<!--                </a>-->
-<!--            </c:when>-->
-<!--            <c:when test="${param.type=='endorsement'}">-->
-<!--                Endorsement Certificate-->
-<!--                <a href="${portal}/certificate-request/endorsement-key-credentials/download?id=${param.id}">-->
-<!--                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">-->
-<!--                </a>-->
-<!--            </c:when>-->
-<!--            <c:when test="${param.type=='platform'}">-->
-<!--                Platform Certificate-->
-<!--                <a href="${portal}/certificate-request/platform-credentials/download?id=${param.id}">-->
-<!--                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">-->
-<!--                </a>-->
-<!--            </c:when>-->
-<!--            <c:when test="${param.type=='issued'}">-->
-<!--                Issued Attestation Certificates-->
-<!--                <a href="${portal}/certificate-request/issued-certificates/download?id=${param.id}">-->
-<!--                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">-->
-<!--                </a>-->
-<!--            </c:when>-->
-<!--            <c:when test="${param.type=='idevid'}">-->
-<!--                IDevID Certificate-->
-<!--                <a href="${portal}/certificate-request/idevid-certificates/download?id=${param.id}">-->
-<!--                    <img src="${icons}/ic_file_download_black_24dp.png" title="Download Certificate">-->
-<!--                </a>-->
-<!--            </c:when>-->
-<!--            <c:otherwise>-->
-<!--                Unknown Certificate-->
-<!--            </c:otherwise>-->
-<!--        </c:choose>-->
-<!--    </jsp:attribute>-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 
-<!--    <jsp:body>-->
-<!--        <div id="certificate-details-page" class="container-fluid">-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Issuer</span></div>-->
-<!--                <div id="issuer" class="col col-md-8">-->
-<!--                    &lt;!&ndash; Display the issuer, and provide a link to the issuer details if provided &ndash;&gt;-->
-<!--                    <div>Distinguished Name:&nbsp;<span>-->
-<!--                            <c:choose>-->
-<!--                                <c:when test="${not empty initialData.issuerID}">-->
-<!--                                    <a-->
-<!--                                            href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">-->
-<!--                                        ${initialData.issuer}-->
-<!--                                    </a>-->
-<!--                                </c:when>-->
-<!--                                <c:otherwise>-->
-<!--                                    ${initialData.issuer}-->
-<!--                                </c:otherwise>-->
-<!--                            </c:choose>-->
-<!--                        </span>-->
-<!--                    </div>-->
-<!--                    <div>Authority Key Identifier:&nbsp;-->
-<!--                        <span id="authorityKeyIdentifier"></span>-->
-<!--                    </div>-->
-<!--                    <c:if test="${not empty initialData.authInfoAccess}">-->
-<!--                        <div>Authority Info Access:&nbsp;<span>-->
-<!--                                <a href="${initialData.authInfoAccess}">${initialData.authInfoAccess}</a>-->
-<!--                            </span>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${not empty initialData.authSerialNumber}">-->
-<!--                        <div>Authority Serial Number:&nbsp;-->
-<!--                            <span id="authSerialNumber"></span>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${param.type!='issued'}">-->
-<!--                        <span class="chainIcon">-->
-<!--                            &lt;!&ndash; Icon with link for missing certificate for the chain &ndash;&gt;-->
-<!--                            <c:choose>-->
-<!--                                <c:when test="${initialData.isSelfSigned == 'true'}">-->
-<!--                                    <img src="${icons}/ic_all_inclusive_black_24dp.png" title="Self sign certificate.">-->
-<!--                                </c:when>-->
-<!--                                <c:when test="${empty initialData.missingChainIssuer}">-->
-<!--                                    <img src="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"-->
-<!--                                         title="All certificates in the chain were found.">-->
-<!--                                </c:when>-->
-<!--                                <c:otherwise>-->
-<!--                                    <img src="${icons}/ic_error_red_24dp.png" title="${initialData.missingChainIssuer}">-->
-<!--                                </c:otherwise>-->
-<!--                            </c:choose>-->
-<!--                        </span>-->
-<!--                    </c:if>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <c:if test="${not empty initialData.subject}">-->
-<!--                <div class="row">-->
-<!--                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject</span></div>-->
-<!--                    <div id="subject" class="col col-md-8">${initialData.subject}</div>-->
-<!--                </div>-->
-<!--            </c:if>-->
-<!--            <c:if test="${not empty initialData.serialNumber}">-->
-<!--                <div class="row">-->
-<!--                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certificate Serial Number</span></div>-->
-<!--                    <div id="serialNumber" class="col col-md-8 vertical"></div>-->
-<!--                </div>-->
-<!--            </c:if>-->
-<!--            <c:if test="${not empty initialData.hwSerialNum}">-->
-<!--                <div class="row">-->
-<!--                    <c:choose>-->
-<!--                        <c:when test="${not empty initialData.ekCertificateDigest}">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"-->
-<!--                                                                        title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware-->
-<!--                                    Module Name</span></div>-->
-<!--                            <div class="col col-md-8">-->
-<!--                                <div><span class="help-text"-->
-<!--                                           title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware-->
-<!--                                        Type</span>:&nbsp;<span id="hwTypeReadable">${initialData.hwTypeReadable}</span>-->
-<!--                                </div>-->
-<!--                                <div><span class="help-text"-->
-<!--                                           title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate public key. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware-->
-<!--                                        Serial Number</span>:</div>-->
-<!--                                <ul>-->
-<!--                                    <li>EK Certificate Public Key:&nbsp;<span-->
-<!--                                            id="hwSerialNum">${initialData.hwSerialNum}</span></li>-->
-<!--                                </ul>-->
-<!--                            </div>-->
-<!--                        </c:when>-->
-<!--                        <c:otherwise>-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"-->
-<!--                                                                        title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific context.">Hardware-->
-<!--                                    Module Name</span></div>-->
-<!--                            <div class="col col-md-8">-->
-<!--                                <div><span class="help-text"-->
-<!--                                           title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.hwType}">Hardware-->
-<!--                                        Type</span>:&nbsp;<span id="hwTypeReadable">${initialData.hwTypeReadable}</span>-->
-<!--                                </div>-->
-<!--                                <div><span class="help-text"-->
-<!--                                           title="Used for identifying the device's hardware module. This field may have manufacturer-specific context.">Hardware-->
-<!--                                        Serial Number</span>:&nbsp;<span-->
-<!--                                        id="hwSerialNum">${initialData.hwSerialNum}</span></div>-->
-<!--                            </div>-->
-<!--                        </c:otherwise>-->
-<!--                    </c:choose>-->
-<!--                </div>-->
-<!--            </c:if>-->
-<!--            <c:if test="${not empty initialData.tcgTpmManufacturer}">-->
-<!--                <div class="row">-->
-<!--                    <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"-->
-<!--                                                                title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware-->
-<!--                            Module Name</span></div>-->
-<!--                    <div class="col col-md-8">-->
-<!--                        <div><span class="help-text"-->
-<!--                                   title="Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.hwType}">Hardware-->
-<!--                                Type</span>:&nbsp;<span id="hwTypeReadable">${initialData.hwTypeReadable}</span></div>-->
-<!--                        <div><span class="help-text"-->
-<!--                                   title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware-->
-<!--                                Serial Number</span>:-->
-<!--                            <ul>-->
-<!--                                <li>TCG TPM Manufacturer Code:&nbsp;<span-->
-<!--                                        id="tcgTpmManufacturer">${initialData.tcgTpmManufacturer}</span></li>-->
-<!--                                <li>EK Authority Key Identifier:&nbsp;<span-->
-<!--                                        id="ekAuthorityKeyIdentifier">${initialData.ekAuthorityKeyIdentifier}</span>-->
-<!--                                </li>-->
-<!--                                <li>EK CertificateSerialNumber:&nbsp;<span-->
-<!--                                        id="ekCertificateSerialNumber">${initialData.ekCertificateSerialNumber}</span>-->
-<!--                                </li>-->
-<!--                            </ul>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </c:if>-->
-<!--            <c:if test="${not empty initialData.beginValidity}">-->
-<!--                <div class="row">-->
-<!--                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>-->
-<!--                    <div id="validity" class="col col-md-8">-->
-<!--                        <div>Not Before:&nbsp;<span>${initialData.beginValidity}</span></div>-->
-<!--                        <div>Not After:&nbsp;<span>${initialData.endValidity}</span></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </c:if>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>-->
-<!--                <div id="signatureSection" class="col col-md-8">-->
-<!--                    <div class="panel-body">-->
-<!--                        <div class="panel panel-default">-->
-<!--                            <div class="panel-heading">-->
-<!--                                <a role="button" data-toggle="collapse" class="collapsed"-->
-<!--                                   href="#signatureComponentcollapse" aria-expanded="true" data-placement="top"-->
-<!--                                   aria-controls="signatureComponentcollapse">-->
-<!--                                    Signature-->
-<!--                                </a>-->
-<!--                            </div>-->
-<!--                            <div id="signatureComponentcollapse" class="panel-body collapse" role="tabpanel"-->
-<!--                                 aria-labelledby="headingOne" aria-expanded="false">-->
-<!--                                <div id="signature" class="fieldValue"></div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                        <div class="panel panel-default">-->
-<!--                            <div class="panel-heading">-->
-<!--                                <a role="button" data-toggle="collapse" class="collapsed" href="#signatureSizecollapse"-->
-<!--                                   aria-expanded="true" data-placement="top" aria-controls="signatureSizecollapse">-->
-<!--                                    Algorithm-->
-<!--                                </a>-->
-<!--                            </div>-->
-<!--                            <div id="signatureSizecollapse" class="panel-body collapse" role="tabpanel"-->
-<!--                                 aria-labelledby="headingOne" aria-expanded="false">-->
-<!--                                <div>-->
-<!--                                    <span class="fieldValue">-->
-<!--                                        ${initialData.signatureAlgorithm}-->
-<!--                                    </span>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <c:if test="${not empty initialData.encodedPublicKey}">-->
-<!--                <div class="row">-->
-<!--                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Public Key</span></div>-->
-<!--                    <div id="publicKeySection" class="col col-md-8">-->
-<!--                        <div class="panel-body">-->
-<!--                            <div class="panel panel-default">-->
-<!--                                <div class="panel-heading">-->
-<!--                                    <a role="button" data-toggle="collapse" class="collapsed" href="#publicKeycollapse"-->
-<!--                                       aria-expanded="true" data-placement="top" aria-controls="publicKeycollapse">-->
-<!--                                        Public Key-->
-<!--                                    </a>-->
-<!--                                </div>-->
-<!--                                <div id="publicKeycollapse" class="panel-body collapse" role="tabpanel"-->
-<!--                                     aria-labelledby="headingOne" aria-expanded="false">-->
-<!--                                    <c:choose>-->
-<!--                                        <c:when test="${not empty initialData.publicKeyValue}">-->
-<!--                                            <div id="encodedPublicKey" class="fieldValue"></div>-->
-<!--                                        </c:when>-->
-<!--                                        <c:otherwise>-->
-<!--                                            <div id="encodedPublicKey" class="fieldValue"></div>-->
-<!--                                        </c:otherwise>-->
-<!--                                    </c:choose>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            <div class="panel panel-default">-->
-<!--                                <div class="panel-heading">-->
-<!--                                    <a role="button" data-toggle="collapse" class="collapsed"-->
-<!--                                       href="#publicKeySizecollapse" aria-expanded="true" data-placement="top"-->
-<!--                                       aria-controls="publicKeySizecollapse">-->
-<!--                                        Algorithm-->
-<!--                                    </a>-->
-<!--                                </div>-->
-<!--                                <div id="publicKeySizecollapse" class="panel-body collapse" role="tabpanel"-->
-<!--                                     aria-expanded="false">-->
-<!--                                    <div>-->
-<!--                                        <span class="fieldValue">-->
-<!--                                            ${initialData.publicKeyAlgorithm} / ${initialData.publicKeySize}-->
-<!--                                        </span>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </c:if>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>-->
-<!--                <div id="credentialVersion" class="col col-md-8 vertical">${initialData.x509Version}-->
-<!--                    (v${initialData.x509Version + 1})</div>-->
-<!--            </div>-->
-<!--            <c:choose>-->
-<!--                <c:when test="${not empty initialData.credentialType}">-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>-->
-<!--                        <div id="credentialType" class="col col-md-8 vertical">${initialData.credentialType}</div>-->
-<!--                    </div>-->
-<!--                </c:when>-->
-<!--            </c:choose>-->
-<!--            &lt;!&ndash; Add the different fields based on the certificate type &ndash;&gt;-->
-<!--            <c:choose>-->
-<!--                <c:when test="${param.type=='certificateauthority'}">-->
-<!--                    <c:choose>-->
-<!--                        <c:when test="${not empty initialData.subjectKeyIdentifier}">-->
-<!--                            <div class="row">-->
-<!--                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject Key-->
-<!--                                        Identifier</span></div>-->
-<!--                                <div id="subjectKeyIdentifier" class="col col-md-8 vertical"></div>-->
-<!--                            </div>-->
-<!--                        </c:when>-->
-<!--                    </c:choose>-->
-<!--                    <c:if test="${initialData.crlPoints}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>-->
-<!--                            </div>-->
-<!--                            <div id="revocationLocator" class="col col-md-8"><a-->
-<!--                                    href="${initialData.crlPoints}">${initialData.crlPoints}</div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>-->
-<!--                        <c:choose>-->
-<!--                            <c:when test="${not empty initialData.keyUsage}">-->
-<!--                                <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>-->
-<!--                            </c:when>-->
-<!--                            <c:otherwise>-->
-<!--                                <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>-->
-<!--                            </c:otherwise>-->
-<!--                        </c:choose>-->
-<!--                    </div>-->
-<!--                    <c:choose>-->
-<!--                        <c:when test="${not empty initialData.extendedKeyUsage}">-->
-<!--                            <div class="row">-->
-<!--                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>-->
-<!--                                </div>-->
-<!--                                <div id="extendedKeyUsage" class="col col-md-8 vertical">${initialData.extendedKeyUsage}-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </c:when>-->
-<!--                    </c:choose>-->
-<!--                </c:when>-->
-<!--                <c:when test="${param.type=='endorsement'}">-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>-->
-<!--                        <div id="subjectAltName" class="col col-md-8">-->
-<!--                            <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>-->
-<!--                            <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>-->
-<!--                            <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>-->
-<!--                        <div id="policyReference" class="col col-md-8 vertical">-->
-<!--                            <c:choose>-->
-<!--                                <c:when test="${not empty initialData.policyReference}">-->
-<!--                                    ${initialData.policyReference}-->
-<!--                                </c:when>-->
-<!--                                <c:otherwise>-->
-<!--                                    Not Specified-->
-<!--                                </c:otherwise>-->
-<!--                            </c:choose>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <c:if test="${initialData.crlPoints}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>-->
-<!--                            </div>-->
-<!--                            <div id="revocationLocator" class="col col-md-8"><a-->
-<!--                                    href="${initialData.crlPoints}">${initialData.crlPoints}</div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>-->
-<!--                        <c:choose>-->
-<!--                            <c:when test="${not empty initialData.keyUsage}">-->
-<!--                                <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>-->
-<!--                            </c:when>-->
-<!--                            <c:otherwise>-->
-<!--                                <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>-->
-<!--                            </c:otherwise>-->
-<!--                        </c:choose>-->
-<!--                    </div>-->
-<!--                    <c:choose>-->
-<!--                        <c:when test="${not empty initialData.extendedKeyUsage}">-->
-<!--                            <div class="row">-->
-<!--                                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>-->
-<!--                                </div>-->
-<!--                                <div id="extendedKeyUsage" class="col col-md-8 vertical">${initialData.extendedKeyUsage}-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </c:when>-->
-<!--                    </c:choose>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1">-->
-<!--                            <span class="colHeader">-->
-<!--                                <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"-->
-<!--                                   aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">-->
-<!--                                    TPM Specification-->
-<!--                                </a>-->
-<!--                            </span>-->
-<!--                        </div>-->
-<!--                        <div id="tpmSpecification" class="col col-md-8">-->
-<!--                            <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel"-->
-<!--                                 aria-expanded="false">-->
-<!--                                <div>Family:&nbsp;<span>${initialData.TPMSpecificationFamily}</span></div>-->
-<!--                                <div>Level:&nbsp;<span>${initialData.TPMSpecificationLevel}</span></div>-->
-<!--                                <div>Revision:&nbsp;<span>${initialData.TPMSpecificationRevision}</span></div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1">-->
-<!--                            <span class="colHeader">-->
-<!--                                <a role="button" data-toggle="collapse" class="collapsed"-->
-<!--                                   href="#tpmSecurityAssertionInner" aria-expanded="true" data-placement="top"-->
-<!--                                   aria-controls="tpmSecurityAssertionInner">-->
-<!--                                    TPM Security Assertion-->
-<!--                                </a>-->
-<!--                            </span>-->
-<!--                        </div>-->
-<!--                        <div id="tpmSecurityAssertion" class="col col-md-8">-->
-<!--                            <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"-->
-<!--                                 aria-expanded="false">-->
-<!--                                <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}</span></div>-->
-<!--                                <div>Field-->
-<!--                                    Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span>-->
-<!--                                </div>-->
-<!--                                <div>ek Generation Type:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenType}</span>-->
-<!--                                </div>-->
-<!--                                <div>ek Generation-->
-<!--                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenerationLocation}</span></div>-->
-<!--                                <div>ek Certificate Generation-->
-<!--                                    Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertificateGenerationLocation}</span></div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </c:when>-->
-<!--                <c:when test="${param.type=='platform'}">-->
-<!--                    <c:if test="${not empty initialData.platformType}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>-->
-<!--                            <div id="platformType" class="col col-md-8 vertical">${initialData.platformType}</div>-->
-<!--                        </div>-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>-->
-<!--                            <div id="platformType" class="col col-md-8 vertical">-->
-<!--                                <span>-->
-<!--                                    <c:forEach items="${initialData.chainCertificates}" var="credential"-->
-<!--                                               varStatus="loop">-->
-<!--                                        <c:choose>-->
-<!--                                            <c:when test="${initialData.certificateId==credential.getId().toString()}">-->
-<!--                                                ${loop.index}&nbsp;-->
-<!--                                            </c:when>-->
-<!--                                            <c:otherwise>-->
-<!--                                                <a-->
-<!--                                                        href="${portal}/certificate-details?id=${credential.getId()}&type=platform">${loop.index}</a>&nbsp;-->
-<!--                                            </c:otherwise>-->
-<!--                                        </c:choose>-->
-<!--                                    </c:forEach>-->
-<!--                                </span>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${not empty initialData.CPSuri}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice-->
-<!--                                    Statement URI</span></div>-->
-<!--                            <div id="certificateCPSU" class="col col-md-8 vertical">-->
-<!--                                <a href="${initialData.CPSuri}"> ${initialData.CPSuri}</a>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>-->
-<!--                        <div id="holder" class="col col-md-8">-->
-<!--                            <c:if test="${not empty initialData.holderIssuer}">-->
-<!--                                <div>Holder Certificate Issuer:&nbsp;<span>${initialData.holderIssuer}</span></div>-->
-<!--                            </c:if>-->
-<!--                            <div id="certificateid">-->
-<!--                                <div>Holder Certificate Serial Number:&nbsp;-->
-<!--                                    <c:choose>-->
-<!--                                        <c:when test="${not empty initialData.holderId}">-->
-<!--                                            <span>-->
-<!--                                                <c:choose>-->
-<!--                                                    <c:when-->
-<!--                                                            test="${(not empty initialData.platformType) and (initialData.platformType=='Delta')}">-->
-<!--                                                        <a-->
-<!--                                                                href="${portal}/certificate-details?id=${initialData.holderId}&type=platform">-->
-<!--                                                            ${initialData.holderSerialNumber}-->
-<!--                                                        </a>-->
-<!--                                                    </c:when>-->
-<!--                                                    <c:otherwise>-->
-<!--                                                        <a-->
-<!--                                                                href="${portal}/certificate-details?id=${initialData.holderId}&type=endorsement">-->
-<!--                                                            ${initialData.holderSerialNumber}-->
-<!--                                                        </a>-->
-<!--                                                    </c:otherwise>-->
-<!--                                                </c:choose>-->
-<!--                                            </span>-->
-<!--                                        </c:when>-->
-<!--                                        <c:otherwise>-->
-<!--                                            <span>${initialData.holderSerialNumber}</span>-->
-<!--                                        </c:otherwise>-->
-<!--                                    </c:choose>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Platform Information</span>-->
-<!--                        </div>-->
-<!--                        <div id="subjectAltName" class="col col-md-8">-->
-<!--                            <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>-->
-<!--                            <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>-->
-<!--                            <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>-->
-<!--                            <div id="serial">Serial Number:&nbsp;<span>${initialData.platformSerial}</span></div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification-->
-<!--                                Version</span></div>-->
-<!--                        <div id="majorVersion" class="col col-md-8 vertical">-->
-<!--                            ${initialData.majorVersion}.${initialData.minorVersion}.${initialData.revisionLevel}</div>-->
-<!--                    </div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>-->
-<!--                        <div id="platformClass" class="col col-md-8 vertical">${initialData.platformClass}</div>-->
-<!--                    </div>-->
-<!--                    &lt;!&ndash; TBB Security Assertion&ndash;&gt;-->
-<!--                    <c:if test="${not empty initialData.tbbSecurityAssertion}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">TBB Security Assertion</span>-->
-<!--                            </div>-->
-<!--                            <div id="tbbsecurity" class="col col-md-8">-->
-<!--                                <div class="tbbsecurityLine">-->
-<!--                                    <span class="fieldHeader">Version:</span>-->
-<!--                                    <span-->
-<!--                                            class="fieldValue">${initialData.tbbSecurityAssertion.getVersion()}&nbsp;(v${initialData.tbbSecurityAssertion.getVersion().getValue()-->
-<!--                                        + 1})</span>-->
-<!--                                </div>-->
-<!--                                <div class="tbbsecurityLine">-->
-<!--                                    <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>-->
-<!--                                    <span-->
-<!--                                            class="fieldValue">${fn:toUpperCase(initialData.tbbSecurityAssertion.getRtmType().getValue())}</span>-->
-<!--                                </div>-->
-<!--                                &lt;!&ndash; CCINFO &ndash;&gt;-->
-<!--                                <c:if test="${not empty initialData.tbbSecurityAssertion.getCcInfo()}">-->
-<!--                                    <c:set var="ccinfo" value="${initialData.tbbSecurityAssertion.getCcInfo()}" />-->
-<!--                                    <div class="panel panel-default">-->
-<!--                                        <div class="panel-heading" role="tab" id="headingOne">-->
-<!--                                            <h4 class="panel-title">-->
-<!--                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"-->
-<!--                                                   class="collapsed" href="#ccinfocollapse" aria-expanded="false"-->
-<!--                                                   aria-controls="ccinfocollapse">-->
-<!--                                                    Common Criteria Measures Information-->
-<!--                                                </a>-->
-<!--                                            </h4>-->
-<!--                                        </div>-->
-<!--                                        <div id="ccinfocollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                             aria-labelledby="headingOne">-->
-<!--                                            <div class="panel-body">-->
-<!--                                                <div id="ccinfo" class="row">-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Version:</span>-->
-<!--                                                        <span class="fieldValue">${ccinfo.getVersion()}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Assurance Level:</span>-->
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getAssuranceLevel().getValue())}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Evaluation Status:</span>-->
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getEvaluationStatus().getValue())}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <c:choose>-->
-<!--                                                            <c:when test="${ccinfo.getPlus()=='TRUE'}">-->
-<!--                                                                <span class="label label-success">Plus</span>-->
-<!--                                                            </c:when>-->
-<!--                                                            <c:otherwise>-->
-<!--                                                                <span class="label label-danger">Not Plus</span>-->
-<!--                                                            </c:otherwise>-->
-<!--                                                        </c:choose>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Strength of Function:</span>-->
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${fn:toUpperCase(ccinfo.getStrengthOfFunction().getValue())}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <c:if test="${not empty ccinfo.getProfileOid()}">-->
-<!--                                                        <div class="tbbsecurityLine">-->
-<!--                                                            <span class="fieldHeader">Profile OID:</span>-->
-<!--                                                            <span class="fieldValue">${ccinfo.getProfileOid()}</span>-->
-<!--                                                        </div>-->
-<!--                                                    </c:if>-->
-<!--                                                    <c:if test="${not empty ccinfo.getProfileUri()}">-->
-<!--                                                        <div class="tbbsecurityLine">-->
-<!--                                                            <span class="fieldHeader">Profile URI:</span>-->
-<!--                                                            <span class="fieldValue">-->
-<!--                                                                <a-->
-<!--                                                                        href="${ccinfo.getProfileUri().getUniformResourceIdentifier()}">-->
-<!--                                                                    ${ccinfo.getProfileUri().getUniformResourceIdentifier()}-->
-<!--                                                                </a>-->
-<!--                                                            </span>-->
-<!--                                                        </div>-->
-<!--                                                        <c:if-->
-<!--                                                                test="${not empty ccinfo.getProfileUri().getHashAlgorithm()}">-->
-<!--                                                            <div class="tbbsecurityLine">-->
-<!--                                                                <span class="fieldHeader">Profile Hash Algorithm:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${ccinfo.getProfileUri().getHashAlgorithm()}</span>-->
-<!--                                                            </div>-->
-<!--                                                        </c:if>-->
-<!--                                                        <c:if test="${not empty ccinfo.getProfileUri().getHashValue()}">-->
-<!--                                                            <div class="tbbsecurityLine">-->
-<!--                                                                <span class="fieldHeader">Profile Hash Value:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${ccinfo.getProfileUri().getHashValue()}</span>-->
-<!--                                                            </div>-->
-<!--                                                        </c:if>-->
-<!--                                                    </c:if>-->
-<!--                                                    <c:if test="${not empty ccinfo.getTargetOid()}">-->
-<!--                                                        <div class="tbbsecurityLine">-->
-<!--                                                            <span class="fieldHeader">Target OID:</span>-->
-<!--                                                            <span class="fieldValue">${ccinfo.getTargetOid()}</span>-->
-<!--                                                        </div>-->
-<!--                                                    </c:if>-->
-<!--                                                    <c:if test="${not empty ccinfo.getTargetUri()}">-->
-<!--                                                        <div class="tbbsecurityLine">-->
-<!--                                                            <span class="fieldHeader">Target URI:</span>-->
-<!--                                                            <span class="fieldValue">-->
-<!--                                                                <a-->
-<!--                                                                        href="${ccinfo.getTargetUri().getUniformResourceIdentifier()}">-->
-<!--                                                                    ${ccinfo.getTargetUri().getUniformResourceIdentifier()}-->
-<!--                                                                </a>-->
-<!--                                                            </span>-->
-<!--                                                        </div>-->
-<!--                                                        <c:if-->
-<!--                                                                test="${not empty ccinfo.getTargetUri().getHashAlgorithm()}">-->
-<!--                                                            <div class="tbbsecurityLine">-->
-<!--                                                                <span class="fieldHeader">Target Hash Algorithm:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${ccinfo.getTargetUri().getHashAlgorithm()}</span>-->
-<!--                                                            </div>-->
-<!--                                                        </c:if>-->
-<!--                                                        <c:if test="${not empty ccinfo.getTargetUri().getHashValue()}">-->
-<!--                                                            <div class="tbbsecurityLine">-->
-<!--                                                                <span class="fieldHeader">Target Hash Value:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${ccinfo.getTargetUri().getHashValue()}</span>-->
-<!--                                                            </div>-->
-<!--                                                        </c:if>-->
-<!--                                                    </c:if>-->
-<!--                                                </div>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </c:if>-->
-<!--                                &lt;!&ndash; FIPS Level &ndash;&gt;-->
-<!--                                <c:if test="${not empty initialData.tbbSecurityAssertion.getFipsLevel()}">-->
-<!--                                    <c:set var="fipslevel" value="${initialData.tbbSecurityAssertion.getFipsLevel()}" />-->
-<!--                                    <div class="panel panel-default">-->
-<!--                                        <div class="panel-heading" role="tab" id="headingThree">-->
-<!--                                            <h4 class="panel-title">-->
-<!--                                                <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"-->
-<!--                                                   class="collapsed" href="#fipscollapse" aria-expanded="false"-->
-<!--                                                   aria-controls="fipscollapse">-->
-<!--                                                    FIPS Level-->
-<!--                                                </a>-->
-<!--                                            </h4>-->
-<!--                                        </div>-->
-<!--                                        <div id="fipscollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                             aria-labelledby="headingTwo">-->
-<!--                                            <div class="panel-body">-->
-<!--                                                <div id="fipsLevel" class="row">-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Version:</span>-->
-<!--                                                        <span class="fieldValue">${fipslevel.getVersion()}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">Level:</span>-->
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${fn:toUpperCase(fipslevel.getLevel().getValue())}</span>-->
-<!--                                                    </div>-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <c:choose>-->
-<!--                                                            <c:when test="${fipslevel.getPlus()=='TRUE'}">-->
-<!--                                                                <span class="label label-success">Plus</span>-->
-<!--                                                            </c:when>-->
-<!--                                                            <c:otherwise>-->
-<!--                                                                <span class="label label-danger">Not Plus</span>-->
-<!--                                                            </c:otherwise>-->
-<!--                                                        </c:choose>-->
-<!--                                                    </div>-->
-<!--                                                </div>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </c:if>-->
-<!--                                &lt;!&ndash; ISO9000 isCertified and URI &ndash;&gt;-->
-<!--                                <div class="panel panel-default">-->
-<!--                                    <div class="panel-heading" role="tab" id="headingThree">-->
-<!--                                        <h4 class="panel-title">-->
-<!--                                            <a role="button" data-toggle="collapse" data-parent="#tbbsecurity"-->
-<!--                                               class="collapsed" href="#iso9000collapse" aria-expanded="false"-->
-<!--                                               aria-controls="iso9000collapse">-->
-<!--                                                ISO 9000-->
-<!--                                            </a>-->
-<!--                                        </h4>-->
-<!--                                    </div>-->
-<!--                                    <div id="iso9000collapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                         aria-labelledby="headingThree">-->
-<!--                                        <div class="panel-body">-->
-<!--                                            <div id="iso9000" class="row">-->
-<!--                                                <div class="tbbsecurityLine">-->
-<!--                                                    <c:choose>-->
-<!--                                                        <c:when-->
-<!--                                                                test="${initialData.tbbSecurityAssertion.getIso9000Certified()=='TRUE'}">-->
-<!--                                                            <span class="label label-success">ISO 9000 Certified</span>-->
-<!--                                                        </c:when>-->
-<!--                                                        <c:otherwise>-->
-<!--                                                            <span class="label label-danger">ISO 9000 Not-->
-<!--                                                                Certified</span>-->
-<!--                                                        </c:otherwise>-->
-<!--                                                    </c:choose>-->
-<!--                                                </div>-->
-<!--                                                <c:if-->
-<!--                                                        test="${not empty initialData.tbbSecurityAssertion.getIso9000Uri()}">-->
-<!--                                                    <div class="tbbsecurityLine">-->
-<!--                                                        <span class="fieldHeader">URI:</span>-->
-<!--                                                        <span class="fieldValue">-->
-<!--                                                            <a-->
-<!--                                                                    href="${initialData.tbbSecurityAssertion.getIso9000Uri()}">-->
-<!--                                                                ${initialData.tbbSecurityAssertion.getIso9000Uri()}-->
-<!--                                                            </a>-->
-<!--                                                        </span>-->
-<!--                                                    </div>-->
-<!--                                                </c:if>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    &lt;!&ndash; For PC 2.0 &ndash;&gt;-->
-<!--                    <c:if test="${fn:contains(initialData.credentialType, 'TCG')}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform-->
-<!--                                    Configuration</span></div>-->
-<!--                            <div id="platformConfiguration" class="col col-md-8">-->
-<!--                                <c:if test="${not empty initialData.componentResults}">-->
-<!--                                    &lt;!&ndash; Component Identifier &ndash;&gt;-->
-<!--                                    <div class="panel panel-default">-->
-<!--                                        <div class="panel-heading" role="tab" id="headingOne">-->
-<!--                                            <h4 class="panel-title">-->
-<!--                                                <a role="button" data-toggle="collapse"-->
-<!--                                                   data-parent="#platformConfiguration" class="collapsed"-->
-<!--                                                   href="#componentIdentifiercollapse" aria-expanded="true"-->
-<!--                                                   aria-controls="componentIdentifiercollapse">-->
-<!--                                                    Components-->
-<!--                                                </a>-->
-<!--                                            </h4>-->
-<!--                                        </div>-->
-<!--                                        <div id="componentIdentifiercollapse" class="panel-collapse collapse in"-->
-<!--                                             role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">-->
-<!--                                            <div class="panel-body">-->
-<!--                                                <div id="componentIdentifier" class="row">-->
-<!--                                                    <c:forEach items="${initialData.componentResults}" var="component">-->
-<!--                                                        <div class="component col col-md-4">-->
-<!--                                                            <div class="panel panel-default">-->
-<!--                                                                <c:choose>-->
-<!--                                                                    <c:when-->
-<!--                                                                            test="${component.isFailedValidation() =='TRUE'}">-->
-<!--                                                                        <div class="panel-heading"-->
-<!--                                                                             style="background-color: red; color: white">-->
-<!--                                                                    </c:when>-->
-<!--                                                                    <c:otherwise>-->
-<!--                                                                        <div class="panel-heading">-->
-<!--                                                                    </c:otherwise>-->
-<!--                                                                </c:choose>-->
-<!--                                                                <c:choose>-->
-<!--                                                                    <c:when test="${component.isVersion2()=='TRUE'}">-->
-<!--                                                                        <span data-toggle="tooltip" data-placement="top"-->
-<!--                                                                              title="${component.getComponentClassToolTipStr()}">${component.getComponentClassStr()}</span>-->
-<!--                                                                    </c:when>-->
-<!--                                                                    <c:otherwise>-->
-<!--                                                                        <span data-toggle="tooltip" data-placement="top"-->
-<!--                                                                              title="Component Class">Platform-->
-<!--                                                                            Components</span>-->
-<!--                                                                    </c:otherwise>-->
-<!--                                                                </c:choose>-->
-<!--                                                            </div>-->
-<!--                                                            <div class="panel-body">-->
-<!--                                                                <span class="fieldHeader">Manufacturer:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${component.getManufacturer()}</span><br />-->
-<!--                                                                <span class="fieldHeader">Model:</span>-->
-<!--                                                                <span-->
-<!--                                                                        class="fieldValue">${component.getModel()}</span><br />-->
-<!--                                                                <c:if-->
-<!--                                                                        test="${not empty fn:trim(component.getSerialNumber())}">-->
-<!--                                                                    <span class="fieldHeader">Serial Number:</span>-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldValue">${component.getSerialNumber()}</span><br />-->
-<!--                                                                </c:if>-->
-<!--                                                                <c:if-->
-<!--                                                                        test="${not empty fn:trim(component.getRevisionNumber())}">-->
-<!--                                                                    <span class="fieldHeader">Revision:</span>-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldValue">${component.getRevisionNumber()}</span><br />-->
-<!--                                                                </c:if>-->
-<!--                                                                <c:forEach items="${component.getComponentAddresses()}"-->
-<!--                                                                           var="address">-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldHeader">${address.getAddressTypeString()}-->
-<!--                                                                        address:</span>-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldValue">${address.getAddressValueString()}</span><br />-->
-<!--                                                                </c:forEach>-->
-<!--                                                                <c:choose>-->
-<!--                                                                    <c:when-->
-<!--                                                                            test="${component.isFieldReplaceable()=='TRUE'}">-->
-<!--                                                                        <span-->
-<!--                                                                                class="label label-success">Replaceable</span><br />-->
-<!--                                                                    </c:when>-->
-<!--                                                                    <c:otherwise>-->
-<!--                                                                        <span-->
-<!--                                                                                class="label label-danger">Irreplaceable</span><br />-->
-<!--                                                                    </c:otherwise>-->
-<!--                                                                </c:choose>-->
-<!--                                                                <c:if test="${component.isVersion2()}">-->
-<!--                                                                    <c:if test="${not empty component.getIssuerDN()}">-->
-<!--                                                                        <span class="fieldHeader">Platform Certificate-->
-<!--                                                                            Issuer:</span>-->
-<!--                                                                        <span-->
-<!--                                                                                class="fieldValue">${component.getIssuerDN()}</span><br />-->
-<!--                                                                        <span class="fieldHeader">Platform Certificate-->
-<!--                                                                            Serial Number:</span>-->
-<!--                                                                        <span-->
-<!--                                                                                class="fieldValue">${component.getCertificateSerialNumber()}</span><br />-->
-<!--                                                                        <span class="fieldHeader">Platform Certificate-->
-<!--                                                                            URI:</span>-->
-<!--                                                                    </c:if>-->
-<!--                                                                    <span class="fieldValue">-->
-<!--                                                                        <a-->
-<!--                                                                                href="${component.getUniformResourceIdentifier()}">-->
-<!--                                                                            ${component.getUniformResourceIdentifier()}-->
-<!--                                                                        </a>-->
-<!--                                                                    </span><br />-->
-<!--                                                                    <span class="fieldHeader">Status:</span>-->
-<!--                                                                    <span-->
-<!--                                                                            class="fieldValue">${component.getAttributeStatus()}</span><br />-->
-<!--                                                                </c:if>-->
-<!--                                                            </div>-->
-<!--                                                        </div>-->
-<!--                                                </div>-->
-<!--                                                </c:forEach>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                            </div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${not empty initialData.componentsIdentifierURI}">-->
-<!--                        &lt;!&ndash; Components Identifier URI &ndash;&gt;-->
-<!--                        <div class="panel panel-default">-->
-<!--                            <div class="panel-heading" role="tab" id="headingTwo">-->
-<!--                                <h4 class="panel-title">-->
-<!--                                    <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"-->
-<!--                                       class="collapsed" href="#componentIdentifierURIcollapse" aria-expanded="false"-->
-<!--                                       aria-controls="componentIdentifierURIcollapse">-->
-<!--                                        Components Identifier URI-->
-<!--                                    </a>-->
-<!--                                </h4>-->
-<!--                            </div>-->
-<!--                            <div id="componentIdentifierURIcollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                 aria-labelledby="headingTwo">-->
-<!--                                <div class="panel-body">-->
-<!--                                    <div id="componentIdentifierURI" class="row">-->
-<!--                                        <span class="fieldHeader">URI:</span>-->
-<!--                                        <a href="${initialData.componentsIdentifierURI.getUniformResourceIdentifier()}">-->
-<!--                                            ${initialData.componentsIdentifierURI.getUniformResourceIdentifier()}-->
-<!--                                        </a>-->
-<!--                                        <c:if-->
-<!--                                                test="${not empty initialData.componentsIdentifierURI.getHashAlgorithm()}">-->
-<!--                                            <span class="fieldHeader">Hash Algorithm:</span>-->
-<!--                                            <span>${initialData.componentsIdentifierURI.getHashAlgorithm()}</span>-->
-<!--                                        </c:if>-->
-<!--                                        <c:if test="${not empty initialData.componentsIdentifierURI.getHashValue()}">-->
-<!--                                            <span class="fieldHeader">Hash Value:</span>-->
-<!--                                            <span>${initialData.componentsIdentifierURI.getHashValue()}</span>-->
-<!--                                        </c:if>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${not empty initialData.platformProperties}">-->
-<!--                        &lt;!&ndash; Platform Properties &ndash;&gt;-->
-<!--                        <div class="panel panel-default">-->
-<!--                            <div class="panel-heading" role="tab" id="headingThree">-->
-<!--                                <h4 class="panel-title">-->
-<!--                                    <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"-->
-<!--                                       class="collapsed" href="#platformPropertiescollapse" aria-expanded="false"-->
-<!--                                       aria-controls="platformPropertiescollapse">-->
-<!--                                        Platform Properties-->
-<!--                                    </a>-->
-<!--                                </h4>-->
-<!--                            </div>-->
-<!--                            <div id="platformPropertiescollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                 aria-labelledby="headingThree">-->
-<!--                                <div class="panel-body">-->
-<!--                                    <div id="platformProperties" class="row">-->
-<!--                                        <c:forEach items="${initialData.platformProperties}" var="property">-->
-<!--                                            <div class="component col col-md-4">-->
-<!--                                                <div class="panel panel-default">-->
-<!--                                                    <div class="panel-body">-->
-<!--                                                        <span class="fieldHeader">Name:</span>-->
-<!--                                                        <span-->
-<!--                                                                class="fieldValue">${property.getPropertyName()}</span><br />-->
-<!--                                                        <span class="fieldHeader">Value:</span>-->
-<!--                                                        <span class="fieldValue"-->
-<!--                                                              style="word-wrap: break-word">${property.getPropertyValue()}</span><br />-->
-<!--                                                    </div>-->
-<!--                                                </div>-->
-<!--                                            </div>-->
-<!--                                        </c:forEach>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${not empty initialData.platformPropertiesURI}">-->
-<!--                        &lt;!&ndash; Platform Properties URI &ndash;&gt;-->
-<!--                        <div class="panel panel-default">-->
-<!--                            <div class="panel-heading" role="tab" id="headingFour">-->
-<!--                                <h4 class="panel-title">-->
-<!--                                    <a role="button" data-toggle="collapse" data-parent="#platformConfiguration"-->
-<!--                                       class="collapsed" href="#platformPropertiesURIcollapse" aria-expanded="false"-->
-<!--                                       aria-controls="platformPropertiesURIcollapse">-->
-<!--                                        Platform Properties URI-->
-<!--                                    </a>-->
-<!--                                </h4>-->
-<!--                            </div>-->
-<!--                            <div id="platformPropertiesURIcollapse" class="panel-collapse collapse" role="tabpanel"-->
-<!--                                 aria-labelledby="headingFour">-->
-<!--                                <div class="panel-body">-->
-<!--                                    <div id="platformPropertiesURI" class="row">-->
-<!--                                        <span class="fieldHeader">URI:</span>-->
-<!--                                        <a href="${initialData.platformPropertiesURI.getUniformResourceIdentifier()}">-->
-<!--                                            ${initialData.platformPropertiesURI.getUniformResourceIdentifier()}-->
-<!--                                        </a>-->
-<!--                                        <c:if test="${not empty initialData.platformPropertiesURI.getHashAlgorithm()}">-->
-<!--                                            <span class="fieldHeader">Hash Algorithm:</span>-->
-<!--                                            <span>${initialData.platformPropertiesURI.getHashAlgorithm()}</span>-->
-<!--                                        </c:if>-->
-<!--                                        <c:if test="${not empty initialData.platformPropertiesURI.getHashValue()}">-->
-<!--                                            <span class="fieldHeader">Hash Value:</span>-->
-<!--                                            <span>${initialData.platformPropertiesURI.getHashValue()}</span>-->
-<!--                                        </c:if>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--        </div>&lt;!&ndash; close platformConfiguration &ndash;&gt;-->
-<!--        </div> &lt;!&ndash; Close row &ndash;&gt;-->
-<!--        </c:if>-->
-<!--        </c:when>-->
-<!--        <c:when test="${param.type=='issued'}">-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>-->
-<!--                <div id="subjectAltName" class="col col-md-8">-->
-<!--                    <div id="manufacturer">Manufacturer:&nbsp;<span>${initialData.manufacturer}</span></div>-->
-<!--                    <div id="model">Model:&nbsp;<span>${initialData.model}</span></div>-->
-<!--                    <div id="version">Version:&nbsp;<span>${initialData.version}</span></div>-->
-<!--                    <div id="serial">Serial Number:&nbsp;<span>${initialData.platformSerial}</span></div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>-->
-<!--                <div id="policyReference" class="col col-md-8 vertical">-->
-<!--                    <c:choose>-->
-<!--                        <c:when test="${not empty initialData.policyReference}">-->
-<!--                            ${initialData.policyReference}-->
-<!--                        </c:when>-->
-<!--                        <c:otherwise>-->
-<!--                            Not Specified-->
-<!--                        </c:otherwise>-->
-<!--                    </c:choose>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <c:if test="${initialData.crlPoints}">-->
-<!--                <div class="row">-->
-<!--                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span></div>-->
-<!--                    <div id="revocationLocator" class="col col-md-8"><a-->
-<!--                            href="${initialData.crlPoints}">${initialData.crlPoints}</div>-->
-<!--                </div>-->
-<!--            </c:if>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Endorsement Credential</span></div>-->
-<!--                <div id="endorsementID" class="col col-md-8">-->
-<!--                    <c:if test="${not empty initialData.endorsementID}">-->
-<!--                        <a href="${portal}/certificate-details?id=${initialData.endorsementID}&type=endorsement">-->
-<!--                            <img src="${icons}/ic_vpn_key_black_24dp.png">-->
-<!--                        </a>-->
-<!--                    </c:if>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Credentials</span></div>-->
-<!--                <div id="platformID" class="col col-md-8">-->
-<!--                    <c:if test="${not empty initialData.platformID}">-->
-<!--                        <c:forTokens items="${initialData.platformID}" delims="," var="pcID">-->
-<!--                            <a href="${portal}/certificate-details?id=${pcID}&type=platform">-->
-<!--                                <img src="${icons}/ic_important_devices_black_24dp.png">-->
-<!--                            </a>-->
-<!--                        </c:forTokens>-->
-<!--                    </c:if>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification Version</span>-->
-<!--                </div>-->
-<!--                <div id="majorVersion" class="col col-md-8 vertical">-->
-<!--                    ${initialData.majorVersion}.${initialData.minorVersion}.${initialData.revisionLevel}</div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification-->
-<!--                        Version</span></div>-->
-<!--                <div id="majorVersion" class="col col-md-8 vertical">-->
-<!--                    ${initialData.tcgMajorVersion}.${initialData.tcgMinorVersion}.${initialData.tcgRevisionLevel}</div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1">-->
-<!--                    <span class="colHeader">-->
-<!--                        <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"-->
-<!--                           aria-expanded="true" data-placement="top" aria-controls="tpmSpecificationInner">-->
-<!--                            TPM Specification-->
-<!--                        </a>-->
-<!--                    </span>-->
-<!--                </div>-->
-<!--                <div id="tpmSpecification" class="col col-md-8">-->
-<!--                    <div id="tpmSpecificationInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">-->
-<!--                        <div>Family:&nbsp;<span>${initialData.TPMSpecificationFamily}</span></div>-->
-<!--                        <div>Level:&nbsp;<span>${initialData.TPMSpecificationLevel}</span></div>-->
-<!--                        <div>Revision:&nbsp;<span>${initialData.TPMSpecificationRevision}</span></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1">-->
-<!--                    <span class="colHeader">-->
-<!--                        <a role="button" data-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"-->
-<!--                           aria-expanded="true" data-placement="top" aria-controls="tpmSecurityAssertionInner">-->
-<!--                            TPM Security Assertion-->
-<!--                        </a>-->
-<!--                    </span>-->
-<!--                </div>-->
-<!--                <div id="tpmSecurityAssertion" class="col col-md-8">-->
-<!--                    <div id="tpmSecurityAssertionInner" class="panel-body collapse" role="tabpanel"-->
-<!--                         aria-expanded="false">-->
-<!--                        <div>Version:&nbsp;<span>${initialData.TPMSecurityAssertionsTpmSecAssertsVersion}</span></div>-->
-<!--                        <div>Field Upgradeable:&nbsp;<span>${initialData.TPMSecurityAssertionsFieldUpgradeable}</span>-->
-<!--                        </div>-->
-<!--                        <div>ek Generation Type:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenType}</span></div>-->
-<!--                        <div>ek Generation Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkGenerationLocation}</span>-->
-<!--                        </div>-->
-<!--                        <div>ek Certificate Generation-->
-<!--                            Location:&nbsp;<span>${initialData.TPMSecurityAssertionsEkCertificateGenerationLocation}</span></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </c:when>-->
-<!--        <c:when test="${param.type=='idevid'}">-->
-<!--            <c:choose>-->
-<!--                <c:when test="${not empty initialData.tpmPolicies}">-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"-->
-<!--                                                                    title="TPM verification policies, as defined in the TCG specification &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">TPM-->
-<!--                                Policies</span></div>-->
-<!--                        <div id="tpmPolicies" class="col col-md-8 vertical">${initialData.tpmPolicies}</div>-->
-<!--                    </div>-->
-<!--                </c:when>-->
-<!--            </c:choose>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>-->
-<!--                <c:choose>-->
-<!--                    <c:when test="${not empty initialData.keyUsage}">-->
-<!--                        <div id="keyUsage" class="col col-md-8 vertical">${initialData.keyUsage}</div>-->
-<!--                    </c:when>-->
-<!--                    <c:otherwise>-->
-<!--                        <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>-->
-<!--                    </c:otherwise>-->
-<!--                </c:choose>-->
-<!--            </div>-->
-<!--            <c:choose>-->
-<!--                <c:when test="${not empty initialData.extendedKeyUsage}">-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span></div>-->
-<!--                        <div id="extendedKeyUsage" class="col col-md-8 vertical">${initialData.extendedKeyUsage}</div>-->
-<!--                    </div>-->
-<!--                </c:when>-->
-<!--            </c:choose>-->
-<!--        </c:when>-->
-<!--        </c:choose>-->
-<!--        </div>-->
-<!--        <script>-->
-<!--            $(document).ready(function () {-->
-<!--                let type = "${param.type}";-->
-<!--                let signature = ${ initialData.signature };-->
-<!--                let serialNumber = '${initialData.serialNumber}';-->
-<!--                let authorityKeyIdentifier = '${initialData.authKeyId}';-->
-<!--                let authoritySerialNumber = '${initialData.authSerialNumber}';-->
+<head>
+    <link rel="stylesheet" th:href="@{/css/certificate_details.css}" />
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+            $(document).ready(function () {
 
-<!--                //Format validity time-->
-<!--                $("#validity span").each(function () {-->
-<!--                    let dateText = $(this).text();-->
-<!--                    return $(this).text(formatCertificateDate(dateText));-->
-<!--                });-->
+                const initialDataExists = /*[[${initialDataExists}]]*/ '';
 
-<!--                //Convert byte array to string-->
-<!--                $("#signature").html(byteToHexString(signature));-->
+                if(initialDataExists) {
 
-<!--                //Convert byte array to string-->
-<!--                $("#serialNumber").html(parseSerialNumber(serialNumber));-->
+                    // initialData parameters
+                    // 'initialData' is a HashMap with the certificate information, added as an object to
+                    // the MAV of CertificateDetailsPageController
+                    const certificateSerialNumber =  /*[[${initialData.get('serialNumber')}]]*/ '';
+                    const signature = /*[[${initialData.get('signature')}]]*/ '';
+                    const authorityKeyIdentifier = /*[[${initialData.get('authKeyId')}]]*/ '';
+                    const authoritySerialNumber = /*[[${initialData.get('authSerialNumber')}]]*/ '';
+                    const publicKey = /*[[${initialData.get('publicKeyValue')}]]*/ '';
+                    const encPublicKey = /*[[${initialData.get('encodedPublicKey')}]]*/ '';
+                    const subjectKeyIdentifier = /*[[${initialData.get('subjectKeyIdentifier')}]]*/ '';
+                    const hwSerialNum = /*[[${initialData.get('hwSerialNum')}]]*/ '';
+                    const tcgTpmManufacturer = /*[[${initialData.get('tcgTpmManufacturer')}]]*/ '';
+                    const ekAuthorityKeyIdentifier = /*[[${initialData.get('ekAuthorityKeyIdentifier')}]]*/ '';
+                    const ekCertificateSerialNumber = /*[[${initialData.get('ekCertificateSerialNumber')}]]*/ '';
+                    const platformIdsString = /*[[${initialData.get('platformID')}]]*/ '';
 
-<!--                // authority key ID-->
-<!--            <c:choose>-->
-<!--                <c:when test="${not empty initialData.authKeyId}">-->
-<!--                $("#authorityKeyIdentifier").html(parseSerialNumber(authorityKeyIdentifier));-->
-<!--                </c:when>-->
-<!--                <c:otherwise>-->
-<!--                $("#authorityKeyIdentifier").html("Not Specified");-->
-<!--                </c:otherwise>-->
-<!--            </c:choose>-->
+                    // param parameters
+                    const type = /*[[${ param.type }]]*/ '';
 
-<!--            <c:if test="${not empty initialData.authSerialNumber}">-->
-<!--                //Convert string to serial String-->
-<!--                $("#authSerialNumber").html(parseSerialNumber(authoritySerialNumber));-->
-<!--            </c:if>-->
-<!--            <c:choose>-->
-<!--                <c:when test="${not empty initialData.publicKeyValue}">-->
-<!--                let publicKey = '${initialData.publicKeyValue}';-->
-<!--                $("#encodedPublicKey").html(parseHexString(publicKey));-->
-<!--                </c:when>-->
-<!--                <c:otherwise>-->
-<!--                    <c:if test="${not empty initialData.encodedPublicKey}">-->
-<!--                //Change public key byte to hex-->
-<!--                let encPublicKey = ${initialData.encodedPublicKey};-->
-<!--                $("#encodedPublicKey").html(byteToHexString(encPublicKey));-->
-<!--                    </c:if>-->
-<!--                </c:otherwise>-->
-<!--            </c:choose>-->
+                    // Authority key ID: convert hex string to byte hex string
+                    const authorityKeyIdentifierDiv = document.getElementById('authorityKeyIdentifier');
+                    if (authorityKeyIdentifier) {
+                        authorityKeyIdentifierDiv.innerHTML = parseSerialNumber(authorityKeyIdentifier);
+                    } else {
+                        authorityKeyIdentifierDiv.innerHTML = "Not Specified";
+                    }
 
-<!--            <c:if test="${not empty initialData.subjectKeyIdentifier}">-->
-<!--                //Change subject byte to hex only for CACertificate-->
-<!--                if (type === "certificateauthority") {-->
-<!--                    let subjectKeyIdentifier = ${initialData.subjectKeyIdentifier};-->
-<!--                    $("#subjectKeyIdentifier").html(byteToHexString(subjectKeyIdentifier));-->
-<!--                }-->
-<!--            </c:if>-->
+                    // Authority serial number: convert hex string to byte hex string
+                    if (authoritySerialNumber) {
+                        const authoritySerialNumberDiv = document.getElementById('authSerialNumber');
+                        authoritySerialNumberDiv.innerHTML = parseSerialNumber(authoritySerialNumber);
+                    }
 
-<!--                <c:if test="${not empty initialData.hwSerialNumHex}">-->
-<!--                    let hwSerialNum = '${initialData.hwSerialNum}';-->
-<!--                    $("#hwSerialNum").html(parseHexString(hwSerialNum));-->
-<!--                </c:if>-->
+                    // Serial number: convert hex string to byte hex string
+                    if(certificateSerialNumber) {
+                        const serialNumberDiv = document.getElementById('serialNumber');
+                        serialNumberDiv.innerHTML = parseSerialNumber(certificateSerialNumber);
+                    }
 
-<!--                <c:if test="${not empty initialData.tcgTpmManufacturer}">-->
-<!--                    let ekAKI = '${initialData.ekAuthorityKeyIdentifier};'-->
-<!--                    let ekCSN = '${initialData.ekCertificateSerialNumber};'-->
+                    // Hw serial number
+                    if (hwSerialNum) {
+                        const hwSerialNumDiv = document.getElementById('hwSerialNum');
+                        hwSerialNumDiv.innerHTML = parseHexString(hwSerialNum);
+                    }
 
-<!--                    $("#ekAuthorityKeyIdentifier").html(parseHexString(ekAKI));-->
-<!--                    $("#ekCertificateSerialNumber").html(parseHexString(ekCSN));-->
-<!--                </c:if>-->
+                    // Tcg tpm manufacturer / ekAuthorityKeyIdentifier / ekCertificateSerialNumber
+                    if (tcgTpmManufacturer) {
+                        if (ekAuthorityKeyIdentifier) {
+                            const ekAuthorityKeyIdentifierDiv = document.getElementById('ekAuthorityKeyIdentifier');
+                            ekAuthorityKeyIdentifierDiv.innerHTML = parseHexString(ekAuthorityKeyIdentifier);
+                        }
+                        if (ekCertificateSerialNumber) {
+                            const ekCertificateSerialNumberDiv = document.getElementById('ekCertificateSerialNumber');
+                            ekCertificateSerialNumberDiv.innerHTML = parseHexString(ekCertificateSerialNumber);
+                        }
+                    }
 
-<!--                //Initilize tooltips-->
-<!--                $('[data-toggle="tooltip"]').tooltip();-->
+                    // Format validity time (assume input of Unix timestamp in milliseconds, ex. 1514782800000)
+                    $("#validity span").each(function () {
+                        let dateText = $(this).text();
+                        if(dateText) {
+                            const dateObject = new Date(parseInt(dateText));
+                            return $(this).text(formatCertificateDate(dateObject.toISOString()));
+                        }
+                    });
 
-<!--                //Vertical alignment on data columns-->
-<!--                $('.vertical').each(function () {-->
-<!--                    $(this).css({-->
-<!--                        'line-height': $(this).height() + 'px'-->
-<!--                    });-->
-<!--                });-->
+                    // Signature: convert byte array to string
+                    if (signature) {
+                        const signatureDiv = document.getElementById('signature');
+                        signatureDiv.innerHTML = byteToHexString(JSON.parse(signature));
+                    }
 
-<!--                //Change link width-->
-<!--                $("#headingOne, #headingTwo, #headingThree").each(function (e) {-->
-<!--                    let width = $(this).width();-->
-<!--                    //Get link width-->
-<!--                    let linkWidth = $(this).find('a').width();-->
+                    // Public key and encoded public key
+                    if (publicKey) {
+                        const encodedPublicKeyDiv = document.getElementById('encodedPublicKey');
+                        encodedPublicKeyDiv.innerHTML = parseHexString(publicKey);
+                    } else if (encPublicKey) {
+                        const encodedPublicKeyDiv = document.getElementById('encodedPublicKey');
+                        encodedPublicKeyDiv.innerHTML = byteToHexString(JSON.parse(encPublicKey));
+                    }
 
-<!--                    //Change width for the link-->
-<!--                    $(this).find('a').css({-->
-<!--                        "padding-right": (width - linkWidth) + "px"-->
-<!--                    });-->
-<!--                });-->
-<!--            });-->
-<!--        </script>-->
-<!--    </jsp:body>-->
+                    // Subject key identifier
+                    if (subjectKeyIdentifier) {
+                        //Change subject byte to hex only for CACertificate
+                        if (type.toString() === "certificateauthority") {
+                            const subjectKeyIdentifierDiv = document.getElementById('subjectKeyIdentifier');
+                            subjectKeyIdentifierDiv.innerHTML = byteToHexString(JSON.parse(subjectKeyIdentifier));
+                        }
+                    }
 
-<!--</my:page>-->
+                    // List of platform id links
+                    if (platformIdsString) {
+
+                        // Split the string into an array and map each item to an object
+                        let platformIdsStringList = platformIdsString
+                            .split(',')
+                            .map(id => ({ url: `/HIRS_AttestationCAPortal/portal/certificate-details?id=${id.trim()}&type=platform` }));
+
+                        // For each platform cert id, display an icon for a link to that platform cert
+                        const listContainer = document.getElementById('platformCertIdsList');
+
+                        // Iterate through each platform cert id link to create the thymeleaf list of links with clickable icons
+                        platformIdsStringList.forEach(link => {
+                            // Create a list item
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.href = link.url;
+
+                            // Add icon
+                            const img = document.createElement('img');
+                            img.src = '/icons/ic_important_devices_black_24dp.png';
+
+                            // Make the icon link clickable, then add link to the list item
+                            a.appendChild(img);
+                            li.appendChild(a);
+
+                            // Append list item to the container of list items
+                            listContainer.appendChild(li);
+                        });
+                    }
+                } //end if initialData
+
+                //Initilize tooltips
+                $('[data-bs-toggle="tooltip"]').tooltip();
+
+                //Vertical alignment on data columns
+                $('.vertical').each(function () {
+                    $(this).css({
+                        'line-height': $(this).height() + 'px'
+                    });
+                });
+
+                //Change link width
+                $("#headingOne, #headingTwo, #headingThree").each(function (e) {
+                    let width = $(this).width();
+                    //Get link width
+                    let linkWidth = $(this).find('a').width();
+
+                    //Change width for the link
+                    $(this).find('a').css({
+                        "padding-right": (width - linkWidth) + "px"
+                    });
+                });
+            });
+        </script>
+    </section>
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">
+
+        <th:block th:if="${not #strings.isEmpty(param.type)}">
+            <th:block th:if="${not #strings.isEmpty(param.id)}">
+                <th:block th:if="${#strings.equals(param.type, 'certificateauthority')}">
+                    Certificate Authority
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download?id={id}(id=${param.id})}">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download Trust Chain Certificate">
+                    </a>
+                </th:block>
+                <th:block th:if="${#strings.equals(param.type, 'endorsement')}">
+                    Endorsement Certificate
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials/download?id={id}(id=${param.id})}">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download Endorsement Certificate">
+                    </a>
+                </th:block>
+                <th:block th:if="${#strings.equals(param.type, 'platform')}">
+                    Platform Certificate
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials/download?id={id}(id=${param.id})}">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download Platform Certificate">
+                    </a>
+                </th:block>
+                <th:block th:if="${#strings.equals(param.type, 'issued')}">
+                    Issued Attestation Certificates
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id={id}(id=${param.id})}">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download Issued Certificate">
+                    </a>
+                </th:block>
+                <th:block th:if="${#strings.equals(param.type, 'idevid')}">
+                    IDevID Certificate
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/download?id={id}(id=${param.id})}">
+                        <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon" title="Download IDevID Certificate">
+                    </a>
+                </th:block>
+            </th:block>
+
+            <th:block th:if="${not (#strings.equals(param.type, 'certificateauthority')
+                                or #strings.equals(param.type, 'endorsement')
+                                or #strings.equals(param.type, 'platform')
+                                or #strings.equals(param.type, 'issued')
+                                or #strings.equals(param.type, 'idevid'))}">
+                Unknown Certificate
+            </th:block>
+        </th:block>
+    </h1>
+
+    <section layout:fragment="content">
+        <div id="certificate-details-page" class="container-fluid certificate-details-container">
+            <th:block th:if="${initialDataExists}">
+                <!-- Display issuer, and provide a link to issuer details if provided -->
+                <div class="certrow">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Issuer</span></div>
+                    <div id="issuer" class="col col-md-8">
+                        <div>Distinguished Name:&nbsp;<span>
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
+                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=certificateauthority(id=${initialData.get('issuerID')})}">
+                                    [[${initialData.get('issuer')}]]
+                                </a>
+                            </th:block>
+                            <th:block th:if="${#strings.isEmpty(initialData.get('issuerID'))}">
+                                [[${initialData.get('issuer')}]]
+                            </th:block>
+                            </span>
+                        </div>
+                        <div>Authority Key Identifier:&nbsp;<span>
+                            <span id="authorityKeyIdentifier"></span>
+                            </span>
+                        </div>
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('authInfoAccess'))}">
+                            <div>Authority Info Access:&nbsp;<span>
+                                <a th:href="@{${initialData.get('authInfoAccess')}}">[[${initialData.get('authInfoAccess')}]]</a>
+                                </span>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('authSerialNumber'))}">
+                            <div>Authority Serial Number:
+                                <span id="authSerialNumber"></span>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${not #strings.equals(param.type, 'issued')}">
+                            <span class="chainIcon">
+                                <!-- Icon with link for missing certificate for the chain -->
+                                <th:block th:if="${not #strings.equals(initialData.get('isSelfSigned'), 'false')}">
+                                    <img th:src="@{/icons/ic_all_inclusive_black_24dp.png}" alt="Black Infinity Icon"
+                                         title="Self sign certificate.">
+                                </th:block>
+                                <th:block th:if="${#strings.equals(initialData.get('isSelfSigned'), 'false')}">
+                                    <th:block th:if="${#strings.isEmpty(initialData.get('missingChainIssuer'))}">
+                                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}"
+                                             alt="Green Checkbox Icon" title="All certificates in the chain were found.">
+                                    </th:block>
+                                    <th:block th:if="${not #strings.isEmpty(initialData.get('missingChainIssuer'))}">
+                                        <img th:src="@{/icons/ic_error_red_24dp.png}" alt="Red Error Icon"
+                                             th:title="${initialData.get('missingChainIssuer')}" >
+                                    </th:block>
+                                </th:block>
+                            </span>
+                        </th:block>
+                    </div>
+                </div> <!-- Close certificate issuer -->
+
+                <!-- Display certificate subject -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('subject'))}">
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject</span></div>
+                        <div id="subject" class="col col-md-8">[[${initialData.get('subject')}]]</div>
+                    </div>
+                </th:block> <!-- Close certificate subject -->
+
+                <!-- Display certificate serial number -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('serialNumber'))}">
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certificate Serial Number</span></div>
+                        <div id="serialNumber" class="col col-md-8 vertical"></div>
+                    </div>
+                </th:block> <!-- Close certificate serial number -->
+
+                <!-- Display certificate hardware serial number -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('hwSerialNum'))}">
+                    <div class="certrow">
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('ekCertificateDigest'))}">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
+                                                                        title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware
+                                    Module Name</span></div>
+                            <div class="col col-md-8">
+                                <div><span class="help-text"
+                                           th:title="|Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.get('hwType')}|">Hardware
+                                        Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span>
+                                </div>
+                                <div><span class="help-text"
+                                           title="TCG-compliant: the device's TPM does not contain an EK certificate, and the Hardware Serial Number represents a digest of the EK Certificate public key. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware
+                                        Serial Number</span>:</div>
+                                <ul>
+                                    <li>EK Certificate Public Key:&nbsp;<span
+                                            id="hwSerialNum">[[${initialData.get('hwSerialNum')}]]</span></li>
+                                </ul>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${#strings.isEmpty(initialData.get('ekCertificateDigest'))}">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
+                                                                        title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is not using a TCG OID for Hardware Type, so these fields may have manufacturer-specific context.">Hardware
+                                    Module Name</span></div>
+                            <div class="col col-md-8">
+                                <div><span class="help-text"
+                                           th:title="|Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a non-TCG OID, possibly indicating manufacturer-specific context. OID value: ${initialData.get('hwType')}|">Hardware
+                                        Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span>
+                                </div>
+                                <div><span class="help-text"
+                                           title="Used for identifying the device's hardware module. This field may have manufacturer-specific context.">Hardware
+                                        Serial Number</span>:&nbsp;<span
+                                        id="hwSerialNum">[[${initialData.get('hwSerialNum')}]]</span></div>
+                            </div>
+                        </th:block>
+                    </div>
+                </th:block> <!-- Close certificate hardware serial number -->
+
+                <!-- Display certificate tcg tpm manufacturer -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('tcgTpmManufacturer'))}">
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
+                                                                    title="Defined in RFC 4108, and contained in the Subject Alternate Name. This certificate is also TCG-compliant for this field, indicated by the use of a TCG OID for Hardware Type.">Hardware
+                                Module Name</span></div>
+                        <div class="col col-md-8">
+                            <div><span class="help-text"
+                                       th:title="|Contains an OID that, in conjunction with the Hardware Serial Number, identifies the device's hardware module. This certificate is using a TCG OID, indicating the use of a Trusted Platform Module. OID value: ${initialData.get('hwType')}|">Hardware
+                                    Type</span>:&nbsp;<span id="hwTypeReadable">[[${initialData.get('hwTypeReadable')}]]</span></div>
+                            <div><span class="help-text"
+                                       title="TCG-compliant: the device's TPM contains an EK certificate, and the below fields are parsed accordingly from the Hardware Serial Number. See TCG specification titled &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">Hardware
+                                    Serial Number</span>:
+                                <ul>
+                                    <li>TCG TPM Manufacturer Code:&nbsp;<span
+                                            id="tcgTpmManufacturer">[[${initialData.get('tcgTpmManufacturer')}]]</span></li>
+                                    <li>EK Authority Key Identifier:&nbsp;<span
+                                            id="ekAuthorityKeyIdentifier">[[${initialData.get('ekAuthorityKeyIdentifier')}]]</span>
+                                    </li>
+                                    <li>EK CertificateSerialNumber:&nbsp;<span
+                                            id="ekCertificateSerialNumber">[[${initialData.get('ekCertificateSerialNumber')}]]</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>  <!-- Close certificate tcg tpm manufacturer -->
+
+                <!-- Display certificate validity dates -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('beginValidity'))}">
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Validity</span></div>
+                        <div id="validity" class="col col-md-8">
+    <!--    TODO: check why had to create a second time function (formatCertificateDate2) for Format validity time -->
+                            <div>Not Before:&nbsp;<span>[[${initialData.get('beginValidity')}]]</span></div>
+                            <div>Not After:&nbsp;<span>[[${initialData.get('endValidity')}]]</span></div>
+                        </div>
+                    </div>
+                </th:block> <!-- Close certificate validity dates -->
+
+                <!-- Display certificate signature -->
+                <div class="certrow">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>
+                    <div id="signatureSection" class="col col-md-8">
+                        <div id="signatureAccordion" class="accordion">
+                            <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                <h2 id="headingOne" class="accordion-header">
+                                    <button
+                                        class="accordion-button collapsed"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#signatureComponentcollapse"
+                                        data-bs-placement="top"
+                                        aria-expanded="true"
+                                        aria-controls="signatureComponentcollapse">
+                                        Signature
+                                    </button>
+                                </h2>
+                                <div id="signatureComponentcollapse"
+                                     class="accordion-collapse collapse"
+                                     aria-labelledby="headingOne"
+                                     aria-expanded="false"
+                                     data-bs-parent="#signatureAccordion">
+                                    <div class="accordion-body">
+                                        <div id="signature" class="fieldValue"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                <h2 id="headingTwo" class="accordion-header">
+                                    <button
+                                         class="accordion-button collapsed"
+                                         type="button"
+                                         data-bs-toggle="collapse"
+                                         data-bs-target="#signatureSizecollapse"
+                                         data-bs-placement="top"
+                                         aria-expanded="true"
+                                         aria-controls="signatureSizecollapse">
+                                        Algorithm
+                                    </button>
+                                </h2>
+                                <div id="signatureSizecollapse"
+                                     class="accordion-collapse collapse"
+                                     aria-labelledby="headingOne"
+                                     aria-expanded="false"
+                                     data-bs-parent="#signatureAccordion">
+                                    <div>
+                                        <div class="accordion-body">
+                                            <span class="fieldValue">
+                                                [[${initialData.get('signatureAlgorithm')}]]
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Close certificate signature -->
+
+                <!-- Display certificate public key -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('encodedPublicKey'))}">
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Public Key</span></div>
+                        <div id="publicKeySection" class="col col-md-8">
+                            <div id="publicKeyAccordion" class="accordion">
+                                <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                    <h2 id="headingOne" class="accordion-header">
+                                        <button
+                                                class="accordion-button collapsed"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#publicKeycollapse"
+                                                data-bs-placement="top"
+                                                aria-expanded="true"
+                                                aria-controls="publicKeycollapse">
+                                            Public Key
+                                        </button>
+                                    </h2>
+                                    <div id="publicKeycollapse"
+                                         class="accordion-collapse collapse"
+                                         aria-labelledby="headingOne"
+                                         aria-expanded="false"
+                                         data-bs-parent="#publicKeyAccordion">
+                                        <div class="accordion-body">
+                                            <div id="encodedPublicKey" class="fieldValue"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                    <h2 id="headingTwo" class="accordion-header">
+                                        <button
+                                                class="accordion-button collapsed"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#publicKeySizecollapse"
+                                                data-bs-placement="top"
+                                                aria-expanded="true"
+                                                aria-controls="publicKeySizecollapse">
+                                            Algorithm
+                                        </button>
+                                    </h2>
+                                    <div id="publicKeySizecollapse"
+                                         class="accordion-collapse collapse"
+                                         aria-expanded="false"
+                                         aria-labelledby="headingTwo"
+                                         data-bs-parent="#publicKeyAccordion">
+                                         <div class="accordion-body">
+                                            <span class="fieldValue">
+                                                [[${initialData.get('publicKeyAlgorithm')}]] / [[${initialData.get('publicKeySize')}]]
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block> <!-- Close certificate public key -->
+
+                <!-- Display certificate version -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('x509Version'))}">
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">X509 Credential Version</span></div>
+                        <!-- per spec, version is 1 more than encoded value -->
+                        <div id="credentialVersion" class="col col-md-8 vertical">[[${{initialData.get('x509Version') + 1}}]]
+                        </div>
+                    </div>
+                </th:block>
+
+                <!-- Display certificate type -->
+                <th:block th:if="${not #strings.isEmpty(initialData.get('credentialType'))}">
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Credential Type</span></div>
+                        <div id="credentialType" class="col col-md-8 vertical">[[${initialData.get('credentialType')}]]</div>
+                    </div>
+                </th:block>
+
+                <!-- Add the different fields based on the certificate type -->
+
+                <!-- If this is a certificate of type 'certificateauthority' -->
+                <th:block th:if="${#strings.equals(param.type, 'certificateauthority')}">
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('subjectKeyIdentifier'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Subject Key
+                                            Identifier</span></div>
+                            <div id="subjectKeyIdentifier" class="col col-md-8 vertical"></div>
+                        </div>
+                    </th:block>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
+                            </div>
+                            <div id="revocationLocator" class="col col-md-8">
+                                <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
+                            </div>
+                        </div>
+                    </th:block>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
+                        </th:block>
+                        <th:block th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+                        </th:block>
+                    </div>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>
+                            </div>
+                            <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]
+                            </div>
+                        </div>
+                    </th:block>
+                </th:block> <!-- Close certificate of type 'certificateauthority' -->
+
+                <!-- If this is a certificate of type 'endorsement' -->
+                <th:block th:if="${#strings.equals(param.type, 'endorsement')}">
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
+                        <div id="subjectAltName" class="col col-md-8">
+                            <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
+                            <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
+                            <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
+                        </div>
+                    </div>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
+                        <div id="policyReference" class="col col-md-8 vertical">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('policyReference'))}">
+                                [[${initialData.get('policyReference')}]]
+                            </th:block>
+                            <th:block th:if="${#strings.isEmpty(initialData.get('policyReference'))}">
+                                Not Specified
+                            </th:block>
+                        </div>
+                    </div>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span>
+                            </div>
+                            <div id="revocationLocator" class="col col-md-8">
+                                <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
+                            </div>
+                        </div>
+                    </th:block>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
+                        </th:block>
+                        <th:block th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+                        </th:block>
+                    </div>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span>
+                            </div>
+                            <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]
+                            </div>
+                        </div>
+                    </th:block>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
+                                   aria-expanded="true" data-bs-placement="top" aria-controls="tpmSpecificationInner">
+                                    TPM Specification
+                                </a>
+                            </span>
+                        </div>
+                        <div id="tpmSpecification" class="col col-md-8">
+                            <div id="tpmSpecificationInner" class="accordion-body card-body collapse" role="tabpanel"
+                                 aria-expanded="false">
+                                <div>Family:&nbsp;<span>[[${initialData.get('TPMSpecificationFamily')}]]</span></div>
+                                <div>Level:&nbsp;<span>[[${initialData.get('TPMSpecificationLevel')}]]</span></div>
+                                <div>Revision:&nbsp;<span>[[${initialData.get('TPMSpecificationRevision')}]]</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-bs-toggle="collapse" class="collapsed"
+                                   href="#tpmSecurityAssertionInner" aria-expanded="true" data-bs-placement="top"
+                                   aria-controls="tpmSecurityAssertionInner">
+                                    TPM Security Assertion
+                                </a>
+                            </span>
+                        </div>
+                        <div id="tpmSecurityAssertion" class="col col-md-8">
+                            <div id="tpmSecurityAssertionInner" class="accordion-body card-body collapse" role="tabpanel"
+                                 aria-expanded="false">
+                                <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
+                                <div>Field
+                                    Upgradeable:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}]]</span>
+                                </div>
+                                <div>ek Generation Type:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenType')}]]</span>
+                                </div>
+                                <div>ek Generation
+                                    Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}]]</span></div>
+                                <div>ek Certificate Generation
+                                    Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}]]</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block> <!-- Close certificate of type 'endorsement' -->
+
+                <!-- If this is a certificate of type 'platform' -->
+                <th:block th:if="${#strings.equals(param.type, 'platform')}">
+                    <!-- Platform Type -->
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('platformType'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Type</span></div>
+                            <div id="platformType" class="col col-md-8 vertical">[[${initialData.get('platformType')}]]</div>
+                        </div>
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Chain</span></div>
+                            <div id="platformChain" class="col col-md-8 vertical">
+                                <span>
+                                    <th:block th:each="credential, loop : ${initialData.get('chainCertificates')}">
+                                        <th:block th:if="${#strings.equals(initialData.get('certificateId'), credential.getId().toString())}">
+                                            [[${loop.index}]]&nbsp;
+                                        </th:block>
+                                        <th:block th:if="${not #strings.equals(initialData.get('certificateId'), credential.getId().toString())}">
+                                            <a
+                                               th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=platform(id=${credential.getId()})}">
+                                                    [[${loop.index}]]
+                                            </a>&nbsp;
+                                        </th:block>
+                                    </th:block>
+                                </span>
+                            </div>
+                        </div>
+                    </th:block>
+                    <!-- Certification Practice Statement URI -->
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('CPSuri'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Certification Practice
+                                    Statement URI</span></div>
+                            <div id="certificateCPSU" class="col col-md-8 vertical">
+                                <a th:href="@{${initialData.get('CPSuri')}}">[[${initialData.get('CPSuri')}]]</a>
+                            </div>
+                        </div>
+                    </th:block>
+                    <!-- Holder -->
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Holder</span></div>
+                        <div id="holder" class="col col-md-8">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('holderIssuer'))}">
+                                <div>Holder Certificate Issuer:&nbsp;<span>[[${initialData.get('holderIssuer')}]]</span></div>
+                            </th:block>
+                            <div id="certificateid">
+                                <div>Holder Certificate Serial Number:&nbsp;
+                                    <th:block th:if="${not #strings.isEmpty(initialData.get('holderId'))}">
+                                        <span>
+                                            <th:block th:if="${not #strings.isEmpty(initialData.get('platformType')) and #strings.equals(initialData.get('platformType'), 'Delta')}">
+                                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=platform(id=${initialData.get('holderId')})}">
+                                                        [[${initialData.get('holderSerialNumber')}]]
+                                                </a>
+                                            </th:block>
+                                            <th:block th:if="${#strings.isEmpty(initialData.get('platformType')) or not #strings.equals(initialData.get('platformType'), 'Delta')}">
+                                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('holderId')})}">
+                                                        [[${initialData.get('holderSerialNumber')}]]
+                                                </a>
+                                            </th:block>
+                                        </span>
+                                    </th:block>
+                                    <th:block th:if="${#strings.isEmpty(initialData.get('holderId'))}">
+                                        <span>[[${initialData.get('holderSerialNumber')}]]</span>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- System Platform Information -->
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Platform Information</span>
+                        </div>
+                        <div id="subjectAltName" class="col col-md-8">
+                            <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
+                            <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
+                            <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
+                            <div id="serial">Serial Number:&nbsp;<span>[[${initialData.get('platformSerial')}]]</span></div>
+                        </div>
+                    </div>
+                    <!-- TCG Platform Specification -->
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification
+                                Version</span></div>
+                        <div id="majorVersion" class="col col-md-8 vertical">
+                            [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
+                    </div>
+                    <!-- Platform Class -->
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Class</span></div>
+                        <div id="platformClass" class="col col-md-8 vertical">[[${initialData.get('platformClass')}]]</div>
+                    </div>
+                    <!-- TBB Security Assertion -->
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">TBB Security Assertion</span>
+                            </div>
+                            <div id="tbbsecurity" class="col col-md-8">
+                                <div class="tbbsecurityLine">
+                                    <span class="fieldHeader">Version:</span>
+                                    <span class="fieldValue">
+                                        <!-- per spec, version is 1 more than encoded value -->
+                                        [[${initialData.get('tbbSecurityAssertion').getVersion().getValue() + 1}]]
+                                    </span>
+                                </div>
+                                <div class="tbbsecurityLine">
+                                    <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getRtmType()) and not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getRtmType().getValue())}">
+                                        <span class="fieldHeader">RTM (Root of Trust of Measurement):</span>
+                                        <span
+                                            class="fieldValue">
+                                            [[${#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getRtmType().getValue())}]]</span>
+                                    </th:block>
+                                </div>
+                                <!-- CCINFO -->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getCcInfo())}">
+                                    <th:block th:with="ccinfo=${initialData.get('tbbSecurityAssertion').getCcInfo()}">
+                                        <div id="tbbSecurityCcInfoAccordion" class="accordion">
+                                            <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                                <h2 id="headingOne" class="accordion-header">
+                                                    <button class="accordion-button collapsed"
+                                                            type="button"
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#ccinfocollapse"
+                                                            aria-expanded="false"
+                                                            aria-controls="ccinfocollapse">
+                                                        Common Criteria Measures Information
+                                                    </button>
+                                                </h2>
+                                                <div id="ccinfocollapse"
+                                                     class="accordion-collapse collapse"
+                                                     aria-labelledby="headingOne"
+                                                     data-bs-parent="#tbbSecurityCcInfoAccordion">
+                                                    <div class="accordion-body">
+                                                        <div id="ccinfo" class="certrow">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Version:</span>
+                                                                    <span class="fieldValue">[[${ccinfo.getVersion()}]]</span>
+                                                            </div>
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Assurance Level:</span>
+                                                                    <span
+                                                                        class="fieldValue">[[${#strings.toUpperCase(ccinfo.getAssuranceLevel().getValue())}]]</span>
+                                                            </div>
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Evaluation Status:</span>
+                                                                <span
+                                                                        class="fieldValue">[[${#strings.toUpperCase(ccinfo.getEvaluationStatus().getValue())}]]</span>
+                                                            </div>
+                                                            <div class="tbbsecurityLine">
+                                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
+                                                                    <span class="badge text-bg-success">Plus</span>
+                                                                </th:block>
+                                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
+                                                                    <span class="badge bg-danger">Not Plus</span>
+                                                                </th:block>
+                                                            </div>
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Strength of Function:</span>
+                                                                <span
+                                                                    class="fieldValue">[[${#strings.toUpperCase(ccinfo.getStrengthOfFunction().getValue())}]]</span>
+                                                            </div>
+                                                            <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileOid())}">
+                                                                <div class="tbbsecurityLine">
+                                                                    <span class="fieldHeader">Profile OID:</span>
+                                                                    <span class="fieldValue">[[${ccinfo.getProfileOid()}]]</span>
+                                                                </div>
+                                                            </th:block>
+                                                            <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri())}">
+                                                                <div class="tbbsecurityLine">
+                                                                    <span class="fieldHeader">Profile URI:</span>
+                                                                    <span class="fieldValue">
+                                                                        <a th:href="@{${ccinfo.getProfileUri().getUniformResourceIdentifier()}}">
+                                                                            [[${ccinfo.getProfileUri().getUniformResourceIdentifier()}]]
+                                                                        </a>
+                                                                    </span>
+                                                                </div>
+                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashAlgorithm())}">
+                                                                    <div class="tbbsecurityLine">
+                                                                        <span class="fieldHeader">Profile Hash Algorithm:</span>
+                                                                        <span
+                                                                            class="fieldValue">[[${ccinfo.getProfileUri().getHashAlgorithm()}]]</span>
+                                                                    </div>
+                                                                </th:block>
+                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashValue())}">
+                                                                    <div class="tbbsecurityLine">
+                                                                        <span class="fieldHeader">Profile Hash Value:</span>
+                                                                        <span
+                                                                            class="fieldValue">[[${ccinfo.getProfileUri().getHashValue()}]]</span>
+                                                                    </div>
+                                                                </th:block>
+                                                            </th:block>
+                                                            <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetOid())}">
+                                                                <div class="tbbsecurityLine">
+                                                                    <span class="fieldHeader">Target OID:</span>
+                                                                    <span class="fieldValue">[[${ccinfo.getTargetOid()}]]</span>
+                                                                </div>
+                                                            </th:block>
+                                                            <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri())}">
+                                                                <div class="tbbsecurityLine">
+                                                                    <span class="fieldHeader">Target URI:</span>
+                                                                    <span class="fieldValue">
+                                                                        <a th:href="@{${ccinfo.getTargetUri().getUniformResourceIdentifier()}}">
+                                                                            [[${ccinfo.getTargetUri().getUniformResourceIdentifier()}]]
+                                                                        </a>
+                                                                    </span>
+                                                                </div>
+                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashAlgorithm())}">
+                                                                    <div class="tbbsecurityLine">
+                                                                        <span class="fieldHeader">Target Hash Algorithm:</span>
+                                                                        <span
+                                                                            class="fieldValue">[[${ccinfo.getTargetUri().getHashAlgorithm()}]]</span>
+                                                                    </div>
+                                                                </th:block>
+                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashValue())}">
+                                                                    <div class="tbbsecurityLine">
+                                                                        <span class="fieldHeader">Target Hash Value:</span>
+                                                                        <span
+                                                                            class="fieldValue">[[${ccinfo.getTargetUri().getHashValue()}]]</span>
+                                                                    </div>
+                                                                </th:block>
+                                                            </th:block>
+                                                        </div>
+                                                    </div> <!-- Close class="accordion-body" -->
+                                                </div> <!-- Close id="ccinfocollapse" class="accordion-collapse -->
+                                            </div> <!-- Close class="accordion-item" -->
+                                        </div> <!-- Close id="tbbSecurityCcInfoAccordion" class="accordion" -->
+                                    </th:block> <!-- Close with="ccinfo=... -->
+                                </th:block> <!-- Close CCINFO -->
+                                <!-- FIPS Level -->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getFipsLevel())}">
+                                    <th:block th:with="fipslevel=${initialData.get('tbbSecurityAssertion').getFipsLevel()}">
+                                        <div id="tbbSecurityFipsAccordion" class="accordion">
+                                            <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                                <h2 id="headingTwo" class="accordion-header">
+                                                    <button
+                                                         class="accordion-button collapsed"
+                                                         type="button"
+                                                         data-bs-toggle="collapse"
+                                                         data-bs-target="#fipscollapse"
+                                                         aria-expanded="false"
+                                                         aria-controls="fipscollapse">
+                                                        FIPS Level
+                                                    </button>
+                                                </h2>
+                                                <div id="fipscollapse"
+                                                     class="accordion-collapse collapse"
+                                                     aria-labelledby="headingTwo"
+                                                     data-bs-parent="#tbbSecurityFipsAccordion">
+                                                    <div class="accordion-body card-body">
+                                                        <div id="fipsLevel" class="certrow">
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Version:</span>
+                                                                <span class="fieldValue">[[${fipslevel.getVersion()}]]</span>
+                                                            </div>
+                                                            <div class="tbbsecurityLine">
+                                                                <span class="fieldHeader">Level:</span>
+                                                                <span
+                                                                    class="fieldValue">[[${#strings.toUpperCase(fipslevel.getLevel().getValue())}]]</span>
+                                                            </div>
+                                                            <div class="tbbsecurityLine">
+                                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
+                                                                    <span class="badge text-bg-success">Plus</span>
+                                                                </th:block>
+                                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
+                                                                    <span class="badge bg-danger">Not Plus</span>
+                                                                </th:block>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> <!-- Close id="tbbSecurityFipsAccordion" class="accordion" -->
+                                    </th:block> <!-- Close th:with="fipslevel= -->
+                                </th:block> <!-- Close FIPS Level -->
+                                <!-- ISO9000 isCertified and URI -->
+                                <div id="tbbsecurityIso9000Accordion" class="accordion">
+                                    <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                        <h2 id="headingThree" class="accordion-header">
+                                            <button
+                                                 class="accordion-button collapsed"
+                                                 type="button"
+                                                 data-bs-toggle="collapse"
+
+                                                 data-bs-target="#iso9000collapse"
+                                                 aria-expanded="false"
+                                                 aria-controls="iso9000collapse">
+                                                ISO 9000
+                                            </button>
+                                        </h2>
+                                        <div id="iso9000collapse"
+                                             class="accordion-collapse collapse"
+                                             aria-labelledby="headingThree"
+                                             data-bs-parent="#tbbsecurityIso9000Accordion">
+                                            <div class="accordion-body card-body">
+                                                <div id="iso9000" class="certrow">
+                                                    <div class="tbbsecurityLine">
+                                                        <th:block th:if="${#strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
+                                                            <span class="badge text-bg-success">ISO 9000 Certified</span>
+                                                        </th:block>
+                                                        <th:block th:if="${not #strings.equals(#strings.toUpperCase(initialData.get('tbbSecurityAssertion').getIso9000Certified()), 'TRUE')}">
+                                                            <span class="badge bg-danger">ISO 9000 Not Certified</span>
+                                                        </th:block>
+                                                    </div>
+                                                    <th:block th:if="${not #strings.isEmpty(initialData.get('tbbSecurityAssertion').getIso9000Uri())}">
+                                                        <div class="tbbsecurityLine">
+                                                            <span class="fieldHeader">URI:</span>
+                                                            <span class="fieldValue">
+                                                                <a th:href="@{${initialData.get('tbbSecurityAssertion').getIso9000Uri()}}">
+                                                                    [[${initialData.get('tbbSecurityAssertion').getIso9000Uri()}]]
+                                                                </a>
+                                                            </span>
+                                                        </div>
+                                                    </th:block>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> <!-- Close id="tbbsecurityIso9000Accordion" class="accordion" -->
+                            </div> <!-- Close id="tbbsecurity" -->
+                        </div> <!-- Close row -->
+                    </th:block> <!-- Close TBB Security Assertion -->
+                    <!-- For PC 2.0 -->
+                    <!-- Credential Type is TCG -->
+                    <th:block th:if="${#strings.contains(initialData.get('credentialType'), 'TCG')}">
+                        <div class="certrow">
+                            <!-- TCG Platform Configuration -->
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform
+                                    Configuration</span></div>
+                            <div id="platformConfiguration" class="col col-md-8">
+                                <!-- TCG Platform Configuration: Components-->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('componentResults'))}">
+                                    <!-- Component Identifier -->
+                                    <div id="componentsAccordion" class="accordion">
+                                        <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                            <h2 id="headingOne" class="accordion-header">
+                                                <button
+                                                     class="accordion-button"
+                                                     type="button"
+                                                     data-bs-toggle="collapse"
+                                                     data-bs-target="#componentIdentifiercollapse"
+                                                     aria-expanded="true"
+                                                     aria-controls="componentIdentifiercollapse">
+                                                    Components
+                                                </button>
+                                            </h2>
+                                            <div id="componentIdentifiercollapse"
+                                                 class="accordion-collapse collapse in show"
+                                                 aria-labelledby="headingOne"
+                                                 aria-expanded="true"
+                                                 data-bs-parent="#platformConfiguration">
+                                                <div class="accordion-body">
+                                                    <div id="componentIdentifier" class="certrow">
+                                                        <!-- 'componentResults' is List<ComponentResult> from CertificateStringMapBuilder-->
+                                                        <th:block th:each="component, loop : ${initialData.get('componentResults')}">
+                                                            <div class="component col col-md-4">
+                                                                <div class="card">
+                                                                    <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
+                                                                        <div class="p-3 mb-3 bg-danger border rounded">
+                                                                            <h5 class="card-heading">
+                                                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
+                                                                                    <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                                        th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
+                                                                                </th:block>
+                                                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
+                                                                                    <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                                    title="Component Class">Platform Components</span>
+                                                                                </th:block>
+                                                                            </h5>
+                                                                        </div>
+                                                                    </th:block>
+                                                                    <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFailedValidation()), 'TRUE')}">
+                                                                        <div class="p-3 mb-3 bg-light border rounded">
+                                                                            <h5 class="card-heading">
+                                                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
+                                                                                    <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                                    th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
+                                                                                </th:block>
+                                                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
+                                                                                    <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                                    title="Component Class">Platform Components</span>
+                                                                                </th:block>
+                                                                            </h5>
+                                                                        </div>
+                                                                    </th:block>
+                                                                    <div class="card-body">
+                                                                        <span class="fieldHeader">Manufacturer:</span>
+                                                                        <span
+                                                                                class="fieldValue">[[${component.getManufacturer()}]]</span><br />
+                                                                        <span class="fieldHeader">Model:</span>
+                                                                        <span
+                                                                            class="fieldValue">[[${component.getModel()}]]</span><br />
+                                                                        <th:block th:if="${not #strings.isEmpty(#strings.trim(component.getSerialNumber()))}">
+                                                                            <span class="fieldHeader">SN:</span>
+                                                                            <span
+                                                                                    class="fieldValue">[[${component.getSerialNumber()}]]</span><br />
+                                                                        </th:block>
+                                                                        <th:block th:if="${not #strings.isEmpty(#strings.trim(component.getRevisionNumber()))}">
+                                                                            <span class="fieldHeader">Revision:</span>
+                                                                            <span
+                                                                                    class="fieldValue">[[${component.getRevisionNumber()}]]</span><br />
+                                                                        </th:block>
+                                                                        <th:block th:each="address, loop : ${component.getComponentAddresses()}">
+                                                                            <span
+                                                                                class="fieldHeader">[[${#strings.capitalize(address.getAddressTypeString())}]]
+                                                                                address:</span>
+                                                                            <span
+                                                                                class="fieldValue">[[${address.getAddressValueString()}]]</span><br />
+                                                                        </th:block>
+                                                                        <span class="fieldHeader">Replaceable:</span>
+                                                                        <th:block th:if="${#strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
+                                                                            <span
+                                                                                    class="fieldValue">True</span><br />
+                                                                        </th:block>
+                                                                        <th:block th:if="${not #strings.equals(#strings.toUpperCase(component.isFieldReplaceable()), 'TRUE')}">
+                                                                            <span
+                                                                                    class="fieldValue">False</span><br />
+                                                                        </th:block>
+                                                                        <th:block th:if="${not #strings.isEmpty(component.isVersion2())}">
+                                                                            <th:block th:if="${not #strings.isEmpty(component.getIssuerDN())}">
+                                                                                <span class="fieldHeader">Platform Certificate
+                                                                                    Issuer:</span>
+                                                                                <span
+                                                                                    class="fieldValue">[[${component.getIssuerDN()}]]</span><br />
+                                                                                <span class="fieldHeader">Platform Certificate
+                                                                                    Serial Number:</span>
+                                                                                <span
+                                                                                    class="fieldValue">[[${component.getCertificateSerialNumber()}]]</span><br />
+                                                                                <span class="fieldHeader">Platform Certificate
+                                                                                    URI:</span>
+                                                                            </th:block>
+                                                                            <span class="fieldValue">
+                                                                                <th:block th:if="${not #strings.isEmpty(component.getUniformResourceIdentifier())}">
+                                                                                    <a th:href="@{${component.getUniformResourceIdentifier()}}">
+                                                                                        [[${component.getUniformResourceIdentifier()}]]
+                                                                                    </a><br />
+                                                                                </th:block>
+                                                                            </span>
+                                                                            <!-- Component Status: added(0), modified (1), removed(2)-->
+                                                                            <span class="fieldHeader">Status:</span>
+                                                                            <th:block th:if="${not #strings.isEmpty(component.getAttributeStatus())}">
+                                                                                <span
+                                                                                        class="fieldValue" th:text="${#strings.capitalize(#strings.toLowerCase(component.getAttributeStatus()))}"></span><br />
+                                                                            </th:block>
+                                                                            <th:block th:if="${#strings.isEmpty(component.getAttributeStatus())}">
+                                                                                <span
+                                                                                    class="fieldValue">Not Specified</span><br />
+                                                                            </th:block>
+                                                                        </th:block>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </th:block> <!-- Close loop through each element in 'componentResults')-->
+                                                    </div> <!-- Close id="componentIdentifier" -->
+                                                </div> <!-- Close class="accordion-body" -->
+                                            </div> <!-- Close id="componentIdentifiercollapse" class="accordion-collapse -->
+                                        </div> <!-- Close class="accordion-item" -->
+                                    </div> <!-- Close id="componentsAccordion" class="accordion" -->
+                                </th:block> <!-- Close Component Results -->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI'))}">
+                                    <!-- Components Identifier URI -->
+                                    <div id="componentsIdUriAccordion" class="accordion">
+                                        <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                            <h4 id="headingTwo" class="accordion-header">
+                                                <button
+                                                     class="accordion-button collapsed"
+                                                     type="button"
+                                                     data-bs-toggle="collapse"
+                                                     data-bs-target="#componentIdentifierURIcollapse"
+                                                     aria-expanded="false"
+                                                     aria-controls="componentIdentifierURIcollapse">
+                                                    Components Identifier URI
+                                                </button>
+                                            </h4>
+                                            <div id="componentIdentifierURIcollapse"
+                                                 class="accordion-collapse collapse"
+                                                 aria-labelledby="headingTwo"
+                                                 data-bs-parent="#platformConfiguration">
+                                                <div class="accordion-body">
+                                                    <div id="componentIdentifierURI" class="certrow">
+                                                        <span class="fieldHeader">URI:</span>
+                                                        <a th:href="@{${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}}">
+                                                            [[${initialData.get('componentsIdentifierURI').getUniformResourceIdentifier()}]]
+                                                        </a>
+                                                        <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashAlgorithm())}">
+                                                            <span class="fieldHeader">Hash Algorithm:</span>
+                                                            <span>[[${initialData.get('componentsIdentifierURI').getHashAlgorithm()}]]</span>
+                                                        </th:block>
+                                                        <th:block th:if="${not #strings.isEmpty(initialData.get('componentsIdentifierURI').getHashValue())}">
+                                                            <span class="fieldHeader">Hash Value:</span>
+                                                            <span>[[${initialData.get('componentsIdentifierURI').getHashValue()}]]</span>
+                                                        </th:block>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th:block>
+                                <!-- TCG Platform Configuration: Platform Properties -->
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('platformProperties'))}">
+                                    <div id="platformPropertiesAccordion" class="accordion">
+                                        <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                            <h2 id="headingThree" class="accordion-header">
+                                                <button
+                                                     class="accordion-button collapsed"
+                                                     type="button"
+                                                     data-bs-toggle="collapse"
+                                                     data-bs-target="#platformPropertiescollapse"
+                                                     aria-expanded="false"
+                                                     aria-controls="platformPropertiescollapse">
+                                                    Platform Properties
+                                                </button>
+                                            </h2>
+                                            <div id="platformPropertiescollapse"
+                                                 class="accordion-collapse collapse"
+                                                 aria-labelledby="headingThree"
+                                                 data-bs-parent="#platformConfiguration">
+                                                <div class="accordion-body">
+                                                    <div id="platformProperties" class="certrow">
+                                                        <th:block th:each="property, loop : ${initialData.get('platformProperties')}">
+                                                            <div class="component col col-md-4">
+                                                                <div class="card">
+                                                                    <div class="card-body">
+                                                                        <span class="fieldHeader">Name:</span>
+                                                                        <span
+                                                                                class="fieldValue">[[${property.getPropertyName()}]]</span><br />
+                                                                        <span class="fieldHeader">Value:</span>
+                                                                        <span class="fieldValue"
+                                                                              style="word-wrap: break-word">[[${property.getPropertyValue()}]]</span><br />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </th:block>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th:block>
+                                <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI'))}">
+                                    <!-- Platform Properties URI -->
+                                    <div class="accordion" id="platformPropertiesUriAccordion">
+                                        <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                            <h4 id="headingFour" class="accordion-header">
+                                                <button
+                                                     class="accordion-button collapsed"
+                                                     type="button"
+                                                     data-bs-toggle="collapse"
+                                                     data-bs-target="#platformPropertiesURIcollapse"
+                                                     aria-expanded="false"
+                                                     aria-controls="platformPropertiesURIcollapse">
+                                                    Platform Properties URI
+                                                </button>
+                                            </h4>
+                                            <div id="platformPropertiesURIcollapse"
+                                                 class="accordion-collapse collapse"
+                                                 aria-labelledby="headingFour"
+                                                 data-bs-parent="#platformConfiguration">
+                                                <div class="accordion-body">
+                                                    <div id="platformPropertiesURI" class="certrow">
+                                                        <span class="fieldHeader">URI:</span>
+                                                        <a th:href="@{${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}}">
+                                                            [[${initialData.get('platformPropertiesURI').getUniformResourceIdentifier()}]]
+                                                        </a>
+                                                        <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI').getHashAlgorithm())}">
+                                                            <span class="fieldHeader">Hash Algorithm:</span>
+                                                            <span>[[${initialData.get('platformPropertiesURI').getHashAlgorithm()}]]</span>
+                                                        </th:block>
+                                                        <th:block th:if="${not #strings.isEmpty(initialData.get('platformPropertiesURI').getHashValue())}">
+                                                            <span class="fieldHeader">Hash Value:</span>
+                                                            <span>[[${initialData.get('platformPropertiesURI').getHashValue()}]]</span>
+                                                        </th:block>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th:block>
+                            </div> <!-- Close id="platformConfiguration" -->
+                        </div> <!-- Close row -->
+                    </th:block> <!-- Close Credential Type is TCG -->
+                </th:block> <!-- Close certificate of type 'platform' -->
+
+                <!-- If this is a certificate of type 'issued' -->
+                <th:block th:if="${#strings.equals(param.type, 'issued')}">
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">System Information</span></div>
+                        <div id="subjectAltName" class="col col-md-8">
+                            <div id="manufacturer">Manufacturer:&nbsp;<span>[[${initialData.get('manufacturer')}]]</span></div>
+                            <div id="model">Model:&nbsp;<span>[[${initialData.get('model')}]]</span></div>
+                            <div id="version">Version:&nbsp;<span>[[${initialData.get('version')}]]</span></div>
+                            <div id="serial">Serial Number:&nbsp;<span>[[${initialData.get('platformSerial')}]]</span></div>
+                        </div>
+                    </div>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Policy Reference</span></div>
+                        <div id="policyReference" class="col col-md-8 vertical">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('policyReference'))}">
+                                [[${initialData.get('policyReference')}]]
+                            </th:block>
+                            <th:block th:if="${#strings.isEmpty(initialData.get('policyReference'))}">
+                                Not Specified
+                            </th:block>
+                        </div>
+                    </div>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('crlPoints'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Revocation Locator</span></div>
+                            <div id="revocationLocator" class="col col-md-8">
+                                <a th:href="@{${initialData.get('crlPoints')}}">[[${initialData.get('crlPoints')}]]</a>
+                            </div>
+                        </div>
+                    </th:block>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Endorsement Credential</span></div>
+                        <div id="endorsementID" class="col col-md-8">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('endorsementID'))}">
+                                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('endorsementID')})}">
+                                    <img th:src="@{/icons/ic_vpn_key_black_24dp.png}" alt="Key Icon" title="Endorsement Certificate">
+                                </a>
+                            </th:block>
+                        </div>
+                    </div>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Platform Credentials</span></div>
+                        <div id="platformID" class="col col-md-8">
+                            <th:block th:if="${not #strings.isEmpty(initialData.get('platformID'))}">
+                                <ul id="platformCertIdsList" style="list-style-type: none; padding-left: 0;"></ul>
+                            </th:block>
+                        </div>
+                    </div>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Platform Specification Version</span>
+                        </div>
+                        <div id="majorVersion" class="col col-md-8 vertical">
+                            [[${initialData.get('majorVersion')}]].[[${initialData.get('minorVersion')}]].[[${initialData.get('revisionLevel')}]]</div>
+                    </div>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">TCG Credential Specification
+                                Version</span></div>
+                        <div id="majorVersion" class="col col-md-8 vertical">
+                            [[${initialData.get('tcgMajorVersion')}]].[[${initialData.get('tcgMinorVersion')}]].[[${initialData.get('tcgRevisionLevel')}]]</div>
+                    </div>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
+                                   aria-expanded="true" data-bs-placement="top" aria-controls="tpmSpecificationInner">
+                                    TPM Specification
+                                </a>
+                            </span>
+                        </div>
+                        <div id="tpmSpecification" class="col col-md-8">
+                            <div id="tpmSpecificationInner" class="card-body collapse" role="tabpanel" aria-expanded="false">
+                                <div>Family:&nbsp;<span>[[${initialData.get('TPMSpecificationFamily')}]]</span></div>
+                                <div>Level:&nbsp;<span>[[${initialData.get('TPMSpecificationLevel')}]]</span></div>
+                                <div>Revision:&nbsp;<span>[[${initialData.get('TPMSpecificationRevision')}]]</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1">
+                            <span class="colHeader">
+                                <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"
+                                   aria-expanded="true" data-bs-placement="top" aria-controls="tpmSecurityAssertionInner">
+                                    TPM Security Assertion
+                                </a>
+                            </span>
+                        </div>
+                        <div id="tpmSecurityAssertion" class="col col-md-8">
+                            <div id="tpmSecurityAssertionInner" class="card-body collapse" role="tabpanel"
+                                 aria-expanded="false">
+                                <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
+                                <div>Field Upgradeable:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}]]</span>
+                                </div>
+                                <div>ek Generation Type:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenType')}]]</span></div>
+                                <div>ek Generation Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}]]</span>
+                                </div>
+                                <div>ek Certificate Generation
+                                    Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}]]</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block> <!-- Close certificate of type 'issued' -->
+
+                <!-- If this is a certificate of type 'idevid' -->
+                <th:block th:if="${#strings.equals(param.type, 'idevid')}">
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('tpmPolicies'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader help-text"
+                                                                        title="TPM verification policies, as defined in the TCG specification &quot;TPM 2.0 Keys for Device Identity and Attestation&quot;.">TPM
+                                    Policies</span></div>
+                            <div id="tpmPolicies" class="col col-md-8 vertical">[[${initialData.get('tpmPolicies')}]]</div>
+                        </div>
+                    </th:block>
+                    <div class="certrow">
+                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Key Usage</span></div>
+                        <th:block th:if="${not #strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">[[${initialData.get('keyUsage')}]]</div>
+                        </th:block>
+                        <th:block th:if="${#strings.isEmpty(initialData.get('keyUsage'))}">
+                            <div id="keyUsage" class="col col-md-8 vertical">Not Specified</div>
+                        </th:block>
+                    </div>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('extendedKeyUsage'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1"><span class="colHeader">Extended Key Usage</span></div>
+                            <div id="extendedKeyUsage" class="col col-md-8 vertical">[[${initialData.get('extendedKeyUsage')}]]</div>
+                        </div>
+                    </th:block>
+                </th:block> <!-- Close certificate of type 'idevid' -->
+            </th:block>
+        </div> <!-- Close id="certificate-details-page" -->
+    </section> <!-- Close section layout -->
+</body>
+</html>

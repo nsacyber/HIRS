@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
+import hirs.attestationca.persist.service.util.PageServiceUtils;
 import hirs.attestationca.persist.service.util.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -346,9 +347,11 @@ public class ReferenceDigestValuePageService {
                 combinedColumnSearchPredicates.add(predicate);
             } else if (Integer.class.equals(referenceDigestValueRoot.get(columnName).getJavaType())) {
                 try {
-                    Integer searchInteger = Integer.parseInt(columnSearchTerm); // Will throw if not a number
-
                     Path<Integer> integerFieldPath = referenceDigestValueRoot.get(columnName);
+
+                    Integer searchInteger =
+                            PageServiceUtils.convertColumnSearchTermIntoInteger(columnSearchTerm,
+                                    columnSearchLogic);
 
                     Predicate predicate = PredicateFactory.createPredicateForIntegerFields(criteriaBuilder,
                             integerFieldPath, searchInteger, columnSearchLogic);

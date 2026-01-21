@@ -18,36 +18,36 @@ public enum Page {
     /**
      * Page to import and manage trust chains.
      */
-    TRUST_CHAIN("Trust Chain Management", "ic_store",
+    TRUST_CHAIN("Trust Chain Management", "ic_store_white_24dp.png",
             null, "certificate-request/"),
 
     /**
      * Page to display and manage endorsement key credentials.
      */
-    ENDORSEMENT_KEY_CREDENTIALS("Endorsement Key Certificates", "ic_vpn_key",
+    ENDORSEMENT_KEY_CREDENTIALS("Endorsement Key Certificates", "ic_vpn_key_white_24dp.png",
             "first", "certificate-request/"),
 
     /**
      * Page to display and manage platform credentials.
      */
-    PLATFORM_CREDENTIALS("Platform Certificates", "ic_important_devices",
+    PLATFORM_CREDENTIALS("Platform Certificates", "ic_important_devices_white_24dp.png",
             null, "certificate-request/"),
 
     /**
      * Page to display and manage IDevID certificates.
      */
-    IDEVID_CERTIFICATES("IDevID Certificates", "ic_important_devices",
+    IDEVID_CERTIFICATES("IDevID Certificates", "ic_important_devices_white_24dp.png",
             null, "certificate-request/"),
 
     /**
      * Page to display issued certificates.
      */
-    ISSUED_CERTIFICATES("Issued Certificates", "ic_library_books",
+    ISSUED_CERTIFICATES("Issued Certificates", "ic_library_books_white_24dp.png",
             null, "certificate-request/"),
     /**
      * Page to display certificate validation reports.
      */
-    VALIDATION_REPORTS("Validation Reports", "ic_assignment", "first"),
+    VALIDATION_REPORTS("Validation Reports", "ic_assignment_white_24dp.png", "first"),
 
     /**
      * Non-menu page to display certificate.  Reachable from all certificate pages.
@@ -57,13 +57,13 @@ public enum Page {
     /**
      * Page to display registered devices.
      */
-    DEVICES("Devices", "ic_devices", "first"),
+    DEVICES("Devices", "ic_devices_white_24dp.png", "first"),
 
     /**
      * Page to display RIMs.
      */
     REFERENCE_MANIFESTS("Reference Integrity Manifests",
-            "ic_important_devices", "first"),
+            "ic_important_devices_white_24dp.png", "first"),
 
     /**
      * Non-menu page to display rims.
@@ -74,17 +74,17 @@ public enum Page {
     /**
      * Page to display RIM event digest table.
      */
-    RIM_DATABASE("RIM Database", "ic_important_devices", "first"),
+    RIM_DATABASE("RIM Database", "ic_important_devices_white_24dp.png", "first"),
 
     /**
      * Page that manages Attestation CA Policy.
      */
-    POLICY("Policy", "ic_subtitles"),
+    POLICY("Policy", "ic_subtitles_white_24dp.png"),
 
     /**
      * Help page.
      */
-    HELP("Help", "ic_live_help");
+    HELP("Help", "/svg/question-circle-white-fill-24dp.svg");
 
 
     private final String title;

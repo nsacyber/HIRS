@@ -8,6 +8,19 @@
       $(document).ready(function () {
         const viewName = /*[[${ page.viewName }]]*/ '';
         const url = viewName + "/list";
+
+        // When the "deleteCertificateConfirmationModal" modal is about to be shown:
+        // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
+        // - Set the value of the hidden input field with ID 'issuedCertToDeleteId' to the retrieved issued certificate ID
+        $('#deleteCertificateConfirmationModal').on('show.bs.modal', function (event) {
+          const deleteCertLinkButton = $(event.relatedTarget);  // Link that triggered the modal
+          const issuedCertId = deleteCertLinkButton.data('id');  // Extract the issued certificate ID from the data-id attribute
+
+          // Set the value of the hidden input to the ID
+          $(this).find('#issuedCertToDeleteId').val(issuedCertId);
+        });
+
+        // Setup Issued Certificates table columns
         let columns = [
           {
             name: "deviceName",
@@ -70,7 +83,7 @@
               ) {
                 let id = full.endorsementCredential.id;
                 html +=
-                  certificateDetailsLink("endorsement", id, false) + "&nbsp;";
+                  generateCertificateDetailsLink("endorsement", id, false) + "&nbsp;";
               }
               return html;
             },
@@ -91,7 +104,7 @@
                 for (let i = 0; i < size; i++) {
                   let id = full.platformCredentials[i].id;
                   html +=
-                    certificateDetailsLink("platform", id, false) + "&nbsp;";
+                    generateCertificateDetailsLink("platform", id, false) + "&nbsp;";
                 }
               }
               return html;
@@ -104,9 +117,9 @@
             render: function (data, type, full, meta) {
               // set up link to details page
               let html = "";
-              html += certificateDetailsLink("issued", data, true);
-              html += certificateDownloadLink(viewName, data);
-              html += certificateDeleteLink(viewName, data);
+              html += generateCertificateDetailsLink("issued", data, true);
+              html += generateCertificateDownloadLink(viewName, data);
+              html += generateCertificateDeleteLink(data);
               return html;
             },
           },
@@ -125,7 +138,8 @@
     <div class="aca-input-box-header">
       Issued Credentials
       <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}">
-        <img th:src="@{/icons/ic_file_download_black_24dp.png}" title="Download All Issued Certificates">
+        <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
+          title="Download All Issued Certificates" alt="Download Icon">
       </a>
     </div>
     <br />
@@ -148,6 +162,28 @@
         </thead>
       </table>
     </div>
+
+    <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
+    <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/delete}">
+      <div
+        th:replace="fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Issued Certificate', 
+                bodyContent=~{this::#deleteIssuedCertConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+
+        <!-- Modal Body Content -->
+        <div id="deleteIssuedCertConfirmationBody">
+          <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this Issued
+              Certificate?</strong></p>
+        </div>
+
+        <!-- Define custom footer buttons here -->
+        <div id="deleteConfirmationFooterButtons">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <!-- The issued certificate ID is stored in this hidden field -->
+          <input type="hidden" name="id" id="issuedCertToDeleteId" value="">
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </form>
   </div>
 </body>
 
