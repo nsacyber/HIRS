@@ -15,6 +15,13 @@ import java.nio.file.Paths;
  */
 @Log4j2
 public class DirectoryArgumentValidator implements IParameterValidator {
+    /**
+     * This implementation checks that a directory path exists and can be accessed.
+     *
+     * @param name "-l | --rimel"
+     * @param value directory path
+     * @throws ParameterException if errors are encountered
+     */
     public void validate(final String name, final String value) throws ParameterException {
         try {
             Path directory = Paths.get(value);
