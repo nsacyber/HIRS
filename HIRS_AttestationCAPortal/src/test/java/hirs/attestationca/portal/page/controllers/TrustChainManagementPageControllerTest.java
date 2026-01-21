@@ -274,4 +274,20 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         assertEquals(0, records.size());
     }
 
+    /**
+     * Tests the delete REST endpoint on the Trust Chain Certificate page controller.
+     */
+    @Test
+    public void testDeleteEndorsementKeyCredential() {
+
+    }
+
+    /**
+     * Tests the bulk-delete REST endpoint on the Trust Chain Certificate page controller.
+     */
+    @Test
+    public void testDeleteMultipleEndorsementKeyCredentials() {
+
+    }
+
 }

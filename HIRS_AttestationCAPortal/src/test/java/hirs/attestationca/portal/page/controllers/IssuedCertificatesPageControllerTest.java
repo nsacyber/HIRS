@@ -43,7 +43,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
     private static final String ISSUED_CLIENT_CERT
             = "/certificates/sample_identity_cert.cer";
     // Base path for the page
-    private String pagePath;
+    private final String pagePath;
     // Fake device to store in db for test
     private Device device;
     // Repository manager to handle data access between device entity and data storage in db
@@ -132,7 +132,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
      */
     @Test
     @Rollback
-    public void getDeviceList() throws Exception {
+    public void testGetDeviceList() throws Exception {
 
         // perform test
         getMockMvc().perform(MockMvcRequestBuilders.get(pagePath + "/list"))
@@ -150,12 +150,11 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
      */
     @Test
     @Rollback
-    public void testDownloadCert() throws Exception {
+    public void testDownloadIssuedCertificate() throws Exception {
 
-        StringBuilder fileName = new StringBuilder("attachment;filename=\"");
-        fileName.append("IssuedAttestationCertificate_");
-        fileName.append(issued.getSerialNumber());
-        fileName.append(".cer\"");
+        String fileName = "attachment;filename=\"" + "IssuedAttestationCertificate_" +
+                issued.getSerialNumber() +
+                ".cer\"";
 
         // verify cert file attachment and content
         getMockMvc()
@@ -166,8 +165,24 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/octet-stream"))
                 .andExpect(header().string("Content-Disposition",
-                        fileName.toString()))
+                        fileName))
                 .andExpect(content().bytes(issued.getRawBytes()));
+
+    }
+
+    /**
+     * Tests the delete REST endpoint on the Issued Certificate page controller.
+     */
+    @Test
+    public void testDeleteIssuedCertificate() {
+
+    }
+
+    /**
+     * Tests the bulk-delete REST endpoint on the Issued Certificate page controller.
+     */
+    @Test
+    public void testDeleteMultipleIssuedCertificates() {
 
     }
 }
