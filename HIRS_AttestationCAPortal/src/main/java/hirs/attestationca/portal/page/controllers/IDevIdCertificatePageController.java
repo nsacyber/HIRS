@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -186,14 +185,15 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     /**
      * Processes the request to upload one or more idevid certificates to the ACA.
      *
-     * @param files the files to process
-     * @param attr  the redirection attributes
+     * @param files              the files to process
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
     protected RedirectView uploadIDevIdCertificate(@RequestParam("file") final MultipartFile[] files,
-                                                   final RedirectAttributes attr) throws URISyntaxException {
+                                                   final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
         log.info("Received request to upload one or more idevid certificates");
 
         Map<String, Object> model = new HashMap<>();
@@ -217,20 +217,21 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.IDEVID_CERTIFICATES, new NoPageParams(), model, attr);
+        return redirectTo(Page.IDEVID_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
      * Processes the request to archive/soft delete the provided idevid certificate.
      *
-     * @param id   the UUID of the idevid certificate to delete
-     * @param attr RedirectAttributes used to forward data back to the original
-     *             page.
+     * @param id                 the UUID of the idevid certificate to delete
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteIdevIdCertificate(@RequestParam final String id, final RedirectAttributes attr)
+    public RedirectView deleteIdevIdCertificate(@RequestParam final String id,
+                                                final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         log.info("Received request to delete idevid certificate id {}", id);
 
@@ -254,7 +255,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.IDEVID_CERTIFICATES, new NoPageParams(), model, attr);
+        return redirectTo(Page.IDEVID_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -278,10 +279,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            // convert the list of string ids to a set of uuids
-            final Set<UUID> uuids = ids.stream().map(UUID::fromString).collect(Collectors.toSet());
-
-            this.certificatePageService.bulkDeleteCertificates(uuids, successMessages,
+            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
                     errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);

@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -365,10 +364,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            // convert the list of string ids to a set of uuids
-            final Set<UUID> uuids = ids.stream().map(UUID::fromString).collect(Collectors.toSet());
-
-            this.certificatePageService.bulkDeleteCertificates(uuids, successMessages,
+            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
                     errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);

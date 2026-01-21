@@ -136,7 +136,7 @@ function initializeDataTableButtonSetup(pageName) {
 
           console.log("Selected IDs for deletion:", selectedIds); // Debugging log
 
-          // Store the selected IDs in the hidden input field inside the modal as a JSON string or comma-separated list
+          // Store the selected IDs in the hidden input field inside the modal as a comma-separated list
           $("#selectedRecordsToDeleteIds").val(selectedIds.join(",")); // Storing as a comma-separated string
 
           $("#numRecordsToDelete").text(selectedIds.length); // Update the modal text with the number of records to delete
@@ -284,8 +284,16 @@ function generateLogLevelChangeButton(
  * @param {boolean} sameType - Indicates whether the details belong to the same certificate type.
  * @returns {string} An HTML string representing the certificate detail link.
  */
-function generateCertificateDetailsLink(certificateType, certificateId, sameType) {
-  const href = "/HIRS_AttestationCAPortal/portal/certificate-details?id=" + certificateId + "&type=" + certificateType;
+function generateCertificateDetailsLink(
+  certificateType,
+  certificateId,
+  sameType
+) {
+  const href =
+    "/HIRS_AttestationCAPortal/portal/certificate-details?id=" +
+    certificateId +
+    "&type=" +
+    certificateType;
   let fullIconPath = iconPath;
   let title = "";
 

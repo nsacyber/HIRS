@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -133,14 +132,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * Processes the request to upload one or more reference manifest(s) to the ACA.
      *
-     * @param files the files to process
-     * @param attr  the redirection attributes
+     * @param files              the files to process
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
     protected RedirectView uploadRIMs(@RequestParam("file") final MultipartFile[] files,
-                                      final RedirectAttributes attr)
+                                      final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -191,7 +190,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         messages.addSuccessMessages(successMessages);
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, attr);
+        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -249,14 +248,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * Processes the request to archive/soft delete the provided Reference Integrity Manifest.
      *
-     * @param id   the UUID of the rim to delete
-     * @param attr RedirectAttributes used to forward data back to the original
-     *             page.
+     * @param id                 the UUID of the rim to delete
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteRIM(@RequestParam final String id, final RedirectAttributes attr)
+    public RedirectView deleteRIM(@RequestParam final String id, final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         log.info("Received request to delete RIM id {}", id);
 
@@ -278,7 +277,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, attr);
+        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -302,10 +301,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            // convert the list of string ids to a set of uuids
-            final Set<UUID> uuids = ids.stream().map(UUID::fromString).collect(Collectors.toSet());
-
-            this.referenceManifestPageService.bulkDeleteRIMs(uuids, successMessages,
+            this.referenceManifestPageService.bulkDeleteRIMs(ids, successMessages,
                     errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
@@ -317,7 +313,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.TRUST_CHAIN, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**

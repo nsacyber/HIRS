@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -201,15 +200,15 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     /**
      * Processes the request to upload one or more platform credentials to the ACA.
      *
-     * @param files the files to process
-     * @param attr  the redirection attributes
+     * @param files              the files to process
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
     protected RedirectView uploadPlatformCredentials(
             @RequestParam("file") final MultipartFile[] files,
-            final RedirectAttributes attr) throws URISyntaxException {
+            final RedirectAttributes redirectAttributes) throws URISyntaxException {
         log.info("Received request to upload one or more platform credentials");
 
         Map<String, Object> model = new HashMap<>();
@@ -235,7 +234,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, attr);
+        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -297,10 +296,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            // convert the list of string ids to a set of uuids
-            final Set<UUID> uuids = ids.stream().map(UUID::fromString).collect(Collectors.toSet());
-
-            this.certificatePageService.bulkDeleteCertificates(uuids, successMessages,
+            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
                     errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);

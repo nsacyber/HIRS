@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -327,13 +328,16 @@ public class ReferenceManifestPageService {
     /**
      * Bulks deletes the provided list of RIMs from the database.
      *
-     * @param uuids           the set of UUIDs of the RIMs to be deleted
+     * @param ids             the list of ids of the RIMs to be deleted
      * @param successMessages contains any success messages that will be displayed on the page
      * @param errorMessages   contains any error messages that will be displayed on the page
      */
-    public void bulkDeleteRIMs(final Set<UUID> uuids,
+    public void bulkDeleteRIMs(final List<String> ids,
                                final List<String> successMessages,
                                final List<String> errorMessages) {
+        // convert the list of string ids to a set of uuids
+        final Set<UUID> uuids = ids.stream().map(UUID::fromString).collect(Collectors.toSet());
+
         // loop through the provided RIM ids and delete each RIM
         for (UUID eachUUID : uuids) {
             deleteRIM(eachUUID, successMessages, errorMessages);

@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -189,14 +188,15 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     /**
      * Processes the request to archive/soft delete the specified issued attestation certificate.
      *
-     * @param id   the UUID of the issued attestation certificate to delete
-     * @param attr RedirectAttributes used to forward data back to the original
-     *             page.
+     * @param id                 the UUID of the issued attestation certificate to delete
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteIssuedCertificate(@RequestParam final String id, final RedirectAttributes attr)
+    public RedirectView deleteIssuedCertificate(@RequestParam final String id,
+                                                final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         log.info("Received request to delete issued attestation certificate id {}", id);
 
@@ -219,7 +219,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ISSUED_CERTIFICATES, new NoPageParams(), model, attr);
+        return redirectTo(Page.ISSUED_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -243,10 +243,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            // convert the list of string ids to a set of uuids
-            final Set<UUID> uuids = ids.stream().map(UUID::fromString).collect(Collectors.toSet());
-
-            this.certificatePageService.bulkDeleteCertificates(uuids, successMessages,
+            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
                     errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
