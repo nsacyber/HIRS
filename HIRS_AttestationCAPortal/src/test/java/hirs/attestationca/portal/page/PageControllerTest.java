@@ -3,6 +3,7 @@ package hirs.attestationca.portal.page;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import org.junit.jupiter.api.BeforeEach;
@@ -127,6 +128,7 @@ public abstract class PageControllerTest {
             case "EndorsementCredential" -> new EndorsementCredential(fPath);
             case "PlatformCredential" -> new PlatformCredential(fPath);
             case "CertificateAuthorityCredential" -> new CertificateAuthorityCredential(fPath);
+            case "IDevIdCertificate" -> new IDevIDCertificate(fPath);
             case "IssuedAttestationCertificate" -> new IssuedAttestationCertificate(fPath,
                     endorsementCredential, platformCredentials, false);
             default -> throw new IllegalArgumentException(

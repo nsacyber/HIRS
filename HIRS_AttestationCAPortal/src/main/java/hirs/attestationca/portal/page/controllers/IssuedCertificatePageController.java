@@ -188,14 +188,15 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     /**
      * Processes the request to archive/soft delete the specified issued attestation certificate.
      *
-     * @param id   the UUID of the issued attestation certificate to delete
-     * @param attr RedirectAttributes used to forward data back to the original
-     *             page.
+     * @param id                 the UUID of the issued attestation certificate to delete
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteIssuedCertificate(@RequestParam final String id, final RedirectAttributes attr)
+    public RedirectView deleteIssuedCertificate(@RequestParam final String id,
+                                                final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         log.info("Received request to delete issued attestation certificate id {}", id);
 
@@ -218,7 +219,43 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ISSUED_CERTIFICATES, new NoPageParams(), model, attr);
+        return redirectTo(Page.ISSUED_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Processes the request to delete multiple issued attestation certificates.
+     *
+     * @param ids                the list of UUIDs of the issued attestation certificates to be deleted
+     * @param redirectAttributes used to pass data back to the original page after the operation
+     * @return a redirect to the issued attestation certificate page
+     * @throws URISyntaxException if the URI is malformed
+     */
+    @PostMapping("/bulk-delete")
+    public RedirectView bulkDeleteIssuedCertificates(@RequestParam final List<String> ids,
+                                                     final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        log.info("Received request to delete multiple issued attestation certificates");
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
+
+        try {
+            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
+                    errorMessages);
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while attempting to delete"
+                    + " multiple issued attestation certificates";
+            messages.addErrorMessage(errorMessage);
+            log.error(errorMessage, exception);
+        }
+
+        model.put(MESSAGES_ATTRIBUTE, messages);
+        return redirectTo(Page.ISSUED_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**

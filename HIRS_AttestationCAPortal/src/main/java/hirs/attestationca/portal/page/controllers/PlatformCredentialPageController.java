@@ -200,15 +200,15 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
     /**
      * Processes the request to upload one or more platform credentials to the ACA.
      *
-     * @param files the files to process
-     * @param attr  the redirection attributes
+     * @param files              the files to process
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
     protected RedirectView uploadPlatformCredentials(
             @RequestParam("file") final MultipartFile[] files,
-            final RedirectAttributes attr) throws URISyntaxException {
+            final RedirectAttributes redirectAttributes) throws URISyntaxException {
         log.info("Received request to upload one or more platform credentials");
 
         Map<String, Object> model = new HashMap<>();
@@ -234,21 +234,22 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, attr);
+        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
      * Processes the request to archive/soft delete the provided platform credential.
      *
-     * @param id   the UUID of the platform credential to delete
-     * @param attr RedirectAttributes used to forward data back to the original
-     *             page.
-     * @return redirect to this page
-     * @throws URISyntaxException if malformed URI
+     * @param id                 the UUID of the platform credential to delete
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
+     * @return a redirect to the platform certificate page
+     * @throws URISyntaxException if the URI is malformed
      */
     @PostMapping("/delete")
     public RedirectView deletePlatformCredential(@RequestParam final String id,
-                                                 final RedirectAttributes attr) throws URISyntaxException {
+                                                 final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
         log.info("Received request to delete platform credential id {}", id);
 
         Map<String, Object> model = new HashMap<>();
@@ -271,7 +272,43 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, attr);
+        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Processes the request to delete multiple platform certificates.
+     *
+     * @param ids                the list of UUIDs of the platform certificates to be deleted
+     * @param redirectAttributes used to pass data back to the original page after the operation
+     * @return a redirect to the platform certificate page
+     * @throws URISyntaxException if the URI is malformed
+     */
+    @PostMapping("/bulk-delete")
+    public RedirectView bulkDeletePlatformCertificates(@RequestParam final List<String> ids,
+                                                       final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        log.info("Received request to delete multiple platform certificates");
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
+
+        try {
+            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
+                    errorMessages);
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while attempting to delete"
+                    + " multiple platform certificates";
+            messages.addErrorMessage(errorMessage);
+            log.error(errorMessage, exception);
+        }
+
+        model.put(MESSAGES_ATTRIBUTE, messages);
+        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**

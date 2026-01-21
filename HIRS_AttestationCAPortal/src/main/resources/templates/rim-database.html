@@ -10,6 +10,12 @@
                 const url = viewName + "/list";
                 let columns = [
                     {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: DataTable.render.select()
+                    },
+                    {
                         name: "manufacturer",
                         data: "manufacturer",
                         orderable: true,
@@ -64,7 +70,7 @@
                     },
                 ];
 
-                let table = setDataTables("#digestValueTable", url, columns);
+                let table = setDataTables(viewName, "#digestValueTable", url, columns);
             });
         </script>
     </section>
@@ -78,6 +84,7 @@
             <table id="digestValueTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Manufacturer</th>
                         <th>Model</th>
                         <th>Event Type</th>

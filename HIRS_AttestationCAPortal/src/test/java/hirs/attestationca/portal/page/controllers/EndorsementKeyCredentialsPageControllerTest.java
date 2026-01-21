@@ -50,7 +50,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
     private MockMultipartFile badCertFile;
 
     /**
-     * Constructor providing the Page's display and routing specification.
+     * Constructor providing the Endorsement Key Credential Page's display and routing specification.
      */
     public EndorsementKeyCredentialsPageControllerTest() {
         super(ENDORSEMENT_KEY_CREDENTIALS);
@@ -135,7 +135,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
     @Test
     @Rollback
     @DirtiesContext(methodMode = BEFORE_METHOD)     // clear endorsement cert from db
-    public void uploadBadEndorsementCert() throws Exception {
+    public void testUploadBadEndorsementCert() throws Exception {
 
         // perform upload. Attach csv file and add HTTP parameters for the baseline name and type.
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
@@ -154,5 +154,21 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
         List<EndorsementCredential> records =
                 endorsementCredentialRepository.findAll();
         assertEquals(0, records.size());
+    }
+
+    /**
+     * Tests the delete REST endpoint on the Endorsement Key Credential page controller.
+     */
+    @Test
+    public void testDeleteEndorsementKeyCredential() {
+
+    }
+
+    /**
+     * Tests the bulk-delete REST endpoint on the Endorsement Key Credential page controller.
+     */
+    @Test
+    public void testDeleteMultipleEndorsementKeyCredentials() {
+
     }
 }

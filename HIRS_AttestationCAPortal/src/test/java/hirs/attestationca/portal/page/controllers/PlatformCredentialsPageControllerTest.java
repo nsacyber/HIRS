@@ -251,4 +251,20 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
                 certificateRepository.findAll();
         assertEquals(0, records.size());
     }
+
+    /**
+     * Tests the delete REST endpoint on the Platform Credential page controller.
+     */
+    @Test
+    public void testDeletePlatformCredential() {
+
+    }
+
+    /**
+     * Tests the bulk-delete REST endpoint on the Platform Credential page controller.
+     */
+    @Test
+    public void testDeleteMultiplePlatformCredentials() {
+
+    }
 }

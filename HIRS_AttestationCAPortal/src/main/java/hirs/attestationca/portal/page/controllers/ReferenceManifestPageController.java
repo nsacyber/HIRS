@@ -132,14 +132,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * Processes the request to upload one or more reference manifest(s) to the ACA.
      *
-     * @param files the files to process
-     * @param attr  the redirection attributes
+     * @param files              the files to process
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
     protected RedirectView uploadRIMs(@RequestParam("file") final MultipartFile[] files,
-                                      final RedirectAttributes attr)
+                                      final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -190,7 +190,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         messages.addSuccessMessages(successMessages);
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, attr);
+        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -248,14 +248,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     /**
      * Processes the request to archive/soft delete the provided Reference Integrity Manifest.
      *
-     * @param id   the UUID of the rim to delete
-     * @param attr RedirectAttributes used to forward data back to the original
-     *             page.
+     * @param id                 the UUID of the rim to delete
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteRIM(@RequestParam final String id, final RedirectAttributes attr)
+    public RedirectView deleteRIM(@RequestParam final String id, final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         log.info("Received request to delete RIM id {}", id);
 
@@ -277,7 +277,43 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, attr);
+        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Processes the request to delete multiple RIMs.
+     *
+     * @param ids                the list of UUIDs of the RIMs to be deleted
+     * @param redirectAttributes used to pass data back to the original page after the operation
+     * @return a redirect to the trust chain certificate page
+     * @throws URISyntaxException if the URI is malformed
+     */
+    @PostMapping("/bulk-delete")
+    public RedirectView bulkDeleteRIMs(@RequestParam final List<String> ids,
+                                       final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        log.info("Received request to delete multiple RIMs");
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
+
+        try {
+            this.referenceManifestPageService.bulkDeleteRIMs(ids, successMessages,
+                    errorMessages);
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while attempting to delete"
+                    + " multiple RIMs";
+            messages.addErrorMessage(errorMessage);
+            log.error(errorMessage, exception);
+        }
+
+        model.put(MESSAGES_ATTRIBUTE, messages);
+        return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**

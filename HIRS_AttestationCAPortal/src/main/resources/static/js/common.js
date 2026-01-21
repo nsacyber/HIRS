@@ -46,20 +46,135 @@ function parseSerialNumber(hexString) {
 }
 
 /**
+ * Configures and returns the button setup for the DataTable based on the page context.
+ *
+ * This function defines the button configuration for the DataTable, including options
+ * for page length, column visibility, export buttons (CSV, Excel, PDF), and custom buttons
+ * like "Clear All" and "Delete Selected". The buttons array is dynamically updated based
+ * on the current page.
+ *
+ * @param {string} pageName - The name or identifier of the current page, used to adjust
+ *                            the buttons shown (e.g., enabling "Delete Selected").
+ *
+ * @returns {Array} The array of button configurations for the DataTable.
+ */
+function initializeDataTableButtonSetup(pageName) {
+  const pageNames = [
+    "endorsement-key-credentials",
+    "trust-chain",
+    "platform-credentials",
+    "idevid-certificates",
+    "issued-certificates",
+    "reference-manifests",
+  ];
+
+  // this configuration contains the default buttons: "Page Length", "Clear All", "Export", "Column Visibility"
+  // for all the DataTables
+  let dataTableButtons = [
+    "pageLength",
+    "colvis",
+    {
+      extend: "collection",
+      text: "Export",
+      buttons: [
+        {
+          extend: "copy",
+          text: '<img src="/icons/svg/copy-20dp.svg" alt="CSV"> Copy',
+          exportOptions: { columns: ":visible" },
+        },
+        {
+          extend: "csv",
+          text: '<img src="/icons/svg/filetype-csv-20dp.svg" alt="CSV"> CSV',
+          exportOptions: { columns: ":visible" },
+        },
+        {
+          extend: "excel",
+          text: '<img src="/icons/svg/file-earmark-spreadsheet-20dp.svg" alt="XLS"> Excel',
+          exportOptions: { columns: ":visible" },
+        },
+        {
+          extend: "pdfHtml5",
+          text: '<img src="/icons/svg/filetype-pdf-20dp.svg" alt="PDF"> PDF',
+          exportOptions: { columns: ":visible" },
+          orientation: "landscape",
+          pageSize: "LEGAL",
+        },
+        {
+          extend: "print",
+          text: '<img src="/icons/svg/printer-20dp.svg" alt="Print"> Print',
+          exportOptions: { columns: ":visible" },
+          customize: function (win) {
+            $(win.document.body).find("table").css({
+              "font-size": "10pt", // Scale down the font size
+            });
+          },
+        },
+      ],
+    },
+    {
+      text: "Clear All",
+      action: function (e, dt, node, config) {
+        dt.search("").columns().columnControl.searchClear().draw();
+        dt.order([]).draw();
+      },
+    },
+  ];
+
+  // If the page is one of the specified pages, add the "Delete Selected" button with appropriate configuration
+  if (pageNames.includes(pageName)) {
+    dataTableButtons.push({
+      text: "Delete Selected",
+      action: function (e, dt, node, config) {
+        const selectedRows = dt.rows({ selected: true });
+        const modalTargetId = "#deleteMultipleConfirmationModal";
+        if (selectedRows.count() > 0) {
+          // Get an array of IDs of the selected rows
+          const selectedIds = selectedRows
+            .data()
+            .toArray()
+            .map((row) => row.id);
+
+          // Store the selected IDs in the hidden input field inside the modal as a comma-separated list
+          $("#selectedRecordsToDeleteIds").val(selectedIds.join(","));
+
+          // Update the modal text with the number of records to delete
+          $("#numRecordsToDelete").text(selectedIds.length);
+
+          // If there are selected rows, show the modal
+          $(modalTargetId).modal("show");
+        }
+      },
+      attr: {
+        id: "deleteSelectedButton",
+        disabled: true,
+        class: "btn btn-danger",
+      },
+    });
+  }
+
+  return dataTableButtons;
+}
+
+/**
  * Initializes a DataTable with the specified configuration, including columns, AJAX URL, and additional settings.
  *
+ * @param {string} viewName - The name or identifier of the current page, used to adjust the DataTable configuration (e.g., enabling certain buttons).
  * @param {string} id - The ID of the DataTable element.
  * @param {string} url - The URL for the AJAX request to fetch table data.
  * @param {Array} columns - An array of column definitions (e.g., column names and data properties).
  * @param {Object} [customConfig] - Optional configuration object to customize the DataTable settings (e.g., disable search, pagination, or ordering).
  * @returns {DataTable} A DataTable instance with the provided configurations.
  */
-function setDataTables(id, url, columns, customConfig = {}) {
+function setDataTables(viewName, id, url, columns, customConfig = {}) {
   let defaultConfig = {
     processing: true,
     serverSide: true,
     colReorder: true,
-    select: true,
+    select: {
+      style: "multi",
+      selector: "td:first-child",
+      headerCheckbox: "select-page",
+    },
     responsive: true,
     lengthMenu: [
       [10, 25, 50, 75, 100, 250, -1],
@@ -75,68 +190,7 @@ function setDataTables(id, url, columns, customConfig = {}) {
     ],
     layout: {
       topStart: {
-        buttons: [
-          "pageLength",
-          "colvis",
-          {
-            extend: "collection",
-            text: "Export",
-            buttons: [
-              {
-                extend: "copy",
-                text: '<img src="/icons/svg/copy-20dp.svg" alt="CSV"> Copy',
-                exportOptions: {
-                  columns: ":visible",
-                },
-              },
-              {
-                extend: "csv",
-                text: '<img src="/icons/svg/filetype-csv-20dp.svg" alt="CSV"> CSV',
-                exportOptions: {
-                  columns: ":visible",
-                },
-              },
-              {
-                extend: "excel",
-                text: '<img src="/icons/svg/file-earmark-spreadsheet-20dp.svg" alt="XLS"> Excel',
-                exportOptions: {
-                  columns: ":visible",
-                },
-              },
-              {
-                extend: "pdfHtml5",
-                text: '<img src="/icons/svg/filetype-pdf-20dp.svg" alt="PDF"> PDF',
-                exportOptions: {
-                  columns: ":visible",
-                },
-                orientation: "landscape",
-                pageSize: "LEGAL",
-              },
-              {
-                extend: "print",
-                text: '<img src="/icons/svg/printer-20dp.svg" alt="Print"> Print',
-                exportOptions: {
-                  columns: ":visible",
-                },
-                customize: function (win) {
-                  $(win.document.body).find("table").css({
-                    "font-size": "10pt", // Scale down the font size
-                  });
-                },
-              },
-            ],
-          },
-          {
-            text: "Clear All",
-            action: function (e, dt, node, config) {
-              // Clear search and reset column controls
-              dt.search("").columns().columnControl.searchClear().draw();
-
-              // Reset ordering
-              dt.order([]).draw();
-            },
-          },
-        ],
+        buttons: initializeDataTableButtonSetup(viewName),
       },
     },
     columnDefs: [{ className: "dt-head-center", targets: "_all" }],
@@ -147,12 +201,44 @@ function setDataTables(id, url, columns, customConfig = {}) {
       },
     },
     columns: columns,
+    order: [], // Ensure no initial ordering
   };
 
-  // Merge user options over default config
+  // Merge custom user configuration over default configuration
   const finalConfiguration = { ...defaultConfig, ...customConfig };
 
-  return new DataTable(id, finalConfiguration);
+  const dataTable = new DataTable(id, finalConfiguration);
+
+  handleDeleteMultipleButtonState(dataTable);
+
+  return dataTable;
+}
+
+/**
+ * Attaches event listeners to a DataTable to handle row selection and toggle the "Delete Selected" button's
+ * enabled/disabled state based on the number of selected rows.
+ *
+ * This function listens for the `select` and `deselect` events on the DataTable and enables the "Delete Selected"
+ * button if at least one row is selected, or disables it when no rows are selected.
+ *
+ * @param {DataTable} dataTable - The DataTable instance to which the event listeners will be attached.
+ */
+function handleDeleteMultipleButtonState(dataTable) {
+  // Add event listener to handle row selection and button enabling/disabling
+  dataTable.on("select deselect", function () {
+    const selectedRowsCount = dataTable.rows({ selected: true }).count();
+    const deleteButton = $("#deleteSelectedButton");
+
+    // Only attempt to enable/disable the delete button if it exists
+    if (deleteButton) {
+      // Enable/Disable the delete button based on selected row count
+      if (selectedRowsCount > 0) {
+        deleteButton.prop("disabled", false);
+      } else {
+        deleteButton.prop("disabled", true);
+      }
+    }
+  });
 }
 
 /**
@@ -197,8 +283,16 @@ function generateLogLevelChangeButton(
  * @param {boolean} sameType - Indicates whether the details belong to the same certificate type.
  * @returns {string} An HTML string representing the certificate detail link.
  */
-function generateCertificateDetailsLink(certificateType, certificateId, sameType) {
-  const href = "/HIRS_AttestationCAPortal/portal/certificate-details?id=" + certificateId + "&type=" + certificateType;
+function generateCertificateDetailsLink(
+  certificateType,
+  certificateId,
+  sameType
+) {
+  const href =
+    "/HIRS_AttestationCAPortal/portal/certificate-details?id=" +
+    certificateId +
+    "&type=" +
+    certificateType;
   let fullIconPath = iconPath;
   let title = "";
 
