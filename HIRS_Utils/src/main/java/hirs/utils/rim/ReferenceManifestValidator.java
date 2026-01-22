@@ -294,26 +294,13 @@ public class ReferenceManifestValidator {
         boolean isPayloadValid = true;
 
         if (hasSupportRim) {
-            System.out.println(System.lineSeparator() + "Validating support RIM...");
-            NodeList files = rim.getElementsByTagName(SwidTagConstants.FILE);
-            if (files.getLength() <= 0) {
-                files = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.FILE);
+            System.out.println(System.lineSeparator() + "Validating payload...");
+            NodeList payload = rim.getElementsByTagName(SwidTagConstants.PAYLOAD);
+            if (payload.getLength() <= 0) {
+                payload = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.PAYLOAD);
             }
-            if (files.getLength() > 0) {
-                for (int i = 0; i < files.getLength(); i++) {
-                    Element file = (Element) files.item(i);
-                    String filename = file.getAttribute("name");
-                    if (!supportRimDirectory.isEmpty()) {
-                        Element overrideSupportRim = createOverrideSupportRim(file, filename);
-                        if (overrideSupportRim == null) {
-                            isPayloadValid = false;
-                        } else {
-                            isPayloadValid &= validateFile(overrideSupportRim);
-                        }
-                    } else {
-                        isPayloadValid &= validateFile(file);
-                    }
-                }
+            if (payload.getLength() > 0) {
+                traversePayloadTree((Element) payload.item(0));
             } else {
                 return failWithError("No payload found with which to validate.");
             }
@@ -324,16 +311,71 @@ public class ReferenceManifestValidator {
         return isPayloadValid;
     }
 
+    private boolean traversePayloadTree(final Element payload) {
+        boolean areDirectoriesValid = true;
+        NodeList directories = payload.getElementsByTagName(SwidTagConstants.DIRECTORY);
+        if (directories.getLength() <= 0) {
+            directories = payload.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
+                    SwidTagConstants.DIRECTORY);
+        }
+        if (directories.getLength() > 0) {
+            for (int i = 0; i < directories.getLength(); i++) {
+                Element directory = (Element) directories.item(i);
+                String location = directory.getAttribute(SwidTagConstants.LOCATION);
+                NodeList files = directory.getElementsByTagName(SwidTagConstants.FILE);
+                if (files.getLength() <= 0) {
+                    files = directory.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
+                            SwidTagConstants.FILE);
+                }
+                if (files.getLength() > 0) {
+                    if (!supportRimDirectory.isEmpty()) {
+                        areDirectoriesValid &= loopDirectoryFiles(supportRimDirectory, files);
+                    } else {
+                        areDirectoriesValid &= loopDirectoryFiles(location, files);
+                    }
+                } else {
+                    log.warn(String.format("%s is an empty directory", location));
+                }
+            }
+        } else {
+            return failWithError("No payload found with which to validate.");
+        }
+
+        return areDirectoriesValid;
+    }
+
+    private boolean loopDirectoryFiles(final String location, final NodeList files) {
+        boolean areFilesValid = true;
+        for (int i = 0; i < files.getLength(); i++) {
+            Element file = (Element) files.item(i);
+            String filename = file.getAttribute("name");
+            if (!location.isEmpty()) {
+                Element overrideSupportRim = createOverrideSupportRim(file, filename, location);
+                if (overrideSupportRim == null) {
+                    areFilesValid = false;
+                } else {
+                    areFilesValid &= validateFile(overrideSupportRim);
+                }
+            } else {
+                areFilesValid &= validateFile(file);
+            }
+        }
+
+        return areFilesValid;
+    }
+
     /**
      * This method creates a <File name="..." hash="..." /> from a File object.
      *
-     * @param oldFile from which to create the new <File> element
+     * @param oldFile        from which to create the new <File> element
      * @param supportRimName the file name to match
+     * @param location
      * @return the new <File> element
      */
-    private Element createOverrideSupportRim(final Element oldFile, final String supportRimName) {
+    private Element createOverrideSupportRim(final Element oldFile, final String supportRimName,
+                                             String location) {
         Element overrideSupportRim = (Element) oldFile.cloneNode(false);
-        Path searchDir = Paths.get(supportRimDirectory);
+        Path searchDir = Paths.get(location);
         List<Path> fileMatches;
         try (Stream<Path> walk = Files.walk(searchDir)) {
             fileMatches = walk
@@ -343,20 +385,20 @@ public class ReferenceManifestValidator {
                     .collect(Collectors.toList());
         } catch (IOException e) {
             String errorMessage = String.format("Error accessing %s: %s",
-                    supportRimDirectory, e.getMessage());
+                    location, e.getMessage());
             log.error(errorMessage);
             return null;
         }
         if (fileMatches.size() < 1) {
             String errorMessage = String.format("%s was not found under %s, "
                     + "check that it exists and is readable.",
-                    supportRimName, supportRimDirectory);
+                    supportRimName, location);
             log.error(errorMessage);
             return null;
         } else if (fileMatches.size() > 1) {
             String errorMessage = String.format("%s was found %d times under %s, "
                     + "it is unclear which to use.",
-                    supportRimName, fileMatches.size(), supportRimDirectory);
+                    supportRimName, fileMatches.size(), location);
             log.error(errorMessage);
             return null;
         } else {
