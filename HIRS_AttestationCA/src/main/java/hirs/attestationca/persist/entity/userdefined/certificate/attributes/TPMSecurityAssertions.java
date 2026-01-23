@@ -58,12 +58,6 @@ public class TPMSecurityAssertions implements Serializable {
         this.fieldUpgradeable = fieldUpgradeable;
     }
 
-    // Future work (may need to create other classes):
-    //private CommonCriteriaMeasures commCritMeasures; //optional
-    //private FIPSLevel fipsLevel; //optional
-    //private boolean iso9000Certified; //default false
-    //private IA5String iso9000Uri; //optional
-
     /**
      * A type to handle the different endorsement key generation types used in the TPM
      * Assertions field of an endorsement credential. Ordering of enum types is intentional
