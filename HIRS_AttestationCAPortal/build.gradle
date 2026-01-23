@@ -2,7 +2,7 @@ plugins {
     id 'application'
     id 'war'
     id 'com.netflix.nebula.ospackage' version '11.10.0'
-    id 'org.springframework.boot' version '3.5.6'
+    id 'org.springframework.boot' version '3.5.10'
 }
 
 // Get version from main project gradle
@@ -22,6 +22,18 @@ configurations {
     }
     compileOnly {
         extendsFrom annotationProcessor
+    }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.apache.logging.log4j') {
+            details.useVersion '2.25.3'
+        }
+        if (details.requested.group == 'org.apache.commons' &&
+                details.requested.name == 'commons-lang3') {
+            details.useVersion '3.20.0'
+        }
     }
 }
 
@@ -59,12 +71,6 @@ dependencies {
 
     // explicitly include the patched version of spring framework expression dependency
     implementation libs.spring.framework.expression
-
-    // explicitly include the patched version of the tomcat embed core dependency
-    implementation libs.tomcat.embed.core
-
-    // explicitly include the patched version of the tomcat embed websocket dependency
-    implementation libs.tomcat.embed.websocket
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

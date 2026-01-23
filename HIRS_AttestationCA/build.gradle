@@ -12,6 +12,14 @@ configurations {
     }
 }
 
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.apache.logging.log4j') {
+            details.useVersion '2.25.3'
+        }
+    }
+}
+
 dependencies {
     implementation project(':HIRS_Utils')
     implementation project(':HIRS_Structs')

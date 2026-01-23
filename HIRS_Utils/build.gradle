@@ -12,6 +12,14 @@ configurations {
     jaxb
 }
 
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.apache.logging.log4j') {
+            details.useVersion '2.25.3'
+        }
+    }
+}
+
 dependencies {
     implementation libs.authlete.cbor
     implementation libs.bouncycastle

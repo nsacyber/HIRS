@@ -4,7 +4,7 @@ authleteCborVersion = "1.19"
 bouncyCastleVersion = "1.79"
 commonsCodecVersion = "1.17.1"
 commonsIoVersion = "2.18.0"
-commonsLang3Version = "3.17.0"
+commonsLang3Version = "3.20.0"
 gsonVersion = "2.11.0"
 glassfishJakartaJsonVersion = "2.0.1"
 glassfishJaxbRuntimeVersion = "4.0.5"
@@ -16,14 +16,13 @@ jcommanderVersion = "2.0"
 lombokVersion = "1.18.42"
 mariadbVersion = "3.5.1"
 minimalJsonVersion = "0.9.5"
-nimbusJwtVersion = "10.0.1"
+nimbusJwtVersion = "10.7"
 pciVersion = "0.3"
 protobufJavaVersion = "4.32.0"
 snakeYamlVersion = "2.0"
-springBootVersion = "3.5.6"
-springFrameworkVersion = "6.2.11"
+springBootVersion = "3.5.10"
+springFrameworkVersion = "7.0.3"
 springRetryVersion = "2.0.12"
-tomcatVersion = "10.1.34"
 thymeleafDialectVersion = "3.3.0"
 
 #test dependencies versions
@@ -69,9 +68,6 @@ spring-framework-jdbc = { module = "org.springframework:spring-jdbc", version.re
 spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springFrameworkVersion" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
 thymeleaf-layout-dialect = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleafDialectVersion" }
-tomcat-embed-core = { module = "org.apache.tomcat.embed:tomcat-embed-core", version.ref = "tomcatVersion" }
-tomcat-embed-websocket = { module = "org.apache.tomcat.embed:tomcat-embed-websocket", version.ref = "tomcatVersion" }
-
 
 # test dependencies
 hsqldb = { module = "org.hsqldb:hsqldb", version.ref = "hsqldbVersion" }
