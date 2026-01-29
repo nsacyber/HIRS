@@ -19,7 +19,7 @@ rim -c base -a ../configs/Base_Rim_Config.json -l ../eventlogs/TpmLog.bin -k ../
 rim_create_status $?
 
 # RIM verify and checking exit status
-rim -v tmp/baseRimFile.swidtag -p ../certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem -t ../certs/PC_OEM1_Cert_Chain.pem -l ../eventlogs/TpmLog.bin
+rim -v tmp/baseRimFile.swidtag -p ../certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem -t ../certs/PC_OEM1_Cert_Chain.pem -l ""
 rim_verify_status $?
 
 #Return to where ever you came from
