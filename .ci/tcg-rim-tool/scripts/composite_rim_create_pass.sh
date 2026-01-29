@@ -16,7 +16,7 @@ rim -c base -a ../configs/Primary_Rim_Config.json -l ../eventlogs/TpmLog.bin -k 
 rim_create_status $?
 
 # verify primary rim
-rim -v tmp/primaryRimFile.swidtag -l ../eventlogs/TpmLog.bin -t ../certs/PC_OEM1_Cert_Chain.pem -p ../certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem
+rim -v tmp/primaryRimFile.swidtag -l "" -t ../certs/PC_OEM1_Cert_Chain.pem -p ../certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem
 rim_verify_status $?
 
 # comp rim create
@@ -24,7 +24,7 @@ rim -c base -a ../configs/Component1_Rim_Config.json -l ../eventlogs/TpmLog2.bin
 rim_create_status $?
 
 # verify comp rim
-rim -v tmp/compRimFile.swidtag -l ../eventlogs/TpmLog2.bin -t ../certs/COMP_OEM1_Cert_Chain.pem -p ../certs/COMP_OEM1_rim_signer_rsa_3k_sha384.pem
+rim -v tmp/compRimFile.swidtag -l "" -t ../certs/COMP_OEM1_Cert_Chain.pem -p ../certs/COMP_OEM1_rim_signer_rsa_3k_sha384.pem
 rim_verify_status $?
 
 #Return to where ever you came from
