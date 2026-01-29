@@ -42,7 +42,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
 
     private static final String TEST_PLATFORM_CREDENTIAL_2
             = "/platform_credentials/Intel_pc2.pem";
-    
+
     private static final String ISSUED_CLIENT_CERT
             = "/certificates/sample_identity_cert.cer";
 
@@ -160,9 +160,9 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
     @Rollback
     public void testDownloadIssuedCertificate() throws Exception {
 
-        String fileName = "attachment;filename=\"" + "IssuedAttestationCertificate_" +
-                issued.getSerialNumber() +
-                ".cer\"";
+        String fileName = "attachment;filename=\"" + "IssuedAttestationCertificate_"
+                + issued.getSerialNumber()
+                + ".cer\"";
 
         // verify cert file attachment and content
         getMockMvc()

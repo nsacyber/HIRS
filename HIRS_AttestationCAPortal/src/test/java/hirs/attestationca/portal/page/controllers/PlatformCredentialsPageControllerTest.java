@@ -297,19 +297,19 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
         assertEquals(1, records.size());
 
         Certificate cert = records.iterator().next();
-        final String PLATFORM_CERT_ID = cert.getId().toString();
+        final String platformCertId = cert.getId().toString();
 
         // Now attempt to delete an platform certificate
         getMockMvc()
                 .perform(MockMvcRequestBuilders
                         .post(pagePath + "/delete")
-                        .param("id", PLATFORM_CERT_ID))
+                        .param("id", platformCertId))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
 
-        // Since deletion doesn't fully remove the item from the repository but instead archives it for potential future use,
-        // ensure that when the delete REST endpoint is triggered, it correctly redirects to the Platform Certificate page
-        // and no platform certificates are displayed on the page.
+        // Since deletion doesn't fully remove the item from the repository but instead archives it for
+        // potential future use,  ensure that when the delete REST endpoint is triggered, it correctly
+        // redirects to the Platform Certificate page and no platform certificates are displayed on the page.
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
                 .andExpect(status().isOk())
@@ -349,19 +349,20 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
         Certificate cert = records.iterator().next();
 
         // Convert the list of platform cert ids to a string of comma separated ids
-        final String PLATFORM_CERT_IDS = String.join(",", List.of(cert.getId().toString()));
+        final String platformCertIds = String.join(",", List.of(cert.getId().toString()));
 
         // Now attempt to delete multiple platform certificates
         getMockMvc()
                 .perform(MockMvcRequestBuilders
                         .post(pagePath + "/bulk-delete")
-                        .param("ids", PLATFORM_CERT_IDS))
+                        .param("ids", platformCertIds))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
 
-        // Since bulk deletion doesn't fully remove the items from the repository but instead archives them for potential future use,
-        // ensure that when the bulk-delete REST endpoint is triggered, it correctly redirects to the platform certificate page
-        // and no platform certificates are displayed on the page.
+        // Since bulk deletion doesn't fully remove the items from the repository but instead archives them
+        // for potential future use,  ensure that when the bulk-delete REST endpoint is triggered, it
+        // correctly redirects to the platform certificate page and no platform certificates are displayed
+        // on the page.
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
                 .andExpect(status().isOk())

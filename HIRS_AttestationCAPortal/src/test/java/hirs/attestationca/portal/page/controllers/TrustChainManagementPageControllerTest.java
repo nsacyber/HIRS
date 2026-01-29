@@ -115,7 +115,10 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
                 );
     }
 
-    //todo write download aca-trust-chain cert method
+    /**
+     * Tests download the ACA full trust chain/
+     * todo write download aca-trust-chain cert method
+     */
     @Test
     public void testDownloadACATrustChainCert() {
 
@@ -319,19 +322,20 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         assertEquals(1, records.size());
 
         Certificate cert = records.iterator().next();
-        final String TRUST_CHAIN_CERT_ID = cert.getId().toString();
+        final String trustChainId = cert.getId().toString();
 
         // Now attempt to delete a trust chain certificate
         getMockMvc()
                 .perform(MockMvcRequestBuilders
                         .post(pagePath + "/delete")
-                        .param("id", TRUST_CHAIN_CERT_ID))
+                        .param("id", trustChainId))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
 
-        // Since deletion doesn't fully remove the item from the repository but instead archives it for potential future use,
-        // ensure that when the delete REST endpoint is triggered, it correctly redirects to the trust chain certificate page
-        // and no trust chain certificates are displayed on the page.
+        // Since deletion doesn't fully remove the item from the repository but instead archives it for
+        // potential future use,  ensure that when the delete REST endpoint is triggered, it correctly
+        // redirects to the trust chain certificate page and no trust chain certificates are displayed on
+        // the page.
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
                 .andExpect(status().isOk())
@@ -349,8 +353,8 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     public void testDeleteMultipleTrustChainCertificates() throws Exception {
         final String[] pathTokens = NONCACERT.split("/");
 
-        // Upload multiple fake trust chain certificates to the ACA and confirm you get a 300 redirection status for
-        // each upload
+        // Upload multiple fake trust chain certificates to the ACA and confirm you get a 300 redirection
+        // status for each upload
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
                         .multipart(pagePath + "/upload")
                         .file(nonCaCertFile))
@@ -371,19 +375,20 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         Certificate cert = records.iterator().next();
 
         // Convert the list of trust chain cert ids to a string of comma separated ids
-        final String TRUST_CHAIN_IDS = String.join(",", List.of(cert.getId().toString()));
+        final String trustChainIds = String.join(",", List.of(cert.getId().toString()));
 
         // Now attempt to delete multiple trust chain certificates
         getMockMvc()
                 .perform(MockMvcRequestBuilders
                         .post(pagePath + "/bulk-delete")
-                        .param("ids", TRUST_CHAIN_IDS))
+                        .param("ids", trustChainIds))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
 
-        // Since bulk deletion doesn't fully remove the items from the repository but instead archives them for potential future use,
-        // ensure that when the bulk-delete REST endpoint is triggered, it correctly redirects to the trust chain certificate page
-        // and no trust chain certificates are displayed on the page.
+        // Since bulk deletion doesn't fully remove the items from the repository but instead archives
+        // them for potential future use, ensure that when the bulk-delete REST endpoint is triggered,
+        // it correctly redirects to the trust chain certificate page  and no trust chain certificates
+        // are displayed on the page.
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
                 .andExpect(status().isOk())

@@ -1195,7 +1195,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Helper function to set policy member variable - PC Validation to True
+     * Helper function to set policy member variable - PC Validation to True.
      * Note: to set PC Validation to true, EC Validation must also be set to true.
      */
     private void setPolicyPcToTrue() {
@@ -1204,7 +1204,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Helper function to set policy member variable - PC Attribute Validation to True
+     * Helper function to set policy member variable - PC Attribute Validation to True.
      * Note: to set PC Attribute Validation to true, PC Validation must also be set to true.
      */
     private void setPolicyPcAttributeToTrue() {
@@ -1213,7 +1213,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Helper function to set policy member variable - Firmware Validation to True
+     * Helper function to set policy member variable - Firmware Validation to True.
      * Note: to set Firmware Validation to true, PC Attribute Validation must also be set to true.
      */
     private void setPolicyFirmwareToTrue() {
@@ -1222,7 +1222,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Helper function to set policy member variables - Save Protobuf Data To Log to False
+     * Helper function to set policy member variables - Save Protobuf Data To Log to False.
      */
     private void setSaveProtobufLogSettingsToFalse() {
         policySetting.setSaveProtobufToLogOnFailedValEnabled(false);

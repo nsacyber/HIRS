@@ -146,19 +146,19 @@ public class IDevIdCertificatePageControllerTest extends PageControllerTest {
         assertEquals(1, records.size());
 
         Certificate cert = records.iterator().next();
-        final String IDEVID_ID = cert.getId().toString();
+        final String idevId = cert.getId().toString();
 
         // Now attempt to delete an IDevId certificate
         getMockMvc()
                 .perform(MockMvcRequestBuilders
                         .post(pagePath + "/delete")
-                        .param("id", IDEVID_ID))
+                        .param("id", idevId))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
 
-        // Since deletion doesn't fully remove the item from the repository but instead archives it for potential future use,
-        // ensure that when the delete REST endpoint is triggered, it correctly redirects to the IDevId certificate page
-        // and no IDevId certificates are displayed on the page.
+        // Since deletion doesn't fully remove the item from the repository but instead archives it for
+        // potential future use, ensure that when the delete REST endpoint is triggered, it correctly
+        // redirects to the IDevId certificate page and no IDevId certificates are displayed on the page.
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
                 .andExpect(status().isOk())
@@ -176,8 +176,8 @@ public class IDevIdCertificatePageControllerTest extends PageControllerTest {
     public void testDeleteMultipleIDevIDCertificates() throws Exception {
         final String[] pathTokens = IDEVID_CERT.split("/");
 
-        // Upload multiple fake IDevId certificates to the ACA and confirm you get a 300 redirection status for
-        // each upload
+        // Upload multiple fake IDevId certificates to the ACA and confirm you get a 300 redirection
+        // status for each upload
         MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
                         .multipart(pagePath + "/upload")
                         .file(nonIDevIdCertFile))
@@ -198,19 +198,19 @@ public class IDevIdCertificatePageControllerTest extends PageControllerTest {
         Certificate cert = records.iterator().next();
 
         // Convert the list of IDevId cert ids to a string of comma separated ids
-        final String IDEVID_IDS = String.join(",", List.of(cert.getId().toString()));
+        final String idevIds = String.join(",", List.of(cert.getId().toString()));
 
         // Now attempt to delete multiple IDevId certificates
         getMockMvc()
                 .perform(MockMvcRequestBuilders
                         .post(pagePath + "/bulk-delete")
-                        .param("ids", IDEVID_IDS))
+                        .param("ids", idevIds))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
 
-        // Since bulk deletion doesn't fully remove the items from the repository but instead archives them for potential future use,
-        // ensure that when the bulk-delete REST endpoint is triggered, it correctly redirects to the IDevId certificate page
-        // and no IDevId certificates are displayed on the page.
+        // Since bulk deletion doesn't fully remove the items from the repository but instead archives them
+        // for potential future use, ensure that when the bulk-delete REST endpoint is triggered, it correctly
+        // redirects to the IDevId certificate page and no IDevId certificates are displayed on the page.
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
                 .andExpect(status().isOk())
