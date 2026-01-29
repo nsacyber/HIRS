@@ -26,6 +26,12 @@
                 // Setup IDevID Certificates table columns
                 let columns = [
                     {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: DataTable.render.select()
+                    },
+                    {
                         name: "issuer",
                         data: "issuer",
                         orderable: true,
@@ -75,7 +81,7 @@
                     },
                 ];
 
-                let table = setDataTables("#idevidCertificateTable", url, columns);
+                let table = setDataTables(viewName, "#idevidCertificateTable", url, columns);
             });
         </script>
     </section>
@@ -109,6 +115,7 @@
             <table id="idevidCertificateTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Issuer</th>
                         <th>Subject</th>
                         <th>Valid (begin)</th>
@@ -137,7 +144,32 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <!-- The idevid certificate ID is stored in this hidden field -->
                     <input type="hidden" name="id" id="devCertToDeleteId" value="">
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-danger">Delete IDevID Certificate</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- This modal will be triggered when the user hits the Delete Selected button on the IDevID Certificate page-->
+        <form method="POST"
+            th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-delete}">
+            <div
+                th:replace="fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple IDevID Certificates', 
+                bodyContent=~{this::#deleteMultipleIdevidCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})">
+
+                <!-- Modal Body Content -->
+                <div id="deleteMultipleIdevidCertificatesConfirmationBody">
+                    <p class="text-center text-danger fs-4">
+                        <strong>Are you sure you want to delete <span id="numRecordsToDelete"></span> IDevID
+                            certificate(s)?</strong>
+                    </p>
+                </div>
+
+                <!-- Define custom footer buttons here -->
+                <div id="deleteMultipleConfirmationFooterButtons">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <!-- The list of idevid certificate ids are stored in this hidden field -->
+                    <input id="selectedRecordsToDeleteIds" name="ids" type="hidden" value="">
+                    <button class="btn btn-danger" type="submit">Delete IDevId Certificate(s)</button>
                 </div>
             </div>
         </form>

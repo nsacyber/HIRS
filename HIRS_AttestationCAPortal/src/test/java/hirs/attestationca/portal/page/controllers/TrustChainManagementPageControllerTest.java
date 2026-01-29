@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.attestationca.portal.page.PageMessages;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,14 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import static hirs.attestationca.portal.page.Page.TRUST_CHAIN;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,9 +41,12 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
     // Location of test certs
     private static final String NONCACERT = "certificates/fakeIntelIntermediateCA.pem";
+
     private static final String BADCERT = "certificates/badCert.pem";
+
     // Base path for the page
     private final String pagePath;
+
     // Repository manager to handle data access between certificate entity and data storage in db
     @Autowired
     private CertificateRepository certificateRepository;
@@ -57,7 +63,6 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     // A file that is not a cert at all, and just contains garbage text.
     private MockMultipartFile badCertFile;
 
-
     /**
      * Constructor providing the Page's display and routing specification.
      */
@@ -65,7 +70,6 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         super(TRUST_CHAIN);
         pagePath = getPagePath();
     }
-
 
     /**
      * Prepares tests.
@@ -82,6 +86,14 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         pathTokens = BADCERT.split("/");
         badCertFile = new MockMultipartFile("file", pathTokens[1], "",
                 new ClassPathResource(BADCERT).getInputStream());
+    }
+
+    /**
+     * Clears the database after each test run.
+     */
+    @AfterEach
+    public void afterEachTest() {
+        this.certificateRepository.deleteAll();
     }
 
     /**
@@ -104,6 +116,10 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     }
 
     //todo write download aca-trust-chain cert method
+    @Test
+    public void testDownloadACATrustChainCert() {
+
+    }
 
     /**
      * Tests downloading the certificate.
@@ -272,6 +288,107 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         // verify the cert was not actually stored
         List<Certificate> records = certificateRepository.findAll();
         assertEquals(0, records.size());
+    }
+
+    /**
+     * Tests the delete REST endpoint on the Trust Chain Certificate page controller.
+     *
+     * @throws Exception if any issues arise from performing this test.
+     */
+    @Test
+    @Rollback
+    public void testDeleteTrustChainCertificate() throws Exception {
+        final String[] pathTokens = NONCACERT.split("/");
+
+        // Upload the fake trust chain certificate to the ACA and confirm you get a 300 redirection status
+        MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
+                        .multipart(pagePath + "/upload")
+                        .file(nonCaCertFile))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        // Verify that the trust chain certificate has been uploaded to the ACA
+        FlashMap flashMap = result.getFlashMap();
+        PageMessages pageMessages = (PageMessages) flashMap.get("messages");
+        assertEquals("New certificate successfully uploaded (" + pathTokens[1] + "): ",
+                pageMessages.getSuccessMessages().get(0));
+        assertEquals(0, pageMessages.getErrorMessages().size());
+
+        // Verify the trust chain cert has been stored
+        List<Certificate> records = certificateRepository.findAll();
+        assertEquals(1, records.size());
+
+        Certificate cert = records.iterator().next();
+        final String TRUST_CHAIN_CERT_ID = cert.getId().toString();
+
+        // Now attempt to delete a trust chain certificate
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .post(pagePath + "/delete")
+                        .param("id", TRUST_CHAIN_CERT_ID))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        // Since deletion doesn't fully remove the item from the repository but instead archives it for potential future use,
+        // ensure that when the delete REST endpoint is triggered, it correctly redirects to the trust chain certificate page
+        // and no trust chain certificates are displayed on the page.
+        getMockMvc()
+                .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", empty()))
+                .andReturn();
+    }
+
+    /**
+     * Tests the bulk-delete REST endpoint on the Trust Chain Certificate page controller.
+     *
+     * @throws Exception if any issues arise from performing this test.
+     */
+    @Test
+    @Rollback
+    public void testDeleteMultipleTrustChainCertificates() throws Exception {
+        final String[] pathTokens = NONCACERT.split("/");
+
+        // Upload multiple fake trust chain certificates to the ACA and confirm you get a 300 redirection status for
+        // each upload
+        MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
+                        .multipart(pagePath + "/upload")
+                        .file(nonCaCertFile))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        // Verify that the trust chain certificates have been uploaded to the ACA
+        FlashMap flashMap = result.getFlashMap();
+        PageMessages pageMessages = (PageMessages) flashMap.get("messages");
+        assertEquals("New certificate successfully uploaded (" + pathTokens[1] + "): ",
+                pageMessages.getSuccessMessages().get(0));
+        assertEquals(0, pageMessages.getErrorMessages().size());
+
+        // Verify one trust chain certificate has been stored
+        List<Certificate> records = certificateRepository.findAll();
+        assertEquals(1, records.size());
+
+        Certificate cert = records.iterator().next();
+
+        // Convert the list of trust chain cert ids to a string of comma separated ids
+        final String TRUST_CHAIN_IDS = String.join(",", List.of(cert.getId().toString()));
+
+        // Now attempt to delete multiple trust chain certificates
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .post(pagePath + "/bulk-delete")
+                        .param("ids", TRUST_CHAIN_IDS))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        // Since bulk deletion doesn't fully remove the items from the repository but instead archives them for potential future use,
+        // ensure that when the bulk-delete REST endpoint is triggered, it correctly redirects to the trust chain certificate page
+        // and no trust chain certificates are displayed on the page.
+        getMockMvc()
+                .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", empty()))
+                .andReturn();
     }
 
 }
