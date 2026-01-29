@@ -36,22 +36,30 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
     // Location of test certs
     private static final String TEST_ENDORSEMENT_CREDENTIAL
             = "/endorsement_credentials/tpmcert.pem";
+
     private static final String TEST_PLATFORM_CREDENTIAL
             = "/platform_credentials/Intel_pc.cer";
+
     private static final String TEST_PLATFORM_CREDENTIAL_2
             = "/platform_credentials/Intel_pc2.pem";
+
     private static final String ISSUED_CLIENT_CERT
             = "/certificates/sample_identity_cert.cer";
+
     // Base path for the page
-    private String pagePath;
+    private final String pagePath;
+
     // Fake device to store in db for test
     private Device device;
+
     // Repository manager to handle data access between device entity and data storage in db
     @Autowired
     private DeviceRepository deviceRepository;
+
     // Repository manager to handle data access between certificate entity and data storage in db
     @Autowired
     private CertificateRepository certificateRepository;
+
     // Certs objects
     private List<PlatformCredential> platformCredentialList;
     private IssuedAttestationCertificate issued;
@@ -132,7 +140,7 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
      */
     @Test
     @Rollback
-    public void getDeviceList() throws Exception {
+    public void testGetDeviceList() throws Exception {
 
         // perform test
         getMockMvc().perform(MockMvcRequestBuilders.get(pagePath + "/list"))
@@ -150,12 +158,11 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
      */
     @Test
     @Rollback
-    public void testDownloadCert() throws Exception {
+    public void testDownloadIssuedCertificate() throws Exception {
 
-        StringBuilder fileName = new StringBuilder("attachment;filename=\"");
-        fileName.append("IssuedAttestationCertificate_");
-        fileName.append(issued.getSerialNumber());
-        fileName.append(".cer\"");
+        String fileName = "attachment;filename=\"" + "IssuedAttestationCertificate_"
+                + issued.getSerialNumber()
+                + ".cer\"";
 
         // verify cert file attachment and content
         getMockMvc()
@@ -166,8 +173,32 @@ public class IssuedCertificatesPageControllerTest extends PageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/octet-stream"))
                 .andExpect(header().string("Content-Disposition",
-                        fileName.toString()))
+                        fileName))
                 .andExpect(content().bytes(issued.getRawBytes()));
+
+    }
+
+    /**
+     * Tests the delete REST endpoint on the Issued Certificate page controller.
+     * todo Finish writing up tests
+     *
+     * @throws Exception if any issues arise from performing this test.
+     */
+    @Test
+    @Rollback
+    public void testDeleteIssuedCertificate() throws Exception {
+
+    }
+
+    /**
+     * Tests the bulk-delete REST endpoint on the Issued Certificate page controller.
+     * todo Finish writing up tests
+     *
+     * @throws Exception if any issues arise from performing this test.
+     */
+    @Test
+    @Rollback
+    public void testDeleteMultipleIssuedCertificates() throws Exception {
 
     }
 }

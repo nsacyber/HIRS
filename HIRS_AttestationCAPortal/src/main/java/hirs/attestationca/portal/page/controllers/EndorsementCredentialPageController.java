@@ -3,11 +3,13 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.CertificateType;
 import hirs.attestationca.persist.service.EndorsementCredentialPageService;
+import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
+import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
@@ -17,9 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -61,8 +61,9 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @param certificatePageService           certificate page service
      */
     @Autowired
-    public EndorsementCredentialPageController(final EndorsementCredentialPageService endorsementCredentialPageService,
-                                               final CertificatePageService certificatePageService) {
+    public EndorsementCredentialPageController(
+            final EndorsementCredentialPageService endorsementCredentialPageService,
+            final CertificatePageService certificatePageService) {
         super(Page.ENDORSEMENT_KEY_CREDENTIALS);
         this.endorsementCredentialPageService = endorsementCredentialPageService;
         this.certificatePageService = certificatePageService;
@@ -85,53 +86,48 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * Processes the request to retrieve a list of endorsement credentials for display on the endorsement credential's
      * page.
      *
-     * @param input data table input received from the front-end
+     * @param dataTableInput data table input received from the front-end
      * @return data table of endorsement credentials
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<EndorsementCredential> getEndorsementCredentialsTableData(final DataTableInput input) {
+    public DataTableResponse<EndorsementCredential> getEndorsementCredentialsTableData(
+            final DataTableInput dataTableInput) {
         log.info("Received request to display list of endorsement credentials");
         log.debug("Request received a datatable input object for the endorsement "
-                + "credentials page: {}", input);
+                + "credentials page: {}", dataTableInput);
 
-        final String orderColumnName = input.getOrderColumnName();
-        log.debug("Ordering on column: {}", orderColumnName);
+        // grab the column to which ordering has been applied
+        final Order orderColumn = dataTableInput.getOrderColumn();
 
-        final String searchTerm = input.getSearch().getValue();
-        final Set<String> searchableColumns =
-                ControllerPagesUtils.findSearchableColumnsNames(EndorsementCredential.class,
-                        input.getColumns());
+        // grab the value that was entered in the global search textbox
+        final String globalSearchTerm = dataTableInput.getSearch().getValue();
 
-        final int currentPage = input.getStart() / input.getLength();
-        Pageable pageable = PageRequest.of(currentPage, input.getLength(), Sort.by(orderColumnName));
+        // find all columns that have a value that's been entered in column search dropdown
+        final Set<DataTablesColumn> columnsWithSearchCriteria =
+                ControllerPagesUtils.findColumnsWithSearchCriteriaForColumnSpecificSearch(
+                        dataTableInput.getColumns());
 
-        FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList = new FilteredRecordsList<>();
+        // find all columns that are considered searchable
+        final Set<String> searchableColumnNames =
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(EndorsementCredential.class,
+                        dataTableInput.getColumns());
 
-        org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
+        Pageable pageable = ControllerPagesUtils.createPageableObject(
+                dataTableInput.getStart(),
+                dataTableInput.getLength(),
+                orderColumn);
 
-        if (StringUtils.isBlank(searchTerm)) {
-            pagedResult = this.endorsementCredentialPageService.
-                    findEndorsementCredentialsByArchiveFlag(false, pageable);
-        } else {
-            pagedResult = this.certificatePageService.findCertificatesBySearchableColumnsAndArchiveFlag(
-                    EndorsementCredential.class,
-                    searchableColumns,
-                    searchTerm,
-                    false, pageable);
-        }
+        FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList =
+                getFilteredEndorsementCredentialList(
+                        globalSearchTerm,
+                        columnsWithSearchCriteria,
+                        searchableColumnNames,
+                        pageable);
 
-        if (pagedResult.hasContent()) {
-            ekFilteredRecordsList.addAll(pagedResult.getContent());
-        }
-
-        ekFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        ekFilteredRecordsList.setRecordsTotal(
-                this.endorsementCredentialPageService.findEndorsementCredentialRepositoryCount());
-
-        log.info("Returning the size of the list of endorsement credentials: {}",
+        log.info("Returning the size of the filtered list of endorsement credentials: {}",
                 ekFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(ekFilteredRecordsList, input);
+        return new DataTableResponse<>(ekFilteredRecordsList, dataTableInput);
     }
 
     /**
@@ -143,13 +139,15 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadEndorsementCredential(@RequestParam final String id, final HttpServletResponse response)
+    public void downloadEndorsementCredential(@RequestParam final String id,
+                                              final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download endorsement credential id {}", id);
 
         try {
             final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(EndorsementCredential.class, UUID.fromString(id));
+                    this.certificatePageService.downloadCertificate(EndorsementCredential.class,
+                            UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -178,7 +176,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
+            this.certificatePageService.bulkDownloadCertificates(zipOut,
+                    CertificateType.ENDORSEMENT_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
@@ -190,14 +189,15 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
     /**
      * Processes the request to upload one or more endorsement credentials to the ACA.
      *
-     * @param files the files to process
-     * @param attr  the redirection attributes
+     * @param files              the files to process
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
      * @return the redirection view
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
     protected RedirectView uploadEndorsementCredential(@RequestParam("file") final MultipartFile[] files,
-                                                       final RedirectAttributes attr) throws URISyntaxException {
+                                                       final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
         log.info("Received request to upload one or more endorsement credentials");
 
         Map<String, Object> model = new HashMap<>();
@@ -221,20 +221,21 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, attr);
+        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
      * Processes the request to archive/soft delete the specified endorsement credential.
      *
-     * @param id   the UUID of the endorsement certificate to delete
-     * @param attr RedirectAttributes used to forward data back to the original
-     *             page.
+     * @param id                 the UUID of the endorsement certificate to delete
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
      * @return redirect to this page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
-    public RedirectView deleteEndorsementCredential(@RequestParam final String id, final RedirectAttributes attr)
+    public RedirectView deleteEndorsementCredential(@RequestParam final String id,
+                                                    final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
         log.info("Received request to delete endorsement credential id {}", id);
 
@@ -258,6 +259,121 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, attr);
+        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Processes the request to delete multiple endorsement credentials.
+     *
+     * @param ids                the list of UUIDs of the endorsement credentials to be deleted
+     * @param redirectAttributes used to pass data back to the original page after the operation
+     * @return a redirect to the endorsement credential page
+     * @throws URISyntaxException if the URI is malformed
+     */
+    @PostMapping("/bulk-delete")
+    public RedirectView bulkDeleteEndorsementCredentials(@RequestParam final List<String> ids,
+                                                         final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        log.info("Received request to delete multiple endorsement credentials");
+
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
+
+        try {
+            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
+                    errorMessages);
+            messages.addSuccessMessages(successMessages);
+            messages.addErrorMessages(errorMessages);
+        } catch (Exception exception) {
+            final String errorMessage = "An exception was thrown while attempting to delete"
+                    + " multiple endorsement credentials";
+            messages.addErrorMessage(errorMessage);
+            log.error(errorMessage, exception);
+        }
+
+        model.put(MESSAGES_ATTRIBUTE, messages);
+        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
+     * Helper method that retrieves a filtered and paginated list of endorsement credentials based on the
+     * provided search criteria.
+     * The method allows filtering based on a global search term and column-specific search criteria,
+     * and returns the result in a paginated format.
+     *
+     * <p>
+     * The method handles four cases:
+     * <ol>
+     *     <li>If no global search term and no column-specific search criteria are provided,
+     *         all endorsement credentials are returned.</li>
+     *     <li>If both a global search term and column-specific search criteria are provided,
+     *         it performs filtering on both.</li>
+     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
+     *         criteria.</li>
+     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     * </ol>
+     * </p>
+     *
+     * @param globalSearchTerm          A global search term that will be used to filter the endorsement
+     *                                  credentials by the searchable fields.
+     * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
+     * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
+     * @param pageable                  pageable
+     * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
+     * endorsement credentials, along with the total number of records and the number of records matching the
+     * filter criteria.
+     */
+    private FilteredRecordsList<EndorsementCredential> getFilteredEndorsementCredentialList(
+            final String globalSearchTerm,
+            final Set<DataTablesColumn> columnsWithSearchCriteria,
+            final Set<String> searchableColumnNames,
+            final Pageable pageable) {
+        org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
+
+        // if no value has been entered in the global search textbox and in the column search dropdown
+        if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
+            pagedResult = this.endorsementCredentialPageService.
+                    findEndorsementCredentialsByArchiveFlag(false, pageable);
+        } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered in both the global search textbox and in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                            EndorsementCredential.class,
+                            searchableColumnNames,
+                            globalSearchTerm,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else if (!columnsWithSearchCriteria.isEmpty()) {
+            // if a value has been entered ONLY in the column search dropdown
+            pagedResult =
+                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                            EndorsementCredential.class,
+                            columnsWithSearchCriteria,
+                            false,
+                            pageable);
+        } else {
+            // if a value has been entered ONLY in the global search textbox
+            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+                    EndorsementCredential.class,
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    false, pageable);
+        }
+
+        FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList = new FilteredRecordsList<>();
+
+        if (pagedResult.hasContent()) {
+            ekFilteredRecordsList.addAll(pagedResult.getContent());
+        }
+
+        ekFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        ekFilteredRecordsList.setRecordsTotal(
+                this.endorsementCredentialPageService.findEndorsementCredentialRepositoryCount());
+
+        return ekFilteredRecordsList;
     }
 }

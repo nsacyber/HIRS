@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'400 - Bad Request'">400 Error</title>
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">Bad Request</h1>
+
+    <section layout:fragment="content">
+        <div class="text-center">
+            <h2>The server could not process the request.</h2>
+            <br>
+            <p>Click <a th:href="@{/}">here</a> to go to the home page.</p>
+        </div>
+    </section>
+</body>
+
+</html>

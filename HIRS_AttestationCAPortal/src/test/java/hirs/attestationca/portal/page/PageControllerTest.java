@@ -3,6 +3,7 @@ package hirs.attestationca.portal.page;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,11 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.ui.ExtendedModelMap;
-import org.springframework.ui.Model;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
@@ -27,7 +25,6 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -36,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Base class for PageController tests.
  */
-
 @SpringBootTest
 @ContextConfiguration(classes = PageTestConfiguration.class) // configuration class for db setup
 @ActiveProfiles("test")                                      // sets profile for test to allow bean overriding
@@ -66,43 +62,6 @@ public abstract class PageControllerTest {
      */
     public PageControllerTest(final Page page) {
         this.page = page;
-    }
-
-    /**
-     * Returns a blank model for initPage tests.
-     *
-     * @return a blank model for initPage tests.
-     */
-    protected static Model getBlankModel() {
-        return new ExtendedModelMap();
-    }
-
-    /**
-     * If the AssertionError is a redirected URL error, check the results of the executed request
-     * for the actual redirected URL and throw a new error containing the comparison to the expected
-     * URL.
-     * <p>
-     * If the error is not a redirected URL error, rethrow the original error.
-     *
-     * @param expectedURL the expected redirected URL AntMatcher pattern
-     * @param actions     the results of the executed request
-     * @param err         the AssertionError to indicate if the error is a redirected URL error
-     * @throws AssertionError with added information if a redirected URL error or the original error
-     */
-    protected static void enhanceRedirectedUrlError(
-            final String expectedURL,
-            final ResultActions actions,
-            final AssertionError err) throws AssertionError {
-        if ("Redirected URL".equals(err.getMessage())) {
-            final String actualURL = actions.andReturn().getResponse().getRedirectedUrl();
-            final String msg
-                    = err.getMessage() + ": "
-                    + " expected [" + expectedURL + "]"
-                    + " but found [" + actualURL + "]";
-            throw new AssertionError(msg);
-        } else {
-            throw err;
-        }
     }
 
     /**
@@ -169,6 +128,7 @@ public abstract class PageControllerTest {
             case "EndorsementCredential" -> new EndorsementCredential(fPath);
             case "PlatformCredential" -> new PlatformCredential(fPath);
             case "CertificateAuthorityCredential" -> new CertificateAuthorityCredential(fPath);
+            case "IDevIdCertificate" -> new IDevIDCertificate(fPath);
             case "IssuedAttestationCertificate" -> new IssuedAttestationCertificate(fPath,
                     endorsementCredential, platformCredentials, false);
             default -> throw new IllegalArgumentException(
@@ -206,7 +166,6 @@ public abstract class PageControllerTest {
      */
     @Test
     public final void doTestPagesExist() throws Exception {
-
         // Add prefix path for page verification
         String pagePath = PRE_PREFIX_PATH + page.getPrefixPath() + getPage().getViewName();
         if (page.getPrefixPath() == null) {
@@ -217,7 +176,6 @@ public abstract class PageControllerTest {
                 .perform(MockMvcRequestBuilders.get(pagePath))
                 .andExpect(status().isOk())
                 .andExpect(view().name(page.getViewName()))
-                .andExpect(forwardedUrl("/WEB-INF/jsp/" + page.getViewName() + ".jsp"))
                 .andExpect(model().attribute(PageController.PAGE_ATTRIBUTE, equalTo(page)))
                 .andExpect(model().attribute(
                         PageController.PAGES_ATTRIBUTE, equalTo(Page.values()))
