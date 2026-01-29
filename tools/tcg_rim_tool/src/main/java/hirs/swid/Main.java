@@ -53,20 +53,19 @@ public class Main {
             if (!commander.getVerifyFile().isEmpty()) {
                 validator = new ReferenceManifestValidator();
                 if (commander.isVerbose()) {
-                    System.out.println(commander.toString());
+                    System.out.println(commander);
                 }
                 String verifyFile = commander.getVerifyFile();
                 String rimel = commander.getRimEventLog();
                 String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
                 validator.setRim(verifyFile);
-                validator.setRimEventLog(rimel);
-                validator.setTrustStoreFile(trustStore);
-                if (validator.validateRim(certificateFile)) {
-                    System.out.println("Successfully verified " + verifyFile);
-                } else {
-                    exitWithErrorCode("Failed to verify " + verifyFile);
+                if (rimel != null) {
+                    validator.setHasSupportRim(true);
+                    validator.setSupportRimDirectory(rimel);
                 }
+                validator.setTrustStoreFile(trustStore);
+                validator.validateBaseRim(certificateFile);
             } else {
                 gateway = new SwidTagGateway();
                 if (commander.isVerbose()) {

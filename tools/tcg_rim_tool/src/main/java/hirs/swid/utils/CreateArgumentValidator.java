@@ -13,7 +13,7 @@ import java.util.Map;
  */
 @Log4j2
 public class CreateArgumentValidator implements IParametersValidator {
-    private String[] requiredArgs = {"--attributes", "--rimel"};
+    private String[] requiredArgs = {"--attributes"};
     private String errorMessage = "";
 
     /**

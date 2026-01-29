@@ -19,7 +19,7 @@ rim -c base -a ../configs/Base_Rim_Config.json -l ../eventlogs/TpmLog.bin -k ../
 rim_create_status $?
 
 #rim verify.
-rim -v  tmp/primary_embedd.swidtag -p ../certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem -l ../eventlogs/TpmLog.bin -t ../certs/PC_OEM1_RSA_Cert_Chain.pem
+rim -v  tmp/primary_embedd.swidtag -p ../certs/PC_OEM1_rim_signer_rsa_3k_sha384.pem -l "" -t ../certs/PC_OEM1_RSA_Cert_Chain.pem
 rim_verify_status $?
 
 #Return to where ever you came from
