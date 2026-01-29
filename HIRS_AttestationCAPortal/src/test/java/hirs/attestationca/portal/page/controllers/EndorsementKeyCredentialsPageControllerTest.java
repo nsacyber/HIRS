@@ -5,6 +5,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.attestationca.portal.page.PageMessages;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +21,16 @@ import java.io.IOException;
 import java.util.List;
 
 import static hirs.attestationca.portal.page.Page.ENDORSEMENT_KEY_CREDENTIALS;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.annotation.DirtiesContext.MethodMode.BEFORE_METHOD;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Integration tests that test the URL End Points of EndorsementKeyCredentialsPageController.
+ * Integration tests that test the URL End Points of Endorsement Key Credentials PageController.
  */
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class EndorsementKeyCredentialsPageControllerTest extends PageControllerTest {
@@ -35,6 +38,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
     // Location of test certs
     private static final String EKCERT = "certificates/fakeIntelIntermediateCA.pem";
     private static final String BADEKCERT = "certificates/badCert.pem";
+
     // Base path for the page
     private final String pagePath;
 
@@ -73,6 +77,14 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
         pathTokens = BADEKCERT.split("/");
         badCertFile = new MockMultipartFile("file", pathTokens[1], "",
                 new ClassPathResource(BADEKCERT).getInputStream());
+    }
+
+    /**
+     * Clears the database after each test run.
+     */
+    @AfterEach
+    public void afterEachTest() {
+        this.endorsementCredentialRepository.deleteAll();
     }
 
     /**
@@ -158,17 +170,103 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
 
     /**
      * Tests the delete REST endpoint on the Endorsement Key Credential page controller.
+     *
+     * @throws Exception if any issues arise from performing this test.
      */
     @Test
-    public void testDeleteEndorsementKeyCredential() {
+    @Rollback
+    public void testDeleteEndorsementKeyCredential() throws Exception {
 
+        final String[] pathTokens = EKCERT.split("/");
+
+        // Upload the fake EK certificate to the ACA and confirm you get a 300 redirection status
+        MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
+                        .multipart(pagePath + "/upload")
+                        .file(nonEkCertFile))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        // Verify that the EK certificate has been uploaded to the ACA
+        FlashMap flashMap = result.getFlashMap();
+        PageMessages pageMessages = (PageMessages) flashMap.get("messages");
+        assertEquals("New certificate successfully uploaded (" + pathTokens[1] + "): ",
+                pageMessages.getSuccessMessages().get(0));
+        assertEquals(0, pageMessages.getErrorMessages().size());
+
+        // Verify the EK cert has been stored
+        List<EndorsementCredential> records = endorsementCredentialRepository.findAll();
+        assertEquals(1, records.size());
+
+        Certificate cert = records.iterator().next();
+        final String EK_ID = cert.getId().toString();
+
+        // Now attempt to delete an Endorsement Credential
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .post(pagePath + "/delete")
+                        .param("id", EK_ID))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        // Since deletion doesn't fully remove the item from the repository but instead archives it for potential future use,
+        // ensure that when the delete REST endpoint is triggered, it correctly redirects to the Endorsement Credential page
+        // and no Endorsement credentials are displayed on the page.
+        getMockMvc()
+                .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", empty()))
+                .andReturn();
     }
 
     /**
      * Tests the bulk-delete REST endpoint on the Endorsement Key Credential page controller.
+     *
+     * @throws Exception if any issues arise from performing this test.
      */
     @Test
-    public void testDeleteMultipleEndorsementKeyCredentials() {
+    @Rollback
+    public void testDeleteMultipleEndorsementKeyCredentials() throws Exception {
+        final String[] pathTokens = EKCERT.split("/");
 
+        // Upload multiple fake EK certificates to the ACA and confirm you get a 300 redirection status for
+        // each upload
+        MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
+                        .multipart(pagePath + "/upload")
+                        .file(nonEkCertFile))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        // Verify that the EK certificates have been uploaded to the ACA
+        FlashMap flashMap = result.getFlashMap();
+        PageMessages pageMessages = (PageMessages) flashMap.get("messages");
+        assertEquals("New certificate successfully uploaded (" + pathTokens[1] + "): ",
+                pageMessages.getSuccessMessages().get(0));
+        assertEquals(0, pageMessages.getErrorMessages().size());
+
+        // Verify one EK certificate has been stored
+        List<EndorsementCredential> records = endorsementCredentialRepository.findAll();
+        assertEquals(1, records.size());
+
+        Certificate cert = records.iterator().next();
+
+        // Convert the list of ek cert ids to a string of comma separated ids
+        final String EK_IDS = String.join(",", List.of(cert.getId().toString()));
+
+        // Now attempt to delete multiple Endorsement Credentials
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .post(pagePath + "/bulk-delete")
+                        .param("ids", EK_IDS))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        // Since bulk deletion doesn't fully remove the items from the repository but instead archives them for potential future use,
+        // ensure that when the bulk-delete REST endpoint is triggered, it correctly redirects to the Endorsement Credential page
+        // and no Endorsement credentials are displayed on the page.
+        getMockMvc()
+                .perform(MockMvcRequestBuilders.get(pagePath + "/list"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", empty()))
+                .andReturn();
     }
 }
