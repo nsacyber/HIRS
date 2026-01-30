@@ -5,11 +5,8 @@ import java.util.concurrent.TimeUnit
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
-    id 'checkstyle'
     id 'com.github.spotbugs' version '6.0.13' apply false
-    id 'org.owasp.dependencycheck' version '12.1.9'
-    id 'java'
-    id 'jacoco'
+    id 'org.owasp.dependencycheck' version '12.2.0'
     id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
@@ -17,12 +14,12 @@ plugins {
 ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
 subprojects {
-    apply plugin: "com.github.spotbugs"
-    apply plugin: "java"
     apply plugin: "checkstyle"
-    apply plugin: "org.owasp.dependencycheck"
-    apply plugin: "jacoco"
+    apply plugin: "com.github.spotbugs"
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: "java"
+    apply plugin: "jacoco"
+    apply plugin: "org.owasp.dependencycheck"
 
     repositories {
         flatDir { dirs "lib" }
@@ -58,8 +55,16 @@ subprojects {
     checkstyleMain {
         source = 'src/main/java'
     }
+
     checkstyleTest {
         source = 'src/test/java'
+    }
+
+    dependencyCheck {
+        nvd {
+            // Read API key from a system property 'nvd.apiKey'
+            apiKey = System.getProperty("nvd.apiKey")
+        }
     }
 
     tasks.withType(Checkstyle).configureEach {
@@ -69,27 +74,31 @@ subprojects {
         }
     }
 
-    spotbugs {
-        excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
-    }
-
     tasks.withType(SpotBugsTask).configureEach {
+        excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
+
         reports {
             html.required = true
         }
     }
-}
 
-dependencyCheck {
-    nvd {
-        // Read API key from a system property 'nvd.apiKey'
-        apiKey = System.getProperty("nvd.apiKey")
-    }
-}
-dependencies {
-    repositories {
-        // Use Maven Central for resolving dependencies.
-        mavenCentral()
+    // Global dependency resolution strategy for all subprojects
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.apache.logging.log4j') {
+                details.useVersion '2.25.3' // Force patched Log4j version
+            }
+
+            if (details.requested.group == 'org.apache.commons' &&
+                    details.requested.name == 'commons-lang3') {
+                details.useVersion '3.20.0'  // Force patched Commons Lang version
+            }
+
+            if (details.requested.group == 'org.apache.httpcomponents' &&
+                    details.requested.name == 'httpclient') {
+                details.useVersion '4.5.14'  // Force patched Apache Http Client version
+            }
+        }
     }
 }
 

@@ -32,10 +32,7 @@ dependencies {
     implementation libs.spring.boot.starter.log4j2
     implementation libs.minimal.json
     implementation libs.nimbus.jwt
-
     implementation libs.pci
-    // explicitly include the patched version of the apache http client dependency
-    implementation libs.apacheHttpClient
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
