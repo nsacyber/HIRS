@@ -17,6 +17,10 @@ configurations.all {
         if (details.requested.group == 'org.apache.logging.log4j') {
             details.useVersion '2.25.3'
         }
+        if (details.requested.group == 'org.assertj' &&
+                details.requested.name == 'assertj-core') {
+            details.useVersion '3.27.7'
+        }
     }
 }
 
