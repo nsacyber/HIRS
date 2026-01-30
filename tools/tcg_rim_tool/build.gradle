@@ -1,17 +1,11 @@
 plugins {
-    id 'com.netflix.nebula.ospackage' version '11.10.0'
+    id 'com.netflix.nebula.ospackage' version '12.2.0'
     id 'com.intershop.gradle.jaxb' version '7.0.1'
 }
 
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion")
 def jarVersion = properties.get("jarVersion")
-
-configurations {
-    configureEach {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
-}
 
 dependencies {
     implementation project(':HIRS_Utils')
