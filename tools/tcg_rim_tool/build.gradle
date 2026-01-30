@@ -1,5 +1,5 @@
 plugins {
-    id 'com.netflix.nebula.ospackage' version '11.10.0'
+    id 'com.netflix.nebula.ospackage' version '12.2.0'
     id 'com.intershop.gradle.jaxb' version '7.0.1'
 }
 
