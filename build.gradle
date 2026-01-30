@@ -84,6 +84,9 @@ subprojects {
 
     // Global dependency resolution strategy for all subprojects
     configurations.configureEach {
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
             if (details.requested.group == 'org.apache.logging.log4j') {
                 details.useVersion '2.25.3' // Force patched Log4j version

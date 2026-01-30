@@ -3,9 +3,6 @@ def packVersion = properties.get("packageVersion")
 def jarVersion = properties.get("jarVersion")
 
 configurations {
-    configureEach {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
     compileOnly {
         extendsFrom annotationProcessor
     }
