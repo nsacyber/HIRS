@@ -7,9 +7,10 @@ plugins {
     id 'application'
     id 'checkstyle'
     id 'com.github.spotbugs' version '6.0.13' apply false
-    id 'org.owasp.dependencycheck' version '11.1.1'
+    id 'org.owasp.dependencycheck' version '12.1.9'
     id 'java'
     id 'jacoco'
+    id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
 // Global checkstyle file
@@ -21,6 +22,7 @@ subprojects {
     apply plugin: "checkstyle"
     apply plugin: "org.owasp.dependencycheck"
     apply plugin: "jacoco"
+    apply plugin: 'io.spring.dependency-management'
 
     repositories {
         flatDir { dirs "lib" }
@@ -37,11 +39,12 @@ subprojects {
         toolVersion = '0.8.12'
     }
 
-    if (project.name != 'tcg_rim_tool') // run tests on every subproject except for rim_tools
-        test {
-            useJUnitPlatform() // Use JUnit platform
-            finalizedBy jacocoTestReport // Generate the JaCoCo report after running tests
+    if (project.name != 'tcg_rim_tool') { // run tests on every subproject except for rim_tools
+        tasks.withType(Test).configureEach {
+            useJUnitPlatform()
+            finalizedBy(tasks.named('jacocoTestReport'))
         }
+    }
 
     jacocoTestReport {
         dependsOn test // tests are required to run before generating the report
@@ -77,6 +80,12 @@ subprojects {
     }
 }
 
+dependencyCheck {
+    nvd {
+        // Read API key from a system property 'nvd.apiKey'
+        apiKey = System.getProperty("nvd.apiKey")
+    }
+}
 dependencies {
     repositories {
         // Use Maven Central for resolving dependencies.

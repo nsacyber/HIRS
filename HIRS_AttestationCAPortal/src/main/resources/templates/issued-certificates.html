@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}">
+
+<head>
+  <section layout:fragment="script">
+    <script th:inline="javascript">
+      $(document).ready(function () {
+        const viewName = /*[[${ page.viewName }]]*/ '';
+        const url = viewName + "/list";
+
+        // When the "deleteCertificateConfirmationModal" modal is about to be shown:
+        // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
+        // - Set the value of the hidden input field with ID 'issuedCertToDeleteId' to the retrieved issued certificate ID
+        $('#deleteCertificateConfirmationModal').on('show.bs.modal', function (event) {
+          const deleteCertLinkButton = $(event.relatedTarget);  // Link that triggered the modal
+          const issuedCertId = deleteCertLinkButton.data('id');  // Extract the issued certificate ID from the data-id attribute
+
+          // Set the value of the hidden input to the ID
+          $(this).find('#issuedCertToDeleteId').val(issuedCertId);
+        });
+
+        // Setup Issued Certificates table columns
+        let columns = [
+          {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: DataTable.render.select()
+          },
+          {
+            name: "deviceName",
+            data: "deviceName",
+            searchable: true,
+            orderable: true,
+            columnControl: ["searchDropdown"]
+          },
+          {
+            name: "ldevID",
+            data: "ldevID",
+            searchable: false,
+            orderable: false,
+            render: function (data, type, full, meta) {
+              if (data === true) {
+                return "LDevID";
+              }
+              return "AK";
+            },
+          },
+          {
+            name: "issuer",
+            data: "issuer",
+            searchable: true,
+            orderable: true,
+            columnControl: ["searchDropdown"],
+          },
+          {
+            name: "beginValidity",
+            data: "beginValidity",
+            type: "date",
+            searchable: true,
+            orderable: true,
+            columnControl: ["searchDropdown"],
+            render: function (data, type, full, meta) {
+              return formatCertificateDate(data);
+            },
+          },
+          {
+            name: "endValidity",
+            data: "endValidity",
+            type: "date",
+            searchable: true,
+            orderable: true,
+            columnControl: ["searchDropdown"],
+            render: function (data, type, full, meta) {
+              return formatCertificateDate(data);
+            },
+          },
+          {
+            data: "id",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, full, meta) {
+              //Display endorsement credential
+              let html = "";
+              if (
+                full.endorsementCredential !== undefined &&
+                full.endorsementCredential !== null
+              ) {
+                let id = full.endorsementCredential.id;
+                html +=
+                  generateCertificateDetailsLink("endorsement", id, false) + "&nbsp;";
+              }
+              return html;
+            },
+          },
+          {
+            data: "id",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, full, meta) {
+              //Display platform credential
+              let html = "";
+              if (
+                full.platformCredentials !== undefined &&
+                full.platformCredentials !== null
+              ) {
+                let size = full.platformCredentials.length;
+
+                for (let i = 0; i < size; i++) {
+                  let id = full.platformCredentials[i].id;
+                  html +=
+                    generateCertificateDetailsLink("platform", id, false) + "&nbsp;";
+                }
+              }
+              return html;
+            },
+          },
+          {
+            data: "id",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, full, meta) {
+              // set up link to details page
+              let html = "";
+              html += generateCertificateDetailsLink("issued", data, true);
+              html += generateCertificateDownloadLink(viewName, data);
+              html += generateCertificateDeleteLink(data);
+              return html;
+            },
+          },
+        ];
+
+        let table = setDataTables(viewName, "#issuedTable", url, columns);
+      });
+    </script>
+  </section>
+</head>
+
+<body>
+  <h1 layout:fragment="pageHeaderTitle">Issued Certificates </h1>
+
+  <div layout:fragment="content">
+    <div class="aca-input-box-header">
+      Issued Credentials
+      <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}">
+        <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
+          title="Download All Issued Certificates" alt="Download Icon">
+      </a>
+    </div>
+    <br />
+    <div class="aca-data-table">
+      <table id="issuedTable" class="table table-bordered table-striped table-hover">
+        <thead>
+          <tr>
+            <th rowspan="2"></th>
+            <th rowspan="2">Hostname</th>
+            <th rowspan="2">Type</th>
+            <th rowspan="2">Issuer</th>
+            <th rowspan="2">Valid (begin)</th>
+            <th rowspan="2">Valid (end)</th>
+            <th colspan="2" class="text-center">Credentials</th>
+            <th rowspan="2">Options</th>
+          </tr>
+          <tr>
+            <th>Endorsement</th>
+            <th>Platform</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+
+    <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
+    <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/delete}">
+      <div
+        th:replace="fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Issued Certificate', 
+                bodyContent=~{this::#deleteIssuedCertConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+
+        <!-- Modal Body Content -->
+        <div id="deleteIssuedCertConfirmationBody">
+          <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this Issued
+              Certificate?</strong></p>
+        </div>
+
+        <!-- Define custom footer buttons here -->
+        <div id="deleteConfirmationFooterButtons">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <!-- The issued certificate ID is stored in this hidden field -->
+          <input type="hidden" name="id" id="issuedCertToDeleteId" value="">
+          <button type="submit" class="btn btn-danger">Delete Issued Certificate</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- This modal will be triggered when the user hits the Delete Selected button on the Issued Certificate page-->
+    <form method="POST"
+      th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-delete}">
+      <div
+        th:replace="fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Issued Certificates', 
+                bodyContent=~{this::#deleteMultipleIssuedCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})">
+
+        <!-- Modal Body Content -->
+        <div id="deleteMultipleIssuedCertificatesConfirmationBody">
+          <p class="text-center text-danger fs-4">
+            <strong>Are you sure you want to delete <span id="numRecordsToDelete"></span> Issued
+              Certificate(s)?</strong>
+          </p>
+        </div>
+
+        <!-- Define custom footer buttons here -->
+        <div id="deleteMultipleConfirmationFooterButtons">
+          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+          <!-- The list of issued certificate ids are stored in this hidden field -->
+          <input id="selectedRecordsToDeleteIds" name="ids" type="hidden" value="">
+          <button class="btn btn-danger" type="submit">Delete Issued Certificate(s)</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</body>
+
+</html>

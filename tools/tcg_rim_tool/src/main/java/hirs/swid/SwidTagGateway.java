@@ -505,7 +505,7 @@ public class SwidTagGateway {
         file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
         Map<QName, String> attributes = file.getOtherAttributes();
         String fileHash;
-        if (rimEventLog.isEmpty()) {
+        if (rimEventLog == null || rimEventLog.isEmpty()) {
             fileHash = jsonObject.getString(SwidTagConstants.HASH);
         } else {
             fileHash = jsonObject.getString(SwidTagConstants.HASH, HashSwid.get256Hash(rimEventLog));

@@ -17,6 +17,7 @@ LOG_DIR="/var/log/hirs/"
 HIRS_DIR=/etc/hirs
 HIRS_CONF_DIR=/etc/hirs/aca
 HIRS_CERT_DIR=/etc/hirs/certificates
+
 # Capture location of the script to allow from invocation from any location 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 
@@ -81,6 +82,7 @@ echo "Setting MYSQL permissions for DB TLS Certs..." | tee -a "$LOG_FILE"
   echo "hirs_pki_password="$PKI_PASS >>  $ACA_PROP
   echo "server.ssl.key-store-password="$PKI_PASS >> $SPRING_PROP_FILE
   echo "server.ssl.trust-store-password="$PKI_PASS >> $SPRING_PROP_FILE
+
 else 
   echo "/etc/hirs/certificates exists, skipping" | tee -a "$LOG_FILE"
 fi

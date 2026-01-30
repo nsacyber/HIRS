@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+
+            $(document).ready(function () {
+                const viewName = /*[[${ page.viewName }]]*/ '';
+                const url = viewName + "/list";
+                const certificateType = "idevid";
+
+
+                // When the "deleteCertificateConfirmationModal" modal is about to be shown:
+                // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
+                // - Set the value of the hidden input field with ID 'devCertToDeleteId' to the retrieved iDevID certificate ID
+                $('#deleteCertificateConfirmationModal').on('show.bs.modal', function (event) {
+                    const deleteCertLinkButton = $(event.relatedTarget);  // Link that triggered the modal
+                    const iDevIdCertifcateId = deleteCertLinkButton.data('id');  // Extract the iDevID certificate ID from the data-id attribute
+
+                    // Set the value of the hidden input to the ID
+                    $(this).find('#devCertToDeleteId').val(iDevIdCertifcateId);
+                });
+
+                // Setup IDevID Certificates table columns
+                let columns = [
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: DataTable.render.select()
+                    },
+                    {
+                        name: "issuer",
+                        data: "issuer",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "subject",
+                        data: "subject",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                    },
+                    {
+                        name: "beginValidity",
+                        data: "beginValidity",
+                        type: "date",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                        render: function (data, type, full, meta) {
+                            return formatCertificateDate(data);
+                        },
+                    },
+                    {
+                        name: "endValidity",
+                        data: "endValidity",
+                        type: "date",
+                        orderable: true,
+                        searchable: true,
+                        columnControl: ["searchDropdown"],
+                        render: function (data, type, full, meta) {
+                            return formatCertificateDate(data);
+                        },
+                    },
+                    {
+                        data: "id",
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, full, meta) {
+                            let html = "";
+                            html += generateCertificateDetailsLink(certificateType, data, true);
+                            html += generateCertificateDownloadLink(viewName, data);
+                            html += generateCertificateDeleteLink(data);
+                            return html;
+                        },
+                    },
+                ];
+
+                let table = setDataTables(viewName, "#idevidCertificateTable", url, columns);
+            });
+        </script>
+    </section>
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">IDevID Certificates</h1>
+
+    <div layout:fragment="content">
+        <div class="aca-input-box-header">
+            <form method="POST"
+                th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/upload}"
+                enctype="multipart/form-data">
+                Import IDevID Certificates
+                <th:block
+                    th:replace="fragments/file-chooser :: fileChooser(id='idevid-editor', label='Import IDevID Certificates', bodyContent=~{this :: bodyContent})">
+                    <th:block th:fragment="bodyContent">
+                        <input id="importFile" type="file" name="file" multiple="multiple" />
+                    </th:block>
+                </th:block>
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-download}">
+                    <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
+                        title="Download All IDevID Certificates" alt="Download Icon">
+                </a>
+            </form>
+        </div>
+
+        <br />
+
+        <div class="aca-data-table">
+            <table id="idevidCertificateTable" class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Issuer</th>
+                        <th>Subject</th>
+                        <th>Valid (begin)</th>
+                        <th>Valid (end)</th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
+        <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
+        <form method="POST"
+            th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/delete}">
+            <div
+                th:replace="fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of IDevID Certificate', 
+                bodyContent=~{this::#deleteDevIdConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+
+                <!-- Modal Body Content -->
+                <div id="deleteDevIdConfirmationBody">
+                    <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this IDevID
+                            Certificate?</strong></p>
+                </div>
+
+                <!-- Define custom footer buttons here -->
+                <div id="deleteConfirmationFooterButtons">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <!-- The idevid certificate ID is stored in this hidden field -->
+                    <input type="hidden" name="id" id="devCertToDeleteId" value="">
+                    <button type="submit" class="btn btn-danger">Delete IDevID Certificate</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- This modal will be triggered when the user hits the Delete Selected button on the IDevID Certificate page-->
+        <form method="POST"
+            th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-delete}">
+            <div
+                th:replace="fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple IDevID Certificates', 
+                bodyContent=~{this::#deleteMultipleIdevidCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})">
+
+                <!-- Modal Body Content -->
+                <div id="deleteMultipleIdevidCertificatesConfirmationBody">
+                    <p class="text-center text-danger fs-4">
+                        <strong>Are you sure you want to delete <span id="numRecordsToDelete"></span> IDevID
+                            certificate(s)?</strong>
+                    </p>
+                </div>
+
+                <!-- Define custom footer buttons here -->
+                <div id="deleteMultipleConfirmationFooterButtons">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <!-- The list of idevid certificate ids are stored in this hidden field -->
+                    <input id="selectedRecordsToDeleteIds" name="ids" type="hidden" value="">
+                    <button class="btn btn-danger" type="submit">Delete IDevId Certificate(s)</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

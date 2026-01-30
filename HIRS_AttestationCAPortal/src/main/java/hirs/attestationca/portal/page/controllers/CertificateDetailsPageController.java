@@ -74,12 +74,12 @@ public class CertificateDetailsPageController extends PageController<Certificate
             String typeError = "ID was not provided";
             messages.addErrorMessage(typeError);
             log.error(typeError);
-            mav.addObject(MESSAGES_ATTRIBUTE, messages);
+            mav.addObject("initialDataExists", false);
         } else if (params.getType() == null) {
             String typeError = "Type was not provided";
             messages.addErrorMessage(typeError);
             log.error(typeError);
-            mav.addObject(MESSAGES_ATTRIBUTE, messages);
+            mav.addObject("initialDataExists", false);
         } else {
             try {
                 String type = params.getType().toLowerCase();
@@ -122,11 +122,14 @@ public class CertificateDetailsPageController extends PageController<Certificate
                 String notFoundMessage = "Unable to find certificate with ID: " + params.getId();
                 messages.addErrorMessage(notFoundMessage);
                 log.warn(notFoundMessage);
-                mav.addObject(MESSAGES_ATTRIBUTE, messages);
+                mav.addObject("initialDataExists", false);
             } else {
-                mav.addObject(INITIAL_DATA, data);
+                mav.addObject("initialDataExists", true);
             }
         }
+        // must add data even if it is empty; otherwise front end gives errors when trying to check it
+        mav.addObject(MESSAGES_ATTRIBUTE, messages);
+        mav.addObject(INITIAL_DATA, data);
 
         // return the model and view
         return mav;

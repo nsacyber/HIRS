@@ -2,26 +2,23 @@ package hirs.attestationca.portal.datatables;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
- * Represents a jQuery DataTables search parameter.
+ * Java representation of a DataTables search parameter.
  */
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 public class Search {
 
     /**
-     * Global search value. To be applied to all columns which have searchable as true.
+     * Search value.
      */
     @NotNull
     private String value = "";
+
     /**
      * True if the global filter should be treated as a regular expression for advanced searching,
      * false otherwise. Note that normally server-side processing scripts will not perform regular
@@ -32,12 +29,14 @@ public class Search {
     private boolean regex;
 
     /**
-     * Constructor for a non-regex search.
-     *
-     * @param value the search value
+     * Logic used for search (e.g., contains, equals, startsWith, endsWith).
      */
-    public Search(final String value) {
-        this(value, false);
-    }
-}
+    @NotNull
+    private String logic = "";
 
+    /**
+     * Type of search (e.g., text).
+     */
+    @NotNull
+    private String type = "";
+}
