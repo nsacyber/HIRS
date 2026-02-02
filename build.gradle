@@ -10,7 +10,15 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
-// Global checkstyle file
+tasks.named('build') {
+    dependsOn 'setProjectVersions'  // Ensure setProjectVersions runs before building
+}
+
+tasks.named('assemble') {
+    dependsOn 'setProjectVersions'  // Ensure setProjectVersions runs before assembling
+}
+
+// Global checkstyle filse
 ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
 subprojects {
@@ -28,7 +36,7 @@ subprojects {
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
+            languageVersion = JavaLanguageVersion.of(25)
         }
     }
 
@@ -106,24 +114,38 @@ subprojects {
 }
 
 def projectVersion = rootProject.file('VERSION').text.trim()
+project.ext["projVersion"] = projectVersion
 
-def buildTime = { ->
-    Date latestdate = new Date()
-    def time = latestdate.getTime()
-    long seconds = TimeUnit.MILLISECONDS.toSeconds(time)
-    return seconds
-}
+tasks.register('retrieveGitHash', Exec) {
+    commandLine 'git', 'rev-parse', '--short', 'HEAD'
 
-def gitHash = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
-        standardOutput = stdout
+    // Set up the ByteArrayOutputStream to capture the output
+    def outputStream = new ByteArrayOutputStream()
+    standardOutput = outputStream
+
+    doLast {
+        // Store the Git hash as an extension property in the project
+        ext.gitHash = outputStream.toString().trim()
     }
-    return stdout.toString().trim()
 }
 
-project.ext["projVersion"] = "${projectVersion}"
-project.ext["jarVersion"] = "${projectVersion}.${buildTime}.${gitHash}"
-project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"
+// Define a task that depends on retrieveGitHash and sets global properties
+tasks.register('setProjectVersions') {
+    dependsOn 'retrieveGitHash'  // Ensure retrieveGitHash runs first
 
+    // Access the captured Git hash after retrieveGitHash has finished
+    doLast {
+        // Get the current time in milliseconds
+        Date latestDate = new Date()
+        long buildTimeInSecs = TimeUnit.MILLISECONDS.toSeconds(latestDate.getTime())
+
+        // Set the global properties
+        project.ext["jarVersion"] = "${projectVersion}.${buildTimeInSecs}.${retrieveGitHash.gitHash}"
+        project.ext["packageVersion"] = "${projectVersion}.${buildTimeInSecs}.${retrieveGitHash.gitHash}.el8"
+
+        // Print the values to verify
+        println "projVersion: ${project.ext["projVersion"]}"
+        println "jarVersion: ${project.ext["jarVersion"]}"
+        println "packageVersion: ${project.ext["packageVersion"]}"
+    }
+}
