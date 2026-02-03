@@ -90,7 +90,6 @@ subprojects {
 
     // Global dependency resolution strategy for all subprojects
     configurations.configureEach {
-        exclude group: 'commons-logging', module: 'commons-logging'
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
@@ -140,10 +139,5 @@ tasks.register('setProjectVersions') {
         // Set the global properties
         project.ext["jarVersion"] = "${projectVersion}.${buildTimeInSecs}.${retrieveGitHash.gitHash}"
         project.ext["packageVersion"] = "${projectVersion}.${buildTimeInSecs}.${retrieveGitHash.gitHash}.el8"
-
-        // Print the values to verify
-        println "projVersion: ${project.ext["projVersion"]}"
-        println "jarVersion: ${project.ext["jarVersion"]}"
-        println "packageVersion: ${project.ext["packageVersion"]}"
     }
 }

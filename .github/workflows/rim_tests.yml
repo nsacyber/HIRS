@@ -1,5 +1,5 @@
 # workflow is used to run RIM tests
-# Updated: 02/11/2025
+# Updated: 02/03/2026
 name: RIM Test
 on:
   push:
@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '25'
           distribution: 'temurin'
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file

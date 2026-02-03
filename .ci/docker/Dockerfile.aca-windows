@@ -29,14 +29,17 @@ RUN mkdir -p C:/ProgramData/hirs/aca
 RUN mkdir -p C:/ProgramData/hirs/log
 
 # Download and install Java 25
-RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.oracle.com/java/17/archive/jdk-17.0.8_windows-x64_bin.exe', 'C:/jdk-17.0.8_windows-x64_bin.exe'))
-RUN Write-Host "Installing JDK..."
-RUN Start-Process -filepath 'C:/jdk-17.0.8_windows-x64_bin.exe' -Wait -PassThru -ArgumentList "/s"
-RUN Write-Host "Finished installing JDK."
+RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.oracle.com/java/25/latest/jdk-25_windows-x64_bin.exe', 'C:/jdk-25_windows-x64_bin.exe'))
 
+# Install JDK 25
+RUN Write-Host "Installing JDK 25..."
+RUN Start-Process -filepath 'C:/jdk-25_windows-x64_bin.exe' -Wait -PassThru -ArgumentList "/s"
+RUN Write-Host "Finished installing JDK 25."
+
+# Verify installation by listing directories
 RUN ls 'C:\Program Files'
 RUN ls 'C:\Program Files\Java'
-RUN ls 'C:\Program Files\Java\jdk-17\'
+RUN ls 'C:\Program Files\Java\jdk-25\'
 
 # Download and install Mariadb as a service
 RUN ((New-Object System.Net.WebClient).DownloadFile('https://archive.mariadb.org/mariadb-11.1.2/winx64-packages/mariadb-11.1.2-winx64.msi', 'C:/mariadb-11.1.2-winx64.msi'))
@@ -81,7 +84,7 @@ RUN ls 'C:\Program Files\openssl'
 EXPOSE 8443
 
 # Set Environment Variables
-RUN setx JAVA_HOME 'C:\Program Files\Java\jdk-17'
+RUN setx JAVA_HOME 'C:\Program Files\Java\jdk-25'
 RUN setx GIT_HOME 'C:\Program Files\Git'
 RUN setx PATH '%JAVA_HOME%\bin;C:\Program Files\MariaDB 11.1\bin;%GIT_HOME%\bin;C:\vsbuildtools\MSBuild\Current\Bin;%LOCALAPPDATA%\Microsoft\dotnet;%PATH%'
 
