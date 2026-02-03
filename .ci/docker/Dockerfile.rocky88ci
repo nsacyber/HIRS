@@ -21,8 +21,8 @@ FROM rockylinux:8.8
 # Update package installer
 RUN dnf -y update
 
-# Install Java 17
-RUN dnf -y install java-17-openjdk-devel
+# Install Java 25
+RUN dnf -y install java-25-openjdk-devel
 
 # Ports needed for system-level tests
 EXPOSE 8080

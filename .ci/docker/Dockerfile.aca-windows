@@ -28,7 +28,7 @@ RUN $PSVersionTable
 RUN mkdir -p C:/ProgramData/hirs/aca
 RUN mkdir -p C:/ProgramData/hirs/log
 
-# Download and install Java 17
+# Download and install Java 25
 RUN ((New-Object System.Net.WebClient).DownloadFile('https://download.oracle.com/java/17/archive/jdk-17.0.8_windows-x64_bin.exe', 'C:/jdk-17.0.8_windows-x64_bin.exe'))
 RUN Write-Host "Installing JDK..."
 RUN Start-Process -filepath 'C:/jdk-17.0.8_windows-x64_bin.exe' -Wait -PassThru -ArgumentList "/s"

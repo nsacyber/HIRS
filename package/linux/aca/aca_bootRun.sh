@@ -135,9 +135,9 @@ if [ -z "$USE_WAR" ]; then
   echo "Booting the ACA from local build..."
   if [ "$DEBUG_ACA" == YES ]; then
     echo "... in debug"
-    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug="$DEBUG_OPTIONS"
+    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" -Pdebug="$DEBUG_OPTIONS" --stacktrace
   else
-    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE"
+    ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE" --stacktrace
   fi
 else
   echo "Booting the ACA from a war file..."

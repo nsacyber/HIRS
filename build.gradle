@@ -5,24 +5,27 @@ import java.util.concurrent.TimeUnit
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
-    id 'checkstyle'
-    id 'com.github.spotbugs' version '6.0.13' apply false
-    id 'org.owasp.dependencycheck' version '12.1.9'
-    id 'java'
-    id 'jacoco'
+    id 'com.github.spotbugs' version '6.4.8' apply false
+    id 'org.owasp.dependencycheck' version '12.2.0'
     id 'io.spring.dependency-management' version '1.1.7' apply false
+}
+
+tasks.withType(Task).configureEach {
+    if (name == 'build' || name == 'assemble') {
+        dependsOn 'setProjectVersions'
+    }
 }
 
 // Global checkstyle file
 ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
 subprojects {
-    apply plugin: "com.github.spotbugs"
-    apply plugin: "java"
     apply plugin: "checkstyle"
-    apply plugin: "org.owasp.dependencycheck"
-    apply plugin: "jacoco"
+    apply plugin: "com.github.spotbugs"
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: "java"
+    apply plugin: "jacoco"
+    apply plugin: "org.owasp.dependencycheck"
 
     repositories {
         flatDir { dirs "lib" }
@@ -31,12 +34,12 @@ subprojects {
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
+            languageVersion = JavaLanguageVersion.of(25)
         }
     }
 
     jacoco {
-        toolVersion = '0.8.12'
+        toolVersion = '0.8.14'
     }
 
     if (project.name != 'tcg_rim_tool') { // run tests on every subproject except for rim_tools
@@ -51,15 +54,23 @@ subprojects {
     }
 
     checkstyle {
-        toolVersion = '10.20.0'
+        toolVersion = '12.3.1'
         configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
     }
 
     checkstyleMain {
         source = 'src/main/java'
     }
+
     checkstyleTest {
         source = 'src/test/java'
+    }
+
+    dependencyCheck {
+        nvd {
+            // Read API key from a system property 'nvd.apiKey'
+            apiKey = System.getProperty("nvd.apiKey")
+        }
     }
 
     tasks.withType(Checkstyle).configureEach {
@@ -69,49 +80,70 @@ subprojects {
         }
     }
 
-    spotbugs {
-        excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
-    }
-
     tasks.withType(SpotBugsTask).configureEach {
+        excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
+
         reports {
             html.required = true
         }
     }
-}
 
-dependencyCheck {
-    nvd {
-        // Read API key from a system property 'nvd.apiKey'
-        apiKey = System.getProperty("nvd.apiKey")
-    }
-}
-dependencies {
-    repositories {
-        // Use Maven Central for resolving dependencies.
-        mavenCentral()
+    // Global dependency resolution strategy for all subprojects
+    configurations.configureEach {
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.apache.logging.log4j') {
+                details.useVersion '2.25.3' // Force patched Log4j version
+            }
+
+            if (details.requested.group == 'org.apache.commons' &&
+                    details.requested.name == 'commons-lang3') {
+                details.useVersion '3.20.0'  // Force patched Commons Lang version
+            }
+
+            if (details.requested.group == 'org.apache.httpcomponents' &&
+                    details.requested.name == 'httpclient') {
+                details.useVersion '4.5.14'  // Force patched Apache Http Client version
+            }
+        }
     }
 }
 
 def projectVersion = rootProject.file('VERSION').text.trim()
+project.ext["projVersion"] = projectVersion
 
-def buildTime = { ->
-    Date latestdate = new Date()
-    def time = latestdate.getTime()
-    long seconds = TimeUnit.MILLISECONDS.toSeconds(time)
-    return seconds
-}
+tasks.register('retrieveGitHash', Exec) {
+    commandLine 'git', 'rev-parse', '--short', 'HEAD'
 
-def gitHash = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
-        standardOutput = stdout
+    // Set up the ByteArrayOutputStream to capture the output
+    def outputStream = new ByteArrayOutputStream()
+    standardOutput = outputStream
+
+    doLast {
+        // Store the Git hash as an extension property in the project
+        ext.gitHash = outputStream.toString().trim()
     }
-    return stdout.toString().trim()
 }
 
-project.ext["projVersion"] = "${projectVersion}"
-project.ext["jarVersion"] = "${projectVersion}.${buildTime}.${gitHash}"
-project.ext["packageVersion"] = "${projectVersion}.${buildTime}.${gitHash}.el8"
+// Define a task that depends on retrieveGitHash and sets global properties
+tasks.register('setProjectVersions') {
+    dependsOn 'retrieveGitHash'  // Ensure retrieveGitHash runs first
 
+    // Access the captured Git hash after retrieveGitHash has finished
+    doLast {
+        // Get the current time in milliseconds
+        Date latestDate = new Date()
+        long buildTimeInSecs = TimeUnit.MILLISECONDS.toSeconds(latestDate.getTime())
+
+        // Set the global properties
+        project.ext["jarVersion"] = "${projectVersion}.${buildTimeInSecs}.${retrieveGitHash.gitHash}"
+        project.ext["packageVersion"] = "${projectVersion}.${buildTimeInSecs}.${retrieveGitHash.gitHash}.el8"
+
+        // Print the values to verify
+        println "projVersion: ${project.ext["projVersion"]}"
+        println "jarVersion: ${project.ext["jarVersion"]}"
+        println "packageVersion: ${project.ext["packageVersion"]}"
+    }
+}

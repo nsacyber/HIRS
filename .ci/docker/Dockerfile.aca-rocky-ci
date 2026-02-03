@@ -29,7 +29,7 @@ ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-pyt
 #   OS tools
 ENV HIRS_DNF_OS_TOOLS="git sudo vim wget"
 #   ACA compile
-ENV HIRS_DNF_ACA_COMPILE="java-17-openjdk-devel"
+ENV HIRS_DNF_ACA_COMPILE="java-25-openjdk-devel"
 #   ACA run
 ENV HIRS_DNF_ACA_RUN="mariadb-server"
 #   IBM TPM simulator compile

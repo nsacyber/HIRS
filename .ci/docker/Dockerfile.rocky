@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-c"]
 RUN dnf update -y
 
 # Install Java 
-RUN dnf -y install java-17-openjdk-devel -y
+RUN dnf -y install java-25-openjdk-devel -y
 
 # Install Tomcat
 #RUN useradd -r -d /opt/tomcat/ -s /bin/false -c "Tomcat User" tomcat 
