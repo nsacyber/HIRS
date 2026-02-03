@@ -16,7 +16,7 @@ jobs:
   ACA_Provisioner_Unit_Tests:
     runs-on: ubuntu-latest  # Configures the job to run on the latest version of an Ubuntu Linux runner
     steps:
-      - uses: actions/checkout@v4  # run v4 of actions/checkout action, which checks out your repository onto the runner
+      - uses: actions/checkout@v6  # run v4 of actions/checkout action, which checks out your repository onto the runner
       # Build will archive build reports and will create a failedFile if build is not successful
       - name: Directory setup
         run: |
@@ -83,7 +83,7 @@ jobs:
             fi; popd;'
       # Upload build report files
       - name: Archive report files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: HIRS_Build_Reports
           path: artifacts/upload_reports/*

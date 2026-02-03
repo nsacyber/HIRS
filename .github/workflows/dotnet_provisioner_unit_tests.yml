@@ -19,9 +19,9 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
       - name: Remove problem matcher for now
@@ -37,7 +37,7 @@ jobs:
       - name: Test
         working-directory: HIRS_Provisioner.NET
         run: dotnet test
-    
+
   package:
     needs: test
     name: Packages
@@ -47,9 +47,9 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
       - name: Remove problem matcher for now
@@ -78,7 +78,7 @@ jobs:
           sha256sum HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
           ls -go --full-time HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
       - name: Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dists
           retention-days: 5
