@@ -1,9 +1,9 @@
 plugins {
-    id "com.netflix.nebula.ospackage" version "11.10.0"
+    id "com.netflix.nebula.ospackage" version "12.2.0"
 }
 // Get version from main project gradle
-def packVersion = properties.get("packageVersion");
-def jarVersion = properties.get("jarVersion");
+def packVersion = properties.get("packageVersion")
+def jarVersion = properties.get("jarVersion")
 
 dependencies {
     implementation project(':HIRS_Utils')

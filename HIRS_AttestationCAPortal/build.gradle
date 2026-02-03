@@ -1,8 +1,8 @@
 plugins {
     id 'application'
     id 'war'
-    id 'com.netflix.nebula.ospackage' version '11.10.0'
-    id 'org.springframework.boot' version '3.5.6'
+    id 'com.netflix.nebula.ospackage' version '12.2.0'
+    id 'org.springframework.boot' version '3.5.10'
 }
 
 // Get version from main project gradle
@@ -17,9 +17,6 @@ bootRun {
 }
 
 configurations {
-    configureEach {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -30,47 +27,22 @@ dependencies {
     implementation project(':HIRS_AttestationCA')
 
     implementation libs.bouncycastle
-    implementation libs.guava
+    implementation libs.commons.io
     implementation libs.gson
+    implementation libs.guava
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
-
-    implementation libs.pci
-
-    implementation libs.commons.io
-
-    // explicitly include the patched version of the apache http client dependency
-    implementation libs.apacheHttpClient
-
     implementation libs.mariadb.java.client
+    implementation libs.pci
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.thymeleaf.layout.dialect
-
-    // explicitly include the patched version of the snake yaml dependency
-    implementation libs.snake.yaml
-
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.data.jpa
     implementation libs.spring.boot.starter.log4j2
 
-    // explicitly include the patched version of the spring framework jdbc dependency
-    implementation libs.spring.framework.jdbc
-
-    // explicitly include the patched version of spring framework expression dependency
-    implementation libs.spring.framework.expression
-
-    // explicitly include the patched version of the tomcat embed core dependency
-    implementation libs.tomcat.embed.core
-
-    // explicitly include the patched version of the tomcat embed websocket dependency
-    implementation libs.tomcat.embed.websocket
-
     compileOnly libs.lombok
     annotationProcessor libs.lombok
-
-    // explicitly include the patched version of the json path dependency
-    testImplementation libs.jsonPath
 
     testImplementation libs.hsqldb
     testImplementation libs.spring.boot.starter.test
@@ -80,9 +52,6 @@ dependencies {
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
-
-    // explicitly include the patched version of the xmlunit-core dependency
-    testImplementation libs.xmlunit.core
 }
 
 tasks.register('buildVersion') {

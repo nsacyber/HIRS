@@ -300,7 +300,7 @@ public class ReferenceManifestValidator {
                 payload = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE, SwidTagConstants.PAYLOAD);
             }
             if (payload.getLength() > 0) {
-                traversePayloadTree((Element) payload.item(0));
+                isPayloadValid &= traversePayloadTree((Element) payload.item(0));
             } else {
                 return failWithError("No payload found with which to validate.");
             }
@@ -373,7 +373,7 @@ public class ReferenceManifestValidator {
      * @return the new <File> element
      */
     private Element createOverrideSupportRim(final Element oldFile, final String supportRimName,
-                                             String location) {
+                                             final String location) {
         Element overrideSupportRim = (Element) oldFile.cloneNode(false);
         Path searchDir = Paths.get(location);
         List<Path> fileMatches;
