@@ -66,9 +66,9 @@ subprojects {
         }
     }
 
-//    tasks.withType(JavaCompile).configureEach { todo
-//        options.deprecation = true
-//    }
+    tasks.withType(JavaCompile).configureEach {
+        options.deprecation = true
+    }
 
     tasks.withType(Checkstyle).configureEach {
         reports {
