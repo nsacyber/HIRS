@@ -94,7 +94,7 @@ ospackage {
 
     buildDeb {
         arch = 'amd64'
-        version = '12.2.0'
+        version = "$packVersion"
         requires('hwdata', '0.314', GREATER | EQUAL)
     }
 

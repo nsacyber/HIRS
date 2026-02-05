@@ -96,7 +96,7 @@ ospackage {
 
     // Post Install
     postInstall "echo ${jarVersion} > /opt/rimtool/VERSION"
-    
+
     // Post Uninstall
     postUninstall 'rm -rf /opt/rimtool'
 }
@@ -107,10 +107,10 @@ buildRpm {
 
 buildDeb {
     arch = 'amd64'
-    version = '12.2.0'
+    version = "$packVersion"
 }
 
-task buildZip(type: Zip) {
+tasks.register('buildZip', Zip) {
     dependsOn jar
     dependsOn jar
     from(tasks.jar.archiveFile) {

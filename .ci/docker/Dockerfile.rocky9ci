@@ -1,7 +1,7 @@
 FROM rockylinux:9.3
 
 # Purpose: This image is designed for HIRS ci testing on Rocky Linux
-# Date Modified: 8/16/23
+# Date Modified: 2/06/2026
 # Notes:
 #   * This image installs java, installs project dependencies, and runs gradlew to download gradlew
 #     dependencies. This saves time during a docker run. This also means the image should be
@@ -12,11 +12,11 @@ FROM rockylinux:9.3
 #   * Steps to login to registry, build image, tag image with ghcr.io registry, and push to registry:
 #     $ cat pat.txt | docker login ghcr.io -u iadgovuser## --password-stdin
 #       Note: pat requires permissions "upload packages from GitHub Package Registry" and possibly "repo"
-#     $ docker build . -f Dockerfile.rocky88ci -t hirs-rocky8-ci:latest
+#     $ docker build . -f Dockerfile.rocky9ci -t hirs-rocky9-ci:latest
 #       Note: may need to use --no-cache when building, if 'git clone HIRS' or 'gradlew' is cached
 #             (bc need any updated dependencies)
-#     $ docker image tag hirs-rocky8-ci:latest ghcr.io/nsacyber/hirs/hirs-rocky8-ci:latest
-#     $ docker push ghcr.io/nsacyber/hirs/hirs-rocky8-ci:latest
+#     $ docker image tag hirs-rocky9-ci:latest ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
+#     $ docker push ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
 
 # Update package installer
 RUN dnf -y update

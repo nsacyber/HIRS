@@ -71,7 +71,7 @@ subprojects {
         }
     }
 
-//    tasks.withType(JavaCompile).configureEach {
+//    tasks.withType(JavaCompile).configureEach { todo
 //        options.deprecation = true
 //    }
 

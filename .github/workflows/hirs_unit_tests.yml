@@ -40,12 +40,12 @@ jobs:
           #   create a mount between curr directory on the runner and the HIRS folder created by the cloning of HIRS repo
           #     -v $(pwd):/HIRS
           #   image used for the container, given by <repository>:<tag_name>
-          #     rocky8: ghcr.io/nsacyber/hirs/hirs-rocky8-ci:latest [repo: https://github.com/orgs/nsacyber/packages]
+          #     rocky9: ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest [repo: https://github.com/orgs/nsacyber/packages]
           #   bash commands to clean/build/test each subproject
           #     /bin/bash -c '<commands>'
           docker run --rm \
           -v $(pwd):/HIRS \
-          ghcr.io/nsacyber/hirs/hirs-rocky8-ci:latest /bin/bash -c \
+          ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest /bin/bash -c \
             'pushd /HIRS
             gradle_status=0
           

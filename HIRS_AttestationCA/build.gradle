@@ -1,5 +1,5 @@
 plugins {
-    id 'com.google.protobuf' version '0.9.4'
+    id 'com.google.protobuf' version '0.9.6'
 }
 
 configurations {
@@ -50,9 +50,10 @@ dependencies {
 
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.24.3'
+        artifact = 'com.google.protobuf:protoc:4.33.5'
     }
 }
+
 sourceSets {
     main {
         proto {
