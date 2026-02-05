@@ -107,7 +107,6 @@ buildRpm {
 
 buildDeb {
     arch = 'amd64'
-    version = "$packVersion"
 }
 
 tasks.register('buildZip', Zip) {

@@ -8,12 +8,7 @@ plugins {
     id 'com.github.spotbugs' version '6.4.8' apply false
     id 'org.owasp.dependencycheck' version '12.2.0'
     id 'io.spring.dependency-management' version '1.1.7' apply false
-}
-
-tasks.withType(Task).configureEach {
-    if (name == 'build' || name == 'assemble') {
-        dependsOn 'setProjectVersions'
-    }
+    id 'com.palantir.git-version' version '4.3.0'
 }
 
 // Global checkstyle file
@@ -115,31 +110,9 @@ subprojects {
 def projectVersion = rootProject.file('VERSION').text.trim()
 project.ext["projVersion"] = projectVersion
 
-tasks.register('retrieveGitHash', Exec) {
-    commandLine 'git', 'rev-parse', '--short', 'HEAD'
+def details = versionDetails()
+def gitHash = details.gitHash
+long buildTimeInSecs = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime())
 
-    // Set up the ByteArrayOutputStream to capture the output
-    def outputStream = new ByteArrayOutputStream()
-    standardOutput = outputStream
-
-    doLast {
-        // Store the Git hash as an extension property in the project
-        ext.gitHash = outputStream.toString().trim()
-    }
-}
-
-// Define a task that depends on retrieveGitHash and sets global properties
-tasks.register('setProjectVersions') {
-    dependsOn 'retrieveGitHash'  // Ensure retrieveGitHash runs first
-
-    // Access the captured Git hash after retrieveGitHash has finished
-    doLast {
-        // Get the current time in milliseconds
-        Date latestDate = new Date()
-        long buildTimeInSecs = TimeUnit.MILLISECONDS.toSeconds(latestDate.getTime())
-
-        // Set the global properties
-        project.ext["jarVersion"] = "${projectVersion}.${buildTimeInSecs}.${retrieveGitHash.gitHash}"
-        project.ext["packageVersion"] = "${projectVersion}.${buildTimeInSecs}.${retrieveGitHash.gitHash}.el8"
-    }
-}
+project.ext["jarVersion"] = "${projectVersion}.${buildTimeInSecs}.${gitHash}"
+project.ext["packageVersion"] = "${projectVersion}.${buildTimeInSecs}.${gitHash}.el8"

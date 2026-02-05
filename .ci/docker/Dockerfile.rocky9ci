@@ -10,13 +10,13 @@ FROM rockylinux:9.3
 #       2) update gradle
 #     If not re-built, the docker run will still work, but will take longer as it downloads updates
 #   * Steps to login to registry, build image, tag image with ghcr.io registry, and push to registry:
-#     $ cat pat.txt | docker login ghcr.io -u iadgovuser## --password-stdin
+#     $ cat pat.txt | sudo docker login ghcr.io -u iadgovuser## --password-stdin
 #       Note: pat requires permissions "upload packages from GitHub Package Registry" and possibly "repo"
-#     $ docker build . -f Dockerfile.rocky9ci -t hirs-rocky9-ci:latest
+#     $ sudo docker build . -f Dockerfile.rocky9ci -t hirs-rocky9-ci:latest
 #       Note: may need to use --no-cache when building, if 'git clone HIRS' or 'gradlew' is cached
 #             (bc need any updated dependencies)
-#     $ docker image tag hirs-rocky9-ci:latest ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
-#     $ docker push ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
+#     $ sudo docker image tag hirs-rocky9-ci:latest ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
+#     $ sudo docker push ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
 
 # Update package installer
 RUN dnf -y update
@@ -29,8 +29,8 @@ EXPOSE 8080
 EXPOSE 8443
 
 # Install HIRS dependencies
-RUN dnf -y install mariadb-server initscripts firewalld policycoreutils net-tools git protobuf-compiler cronie && dnf clean all
-# maybe: libtool cmake make gcc-c++ sudo vim wget openssl openssl-devel protobuf tpm2-tools libcurl-devel libssh-devel
+RUN dnf -y install mariadb-server initscripts firewalld policycoreutils net-tools git cronie && dnf clean all
+# maybe: libtool cmake make gcc-c++ sudo vim wget openssl openssl-devel protobuf-compiler protobuf tpm2-tools libcurl-devel libssh-devel
 # prob not: rpmdevtools tpm2-tss-devel tpm2-abrmd protobuf-devel python36 log4cplus-devel re2-devel tpm2-tss-devel tpm2-abrmd-devel
 
 # Install PACCOR for Device Info Gathering
@@ -51,7 +51,7 @@ RUN dnf -y install mariadb-server initscripts firewalld policycoreutils net-tool
 
 # Checkout HIRS main branch and run gradlew to install gradlew dependencies, then delete HIRS
 # Use '--depth=1' so as to not download the history of all commits
-RUN git clone -b main --depth=1 https://github.com/nsacyber/HIRS.git /hirsTemp
+RUN git clone -b v3.1_1099-migrate-to-jdk-25-and-gradle --depth=1 https://github.com/nsacyber/HIRS.git /hirsTemp
 WORKDIR "/hirsTemp"
 RUN /bin/bash -c './gradlew clean build'
 WORKDIR "/"

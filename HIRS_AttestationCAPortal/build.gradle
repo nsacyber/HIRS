@@ -141,7 +141,6 @@ ospackage {
     buildDeb {
         dependsOn ':HIRS_AttestationCAPortal:buildVersion'
         dependsOn ':HIRS_AttestationCAPortal:bootWar'
-        version = "$packVersion"
         packageName = 'hirs-attestationca'
         arch = 'amd64'
 
