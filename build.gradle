@@ -42,11 +42,9 @@ subprojects {
         toolVersion = '0.8.14'
     }
 
-    if (project.name != 'tcg_rim_tool') { // run tests on every subproject except for rim_tools
-        tasks.withType(Test).configureEach {
-            useJUnitPlatform()
-            finalizedBy(tasks.named('jacocoTestReport'))
-        }
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        finalizedBy(tasks.named('jacocoTestReport'))
     }
 
     jacocoTestReport {
@@ -72,6 +70,10 @@ subprojects {
             apiKey = System.getProperty("nvd.apiKey")
         }
     }
+
+//    tasks.withType(JavaCompile).configureEach {
+//        options.deprecation = true
+//    }
 
     tasks.withType(Checkstyle).configureEach {
         reports {
