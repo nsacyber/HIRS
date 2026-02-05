@@ -77,6 +77,7 @@ ospackage {
             }
         }
     }
+
     into('/opt/rimtool/docs') {
         from('./') {
             include {
@@ -85,14 +86,17 @@ ospackage {
             }
         }
     }
+
     into('/opt/rimtool/data') {
         from('src/test/resources/') {
         }
     }
+
     link("/usr/local/bin/rim", "/opt/rimtool/scripts/rimtool.sh", 0x755)
 
     // Post Install
     postInstall "echo ${jarVersion} > /opt/rimtool/VERSION"
+    
     // Post Uninstall
     postUninstall 'rm -rf /opt/rimtool'
 }
@@ -103,6 +107,7 @@ buildRpm {
 
 buildDeb {
     arch = 'amd64'
+    version = '12.2.0'
 }
 
 task buildZip(type: Zip) {

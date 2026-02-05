@@ -45,6 +45,7 @@ ospackage {
         from jar.outputs.files
         from configurations.runtimeClasspath
     }
+
     into('/opt/eltool/scripts') {
         from('scripts') {
             exclude {
@@ -53,6 +54,7 @@ ospackage {
             }
         }
     }
+
     into('/opt/eltool/docs') {
         from('docs') {
             exclude {
@@ -67,6 +69,7 @@ ospackage {
             }
         }
     }
+
     // Copy vendor-table into /tmp to avoid conflict with the ACA 
     into('/opt/eltool/default-properties') {
         from('../../HIRS_Utils/src/main/resources/vendor-table.json') {
@@ -80,6 +83,7 @@ ospackage {
 
     // Post Install
     postInstall "echo ${jarVersion} > /opt/eltool/VERSION"
+
     // Post Uninstall
     postUninstall 'rm -rf /opt/eltool'
 
@@ -87,15 +91,17 @@ ospackage {
         arch = X86_64
         requires('hwdata', '0.314', GREATER | EQUAL)
     }
+
     buildDeb {
         arch = 'amd64'
+        version = '12.2.0'
         requires('hwdata', '0.314', GREATER | EQUAL)
     }
 
 }
 
 
-task buildZip(type: Zip) {
+tasks.register('buildZip', Zip) {
     dependsOn jar
     from(tasks.jar.archiveFile) {
         rename(filename ->

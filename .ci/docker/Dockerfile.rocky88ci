@@ -1,4 +1,4 @@
-FROM rockylinux:8.8
+FROM rockylinux:9.3
 
 # Purpose: This image is designed for HIRS ci testing on Rocky Linux
 # Date Modified: 8/16/23
