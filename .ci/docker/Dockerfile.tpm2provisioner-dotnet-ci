@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.description Tools for testing the build and deplo
 
 # Purpose: This image is designed for HIRS Provisioner.Net testing on Rocky 9. It is meant to be used in
 #          the .ci, and does not automatically start the Provisioner upon running the container.
-# Date Modified: 5/31/24
+# Date Modified: 2/06/2026
 # Notes: The image to be built should be named "tpm2provisioner-dotnet-ci:latest".
 #        For local image build, use this command from the /HIRS/ directory to build the image:
 #           $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
@@ -36,7 +36,7 @@ ENV HIRS_DNF_TPM_COMPILE="tpm2-tools gcc cmake openssl-devel"
 #   IBM TSS compile
 ENV HIRS_DNF_TSS_COMPILE="autoconf automake libtool"
 #   .NET SDK
-ENV HIRS_DNF_DOTNET_SDK="dotnet-sdk-6.0"
+ENV HIRS_DNF_DOTNET_SDK="dotnet-sdk-8.0"
 # Download and install all dependencies at one time
 RUN dnf -y install $(echo "$HIRS_DNF_OS_SETUP") $(echo "$HIRS_DNF_OS_TOOLS") $(echo "$HIRS_DNF_ACA_COMPILE") $(echo "$HIRS_DNF_ACA_RUN") $(echo "$HIRS_DNF_TPM_COMPILE") $(echo "$HIRS_DNF_TSS_COMPILE") $(echo "$HIRS_DNF_DOTNET_SDK")
 

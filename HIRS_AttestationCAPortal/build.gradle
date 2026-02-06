@@ -68,11 +68,11 @@ ospackage {
     arch = NOARCH
     version = "$packVersion"
     release = '2'
-    user 'root'
+    user = 'root'
     fileMode = 0755
 
     addParentDirs = true
-    createDirectoryEntry true
+    createDirectoryEntry = true
 
     into('/etc/hirs') {
         from '../VERSION'

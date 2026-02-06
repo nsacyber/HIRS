@@ -38,7 +38,7 @@ ospackage {
     version = "$packVersion"
     release = '1'
 
-    user 'root'
+    user = 'root'
     fileMode = 0755
 
     into('/opt/eltool/lib') {
@@ -73,7 +73,7 @@ ospackage {
     // Copy vendor-table into /tmp to avoid conflict with the ACA 
     into('/opt/eltool/default-properties') {
         from('../../HIRS_Utils/src/main/resources/vendor-table.json') {
-            fileMode 0664
+            fileMode = 0664
             addParentDirs = true
         }
     }

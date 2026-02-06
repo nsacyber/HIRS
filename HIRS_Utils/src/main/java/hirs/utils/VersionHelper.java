@@ -1,6 +1,5 @@
 package hirs.utils;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import lombok.extern.log4j.Log4j2;
 
@@ -10,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -107,7 +107,7 @@ public final class VersionHelper {
         final StringBuilder result = new StringBuilder();
         InputStream inputStream = new FileInputStream(filename);
 
-        try (Reader reader = new InputStreamReader(inputStream, Charsets.UTF_8)) {
+        try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
             int charsRead;
             while ((charsRead = reader.read(buffer, 0, buffer.length)) > 0) {
                 result.append(buffer, 0, charsRead);
@@ -126,7 +126,7 @@ public final class VersionHelper {
      */
     private static String getResourceContents(final String filename) throws IOException {
         URL url = Resources.getResource(filename);
-        return Resources.toString(url, Charsets.UTF_8).trim();
+        return Resources.toString(url, StandardCharsets.UTF_8).trim();
     }
 }
 

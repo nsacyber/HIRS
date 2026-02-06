@@ -35,8 +35,8 @@ import static hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidItems.FS_NAME_INT
 @NoArgsConstructor
 public class CoswidParser {
     private static final Logger LOGGER = LogManager.getLogger(CoswidParser.class);
-    private static final int coswidMap = 0;
-    private static final int entityMap = CoswidItems.ENTITY_INT;
+    private static final int COSWID_MAP = 0;
+    private static final int ENTITY_MAP = CoswidItems.ENTITY_INT;
     private final List<String> path = new ArrayList<>();
     /**
      * Coswid object.
@@ -100,15 +100,15 @@ public class CoswidParser {
                 coswid.setTagId(tag);
             }
             buildString(CoswidItems.TAG_ID_INT, coswid.getTagId());
-            coswid.setSoftwareName(parseString(coswidMap, CoswidItems.SOFTWARE_NAME_INT));
-            coswid.setCorpus(parseBoolean(coswidMap, CoswidItems.CORPUS_INT));
-            coswid.setPatch(parseBoolean(coswidMap, CoswidItems.PATCH_INT));
-            coswid.setSupplemental(parseBoolean(coswidMap, CoswidItems.SUPPLEMENTAL_INT));
-            coswid.setTagVersion(parseString(coswidMap, CoswidItems.TAG_VERSION_INT));
-            coswid.setSoftwareVersion(parseString(coswidMap, CoswidItems.SOFTWARE_VERSION_INT));
+            coswid.setSoftwareName(parseString(COSWID_MAP, CoswidItems.SOFTWARE_NAME_INT));
+            coswid.setCorpus(parseBoolean(COSWID_MAP, CoswidItems.CORPUS_INT));
+            coswid.setPatch(parseBoolean(COSWID_MAP, CoswidItems.PATCH_INT));
+            coswid.setSupplemental(parseBoolean(COSWID_MAP, CoswidItems.SUPPLEMENTAL_INT));
+            coswid.setTagVersion(parseString(COSWID_MAP, CoswidItems.TAG_VERSION_INT));
+            coswid.setSoftwareVersion(parseString(COSWID_MAP, CoswidItems.SOFTWARE_VERSION_INT));
 
             // global-attributes group
-            String lang = parseString(coswidMap, CoswidItems.LANG_INT);
+            String lang = parseString(COSWID_MAP, CoswidItems.LANG_INT);
             if (!lang.isEmpty()) {
                 nonpayloadParsedDataOneline += " global-attributes => ";
                 nonpayloadParsedDataPretty += "global-attributes :\n";
@@ -118,8 +118,8 @@ public class CoswidParser {
             // entity-entry map
             nonpayloadParsedDataOneline += " entity => ";
             nonpayloadParsedDataPretty += "entity :\n";
-            coswid.setEntityName(parseString(entityMap, CoswidItems.ENTITY_NAME_INT));
-            coswid.setRegId(parseString(entityMap, CoswidItems.REG_ID_INT));
+            coswid.setEntityName(parseString(ENTITY_MAP, CoswidItems.ENTITY_NAME_INT));
+            coswid.setRegId(parseString(ENTITY_MAP, CoswidItems.REG_ID_INT));
             JsonNode roleNode = rootNode.path(Integer.toString(CoswidItems.ENTITY_INT))
                     .path(Integer.toString(CoswidItems.ROLE_INT));
             processRole(roleNode);
@@ -279,9 +279,14 @@ public class CoswidParser {
         payloadParsedDataPretty += "     directory" + " : \n";
 
         // temporarily peek ahead to grab the directory name and add it to the current path
-        if (directoryNode.fields().hasNext()
-                && Integer.parseInt(directoryNode.fields().next().getKey()) == FS_NAME_INT) {
-            path.add(directoryNode.fields().next().getValue().asText());
+        Set<Map.Entry<String, JsonNode>> properties = directoryNode.properties();
+        if (!properties.isEmpty()) {
+            Map.Entry<String, JsonNode> firstEntry = properties.iterator().next();
+            if (Integer.parseInt(firstEntry.getKey()) == FS_NAME_INT) {
+                path.add(firstEntry.getValue().asText());
+            } else {
+                path.add("Unknown_directory_name");
+            }
         } else {
             path.add("Unknown_directory_name");
         }
@@ -290,7 +295,7 @@ public class CoswidParser {
         processPayload(directoryNode);
 
         // when leaving the directory, remove its name from the current path
-        path.remove(path.size() - 1);
+        path.removeLast();
     }
 
     /**
@@ -331,9 +336,7 @@ public class CoswidParser {
                         filepath += field.getValue().asText();
                         measurement.setAdditionalMetadata("    File path: " + filepath + "\n");
                         break;
-                    case CoswidItems.SIZE_STR:
-                        break;
-                    case CoswidItems.FILE_VERSION_STR:
+                    case CoswidItems.SIZE_STR, CoswidItems.FILE_VERSION_STR:
                         break;
                     default:
                         throw new RuntimeException("Error processing Coswid data: "
@@ -424,7 +427,7 @@ public class CoswidParser {
         String itemString = Integer.toString(coswidItem);
         String mapString = Integer.toString(map);
         String referenceVal = "";
-        if (map == coswidMap) {
+        if (map == COSWID_MAP) {
             referenceVal = rootNode.path(itemString).asText();
         } else {
             referenceVal = rootNode.path(mapString).path(itemString).asText();
@@ -445,7 +448,7 @@ public class CoswidParser {
         String itemString = Integer.toString(coswidItem);
         String mapString = Integer.toString(map);
         boolean referenceVal = false;
-        if (map == coswidMap) {
+        if (map == COSWID_MAP) {
             referenceVal = rootNode.path(itemString).asBoolean(false);
         } else {
             referenceVal = rootNode.path(mapString).path(itemString).asBoolean(false);

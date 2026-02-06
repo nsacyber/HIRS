@@ -48,7 +48,7 @@ subprojects {
 
     checkstyle {
         toolVersion = '12.3.1'
-        configFile file("${rootDir}/config/checkstyle/checkstyle.xml")
+        configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
     }
 
     checkstyleMain {
@@ -60,15 +60,15 @@ subprojects {
     }
 
     dependencyCheck {
-        nvd {
-            // Read API key from a system property 'nvd.apiKey'
-            apiKey = System.getProperty("nvd.apiKey")
-        }
+        // Read API key from a system property 'nvd.apiKey'
+        nvd.apiKey = System.getProperty("nvd.apiKey")
     }
 
-    tasks.withType(JavaCompile).configureEach {
-        options.deprecation = true
-    }
+//    Uncomment the lines right after this comment, if you wish to see all the places
+//    in the application that are using deprecated features
+//    tasks.withType(JavaCompile).configureEach {
+//        options.deprecation = true
+//    }
 
     tasks.withType(Checkstyle).configureEach {
         reports {
@@ -102,6 +102,11 @@ subprojects {
             if (details.requested.group == 'org.apache.httpcomponents' &&
                     details.requested.name == 'httpclient') {
                 details.useVersion '4.5.14'  // Force patched Apache Http Client version
+            }
+
+            if (details.requested.group == 'org.assertj' &&
+                    details.requested.name == 'assertj-core') {
+                details.useVersion '3.27.7'  // Force patched Assert Core version
             }
         }
     }
