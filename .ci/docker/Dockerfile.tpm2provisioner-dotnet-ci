@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.description Tools for testing the build and deplo
 # Date Modified: 2/06/2026
 # Notes: The image to be built should be named "tpm2provisioner-dotnet-ci:latest".
 #        For local image build, use this command from the /HIRS/ directory to build the image:
-#           $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
+#           $ sudo docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ENV REF=main
