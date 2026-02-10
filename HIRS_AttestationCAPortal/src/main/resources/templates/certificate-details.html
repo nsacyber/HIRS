@@ -584,7 +584,7 @@
                             <span class="colHeader">
                                 <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
                                    aria-expanded="true" data-bs-placement="top" aria-controls="tpmSpecificationInner">
-                                    TPM Specification
+                                    TPM Specification ▼
                                 </a>
                             </span>
                         </div>
@@ -603,23 +603,252 @@
                                 <a role="button" data-bs-toggle="collapse" class="collapsed"
                                    href="#tpmSecurityAssertionInner" aria-expanded="true" data-bs-placement="top"
                                    aria-controls="tpmSecurityAssertionInner">
-                                    TPM Security Assertion
+                                    TPM Security Assertion ▼
                                 </a>
                             </span>
                         </div>
                         <div id="tpmSecurityAssertion" class="col col-md-8">
                             <div id="tpmSecurityAssertionInner" class="accordion-body card-body collapse" role="tabpanel"
                                  aria-expanded="false">
-                                <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
-                                <div>Field
-                                    Upgradeable:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}]]</span>
+                                <table class="table table-bordered table-sm">
+                                    <tr>
+                                        <th>Version</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Field Upgradeable</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>EK Generation Type</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsEkGenType')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>EK Generation Location</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>EK Certificate Generation Location</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <span class="colHeader">
+                                    <a role="button" data-bs-toggle="collapse" class="collapsed"
+                                       href="#commonCriteriaInner" aria-expanded="false" data-bs-placement="top"
+                                       aria-controls="commonCriteriaInner">
+                                        Common Criteria Info ▼
+                                    </a>
+                                </span>
+                                <div id="commonCriteriaInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                    <table class="table table-bordered table-sm">
+                                        <tr>
+                                            <th>Version</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresCcVersion')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Assurance Level</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresAssuranceLevel')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Evaluation Status</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresEvaluationStatus')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Plus</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresCcPlus')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Strength of Function</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresStrengthOfFunction')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Profile OID</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresProfileOid')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Profile URI</th>
+                                            <td>
+                                                <table class="table table-sm mb-0">
+                                                    <tr>
+                                                        <th>Uniform Resource Identifier</th>
+                                                        <td>
+                                                            <span th:replace="fragments/field-displayer :: value(
+                                                                ${initialData.get('CommonCriteriaMeasuresProfileUri')}
+                                                            )"></span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Hash Algorithm</th>
+                                                        <td>
+                                                            <table class="table table-sm mb-0">
+                                                                <tr>
+                                                                    <th>Algorithm</th>
+                                                                    <td>
+                                                                        <span th:replace="fragments/field-displayer :: value(
+                                                                            ${initialData.get('CommonCriteriaMeasuresProfileAlgOid')}
+                                                                        )"></span>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <th>Parameters</th>
+                                                                    <td>
+                                                                        <span th:replace="fragments/field-displayer :: value(
+                                                                            ${initialData.get('CommonCriteriaMeasuresProfileAlgParameters')}
+                                                                        )"></span>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Target OID</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresTargetOid')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Target URI</th>
+                                            <td>
+                                                <table class="table table-sm mb-0">
+                                                    <tr>
+                                                        <th>Uniform Resource Identifier</th>
+                                                        <td>
+                                                            <span th:replace="fragments/field-displayer :: value(
+                                                                ${initialData.get('CommonCriteriaMeasuresTargetUri')}
+                                                            )"></span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Hash Algorithm</th>
+                                                        <td>
+                                                            <table class="table table-sm mb-0">
+                                                                <tr>
+                                                                    <th>Algorithm</th>
+                                                                    <td>
+                                                                        <span th:replace="fragments/field-displayer :: value(
+                                                                            ${initialData.get('CommonCriteriaMeasuresTargetAlgOid')}
+                                                                        )"></span>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <th>Parameters</th>
+                                                                    <td>
+                                                                        <span th:replace="fragments/field-displayer :: value(
+                                                                            ${initialData.get('CommonCriteriaMeasuresTargetAlgParameters')}
+                                                                        )"></span>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
-                                <div>ek Generation Type:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenType')}]]</span>
+                                <br>
+                                <span class="colHeader">
+                                    <a role="button" data-bs-toggle="collapse" class="collapsed"
+                                       href="#fipsInfoInner" aria-expanded="false" data-bs-placement="top"
+                                       aria-controls="fipsInfoInner">
+                                        FIPS Info ▼
+                                    </a>
+                                </span>
+                                <div id="fipsInfoInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                    <table class="table table-bordered table-sm">
+                                        <tr>
+                                            <th>Version</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('FIPSLevelFipsVersion')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Level</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('FIPSLevelSecurityLevel')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Plus</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('FIPSLevelFipsPlus')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
-                                <div>ek Generation
-                                    Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}]]</span></div>
-                                <div>ek Certificate Generation
-                                    Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}]]</span></div>
+                                <table class="table table-bordered table-sm">
+                                    <tr>
+                                        <th>ISO 9000 Certified</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('iso9000Certified')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>ISO 9000 URI</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('iso9000Uri')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -759,7 +988,7 @@
                                                         <div id="ccinfo" class="certrow">
                                                             <div class="tbbsecurityLine">
                                                                 <span class="fieldHeader">Version:</span>
-                                                                    <span class="fieldValue">[[${ccinfo.getVersion()}]]</span>
+                                                                    <span class="fieldValue">[[${ccinfo.getCcVersion()}]]</span>
                                                             </div>
                                                             <div class="tbbsecurityLine">
                                                                 <span class="fieldHeader">Assurance Level:</span>
@@ -772,10 +1001,10 @@
                                                                         class="fieldValue">[[${#strings.toUpperCase(ccinfo.getEvaluationStatus().getValue())}]]</span>
                                                             </div>
                                                             <div class="tbbsecurityLine">
-                                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
+                                                                <th:block th:if="${ccinfo.ccPlus}">
                                                                     <span class="badge text-bg-success">Plus</span>
                                                                 </th:block>
-                                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(ccinfo.getPlus()), 'TRUE')}">
+                                                                <th:block th:unless="${ccinfo.ccPlus}">
                                                                     <span class="badge bg-danger">Not Plus</span>
                                                                 </th:block>
                                                             </div>
@@ -794,23 +1023,23 @@
                                                                 <div class="tbbsecurityLine">
                                                                     <span class="fieldHeader">Profile URI:</span>
                                                                     <span class="fieldValue">
-                                                                        <a th:href="@{${ccinfo.getProfileUri().getUniformResourceIdentifier()}}">
-                                                                            [[${ccinfo.getProfileUri().getUniformResourceIdentifier()}]]
+                                                                        <a th:href="@{${ccinfo.getProfileUri()}}">
+                                                                            [[${ccinfo.getProfileUri()}]]
                                                                         </a>
                                                                     </span>
                                                                 </div>
-                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashAlgorithm())}">
+                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileAlgOid())}">
                                                                     <div class="tbbsecurityLine">
                                                                         <span class="fieldHeader">Profile Hash Algorithm:</span>
                                                                         <span
-                                                                            class="fieldValue">[[${ccinfo.getProfileUri().getHashAlgorithm()}]]</span>
+                                                                            class="fieldValue">[[${ccinfo.getProfileAlgOid()}]]</span>
                                                                     </div>
                                                                 </th:block>
-                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileUri().getHashValue())}">
+                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getProfileHashValue())}">
                                                                     <div class="tbbsecurityLine">
                                                                         <span class="fieldHeader">Profile Hash Value:</span>
                                                                         <span
-                                                                            class="fieldValue">[[${ccinfo.getProfileUri().getHashValue()}]]</span>
+                                                                            class="fieldValue">[[${ccinfo.getProfileHashValue()}]]</span>
                                                                     </div>
                                                                 </th:block>
                                                             </th:block>
@@ -824,23 +1053,23 @@
                                                                 <div class="tbbsecurityLine">
                                                                     <span class="fieldHeader">Target URI:</span>
                                                                     <span class="fieldValue">
-                                                                        <a th:href="@{${ccinfo.getTargetUri().getUniformResourceIdentifier()}}">
-                                                                            [[${ccinfo.getTargetUri().getUniformResourceIdentifier()}]]
+                                                                        <a th:href="@{${ccinfo.getTargetUri()}}">
+                                                                            [[${ccinfo.getTargetUri()}]]
                                                                         </a>
                                                                     </span>
                                                                 </div>
-                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashAlgorithm())}">
+                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetAlgOid())}">
                                                                     <div class="tbbsecurityLine">
                                                                         <span class="fieldHeader">Target Hash Algorithm:</span>
                                                                         <span
-                                                                            class="fieldValue">[[${ccinfo.getTargetUri().getHashAlgorithm()}]]</span>
+                                                                            class="fieldValue">[[${ccinfo.getTargetAlgOid()}]]</span>
                                                                     </div>
                                                                 </th:block>
-                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetUri().getHashValue())}">
+                                                                <th:block th:if="${not #strings.isEmpty(ccinfo.getTargetHashValue())}">
                                                                     <div class="tbbsecurityLine">
                                                                         <span class="fieldHeader">Target Hash Value:</span>
                                                                         <span
-                                                                            class="fieldValue">[[${ccinfo.getTargetUri().getHashValue()}]]</span>
+                                                                            class="fieldValue">[[${ccinfo.getTargetHashValue()}]]</span>
                                                                     </div>
                                                                 </th:block>
                                                             </th:block>
@@ -875,21 +1104,22 @@
                                                         <div id="fipsLevel" class="certrow">
                                                             <div class="tbbsecurityLine">
                                                                 <span class="fieldHeader">Version:</span>
-                                                                <span class="fieldValue">[[${fipslevel.getVersion()}]]</span>
+                                                                <span class="fieldValue">[[${fipslevel.getFipsVersion()}]]</span>
                                                             </div>
                                                             <div class="tbbsecurityLine">
                                                                 <span class="fieldHeader">Level:</span>
                                                                 <span
-                                                                    class="fieldValue">[[${#strings.toUpperCase(fipslevel.getLevel().getValue())}]]</span>
+                                                                    class="fieldValue">[[${#strings.toUpperCase(fipslevel.getSecurityLevel().getValue())}]]</span>
                                                             </div>
                                                             <div class="tbbsecurityLine">
-                                                                <th:block th:if="${#strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
+                                                                <th:block th:if="${fipslevel.fipsPlus}">
                                                                     <span class="badge text-bg-success">Plus</span>
                                                                 </th:block>
-                                                                <th:block th:if="${not #strings.equals(#strings.toUpperCase(fipslevel.getPlus()), 'TRUE')}">
+                                                                <th:block th:unless="${fipslevel.fipsPlus}">
                                                                     <span class="badge bg-danger">Not Plus</span>
                                                                 </th:block>
                                                             </div>
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1270,7 +1500,7 @@
                             <span class="colHeader">
                                 <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSpecificationInner"
                                    aria-expanded="true" data-bs-placement="top" aria-controls="tpmSpecificationInner">
-                                    TPM Specification
+                                    TPM Specification ▼
                                 </a>
                             </span>
                         </div>
@@ -1287,21 +1517,252 @@
                             <span class="colHeader">
                                 <a role="button" data-bs-toggle="collapse" class="collapsed" href="#tpmSecurityAssertionInner"
                                    aria-expanded="true" data-bs-placement="top" aria-controls="tpmSecurityAssertionInner">
-                                    TPM Security Assertion
+                                    TPM Security Assertion ▼
                                 </a>
                             </span>
                         </div>
                         <div id="tpmSecurityAssertion" class="col col-md-8">
                             <div id="tpmSecurityAssertionInner" class="card-body collapse" role="tabpanel"
                                  aria-expanded="false">
-                                <div>Version:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}]]</span></div>
-                                <div>Field Upgradeable:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}]]</span>
+                                <table class="table table-bordered table-sm">
+                                    <tr>
+                                        <th>Version</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsTpmSecAssertsVersion')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Field Upgradeable</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsFieldUpgradeable')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>EK Generation Type</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsEkGenType')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>EK Generation Location</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>EK Certificate Generation Location</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <span class="colHeader">
+                                    <a role="button" data-bs-toggle="collapse" class="collapsed"
+                                       href="#commonCriteriaInner" aria-expanded="false" data-bs-placement="top"
+                                       aria-controls="commonCriteriaInner">
+                                        Common Criteria Info ▼
+                                    </a>
+                                </span>
+                                <div id="commonCriteriaInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                    <table class="table table-bordered table-sm">
+                                        <tr>
+                                            <th>Version</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresCcVersion')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Assurance Level</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresAssuranceLevel')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Evaluation Status</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresEvaluationStatus')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Plus</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresCcPlus')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Strength of Function</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresStrengthOfFunction')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Profile OID</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresProfileOid')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Profile URI</th>
+                                            <td>
+                                                <table class="table table-sm mb-0">
+                                                    <tr>
+                                                        <th>Uniform Resource Identifier</th>
+                                                        <td>
+                                                            <span th:replace="fragments/field-displayer :: value(
+                                                                ${initialData.get('CommonCriteriaMeasuresProfileUri')}
+                                                            )"></span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Hash Algorithm</th>
+                                                        <td>
+                                                            <table class="table table-sm mb-0">
+                                                                <tr>
+                                                                    <th>Algorithm</th>
+                                                                    <td>
+                                                                        <span th:replace="fragments/field-displayer :: value(
+                                                                            ${initialData.get('CommonCriteriaMeasuresProfileAlgOid')}
+                                                                        )"></span>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <th>Parameters</th>
+                                                                    <td>
+                                                                        <span th:replace="fragments/field-displayer :: value(
+                                                                            ${initialData.get('CommonCriteriaMeasuresProfileAlgParameters')}
+                                                                        )"></span>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Target OID</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('CommonCriteriaMeasuresTargetOid')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Target URI</th>
+                                            <td>
+                                                <table class="table table-sm mb-0">
+                                                    <tr>
+                                                        <th>Uniform Resource Identifier</th>
+                                                        <td>
+                                                            <span th:replace="fragments/field-displayer :: value(
+                                                                ${initialData.get('CommonCriteriaMeasuresTargetUri')}
+                                                            )"></span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Hash Algorithm</th>
+                                                        <td>
+                                                            <table class="table table-sm mb-0">
+                                                                <tr>
+                                                                    <th>Algorithm</th>
+                                                                    <td>
+                                                                        <span th:replace="fragments/field-displayer :: value(
+                                                                            ${initialData.get('CommonCriteriaMeasuresTargetAlgOid')}
+                                                                        )"></span>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <th>Parameters</th>
+                                                                    <td>
+                                                                        <span th:replace="fragments/field-displayer :: value(
+                                                                            ${initialData.get('CommonCriteriaMeasuresTargetAlgParameters')}
+                                                                        )"></span>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
-                                <div>ek Generation Type:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenType')}]]</span></div>
-                                <div>ek Generation Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkGenerationLocation')}]]</span>
+                                <br>
+                                <span class="colHeader">
+                                    <a role="button" data-bs-toggle="collapse" class="collapsed"
+                                       href="#fipsInfoInner" aria-expanded="false" data-bs-placement="top"
+                                       aria-controls="fipsInfoInner">
+                                        FIPS Info ▼
+                                    </a>
+                                </span>
+                                <div id="fipsInfoInner" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                                    <table class="table table-bordered table-sm">
+                                        <tr>
+                                            <th>Version</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('FIPSLevelFipsVersion')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Level</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('FIPSLevelSecurityLevel')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Plus</th>
+                                            <td>
+                                                <span th:replace="fragments/field-displayer :: value(
+                                                    ${initialData.get('FIPSLevelFipsPlus')}
+                                                )"></span>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
-                                <div>ek Certificate Generation
-                                    Location:&nbsp;<span>[[${initialData.get('TPMSecurityAssertionsEkCertificateGenerationLocation')}]]</span></div>
+                                <table class="table table-bordered table-sm">
+                                    <tr>
+                                        <th>ISO 9000 Certified</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('iso9000Certified')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>ISO 9000 URI</th>
+                                        <td>
+                                            <span th:replace="fragments/field-displayer :: value(
+                                                ${initialData.get('iso9000Uri')}
+                                            )"></span>
+                                        </td>
+                                    </tr>
+                                </table>
                             </div>
                         </div>
                     </div>

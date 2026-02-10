@@ -373,6 +373,12 @@ public final class CertificateStringMapBuilder {
             //x509 credential version
             data.put("x509Version", Integer.toString(certificate
                     .getX509CredentialVersion()));
+            // Reparse certificate to fetch additional details for display
+            try {
+                certificate.parseCertificate();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to re-parse Endorsement Credential for details display", e);
+            }
             // Add hashmap with TPM information if available
             if (certificate.getTpmSpecification() != null) {
                 data.putAll(
@@ -381,12 +387,6 @@ public final class CertificateStringMapBuilder {
             if (certificate.getTpmSecurityAssertions() != null) {
                 data.putAll(
                         convertStringToHash(certificate.getTpmSecurityAssertions().toString()));
-                // Reparse certificate to fetch additional details for display
-                try {
-                    certificate.parseCertificate();
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to re-parse Endorsement Credential for details display", e);
-                }
                 if (certificate.getCommonCriteriaMeasures() != null) {
                     data.putAll(convertStringToHash(certificate.getCommonCriteriaMeasures().toString()));
                 }
