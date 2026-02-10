@@ -21,23 +21,6 @@ public class CertificateDetailsPageParams implements PageParams {
     private String type;
 
     /**
-     * Constructor to set ID Certificate Details URL parameters.
-     *
-     * @param id the String parameter to set
-     */
-    public CertificateDetailsPageParams(final String id) {
-        this.id = id;
-    }
-
-    /**
-     * Default constructor for Spring.
-     */
-    public CertificateDetailsPageParams() {
-        id = null;
-        type = null;
-    }
-
-    /**
      * Allows PageController to iterate over the url parameters.
      *
      * @return map containing the object's URL parameters.

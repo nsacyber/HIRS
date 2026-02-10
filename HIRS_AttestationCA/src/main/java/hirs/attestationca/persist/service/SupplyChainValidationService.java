@@ -105,6 +105,7 @@ public class SupplyChainValidationService {
      * @param device         The device to be validated.
      * @param componentInfos list of components from the device
      * @return A summary of the validation results.
+     * @throws IOException if any issues arise from validating the supply chain
      */
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
                                                             final List<PlatformCredential> pcs,

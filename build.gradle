@@ -68,6 +68,12 @@ subprojects {
     }
 
     tasks.withType(Javadoc).configureEach {
+        if (project.name == 'HIRS_AttestationCA') {
+            // Remove the generated files from the source set
+            source = source.filter { file ->
+                !file.path.contains('build/generated/source/proto/main/java')
+            }
+        }
         options.addStringOption('Xmaxwarns', '0')  // Show unlimited warnings todo
     }
 

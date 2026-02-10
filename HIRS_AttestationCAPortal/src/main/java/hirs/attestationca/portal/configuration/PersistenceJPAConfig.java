@@ -1,4 +1,4 @@
-package hirs.attestationca.portal;
+package hirs.attestationca.portal.configuration;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
@@ -305,7 +305,7 @@ public class PersistenceJPAConfig {
         certPathValidator.validate(certPath, pkixParams);
     }
 
-    final Properties additionalProperties() {
+    private Properties additionalProperties() {
         final Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty("hibernate.hbm2ddl.auto",
                 environment.getProperty("hibernate.hbm2ddl.auto"));

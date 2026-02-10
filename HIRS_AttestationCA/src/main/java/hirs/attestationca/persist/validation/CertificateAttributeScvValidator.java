@@ -153,6 +153,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @param ignoreRevisionAttribute      policy flag to ignore the revision attribute
      * @param ignorePcieVpdAttribute       policy flag to ignore the pcie vpd attribute
      * @return either PASS or FAIL
+     * @throws IOException if any issues arise while validating v2 platform credential attributes
      */
     public static AppraisalStatus validatePlatformCredentialAttributesV2p0(
             final PlatformCredential platformCredential,

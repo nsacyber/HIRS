@@ -195,9 +195,11 @@ public class ValidationSummaryPageService {
      * The results are returned with pagination support.
      * <p>
      * This method combines the logic of two search functionalities:
-     * - Global search: Searches across all specified columns for a matching term.
-     * - Column-specific search: Filters based on individual column search criteria, such as text or date searches.
-     * <p>
+     * <ul>
+     * <li> Global search: Searches across all specified columns for a matching term.</li>
+     * <li> Column-specific search: Filters based on individual column search criteria,
+     * such as text or date searches.</li>
+     * </ul>
      *
      * @param searchableColumnNames     list of the searchable column names
      * @param globalSearchTerm          The term that the user enters in the global search box.

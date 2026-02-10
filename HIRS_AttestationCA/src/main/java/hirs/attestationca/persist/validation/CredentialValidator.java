@@ -176,6 +176,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      * @param ignoreRevisionAttribute      policy flag to ignore the revision attribute
      * @param ignorePcieVpdAttribute       policy flag to ignore the pcie vpd attribute
      * @return The result of the validation.
+     * @throws IOException if any issues arise while validating platform credential attributes
      */
     public static AppraisalStatus validatePlatformCredentialAttributes(
             final PlatformCredential platformCredential,
