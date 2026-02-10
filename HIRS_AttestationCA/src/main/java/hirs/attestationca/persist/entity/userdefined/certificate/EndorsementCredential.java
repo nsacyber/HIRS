@@ -94,6 +94,11 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     private static final int SECURITY_VAL_MIN = 1;
     private static final int SECURITY_VAL_MAX = 4;
 
+    private static final int BYTE_MASK_UNSIGNED = 0xFF;
+    private static final int ASCII_PRINTABLE_MIN = 0x20;
+    private static final int ASCII_PRINTABLE_MAX = 0x7E;
+    private static final int DER_OID_TAG = 0x06;
+
     // EK Tag index values
     private static final int EK_TYPE_TAG = 0;
     private static final int EK_LOC_TAG = 1;
@@ -413,7 +418,8 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                                 tpmSecurityAssertions.setEkGenerationLocation(ekGenLocation);
                             }
                         } case EK_CERT_LOC_TAG -> {
-                            int ekCertGenLocVal = ((ASN1Enumerated) unwrapTaggedObject(taggedObj)).getValue().intValue();
+                            int ekCertGenLocVal = ((ASN1Enumerated) unwrapTaggedObject(taggedObj)).getValue()
+                                    .intValue();
                             if (ekCertGenLocVal >= EK_LOC_VAL_MIN
                                     && ekCertGenLocVal <= EK_LOC_VAL_MAX) {
                                 TPMSecurityAssertions.EkGenerationLocation ekCertGenLoc
@@ -766,9 +772,10 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * Unwraps an ASN1TaggedObject to get the underlying ASN1Primitive,
      * handling both explicit (direct type) and implicit (octet string).
      *
-     * @param taggedObj the ASN1TaggedObject to manually parse
+     * @param taggedObj the ASN1TaggedObject to manually parse.
+     * @return the ASN1Primitive form of original object
      */
-    private static ASN1Primitive unwrapTaggedObject(ASN1TaggedObject taggedObj) throws IOException {
+    private static ASN1Primitive unwrapTaggedObject(final ASN1TaggedObject taggedObj) {
         ASN1Encodable encodable = taggedObj.getBaseObject();
 
         // Explicit = Leave as is
@@ -785,17 +792,17 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                 return parsed.toASN1Primitive();
             }
         } catch (Exception e) {
-            // Ignore
+            log.debug("Failed DER parse of implicit tagged value, falling back to heuristics", e);
         }
         // Enum parse
         if (bytes.length == 1) {
-            return new ASN1Enumerated(bytes[0] & 0xFF);
+            return new ASN1Enumerated(bytes[0] & BYTE_MASK_UNSIGNED);
         }
         // IA5String parse
         boolean ascii = bytes.length > 0;
         for (byte b : bytes) {
-            int c = b & 0xFF;
-            if (c < 0x20 || c > 0x7E) {
+            int c = b & BYTE_MASK_UNSIGNED;
+            if (c < ASCII_PRINTABLE_MIN || c > ASCII_PRINTABLE_MAX) {
                 ascii = false;
                 break;
             }
@@ -810,8 +817,9 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * Parses an ASN.1 tagged object to extract an Object Identifier (OID) as a string.
      *
      * @param taggedObj the ASN1TaggedObject to manually parse
+     * @return oidString the Oid to return in String form
      */
-    private static String parseTaggedOid(ASN1TaggedObject taggedObj) throws IOException {
+    private static String parseTaggedOid(final ASN1TaggedObject taggedObj) throws IOException {
         ASN1Primitive primitiveObj = unwrapTaggedObject(taggedObj);
         String oidString = "";
         if (primitiveObj instanceof ASN1ObjectIdentifier oid) {
@@ -819,7 +827,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
         } else if (primitiveObj instanceof ASN1OctetString oct) {
             byte[] body = oct.getOctets();
             byte[] der = new byte[body.length + 2];
-            der[0] = 0x06;
+            der[0] = DER_OID_TAG;
             der[1] = (byte) body.length;
             System.arraycopy(body, 0, der, 2, body.length);
             oidString = ASN1ObjectIdentifier.getInstance(ASN1Primitive.fromByteArray(der))
