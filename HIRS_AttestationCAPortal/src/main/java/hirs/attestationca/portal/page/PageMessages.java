@@ -10,13 +10,23 @@ import java.util.List;
  */
 @Getter
 public class PageMessages {
-
+    /**
+     * A list of error messages to be displayed on the page.
+     */
     private final List<String> errorMessages = new ArrayList<>();
+
+    /**
+     * A list of success messages to be displayed on the page.
+     */
     private final List<String> successMessages = new ArrayList<>();
+
+    /**
+     * A list of informational messages to be displayed on the page.
+     */
     private final List<String> infoMessages = new ArrayList<>();
 
     /**
-     * Adds an error message.
+     * Adds an error message to the list of error messages
      *
      * @param error the error message to add
      */
@@ -25,7 +35,7 @@ public class PageMessages {
     }
 
     /**
-     * Adds multiple error messages.
+     * Adds multiple error messages to the list of error messages.
      *
      * @param multipleErrors list of error messages
      */
@@ -34,7 +44,7 @@ public class PageMessages {
     }
 
     /**
-     * Adds a success message.
+     * Adds a success message to the list of success messages.
      *
      * @param success the success message to add
      */
@@ -43,7 +53,7 @@ public class PageMessages {
     }
 
     /**
-     * Adds multiple success messages.
+     * Adds multiple success messages to the list of success messages.
      *
      * @param multipleSuccessMessages list of success messages to add
      */
@@ -52,7 +62,7 @@ public class PageMessages {
     }
 
     /**
-     * Adds an informational message.
+     * Adds an informational message to the list of info messages.
      *
      * @param info the informational message to add
      */
@@ -61,11 +71,11 @@ public class PageMessages {
     }
 
     /**
-     * Adds multiple informational messages.
+     * Adds multiple informational messages to the list of info messages
      *
      * @param multipleInfoMessages list of informational messages to add
      */
     public void addInfoMessages(final List<String> multipleInfoMessages) {
-        this.errorMessages.addAll(multipleInfoMessages);
+        this.infoMessages.addAll(multipleInfoMessages);
     }
 }

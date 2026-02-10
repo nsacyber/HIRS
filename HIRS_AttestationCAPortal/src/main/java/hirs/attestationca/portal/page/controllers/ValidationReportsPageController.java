@@ -116,6 +116,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      *
      * @param request  http request
      * @param response http response
+     * @throws IOException if any issues arise from downloading the validation report.
      */
     @PostMapping("/download")
     public void downloadValidationReports(final HttpServletRequest request,

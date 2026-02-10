@@ -15,6 +15,7 @@ public class CoseHeaderUnprotected extends CoseHeader {
 
     /**
      * Parser constructor to fill class variables.
+     *
      * @param uheader COSEUnprotectedHeader holding the COSE unprotected header
      */
     public CoseHeaderUnprotected(final COSEUnprotectedHeader uheader) {
@@ -37,9 +38,10 @@ public class CoseHeaderUnprotected extends CoseHeader {
 
     /**
      * Default toString.
+     *
      * @return default "pretty" version
      */
-    public String toString()   {
+    public String toString() {
         try {
             return toString("pretty");
         } catch (IOException e) {
@@ -49,8 +51,11 @@ public class CoseHeaderUnprotected extends CoseHeader {
 
     /**
      * Prints the processed COSE Unprotected Header data.
-     * @param format  empty (default String) or "pretty"
-     * @return a formated string representation of the data in the COSE unproteced header object
+     *
+     * @param format empty (default String) or "pretty"
+     * @return a formated string representation of the data in the COSE unprotected header object
+     * @throws IOException if any issues arise while building the string representation of the COSE
+     *                     Unprotected Header data
      */
     public String toString(final String format) throws IOException {
         String returnString = "";

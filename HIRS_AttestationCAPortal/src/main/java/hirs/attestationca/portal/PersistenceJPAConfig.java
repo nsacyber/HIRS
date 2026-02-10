@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.env.Environment;
-import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -22,7 +21,6 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import javax.sql.DataSource;
 import java.nio.file.Files;
@@ -91,6 +89,30 @@ public class PersistenceJPAConfig {
     private Environment environment;
 
     /**
+     * Initialization of the ACA. Detects environment and runs configuration
+     * methods as required. This method is intended to be invoked by the Spring
+     * application context.
+     */
+    @PostConstruct
+    void initialize() {
+        // ensure that Bouncy Castle is registered as a security provider
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
+
+    /**
+     * Platform Transaction Manager bean.
+     *
+     * @return platform transaction manager bean
+     */
+    @Bean
+    public PlatformTransactionManager transactionManager() {
+        final JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
+        return transactionManager;
+    }
+
+    /**
      * Entity manager factory bean.
      *
      * @return a local container entity manager factory bean
@@ -124,17 +146,6 @@ public class PersistenceJPAConfig {
         dataSource.setPassword(environment.getProperty("hibernate.connection.password"));
 
         return dataSource;
-    }
-
-    /**
-     * Initialization of the ACA. Detects environment and runs configuration
-     * methods as required. This method is intended to be invoked by the Spring
-     * application context.
-     */
-    @PostConstruct
-    void initialize() {
-        // ensure that Bouncy Castle is registered as a security provider
-        Security.addProvider(new BouncyCastleProvider());
     }
 
     /**
@@ -257,28 +268,6 @@ public class PersistenceJPAConfig {
     }
 
     /**
-     * Platform Transaction Manager bean.
-     *
-     * @return platform transaction manager bean
-     */
-    @Bean
-    public PlatformTransactionManager transactionManager() {
-        final JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
-        return transactionManager;
-    }
-
-    /**
-     * Persistence Exception Translation Post Processor bean.
-     *
-     * @return persistence exception translation post processor bean
-     */
-    @Bean
-    public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
-        return new PersistenceExceptionTranslationPostProcessor();
-    }
-
-    /**
      * Helper method that validates the provided leaf certificate against the
      * established intermediate and root certificates.
      *
@@ -326,16 +315,5 @@ public class PersistenceJPAConfig {
                 "false");
 
         return hibernateProperties;
-    }
-
-    /**
-     * Creates a Spring Resolver for Multi-part form uploads. This is required
-     * for spring controllers to be able to process Spring MultiPartFiles
-     *
-     * @return bean to handle multipart form requests
-     */
-    @Bean(name = "multipartResolver")
-    public StandardServletMultipartResolver multipartResolver() {
-        return new StandardServletMultipartResolver();
     }
 }

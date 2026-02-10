@@ -14,7 +14,6 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.net.URISyntaxException;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Abstract class to provide common functionality for page Controllers.
@@ -110,10 +109,10 @@ public abstract class PageController<P extends PageParams> {
     /**
      * Redirects controller's page with the specified data.
      *
-     * @param newPage new page to get the model and view
-     * @param params  The url parameters to pass to the page.
-     * @param model   The model data to pass to the page.
-     * @param attr    The request's RedirectAttributes to hold the model data.
+     * @param newPage            new page to get the model and view
+     * @param params             The url parameters to pass to the page.
+     * @param model              The model data to pass to the page.
+     * @param redirectAttributes The request's RedirectAttributes to hold the model data.
      * @return RedirectView back to the page with the specified parameters.
      * @throws URISyntaxException if malformed URI
      */
@@ -121,33 +120,34 @@ public abstract class PageController<P extends PageParams> {
             final Page newPage,
             final P params,
             final Map<String, ?> model,
-            final RedirectAttributes attr) throws URISyntaxException {
+            final RedirectAttributes redirectAttributes) throws URISyntaxException {
 
-        String defaultUri = "../" + newPage.getViewName();
-        // create uri with specified parameters
-        URIBuilder uri = new URIBuilder("../" + newPage.getViewName());
+        final String defaultUri = "../" + newPage.getViewName();
+
+        // create uri with default uri
+        URIBuilder uri = new URIBuilder(defaultUri);
         log.debug("Redirection URI = {}", uri.toString());
 
         if (params != null) {
             for (Map.Entry<String, ?> e : params.asMap().entrySet()) {
-                Object v = Optional.ofNullable(e.getValue()).orElse(null);
+                Object v = e.getValue();
                 uri.addParameter(e.getKey(), v.toString());
             }
         }
 
-        // create view
-        RedirectView redirect = new RedirectView(defaultUri);
+        // create redirect view
+        RedirectView redirectView = new RedirectView(uri.toString());
 
         // do not put model attributes in the url
-        redirect.setExposeModelAttributes(false);
+        redirectView.setExposeModelAttributes(false);
 
         // add model data to forward to redirected page
         if (model != null) {
             for (Map.Entry<String, ?> e : model.entrySet()) {
-                attr.addFlashAttribute(e.getKey(), e.getValue());
+                redirectAttributes.addFlashAttribute(e.getKey(), e.getValue());
             }
         }
 
-        return redirect;
+        return redirectView;
     }
 }

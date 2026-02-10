@@ -67,6 +67,10 @@ subprojects {
         }
     }
 
+    tasks.withType(Javadoc).configureEach {
+        options.addStringOption('Xmaxwarns', '0')  // Show unlimited warnings todo
+    }
+
     tasks.withType(Checkstyle).configureEach {
         reports {
             xml.required = false

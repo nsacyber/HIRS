@@ -112,7 +112,6 @@ public final class ProvisionUtils {
      * @param identityClaim byte array that should be converted to a Protobuf IdentityClaim
      *                      object
      * @return the Protobuf generated Identity Claim object
-     * @throws {@link InvalidProtocolBufferException} if byte array could not be parsed
      */
     public static ProvisionerTpm2.IdentityClaim parseIdentityClaim(final byte[] identityClaim) {
         try {
@@ -128,7 +127,6 @@ public final class ProvisionUtils {
      *
      * @param certificate the X509 certificate to be converted to DER encoding
      * @return the byte array representing the DER encoded certificate
-     * @throws {@link UnexpectedServerException} if error occurs during encoding retrieval
      */
     public static byte[] getDerEncodedCertificate(final X509Certificate certificate) {
         try {
@@ -145,7 +143,6 @@ public final class ProvisionUtils {
      * Helper method to extract a PEM encoded certificate from an X509 certificate.
      *
      * @param certificate the X509 certificate to be converted to PEM encoding
-     * @throws {@link UnexpectedServerException} if error occurs during encoding retrieval
      * @return the string representing the PEM encoded certificate
      */
     public static String getPemEncodedCertificate(final X509Certificate certificate) {
@@ -308,12 +305,10 @@ public final class ProvisionUtils {
                 generateRandomBytes(DEFAULT_IV_SIZE);
 
         // create a symmetric key struct for the CA contents
-        SymmetricKey sessionKey =
-                new SimpleStructBuilder<>(SymmetricKey.class)
-                        .set("algorithmId", SymmetricKey.ALGORITHM_AES)
-                        .set("encryptionScheme", SymmetricKey.SCHEME_CBC)
-                        .set("key", responseSymmetricKey).build();
-        return sessionKey;
+        return new SimpleStructBuilder<>(SymmetricKey.class)
+                .set("algorithmId", SymmetricKey.ALGORITHM_AES)
+                .set("encryptionScheme", SymmetricKey.SCHEME_CBC)
+                .set("key", responseSymmetricKey).build();
     }
 
     /**
@@ -513,17 +508,15 @@ public final class ProvisionUtils {
             byte[] credentialBytes = ArrayUtils.addAll(credentialIV, encryptedCredential);
 
             // create attestation for identity response that contains the credential
-            SymmetricAttestation attestation =
-                    new SimpleStructBuilder<>(SymmetricAttestation.class)
-                            .set("credential", credentialBytes)
-                            .set("algorithm",
-                                    new SimpleStructBuilder<>(SymmetricKeyParams.class)
-                                            .set("algorithmId", SymmetricKeyParams.ALGORITHM_AES)
-                                            .set("encryptionScheme",
-                                                    SymmetricKeyParams.SCHEME_CBC_PKCS5PADDING)
-                                            .set("signatureScheme", 0).build()).build();
 
-            return attestation;
+            return new SimpleStructBuilder<>(SymmetricAttestation.class)
+                    .set("credential", credentialBytes)
+                    .set("algorithm",
+                            new SimpleStructBuilder<>(SymmetricKeyParams.class)
+                                    .set("algorithmId", SymmetricKeyParams.ALGORITHM_AES)
+                                    .set("encryptionScheme",
+                                            SymmetricKeyParams.SCHEME_CBC_PKCS5PADDING)
+                                    .set("signatureScheme", 0).build()).build();
 
         } catch (BadPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException
                  | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException

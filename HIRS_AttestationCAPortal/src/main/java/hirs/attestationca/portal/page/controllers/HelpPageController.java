@@ -125,6 +125,7 @@ public class HelpPageController extends PageController<NoPageParams> {
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
      * @return the redirection view
+     * @throws URISyntaxException if any issues arise from redirecting to the Help page.
      */
     @PostMapping("/setLogLevel")
     public RedirectView setLogLevel(@RequestParam final String loggerName,
