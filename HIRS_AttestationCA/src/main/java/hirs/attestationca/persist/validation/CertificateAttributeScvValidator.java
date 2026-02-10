@@ -35,6 +35,9 @@ import java.util.UUID;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
+/**
+ * Validator class responsible for validating certificate attributes.
+ */
 @Log4j2
 public class CertificateAttributeScvValidator extends SupplyChainCredentialValidator {
 

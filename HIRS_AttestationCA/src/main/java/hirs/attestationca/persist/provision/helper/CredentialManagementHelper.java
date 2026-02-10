@@ -1,9 +1,9 @@
 package hirs.attestationca.persist.provision.helper;
 
-import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.exceptions.DBManagerException;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;

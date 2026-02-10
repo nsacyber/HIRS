@@ -26,7 +26,7 @@ public class PageMessages {
     private final List<String> infoMessages = new ArrayList<>();
 
     /**
-     * Adds an error message to the list of error messages
+     * Adds an error message to the list of error messages.
      *
      * @param error the error message to add
      */
@@ -71,7 +71,7 @@ public class PageMessages {
     }
 
     /**
-     * Adds multiple informational messages to the list of info messages
+     * Adds multiple informational messages to the list of info messages.
      *
      * @param multipleInfoMessages list of informational messages to add
      */

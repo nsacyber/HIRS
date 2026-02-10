@@ -1,15 +1,23 @@
 package hirs.attestationca.persist.util;
 
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVariables;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Base64;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
+/**
+ * Helper class that provides various utility methods for handling credential-related tasks.
+ */
 @Log4j2
 public final class CredentialHelper {
 
@@ -20,10 +28,30 @@ public final class CredentialHelper {
     }
 
     /**
+     * Converts a set of {@link CertificateAuthorityCredential} certificates to a list of
+     * {@link X509Certificate} Certificates.
+     *
+     * @param certificateAuthorityCredentials Set of {@link CertificateAuthorityCredential} certificates
+     *                                        to convert
+     * @return list of {@link X509Certificate} certificates
+     * @throws IOException if any issues arise attempting to convert the list of certificate
+     *                     authority credentials to X509 certificates
+     */
+    public static List<X509Certificate> convertCACsToX509Certificates(
+            final Set<CertificateAuthorityCredential> certificateAuthorityCredentials)
+            throws IOException {
+        List<X509Certificate> certs = new ArrayList<>(certificateAuthorityCredentials.size());
+        for (CertificateAuthorityCredential cac : certificateAuthorityCredentials) {
+            certs.add(cac.getX509Certificate());
+        }
+        return certs;
+    }
+
+    /**
      * Small method to check if the certificate is a PEM.
      *
      * @param possiblePEM header information
-     * @return true if it is.
+     * @return true if the provided string is a PEM.
      */
     public static boolean isPEM(final String possiblePEM) {
         return possiblePEM.contains(CertificateVariables.PEM_HEADER)
@@ -34,7 +62,7 @@ public final class CredentialHelper {
      * Small method to check if there are multi pem files.
      *
      * @param possiblePEM header information
-     * @return true if it is.
+     * @return true if the provided string is a Multi-PEM.
      */
     public static boolean isMultiPEM(final String possiblePEM) {
         boolean multiPem = false;
@@ -76,7 +104,6 @@ public final class CredentialHelper {
      * @param certificateBytes raw byte form
      * @return a cleaned up byte form
      */
-
     public static byte[] trimCertificate(final byte[] certificateBytes) {
         int certificateStart = 0;
         int certificateLength = 0;

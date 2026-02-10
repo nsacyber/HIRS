@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.persist.configuration;
 
 import hirs.structs.converters.SimpleStructConverter;
 import hirs.structs.converters.StructConverter;

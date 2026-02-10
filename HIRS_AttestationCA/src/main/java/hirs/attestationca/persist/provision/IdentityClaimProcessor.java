@@ -69,6 +69,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Processor class that is responsible for processing identity claim requests from and to the provisioner.
+ */
 @Log4j2
 public class IdentityClaimProcessor extends AbstractProcessor {
     /**
@@ -165,7 +168,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             log.error(ex.getMessage());
         }
 
-        ByteString blobStr = ByteString.copyFrom(new byte[]{});
+        ByteString blobStr = ByteString.copyFrom(new byte[] {});
 
         if (validationResult == AppraisalStatus.Status.PASS) {
             RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());

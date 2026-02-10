@@ -1,6 +1,5 @@
 package hirs.attestationca.persist;
 
-import com.google.protobuf.ByteString;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.provision.AbstractProcessor;
@@ -26,7 +25,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -51,7 +49,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.Random;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -60,7 +57,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -121,12 +118,43 @@ public class AttestationCertificateAuthorityTest {
     private static final String AK_NAME_HEX = "00 0b 6e 8f 79 1c 7e 16  96 1b 11 71 65 9c e0 cd"
             + "ae 0d 4d aa c5 41 be 58  89 74 67 55 96 c2 5e 38"
             + "e2 94";
+    private final Random random = new Random();
     // object in test
     private AttestationCertificateAuthority aca;
     private AccessAbstractProcessor abstractProcessor;
     // test key pair
     private KeyPair keyPair;
-    private  Random random = new Random();
+
+    /**
+     * Creates a self-signed X.509 public-key certificate.
+     *
+     * @param pair KeyPair to create the cert for
+     * @return self-signed X509Certificate
+     */
+    private static X509Certificate createSelfSignedCertificate(final KeyPair pair) {
+        Security.addProvider(new BouncyCastleProvider());
+        final int timeRange = 10000;
+        X509Certificate cert = null;
+        try {
+
+            X500Name issuerName = new X500Name("CN=TEST2, OU=TEST2, O=TEST2, C=TEST2");
+            X500Name subjectName = new X500Name("CN=TEST, OU=TEST, O=TEST, C=TEST");
+            BigInteger serialNumber = BigInteger.ONE;
+            Date notBefore = new Date(System.currentTimeMillis() - timeRange);
+            Date notAfter = new Date(System.currentTimeMillis() + timeRange);
+            X509v3CertificateBuilder builder =
+                    new JcaX509v3CertificateBuilder(issuerName, serialNumber, notBefore, notAfter,
+                            subjectName, pair.getPublic());
+            ContentSigner signer =
+                    new JcaContentSignerBuilder("SHA256WithRSA").setProvider("BC").build(
+                            pair.getPrivate());
+            return new JcaX509CertificateConverter().setProvider("BC").getCertificate(
+                    builder.build(signer));
+        } catch (Exception e) {
+            fail("Exception occurred while creating a cert", e);
+        }
+        return cert;
+    }
 
     /**
      * Registers bouncy castle as a security provider. Normally the JEE container will handle this,
@@ -382,37 +410,6 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Creates a self-signed X.509 public-key certificate.
-     *
-     * @param pair KeyPair to create the cert for
-     * @return self-signed X509Certificate
-     */
-    private static X509Certificate createSelfSignedCertificate(final KeyPair pair) {
-        Security.addProvider(new BouncyCastleProvider());
-        final int timeRange = 10000;
-        X509Certificate cert = null;
-        try {
-
-            X500Name issuerName = new X500Name("CN=TEST2, OU=TEST2, O=TEST2, C=TEST2");
-            X500Name subjectName = new X500Name("CN=TEST, OU=TEST, O=TEST, C=TEST");
-            BigInteger serialNumber = BigInteger.ONE;
-            Date notBefore = new Date(System.currentTimeMillis() - timeRange);
-            Date notAfter = new Date(System.currentTimeMillis() + timeRange);
-            X509v3CertificateBuilder builder =
-                    new JcaX509v3CertificateBuilder(issuerName, serialNumber, notBefore, notAfter,
-                            subjectName, pair.getPublic());
-            ContentSigner signer =
-                    new JcaContentSignerBuilder("SHA256WithRSA").setProvider("BC").build(
-                            pair.getPrivate());
-            return new JcaX509CertificateConverter().setProvider("BC").getCertificate(
-                    builder.build(signer));
-        } catch (Exception e) {
-            fail("Exception occurred while creating a cert", e);
-        }
-        return cert;
-    }
-
-    /**
      * Tests {@link AttestationCertificateAuthority#
      * AttestationCertificateAuthority(SupplyChainValidationService, PrivateKey,
      * X509Certificate, StructConverter, CertificateManager, DeviceRegister, int,
@@ -610,46 +607,47 @@ public class AttestationCertificateAuthorityTest {
         assertEquals(hex, realHex);
     }
 
-    /**
-     * Method to generate a make credential output file for use in manual testing. Feed to
-     * a TPM 2.0 or emulator using the activate credential command to ensure proper parsing.
-     * Must be performed manually. To use, copy the TPM's ek and ak into
-     * HIRS_AttestationCA/src/test/resources/tpm2/test/ and ensure the variables akPubPath
-     * and ekPubPath are correct. Your output file will be
-     * HIRS_AttestationCA/src/test/resources/tpm2/test/make.blob and the nonce used will be
-     * output as HIRS_AttestationCA/src/test/resources/tpm2/test/secret.blob
-     *
-     * @throws URISyntaxException invalid file path
-     * @throws IOException        unable to read file
-     */
-    @Disabled
-    @Test
-    public void testMakeCredential() throws URISyntaxException, IOException {
-        Path akPubPath = Paths.get(getClass().getResource(
-                AK_PUBLIC_PATH).toURI());
-        Path ekPubPath = Paths.get(getClass().getResource(
-                EK_PUBLIC_PATH).toURI());
-
-        byte[] ekPubFile = Files.readAllBytes(ekPubPath);
-        byte[] akPubFile = Files.readAllBytes(akPubPath);
-
-        RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(ekPubFile);
-        RSAPublicKey akPub = ProvisionUtils.parsePublicKey(akPubFile);
-
-        // prepare the nonce and wrap it with keys
-        final byte[] nonce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-                21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
-        ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
-
-        Path resources = Objects.requireNonNull(Paths.get(Objects.requireNonNull(this.getClass().getResource(
-                        "/").toURI()))
-                .getParent().getParent().getParent().getParent());
-        Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
-        Files.write(makeBlob, blob.toByteArray());
-
-        Path secretPath = resources.resolve("src/test/resources/tpm2/test/secret.blob");
-        Files.write(secretPath, nonce);
-    }
+//    /**
+//     * Method to generate a make credential output file for use in manual testing. Feed to
+//     * a TPM 2.0 or emulator using the activate credential command to ensure proper parsing.
+//     * Must be performed manually. To use, copy the TPM's ek and ak into
+//     * HIRS_AttestationCA/src/test/resources/tpm2/test/ and ensure the variables akPubPath
+//     * and ekPubPath are correct. Your output file will be
+//     * HIRS_AttestationCA/src/test/resources/tpm2/test/make.blob and the nonce used will be
+//     * output as HIRS_AttestationCA/src/test/resources/tpm2/test/secret.blob
+//     *
+//     * @throws URISyntaxException invalid file path
+//     * @throws IOException        unable to read file
+//     */
+//    @Disabled
+//    @Test
+//    public void testMakeCredential() throws URISyntaxException, IOException {
+//        Path akPubPath = Paths.get(Objects.requireNonNull(getClass().getResource(
+//                AK_PUBLIC_PATH)).toURI());
+//        Path ekPubPath = Paths.get(Objects.requireNonNull(getClass().getResource(
+//                EK_PUBLIC_PATH)).toURI());
+//
+//        byte[] ekPubFile = Files.readAllBytes(ekPubPath);
+//        byte[] akPubFile = Files.readAllBytes(akPubPath);
+//
+//        RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(ekPubFile);
+//        RSAPublicKey akPub = ProvisionUtils.parsePublicKey(akPubFile);
+//
+//        // prepare the nonce and wrap it with keys
+//        final byte[] nonce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+//                21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+//        ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
+//
+//        Path resources = Objects.requireNonNull(Paths.get(Objects.requireNonNull(
+//                        Objects.requireNonNull(this.getClass().getResource(
+//                                "/")).toURI()))
+//                .getParent().getParent().getParent().getParent());
+//        Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
+//        Files.write(makeBlob, blob.toByteArray());
+//
+//        Path secretPath = resources.resolve("src/test/resources/tpm2/test/secret.blob");
+//        Files.write(secretPath, nonce);
+//    }
 
     /**
      * Test helper method that encrypts a blob using the specified transformation and the test key

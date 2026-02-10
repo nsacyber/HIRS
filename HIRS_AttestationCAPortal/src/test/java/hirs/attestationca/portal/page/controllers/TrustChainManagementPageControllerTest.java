@@ -116,12 +116,11 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Tests download the ACA full trust chain/
+     * Tests download the ACA full trust chain.
      * todo write download aca-trust-chain cert method
      */
     @Test
     public void testDownloadACATrustChainCert() {
-
     }
 
     /**

@@ -22,6 +22,9 @@ import lombok.Setter;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+/**
+ * User-defined, Java representation of a physical Device.
+ */
 @Entity
 @Table(name = "Device")
 @Setter

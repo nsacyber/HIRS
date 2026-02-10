@@ -9,6 +9,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 
@@ -27,6 +28,9 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
+/**
+ * Validator class responsible for validating certificates.
+ */
 @Log4j2
 public class CredentialValidator extends SupplyChainCredentialValidator {
 
