@@ -1,9 +1,3 @@
-configurations {
-    configureEach {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
-}
-
 dependencies {
     implementation libs.commons.lang3
 
