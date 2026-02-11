@@ -10,13 +10,15 @@ FROM rockylinux:9.3
 #       2) update gradle
 #     If not re-built, the docker run will still work, but will take longer as it downloads updates
 #   * Steps to login to registry, build image, tag image with ghcr.io registry, and push to registry:
-#     $ cat pat.txt | sudo docker login ghcr.io -u iadgovuser## --password-stdin
+      $ sudo groupadd docker
+      $ sudo usermod -aG docker $USER
+#     $ cat pat.txt | docker login ghcr.io -u iadgovuser## --password-stdin
 #       Note: pat requires permissions "upload packages from GitHub Package Registry" and possibly "repo"
-#     $ sudo docker build . -f Dockerfile.rocky9ci -t hirs-rocky9-ci:latest
+#     $ docker build . -f Dockerfile.rocky9ci -t hirs-rocky9-ci:latest
 #       Note: may need to use --no-cache when building, if 'git clone HIRS' or 'gradlew' is cached
 #             (bc need any updated dependencies)
-#     $ sudo docker image tag hirs-rocky9-ci:latest ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
-#     $ sudo docker push ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
+#     $ docker image tag hirs-rocky9-ci:latest ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
+#     $ docker push ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
 
 # Update package installer
 RUN dnf -y update
