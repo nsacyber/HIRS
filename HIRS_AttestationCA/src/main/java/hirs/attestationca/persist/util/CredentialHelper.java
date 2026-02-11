@@ -4,7 +4,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVari
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Base64;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
