@@ -7,7 +7,6 @@ plugins {
     id 'application'
     id 'com.github.spotbugs' version '6.4.8' apply false
     id 'org.owasp.dependencycheck' version '12.2.0'
-    id 'io.spring.dependency-management' version '1.1.7' apply false
     id 'com.palantir.git-version' version '4.3.0'
 }
 
@@ -17,7 +16,6 @@ ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml"
 subprojects {
     apply plugin: "checkstyle"
     apply plugin: "com.github.spotbugs"
-    apply plugin: 'io.spring.dependency-management'
     apply plugin: "java"
     apply plugin: "jacoco"
     apply plugin: "org.owasp.dependencycheck"

@@ -29,7 +29,7 @@ RUN mkdir ibmtpm && pushd ibmtpm && wget --no-check-certificate https://download
 RUN wget https://dot.net/v1/dotnet-install.sh
 RUN sh dotnet-install.sh --os linux --channel LTS
 ENV PATH="/root/.dotnet:${PATH}"
-RUN wget https://packages.microsoft.com/rhel/8/prod/packages-microsoft-prod.rpm
+RUN wget https://packages.microsoft.com/rhel/9/prod/packages-microsoft-prod.rpm
 RUN dnf -y install packages-microsoft-prod.rpm
 RUN dnf makecache
 RUN dnf -y install dotnet-sdk-8.0
