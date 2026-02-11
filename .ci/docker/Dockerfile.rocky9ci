@@ -10,8 +10,8 @@ FROM rockylinux:9.3
 #       2) update gradle
 #     If not re-built, the docker run will still work, but will take longer as it downloads updates
 #   * Steps to login to registry, build image, tag image with ghcr.io registry, and push to registry:
-      $ sudo groupadd docker
-      $ sudo usermod -aG docker $USER
+#      $ sudo groupadd docker
+#      $ sudo usermod -aG docker $USER
 #     $ cat pat.txt | docker login ghcr.io -u iadgovuser## --password-stdin
 #       Note: pat requires permissions "upload packages from GitHub Package Registry" and possibly "repo"
 #     $ docker build . -f Dockerfile.rocky9ci -t hirs-rocky9-ci:latest
