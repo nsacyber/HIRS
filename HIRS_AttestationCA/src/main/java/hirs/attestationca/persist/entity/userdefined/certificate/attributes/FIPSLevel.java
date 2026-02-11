@@ -9,6 +9,8 @@ import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Sequence;
 
+import java.io.Serializable;
+
 /**
  * Basic class that handle FIPS Level.
  * <pre>
@@ -22,23 +24,23 @@ import org.bouncycastle.asn1.ASN1Sequence;
 @Setter
 @AllArgsConstructor
 @ToString
-public class FIPSLevel {
+public class FIPSLevel implements Serializable {
 
     private static final int MAX_SEQUENCE_SIZE = 3;
 
-    private ASN1IA5String version;
+    private String fipsVersion;
 
-    private SecurityLevel level;
+    private SecurityLevel securityLevel;
 
-    private ASN1Boolean plus;
+    private Boolean fipsPlus;
 
     /**
      * Default constructor.
      */
     public FIPSLevel() {
-        version = null;
-        level = null;
-        plus = null;
+        fipsVersion = null;
+        securityLevel = null;
+        fipsPlus = null;
     }
 
     /**
@@ -49,7 +51,7 @@ public class FIPSLevel {
      */
     public FIPSLevel(final ASN1Sequence sequence) throws IllegalArgumentException {
         //Get version
-        version = ASN1IA5String.getInstance(sequence.getObjectAt(0));
+        fipsVersion = ASN1IA5String.getInstance(sequence.getObjectAt(0)).getString();
         //Get and validate level
         ASN1Enumerated enumerated = ASN1Enumerated.getInstance(sequence.getObjectAt(1));
         //Throw exception when is not between 1 and 7
@@ -57,12 +59,12 @@ public class FIPSLevel {
                 || enumerated.getValue().intValue() > SecurityLevel.values().length) {
             throw new IllegalArgumentException("Invalid security level on FIPSLevel.");
         }
-        level = SecurityLevel.values()[enumerated.getValue().intValue() - 1];
+        securityLevel = SecurityLevel.values()[enumerated.getValue().intValue() - 1];
 
         //Check if there is another value on the sequence for the plus
-        plus = ASN1Boolean.FALSE;   //Default to false
+        fipsPlus = Boolean.FALSE;   //Default to false
         if (sequence.size() == MAX_SEQUENCE_SIZE) {
-            plus = ASN1Boolean.getInstance(sequence.getObjectAt(2));
+            fipsPlus = ASN1Boolean.getInstance(sequence.getObjectAt(2)).isTrue();
         }
     }
 
