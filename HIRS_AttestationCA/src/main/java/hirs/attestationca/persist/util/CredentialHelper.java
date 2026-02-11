@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVari
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Base64;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,17 +57,21 @@ public final class CredentialHelper {
      * @return a cleaned up raw byte object
      */
     public static byte[] stripPemHeaderFooter(final String pemFile) {
-        String strippedFile;
-        strippedFile = pemFile.replace(CertificateVariables.PEM_HEADER, "");
-        int keyFooterPos = strippedFile.indexOf(CertificateVariables.PEM_FOOTER);
-        if (keyFooterPos >= 0) {
-            strippedFile = strippedFile.substring(0, keyFooterPos);
+        String strippedFile = pemFile;
+        int beginIndex = strippedFile.indexOf(CertificateVariables.PEM_HEADER);
+        int endIndex = strippedFile.lastIndexOf(CertificateVariables.PEM_FOOTER);
+        if (beginIndex >= 0 && endIndex > beginIndex) {
+            endIndex += CertificateVariables.PEM_FOOTER.length();
+            strippedFile = strippedFile.substring(beginIndex, endIndex);
         }
+        strippedFile = strippedFile.replace(CertificateVariables.PEM_HEADER, "");
+        strippedFile = strippedFile.replace(CertificateVariables.PEM_FOOTER, "");
         strippedFile = strippedFile.replace(CertificateVariables.PEM_ATTRIBUTE_HEADER, "");
         int attrFooterPos = strippedFile.indexOf(CertificateVariables.PEM_ATTRIBUTE_FOOTER);
         if (attrFooterPos >= 0) {
             strippedFile = strippedFile.substring(0, attrFooterPos);
         }
+        strippedFile = strippedFile.replaceAll("\\s", "");
         return Base64.decode(strippedFile);
     }
 
