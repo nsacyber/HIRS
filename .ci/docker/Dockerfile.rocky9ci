@@ -53,7 +53,7 @@ RUN dnf -y install mariadb-server initscripts firewalld policycoreutils net-tool
 
 # Checkout HIRS main branch and run gradlew to install gradlew dependencies, then delete HIRS
 # Use '--depth=1' so as to not download the history of all commits
-RUN git clone -b main https://github.com/nsacyber/HIRS.git /hirsTemp
+RUN git clone -b v3.1_1099-migrate-to-jdk-25-and-gradle https://github.com/nsacyber/HIRS.git /hirsTemp
 WORKDIR "/hirsTemp"
 RUN /bin/bash -c './gradlew clean build'
 WORKDIR "/"
