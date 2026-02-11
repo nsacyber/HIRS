@@ -59,10 +59,10 @@ RUN Start-Process -FilePath 'C:/Git-2.42.0.2-64-bit.exe' -ArgumentList \"/VERYSI
 RUN [Environment]::SetEnvironmentVariable('GCM_INTERACTIVE', 'Never', [System.EnvironmentVariableTarget]::Machine)
 RUN Write-Host "Finished installing Git."
 
-# Download and install .NET SDK 6
+# Download and install .NET SDK 8
 RUN ((New-Object System.Net.WebClient).DownloadFile('https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1', 'C:/dotnet-install.ps1'))
 RUN Write-Host "Installing .NET SDK..."
-RUN pwsh -ExecutionPolicy Bypass C:/dotnet-install.ps1 --channel 6.0
+RUN pwsh -ExecutionPolicy Bypass C:/dotnet-install.ps1 --channel 8.0
 RUN Write-Host "Finished installing .NET SDK."
 
 # Download and install VS Build Tools from Microsoft
