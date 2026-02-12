@@ -69,6 +69,8 @@ public class SPKIDataType {
      * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      * {@link Object }
      * {@link Element }
+     *
+     * @return list of objects
      */
     public List<Object> getSPKISexpAndAny() {
         if (spkiSexpAndAny == null) {

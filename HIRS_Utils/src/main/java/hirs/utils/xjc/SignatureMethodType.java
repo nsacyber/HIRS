@@ -82,6 +82,8 @@ public class SignatureMethodType {
      * {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      * {@link Object }
      * {@link String }
+     *
+     * @return list of objects
      */
     public List<Object> getContent() {
         if (content == null) {

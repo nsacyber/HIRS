@@ -12,10 +12,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
-import java.util.HexFormat;
 
 /**
  * Class that is used to build a Coswid file based upon values previously retrieved from a config file.
@@ -27,11 +27,13 @@ public class CoswidBuilder extends Coswid {
     protected CoswidConfig config = null;
     protected IanaHashAlg algInfo = null;
     protected CoswidItems coswidItems = new CoswidItems();
+
     /**
      * Constructor for the Coswid Builder.
      * Configuration file is a json formatted file consisting of Coswid defined variables
      * to be encoded as Cbor items.
-     * @param conf  Coswid Configuration file
+     *
+     * @param conf Coswid Configuration file
      */
     public CoswidBuilder(final CoswidConfig conf) {
         config = conf;
@@ -64,10 +66,13 @@ public class CoswidBuilder extends Coswid {
         setProductFamily(config.getProductFamily());
         setSummary(config.getSummary());
     }
+
     /**
      * Method for creating a Coswid Object.
+     *
      * @param out Byte array to write Coswid data to
      * @return updated Byte array.
+     * @throws IOException if an I/O error occurs during the COSWID data creation.
      */
     public ByteArrayOutputStream createCoswidData(final ByteArrayOutputStream out) throws IOException {
         initCoswid(out);
@@ -76,10 +81,13 @@ public class CoswidBuilder extends Coswid {
         out.flush();
         return out;
     }
+
     /**
      * Method for creating a Coswid Object.
      * Note 1398229316 is the IANA CBOR Tag for coswid
+     *
      * @param fileName File name to place the encoded Coswid data
+     * @throws IOException if an I/O error occurs during the creation of the COSWID data.
      */
     public void createCoswidData(final String fileName) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -94,10 +102,12 @@ public class CoswidBuilder extends Coswid {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Encodes the Coswid variables within this class but does not finish the encoding.
      * This allows for addition of other objects by other classes.
      * Use completeCoswid to close the ByteArrayOutputStream for writing to a file.
+     *
      * @param out ByteArrayOutputStream to hold the encoded Coswid data
      * @return ByteArrayOutputStream that contains the encoded Coswid data
      */
@@ -151,6 +161,7 @@ public class CoswidBuilder extends Coswid {
 
     /**
      * Completes the encoding of the coswid data contained in a ByteArrayOutputStream object.
+     *
      * @param out ByteArrayOutputStream to hold the encoded Coswid data
      * @return ByteArrayOutputStream that contains the encoded Coswid data
      */
@@ -164,11 +175,13 @@ public class CoswidBuilder extends Coswid {
         }
         return out;
     }
+
     /**
      * Adds a string attribute to the ByteArrayOutputStream.
+     *
      * @param attribute String to hold the field value
      * @param fieldItem int : spec defined Coswid "index" for the item
-     * @param out ByteArrayOutputStream that holds the encoded Coswid object
+     * @param out       ByteArrayOutputStream that holds the encoded Coswid object
      */
     protected void addStringAttribute(final String attribute, final int fieldItem,
                                       final ByteArrayOutputStream out) {
@@ -186,11 +199,13 @@ public class CoswidBuilder extends Coswid {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Adds a string attribute to the ByteArrayOutputStream.
+     *
      * @param attribute Int to hold the field value
      * @param fieldItem int : spec defined Coswid "index" for the item
-     * @param out ByteArrayOutputStream that holds the encoded Coswid object
+     * @param out       ByteArrayOutputStream that holds the encoded Coswid object
      */
     protected void addIntAttribute(final int attribute, final int fieldItem,
                                    final ByteArrayOutputStream out) {
@@ -201,8 +216,10 @@ public class CoswidBuilder extends Coswid {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Adds a boolean attribute to the ByteArrayOutputStream.
+     *
      * @param attribute Boolean to hold the field value
      * @param fieldItem int : spec defined Coswid "index" for the item
      * @param out       ByteArrayOutputStream that holds the encoded Coswid object
@@ -216,8 +233,10 @@ public class CoswidBuilder extends Coswid {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Adds the tagid to the encoded Coswid Object.
+     *
      * @param tagId String GUID
      * @param out   ByteArrayOutputStream to add the tagid into.
      */
@@ -230,9 +249,11 @@ public class CoswidBuilder extends Coswid {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Converts a comma separated string from the configuration file, converts each sting item to an int index
      * and encodes it as an array using the provided index as a array identifier.
+     *
      * @param roles     comma separated string , each item must exactly match the role name in rfc9393
      * @param roleIndex the dex value to use for the role array
      * @param out       ByteArrayOutputStream to add the role array into
@@ -254,6 +275,7 @@ public class CoswidBuilder extends Coswid {
 
     /**
      * Converts a tagid string (UUID) into a "16-byte binary string" per rfc 9393.
+     *
      * @param guid Global Unique Identifier
      * @return byte array holding the UUID
      */
@@ -269,27 +291,31 @@ public class CoswidBuilder extends Coswid {
         }
         return bytes;
     }
+
     /**
      * Uses the role string field name defined in rfc9393 to convert the index value.
      * This lookup is specific for roles defined in section 2.6
+     *
      * @param role The index value defined in RFC-9393 for roles
      * @return role index
      */
     protected int roleLookup(final String role) {
         return switch (role) {
-            case "tag-creator"      -> 1;
+            case "tag-creator" -> 1;
             case "software-creator" -> 2;
-            case "aggregator"       -> 3;
-            case "distributor"      -> 4;
-            case "licensor"         -> 5;
-            case "maintainer"       -> 6;
-            default                 -> 0xff;
+            case "aggregator" -> 3;
+            case "distributor" -> 4;
+            case "licensor" -> 5;
+            case "maintainer" -> 6;
+            default -> 0xff;
         };
     }
+
     /**
      * Builds a Coswid payload based upon the Json based config file.
+     *
      * @param payloadNode A JSonNode pointing to the Payload of Json Config File
-     * @param out ByteArrayOutputStream that holds the encoded Coswid object
+     * @param out         ByteArrayOutputStream that holds the encoded Coswid object
      */
     protected void createPayload(final JsonNode payloadNode, final ByteArrayOutputStream out) {
 
@@ -309,7 +335,7 @@ public class CoswidBuilder extends Coswid {
                 } else {
                     JsonNode item = field.getValue();
                     String value = field.getValue().textValue();
-                    addStringAttribute(key, coswidItems.getIndex(value), out);
+                    addStringAttribute(key, CoswidItems.getIndex(value), out);
                 }
                 cborGen.writeEndObject();
             }
@@ -317,10 +343,12 @@ public class CoswidBuilder extends Coswid {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Adds a Cbor directory based upon input from the Json Configuration file.
-     * @param node  JsonNode to place the directory
-     * @param out ByteArrayOutputStream that holds the encoded Coswid object
+     *
+     * @param node JsonNode to place the directory
+     * @param out  ByteArrayOutputStream that holds the encoded Coswid object
      * @throws IOException if an issue occur when updating cbor data
      */
     protected void createDirectory(final JsonNode node, final ByteArrayOutputStream out) throws IOException {
@@ -335,15 +363,17 @@ public class CoswidBuilder extends Coswid {
                 prepFile(field.getValue(), out);
             } else {
                 String value = field.getValue().textValue();
-                addStringAttribute(value, coswidItems.getIndex(key), out);
+                addStringAttribute(value, CoswidItems.getIndex(key), out);
             }
         }
         cborGen.writeEndObject();
     }
+
     /**
      * Saves the current Coswid Data to A Byte array.
+     *
      * @param node cbor encoded data
-     * @param out ByteArrayOutputStream that holds the encoded Coswid object
+     * @param out  ByteArrayOutputStream that holds the encoded Coswid object
      * @throws IOException if an issue occurs when creating or writing a file
      */
     protected void prepFile(final JsonNode node, final ByteArrayOutputStream out) throws IOException {
@@ -363,37 +393,38 @@ public class CoswidBuilder extends Coswid {
                 String key = field.getKey();
                 if (key.compareToIgnoreCase(CoswidItems.FILE_STR) == 0) {
                     String value = field.getValue().textValue();
-                    addStringAttribute(value, coswidItems.getIndex(key), out);
+                    addStringAttribute(value, CoswidItems.getIndex(key), out);
                 } else if (key.compareToIgnoreCase(CoswidItems.SIZE_STR) == 0) {
                     int value = Integer.parseInt(field.getValue().textValue());
-                    addIntAttribute(value, coswidItems.getIndex(key), out);
+                    addIntAttribute(value, CoswidItems.getIndex(key), out);
                 } else if (key.compareToIgnoreCase(CoswidItems.HASH_STR) == 0) {
                     String value = field.getValue().textValue();
                     createFileHash(out, value, IanaHashAlg.SHA_256);
                 } else {
                     String value = field.getValue().textValue();
-                    addStringAttribute(value, coswidItems.getIndex(key), out);
+                    addStringAttribute(value, CoswidItems.getIndex(key), out);
                 }
             }
             cborGen.writeEndObject();
         }
     }
+
     /**
      * Create a hash-entry array as specified i rfc 9393.
      * hash-entry = [
-     *   hash-alg-id: int,
-     *   hash-value: bytes,
+     * hash-alg-id: int,
+     * hash-value: bytes,
      * ]
      * where hash-alg-id value is defined by Iana :
-     * https://www.iana.org/assignments/named-information/named-information.xhtml
+     * <a href="https://www.iana.org/assignments/named-information/named-information.xhtml">
+     * named-information </a>
+     *
      * @param out  ByteArrayOutputStream to add the tagid into.
-     * @param hash  String holding the text representation of the hash value
-     * @param alg Iana registered algorithm ID
-     * @throws IOException if an issue occur when updating cbor data
+     * @param hash String holding the text representation of the hash value
+     * @param alg  Iana registered algorithm ID
      */
-    protected void createFileHash(final ByteArrayOutputStream out, final String hash, final IanaHashAlg alg)
-            throws IOException {
-        HexFormat hexTool =  HexFormat.of();
+    protected void createFileHash(final ByteArrayOutputStream out, final String hash, final IanaHashAlg alg) {
+        HexFormat hexTool = HexFormat.of();
         int size = hash.length() / 2;
 
         byte[] hashByteArray = hexTool.parseHex(hash);
@@ -408,14 +439,16 @@ public class CoswidBuilder extends Coswid {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * "1398229316" is a CBOR tag defined for coswid that gets written to the start of the Coswid object.
      * Cbor Tags are defined in https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml
      * Note in section 8 of RFC 9393 states that Coswid tags should be tagged but redundant tagging
      * should be avoided.
-     * @param untaggedCoswid  Coswid Byte array to add the tag to
-     * @throws IOException if an issue occur when updating cbor data
+     *
+     * @param untaggedCoswid Coswid Byte array to add the tag to
      * @return Coswid Byte array with a Coswid CBOR tag added
+     * @throws IOException if an issue occur when updating cbor data
      */
     public ByteArrayOutputStream addCborTag(final ByteArrayOutputStream untaggedCoswid) throws IOException {
         ByteArrayOutputStream taggedCoswid = new ByteArrayOutputStream();

@@ -78,6 +78,8 @@ public class SignaturePropertiesType {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link SignaturePropertyType }
+     *
+     * @return list of signature property types
      */
     public List<SignaturePropertyType> getSignatureProperty() {
         if (signatureProperty == null) {

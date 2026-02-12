@@ -9,6 +9,7 @@ import com.authlete.cose.COSEProtectedHeader;
 import hirs.utils.rim.unsignedRim.cbor.ietfCorim.CoRim;
 import hirs.utils.rim.unsignedRim.cbor.ietfCorim.MetaMap;
 import lombok.Getter;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
 public class CoseHeaderProtected extends CoseHeader {
     // criticality
     @Getter
-    private String crit = "";
+    private final String crit = "";
     // CBor Pairs (currently only 2 being processed: metamap and x5t for corim)
     private MetaMap mmap = null;
     @Getter
@@ -28,8 +29,10 @@ public class CoseHeaderProtected extends CoseHeader {
     @Getter
     private String x5tHashVal = "";
     private String toStringCborDiag = "";
+
     /**
      * Parser constructor to fill class variables.
+     *
      * @param pheader COSEUnprotectedHeader holding the COSE protected header
      */
     public CoseHeaderProtected(final COSEProtectedHeader pheader) {
@@ -79,21 +82,27 @@ public class CoseHeaderProtected extends CoseHeader {
             }
         }
     }
+
     /**
      * Default toString.
+     *
      * @return default "pretty" version
      */
-    public String toString()   {
+    public String toString() {
         try {
             return toString("pretty");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Prints the processed COSE Protected Header data.
-     * @param format  empty (default String) or "pretty"
+     *
+     * @param format empty (default String) or "pretty"
      * @return a formated string representation of the data in the COSE protected header object
+     * @throws IOException if any issues trying to create the string representation of the COSE Protected
+     *                     Header object.
      */
     public String toString(final String format) throws IOException {
         String returnString = "";

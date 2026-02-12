@@ -2,7 +2,6 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageControllerTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

@@ -15,7 +15,8 @@ import java.nio.charset.StandardCharsets;
  * <p>
  * HEADERS defined by PFP v1.06 Rev 52.
  * Certain fields are common to both ..HEADER and ..HEADER2, and are noted below the structures.
- * <p>
+ *
+ * <pre>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER {
  * .     UINT8                           Signature[16];
  * .     UINT16                          Version;
@@ -26,7 +27,9 @@ import java.nio.charset.StandardCharsets;
  * .     UINT64                          DevicePathLength;
  * .     UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER;
- * <p>
+ * </pre>
+ *
+ * <pre>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER2 {        - NOT IMPLEMENTED YET
  * .     UINT8                           Signature[16];
  * .     UINT16                          Version;
@@ -40,14 +43,16 @@ import java.nio.charset.StandardCharsets;
  * .     UINT64                          DevicePathLength;
  * .     UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER2;
- * <p>
+ * </pre>
+ *
+ * <pre>
  * Fields common to both ..HEADER and ..HEADER2:
  * .  Signature
  * .  Version
  * .  DeviceType
  * .  DevicePathLength
  * .  DevicePath
- * <p>
+ * </pre>
  */
 public abstract class DeviceSecurityEventHeader {
 
@@ -56,27 +61,32 @@ public abstract class DeviceSecurityEventHeader {
      */
     @Getter
     private static final int DEVICE_PATH_LENGTH = 0;
+
     /**
      * Contains the size (in bytes) of the header.
      */
     @Getter
     private Integer dsedHeaderLength = 0;
+
     /**
      * Signature (text) data.
      */
     @Getter
     private String signature = "";
+
     /**
      * Version determines data structure used (..DATA or ..DATA2).
      * This determines whether ..HEADER or ..HEADER2 is used.
      */
     @Getter
     private String version = "";
+
     /**
      * Device type.
      */
     @Getter
     private int deviceType = -1;
+    
     /**
      * UEFI Device path.
      */

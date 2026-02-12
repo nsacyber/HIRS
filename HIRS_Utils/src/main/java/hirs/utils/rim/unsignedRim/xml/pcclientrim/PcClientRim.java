@@ -1,5 +1,27 @@
 package hirs.utils.rim.unsignedRim.xml.pcclientrim;
 
+import hirs.utils.rim.ReferenceManifestValidator;
+import hirs.utils.rim.unsignedRim.GenericRim;
+import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
+import hirs.utils.swid.SwidTagConstants;
+import hirs.utils.swid.SwidTagGateway;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.UnmarshalException;
+import jakarta.xml.bind.Unmarshaller;
+import lombok.NoArgsConstructor;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -10,40 +32,17 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-
-import lombok.NoArgsConstructor;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import hirs.utils.rim.unsignedRim.GenericRim;
-import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
-import hirs.utils.swid.SwidTagConstants;
-import hirs.utils.swid.SwidTagGateway;
-import hirs.utils.rim.ReferenceManifestValidator;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.UnmarshalException;
-import jakarta.xml.bind.Unmarshaller;
-
 /**
  * Class that holds a PC Client RIM.
  */
 @NoArgsConstructor
 public class PcClientRim extends SwidTagGateway implements GenericRim {
 
-    private boolean isValid = false;
-    private Unmarshaller unmarshaller;
     private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
     private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
+    private final List<Measurement> measurements = new ArrayList<>();
+    private boolean isValid = false;
+    private Unmarshaller unmarshaller;
     private Schema schema;
     private Document rim;
     // private Measurement measurement = new Measurement();
@@ -53,15 +52,16 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     private String revision = "";
     private String digest = "";
     private UUID tagUuid = null; // private String tagId = "";
-    private List<Measurement> measurements = new ArrayList<>();;
 
     /**
      * Validate a PC Client RIM.
-     * @param verifyFile RIM to verify
+     *
+     * @param verifyFile      RIM to verify
      * @param certificateFile certificate
-     * @param rimel RIM event log
-     * @param trustStore certificate chain
+     * @param rimel           RIM event log
+     * @param trustStore      certificate chain
      * @return true if validated
+     * @throws IOException if there is an I/O error during the operation.
      */
     public boolean validate(final String verifyFile, final String certificateFile, final String rimel,
                             final String trustStore) throws IOException {
@@ -136,6 +136,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
 
     /**
      * Get RIM type.
+     *
      * @return PC Client RIM
      */
     @Override
@@ -145,12 +146,13 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
 
     /**
      * Create a PC Client RIM.
-     * @param configFile config file
-     * @param rimEventLog event log
+     *
+     * @param configFile      config file
+     * @param rimEventLog     event log
      * @param certificateFile certificate
-     * @param privateKeyFile private key
-     * @param embeddedCert true if cert should be embedded
-     * @param outFile ouptut RIM
+     * @param privateKeyFile  private key
+     * @param embeddedCert    true if cert should be embedded
+     * @param outFile         ouptut RIM
      */
     public void create(final String configFile, final String rimEventLog, final String certificateFile,
                        final String privateKeyFile, final boolean embeddedCert, final String outFile) {
@@ -183,6 +185,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
 
     /**
      * Default getRimID.
+     *
      * @return n/a
      */
     @Override
@@ -192,6 +195,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
 
     /**
      * Default getSignerId.
+     *
      * @return n/a
      */
     @Override
@@ -201,6 +205,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
 
     /**
      * Default isValid.
+     *
      * @return n/a
      */
     @Override
@@ -210,6 +215,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
 
     /**
      * Default getReferenceMeasurements.
+     *
      * @return n/a
      */
     @Override
@@ -219,6 +225,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
 
     /**
      * Default getReferencedRims.
+     *
      * @return n/a
      */
     @Override
@@ -228,6 +235,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
 
     /**
      * Default toString.
+     *
      * @return n/a
      */
     @Override
@@ -264,7 +272,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
      * @param source of the input xml.
      * @return Document representation of the xml.
      */
-    private Document removeXMLWhitespace(final StreamSource source) throws IOException {
+    private Document removeXMLWhitespace(final StreamSource source) {
         TransformerFactory tf = TransformerFactory.newInstance();
         Source identitySource = new StreamSource(
                 ReferenceManifestValidator.class.getClassLoader().getResourceAsStream(IDENTITY_TRANSFORM));

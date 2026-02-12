@@ -10,7 +10,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.HealthStatus;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageControllerTest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;

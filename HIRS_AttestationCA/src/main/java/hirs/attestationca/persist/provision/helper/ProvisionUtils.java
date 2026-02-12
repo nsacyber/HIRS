@@ -48,6 +48,9 @@ import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Date;
 
+/**
+ * Utility class that provides utility methods to assist with the device provisioning process.
+ */
 @Log4j2
 public final class ProvisionUtils {
 

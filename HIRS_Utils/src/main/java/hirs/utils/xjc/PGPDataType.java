@@ -91,6 +91,8 @@ public class PGPDataType {
      * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
      * {@link Element }
      * {@link Object }
+     *
+     * @return list of objects
      */
     public List<Object> getContent() {
         if (content == null) {

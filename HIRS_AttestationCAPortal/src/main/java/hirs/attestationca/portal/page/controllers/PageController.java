@@ -1,5 +1,7 @@
-package hirs.attestationca.portal.page;
+package hirs.attestationca.portal.page.controllers;
 
+import hirs.attestationca.portal.page.Page;
+import hirs.attestationca.portal.page.params.PageParams;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.client.utils.URIBuilder;
