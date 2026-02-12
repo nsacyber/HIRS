@@ -123,7 +123,7 @@ public abstract class AttestationCertificateAuthority {
      * @param identityClaim a byte array representation of the identity claim
      * @return processed identity claim response
      */
-    byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
+    public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
         return this.identityClaimHandler.processIdentityClaimTpm2(identityClaim);
     }
 
@@ -133,7 +133,7 @@ public abstract class AttestationCertificateAuthority {
      * @param certificateRequest a byte array representation of the certificate request
      * @return processed certificate request response
      */
-    byte[] processCertificateRequest(final byte[] certificateRequest) {
+    public byte[] processCertificateRequest(final byte[] certificateRequest) {
         return this.certificateRequestHandler.processCertificateRequest(certificateRequest);
     }
 

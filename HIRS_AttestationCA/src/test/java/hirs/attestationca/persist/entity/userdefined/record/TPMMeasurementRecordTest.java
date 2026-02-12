@@ -2,7 +2,7 @@ package hirs.attestationca.persist.entity.userdefined.record;
 
 import hirs.attestationca.persist.entity.userdefined.ExaminableRecord;
 import hirs.utils.digest.Digest;
-import hirs.utils.enums.DigestAlgorithm;
+import hirs.utils.digest.DigestAlgorithm;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;

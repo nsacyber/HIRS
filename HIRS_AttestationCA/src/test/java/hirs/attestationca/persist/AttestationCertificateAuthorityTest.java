@@ -1,5 +1,6 @@
 package hirs.attestationca.persist;
 
+import com.google.protobuf.ByteString;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.provision.AbstractProcessor;
@@ -26,6 +27,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -58,6 +60,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -608,47 +611,46 @@ public class AttestationCertificateAuthorityTest {
         assertEquals(hex, realHex);
     }
 
-//    /**
-//     * Method to generate a make credential output file for use in manual testing. Feed to
-//     * a TPM 2.0 or emulator using the activate credential command to ensure proper parsing.
-//     * Must be performed manually. To use, copy the TPM's ek and ak into
-//     * HIRS_AttestationCA/src/test/resources/tpm2/test/ and ensure the variables akPubPath
-//     * and ekPubPath are correct. Your output file will be
-//     * HIRS_AttestationCA/src/test/resources/tpm2/test/make.blob and the nonce used will be
-//     * output as HIRS_AttestationCA/src/test/resources/tpm2/test/secret.blob
-//     *
-//     * @throws URISyntaxException invalid file path
-//     * @throws IOException        unable to read file
-//     */
-//    @Disabled
-//    @Test
-//    public void testMakeCredential() throws URISyntaxException, IOException {
-//        Path akPubPath = Paths.get(Objects.requireNonNull(getClass().getResource(
-//                AK_PUBLIC_PATH)).toURI());
-//        Path ekPubPath = Paths.get(Objects.requireNonNull(getClass().getResource(
-//                EK_PUBLIC_PATH)).toURI());
-//
-//        byte[] ekPubFile = Files.readAllBytes(ekPubPath);
-//        byte[] akPubFile = Files.readAllBytes(akPubPath);
-//
-//        RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(ekPubFile);
-//        RSAPublicKey akPub = ProvisionUtils.parsePublicKey(akPubFile);
-//
-//        // prepare the nonce and wrap it with keys
-//        final byte[] nonce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-//                21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
-//        ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
-//
-//        Path resources = Objects.requireNonNull(Paths.get(Objects.requireNonNull(
-//                        Objects.requireNonNull(this.getClass().getResource(
-//                                "/")).toURI()))
-//                .getParent().getParent().getParent().getParent());
-//        Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
-//        Files.write(makeBlob, blob.toByteArray());
-//
-//        Path secretPath = resources.resolve("src/test/resources/tpm2/test/secret.blob");
-//        Files.write(secretPath, nonce);
-//    }
+    /**
+     * Method to generate a make credential output file for use in manual testing. Feed to
+     * a TPM 2.0 or emulator using the activate credential command to ensure proper parsing.
+     * Must be performed manually. To use, copy the TPM's ek and ak into
+     * HIRS_AttestationCA/src/test/resources/tpm2/test/ and ensure the variables akPubPath
+     * and ekPubPath are correct. Your output file will be
+     * HIRS_AttestationCA/src/test/resources/tpm2/test/make.blob and the nonce used will be
+     * output as HIRS_AttestationCA/src/test/resources/tpm2/test/secret.blob
+     *
+     * @throws URISyntaxException invalid file path
+     * @throws IOException        unable to read file
+     */
+    @Disabled
+    @Test
+    public void testMakeCredential() throws URISyntaxException, IOException {
+        Path akPubPath = Paths.get(getClass().getResource(
+                AK_PUBLIC_PATH).toURI());
+        Path ekPubPath = Paths.get(getClass().getResource(
+                EK_PUBLIC_PATH).toURI());
+
+        byte[] ekPubFile = Files.readAllBytes(ekPubPath);
+        byte[] akPubFile = Files.readAllBytes(akPubPath);
+
+        RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(ekPubFile);
+        RSAPublicKey akPub = ProvisionUtils.parsePublicKey(akPubFile);
+
+        // prepare the nonce and wrap it with keys
+        final byte[] nonce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+        ByteString blob = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
+
+        Path resources = Objects.requireNonNull(Paths.get(Objects.requireNonNull(this.getClass().getResource(
+                        "/").toURI()))
+                .getParent().getParent().getParent().getParent());
+        Path makeBlob = resources.resolve("src/test/resources/tpm2/test/make.blob");
+        Files.write(makeBlob, blob.toByteArray());
+
+        Path secretPath = resources.resolve("src/test/resources/tpm2/test/secret.blob");
+        Files.write(secretPath, nonce);
+    }
 
     /**
      * Test helper method that encrypts a blob using the specified transformation and the test key

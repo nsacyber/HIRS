@@ -11,7 +11,6 @@ import hirs.utils.rim.unsignedRim.cbor.ietfCorim.MetaMap;
 import lombok.Getter;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -21,11 +20,14 @@ import java.util.List;
 public class CoseHeaderProtected extends CoseHeader {
     // criticality
     @Getter
-    private final String crit = "";
+    private static final String CRIT = "";
+
     // CBor Pairs (currently only 2 being processed: metamap and x5t for corim)
     private MetaMap mmap = null;
+
     @Getter
     private String x5tHashAlg = "";
+
     @Getter
     private String x5tHashVal = "";
     private String toStringCborDiag = "";
@@ -57,9 +59,7 @@ public class CoseHeaderProtected extends CoseHeader {
         // Cbor pairs
         if (pheader.getDecodedContent() != null) {
             List<CBORPair> cborPairs = (List<CBORPair>) pheader.getPairs();
-            Iterator pairs = cborPairs.iterator();
-            while (pairs.hasNext()) {
-                CBORPair pair = (CBORPair) pairs.next();
+            for (CBORPair pair : cborPairs) {
                 // Look for corim-meta (index 8)
                 if (Integer.parseInt(pair.getKey().toString()) == CoRim.CORIM_META_MAP) {
                     byte[] corimMap = pair.getValue().encode();
@@ -110,8 +110,8 @@ public class CoseHeaderProtected extends CoseHeader {
             returnString = "Protected Header Contents: " + "\n";
             returnString += printHeaderCommonContentsPretty();
 
-            if (!crit.isEmpty()) {
-                returnString += "  Criticality = " + crit + "\n";
+            if (!CRIT.isEmpty()) {
+                returnString += "  Criticality = " + CRIT + "\n";
             }
             if (mmap != null) {
                 returnString += "  Signer Name = " + mmap.getSignerName() + "\n";
