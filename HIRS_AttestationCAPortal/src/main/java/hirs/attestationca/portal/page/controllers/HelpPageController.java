@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.HIRSLogger;
 import hirs.attestationca.persist.service.HelpPageService;
 import hirs.attestationca.portal.datatables.DataTableInput;

@@ -634,6 +634,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * a {@link CommonCriteriaMeasures} object with the discovered fields.
      *
      * @param ccSeq the ASN1Sequence containing Common Criteria information
+     * @throws IOException parsing individual subcomponents failed
      */
     private void parseCommonCriteria(final ASN1Sequence ccSeq) throws IOException {
         CommonCriteriaMeasures parsedCommonCriteria = new CommonCriteriaMeasures();
@@ -818,6 +819,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      *
      * @param taggedObj the ASN1TaggedObject to manually parse
      * @return oidString the Oid to return in String form
+     * @throws IOException parsing individual subcomponents failed
      */
     private static String parseTaggedOid(final ASN1TaggedObject taggedObj) throws IOException {
         ASN1Primitive primitiveObj = unwrapTaggedObject(taggedObj);

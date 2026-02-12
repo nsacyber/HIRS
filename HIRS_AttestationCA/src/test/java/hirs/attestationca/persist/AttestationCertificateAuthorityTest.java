@@ -3,6 +3,7 @@ package hirs.attestationca.persist;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.provision.AbstractProcessor;
+import hirs.attestationca.persist.provision.AttestationCertificateAuthority;
 import hirs.attestationca.persist.provision.helper.IssuedCertificateAttributeHelper;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.structs.elements.aca.SymmetricAttestation;

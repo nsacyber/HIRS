@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.persist.provision;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
@@ -9,8 +9,6 @@ import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
-import hirs.attestationca.persist.provision.CertificateRequestProcessor;
-import hirs.attestationca.persist.provision.IdentityClaimProcessor;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.structs.converters.StructConverter;
 import lombok.extern.log4j.Log4j2;
