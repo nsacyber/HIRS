@@ -5,6 +5,8 @@ dependencies {
     annotationProcessor libs.lombok
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
     testRuntimeOnly libs.junit.platform.launcher
 
     testCompileOnly libs.lombok

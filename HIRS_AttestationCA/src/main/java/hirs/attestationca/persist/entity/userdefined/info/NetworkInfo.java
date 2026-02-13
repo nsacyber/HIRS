@@ -28,9 +28,7 @@ public class NetworkInfo implements Serializable {
 
     @XmlElement
     @Getter
-//    @XmlJavaTypeAdapter(value = InetAddressXmlAdapter.class)
     @Column(length = DeviceInfoEnums.SHORT_STRING_LENGTH)
-//    @JsonSubTypes.Type(type = "hirs.data.persist.type.InetAddressType")
     private InetAddress ipAddress;
 
     @XmlElement

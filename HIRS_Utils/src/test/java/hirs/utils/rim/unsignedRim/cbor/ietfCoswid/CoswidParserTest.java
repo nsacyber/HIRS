@@ -1,13 +1,16 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCoswid;
 
+import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HexFormat;
 import java.util.List;
-import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the basic parsing of an unsigned CoSWID object.
@@ -16,7 +19,7 @@ public class CoswidParserTest {
     /**
      * Tests the variable assignment of various CoSWID attributes.
      *
-     * @throws IOException
+     * @throws IOException if there are issues parsing the coswid file
      */
     @Test
     public final void testCoswidParse() throws IOException {
@@ -27,7 +30,7 @@ public class CoswidParserTest {
 
         CoswidParser cparser = new CoswidParser(coswidData);
         Coswid coswid = cparser.getCoswid();
-        List roles = coswid.getRoleCoswid();
+        List<String> roles = coswid.getRoleCoswid();
         assertEquals("tag-creator", roles.get(0));
         assertEquals("software-creator", roles.get(1));
         assertEquals("maintainer", roles.get(2));
@@ -35,8 +38,8 @@ public class CoswidParserTest {
         assertEquals("en-US", coswid.getLang());
         assertEquals("fab60fae-7ae9-4b56-9c50-44c7e6836af5", coswid.getTagId());
         assertEquals("Test2.efi", coswid.getSoftwareName());
-        assertEquals(true, coswid.isCorpus());
-        assertEquals(false, coswid.isPatch());
+        assertTrue(coswid.isCorpus());
+        assertFalse(coswid.isPatch());
         assertEquals("1", coswid.getSoftwareVersion());
         assertEquals("TestRUs", coswid.getEntityName());
         assertEquals("TestRUs.com", coswid.getRegId());
@@ -45,11 +48,11 @@ public class CoswidParserTest {
     /**
      * Tests the parsing of the payload within a CoSWID object.
      *
-     * @throws IOException
+     * @throws IOException if there are issues parsing the coswid payload
      */
     @Test
     public final void testCoswidPayload() throws IOException {
-        HexFormat hexTool =  HexFormat.of();
+        HexFormat hexTool = HexFormat.of();
 
         String coswidConfigFile = "coswid/coswid_rim_1.coswid";
         ClassLoader classLoader = getClass().getClassLoader();
@@ -58,9 +61,9 @@ public class CoswidParserTest {
 
         CoswidParser cparser = new CoswidParser(coswidData);
         Coswid coswid = cparser.getCoswid();
-        List measurements = coswid.getMeasurements();
+        List<Measurement> measurements = coswid.getMeasurements();
 
-        Measurement rimEntry = (Measurement) measurements.get(0);
+        Measurement rimEntry = measurements.getFirst();
         String manufacturer = rimEntry.getManufacturer();
         String model = rimEntry.getModel();
         String revision = rimEntry.getRevision();

@@ -322,20 +322,18 @@ public class CoswidBuilder extends Coswid {
         try {
             cborGen.writeFieldId(CoswidItems.PAYLOAD_INT); // Add payload map
             cborGen.writeStartObject();
-            Iterator<Map.Entry<String, JsonNode>> fields = payloadNode.fields();
-            int i = 0;
-            while (fields.hasNext()) {
-                ArrayList<String> payloadItem = new ArrayList<>();
-                Map.Entry<String, JsonNode> field = fields.next();
-                String key = field.getKey();
-                if (key.compareToIgnoreCase("Directory") == 0) {
+            Set<Map.Entry<String, JsonNode>> fields = payloadNode.properties();
+
+            for (Map.Entry<String, JsonNode> field : fields) {
+                String fieldKey = field.getKey();
+
+                if (fieldKey.compareToIgnoreCase("Directory") == 0) {
                     createDirectory(field.getValue(), out);
-                } else if (key.compareToIgnoreCase("File") == 0) {
+                } else if (fieldKey.compareToIgnoreCase("File") == 0) {
                     prepFile(field.getValue(), out);
                 } else {
-                    JsonNode item = field.getValue();
                     String value = field.getValue().textValue();
-                    addStringAttribute(key, CoswidItems.getIndex(value), out);
+                    addStringAttribute(fieldKey, CoswidItems.getIndex(value), out);
                 }
                 cborGen.writeEndObject();
             }
@@ -354,16 +352,16 @@ public class CoswidBuilder extends Coswid {
     protected void createDirectory(final JsonNode node, final ByteArrayOutputStream out) throws IOException {
         cborGen.writeFieldId(CoswidItems.DIRECTORY_INT); // Add Directory map
         cborGen.writeStartObject();
-        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> field = fields.next();
-            String key = field.getKey();
-            if (key.compareToIgnoreCase("File") == 0) {
+        Set<Map.Entry<String, JsonNode>> fields = node.properties();
+        for (Map.Entry<String, JsonNode> field : fields) {
+            String fieldKey = field.getKey();
+
+            if (fieldKey.compareToIgnoreCase("File") == 0) {
                 cborGen.writeFieldId(CoswidItems.FILE_INT); // Add payload map
                 prepFile(field.getValue(), out);
             } else {
                 String value = field.getValue().textValue();
-                addStringAttribute(value, CoswidItems.getIndex(key), out);
+                addStringAttribute(value, CoswidItems.getIndex(fieldKey), out);
             }
         }
         cborGen.writeEndObject();
@@ -387,22 +385,22 @@ public class CoswidBuilder extends Coswid {
             cborGen.writeEndArray();
         } else {
             cborGen.writeStartObject();
-            Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-            while (fields.hasNext()) {
-                Map.Entry<String, JsonNode> field = fields.next();
-                String key = field.getKey();
-                if (key.compareToIgnoreCase(CoswidItems.FILE_STR) == 0) {
+            Set<Map.Entry<String, JsonNode>> fields = node.properties();
+            for (Map.Entry<String, JsonNode> field : fields) {
+                String fieldKey = field.getKey();
+
+                if (fieldKey.compareToIgnoreCase(CoswidItems.FILE_STR) == 0) {
                     String value = field.getValue().textValue();
-                    addStringAttribute(value, CoswidItems.getIndex(key), out);
-                } else if (key.compareToIgnoreCase(CoswidItems.SIZE_STR) == 0) {
+                    addStringAttribute(value, CoswidItems.getIndex(fieldKey), out);
+                } else if (fieldKey.compareToIgnoreCase(CoswidItems.SIZE_STR) == 0) {
                     int value = Integer.parseInt(field.getValue().textValue());
-                    addIntAttribute(value, CoswidItems.getIndex(key), out);
-                } else if (key.compareToIgnoreCase(CoswidItems.HASH_STR) == 0) {
+                    addIntAttribute(value, CoswidItems.getIndex(fieldKey), out);
+                } else if (fieldKey.compareToIgnoreCase(CoswidItems.HASH_STR) == 0) {
                     String value = field.getValue().textValue();
                     createFileHash(out, value, IanaHashAlg.SHA_256);
                 } else {
                     String value = field.getValue().textValue();
-                    addStringAttribute(value, CoswidItems.getIndex(key), out);
+                    addStringAttribute(value, CoswidItems.getIndex(fieldKey), out);
                 }
             }
             cborGen.writeEndObject();

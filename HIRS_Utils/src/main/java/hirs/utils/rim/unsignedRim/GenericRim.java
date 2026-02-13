@@ -27,6 +27,7 @@ import java.util.List;
  *   <li>RIMTYPE_CORIM_COMID: IETF CoRIM (Concise RIM) which envelopes a comid</li>
  *   <li>RIMTYPE_CORIM_COSWID: IETF CoRIM which envelopes a CoSWID</li>
  * </ul>
+ * </p>
  */
 public interface GenericRim {
 
@@ -89,7 +90,7 @@ public interface GenericRim {
      * @param rimType the RIM type
      * @return the signature type
      */
-    static String getSigType(String rimType) {
+    static String getSigType(final String rimType) {
         return switch (rimType) {
             case GenericRim.RIMTYPE_COSWID,
                  GenericRim.RIMTYPE_COMP_COSWID,
@@ -136,7 +137,7 @@ public interface GenericRim {
     /**
      * Returns a list of Measurement objects for given RIM identifier that were found in payload (if any).
      *
-     * @return reference measurements
+     * @return list of reference measurements
      */
     List<Measurement> getReferenceMeasurements();
 

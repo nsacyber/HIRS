@@ -1,6 +1,6 @@
 plugins {
     id 'com.netflix.nebula.ospackage' version '12.2.0'
-    id 'com.intershop.gradle.jaxb' version '7.0.1'
+    id 'com.intershop.gradle.jaxb' version '8.0.1'
 }
 
 // Get version from main project gradle
@@ -26,6 +26,8 @@ dependencies {
     annotationProcessor libs.lombok
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
     testRuntimeOnly libs.junit.platform.launcher
 
     testCompileOnly libs.lombok
@@ -33,7 +35,7 @@ dependencies {
 
 }
 test {
-    testLogging.showStandardStreams true
+    testLogging.showStandardStreams = true
 }
 
 jar {
@@ -58,7 +60,7 @@ ospackage {
     version = "$packVersion"
     release = '1'
 
-    user 'root'
+    user = 'root'
     fileMode = 0755
 
     into('/opt/rimtool/lib') {
@@ -75,6 +77,7 @@ ospackage {
             }
         }
     }
+
     into('/opt/rimtool/docs') {
         from('./') {
             include {
@@ -83,14 +86,17 @@ ospackage {
             }
         }
     }
+
     into('/opt/rimtool/data') {
         from('src/test/resources/') {
         }
     }
+
     link("/usr/local/bin/rim", "/opt/rimtool/scripts/rimtool.sh", 0x755)
 
     // Post Install
     postInstall "echo ${jarVersion} > /opt/rimtool/VERSION"
+
     // Post Uninstall
     postUninstall 'rm -rf /opt/rimtool'
 }
@@ -103,7 +109,7 @@ buildDeb {
     arch = 'amd64'
 }
 
-task buildZip(type: Zip) {
+tasks.register('buildZip', Zip) {
     dependsOn jar
     dependsOn jar
     from(tasks.jar.archiveFile) {

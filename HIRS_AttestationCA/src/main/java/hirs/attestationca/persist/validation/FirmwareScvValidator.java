@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -170,7 +171,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             try {
                 keyStore = ValidationService.caCertSetToKeystore(set);
             } catch (Exception e) {
-                log.error("Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
+                log.error("Error building CA chain for "
+                        + Arrays.toString(signingCert.getSubjectKeyIdentifier()) + ": "
                         + e.getMessage());
             }
 
@@ -180,7 +182,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                     certs.add(cac.getX509Certificate());
                 } catch (IOException e) {
                     log.error(
-                            "Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
+                            "Error building CA chain for "
+                                    + Arrays.toString(signingCert.getSubjectKeyIdentifier()) + ": "
                                     + e.getMessage());
                 }
             }
