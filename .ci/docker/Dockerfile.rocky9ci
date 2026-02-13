@@ -20,41 +20,38 @@ FROM rockylinux:9.3
 #     $ docker image tag hirs-rocky9-ci:latest ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
 #     $ docker push ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
 
+SHELL ["/bin/bash", "-c"]
+
 # Update package installer
 RUN dnf -y update
 
 # Install Java 25
 RUN dnf -y install java-25-openjdk-devel
 
-# Ports needed for system-level tests
-EXPOSE 8080
-EXPOSE 8443
-
 # Install HIRS dependencies
-RUN dnf -y install mariadb-server initscripts firewalld policycoreutils net-tools git cronie && dnf clean all
-# maybe: libtool cmake make gcc-c++ sudo vim wget openssl openssl-devel protobuf-compiler protobuf tpm2-tools libcurl-devel libssh-devel
-# prob not: rpmdevtools tpm2-tss-devel tpm2-abrmd protobuf-devel python36 log4cplus-devel re2-devel tpm2-tss-devel tpm2-abrmd-devel
+RUN dnf install -y mariadb-server rpmdevtools initscripts firewalld policycoreutils net-tools libtool cmake make git gcc-c++ cronie  && dnf clean all
+RUN dnf install -y wget openssl openssl-devel protobuf tpm2-tools tpm2-abrmd libcurl-devel libssh-devel && dnf clean all
 
 # Install PACCOR for Device Info Gathering
-# RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.1.4r6/paccor-1.1.4-6.noarch.rpm && yum -y install paccor-*.rpm && popd
-
-# Install TPM Emulator for Provisioning
-# RUN mkdir ibmtpm && pushd ibmtpm && wget --no-check-certificate https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm1332.tar.gz && tar -zxvf ibmtpm1332.tar.gz && cd src && make -j5 && popd
+RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.1.4r12/paccor-1.1.4-12.noarch.rpm && yum -y install paccor-*.rpm && popd
 
 # Install Microsoft dotnet and rpm  package tool
-# RUN wget https://dot.net/v1/dotnet-install.sh
-# RUN sh dotnet-install.sh --os linux --channel LTS
-# ENV PATH="/root/.dotnet:${PATH}"
-# RUN wget https://packages.microsoft.com/rhel/9/prod/packages-microsoft-prod.rpm
-# RUN dnf -y install packages-microsoft-prod.rpm
-# RUN dnf makecache
-# RUN dnf -y install dotnet-sdk-8.0
-# RUN dotnet tool install --global dotnet-rpm
+RUN wget https://dot.net/v1/dotnet-install.sh
+RUN sh dotnet-install.sh --os linux --channel LTS
+ENV PATH="/root/.dotnet:${PATH}"
+RUN wget https://packages.microsoft.com/rhel/9/prod/packages-microsoft-prod.rpm
+RUN dnf -y install packages-microsoft-prod.rpm
+RUN dnf makecache
+RUN dnf -y install dotnet-sdk-8.0
+RUN dotnet tool install --global dotnet-rpm
+
+# Ports needed for system-level tests
+EXPOSE 8443
 
 # Checkout HIRS main branch and run gradlew to install gradlew dependencies, then delete HIRS
 # Use '--depth=1' so as to not download the history of all commits
-RUN git clone -b v3.1_1099-migrate-to-jdk-25-and-gradle https://github.com/nsacyber/HIRS.git /hirsTemp
-WORKDIR "/hirsTemp"
-RUN /bin/bash -c './gradlew clean build'
-WORKDIR "/"
-RUN rm -rf /hirsTemp
+#RUN git clone -b v3.1_1099-migrate-to-jdk-25-and-gradle https://github.com/nsacyber/HIRS.git /hirsTemp
+#WORKDIR "/hirsTemp"
+#RUN /bin/bash -c './gradlew clean build'
+#WORKDIR "/"
+#RUN rm -rf /hirsTemp
