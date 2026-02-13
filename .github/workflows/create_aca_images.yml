@@ -12,7 +12,7 @@ on:
 env:
   DOCKERFILE_ROCKY: hirs-rocky9-ci
   DOCKERFILE_WINDOWS: aca-windows
-  IMAGE_NAME_ROCKY: ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
+  IMAGE_NAME_ROCKY: ghcr.io/nsacyber/hirs/hirs-rocky9-ci
   IMAGE_NAME_WINDOWS: ghcr.io/nsacyber/hirs/aca-windows
   PUBLIC_IMAGE_NAME: ghcr.io/nsacyber/hirs/aca
   PUBLIC_IMAGE_TAG_LATEST: ghcr.io/nsacyber/hirs/aca:latest
