@@ -32,33 +32,52 @@ import java.util.List;
 public interface GenericRim {
 
     // Signature types
-    /** Signature type COSE. */
+    /**
+     * Signature type COSE.
+     */
     String SIGTYPE_COSE = "cose";
-    /** Signature type DSIG. */
+    /**
+     * Signature type DSIG.
+     */
     String SIGTYPE_DSIG = "dsig";
 
     // Unsigned RIM Types used for PC
-    /** RIM type PC RIM. */
+    /**
+     * RIM type PC RIM.
+     */
     String RIMTYPE_PCRIM = "pcrim";
-    /** RIM type CoSWID. */
+    /**
+     * RIM type CoSWID.
+     */
     String RIMTYPE_COMP_SWID = "comp_swid";
 
     // Unsigned RIM Types used for PC Components
-    /** RIM type TCG Comp RIM CoSWID. */
+    /**
+     * RIM type TCG Comp RIM CoSWID.
+     */
     String RIMTYPE_COSWID = "coswid";
-    /** RIM type TCG Comp RIM SWID. */
+    /**
+     * RIM type TCG Comp RIM SWID.
+     */
     String RIMTYPE_COMP_COSWID = "comp_coswid";
-    /** RIM type CORIM-COMID. */
+    /**
+     * RIM type CORIM-COMID.
+     */
     String RIMTYPE_CORIM_COMID = "corim_comid";
-    /** RIM type CORIM-CoSWID. */
+    /**
+     * RIM type CORIM-CoSWID.
+     */
     String RIMTYPE_CORIM_COSWID = "corim_coswid";
 
-    /** Human-readable string listing RIM types available. */
+    /**
+     * Human-readable string listing RIM types available.
+     */
     String RIMTYPES_AVAILABLE = RIMTYPE_PCRIM + " " + RIMTYPE_COSWID + " " + RIMTYPE_COMP_SWID
             + " " + RIMTYPE_COMP_COSWID + " " + RIMTYPE_CORIM_COMID + " " + RIMTYPE_CORIM_COSWID + ".";
 
     /**
      * Returns the signature type options.
+     *
      * @return the signature type options
      */
     static String getValidSigTypes() {
@@ -67,10 +86,11 @@ public interface GenericRim {
 
     /**
      * Returns signature type of RIM.
+     *
      * @param rimType the RIM type
      * @return the signature type
      */
-    static String getSigType(String rimType) {
+    static String getSigType(final String rimType) {
         return switch (rimType) {
             case GenericRim.RIMTYPE_COSWID,
                  GenericRim.RIMTYPE_COMP_COSWID,
@@ -84,6 +104,7 @@ public interface GenericRim {
 
     /**
      * Returns a unique identifier String describing the type of RIM.
+     *
      * @return the RIM type
      */
     String getRimType();
@@ -91,12 +112,14 @@ public interface GenericRim {
     /**
      * Returns a unique identifier String (Manufacturer+Model in most cases)
      * or perhaps hash of a string to use as a DB lookup value for the RIMs Digests and the RIM itself.
+     *
      * @return the Rim ID
      */
     String getRimID();
 
     /**
      * Retrieves the Signer info for the RIM.
+     *
      * @return String representing the SKID of the RIM Signer
      */
     String getSignerId();
@@ -106,24 +129,28 @@ public interface GenericRim {
      * Should include signature checks, content checks, and formatting checks
      * Requires a cert chain to verify the RIMs signature
      * SignerId would provide the reference for the ACA to look up the certs
+     *
      * @return true if valid, false if not
      */
     boolean isValid();
 
     /**
      * Returns a list of Measurement objects for given RIM identifier that were found in payload (if any).
+     *
      * @return List<Measurement> that holds the reference measurements
      */
     List<Measurement> getReferenceMeasurements();
 
     /**
      * ReferencedRims is a list of RimId references found in the payload (if any).
+     *
      * @return the string of RIMId references
      */
     String getReferencedRims();
 
     /**
      * Produces an object specific string with info about the object.
+     *
      * @return the human-readable string
      */
     String toString();

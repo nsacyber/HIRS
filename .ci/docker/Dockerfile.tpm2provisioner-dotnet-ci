@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.description Tools for testing the build and deplo
 
 # Purpose: This image is designed for HIRS Provisioner.Net testing on Rocky 9. It is meant to be used in
 #          the .ci, and does not automatically start the Provisioner upon running the container.
-# Date Modified: 5/31/24
+# Date Modified: 2/06/2026
 # Notes: The image to be built should be named "tpm2provisioner-dotnet-ci:latest".
 #        For local image build, use this command from the /HIRS/ directory to build the image:
 #           $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
@@ -28,7 +28,7 @@ ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-pyt
 #   OS tools
 ENV HIRS_DNF_OS_TOOLS="git sudo vim wget"
 #   ACA compile
-ENV HIRS_DNF_ACA_COMPILE="java-17-openjdk-devel"
+ENV HIRS_DNF_ACA_COMPILE="java-25-openjdk-devel"
 #   ACA run
 ENV HIRS_DNF_ACA_RUN="mariadb-server"
 #   IBM TPM simulator compile
@@ -36,7 +36,7 @@ ENV HIRS_DNF_TPM_COMPILE="tpm2-tools gcc cmake openssl-devel"
 #   IBM TSS compile
 ENV HIRS_DNF_TSS_COMPILE="autoconf automake libtool"
 #   .NET SDK
-ENV HIRS_DNF_DOTNET_SDK="dotnet-sdk-6.0"
+ENV HIRS_DNF_DOTNET_SDK="dotnet-sdk-8.0"
 # Download and install all dependencies at one time
 RUN dnf -y install $(echo "$HIRS_DNF_OS_SETUP") $(echo "$HIRS_DNF_OS_TOOLS") $(echo "$HIRS_DNF_ACA_COMPILE") $(echo "$HIRS_DNF_ACA_RUN") $(echo "$HIRS_DNF_TPM_COMPILE") $(echo "$HIRS_DNF_TSS_COMPILE") $(echo "$HIRS_DNF_DOTNET_SDK")
 
@@ -62,7 +62,7 @@ RUN echo "#!/bin/bash" > /tmp/tpm_config && \
     rm -rf /tmp/tpm_config
 
 # Checkout HIRS
-RUN git clone -b main https://github.com/nsacyber/HIRS.git /hirs
+RUN git clone -b v3.1_1099-migrate-to-jdk-25-and-gradle https://github.com/nsacyber/HIRS.git /hirs
 
 # Run bootwar to cache build artifacts
 WORKDIR /hirs

@@ -807,7 +807,7 @@ public abstract class Certificate extends ArchivableEntity {
     private String authKeyIdentifierToString(final AuthorityKeyIdentifier aki) {
         String retValue = "";
         if (aki != null) {
-            byte[] keyArray = aki.getKeyIdentifier();
+            byte[] keyArray = aki.getKeyIdentifierOctets();
             if (keyArray != null) {
                 retValue = HexUtils.byteArrayToHexString(keyArray);
             }

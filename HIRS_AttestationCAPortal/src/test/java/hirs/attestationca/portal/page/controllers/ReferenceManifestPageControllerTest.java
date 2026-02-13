@@ -46,7 +46,6 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
      */
     @AfterEach
     public void afterEachTest() {
-       
     }
 
     /**

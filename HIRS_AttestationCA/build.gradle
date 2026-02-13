@@ -1,5 +1,5 @@
 plugins {
-    id 'com.google.protobuf' version '0.9.4'
+    id 'com.google.protobuf' version '0.9.6'
 }
 
 configurations {
@@ -40,6 +40,8 @@ dependencies {
 
     testImplementation libs.commons.io
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
     testRuntimeOnly libs.junit.platform.launcher
 
     testCompileOnly libs.lombok
@@ -48,9 +50,10 @@ dependencies {
 
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.24.3'
+        artifact = 'com.google.protobuf:protoc:4.33.5'
     }
 }
+
 sourceSets {
     main {
         proto {

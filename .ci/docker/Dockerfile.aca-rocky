@@ -1,10 +1,10 @@
-FROM rockylinux:9
+FROM rockylinux:9.3
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority. Expose port 8443 to access the portal from outside the container.
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
-ARG REF=main
+ARG REF=v3.1_1099-migrate-to-jdk-25-and-gradle
 
 SHELL ["/bin/bash", "-c"]
 
@@ -19,7 +19,7 @@ ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-pyt
 #   OS tools
 ENV HIRS_DNF_OS_TOOLS="git sudo vim wget"
 #   ACA compile
-ENV HIRS_DNF_ACA_COMPILE="java-17-openjdk-devel"
+ENV HIRS_DNF_ACA_COMPILE="java-25-openjdk-devel"
 #   ACA run
 ENV HIRS_DNF_ACA_RUN="mariadb-server"
 #   IBM TPM simulator compile
