@@ -1,7 +1,7 @@
 FROM rockylinux:9.3
 
 # Purpose: This image is designed for HIRS ci testing on Rocky Linux
-# Date Modified: 2/06/2026
+# Date Modified: 2/13/2026
 # Notes:
 #   * This image installs java, installs project dependencies, and runs gradlew to download gradlew
 #     dependencies. This saves time during a docker run. This also means the image should be
@@ -35,6 +35,16 @@ RUN dnf install -y wget openssl openssl-devel protobuf tpm2-tools tpm2-abrmd lib
 # Install PACCOR for Device Info Gathering
 RUN mkdir paccor && pushd paccor && wget https://github.com/nsacyber/paccor/releases/download/v1.1.4r12/paccor-1.1.4-12.noarch.rpm && yum -y install paccor-*.rpm && popd
 
+# Build IBM TPM Simulator
+RUN git clone https://github.com/kgoldman/ibmswtpm2 /ibmswtpm2
+WORKDIR /ibmswtpm2/src
+RUN make
+
+# Build IBM TPM tools
+RUN git clone https://github.com/kgoldman/ibmtss /ibmtss
+WORKDIR /ibmtss/utils
+RUN make -f makefiletpmc
+
 # Install Microsoft dotnet and rpm  package tool
 RUN wget https://dot.net/v1/dotnet-install.sh
 RUN sh dotnet-install.sh --os linux --channel LTS
@@ -46,12 +56,13 @@ RUN dnf -y install dotnet-sdk-8.0
 RUN dotnet tool install --global dotnet-rpm
 
 # Ports needed for system-level tests
+EXPOSE 8080
 EXPOSE 8443
 
 # Checkout HIRS main branch and run gradlew to install gradlew dependencies, then delete HIRS
 # Use '--depth=1' so as to not download the history of all commits
-#RUN git clone -b v3.1_1099-migrate-to-jdk-25-and-gradle https://github.com/nsacyber/HIRS.git /hirsTemp
-#WORKDIR "/hirsTemp"
-#RUN /bin/bash -c './gradlew clean build'
-#WORKDIR "/"
-#RUN rm -rf /hirsTemp
+RUN git clone -b v3.1_1099-migrate-to-jdk-25-and-gradle https://github.com/nsacyber/HIRS.git /hirsTemp
+WORKDIR "/hirsTemp"
+RUN /bin/bash -c './gradlew clean build'
+WORKDIR "/"
+RUN rm -rf /hirsTemp
