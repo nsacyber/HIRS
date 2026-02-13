@@ -10,9 +10,9 @@ on:
         required: false
         type: boolean
 env:
-  DOCKERFILE_ROCKY: aca-rocky
+  DOCKERFILE_ROCKY: hirs-rocky9-ci:latest
   DOCKERFILE_WINDOWS: aca-windows
-  IMAGE_NAME_ROCKY: ghcr.io/nsacyber/hirs/aca-rocky
+  IMAGE_NAME_ROCKY: ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
   IMAGE_NAME_WINDOWS: ghcr.io/nsacyber/hirs/aca-windows
   PUBLIC_IMAGE_NAME: ghcr.io/nsacyber/hirs/aca
   PUBLIC_IMAGE_TAG_LATEST: ghcr.io/nsacyber/hirs/aca:latest
