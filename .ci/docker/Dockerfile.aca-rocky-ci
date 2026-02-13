@@ -31,7 +31,7 @@ LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate A
 #     $ docker push ghcr.io/nsacyber/hirs/aca-rocky-ci:latest
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
-ARG REF=v3.1_1099-migrate-to-jdk-25-and-gradle
+ARG REF=main
 
 SHELL ["/bin/bash", "-c"]
 
