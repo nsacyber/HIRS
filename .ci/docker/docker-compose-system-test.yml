@@ -1,36 +1,36 @@
 services:
-   aca:
-      image: ghcr.io/nsacyber/hirs/aca-rocky-ci:latest
-      container_name: hirs-aca1
-      volumes:
-         - ../../:/HIRS
-      command: ["bash", "-c", "tail -f /dev/null;"]
-      ports:
-         - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
-         - 9123:9123
-      hostname: ${HIRS_ACA_HOSTNAME}
-      networks:
-         hirs_aca_system_tests:
-            ipv4_address: ${HIRS_ACA_PORTAL_IP}
-            aliases:
-               - ${HIRS_ACA_HOSTNAME}
+  aca:
+    image: ghcr.io/nsacyber/hirs/hirs-aca-rocky9-ci:latest
+    container_name: hirs-aca1
+    volumes:
+      - ../../:/HIRS
+    command: [ "bash", "-c", "tail -f /dev/null;" ]
+    ports:
+      - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_CONTAINER_PORT}"
+      - 9123:9123
+    hostname: ${HIRS_ACA_HOSTNAME}
+    networks:
+      hirs_aca_system_tests:
+        ipv4_address: ${HIRS_ACA_PORTAL_IP}
+        aliases:
+          - ${HIRS_ACA_HOSTNAME}
 
-   tpmprovisioner:
-      image: ghcr.io/nsacyber/hirs/tpm2provisioner-dotnet-ci:latest
-      container_name: hirs-provisioner1-tpm2
-      depends_on:
-         - aca
-      volumes:
-         - ../../:/HIRS
-      command: ["bash", "-c", "tail -f /dev/null"]
-      networks:
-         hirs_aca_system_tests:
-            ipv4_address: ${HIRS_ACA_PROVISIONER_TPM2_IP}
+  tpmprovisioner:
+    image: ghcr.io/nsacyber/hirs/tpm2provisioner-dotnet-ci:latest
+    container_name: hirs-provisioner1-tpm2
+    depends_on:
+      - aca
+    volumes:
+      - ../../:/HIRS
+    command: [ "bash", "-c", "tail -f /dev/null" ]
+    networks:
+      hirs_aca_system_tests:
+        ipv4_address: ${HIRS_ACA_PROVISIONER_TPM2_IP}
 
 networks:
-   hirs_aca_system_tests:
-      driver: bridge
-      ipam:
-         driver: default
-         config:
-            - subnet: ${HIRS_SUBNET}
+  hirs_aca_system_tests:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${HIRS_SUBNET}
