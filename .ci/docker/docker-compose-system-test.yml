@@ -1,6 +1,6 @@
 services:
   aca:
-    image: ghcr.io/nsacyber/hirs/hirs-aca-rocky9-ci:latest
+    image: ghcr.io/nsacyber/hirs/hirs-rocky9-ci:latest
     container_name: hirs-aca1
     volumes:
       - ../../:/HIRS
