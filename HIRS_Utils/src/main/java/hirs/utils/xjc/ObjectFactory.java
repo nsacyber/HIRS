@@ -17,17 +17,12 @@ import java.math.BigInteger;
 
 
 /**
- * This object contains factory methods for each
- * Java content interface and Java element interface
+ * This object contains factory methods for each Java content interface and Java element interface
  * generated in the main.java.hirs.utils.xjc package.
- * <p>An ObjectFactory allows you to programatically
- * construct new instances of the Java representation
- * for XML content. The Java representation of XML
- * content can consist of schema derived interfaces
- * and classes representing the binding of schema
- * type definitions, element declarations and model
- * groups.  Factory methods for each of these are
- * provided in this class.
+ * <p>An ObjectFactory allows you to programmatically construct new instances of the Java representation
+ * for XML content. The Java representation of XML content can consist of schema derived interfaces
+ * and classes representing the binding of schema type definitions, element declarations and model
+ * groups.  Factory methods for each of these are  provided in this class.
  */
 @XmlRegistry
 public class ObjectFactory {
@@ -234,6 +229,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link PGPDataType }.
+     *
+     * @return {@link PGPDataType }
      */
     public PGPDataType createPGPDataType() {
         return new PGPDataType();
@@ -519,10 +516,9 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * <p>
-     * * @param value string representation of the value
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}.
      *
+     * @param value string representation of the value
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "KeyName")
@@ -531,7 +527,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link RSAKeyValueType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link RSAKeyValueType }{@code >}.
      *
      * @param value {@link RSAKeyValueType } representation of the value
      * @return {@link JAXBElement }
@@ -588,8 +584,9 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ObjectType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link ObjectType }{@code >}.
      *
+     * @param value {@link ObjectType } representation of the value
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "Object")
@@ -598,8 +595,9 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link SignaturePropertiesType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link SignaturePropertiesType }{@code >}.
      *
+     * @param value {@link SignaturePropertiesType } representation of the value
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "SignatureProperties")
@@ -609,8 +607,9 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TransformType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link TransformType }{@code >}.
      *
+     * @param value {@link TransformType } representation of the value
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "Transform")
@@ -619,8 +618,9 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link PGPDataType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link PGPDataType }{@code >}.
      *
+     * @param value {@link PGPDataType } representation of the value
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "PGPData")
@@ -631,6 +631,7 @@ public class ObjectFactory {
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ReferenceType }{@code >}}
      *
+     * @param value {@link ReferenceType } representation of the value
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "Reference")
@@ -639,8 +640,9 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link RetrievalMethodType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link RetrievalMethodType }{@code >}.
      *
+     * @param value {@link RetrievalMethodType } representation of the value
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "RetrievalMethod")
@@ -650,8 +652,9 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link DSAKeyValueType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link DSAKeyValueType }{@code >}.
      *
+     * @param value {@link DSAKeyValueType } representation of the value
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "DSAKeyValue")
@@ -673,7 +676,7 @@ public class ObjectFactory {
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CanonicalizationMethodType }{@code >}.
      *
-     * @param value
+     * @param value {@link CanonicalizationMethodType } representation of the value.
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "CanonicalizationMethod")
@@ -686,7 +689,7 @@ public class ObjectFactory {
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SignedInfoType }{@code >}.
      *
-     * @param value
+     * @param value {@link SignedInfoType } representation of the value.
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "SignedInfo")
@@ -697,6 +700,7 @@ public class ObjectFactory {
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ManifestType }{@code >}.
      *
+     * @param value {@link ManifestType } representation of the value.
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "Manifest")
@@ -707,6 +711,7 @@ public class ObjectFactory {
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}.
      *
+     * @param value string representation of the value.
      * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2000/09/xmldsig#", name = "XPath", scope = TransformType.class)
@@ -776,6 +781,9 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Link }{@code >}.
+     *
+     * @param value {@link Link } representation of the value
+     * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", name = "Link", scope = SoftwareIdentity.class)
     public JAXBElement<Link> createSoftwareIdentityLink(Link value) {
@@ -784,6 +792,9 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Evidence }{@code >}.
+     *
+     * @param value {@link Evidence } representation of the value
+     * @return {@link JAXBElement }
      */
     @XmlElementDecl(namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd", name = "Evidence", scope = SoftwareIdentity.class)
     public JAXBElement<Evidence> createSoftwareIdentityEvidence(Evidence value) {
