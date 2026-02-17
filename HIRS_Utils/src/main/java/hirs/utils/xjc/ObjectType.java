@@ -95,6 +95,8 @@ public class ObjectType {
      * {@link Object }
      * {@link Element }
      * {@link String }
+     *
+     * @return list of objects
      */
     public List<Object> getContent() {
         if (content == null) {

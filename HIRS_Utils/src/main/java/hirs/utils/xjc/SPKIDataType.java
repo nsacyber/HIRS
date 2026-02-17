@@ -65,10 +65,9 @@ public class SPKIDataType {
      *
      *
      * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
-     * {@link Object }
-     * {@link Element }
+     * Objects of the following type(s) are allowed in the list:
+     * Byte array representation of {@link JAXBElement },
+     * {@link Object }, and {@link Element }
      *
      * @return list of objects
      */

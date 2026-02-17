@@ -27,7 +27,6 @@ import java.util.List;
  *   <li>RIMTYPE_CORIM_COMID: IETF CoRIM (Concise RIM) which envelopes a comid</li>
  *   <li>RIMTYPE_CORIM_COSWID: IETF CoRIM which envelopes a CoSWID</li>
  * </ul>
- * </p>
  */
 public interface GenericRim {
 

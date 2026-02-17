@@ -78,6 +78,8 @@ public class KeyValueType {
      * {@link String }
      * {@link JAXBElement }{@code <}{@link DSAKeyValueType }{@code >}
      * {@link Object }
+     *
+     * @return list of objects
      */
     public List<Object> getContent() {
         if (content == null) {
