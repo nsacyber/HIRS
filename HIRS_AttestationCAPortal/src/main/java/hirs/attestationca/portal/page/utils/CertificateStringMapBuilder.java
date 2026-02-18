@@ -14,11 +14,15 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
+import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.PciIds;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;
+
+import jakarta.persistence.NonUniqueResultException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -168,8 +172,13 @@ public final class CertificateStringMapBuilder {
             //Get issuer ID if not self signed
             if (data.get("isSelfSigned").equals("false")) {
                 //Get the missing certificate chain for not self sign
-                Certificate missingCert =
-                        containsAllChain(certificate, caCertificateRepository);
+                Certificate missingCert = null;
+                try {
+                    missingCert = containsAllChain(certificate, caCertificateRepository);
+                } catch (NonUniqueSKIException e) {
+                    data.put("missingChainIssuer",
+                            "Chain contains Root CA whose SKI is non-unique within CA repository.");
+                }
                 String issuerResult;
 
                 if (missingCert != null) {
@@ -180,12 +189,17 @@ public final class CertificateStringMapBuilder {
                 // Match AKI against SKI
                 if (certificate.getAuthorityKeyIdentifier() != null
                         && !certificate.getAuthorityKeyIdentifier().isEmpty()) {
-                    CertificateAuthorityCredential keyIdMatch = caCertificateRepository
-                            .findBySubjectKeyIdStringAndArchiveFlag(
-                                    certificate.getAuthorityKeyIdentifier(), false);
-                    if (keyIdMatch != null) {
-                        data.put("issuerID", keyIdMatch.getId().toString());
-                        return data;
+                    try {
+                        CertificateAuthorityCredential keyIdMatch = caCertificateRepository
+                                .findBySubjectKeyIdStringAndArchiveFlag(
+                                        certificate.getAuthorityKeyIdentifier(), false);
+                        if (keyIdMatch != null) {
+                            data.put("issuerID", keyIdMatch.getId().toString());
+                            return data;
+                        }
+                    } catch (IncorrectResultSizeDataAccessException | NonUniqueResultException e) {
+                        log.error("Duplicate Root CA SKI detected while matching AKI to SKI: {}",
+                                certificate.getAuthorityKeyIdentifier(), e);
                     }
                 }
 
@@ -234,11 +248,19 @@ public final class CertificateStringMapBuilder {
         //Check if there is a subject organization
         if (certificate.getAuthorityKeyIdentifier() != null
                 && !certificate.getAuthorityKeyIdentifier().isEmpty()) {
-            skiCA = caCredentialRepository.findBySubjectKeyIdStringAndArchiveFlag(
-                    certificate.getAuthorityKeyIdentifier(), false);
+            try {
+                skiCA = caCredentialRepository.findBySubjectKeyIdStringAndArchiveFlag(
+                        certificate.getAuthorityKeyIdentifier(), false);
+            } catch (IncorrectResultSizeDataAccessException | NonUniqueResultException e) {
+                log.error("Duplicate Root CA SKI detected while resolving chain: {}",
+                        certificate.getAuthorityKeyIdentifier(), e);
+                throw new NonUniqueSKIException(
+                        "Duplicate Root CA SKI detected in CA Credential Repository: "
+                                + certificate.getAuthorityKeyIdentifier(), e);
+            }
         } else {
-            log.error("Certificate ({}) for {} has no authority key identifier.", certificate.getClass(),
-                    certificate.getSubject());
+            log.error("Certificate ({}) for {} has no authority key identifier.",
+                    certificate.getClass(), certificate.getSubject());
         }
 
         if (skiCA == null) {
