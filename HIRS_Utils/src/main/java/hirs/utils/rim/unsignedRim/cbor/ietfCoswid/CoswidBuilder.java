@@ -422,7 +422,6 @@ public class CoswidBuilder extends Coswid {
      */
     protected void createFileHash(final ByteArrayOutputStream out, final String hash, final IanaHashAlg alg) {
         HexFormat hexTool = HexFormat.of();
-        int size = hash.length() / 2;
 
         byte[] hashByteArray = hexTool.parseHex(hash);
 
