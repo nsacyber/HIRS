@@ -173,8 +173,8 @@
     <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/delete}">
       <div
-        th:replace="fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Issued Certificate', 
-                bodyContent=~{this::#deleteIssuedCertConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+        th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Issued Certificate', 
+                bodyContent=~{this::#deleteIssuedCertConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})}">
 
         <!-- Modal Body Content -->
         <div id="deleteIssuedCertConfirmationBody">
@@ -196,8 +196,8 @@
     <form method="POST"
       th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-delete}">
       <div
-        th:replace="fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Issued Certificates', 
-                bodyContent=~{this::#deleteMultipleIssuedCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})">
+        th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Issued Certificates', 
+                bodyContent=~{this::#deleteMultipleIssuedCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})}">
 
         <!-- Modal Body Content -->
         <div id="deleteMultipleIssuedCertificatesConfirmationBody">

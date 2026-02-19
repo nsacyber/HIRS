@@ -5,10 +5,10 @@
     </a>
 
     <!-- Include modal-dialogue fragment -->
-    <th:block th:replace="fragments/modal-dialogue :: modalDialogue(
+    <th:block th:replace="~{fragments/modal-dialogue :: modalDialogue(
         id=${id}, 
         label=${label}, 
         customButtons=${customButtons}, 
         bodyContent=${bodyContent}
-    )"></th:block>
+    )}"></th:block>
 </th:block>
