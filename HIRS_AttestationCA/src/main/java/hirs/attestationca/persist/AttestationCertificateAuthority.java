@@ -15,6 +15,7 @@ import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.structs.converters.StructConverter;
 import lombok.extern.log4j.Log4j2;
 
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
@@ -23,7 +24,7 @@ import java.security.cert.X509Certificate;
  * Identity Request.
  */
 @Log4j2
-public abstract class AttestationCertificateAuthority {
+public abstract class AttestationCertificateAuthority implements RestfulInterface {
 
     /**
      * Container wired ACA private key.
@@ -125,7 +126,7 @@ public abstract class AttestationCertificateAuthority {
      * @param identityClaim a byte array representation of the identity claim
      * @return processed identity claim response
      */
-    byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
+    public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
         return this.identityClaimHandler.processIdentityClaimTpm2(identityClaim);
     }
 
@@ -135,7 +136,7 @@ public abstract class AttestationCertificateAuthority {
      * @param certificateRequest a byte array representation of the certificate request
      * @return processed certificate request response
      */
-    byte[] processCertificateRequest(final byte[] certificateRequest) {
+    public byte[] processCertificateRequest(final byte[] certificateRequest) throws GeneralSecurityException {
         return this.certificateRequestHandler.processCertificateRequest(certificateRequest);
     }
 

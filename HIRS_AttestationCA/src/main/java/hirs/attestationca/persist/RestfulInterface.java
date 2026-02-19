@@ -1,5 +1,7 @@
 package hirs.attestationca.persist;
 
+import java.security.GeneralSecurityException;
+
 /**
  * Defines the responsibilities of the Attestation Certificate Authority.
  */
@@ -19,6 +21,6 @@ public interface RestfulInterface {
      * @param certificateRequest a byte array representation of the certificate request
      * @return a byte array representation of the certificate request response
      */
-    byte[] processCertificateRequest(byte[] certificateRequest);
+    byte[] processCertificateRequest(byte[] certificateRequest) throws GeneralSecurityException;
 
 }

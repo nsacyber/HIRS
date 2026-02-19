@@ -23,9 +23,10 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 
 @Log4j2
@@ -75,12 +76,13 @@ public class CertificateRequestProcessor extends AbstractProcessor {
      *                           claim handshake
      * @return a certificateResponse containing the signed certificate
      */
-    public byte[] processCertificateRequest(final byte[] certificateRequest) {
+    public byte[] processCertificateRequest(final byte[] certificateRequest) throws GeneralSecurityException {
         log.info("Certificate Request has been received and is ready to be processed");
 
         if (ArrayUtils.isEmpty(certificateRequest)) {
-            throw new IllegalArgumentException("The CertificateRequest sent by the client"
-                    + " cannot be null or empty.");
+            final String errorMsg = "The CertificateRequest sent by the client cannot be null or empty.";
+            log.error(errorMsg);
+            throw new IllegalArgumentException(errorMsg);
         }
 
         final PolicyRepository policyRepository = this.getPolicyRepository();
@@ -91,15 +93,16 @@ public class CertificateRequestProcessor extends AbstractProcessor {
         try {
             request = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequest);
         } catch (InvalidProtocolBufferException ipbe) {
-            throw new CertificateProcessingException(
-                    "Could not deserialize Protobuf Certificate Request object.", ipbe);
+            final String errorMsg = "Could not deserialize Protobuf Certificate Request object.";
+            log.error(errorMsg);
+            throw new CertificateProcessingException(errorMsg, ipbe);
         }
 
         String certificateRequestJsonString = "";
         try {
             certificateRequestJsonString = JsonFormat.printer().print(request);
         } catch (InvalidProtocolBufferException exception) {
-            log.error("Certificate request could not be parsed properly into a json string");
+            log.error("Certificate request could not be parsed properly into a JSON string");
         }
 
         // attempt to retrieve provisioner state based on nonce in request
@@ -111,23 +114,22 @@ public class CertificateRequestProcessor extends AbstractProcessor {
             ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
 
             // Get endorsement public key
-            RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(claim.getEkPublicArea().toByteArray());
+            PublicKey ekPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(claim.getEkPublicArea().toByteArray());
 
             // Get attestation public key
-            RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
+            PublicKey akPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(claim.getAkPublicArea().toByteArray());
 
             // Get Endorsement Credential if it exists or was uploaded
-            EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim,
-                    ekPub, certificateRepository);
+            EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
 
             // Get Platform Credentials if they exist or were uploaded
             List<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
                     endorsementCredential, certificateRepository);
 
             // Get LDevID public key if it exists
-            RSAPublicKey ldevidPub = null;
+            PublicKey ldevidPub = null;
             if (claim.hasLdevidPublicArea()) {
-                ldevidPub = ProvisionUtils.parsePublicKey(claim.getLdevidPublicArea().toByteArray());
+                ldevidPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(claim.getLdevidPublicArea().toByteArray());
             }
 
             // Get device name and device
@@ -136,7 +138,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
 
             // Parse through the Provisioner supplied TPM Quote and pcr values
             // these fields are optional
-            if (request.getQuote() != null && !request.getQuote().isEmpty()) {
+            if (!request.getQuote().isEmpty()) {
                 TPMInfo savedInfo = device.getDeviceInfo().getTpmInfo();
                 TPMInfo tpmInfo = new TPMInfo(savedInfo.getTpmMake(),
                         savedInfo.getTpmVersionMajor(),

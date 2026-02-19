@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
@@ -42,9 +43,7 @@ import java.security.cert.X509Certificate;
 @Log4j2
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
-public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority
-        implements RestfulInterface {
-
+public class RestfulAttestationCertificateAuthority extends AttestationCertificateAuthority {
     /**
      * Constructor.
      *
@@ -118,7 +117,7 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
     @ResponseBody
     @PostMapping(value = "/request-certificate-tpm2",
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest) {
+    public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest) throws GeneralSecurityException {
         return super.processCertificateRequest(certificateRequest);
     }
 

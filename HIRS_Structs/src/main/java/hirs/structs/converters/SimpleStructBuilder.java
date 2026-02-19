@@ -13,7 +13,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @param <T> the type of Struct to build
  */
-public class SimpleStructBuilder<T extends Struct> implements StructBuilder {
+public class SimpleStructBuilder<T extends Struct> implements StructBuilder<T> {
     private final Class<T> clazz;
     private T struct;
 

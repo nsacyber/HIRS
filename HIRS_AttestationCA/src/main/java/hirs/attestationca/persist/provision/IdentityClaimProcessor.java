@@ -156,7 +156,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
         // parse the EK Public key from the IdentityClaim once for use in supply chain validation
         // and later tpm20MakeCredential function
-        RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(claim.getEkPublicArea().toByteArray());
+        RSAPublicKey ekPub = ProvisionUtils.parseRSAKeyFromPublicDataSegment(claim.getEkPublicArea().toByteArray());
         AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
 
         try {
@@ -168,7 +168,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         ByteString blobStr = ByteString.copyFrom(new byte[]{});
 
         if (validationResult == AppraisalStatus.Status.PASS) {
-            RSAPublicKey akPub = ProvisionUtils.parsePublicKey(claim.getAkPublicArea().toByteArray());
+            RSAPublicKey akPub = ProvisionUtils.parseRSAKeyFromPublicDataSegment(claim.getAkPublicArea().toByteArray());
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
             blobStr = ProvisionUtils.tpm20MakeCredential(ekPub, akPub, nonce);
 

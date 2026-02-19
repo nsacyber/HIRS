@@ -51,7 +51,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.Random;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -61,6 +60,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -121,12 +121,43 @@ public class AttestationCertificateAuthorityTest {
     private static final String AK_NAME_HEX = "00 0b 6e 8f 79 1c 7e 16  96 1b 11 71 65 9c e0 cd"
             + "ae 0d 4d aa c5 41 be 58  89 74 67 55 96 c2 5e 38"
             + "e2 94";
+    private final Random random = new Random();
     // object in test
     private AttestationCertificateAuthority aca;
     private AccessAbstractProcessor abstractProcessor;
     // test key pair
     private KeyPair keyPair;
-    private  Random random = new Random();
+
+    /**
+     * Creates a self-signed X.509 public-key certificate.
+     *
+     * @param pair KeyPair to create the cert for
+     * @return self-signed X509Certificate
+     */
+    private static X509Certificate createSelfSignedCertificate(final KeyPair pair) {
+        Security.addProvider(new BouncyCastleProvider());
+        final int timeRange = 10000;
+        X509Certificate cert = null;
+        try {
+
+            X500Name issuerName = new X500Name("CN=TEST2, OU=TEST2, O=TEST2, C=TEST2");
+            X500Name subjectName = new X500Name("CN=TEST, OU=TEST, O=TEST, C=TEST");
+            BigInteger serialNumber = BigInteger.ONE;
+            Date notBefore = new Date(System.currentTimeMillis() - timeRange);
+            Date notAfter = new Date(System.currentTimeMillis() + timeRange);
+            X509v3CertificateBuilder builder =
+                    new JcaX509v3CertificateBuilder(issuerName, serialNumber, notBefore, notAfter,
+                            subjectName, pair.getPublic());
+            ContentSigner signer =
+                    new JcaContentSignerBuilder("SHA256WithRSA").setProvider("BC").build(
+                            pair.getPrivate());
+            return new JcaX509CertificateConverter().setProvider("BC").getCertificate(
+                    builder.build(signer));
+        } catch (Exception e) {
+            fail("Exception occurred while creating a cert", e);
+        }
+        return cert;
+    }
 
     /**
      * Registers bouncy castle as a security provider. Normally the JEE container will handle this,
@@ -169,7 +200,7 @@ public class AttestationCertificateAuthorityTest {
     public void testGetPublicKey() {
 
         // encoded byte array to be returned by public key
-        byte[] encoded = new byte[] {0, 1, 0, 1, 0};
+        byte[] encoded = new byte[]{0, 1, 0, 1, 0};
 
         // create mocks for testing
         X509Certificate acaCertificate = mock(X509Certificate.class);
@@ -285,7 +316,7 @@ public class AttestationCertificateAuthorityTest {
     public void testGenerateAsymmetricContents() throws Exception {
 
         // "encoded" identity proof (returned by struct converter)
-        byte[] identityProofEncoded = new byte[] {0, 0, 1, 1};
+        byte[] identityProofEncoded = new byte[]{0, 0, 1, 1};
 
         // generate a random session key to be used for encryption and decryption
         byte[] sessionKey = new byte[ENCRYPTION_IV_LEN];
@@ -382,37 +413,6 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Creates a self-signed X.509 public-key certificate.
-     *
-     * @param pair KeyPair to create the cert for
-     * @return self-signed X509Certificate
-     */
-    private static X509Certificate createSelfSignedCertificate(final KeyPair pair) {
-        Security.addProvider(new BouncyCastleProvider());
-        final int timeRange = 10000;
-        X509Certificate cert = null;
-        try {
-
-            X500Name issuerName = new X500Name("CN=TEST2, OU=TEST2, O=TEST2, C=TEST2");
-            X500Name subjectName = new X500Name("CN=TEST, OU=TEST, O=TEST, C=TEST");
-            BigInteger serialNumber = BigInteger.ONE;
-            Date notBefore = new Date(System.currentTimeMillis() - timeRange);
-            Date notAfter = new Date(System.currentTimeMillis() + timeRange);
-            X509v3CertificateBuilder builder =
-                    new JcaX509v3CertificateBuilder(issuerName, serialNumber, notBefore, notAfter,
-                            subjectName, pair.getPublic());
-            ContentSigner signer =
-                    new JcaContentSignerBuilder("SHA256WithRSA").setProvider("BC").build(
-                            pair.getPrivate());
-            return new JcaX509CertificateConverter().setProvider("BC").getCertificate(
-                    builder.build(signer));
-        } catch (Exception e) {
-            fail("Exception occurred while creating a cert", e);
-        }
-        return cert;
-    }
-
-    /**
      * Tests {@link AttestationCertificateAuthority#
      * AttestationCertificateAuthority(SupplyChainValidationService, PrivateKey,
      * X509Certificate, StructConverter, CertificateManager, DeviceRegister, int,
@@ -488,7 +488,7 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Tests {@link ProvisionUtils#assemblePublicKey(byte[])}.
+     * Tests {@link ProvisionUtils#assembleRSAPublicKey(byte[])}.
      */
     @Test
     public void testAssemblePublicKeyUsingByteArray() {
@@ -496,7 +496,7 @@ public class AttestationCertificateAuthorityTest {
         final BigInteger modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus();
 
         // perform test
-        RSAPublicKey publicKey = (RSAPublicKey) ProvisionUtils.assemblePublicKey(modulus.toByteArray());
+        RSAPublicKey publicKey = (RSAPublicKey) ProvisionUtils.assembleRSAPublicKey(modulus.toByteArray());
 
         // assert that the exponent and the modulus are the same. the exponents should be the well
         // known prime, 101
@@ -506,7 +506,7 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Tests {@link ProvisionUtils#assemblePublicKey(String)}.
+     * Tests {@link ProvisionUtils#assembleRSAPublicKey(String)}.
      */
     @Test
     public void testAssemblePublicKeyUsingHexEncodedString() {
@@ -518,7 +518,7 @@ public class AttestationCertificateAuthorityTest {
                 ((RSAPublicKey) keyPair.getPublic()).getModulus().toByteArray());
 
         // perform test
-        RSAPublicKey publicKey = (RSAPublicKey) ProvisionUtils.assemblePublicKey(modulusString);
+        RSAPublicKey publicKey = (RSAPublicKey) ProvisionUtils.assembleRSAPublicKey(modulusString);
 
         // assert that the exponent and the modulus are the same. the exponents should be the well
         // known prime, 101.
@@ -540,7 +540,7 @@ public class AttestationCertificateAuthorityTest {
 
         byte[] ekFile = Files.readAllBytes(ekPath);
 
-        RSAPublicKey ek = ProvisionUtils.parsePublicKey(ekFile);
+        RSAPublicKey ek = ProvisionUtils.parseRSAKeyFromPublicDataSegment(ekFile);
         final int radix = 16;
         assertTrue(ek.getPublicExponent().equals(new BigInteger("010001", radix)));
 
@@ -569,7 +569,7 @@ public class AttestationCertificateAuthorityTest {
 
         byte[] akFile = Files.readAllBytes(akPath);
 
-        RSAPublicKey ak = ProvisionUtils.parsePublicKey(akFile);
+        RSAPublicKey ak = ProvisionUtils.parseRSAKeyFromPublicDataSegment(akFile);
         final int radix = 16;
         assertTrue(ak.getPublicExponent().equals(new BigInteger("010001", radix)));
 
@@ -633,8 +633,8 @@ public class AttestationCertificateAuthorityTest {
         byte[] ekPubFile = Files.readAllBytes(ekPubPath);
         byte[] akPubFile = Files.readAllBytes(akPubPath);
 
-        RSAPublicKey ekPub = ProvisionUtils.parsePublicKey(ekPubFile);
-        RSAPublicKey akPub = ProvisionUtils.parsePublicKey(akPubFile);
+        RSAPublicKey ekPub = ProvisionUtils.parseRSAKeyFromPublicDataSegment(ekPubFile);
+        RSAPublicKey akPub = ProvisionUtils.parseRSAKeyFromPublicDataSegment(akPubFile);
 
         // prepare the nonce and wrap it with keys
         final byte[] nonce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
