@@ -431,9 +431,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                                 unwrapTaggedObject(taggedObj)));
                         case EK_FIPS_TAG -> parseFipsLevel(ASN1Sequence.getInstance(unwrapTaggedObject(taggedObj)));
                         case EK_ISO_9000_CERT_TAG -> {
-                            if (unwrapTaggedObject(taggedObj) instanceof ASN1Boolean isoCertified) {
-                                this.iso9000Certified = isoCertified.isTrue();
-                            }
+                            this.iso9000Certified = ASN1Boolean.getInstance(taggedObj, false).isTrue();
                         } default -> log.warn("Encountered unknown TPM Security Assertions tag "
                                 + "in Endorsement Credential: {}", tag);
                     }
