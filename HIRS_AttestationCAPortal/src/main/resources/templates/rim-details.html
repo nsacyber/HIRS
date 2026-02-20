@@ -9,7 +9,7 @@
 
 <body>
     <h1 layout:fragment="pageHeaderTitle">
-        <div th:text="${initialData.get('validationResult')} == 'PASS' ? 'TCG Log events' : 'TCG Log event(s) not found in the RIM DB'"
+        <div th:text="${initialData.get('validationResult')} == 'PASS' ? 'TPM Log events' : 'TPM Log event(s) not found in the RIM DB'"
              th:if="${initialData?.get('rimType') == 'Measurement'}"/>
             <span th:text="${initialData?.get('rimType')} + ' Reference Integrity Manifest'"
                   th:unless="${initialData?.get('rimType') == 'Measurement'}">
@@ -215,9 +215,8 @@
 
         <th:block th:if="${initialData?.get('rimType') == 'Measurement'
             && initialData.get('validationResult') == T(hirs.attestationca.persist.enums.AppraisalStatus.Status).FAIL}">
-            <div style="display: inline">
                 <div class="row">
-                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
+                    <div class="col-md-2 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
                     <div id="measurements" class="col col-md-8">
                         <div>Download Measurement:
                             <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/download?(id=${param.id})}">
@@ -244,11 +243,11 @@
                 </div><!--row-->
                 <div class="row">
                     <div class="col col-md-8" style="display: flex; background: gainsboro; margin-top: 1rem; padding: 1rem auto 1rem auto">
-                        <div>Client Log</div>
+                        <div>TPM Events</div>
                     </div>
                     <th:block th:if="${not #lists.isEmpty(initialData.get('livelogEvents'))}"
                               th:each="lEvent, lEventStat : ${initialData.get('livelogEvents')}">
-                        <div class="col col-md-8" style="display: flex; background: lightgray;">
+                        <div class="col col-md-8 bg-danger" style="display: flex;">
                             <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">
                                 Failed Event Digest:
                                 <br />
@@ -271,8 +270,7 @@
                                                 th:data-bs-target="${'#eventCollapse' + lEventStat.count}"
                                                 aria-expanded="false"
                                                 th:aria-controls="${'eventCollapse' + lEventStat.count}">
-                                            Expected Events from RIM DB:
-                                            <br />
+                                            Expected Events from the RIM DB with the Event Type of&nbsp;
                                             <span style="word-wrap: break-word" th:text="${lEvent.eventTypeString}"/>
                                         </button>
                                     </h3>
@@ -298,7 +296,6 @@
                         </div>
                     </th:block>
                 </div><!--row-->
-            </div>
         </th:block><!--Failed measurements-->
 
 
