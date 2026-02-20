@@ -19,17 +19,17 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Root level="WARN">
-            <AppenderRef ref="STDOUT" level="WARN"/>
+        <Root level="ERROR">
+            <AppenderRef ref="STDOUT" level="ERROR"/>
             <AppenderRef ref="FILE"/>
         </Root>
         <SpringProfile name="!development, !production">
-            <Logger name="hirs.attestationca" level="trace"/>
+            <Logger name="hirs.attestationca" level="info"/>
         </SpringProfile>
-        <Logger name="org.hibernate" level="DEBUG"/>
+        <Logger name="org.hibernate" level="ERROR"/>
     </Loggers>
     <!-- prevents an out-of-memory exception caused by  the debug logging of very large inserts -->
     <category name="org.hibernate.event.def.AbstractFlushingEventListener">
-        <priority value="INFO"/>
+        <priority value="ERROR"/>
     </category>
 </Configuration>
