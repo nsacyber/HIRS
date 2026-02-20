@@ -73,7 +73,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- * Test suite for {@link AttestationCertificateAuthority}.
+ * Test suite for {@link AttestationCertificateAuthorityService}.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)              // needed to use non-static BeforeAll
 public class AttestationCertificateAuthorityTest {
@@ -123,7 +123,7 @@ public class AttestationCertificateAuthorityTest {
             + "e2 94";
     private final Random random = new Random();
     // object in test
-    private AttestationCertificateAuthority aca;
+    private AttestationCertificateAuthorityService aca;
     private AccessAbstractProcessor abstractProcessor;
     // test key pair
     private KeyPair keyPair;
@@ -174,9 +174,8 @@ public class AttestationCertificateAuthorityTest {
         keyPair = keyPairGenerator.generateKeyPair();
 
         //BeforeTest
-        aca = new AttestationCertificateAuthority(null, keyPair.getPrivate(),
-                null, null, null, null, null, null, null, 1,
-                null, null, null, null) {
+        aca = new AttestationCertificateAuthorityService(null,
+                null) {
         };
         abstractProcessor = new AccessAbstractProcessor(keyPair.getPrivate(), 1);
 
@@ -184,7 +183,7 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthority#processIdentityClaimTpm2(byte[])}
+     * Tests {@link AttestationCertificateAuthorityService#processIdentityClaimTpm2(byte[])}
      * where the byte array is null. Expects an illegal argument exception to be thrown.
      */
     @Test
@@ -194,7 +193,7 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthority#getPublicKey()}.
+     * Tests {@link AttestationCertificateAuthorityService#getLeafACACertPublicKey()}.
      */
     @Test
     public void testGetPublicKey() {
@@ -216,7 +215,7 @@ public class AttestationCertificateAuthorityTest {
         when(publicKey.getEncoded()).thenReturn(encoded);
 
         // assert what the ACA returns is as expected
-        assertArrayEquals(encoded, aca.getPublicKey());
+        assertArrayEquals(encoded, aca.getLeafACACertPublicKey());
 
         // verify mock interactions
         verify(acaCertificate).getPublicKey();
@@ -413,7 +412,7 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthority#
+     * Tests {@link AttestationCertificateAuthorityService#
      * AttestationCertificateAuthority(SupplyChainValidationService, PrivateKey,
      * X509Certificate, StructConverter, CertificateManager, DeviceRegister, int,
      * DeviceManager, DBManager)}.

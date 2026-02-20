@@ -14,7 +14,7 @@ import java.security.interfaces.RSAPublicKey;
  * This enum currently includes:
  * <ul>
  *   <li>{@link #RSA} – RSA public-key algorithm.</li>
- *   <li>{@link #EC} – Elliptic Curve (EC) public-key algorithm, commonly referred to as ECC.</li>
+ *   <li>{@link #ECC} – Elliptic Curve (EC) public-key algorithm, commonly referred to as ECC.</li>
  * </ul>
  * <p>
  * Each enum constant also holds its corresponding JCA (Java Cryptography Architecture)
@@ -25,10 +25,25 @@ import java.security.interfaces.RSAPublicKey;
 @ToString
 public enum PublicKeyAlgorithm {
     RSA("RSA", RSAPublicKey.class),
-    EC("EC", ECPublicKey.class),
+    ECC("ECC", ECPublicKey.class),
     UNKNOWN("", null);
 
     private final String algorithmName;
     private final Class<? extends PublicKey> keyClass;
+
+    /**
+     * Converts the provided string public key algorithm into an ENUM.
+     *
+     * @param algorithmAsString public key algorithm name as a string
+     * @return ENUM representation of the public key algorithm
+     */
+    public static PublicKeyAlgorithm fromString(final String algorithmAsString) {
+        for (PublicKeyAlgorithm algorithmEnum : PublicKeyAlgorithm.values()) {
+            if (algorithmEnum.getAlgorithmName().equalsIgnoreCase(algorithmAsString)) {
+                return algorithmEnum;
+            }
+        }
+        return UNKNOWN; // Return UNKNOWN if no match is found
+    }
 }
 

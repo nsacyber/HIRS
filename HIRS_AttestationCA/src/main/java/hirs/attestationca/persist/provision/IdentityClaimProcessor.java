@@ -48,6 +48,8 @@ import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -69,6 +71,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Service
 @Log4j2
 public class IdentityClaimProcessor extends AbstractProcessor {
     /**
@@ -102,6 +105,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * @param tpm2ProvisionerStateRepository tpm2 provisioner state repository
      * @param policyRepository               policy repository
      */
+    @Autowired
     public IdentityClaimProcessor(
             final SupplyChainValidationService supplyChainValidationService,
             final CertificateRepository certificateRepository,

@@ -3,9 +3,9 @@ package hirs.attestationca.persist;
 import java.security.GeneralSecurityException;
 
 /**
- * Defines the responsibilities of the Attestation Certificate Authority.
+ * Interface that defines the responsibilities of the Attestation Certificate Authority service.
  */
-public interface RestfulInterface {
+public interface AttestationCertificateAuthorityServiceInterface {
 
     /**
      * Processes the provided identity claim.

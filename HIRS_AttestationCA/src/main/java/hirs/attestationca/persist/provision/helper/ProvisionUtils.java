@@ -48,7 +48,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 
 @Log4j2
@@ -168,16 +167,16 @@ public final class ProvisionUtils {
      * Parses a public key from a byte array and returns it as a generic PublicKey.
      * Supports RSA and EC (Elliptic Curve) keys.
      *
-     * @param keyBytes the DER-encoded public key bytes
+     * @param publicKeyAlgorithm public key algorithm
+     * @param keyBytes           the DER-encoded public key bytes
      * @return the parsed PublicKey instance
      * @throws GeneralSecurityException if the key cannot be parsed
      */
-    public static PublicKey parsePublicKeyFromPublicDataSegment(byte[] keyBytes) throws GeneralSecurityException {
-        PublicKeyAlgorithm publicKeyAlgorithm = determineKeyType(keyBytes);
-
+    public static PublicKey parsePublicKeyFromPublicDataSegment(final PublicKeyAlgorithm publicKeyAlgorithm,
+                                                                byte[] keyBytes) throws GeneralSecurityException {
         return switch (publicKeyAlgorithm) {
             case RSA -> parseRSAKeyFromPublicDataSegment(keyBytes);
-            case EC -> parseECKeyFromPublicDataSegment(keyBytes);
+            case ECC -> parseECCKeyFromPublicDataSegment(keyBytes);
             default -> throw new GeneralSecurityException("Unsupported or invalid public key");
         };
     }
@@ -247,7 +246,7 @@ public final class ProvisionUtils {
      * @param publicArea the public area segment to parse
      * @return the ECC public key of the supplied public data
      */
-    public static ECPublicKey parseECKeyFromPublicDataSegment(final byte[] publicArea) {
+    public static ECPublicKey parseECCKeyFromPublicDataSegment(final byte[] publicArea) {
         return null;
     }
 
@@ -318,7 +317,8 @@ public final class ProvisionUtils {
         } catch (IllegalBlockSizeException | InvalidKeyException | NoSuchAlgorithmException
                  | BadPaddingException | NoSuchPaddingException
                  | InvalidAlgorithmParameterException exception) {
-            log.error("Encountered error while decrypting symmetric blob of an identity request: {}", exception.getMessage(), exception);
+            log.error("Encountered error while decrypting symmetric blob of an identity request: {}",
+                    exception.getMessage(), exception);
         }
 
         return new byte[0];
@@ -739,33 +739,5 @@ public final class ProvisionUtils {
         final int millisecondsInASecond = 1000;
         return (int) ((date2.getTime() - date1.getTime())
                 / (millisecondsInASecond * secondsInAnHour * hoursInADay));
-    }
-
-    /**
-     * Helper method that determines the public key algorithm associated with the supplied byte array.
-     *
-     * @param keyBytes byte array representation of the key
-     * @return {@link PublicKeyAlgorithm}
-     */
-    private static PublicKeyAlgorithm determineKeyType(byte[] keyBytes) {
-        // Loop over supported algorithms
-        for (PublicKeyAlgorithm publicKeyAlgorithm : PublicKeyAlgorithm.values()) {
-            if (publicKeyAlgorithm == PublicKeyAlgorithm.UNKNOWN) continue; // Skip UNKNOWN
-
-            try {
-                KeyFactory keyFactory = KeyFactory.getInstance(publicKeyAlgorithm.getAlgorithmName());
-                X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-                PublicKey publicKey = keyFactory.generatePublic(keySpec);
-
-                // Check if the parsed key matches the expected type
-                if (publicKeyAlgorithm.getKeyClass().isInstance(publicKey)) {
-                    return publicKeyAlgorithm;
-                }
-            } catch (Exception ignored) {
-                // Ignore and try next algorithm
-            }
-        }
-
-        return PublicKeyAlgorithm.UNKNOWN;
     }
 }

@@ -16,11 +16,16 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.enums.PublicKeyAlgorithm;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -29,6 +34,7 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+@Service
 @Log4j2
 public class CertificateRequestProcessor extends AbstractProcessor {
 
@@ -37,6 +43,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
     private final DeviceRepository deviceRepository;
     private final X509Certificate acaCertificate;
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
+    private final PublicKeyAlgorithm publicKeyAlgorithm;
 
     /**
      * Constructor.
@@ -50,12 +57,14 @@ public class CertificateRequestProcessor extends AbstractProcessor {
      * @param tpm2ProvisionerStateRepository db connector for provisioner state.
      * @param policyRepository               db connector for policies.
      */
+    @Autowired
     public CertificateRequestProcessor(final SupplyChainValidationService supplyChainValidationService,
                                        final CertificateRepository certificateRepository,
                                        final DeviceRepository deviceRepository,
                                        final PrivateKey privateKey,
-                                       final X509Certificate acaCertificate,
-                                       final int validDays,
+                                       @Qualifier("leafACACert") final X509Certificate acaCertificate,
+                                       @Value("${aca.current.public.key.algorithm}") final String publicKeyAlgorithmStr,
+                                       @Value("${aca.certificates.validity}") final int validDays,
                                        final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
                                        final PolicyRepository policyRepository) {
         super(privateKey, validDays);
@@ -64,7 +73,17 @@ public class CertificateRequestProcessor extends AbstractProcessor {
         this.deviceRepository = deviceRepository;
         this.acaCertificate = acaCertificate;
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
+        this.publicKeyAlgorithm = PublicKeyAlgorithm.fromString(publicKeyAlgorithmStr);
         setPolicyRepository(policyRepository);
+    }
+
+    /**
+     * Retrieves the byte array representation of the ACA certificate public key.
+     *
+     * @return byte array representation of the ACA certificate public key
+     */
+    public byte[] getLeafACACertificatePublicKey() {
+        return acaCertificate.getPublicKey().getEncoded();
     }
 
     /**
@@ -114,10 +133,12 @@ public class CertificateRequestProcessor extends AbstractProcessor {
             ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
 
             // Get endorsement public key
-            PublicKey ekPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(claim.getEkPublicArea().toByteArray());
+            PublicKey ekPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(publicKeyAlgorithm,
+                    claim.getEkPublicArea().toByteArray());
 
             // Get attestation public key
-            PublicKey akPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(claim.getAkPublicArea().toByteArray());
+            PublicKey akPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(publicKeyAlgorithm,
+                    claim.getAkPublicArea().toByteArray());
 
             // Get Endorsement Credential if it exists or was uploaded
             EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
@@ -129,7 +150,8 @@ public class CertificateRequestProcessor extends AbstractProcessor {
             // Get LDevID public key if it exists
             PublicKey ldevidPub = null;
             if (claim.hasLdevidPublicArea()) {
-                ldevidPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(claim.getLdevidPublicArea().toByteArray());
+                ldevidPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(publicKeyAlgorithm,
+                        claim.getLdevidPublicArea().toByteArray());
             }
 
             // Get device name and device
