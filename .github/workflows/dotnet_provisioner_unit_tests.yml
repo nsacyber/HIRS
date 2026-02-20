@@ -3,8 +3,9 @@ name: Dotnet Provisioner Unit Tests and Packages
 
 on: push
 env:
-  DOTNET_VERSION: 8.0.x
-  DOTNET_MSI_TARGETFRAMEWORK: net8.0
+  DOTNET_VERSION: 10.0.x
+  DOTNET_MSI_TARGETFRAMEWORK: net10.0
+  DOTNET_ROLL_FORWARD: LatestMajor
 jobs:
   test:
     name: Run Unit Tests
@@ -21,7 +22,7 @@ jobs:
           git config --global core.eol lf
       - uses: actions/checkout@v6
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
       - name: Remove problem matcher for now
@@ -49,7 +50,7 @@ jobs:
           git config --global core.eol lf
       - uses: actions/checkout@v6
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
       - name: Remove problem matcher for now
@@ -59,8 +60,8 @@ jobs:
       - name: Install Package Tools
         working-directory: HIRS_Provisioner.NET/hirs
         run: |
-          dotnet tool install --global dotnet-deb
-          dotnet tool install --global dotnet-rpm
+          dotnet tool install --global dotnet-deb --allow-roll-forward
+          dotnet tool install --global dotnet-rpm --allow-roll-forward
       - name: Linux Packages
         working-directory: HIRS_Provisioner.NET/hirs
         run: |
