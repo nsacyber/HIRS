@@ -4,14 +4,15 @@
 
 <head>
     <link rel="stylesheet" th:href="@{/css/rim_details.css}" />
+    <link rel="stylesheet" th:href="@{/css/certificate_details.css}" />
 </head>
 
 <body>
     <h1 layout:fragment="pageHeaderTitle">
         <div th:text="${initialData.get('validationResult')} == 'PASS' ? 'TCG Log events' : 'TCG Log event(s) not found in the RIM DB'"
-             th:if="${initialData.get('rimType') == 'Measurement'}"/>
-            <span th:text="${initialData.get('rimType')} + ' Reference Integrity Manifest'"
-                  th:unless="${initialData.get('rimType') == 'Measurement'}">
+             th:if="${initialData?.get('rimType') == 'Measurement'}"/>
+            <span th:text="${initialData?.get('rimType')} + ' Reference Integrity Manifest'"
+                  th:unless="${initialData?.get('rimType') == 'Measurement'}">
             <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/download?(id=${param.id})}">
                 <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download this RIM">
             </a>
@@ -19,7 +20,7 @@
     </h1>
 
     <div id="rim-details-page" class="container-fluid" layout:fragment="content">
-        <th:block th:if="${initialData.get('rimType') == 'Support'
+        <th:block th:if="${initialData?.get('rimType') == 'Support'
             || (initialData.get('rimType') == 'Measurement' && initialData.get('validationResult') == 'PASS')}">
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Additonal RIM Info</span></div>
@@ -212,7 +213,7 @@
         </th:block><!--Support RIM and validation passed measurements-->
 
 
-        <th:block th:if="${initialData.get('rimType') == 'Measurement'
+        <th:block th:if="${initialData?.get('rimType') == 'Measurement'
             && initialData.get('validationResult') == T(hirs.attestationca.persist.enums.AppraisalStatus.Status).FAIL}">
             <div style="display: inline">
                 <div class="row">
@@ -227,8 +228,8 @@
                                        th:if="${#maps.containsKey(initialData, 'hostName')}"/>
                         <th:block th:if="${#maps.containsKey(initialData, 'tagId')}">
                             <div>Base:
-                                <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.tagId})}">
-                                    <span th:text="${initialData.tagId}"></span>
+                                <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.associatedRim})}">
+                                    <span th:text="${initialData.associatedRim}"></span>
                                 </a>
                             </div>
                         </th:block>
@@ -241,11 +242,13 @@
                         </th:block>
                     </div><!--measurements-->
                 </div><!--row-->
-                <div class="row" style="margin: auto 260px auto 125px">
-                    <div class="panel-heading">Client Log</div>
+                <div class="row">
+                    <div class="col col-md-8" style="display: flex; background: gainsboro; margin-top: 1rem; padding: 1rem auto 1rem auto">
+                        <div>Client Log</div>
+                    </div>
                     <th:block th:if="${not #lists.isEmpty(initialData.get('livelogEvents'))}"
                               th:each="lEvent, lEventStat : ${initialData.get('livelogEvents')}">
-                        <div style="display: flex; background: lightgray;">
+                        <div class="col col-md-8" style="display: flex; background: lightgray;">
                             <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">
                                 Failed Event Digest:
                                 <br />
@@ -258,25 +261,40 @@
                                 <span class="mappedData" th:text="${'Event Content: ' + lEvent.eventContentStr}"/>
                             </div>
                         </div>
-                        <div style="display: flex;">
-                            <div class="mappedButton">
-                                Expected Events from RIM DB:<br />
-                                <a role="button" data-toggle="collapse" th:href="@{${'#eventContent' + lEventStat.count}}">
-                                    <span style="word-wrap: break-word" th:text="${lEvent.eventTypeString}"/>
-                                </a>
-                            </div>
-                            <div th:id="${'eventContent' + lEventStat.count}" class="panel-collapse collapse in" style="flex: 2">
-                                <th:block th:each="mappedDigest : ${initialData.get('eventTypeMap')}">
-                                    <th:block th:if="${mappedDigest.key == lEvent.eventDigestStr}"
-                                              th:each="event : ${mappedDigest.value}">
-                                        <div class="mappedOverhead">
-                                            <div><span class="mappedData" th:text="${'PCR Index: ' + event.pcrIndex}"/></div>
-                                            <div><span class="mappedData" th:text="${'Digest: ' + event.eventDigestStr}"/></div>
-                                            <div><span class="mappedData" th:text="${'Event Content: ' + event.eventContentStr}"/></div>
-                                        </div>
-                                    </th:block>
-                                </th:block>
-                            </div>
+                        <div class="col col-md-8" style="display: flex;">
+                            <div class="accordion" th:id="${'eventAccordion' + lEventStat.count}">
+                                <div class="accordion item">
+                                    <h3 class="accordion-header" th:id="${'eventHeader' + lEventStat.count}">
+                                        <button class="accordion-button"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                th:data-bs-target="${'#eventCollapse' + lEventStat.count}"
+                                                aria-expanded="false"
+                                                th:aria-controls="${'eventCollapse' + lEventStat.count}">
+                                            Expected Events from RIM DB:
+                                            <br />
+                                            <span style="word-wrap: break-word" th:text="${lEvent.eventTypeString}"/>
+                                        </button>
+                                    </h3>
+                                    <div th:id="${'eventCollapse' + lEventStat.count}"
+                                         class="accordion-collapse collapse"
+                                         th:aria-labelledby="${'eventHeader' + lEventStat.count}"
+                                         th:data-bs-parent="${'#eventAccordion' + lEventStat.count}">
+                                        <div class="accordion-body">
+                                            <th:block th:each="mappedDigest : ${initialData.get('eventTypeMap')}">
+                                                <th:block th:if="${mappedDigest.key == lEvent.eventDigestStr}"
+                                                          th:each="event : ${mappedDigest.value}">
+                                                    <div class="mappedOverhead">
+                                                        <div><span class="mappedData" th:text="${'PCR Index: ' + event.pcrIndex}"/></div>
+                                                        <div><span class="mappedData" th:text="${'Digest: ' + event.eventDigestStr}"/></div>
+                                                        <div><span class="mappedData" th:text="${'Event Content: ' + event.eventContentStr}"/></div>
+                                                    </div>
+                                                </th:block>
+                                            </th:block>
+                                        </div><!--accordion body-->
+                                    </div><!--accordion collapse-->
+                                </div><!--accordion item-->
+                            </div><!--accordion-->
                         </div>
                     </th:block>
                 </div><!--row-->
@@ -522,6 +540,6 @@
                 </div><!--signature-->
             </div><!--signature row-->
         </th:block><!--Base RIM-->
-    </div>
+    </div><!--content fragment-->
 </body>
 </html>
