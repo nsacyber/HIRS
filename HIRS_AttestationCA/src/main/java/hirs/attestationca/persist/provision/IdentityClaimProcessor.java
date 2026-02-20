@@ -35,6 +35,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.enums.PublicKeyAlgorithm;
 import hirs.attestationca.persist.exceptions.IdentityProcessingException;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
@@ -49,6 +50,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -78,8 +80,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      * Number of bytes to include in the TPM2.0 nonce.
      */
     public static final int NONCE_LENGTH = 20;
-    private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,"
-            + "14,15,16,17,18,19,20,21,22,23";
+    private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23";
     private static final int NUM_OF_VARIABLES = 5;
     private static final int MAC_BYTES = 6;
 
@@ -91,6 +92,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final DeviceRepository deviceRepository;
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
+    private final PublicKeyAlgorithm publicKeyAlgorithm;
 
     /**
      * Constructor.
@@ -107,6 +109,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
      */
     @Autowired
     public IdentityClaimProcessor(
+            @Value("${aca.current.public.key.algorithm}") final String publicKeyAlgorithmStr,
             final SupplyChainValidationService supplyChainValidationService,
             final CertificateRepository certificateRepository,
             final ComponentResultRepository componentResultRepository,
@@ -124,6 +127,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.deviceRepository = deviceRepository;
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
+        this.publicKeyAlgorithm = PublicKeyAlgorithm.fromString(publicKeyAlgorithmStr);
         setPolicyRepository(policyRepository);
     }
 

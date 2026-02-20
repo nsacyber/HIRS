@@ -73,7 +73,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- * Test suite for {@link AttestationCertificateAuthorityService}.
+ * Test suite for {@link AttestationCertificateAuthorityServiceImpl}.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)              // needed to use non-static BeforeAll
 public class AttestationCertificateAuthorityTest {
@@ -123,7 +123,7 @@ public class AttestationCertificateAuthorityTest {
             + "e2 94";
     private final Random random = new Random();
     // object in test
-    private AttestationCertificateAuthorityService aca;
+    private AttestationCertificateAuthorityServiceImpl aca;
     private AccessAbstractProcessor abstractProcessor;
     // test key pair
     private KeyPair keyPair;
@@ -174,7 +174,7 @@ public class AttestationCertificateAuthorityTest {
         keyPair = keyPairGenerator.generateKeyPair();
 
         //BeforeTest
-        aca = new AttestationCertificateAuthorityService(null,
+        aca = new AttestationCertificateAuthorityServiceImpl(null,
                 null) {
         };
         abstractProcessor = new AccessAbstractProcessor(keyPair.getPrivate(), 1);
@@ -183,7 +183,7 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthorityService#processIdentityClaimTpm2(byte[])}
+     * Tests {@link AttestationCertificateAuthorityServiceImpl#processIdentityClaimTpm2(byte[])}
      * where the byte array is null. Expects an illegal argument exception to be thrown.
      */
     @Test
@@ -193,7 +193,7 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthorityService#getLeafACACertPublicKey()}.
+     * Tests {@link AttestationCertificateAuthorityServiceImpl#getLeafACACertPublicKey()}.
      */
     @Test
     public void testGetPublicKey() {
@@ -412,7 +412,7 @@ public class AttestationCertificateAuthorityTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthorityService#
+     * Tests {@link AttestationCertificateAuthorityServiceImpl#
      * AttestationCertificateAuthority(SupplyChainValidationService, PrivateKey,
      * X509Certificate, StructConverter, CertificateManager, DeviceRegister, int,
      * DeviceManager, DBManager)}.

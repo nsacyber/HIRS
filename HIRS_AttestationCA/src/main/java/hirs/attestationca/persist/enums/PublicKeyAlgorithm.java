@@ -26,7 +26,7 @@ import java.security.interfaces.RSAPublicKey;
 public enum PublicKeyAlgorithm {
     RSA("RSA", RSAPublicKey.class),
     ECC("ECC", ECPublicKey.class),
-    UNKNOWN("", null);
+    UNKNOWN("UNKNOWN", null);
 
     private final String algorithmName;
     private final Class<? extends PublicKey> keyClass;

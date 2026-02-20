@@ -1,9 +1,9 @@
 package hirs.attestationca.persist.exceptions;
 
-import hirs.attestationca.persist.AttestationCertificateAuthorityService;
+import hirs.attestationca.persist.AttestationCertificateAuthorityServiceImpl;
 
 /**
- * Generic exception thrown while a {@link AttestationCertificateAuthorityService}
+ * Generic exception thrown while a {@link AttestationCertificateAuthorityServiceImpl}
  * is processing a newly submitted Identity.
  */
 public class IdentityProcessingException extends RuntimeException {

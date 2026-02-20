@@ -13,11 +13,11 @@ tpm2_container=hirs-provisioner1-tpm2
 checkContainerStatus() {
   container_name=$1
   container_id="$(docker ps -aqf "name=$container_name")"
-  container_status="$(docker inspect $container_id --format='{{.State.Status}}')"
+  container_status="$(docker inspect "$container_id" --format='{{.State.Status}}')"
   echo "Container id is $container_id and the status is $container_status"
 
   if [ "$container_status" != "running" ]; then
-     container_exit_code="$(docker inspect $container_id --format='{{.State.ExitCode}}')"
+     container_exit_code="$(docker inspect "$container_id" --format='{{.State.ExitCode}}')"
      echo "Container Exit Code: $container_exit_code"
      docker info
      exit 1;
@@ -61,7 +61,7 @@ clearAcaDb() {
 docker exec -i $aca_container mysql -u root -proot -e "use hirs_db; set foreign_key_checks=0; truncate Appraiser;
  truncate Certificate;truncate Issued_Attestation_Platform_Join_Table;truncate CertificatesUsedToValidate;truncate ComponentAttributeResult;
  truncate ComponentInfo;truncate ComponentResult;truncate Device;truncate DeviceInfoReport;truncate PortalInfo;
- truncate ReferenceDigestValue;truncate ReferenceManifest;truncate Report;truncate SupplyChainValidation;
+ truncate ReferenceDigestValue;truncate ReferenceManifest;truncate Report;
  truncate SupplyChainValidationSummary;truncate SupplyChainValidationSummary_SupplyChainValidation;
  truncate TPM2ProvisionerState;set foreign_key_checks=1;"
 }
@@ -146,6 +146,6 @@ setAppsettings() {
 # write_to_logs <log statement>
 writeToLogs() {
   line=$1
-  echo $line;
+  echo "$line";
   docker exec -i $aca_container /bin/bash -c "cd .. && echo '$line' >> /var/log/hirs/HIRS_AttestationCA_Portal.log"
 }

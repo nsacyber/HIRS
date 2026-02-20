@@ -10,6 +10,7 @@ import hirs.attestationca.persist.exceptions.UnexpectedServerException;
 import hirs.structs.converters.SimpleStructBuilder;
 import hirs.structs.elements.aca.SymmetricAttestation;
 import hirs.structs.elements.tpm.EncryptionScheme;
+import hirs.structs.elements.tpm.IdentityRequest;
 import hirs.structs.elements.tpm.SymmetricKey;
 import hirs.structs.elements.tpm.SymmetricKeyParams;
 import hirs.utils.HexUtils;
@@ -45,6 +46,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
@@ -91,7 +93,9 @@ public final class ProvisionUtils {
 
     private static final int TPM2_CREDENTIAL_BLOB_SIZE = 392;
 
-    private static final int RSA_MODULUS_LENGTH = 256;
+    private static final int DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES = 256;
+
+    private static final int DEFAULT_ECC_LENGTH = 0;
 
     // Constants used to parse out the ak name from the ak public data. Used in generateAkName
     private static final String AK_NAME_PREFIX = "000b";
@@ -108,11 +112,9 @@ public final class ProvisionUtils {
     }
 
     /**
-     * Helper method to parse a byte array into an
-     * {@link hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2.IdentityClaim}.
+     * Helper method to parse a byte array into an {@link ProvisionerTpm2.IdentityClaim}.
      *
-     * @param identityClaim byte array that should be converted to a Protobuf IdentityClaim
-     *                      object
+     * @param identityClaim byte array that should be converted to a Protobuf IdentityClaim object
      * @return the Protobuf generated Identity Claim object
      */
     public static ProvisionerTpm2.IdentityClaim parseIdentityClaim(final byte[] identityClaim) {
@@ -173,7 +175,7 @@ public final class ProvisionUtils {
      * @throws GeneralSecurityException if the key cannot be parsed
      */
     public static PublicKey parsePublicKeyFromPublicDataSegment(final PublicKeyAlgorithm publicKeyAlgorithm,
-                                                                byte[] keyBytes) throws GeneralSecurityException {
+                                                                final byte[] keyBytes) throws GeneralSecurityException {
         return switch (publicKeyAlgorithm) {
             case RSA -> parseRSAKeyFromPublicDataSegment(keyBytes);
             case ECC -> parseECCKeyFromPublicDataSegment(keyBytes);
@@ -189,14 +191,13 @@ public final class ProvisionUtils {
      */
     public static RSAPublicKey parseRSAKeyFromPublicDataSegment(final byte[] publicArea) {
         final int pubLen = publicArea.length;
-        if (pubLen < RSA_MODULUS_LENGTH) {
-            throw new IllegalArgumentException(
-                    "EK or AK public data segment is not long enough");
+
+        if (pubLen < DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES) {
+            throw new IllegalArgumentException("EK or AK public data segment is not long enough");
         }
+
         // public data ends with 256 byte modulus
-        byte[] modulus = HexUtils.subarray(publicArea,
-                pubLen - RSA_MODULUS_LENGTH,
-                pubLen - 1);
+        byte[] modulus = HexUtils.subarray(publicArea, pubLen - DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES, pubLen - 1);
         return (RSAPublicKey) assembleRSAPublicKey(modulus);
     }
 
@@ -227,16 +228,16 @@ public final class ProvisionUtils {
      * @return RSA public key using the provided integer modulus
      */
     public static PublicKey assembleRSAPublicKey(final BigInteger modulus) {
-        // generate a key spec using mod and exp
+        // generate an RSA key spec using mod and exp
         RSAPublicKeySpec keySpec = new RSAPublicKeySpec(modulus, EXPONENT);
 
-        // create the public key
+        // create the RSA public key
         try {
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            KeyFactory keyFactory = KeyFactory.getInstance(PublicKeyAlgorithm.RSA.getAlgorithmName());
             return keyFactory.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new UnexpectedServerException(
-                    "Encountered unexpected error creating public key: " + e.getMessage(), e);
+                    "Encountered unexpected error creating RSA public key: " + e.getMessage(), e);
         }
     }
 
@@ -247,12 +248,27 @@ public final class ProvisionUtils {
      * @return the ECC public key of the supplied public data
      */
     public static ECPublicKey parseECCKeyFromPublicDataSegment(final byte[] publicArea) {
-        return null;
+        final int pubLen = publicArea.length;
+
+        return (ECPublicKey) assembleECCPublicKey();
+    }
+
+    public static PublicKey assembleECCPublicKey() {
+        ECPublicKeySpec ecPublicKeySpec = null;
+
+        // create the RSA public key
+        try {
+            KeyFactory keyFactory = KeyFactory.getInstance(PublicKeyAlgorithm.ECC.getAlgorithmName());
+            return keyFactory.generatePublic(ecPublicKeySpec);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new UnexpectedServerException(
+                    "Encountered unexpected error creating ECC public key: " + e.getMessage(), e);
+        }
     }
 
     /**
      * Will attempt to decrypt the asymmetric blob that originated from an
-     * {@link hirs.structs.elements.tpm.IdentityRequest} using the cipher transformation.
+     * {@link IdentityRequest} using the cipher transformation.
      *
      * @param asymmetricBlob to be decrypted
      * @param scheme         to decrypt with
@@ -291,7 +307,7 @@ public final class ProvisionUtils {
 
     /**
      * Will attempt to decrypt the symmetric blob that originated from an
-     * {@link hirs.structs.elements.tpm.IdentityRequest} using the specified symmetric key
+     * {@link IdentityRequest} using the specified symmetric key
      * and cipher transformation.
      *
      * @param symmetricBlob  to be decrypted
@@ -379,14 +395,14 @@ public final class ProvisionUtils {
 
             // generate ak name from akMod
             byte[] akModTemp = ak.getModulus().toByteArray();
-            byte[] akMod = new byte[RSA_MODULUS_LENGTH];
+            byte[] akMod = new byte[DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES];
             int startpos = 0;
             // BigIntegers are signed, so a modulus that has a first bit of 1
             // will be padded with a zero byte that must be removed
             if (akModTemp[0] == 0x00) {
                 startpos = 1;
             }
-            System.arraycopy(akModTemp, startpos, akMod, 0, RSA_MODULUS_LENGTH);
+            System.arraycopy(akModTemp, startpos, akMod, 0, DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES);
             byte[] akName = ProvisionUtils.generateAkName(akMod);
 
             // generate AES and HMAC keys from seed
@@ -588,7 +604,7 @@ public final class ProvisionUtils {
      *
      * @param akModulus modulus of an attestation key
      * @return the ak name byte array
-     * @throws java.security.NoSuchAlgorithmException Underlying SHA256 method used a bad algorithm
+     * @throws NoSuchAlgorithmException Underlying SHA256 method used a bad algorithm
      */
     public static byte[] generateAkName(final byte[] akModulus) throws NoSuchAlgorithmException {
         byte[] namePrefix = HexUtils.hexStringToByteArray(AK_NAME_PREFIX);
@@ -614,8 +630,8 @@ public final class ProvisionUtils {
      * @param context     second portion of message used to generate key
      * @param sizeInBytes size of key to generate in bytes
      * @return the derived key
-     * @throws NoSuchAlgorithmException          Wrong crypto algorithm selected
-     * @throws java.security.InvalidKeyException Invalid key used
+     * @throws NoSuchAlgorithmException Wrong crypto algorithm selected
+     * @throws InvalidKeyException      Invalid key used
      */
 
     public static byte[] cryptKDFa(final byte[] seed, final String label, final byte[] context,

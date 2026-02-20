@@ -1,60 +1,26 @@
 package hirs.attestationca.persist;
 
-import hirs.attestationca.persist.provision.CertificateRequestProcessor;
-import hirs.attestationca.persist.provision.IdentityClaimProcessor;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Service;
-
 import java.security.GeneralSecurityException;
 
 /**
- * Service layer class responsible for handling both certificate and identity claim requests made by the provisioner.
+ * Interface that defines the responsibilities of the Attestation Certificate Authority service.
  */
-@Service
-@Log4j2
-public class AttestationCertificateAuthorityService implements AttestationCertificateAuthorityServiceInterface {
-    private final CertificateRequestProcessor certificateRequestProcessor;
-    private final IdentityClaimProcessor identityClaimProcessor;
-
-    /**
-     * Constructor.
-     *
-     * @param certificateRequestProcessor certificate request processor service
-     * @param identityClaimProcessor      identity claim processor service
-     */
-    public AttestationCertificateAuthorityService(
-            final CertificateRequestProcessor certificateRequestProcessor,
-            final IdentityClaimProcessor identityClaimProcessor) {
-        this.certificateRequestProcessor = certificateRequestProcessor;
-        this.identityClaimProcessor = identityClaimProcessor;
-    }
+public interface AttestationCertificateAuthorityService {
 
     /**
      * Processes the provided identity claim.
      *
      * @param identityClaim a byte array representation of the identity claim
-     * @return processed identity claim response
+     * @return a byte array representation of the identity claim response
      */
-    public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-        return this.identityClaimProcessor.processIdentityClaimTpm2(identityClaim);
-    }
+    byte[] processIdentityClaimTpm2(byte[] identityClaim) throws GeneralSecurityException;
 
     /**
      * Processes the provided certificate request.
      *
      * @param certificateRequest a byte array representation of the certificate request
-     * @return processed certificate request response
+     * @return a byte array representation of the certificate request response
      */
-    public byte[] processCertificateRequest(final byte[] certificateRequest) throws GeneralSecurityException {
-        return this.certificateRequestProcessor.processCertificateRequest(certificateRequest);
-    }
+    byte[] processCertificateRequest(byte[] certificateRequest) throws GeneralSecurityException;
 
-    /**
-     * Retrieves the encoded public key.
-     *
-     * @return encoded public key
-     */
-    public byte[] getLeafACACertPublicKey() {
-        return this.certificateRequestProcessor.getLeafACACertificatePublicKey();
-    }
 }

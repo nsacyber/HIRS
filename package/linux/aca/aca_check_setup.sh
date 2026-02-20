@@ -167,15 +167,15 @@ check_pwds () {
 
 PRESENT=true
 echo "Checking if ACA passwords are present..."
- if [ -z $hirs_pki_password ]; then
+ if [ -z "$hirs_pki_password" ]; then
    echo "ACA pki password not set" 
    PRESENT=false 
  fi
- if [ -z $hirs_db_username ]; then
+ if [ -z "$hirs_db_username" ]; then
    echo "hirs db username not set"
    PRESENT=false 
  fi
- if [ -z $hirs_db_password ]; then
+ if [ -z "$hirs_db_password" ]; then
    echo "hirs db user password not set"
    PRESENT=false  
  fi
@@ -204,8 +204,8 @@ check_mysql_setup () {
        echo "   Mysql client ($DB_CLIENT_CONF) is configured for command line use of TLS"
   fi
   
-  if [ ! -z $mysql_admin_password ]; then
-    mysql -u root --password=$mysql_admin_password -e "STATUS;"  &> /dev/null
+  if [ ! -z "$mysql_admin_password" ]; then
+    mysql -u root --password="$mysql_admin_password" -e "STATUS;"  &> /dev/null
     if [ $? -eq 0 ]; then
         echo "Mysql Root password verified"
        else 
@@ -213,10 +213,11 @@ check_mysql_setup () {
     fi
     if [ ! -z "${ARG_VERBOSE}" ]; then
       echo "Mysql status:"
-      mysql -u root --password=$mysql_admin_password -e "STATUS;"
+      mysql -u root --password="$mysql_admin_password" -e "STATUS;"
       echo "Listing mysql users:"
-      mysql -u root --password=$mysql_admin_password -e "Select user from mysql.user;"
+      mysql -u root --password="$mysql_admin_password" -e "Select user from mysql.user;"
       echo "Listing all databses:"
+      # shellcheck disable=SC2086
       mysql -u root --password=$mysql_admin_password -e "show databases;"
     fi
   fi
@@ -225,7 +226,7 @@ check_mysql_setup () {
 check_cert () {
   TRUST_STORE=$1
   CERT=$2
-  RESULT=$(openssl verify -CAfile "$TRUST_STORE" $CERT)
+  RESULT=$(openssl verify -CAfile "$TRUST_STORE" "$CERT")
   if [ $? -ne 0 ]; then
      ALL_CHECKS_PASSED=false
      ALL_CERTS_PASSED=false
@@ -242,7 +243,7 @@ check_pki () {
            Skipping PKI Checks." 
   fi
 
-  pushd $CERT_PATH$RSA_PATH > /dev/null
+  pushd $CERT_PATH$RSA_PATH > /dev/null || echo "Unable to push the directory to the stack"
    check_cert $RSA_TRUST_STORE $RSA_HIRS_ROOT
    check_cert $RSA_TRUST_STORE $RSA_HIRS_INTERMEDIATE
    check_cert $RSA_TRUST_STORE $RSA_HIRS_CA1
@@ -302,7 +303,7 @@ check_db () {
   fi
   
   
-  RESULT=$(mysqlshow --user=hirs_db --password=$hirs_db_password hirs_db|  grep -o hirs_db)
+  RESULT=$(mysqlshow --user=hirs_db --password="$hirs_db_password" hirs_db|  grep -o hirs_db)
   if [ "$RESULT" == "hirs_db" ]; then
       echo "   The hirs_db database is visible by the hirs_db user"
     else
@@ -311,26 +312,26 @@ check_db () {
   fi
    if [ ! -z "${ARG_VERBOSE}" ]; then
    echo "   Show hirs_db user config using hirs_db password"
-   mysql -u hirs_db --password=$hirs_db_password -e "SHOW CREATE USER 'hirs_db'@'localhost';" \
+   mysql -u hirs_db --password="$hirs_db_password" -e "SHOW CREATE USER 'hirs_db'@'localhost';" \
     --ssl-ca=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem \
     --ssl-cert=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.pem \
     --ssl-key=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.key
     echo "Mysql TLS configuration"
-    mysql -u root --password=$mysql_admin_password -e "SHOW VARIABLES LIKE '%ssl%'"
+    mysql -u root --password="$mysql_admin_password" -e "SHOW VARIABLES LIKE '%ssl%'"
     echo "TLS versions allowed on mariadb:"
-    mysql -u root --password=$mysql_admin_password -e "SHOW GLOBAL VARIABLES LIKE 'tls_version'";
+    mysql -u root --password="$mysql_admin_password" -e "SHOW GLOBAL VARIABLES LIKE 'tls_version'";
     echo "hirs_db user database access:"
-    mysql -u hirs_db --password=$hirs_db_password -e "SHOW DATABASES;";
+    mysql -u hirs_db --password="$hirs_db_password" -e "SHOW DATABASES;";
     echo "Privileges for the hirs_db user:"
-    mysql -u hirs_db --password=$hirs_db_password -e "SHOW GRANTS FOR 'hirs_db'@'localhost'" 
+    mysql -u hirs_db --password="$hirs_db_password" -e "SHOW GRANTS FOR 'hirs_db'@'localhost'"
     echo "MYSQL Log:"
-    mysql -u root --password=$mysql_admin_password -e "SHOW GLOBAL VARIABLES LIKE 'log_error'" 
+    mysql -u root --password="$mysql_admin_password" -e "SHOW GLOBAL VARIABLES LIKE 'log_error'"
   fi
 }
 
 # Check selinux status and files that require specific contexts
 check_selinux () {
-   if [ $ID = "ubuntu" ]; then
+   if [ "$ID" = "ubuntu" ]; then
      echo "Skipping selinux check on ubuntu"
      return
    fi

@@ -19,17 +19,17 @@ import java.security.GeneralSecurityException;
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
 public class AttestationCertificateAuthorityRestController {
-    private final AttestationCertificateAuthorityService attestationCertificateAuthorityService;
+    private final AttestationCertificateAuthorityServiceImpl attestationCertificateAuthorityServiceImpl;
 
     /**
      * Constructor.
      *
-     * @param attestationCertificateAuthorityService Attestation Certificate Authority service
+     * @param attestationCertificateAuthorityServiceImpl Attestation Certificate Authority service
      */
     @Autowired
     public AttestationCertificateAuthorityRestController(
-            final AttestationCertificateAuthorityService attestationCertificateAuthorityService) {
-        this.attestationCertificateAuthorityService = attestationCertificateAuthorityService;
+            final AttestationCertificateAuthorityServiceImpl attestationCertificateAuthorityServiceImpl) {
+        this.attestationCertificateAuthorityServiceImpl = attestationCertificateAuthorityServiceImpl;
     }
 
     /**
@@ -41,8 +41,8 @@ public class AttestationCertificateAuthorityRestController {
      */
     @ResponseBody
     @PostMapping(value = "/identity-claim-tpm2/process", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public byte[] processIdentityClaimTpm2(@RequestBody final byte[] identityClaim) {
-        return this.attestationCertificateAuthorityService.processIdentityClaimTpm2(identityClaim);
+    public byte[] processIdentityClaimTpm2(@RequestBody final byte[] identityClaim) throws GeneralSecurityException {
+        return this.attestationCertificateAuthorityServiceImpl.processIdentityClaimTpm2(identityClaim);
     }
 
     /**
@@ -55,8 +55,9 @@ public class AttestationCertificateAuthorityRestController {
      */
     @ResponseBody
     @PostMapping(value = "/request-certificate-tpm2", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest) throws GeneralSecurityException {
-        return this.attestationCertificateAuthorityService.processCertificateRequest(certificateRequest);
+    public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest)
+            throws GeneralSecurityException {
+        return this.attestationCertificateAuthorityServiceImpl.processCertificateRequest(certificateRequest);
     }
 
     /**
@@ -67,6 +68,6 @@ public class AttestationCertificateAuthorityRestController {
     @ResponseBody
     @GetMapping("/public-key")
     public byte[] getLeafACACertPublicKey() {
-        return this.attestationCertificateAuthorityService.getLeafACACertPublicKey();
+        return this.attestationCertificateAuthorityServiceImpl.getLeafACACertPublicKey();
     }
 }
