@@ -4,19 +4,26 @@
 
 <head>
     <link rel="stylesheet" th:href="@{/css/rim_details.css}" />
-    <link rel="stylesheet" th:href="@{/css/certificate_details.css}" />
 </head>
 
 <body>
     <h1 layout:fragment="pageHeaderTitle">
-        <div th:text="${initialData.get('validationResult')} == 'PASS' ? 'TPM Log events' : 'TPM Log event(s) not found in the RIM DB'"
-             th:if="${initialData?.get('rimType') == 'Measurement'}"/>
-            <span th:text="${initialData?.get('rimType')} + ' Reference Integrity Manifest'"
-                  th:unless="${initialData?.get('rimType') == 'Measurement'}">
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/download?(id=${param.id})}">
-                <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download this RIM">
-            </a>
+        <th:block th:if="${initialData?.get('rimType') == 'Measurement'}">
+            <th:block th:if="${initialData.get('validationResult')} == 'PASS'">
+                TPM Log events
+            </th:block>
+            <th:block th:unless="${initialData.get('validationResult')} == 'PASS'">
+                Firmware Errors
+                <h3>TPM Log event(s) not found in the RIM DB</h3>
+            </th:block>
+        </th:block>
+        <th:block th:unless="${initialData?.get('rimType') == 'Measurement'}">
+            <span th:text="${initialData?.get('rimType')} + ' Reference Integrity Manifest'">
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/download?(id=${param.id})}">
+                    <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download this RIM">
+                </a>
             </span>
+        </th:block>
     </h1>
 
     <div id="rim-details-page" class="container-fluid" layout:fragment="content">
@@ -215,9 +222,9 @@
 
         <th:block th:if="${initialData?.get('rimType') == 'Measurement'
             && initialData.get('validationResult') == T(hirs.attestationca.persist.enums.AppraisalStatus.Status).FAIL}">
-                <div class="row">
-                    <div class="col-md-2 col-md-offset-1"><span class="colHeader">Base/Support</span></div>
-                    <div id="measurements" class="col col-md-8">
+                <div class="row rimrow">
+                    <div class="col-md-1 offset-md-1"><span class="colRimHeader">Base/Support</span></div>
+                    <div id="measurements" class="col col-md-7">
                         <div>Download Measurement:
                             <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/download?(id=${param.id})}">
                                 BIOS Measurements
@@ -242,29 +249,29 @@
                     </div><!--measurements-->
                 </div><!--row-->
                 <div class="row">
-                    <div class="col col-md-8" style="display: flex; background: gainsboro; margin-top: 1rem; padding: 1rem auto 1rem auto">
+                    <div class="col col-md-8 offset-md-1" style="display: flex; background: gainsboro; margin-top: 1rem; padding: 1rem auto 1rem auto">
                         <div>TPM Events</div>
                     </div>
                     <th:block th:if="${not #lists.isEmpty(initialData.get('livelogEvents'))}"
                               th:each="lEvent, lEventStat : ${initialData.get('livelogEvents')}">
-                        <div class="col col-md-8 bg-danger" style="display: flex;">
+                        <div class="col col-md-8 offset-md-1" style="display: flex; background: #FF6164">
                             <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">
                                 Failed Event Digest:
                                 <br />
                             </div>
                             <div style="display: flex 2; margin: 2px auto 2px 25px">
-                                <span class="mappedData" th:text="${'PCR Index: ' + lEvent.pcrIndex}"/>
+                                <span class="mappedData">PCR Index: </span><span th:text="${lEvent.pcrIndex}"/>
                                 <br />
-                                <span class="mappedData" th:text="${'Digest: ' + lEvent.eventDigestStr}"/>
+                                <span class="mappedData">Digest: </span><span th:text="${lEvent.eventDigestStr}"/>
                                 <br />
-                                <span class="mappedData" th:text="${'Event Content: ' + lEvent.eventContentStr}"/>
+                                <span class="mappedData">Event Content: </span><span th:text="${lEvent.eventContentStr}"/>
                             </div>
                         </div>
-                        <div class="col col-md-8" style="display: flex;">
+                        <div class="col col-md-8 offset-md-1" style="display: flex; margin-bottom: 1rem; border-bottom: 1px ridge lightgray;">
                             <div class="accordion" th:id="${'eventAccordion' + lEventStat.count}">
                                 <div class="accordion item">
                                     <h3 class="accordion-header" th:id="${'eventHeader' + lEventStat.count}">
-                                        <button class="accordion-button"
+                                        <button class="accordion-button collapsed"
                                                 type="button"
                                                 data-bs-toggle="collapse"
                                                 th:data-bs-target="${'#eventCollapse' + lEventStat.count}"
@@ -283,9 +290,9 @@
                                                 <th:block th:if="${mappedDigest.key == lEvent.eventDigestStr}"
                                                           th:each="event : ${mappedDigest.value}">
                                                     <div class="mappedOverhead">
-                                                        <div><span class="mappedData" th:text="${'PCR Index: ' + event.pcrIndex}"/></div>
-                                                        <div><span class="mappedData" th:text="${'Digest: ' + event.eventDigestStr}"/></div>
-                                                        <div><span class="mappedData" th:text="${'Event Content: ' + event.eventContentStr}"/></div>
+                                                        <div><span class="mappedData">PCR Index: </span><span th:text="${event.pcrIndex}"/></div>
+                                                        <div><span class="mappedData">Digest: </span><span th:text="${event.eventDigestStr}"/></div>
+                                                        <div><span class="mappedData">Event Content: </span><span th:text="${event.eventContentStr}"/></div>
                                                     </div>
                                                 </th:block>
                                             </th:block>
@@ -300,7 +307,7 @@
 
 
         <th:block th:if="${initialData.get('rimType') == 'Base'}">
-            <div class = "row">
+            <div class = "rimrow">
                 <div class="col-md-1 col-md-offset-1">
                     <span class="colHeader">Software Identity</span>
                 </div>
@@ -323,7 +330,7 @@
                     </span>
                 </div>
             </div><!--softwareIdentity row-->
-            <div class="row">
+            <div class="rimrow">
                 <div class="col-md-1 col-md-offset-1">
                     <span class="colHeader">Entity</span>
                 </div>
@@ -335,7 +342,7 @@
                     <span th:text="${'Entity Thumbprint: ' + initialData.entityThumbprint}"/>
                 </div>
             </div><!--entity row-->
-            <div class="row">
+            <div class="rimrow">
                 <div class="col-md-1 col-md-offset-1">
                     <span class="colHeader">Link</span>
                 </div>
@@ -354,7 +361,7 @@
                     <span th:text="${'Rel: ' + initialData.get('linkRel')}"/>
                 </div>
             </div><!--link row-->
-            <div class="row">
+            <div class="rimrow">
                 <div class="col-md-1 col-md-offset-1">
                     <span class="colHeader">Meta</span>
                 </div>
@@ -392,7 +399,7 @@
                     </th:block>
                 </div>
             </div><!--meta row-->
-            <div class="row">
+            <div class="rimrow">
                 <div class="col-md-1 col-md-offset-1">
                     <span class="colHeader">Payload/Support RIM(s)</span>
                 </div>
@@ -518,7 +525,7 @@
                     </div><!--directoryAccordion-->
                 </div>
             </div><!--payload row-->
-            <div class="row">
+            <div class="rimrow">
                 <div class="col-md-1 col-md-offset-1">
                     <span class="colHeader">Signature</span>
                 </div>
