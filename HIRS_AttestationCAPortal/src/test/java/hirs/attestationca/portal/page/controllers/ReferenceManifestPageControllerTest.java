@@ -37,17 +37,13 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
      * @throws IOException if test resources are not found
      */
     @BeforeAll
-    public void prepareTests() throws IOException {
-
-    }
+    public void prepareTests() throws IOException {}
 
     /**
      * Clears the database after each test run.
      */
     @AfterEach
-    public void afterEachTest() {
-       
-    }
+    public void afterEachTest() {}
 
     /**
      * Tests the list REST endpoint on the Reference Manifest page controller.
