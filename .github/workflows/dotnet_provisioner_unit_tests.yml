@@ -32,6 +32,9 @@ jobs:
       - name: Restore dependencies
         working-directory: HIRS_Provisioner.NET
         run: dotnet restore
+      - name: Restore Tools
+        working-directory: HIRS_Provisioner.NET
+        run: dotnet tool restore
       - name: Build
         working-directory: HIRS_Provisioner.NET
         run: dotnet build
@@ -57,6 +60,12 @@ jobs:
         run: |
           echo "::remove-matcher owner=csc::"
           echo "::remove-matcher owner=dotnet::"
+      - name: Restore dependencies
+        working-directory: HIRS_Provisioner.NET
+        run: dotnet restore
+      - name: Restore Tools
+        working-directory: HIRS_Provisioner.NET
+        run: dotnet tool restore
       - name: Install Package Tools
         working-directory: HIRS_Provisioner.NET/hirs
         run: |
