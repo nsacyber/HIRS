@@ -40,11 +40,11 @@ DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
 ALL_CHECKS_PASSED=true
 ALL_CERTS_PASSED=true
 
-source $SCRIPT_DIR/../db/mysql_util.sh
+source "$SCRIPT_DIR"/../db/mysql_util.sh
 source /etc/os-release
 
 # Setup distro specifc paths and variables
-if [ $ID = "ubuntu" ]; then 
+if [ "$ID" = "ubuntu" ]; then
    DB_SRV_CONF="/etc/mysql/mariadb.conf.d/50-server.cnf"
    DB_CLIENT_CONF="/etc/mysql/mariadb.conf.d/50-client.cnf"
 fi
@@ -85,13 +85,13 @@ fi
 echo "Checking HIRS ACA Setup on this device..."
 # Check if aca setup was performed
   # Check is RPM was installed via RPM package 
-  if [ $ID = "rhel" ]; then
+  if [ "$ID" = "rhel" ]; then
      echo "RHEL distro detected"
      rpm -q --quiet HIRS_AttestationCA
-    elif [ $ID = 'ubuntu' ]; then
+    elif [ "$ID" = 'ubuntu' ]; then
      echo "Ubuntu distro detected"
      dpkg -l "hirs-attestationca" > /dev/null
-    elif [ $ID = 'rocky' ]; then
+    elif [ "$ID" = 'rocky' ]; then
      echo "Rocky distro detected"
      rpm -q --quiet HIRS_AttestationCA
    else
@@ -99,7 +99,7 @@ echo "Checking HIRS ACA Setup on this device..."
   fi
   if [ $? -eq 0 ]; then
       echo "HIRS ACA was installed via an OS package on this device."
-      if [ $SYSD_SERVICE = true ]; then
+      if [ "$SYSD_SERVICE" = true ]; then
         systemctl is-active --quiet hirs-aca
         if [[ $? -eq 0 ]]; then
           echo "    The hirs-aca service is active"
@@ -191,34 +191,33 @@ check_mysql_setup () {
   # make sure mysql is running and restart if its not...
   check_mysql
   # Check DB server/client TLS setup.
-  if [[ $(cat "$DB_SRV_CONF" | grep -c "HIRS") < 1 ]]; then
+  if [[ "$(grep -c "HIRS" "$DB_SRV_CONF")" -lt 1 ]]; then
      echo "   Mysql server ($DB_SRV_CONF) is NOT configured for Server Side TLS"
      ALL_CHECKS_PASSED=false
    else
      echo "   Mysql server ($DB_SRV_CONF) is configured for Server Side TLS"
   fi
-  if [[ $(cat "$DB_CLIENT_CONF" | grep -c "HIRS") < 1 ]]; then
+  if [[ "$(grep -c "HIRS" "$DB_CLIENT_CONF")" -lt 1 ]]; then
       echo "   Mysql client ($DB_CLIENT_CONF)is NOT configured for command line use of TLS without provding key/cert ino the commandline"
       ALL_CHECKS_PASSED=false
     else
        echo "   Mysql client ($DB_CLIENT_CONF) is configured for command line use of TLS"
   fi
   
-  if [ ! -z "$mysql_admin_password" ]; then
+  if [ -n "$mysql_admin_password" ]; then
     mysql -u root --password="$mysql_admin_password" -e "STATUS;"  &> /dev/null
     if [ $? -eq 0 ]; then
         echo "Mysql Root password verified"
        else 
         echo "Mysql Root password verification failed!"
     fi
-    if [ ! -z "${ARG_VERBOSE}" ]; then
+    if [ -n "${ARG_VERBOSE}" ]; then
       echo "Mysql status:"
       mysql -u root --password="$mysql_admin_password" -e "STATUS;"
       echo "Listing mysql users:"
       mysql -u root --password="$mysql_admin_password" -e "Select user from mysql.user;"
-      echo "Listing all databses:"
-      # shellcheck disable=SC2086
-      mysql -u root --password=$mysql_admin_password -e "show databases;"
+      echo "Listing all databases:"
+      mysql -u root --password="$mysql_admin_password" -e "show databases;"
     fi
   fi
 }
@@ -231,8 +230,8 @@ check_cert () {
      ALL_CHECKS_PASSED=false
      ALL_CERTS_PASSED=false
   fi
-  if [ ! -z "${ARG_VERBOSE}" ]; then
-    echo "     "$RESULT
+  if [ -n "${ARG_VERBOSE}" ]; then
+    echo "     ""$RESULT"
   fi
 }
 
@@ -254,8 +253,8 @@ check_pki () {
    check_cert $RSA_TRUST_STORE $RSA_DB_CLIENT_CERT
    check_cert $RSA_TRUST_STORE $RSA_WEB_TLS_CERT
 
-  popd  > /dev/null
-  pushd $CERT_PATH$ECC_PATH > /dev/null
+  popd  > /dev/null || echo "Unable to pop the directory from the stack"
+  pushd $CERT_PATH$ECC_PATH > /dev/null || echo "Unable to push the directory to the stack"
    check_cert $ECC_TRUST_STORE $ECC_HIRS_ROOT
    check_cert $ECC_TRUST_STORE $ECC_HIRS_INTERMEDIATE
    check_cert $ECC_TRUST_STORE $ECC_HIRS_CA1
@@ -265,7 +264,7 @@ check_pki () {
    check_cert $ECC_TRUST_STORE $ECC_DN_SRV_CERT
    check_cert $ECC_TRUST_STORE $ECC_DB_CLIENT_CERT
    check_cert $ECC_TRUST_STORE $ECC_WEB_TLS_CERT
-  popd  > /dev/null
+  popd  > /dev/null || echo "Unable to pop the directory from the stack"
 
   if [ -z "${ARG_VERBOSE}" ]; then
     if [ $ALL_CERTS_PASSED == true ]; then
@@ -273,15 +272,15 @@ check_pki () {
       else
          echo "   Error: There were error in the certificates under $CERT_PATH"
     fi
-       keytool -list -keystore  /etc/hirs/certificates/HIRS/TrustStore.jks  -storepass $hirs_pki_password | grep hirs | sed -e 's/^/     /' > /dev/null
+       keytool -list -keystore  /etc/hirs/certificates/HIRS/TrustStore.jks  -storepass "$hirs_pki_password" | grep hirs | sed -e 's/^/     /' > /dev/null
     else  #verbose
        echo "   Checking TrustStore, aliases, and pki password"
        echo "   Truststore alias list:"
-       keytool -list -keystore  /etc/hirs/certificates/HIRS/TrustStore.jks  -storepass $hirs_pki_password  | sed -e 's/^/     /' 2>/dev/null
+       keytool -list -keystore  /etc/hirs/certificates/HIRS/TrustStore.jks  -storepass "$hirs_pki_password"  | sed -e 's/^/     /' 2>/dev/null
 
        echo "   Checking KeyStore, aliases, and pki password"
        echo "   Keystore alias list:"
-       keytool -list -keystore  /etc/hirs/certificates/HIRS/KeyStore.jks  -storepass $hirs_pki_password   | sed -e 's/^/     /'  2>/dev/null
+       keytool -list -keystore  /etc/hirs/certificates/HIRS/KeyStore.jks  -storepass "$hirs_pki_password"   | sed -e 's/^/     /'  2>/dev/null
   fi
  
   if [ $? -eq 0 ]; then
@@ -294,7 +293,7 @@ check_pki () {
 
 check_db () {
   echo "Checking DB server TLS configuration..."
-  RESULT=$(mysql -u root --password=$mysql_admin_password -e "SHOW VARIABLES LIKE '%have_ssl%'" |  grep -o YES )
+  RESULT=$(mysql -u root --password="$mysql_admin_password" -e "SHOW VARIABLES LIKE '%have_ssl%'" |  grep -o YES )
   if [ "$RESULT" == "YES" ]; then
       echo "   Mysql Server side TLS is enabled:"
     else
@@ -310,7 +309,7 @@ check_db () {
       echo "   Error: The hirs_db database is NOT visible by the hirs_db user"
       ALL_CHECKS_PASSED=false
   fi
-   if [ ! -z "${ARG_VERBOSE}" ]; then
+   if [ -n "${ARG_VERBOSE}" ]; then
    echo "   Show hirs_db user config using hirs_db password"
    mysql -u hirs_db --password="$hirs_db_password" -e "SHOW CREATE USER 'hirs_db'@'localhost';" \
     --ssl-ca=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem \
@@ -361,7 +360,7 @@ check_selinux () {
 check_fips () {
    echo "Checking FIPS mode on this device..."
    fips=$(sysctl -a  2>&1 | grep crypto.fips_enabled)
-   echo "   "$fips
+   echo "   ""$fips"
 }
 # Run Checks
 

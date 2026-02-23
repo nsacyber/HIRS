@@ -8,7 +8,7 @@
 ACA_URL="https://localhost:8443/HIRS_AttestationCAPortal/portal/index"
 echo "Waiting for tomcat..."
   count=0
-  until [ "`curl --silent --connect-timeout 1 --insecure -I  $ACA_URL | grep -c 'Date'`" == 1 ] || [[ $count -gt 20 ]]; do
+  until [ "$(curl --silent --connect-timeout 1 --insecure -I  $ACA_URL | grep -c 'Date')" == 1 ] || [[ $count -gt 20 ]]; do
         ((count++))
         sleep 1
   done

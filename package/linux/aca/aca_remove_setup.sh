@@ -25,7 +25,6 @@ case $OPTION_IN in
    *) 
      echo "$1 is an unknown parameter for aca_remove_setup"
      exit 1
-     break
     ;;
 esac
 
@@ -81,5 +80,5 @@ fi
 
 # Remove current ACA process
 echo "Shutting down the aca..."
-ps axf | grep HIRS_AttestationCAPortal.war | grep -v grep | awk '{print "kill " $1}' | sh  >/dev/null 2>&1
+pgrep HIRS_AttestationCAPortal.war | xargs kill >/dev/null 2>&1
 echo "ACA setup removal complete."

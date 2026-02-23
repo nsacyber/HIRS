@@ -79,7 +79,7 @@ fi
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-source $SCRIPT_DIR/../db/mysql_util.sh
+source "$SCRIPT_DIR"/../db/mysql_util.sh
 
 if [ $ALG = "RSA" ]; then 
    CERT_PATH="/etc/hirs/certificates/HIRS/$RSA_PATH"
@@ -143,9 +143,9 @@ else
   echo "Booting the ACA from a war file..."
   if [ "$DEBUG_ACA" == YES ]; then
     echo "... in debug"
-    java $DEBUG_OPTIONS  -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
+    java "$DEBUG_OPTIONS"  -jar  "$WAR_PATH" --spring.config.location=$SPRING_PROP_FILE &
   else
-    java -jar  $WAR_PATH --spring.config.location=$SPRING_PROP_FILE &
+    java -jar  "$WAR_PATH" --spring.config.location=$SPRING_PROP_FILE &
   fi
   exit 0
 fi

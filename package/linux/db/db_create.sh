@@ -19,7 +19,7 @@ SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 ACA_PROP_FILE="/etc/hirs/aca/aca.properties"
 DB_ADMIN_PWD=""
-# Db Configuration fileis, use RHELpaths as default
+# Db Configuration files, use RHELpaths as default
 DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
 # Default Certificates
@@ -47,22 +47,22 @@ mkdir -p /etc/hirs/aca/
 mkdir -p /var/log/hirs/
 
 source $ACA_PROP_FILE
-source $SCRIPT_DIR/mysql_util.sh
+source "$SCRIPT_DIR"/mysql_util.sh
 source /etc/os-release 
 
 # Setup distro specifc paths and variables
-if [ $ID = "ubuntu" ]; then 
+if [ "$ID" = "ubuntu" ]; then
    DB_SRV_CONF="/etc/mysql/mariadb.conf.d/50-server.cnf"
    DB_CLIENT_CONF="/etc/mysql/mariadb.conf.d/50-client.cnf"
    mkdir -p /var/log/mariadb >> /dev/null
-   if [[ $(cat "$DB_SRV_CONF" | grep -c "log-error") < 1 ]]; then
+   if [[ "$(grep -c "log-error" "$DB_SRV_CONF")" -lt 1 ]]; then
        echo "log_error=/var/log/mariadb/mariadb.log" >> $DB_SRV_CONF
        echo "tls_version = TLSv1.2,TLSv1.3" >> $DB_SRV_CONF
   fi
 fi
 
 touch $ACA_PROP_FILE
-touch $LOG_FILE
+touch "$LOG_FILE"
 touch $DB_SRV_CONF
 touch $DB_LOG_FILE
 
@@ -73,19 +73,19 @@ check_mysql_root_pwd () {
      # Check if property file exists and look for properties
      if [ -f $ACA_PROP_FILE ]; then
         source $ACA_PROP_FILE
-        if [ ! -z $hirs_pki_password ]; then PKI_PASS=$hirs_pki_password; fi
-        if [ ! -z $mysql_admin_password ]; then HIRS_MYSQL_ROOT_PWD=$mysql_admin_password; fi
-        if [ ! -z $hirs_db_password ]; then HIRS_DB_PWD=$hirs_db_password; fi
+        if [ -n "$hirs_pki_password" ]; then PKI_PASS=$hirs_pki_password; fi
+        if [ -n "$mysql_admin_password" ]; then HIRS_MYSQL_ROOT_PWD=$mysql_admin_password; fi
+        if [ -n "$hirs_db_password" ]; then HIRS_DB_PWD=$hirs_db_password; fi
      fi
   fi
 
-  if [ -z $HIRS_MYSQL_ROOT_PWD ]; then
+  if [ -z "$HIRS_MYSQL_ROOT_PWD" ]; then
 	 # Create a 32 character random password
 	 echo "Using randomly generated password for the DB admin" | tee -a "$LOG_FILE"
 	 DB_ADMIN_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
 	 echo "DB Admin will be set to $DB_ADMIN_PWD , please make note for next mysql use."
      # Check UNATTENDED flag set m if not then prompt user for permission ot store mysql root password
-	 if [ -z $UNATTENDED ]; then
+	 if [ -z "$UNATTENDED" ]; then
 	   read -p "Do you wish to save this password to the aca.properties file? " confirm
 	   if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
 	      echo "mysql_admin_password=$DB_ADMIN_PWD" >> $ACA_PROP_FILE
@@ -117,18 +117,20 @@ check_mysql_root_pwd () {
 
 set_mysql_server_tls () {
   # Check DB server setup. If HIRS ssl params dont exist then we need to add them.
-  if [[ $(cat "$DB_SRV_CONF" | grep -c "HIRS") < 1 ]]; then
+  if [[ "$(grep -c "HIRS" "$DB_SRV_CONF")" -lt 1 ]]; then
     # Add TLS files to my.cnf
     echo "Updating $DB_SRV_CONF with ssl parameters..." | tee -a "$LOG_FILE"
-    echo "ssl_ca=$SSL_DB_SRV_CHAIN" >> "$DB_SRV_CONF"
-    echo "ssl_cert=$SSL_DB_SRV_CERT" >> "$DB_SRV_CONF"
-    echo "ssl_key=$SSL_DB_SRV_KEY" >> "$DB_SRV_CONF"
-    # The following arent avialble in Mariadb 10.3
+    {
+    echo "ssl_ca=$SSL_DB_SRV_CHAIN"
+    echo "ssl_cert=$SSL_DB_SRV_CERT"
+    echo "ssl_key=$SSL_DB_SRV_KEY"
+    } >> "$DB_SRV_CONF"
+    # The following arent available in Mariadb 10.3
     #echo "tls_version=TLSv1.2,TLSv1.3" >> "$DB_SRV_CONF"
     #echo "require_secure_transport=ON" >> "$DB_SRV_CONF"
    
     # Make sure mysql can access them
-    chown mysql:mysql $SSL_DB_SRV_CHAIN $SSL_DB_SRV_CERT $SSL_DB_SRV_KEY
+    chown mysql:mysql "$SSL_DB_SRV_CHAIN" "$SSL_DB_SRV_CERT" "$SSL_DB_SRV_KEY"
     chmod 644 $DB_SRV_CONF $DB_CLIENT_CONF
     # Make selinux contexts for config files, if selinux is enabled
     if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
@@ -142,18 +144,20 @@ set_mysql_server_tls () {
         fi
     fi
   else
-       echo "mysql.cnf contians existing entry for ssl, skipping..." | tee -a "$LOG_FILE"
+       echo "mysql.cnf contains existing entry for ssl, skipping..." | tee -a "$LOG_FILE"
   fi
 }
 
 set_mysql_client_tls () {
 # Update ACA property file with client cert info, if not there already
-if [[ $(cat "$DB_CLIENT_CONF" | grep -c "HIRS") < 1 ]]; then 
+if [[ "$(grep -c "HIRS" "$DB_CLIENT_CONF")" -lt 1 ]]; then
   echo "Updating $DB_CLIENT_CONF with ssl parameters..." | tee -a "$LOG_FILE"
-  echo "ssl_ca=$SSL_DB_CLIENT_CHAIN" >> $DB_CLIENT_CONF
-  echo "ssl_cert=$SSL_DB_CLIENT_CERT" >> $DB_CLIENT_CONF
-  echo "ssl_key=$SSL_DB_CLIENT_KEY" >> $DB_CLIENT_CONF
-  chown mysql:mysql $SSL_DB_CLIENT_CHAIN $SSL_DB_CLIENT_CERT $SSL_DB_CLIENT_KEY 
+  {
+  echo "ssl_ca=$SSL_DB_CLIENT_CHAIN"
+  echo "ssl_cert=$SSL_DB_CLIENT_CERT"
+  echo "ssl_key=$SSL_DB_CLIENT_KEY"
+  } >> $DB_CLIENT_CONF
+  chown mysql:mysql "$SSL_DB_CLIENT_CHAIN" "$SSL_DB_CLIENT_CERT" "$SSL_DB_CLIENT_KEY"
   # Make selinux contexts for config files, if selinux is enabled
    if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
       command -v selinuxenabled  > /dev/null
@@ -173,7 +177,7 @@ set_hirs_db_pwd () {
 check_hirs_db
  if [[ $HIRS_DB_USER_EXISTS != "1" ]]; then 
    # Check if Mysql HIRS DB  password set by system variable or set to random number
-     if [ -z $HIRS_DB_PWD ]; then
+     if [ -z "$HIRS_DB_PWD" ]; then
        HIRS_DB_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
      fi
      # Add key/values only if they dont exist
@@ -202,13 +206,13 @@ create_hirs_db_with_tls () {
    echo "hirs_db already exists, skipping"
    else
      # Check if hirs_db not created and create it if it wasn't
-     mysqlshow --user=root --password="$DB_ADMIN_PWD" | grep "hirs_db" >> $LOG_FILE 2>&1
+     mysqlshow --user=root --password="$DB_ADMIN_PWD" | grep "hirs_db" >> "$LOG_FILE" 2>&1
      if [ $? -eq 0 ]; then
        echo "hirs_db exists, skipping hirs_db create"
      else
-       mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/db_create.sql
-       mysql -u root --password=$DB_ADMIN_PWD < $MYSQL_DIR/secure_mysql.sql
-       mysql -u root --password=$DB_ADMIN_PWD -e "SET PASSWORD FOR 'hirs_db'@'localhost' = PASSWORD('"$HIRS_DB_PWD"'); FLUSH PRIVILEGES;";
+       mysql -u root --password="$DB_ADMIN_PWD" < "$MYSQL_DIR"/db_create.sql
+       mysql -u root --password="$DB_ADMIN_PWD" < "$MYSQL_DIR"/secure_mysql.sql
+       mysql -u root --password="$DB_ADMIN_PWD" -e "SET PASSWORD FOR 'hirs_db'@'localhost' = PASSWORD('"$HIRS_DB_PWD"'); FLUSH PRIVILEGES;";
        echo "**** Setting hirs_db pwd to $HIRS_DB_PWD ***"
      fi
  fi
@@ -219,7 +223,7 @@ create_hibernate_url () {
  ALG=$1
  db_username=$2
 
-  if [ $ALG = "rsa" ]; then
+  if [ "$ALG" = "rsa" ]; then
     CERT_PATH="/etc/hirs/certificates/HIRS/$RSA_PATH"
     CERT_CHAIN="$CERT_PATH/HIRS_rsa_3k_sha384_Cert_Chain.pem"
     CLIENT_DB_P12=$CERT_PATH/HIRS_db_client_rsa_3k_sha384.p12
@@ -241,7 +245,7 @@ keyStorePassword=$PKI_PASS&\
 keyStore="$CLIENT_DB_P12" "
 
 if [[ $(grep -c "hibernate.connection.url" $SPRING_PROP_FILE) -eq 0 ]]; then
-     echo $CONNECTOR_URL >> $SPRING_PROP_FILE
+     echo "$CONNECTOR_URL" >> $SPRING_PROP_FILE
 fi
 
 }
@@ -255,5 +259,5 @@ set_hirs_db_pwd
 create_hirs_db_with_tls
 set_mysql_server_tls
 set_mysql_client_tls
-create_hibernate_url $DB_ALG "hirs_db"
+create_hibernate_url "$DB_ALG" "hirs_db"
 mysqld_reboot
