@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64;win-x64</RuntimeIdentifiers>
     <StartupObject>hirs.Program</StartupObject>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageVersion>3.0.6</PackageVersion>
+    <PackageVersion>3.1.0</PackageVersion>
     <Release></Release> 
 </PropertyGroup>
 
@@ -25,30 +25,29 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Google.Protobuf" Version="3.28.3" />
-    <PackageReference Include="Google.Protobuf.Tools" Version="3.28.3">
+    <PackageReference Include="Google.Protobuf" Version="3.33.5" />
+    <PackageReference Include="Google.Protobuf.Tools" Version="3.33.5">
         <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
     <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="paccor.HardwareManifestPlugin" Version="2.0.5" />
-    <PackageReference Include="paccor.HardwareManifestPluginManager" Version="2.0.5" />
-    <PackageReference Include="paccor.paccor_scripts" Version="2.2.0" />
-    <PackageReference Include="paccor.pcie" Version="0.8.0" />
-    <PackageReference Include="paccor.smbios" Version="0.8.1" />
-    <PackageReference Include="paccor.storage" Version="0.7.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="paccor.HardwareManifestPlugin" Version="2.1.0" />
+    <PackageReference Include="paccor.HardwareManifestPluginManager" Version="2.1.0" />
+    <PackageReference Include="paccor.paccor_scripts" Version="2.5.0" />
+    <PackageReference Include="paccor.pcie" Version="0.8.5" />
+    <PackageReference Include="paccor.smbios" Version="0.8.5" />
+    <PackageReference Include="paccor.storage" Version="0.8.5" />
     <PackageReference Include="Packaging.Targets" Version="0.1.232">
       <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Serilog" Version="4.1.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="System.Management" Version="8.0.0" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="System.Management" Version="10.0.3" />
     <PackageReference Include="WiX" Version="3.14.1">
         <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
 </PackageReference>
@@ -85,7 +84,7 @@
     <Exec Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'" Command="for /f %%i in ('dir /s /b $(FOLDER_PROTO)\*.proto') do (  $(protoc) -I=$(FOLDER_PROTO) --csharp_out=$(FOLDER_OUT) %%i )" />
     <Exec Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'" Command="for file in `ls -1R $(FOLDER_PROTO)/*.proto` ; do $(protoc) -I=$(FOLDER_PROTO) --csharp_out=$(FOLDER_OUT) $file; done " />
   </Target>
-  <Import Project="$(NuGetPackageRoot)paccor.paccor_scripts/2.2.0/contentFiles/any/net8.0/resources/paccor.paccor_scripts.targets" Condition="Exists('$(NuGetPackageRoot)paccor.paccor_scripts/2.2.0/contentFiles/any/net8.0/resources/paccor.paccor_scripts.targets')" />
+  <Import Project="$(NuGetPackageRoot)paccor.paccor_scripts/2.5.0/contentFiles/any/net10.0/resources/paccor.paccor_scripts.targets" Condition="Exists('$(NuGetPackageRoot)paccor.paccor_scripts/2.5.0/contentFiles/any/net10.0/resources/paccor.paccor_scripts.targets')" />
   <Target Name="ImportPaccorScripts" BeforeTargets="PreBuildEvent">
     <ItemGroup>
       <PaccorScriptsLinux Include="$(dotnet_paccor_scripts_directory)/*" />
