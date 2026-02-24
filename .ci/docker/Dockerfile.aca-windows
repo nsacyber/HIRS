@@ -39,7 +39,7 @@ RUN Write-Host "Finished installing JDK 25."
 # Verify installation by listing directories
 RUN ls 'C:\Program Files'
 RUN ls 'C:\Program Files\Java'
-RUN ls 'C:\Program Files\Java\jdk-25\'
+RUN ls 'C:\Program Files\Java\latest\'
 
 # Download and install Mariadb as a service
 RUN ((New-Object System.Net.WebClient).DownloadFile('https://archive.mariadb.org/mariadb-11.1.2/winx64-packages/mariadb-11.1.2-winx64.msi', 'C:/mariadb-11.1.2-winx64.msi'))
@@ -84,7 +84,7 @@ RUN ls 'C:\Program Files\openssl'
 EXPOSE 8443
 
 # Set Environment Variables
-RUN setx JAVA_HOME 'C:\Program Files\Java\jdk-25'
+RUN setx JAVA_HOME 'C:\Program Files\Java\latest'
 RUN setx GIT_HOME 'C:\Program Files\Git'
 RUN setx PATH '%JAVA_HOME%\bin;C:\Program Files\MariaDB 11.1\bin;%GIT_HOME%\bin;C:\vsbuildtools\MSBuild\Current\Bin;%LOCALAPPDATA%\Microsoft\dotnet;%PATH%'
 
