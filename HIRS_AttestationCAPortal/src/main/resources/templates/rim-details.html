@@ -4,6 +4,54 @@
 
 <head>
     <link rel="stylesheet" th:href="@{/css/rim_details.css}" />
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+            function eventSearch(txtInput) {
+                let input, filter, table, tr, td, i, txtValue, txtFound;
+                if(txtInput == null) {
+                    input = document.getElementById("eventInput");
+                    filter = input.value.toUpperCase();
+                } else {
+                    filter = txtInput;
+                }
+
+                table = document.getElementById("eventLog");
+                tr = document.getElementsByTagName("tr");
+                for (i = 0; i < tr.length; i++) {
+                    txtFound = true;
+                    tds = tr[i].getElementsByTagName("td");
+                    for (j = 0; j < tds.length; j++) {
+                        td = tds[j];
+                        txtValue = td.textContent || td.innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            txtFound = true;
+                            break;
+                        } else {
+                            txtFound = false;
+                        }
+                    }
+                    if(txtFound) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+            window.onload = function () {
+                let maxRows = 11;
+                let table = document.getElementById("eventLog");
+                let wrapper = table.parentNode;
+                let rowsInTable = table.rows.length;
+                let height = 0;
+                if (rowsInTable > maxRows) {
+                    for (i = 0; i < maxRows; i++) {
+                        height += table.rows[i].clientHeight;
+                    }
+                    wrapper.style.height = height + "px";
+                }
+            }
+        </script>
+    </section>
 </head>
 
 <body>
@@ -94,7 +142,7 @@
                                             PC Client Boot path
                                         </li>
                                         <ul>
-                                            <li th:if="${initialData.get('crtm')}">Software Core Root of Trust for Measurement (SRTM)</li>
+                                            <li th:if="${initialData.get('crtm')}">Firmware modules</li>
                                             <li th:if="${initialData.get('bootManager')}">Boot Manager</li>
                                             <li th:if="${initialData.get('osLoader')}">OS Loader</li>
                                             <li th:if="${initialData.get('osKernel')}">OS Kernel</li>
@@ -110,7 +158,6 @@
                                             <li th:if="${initialData.get('smbiosTables')}">SMBIOS Tables</li>
                                             <li th:if="${initialData.get('gptTable')}">GPT Table</li>
                                             <li th:if="${initialData.get('bootOrder')}">Boot Order</li>
-                                            <li th:if="${initialData.get('defaultBootDevice')}">Default boot device</li>
                                         </ul>
                                         <li th:if="${initialData.get('secureBoot')
                                         || initialData.get('pk')
@@ -130,10 +177,10 @@
                                 </ul>
                                 <ul>
                                     <li th:if="${initialData.get('rimType') == 'Support'}">
-                                        This Support RIM file covers the following critical items:
+                                        This Support RIM file does NOT cover the following critical items:
                                     </li>
                                     <li th:unless="${initialData.get('rimType') == 'Support'}">
-                                        This Event Log file covers the following critical items:
+                                        This Event Log file does NOT cover the following critical items:
                                     </li>
                                     <ul>
                                         <li th:if="${not initialData.get('crtm')
@@ -143,7 +190,7 @@
                                             PC Client Boot path
                                         </li>
                                         <ul>
-                                            <li th:if="${not initialData.get('crtm')}">Software Core Root of Trust for Measurement (SRTM)</li>
+                                            <li th:if="${not initialData.get('crtm')}">Firmware modules</li>
                                             <li th:if="${not initialData.get('bootManager')}">Boot Manager</li>
                                             <li th:if="${not initialData.get('osLoader')}">OS Loader</li>
                                             <li th:if="${not initialData.get('osKernel')}">OS Kernel</li>
@@ -159,7 +206,6 @@
                                             <li th:if="${not initialData.get('smbiosTables')}">SMBIOS Tables</li>
                                             <li th:if="${not initialData.get('gptTable')}">GPT Table</li>
                                             <li th:if="${not initialData.get('bootOrder')}">Boot Order</li>
-                                            <li th:if="${not initialData.get('defaultBootDevice')}">Default boot device</li>
                                         </ul>
                                         <li th:if="${not initialData.get('secureBoot')
                                         || not initialData.get('pk')
