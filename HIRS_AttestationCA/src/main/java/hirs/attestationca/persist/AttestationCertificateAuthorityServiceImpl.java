@@ -3,6 +3,7 @@ package hirs.attestationca.persist;
 import hirs.attestationca.persist.provision.CertificateRequestProcessor;
 import hirs.attestationca.persist.provision.IdentityClaimProcessor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.GeneralSecurityException;
@@ -22,6 +23,7 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
      * @param certificateRequestProcessor certificate request processor service
      * @param identityClaimProcessor      identity claim processor service
      */
+    @Autowired
     public AttestationCertificateAuthorityServiceImpl(
             final CertificateRequestProcessor certificateRequestProcessor,
             final IdentityClaimProcessor identityClaimProcessor) {
@@ -35,7 +37,7 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
      * @param identityClaim a byte array representation of the identity claim
      * @return processed identity claim response
      */
-    public byte[] processIdentityClaimTpm2(final byte[] identityClaim) throws GeneralSecurityException {
+    public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
         return this.identityClaimProcessor.processIdentityClaimTpm2(identityClaim);
     }
 
@@ -50,9 +52,9 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
     }
 
     /**
-     * Retrieves the encoded public key.
+     * Retrieves the encoded public key of the leaf certificate.
      *
-     * @return encoded public key
+     * @return encoded public key of the leaf certificate
      */
     public byte[] getLeafACACertPublicKey() {
         return this.certificateRequestProcessor.getLeafACACertificatePublicKey();

@@ -13,7 +13,7 @@ public interface AttestationCertificateAuthorityService {
      * @param identityClaim a byte array representation of the identity claim
      * @return a byte array representation of the identity claim response
      */
-    byte[] processIdentityClaimTpm2(byte[] identityClaim) throws GeneralSecurityException;
+    byte[] processIdentityClaimTpm2(byte[] identityClaim);
 
     /**
      * Processes the provided certificate request.
@@ -23,4 +23,11 @@ public interface AttestationCertificateAuthorityService {
      */
     byte[] processCertificateRequest(byte[] certificateRequest) throws GeneralSecurityException;
 
+
+    /**
+     * Retrieves the encoded public key of the leaf certificate.
+     *
+     * @return encoded public key of the leaf certificate
+     */
+    byte[] getLeafACACertPublicKey();
 }

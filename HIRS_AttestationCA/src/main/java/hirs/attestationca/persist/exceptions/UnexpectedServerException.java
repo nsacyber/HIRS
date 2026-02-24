@@ -1,9 +1,7 @@
 package hirs.attestationca.persist.exceptions;
 
-import hirs.attestationca.persist.AttestationCertificateAuthorityServiceImpl;
-
 /**
- * Generic exception thrown when a {@link AttestationCertificateAuthorityServiceImpl}
+ * Generic exception thrown when the Attestation Certificate Authority Service
  * encounters an unexpected condition that can't be handled.
  */
 public class UnexpectedServerException extends RuntimeException {

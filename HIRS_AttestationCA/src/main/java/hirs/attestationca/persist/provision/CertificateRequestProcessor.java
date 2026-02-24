@@ -37,7 +37,6 @@ import java.util.List;
 @Service
 @Log4j2
 public class CertificateRequestProcessor extends AbstractProcessor {
-
     private final SupplyChainValidationService supplyChainValidationService;
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
@@ -53,7 +52,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
      * @param deviceRepository               database connector for Devices.
      * @param privateKey                     private key used for communication authentication
      * @param acaCertificate                 object used to create credential
-     * @param validDays                      int for the time in which a certificate is valid.
+     * @param certificateValidityInDays      int for the time in which a certificate is valid.
      * @param tpm2ProvisionerStateRepository db connector for provisioner state.
      * @param policyRepository               db connector for policies.
      */
@@ -64,10 +63,10 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                                        final PrivateKey privateKey,
                                        @Qualifier("leafACACert") final X509Certificate acaCertificate,
                                        @Value("${aca.current.public.key.algorithm}") final String publicKeyAlgorithmStr,
-                                       @Value("${aca.certificates.validity}") final int validDays,
+                                       @Value("${aca.certificates.validity}") final int certificateValidityInDays,
                                        final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
                                        final PolicyRepository policyRepository) {
-        super(privateKey, validDays);
+        super(privateKey, certificateValidityInDays);
         this.supplyChainValidationService = supplyChainValidationService;
         this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;

@@ -144,9 +144,9 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         log.info("Identity Claim has been received and is ready to be processed");
 
         if (ArrayUtils.isEmpty(identityClaim)) {
-            log.error("Identity claim empty throwing exception.");
-            throw new IllegalArgumentException("The IdentityClaim sent by the client"
-                    + " cannot be null or empty.");
+            final String errorMsg = "The IdentityClaim sent by the client cannot be null or empty.";
+            log.error(errorMsg);
+            throw new IllegalArgumentException(errorMsg);
         }
 
         final PolicyRepository policyRepository = this.getPolicyRepository();

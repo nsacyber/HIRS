@@ -19,17 +19,17 @@ import java.security.GeneralSecurityException;
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
 public class AttestationCertificateAuthorityRestController {
-    private final AttestationCertificateAuthorityServiceImpl attestationCertificateAuthorityServiceImpl;
+    private final AttestationCertificateAuthorityService attestationCertificateAuthorityService;
 
     /**
      * Constructor.
      *
-     * @param attestationCertificateAuthorityServiceImpl Attestation Certificate Authority service
+     * @param attestationCertificateAuthorityService Attestation Certificate Authority service
      */
     @Autowired
     public AttestationCertificateAuthorityRestController(
-            final AttestationCertificateAuthorityServiceImpl attestationCertificateAuthorityServiceImpl) {
-        this.attestationCertificateAuthorityServiceImpl = attestationCertificateAuthorityServiceImpl;
+            final AttestationCertificateAuthorityService attestationCertificateAuthorityService) {
+        this.attestationCertificateAuthorityService = attestationCertificateAuthorityService;
     }
 
     /**
@@ -42,7 +42,7 @@ public class AttestationCertificateAuthorityRestController {
     @ResponseBody
     @PostMapping(value = "/identity-claim-tpm2/process", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processIdentityClaimTpm2(@RequestBody final byte[] identityClaim) throws GeneralSecurityException {
-        return this.attestationCertificateAuthorityServiceImpl.processIdentityClaimTpm2(identityClaim);
+        return this.attestationCertificateAuthorityService.processIdentityClaimTpm2(identityClaim);
     }
 
     /**
@@ -57,7 +57,7 @@ public class AttestationCertificateAuthorityRestController {
     @PostMapping(value = "/request-certificate-tpm2", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest)
             throws GeneralSecurityException {
-        return this.attestationCertificateAuthorityServiceImpl.processCertificateRequest(certificateRequest);
+        return this.attestationCertificateAuthorityService.processCertificateRequest(certificateRequest);
     }
 
     /**
@@ -68,6 +68,6 @@ public class AttestationCertificateAuthorityRestController {
     @ResponseBody
     @GetMapping("/public-key")
     public byte[] getLeafACACertPublicKey() {
-        return this.attestationCertificateAuthorityServiceImpl.getLeafACACertPublicKey();
+        return this.attestationCertificateAuthorityService.getLeafACACertPublicKey();
     }
 }
