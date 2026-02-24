@@ -1,7 +1,7 @@
 FROM rockylinux:9.3
 
 # Purpose: This image is designed for HIRS ci testing on Rocky Linux
-# Date Modified: 2/13/2026
+# Date Modified: 2/20/2026
 # Notes:
 #   * This image installs java, installs project dependencies, and runs gradlew to download gradlew
 #     dependencies. This saves time during a docker run. This also means the image should be
@@ -52,8 +52,8 @@ ENV PATH="/root/.dotnet:${PATH}"
 RUN wget https://packages.microsoft.com/rhel/9/prod/packages-microsoft-prod.rpm
 RUN dnf -y install packages-microsoft-prod.rpm
 RUN dnf makecache
-RUN dnf -y install dotnet-sdk-8.0
-RUN dotnet tool install --global dotnet-rpm
+RUN dnf -y install dotnet-sdk-10.0
+RUN dotnet tool install --global dotnet-rpm --allow-roll-forward
 
 # Ports needed for system-level tests
 EXPOSE 8080
