@@ -1,3 +1,5 @@
+**Note**: The tcg_rim_tool is being phased out in favor of the [RIM-Tool](https://github.com/nsacyber/RIM-Tool) launched in February 2026. Please refer to the RIM-Tool for future plans. 
+
 To support the [TCG RIM concept](https://trustedcomputinggroup.org/resource/tcg-reference-integrity-manifest-rim-information-model/) a new command line application called the The tcg_rim_tool has been created. 
 The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the [TCG PC Client RIM specification](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/).
 It also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload any RIM file.
