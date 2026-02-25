@@ -281,7 +281,7 @@ public class DevicePageService {
         for (PlatformCredential pc : platformCredentialList) {
             // verify that the platform certificate is associated with this device
             if (device.getName().equals(pc.getDeviceName())) {
-                // if there is platform credential ids entry already in the map
+                // if there is not a platform credential entry already in the map
                 certificatePropertyMap.computeIfAbsent(platformCredentialIdsKey, _ -> {
                             // create a new list for the platform certificate ids and add it to the map
                             List<UUID> newPlatformCertificateIdsList = new ArrayList<>();
@@ -311,7 +311,7 @@ public class DevicePageService {
         for (EndorsementCredential ec : endorsementCredentialList) {
             // verify that the endorsement certificate is associated with this device
             if (device.getName().equals(ec.getDeviceName())) {
-                // if there is endorsement credential ids entry already in the map
+                // if there is not an endorsement credential entry already in the map
                 certificatePropertyMap.computeIfAbsent(endorsementCredentialIdsKey, _ -> {
                             // create a new list for the endorsement certificate ids and add it to the map
                             List<UUID> newEndorsementCertificateIdsList = new ArrayList<>();
@@ -341,7 +341,7 @@ public class DevicePageService {
         for (IssuedAttestationCertificate ic : issuedCertificateList) {
             // verify that the issued attestation certificate is associated with this device
             if (device.getName().equals(ic.getDeviceName())) {
-                // if there is issued attestation certificate ids entry already in the map
+                // if there is not an issued attestation certificate entry already in the map
                 certificatePropertyMap.computeIfAbsent(issuedCertificatesIdsKey, _ -> {
                             // create a new list for the issued attestation certificate ids and add it to the map
                             List<UUID> newIssuedAttestationCertificateIdsList = new ArrayList<>();
