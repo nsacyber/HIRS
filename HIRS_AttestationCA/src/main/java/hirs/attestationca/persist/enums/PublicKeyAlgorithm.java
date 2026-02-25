@@ -24,11 +24,31 @@ import java.security.interfaces.RSAPublicKey;
 @AllArgsConstructor
 @ToString
 public enum PublicKeyAlgorithm {
+    /**
+     * RSA Public Key Algorithm.
+     */
     RSA("RSA", RSAPublicKey.class),
-    ECC("ECC", ECPublicKey.class),
+
+    /**
+     * ECC Public Key Algorithm.
+     */
+    ECC("EC", ECPublicKey.class),
+
+    /**
+     * Represents an unknown public key algorithm.
+     * This is used when the application encounters a public key algorithm that is not recognized or supported.
+     * It may occur if the algorithm is unsupported or not implemented in the current version of the application.
+     */
     UNKNOWN("UNKNOWN", null);
 
+    /**
+     * The name of the cryptographic algorithm.
+     */
     private final String algorithmName;
+
+    /**
+     * The Java Security class corresponding to the public key type used by the algorithm.
+     */
     private final Class<? extends PublicKey> keyClass;
 
     /**

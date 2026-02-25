@@ -1,39 +1,20 @@
 package hirs.attestationca.persist;
 
-import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.provision.AbstractProcessor;
+import hirs.attestationca.persist.exceptions.CertificateProcessingException;
 import hirs.attestationca.persist.provision.CertificateRequestProcessor;
 import hirs.attestationca.persist.provision.IdentityClaimProcessor;
-import hirs.attestationca.persist.provision.helper.IssuedCertificateAttributeHelper;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
-import hirs.structs.elements.tpm.AsymmetricPublicKey;
-import hirs.structs.elements.tpm.IdentityProof;
-import hirs.structs.elements.tpm.StorePubKey;
 import hirs.utils.HexUtils;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.TBSCertificate;
-import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,35 +22,26 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- *
+ * Tests the {@link AttestationCertificateAuthorityServiceImpl} service class.
  */
 public class AttestationCertificateAuthorityServiceTest {
-    private static final String EK_PUBLIC_PATH = "/tpm2/ek.pub";
+    private static final String EK_PUBLIC_KEY_PATH = "/public_keys/ek.pub";
 
-    private static final String AK_PUBLIC_PATH = "/tpm2/ak.pub";
+    private static final String AK_PUBLIC_KEY_PATH = "/public_keys/ak.pub";
 
-    private static final String AK_NAME_PATH = "/tpm2/ak.name";
+    private static final String AK_NAME_PATH = "/public_keys/ak.name";
 
     private static final String EK_MODULUS_HEX = "a3 b5 c2 1c 57 be 40 c4  3c 78 90 0d 00 81 01 78"
             + "13 ca 02 ec b6 75 89 60  ca 60 9b 10 b6 b4 d0 0b"
@@ -116,14 +88,17 @@ public class AttestationCertificateAuthorityServiceTest {
     @InjectMocks
     private AttestationCertificateAuthorityServiceImpl attestationCertificateAuthorityService;
 
-    private AccessAbstractProcessor abstractProcessor;
-
     @Mock
     private CertificateRequestProcessor certificateRequestProcessor;
 
     @Mock
     private IdentityClaimProcessor identityClaimProcessor;
 
+    /**
+     * Setups configuration prior to each test method.
+     *
+     * @throws NoSuchAlgorithmException if issues arise while generating keypair.
+     */
     @BeforeEach
     public void setupTests() throws NoSuchAlgorithmException {
         // Initializes mocks before each test
@@ -135,6 +110,11 @@ public class AttestationCertificateAuthorityServiceTest {
         keyPair = keyPairGenerator.generateKeyPair();
     }
 
+    /**
+     * Closes mocks after the completion of each test method.
+     *
+     * @throws Exception if any issues arise while closing mocks.
+     */
     @AfterEach
     public void afterEach() throws Exception {
         if (mocks != null) {
@@ -144,72 +124,133 @@ public class AttestationCertificateAuthorityServiceTest {
 
     /**
      * Tests {@link AttestationCertificateAuthorityService#processIdentityClaimTpm2(byte[])}
-     * where the byte array is null or empty. Expects an illegal argument exception to be thrown.
-     *
-     * @throws GeneralSecurityException if any issues arise while processing the identity claim request
+     * where the byte array is null or empty. Expects an {@link IllegalArgumentException} to be thrown.
      */
     @Test
-    public void testProcessIdentityClaimTpm2NullOrEmptyRequest() throws GeneralSecurityException {
+    public void testProcessIdentityClaimTpm2NullOrEmptyRequest() {
+        final String expectedExceptionMsg = "The IdentityClaim sent by the client cannot be null or empty.";
+
         // test 1: test null identity claim
-        when(attestationCertificateAuthorityService.processIdentityClaimTpm2(null)).thenThrow(
-                new IllegalArgumentException("The IdentityClaim sent by the client cannot be null or empty."));
+        when(identityClaimProcessor.processIdentityClaimTpm2(null)).thenThrow(
+                new IllegalArgumentException(expectedExceptionMsg));
 
         // Act & Assert: Verify that the exception is thrown
-        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> attestationCertificateAuthorityService.processIdentityClaimTpm2(null));
+        String actualExceptionMsg = assertThrows(IllegalArgumentException.class,
+                () -> attestationCertificateAuthorityService.processIdentityClaimTpm2(null)).getMessage();
 
-        assertEquals("The IdentityClaim sent by the client cannot be null or empty.",
-                illegalArgumentException.getMessage());
+        assertEquals(expectedExceptionMsg, actualExceptionMsg);
 
         // test 2: test empty identity claim
 
         // initialize an empty byte array
         final byte[] emptyArr = {};
 
-        when(attestationCertificateAuthorityService.processIdentityClaimTpm2(emptyArr)).thenThrow(
-                new IllegalArgumentException("The IdentityClaim sent by the client cannot be null or empty."));
+        when(identityClaimProcessor.processIdentityClaimTpm2(emptyArr)).thenThrow(
+                new IllegalArgumentException(expectedExceptionMsg));
 
         // Act & Assert: Verify that the exception is thrown
-        illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> attestationCertificateAuthorityService.processIdentityClaimTpm2(emptyArr));
+        actualExceptionMsg = assertThrows(IllegalArgumentException.class,
+                () -> attestationCertificateAuthorityService.processIdentityClaimTpm2(emptyArr)).getMessage();
 
-        assertEquals("The IdentityClaim sent by the client cannot be null or empty.",
-                illegalArgumentException.getMessage());
+        assertEquals(expectedExceptionMsg, actualExceptionMsg);
+    }
+
+    /**
+     * Tests {@link AttestationCertificateAuthorityService#processIdentityClaimTpm2(byte[])}.
+     */
+    @Test
+    public void testProcessIdentityClaimTpm2() {
+        final byte[] identityClaim = {0, 1, 0, 1, 2, 2, 2};
+
+        final byte[] expectedIdentityClaimResponse = {1, 1, 1, 1, 2, 2, 2, 2};
+
+        when(identityClaimProcessor.processIdentityClaimTpm2(identityClaim)).thenReturn(
+                expectedIdentityClaimResponse);
+
+        final byte[] actualCertificateResponse =
+                identityClaimProcessor.processIdentityClaimTpm2(identityClaim);
+
+        // Assert that the byte arrays match
+        assertArrayEquals(expectedIdentityClaimResponse, actualCertificateResponse);
     }
 
     /**
      * Tests {@link AttestationCertificateAuthorityService#processCertificateRequest(byte[])}
-     * where the byte array is null or empty. Expects an illegal argument exception to be thrown.
+     * where the byte array is null or empty. Expects an {@link IllegalArgumentException} to be thrown.
      *
      * @throws GeneralSecurityException if any issues arise while processing the certificate request
      */
     @Test
     public void testProcessCertificateRequestNullOrEmptyRequest() throws GeneralSecurityException {
-        // test 1: test null certificate request
+        final String expectedExceptionMsg = "The CertificateRequest sent by the client cannot be null or empty.";
 
-        when(attestationCertificateAuthorityService.processCertificateRequest(null)).thenThrow(
-                new IllegalArgumentException("The CertificateRequest sent by the client cannot be null or empty."));
+        // test 1: test null certificate request
+        when(certificateRequestProcessor.processCertificateRequest(null)).thenThrow(
+                new IllegalArgumentException(expectedExceptionMsg));
 
         // Act & Assert: Verify that the exception is thrown
-        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> attestationCertificateAuthorityService.processCertificateRequest(null));
+        String actualExceptionMsg = assertThrows(IllegalArgumentException.class,
+                () -> attestationCertificateAuthorityService.processCertificateRequest(null)).getMessage();
 
-        assertEquals("The CertificateRequest sent by the client cannot be null or empty.",
-                illegalArgumentException.getMessage());
+        assertEquals(expectedExceptionMsg, actualExceptionMsg);
 
         // test 2: test empty certificate request
 
         // initialize an empty byte array
         final byte[] emptyArr = {};
 
-        when(attestationCertificateAuthorityService.processCertificateRequest(emptyArr)).thenThrow(
-                new IllegalArgumentException("The CertificateRequest sent by the client cannot be null or empty."));
+        when(certificateRequestProcessor.processCertificateRequest(emptyArr)).thenThrow(
+                new IllegalArgumentException(expectedExceptionMsg));
 
-        illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> attestationCertificateAuthorityService.processCertificateRequest(emptyArr));
+        // Act & Assert: Verify that the exception is thrown
+        actualExceptionMsg = assertThrows(IllegalArgumentException.class,
+                () -> attestationCertificateAuthorityService.processCertificateRequest(emptyArr)).getMessage();
 
-        assertEquals("The CertificateRequest sent by the client cannot be null or empty.",
-                illegalArgumentException.getMessage());
+        assertEquals(expectedExceptionMsg, actualExceptionMsg);
+    }
+
+    /**
+     * Tests {@link AttestationCertificateAuthorityService#processCertificateRequest(byte[])}
+     * where the byte array is invalid. Expects a {@link CertificateProcessingException} to be thrown.
+     *
+     * @throws GeneralSecurityException if any issues arise while processing the certificate request
+     */
+    @Test
+    public void testProcessCertificateRequestProcessorDeserializationError() throws GeneralSecurityException {
+        final String expectedExceptionMsg = "Could not deserialize Protobuf Certificate Request object";
+
+        final byte[] badCertificateRequest = {0, 0, 0, 0, 0, 1, 0, 0};
+
+        when(certificateRequestProcessor.processCertificateRequest(badCertificateRequest)).thenThrow(
+                new CertificateProcessingException(expectedExceptionMsg));
+
+        // Act & Assert: Verify that the exception is thrown
+        String actualExceptionMsg = assertThrows(CertificateProcessingException.class,
+                () -> attestationCertificateAuthorityService.processCertificateRequest(
+                        badCertificateRequest)).getMessage();
+
+        assertEquals(expectedExceptionMsg, actualExceptionMsg);
+    }
+
+    /**
+     * Tests {@link AttestationCertificateAuthorityService#processCertificateRequest(byte[])}.
+     *
+     * @throws GeneralSecurityException if any issues arise while processing the certificate request
+     */
+    @Test
+    public void testProcessCertificateRequest() throws GeneralSecurityException {
+        final byte[] certificateRequest = {0, 1, 0, 1};
+
+        final byte[] expectedCertificateResponse = {1, 1, 1, 1};
+
+        when(certificateRequestProcessor.processCertificateRequest(certificateRequest)).thenReturn(
+                expectedCertificateResponse);
+
+        final byte[] actualCertificateResponse =
+                attestationCertificateAuthorityService.processCertificateRequest(certificateRequest);
+
+        // Assert that the byte arrays match
+        assertArrayEquals(expectedCertificateResponse, actualCertificateResponse);
     }
 
     /**
@@ -217,11 +258,8 @@ public class AttestationCertificateAuthorityServiceTest {
      */
     @Test
     public void testGetPublicKey() {
-
-        // setup
-
         // encoded byte array to be returned by public key
-        final byte[] desiredByteArray = new byte[]{0, 1, 0, 1, 0};
+        final byte[] expectedByteArray = new byte[]{0, 1, 0, 1, 0};
 
         // create mocks for testing
         X509Certificate mockCertificate = mock(X509Certificate.class);
@@ -229,23 +267,26 @@ public class AttestationCertificateAuthorityServiceTest {
 
         // Mock the behavior of getPublicKey().getEncoded() to return the desired byte array
         when(mockCertificate.getPublicKey()).thenReturn(mockPublicKey);
-        when(mockPublicKey.getEncoded()).thenReturn(desiredByteArray);
+        when(mockPublicKey.getEncoded()).thenReturn(expectedByteArray);
 
-        when(attestationCertificateAuthorityService.getLeafACACertPublicKey()).thenReturn(
-                mockCertificate.getPublicKey().getEncoded());
+        // grab the public key encoding
+        byte[] mockedByteArrayResult = mockPublicKey.getEncoded();
+
+        // Mock the behavior of retrieving the public key from the service class
+        when(attestationCertificateAuthorityService.getLeafACACertPublicKey()).thenReturn(mockedByteArrayResult);
 
         // Test: Call the service method and assert the return value
         byte[] actualByteArray = attestationCertificateAuthorityService.getLeafACACertPublicKey();
 
-        // Assert that the byte arrays match
-        assertArrayEquals(desiredByteArray, actualByteArray);
+        // Assert that the mocked and actual byte arrays match
+        assertArrayEquals(expectedByteArray, actualByteArray);
     }
 
     /**
      * Tests {@link ProvisionUtils#assembleRSAPublicKey(byte[])}.
      */
     @Test
-    public void testAssemblePublicKeyUsingByteArray() {
+    public void testAssembleRSAPublicKeyUsingByteArray() {
         // obtain the expected modulus from the existing public key
         final BigInteger modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus();
 
@@ -267,7 +308,7 @@ public class AttestationCertificateAuthorityServiceTest {
      */
     @Test
     public void testParseEk() throws URISyntaxException, IOException {
-        Path ekPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_PUBLIC_PATH)).toURI());
+        Path ekPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_PUBLIC_KEY_PATH)).toURI());
 
         byte[] ekFile = Files.readAllBytes(ekPath);
 
@@ -295,7 +336,7 @@ public class AttestationCertificateAuthorityServiceTest {
      */
     @Test
     public void testParseAk() throws URISyntaxException, IOException {
-        Path akPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_PUBLIC_PATH)).toURI());
+        Path akPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_PUBLIC_KEY_PATH)).toURI());
 
         byte[] akFile = Files.readAllBytes(akPath);
 
@@ -314,155 +355,4 @@ public class AttestationCertificateAuthorityServiceTest {
         String realMod = AK_MODULUS_HEX.replaceAll("\\s+", "");
         assertEquals(realMod, hex);
     }
-
-    /**
-     * Tests {@link AttestationCertificateAuthorityService#
-     * AttestationCertificateAuthority(SupplyChainValidationService, PrivateKey,
-     * X509Certificate, StructConverter, CertificateManager, DeviceRegister, int,
-     * DeviceManager, DBManager)}.
-     *
-     * @throws Exception during subject alternative name checking if cert formatting is bad
-     */
-    @Test
-    public void testGenerateCredential() throws Exception {
-        // test variables
-        final String identityProofLabelString = "label";
-        byte[] identityProofLabel = identityProofLabelString.getBytes(StandardCharsets.UTF_8);
-        byte[] modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus().toByteArray();
-        int validDays = 1;
-
-        // create mocks for testing
-        IdentityProof identityProof = mock(IdentityProof.class);
-        AsymmetricPublicKey asymmetricPublicKey = mock(AsymmetricPublicKey.class);
-        StorePubKey storePubKey = mock(StorePubKey.class);
-        X509Certificate acaCertificate = createSelfSignedCertificate(keyPair);
-
-        // assign ACA fields
-        ReflectionTestUtils.setField(attestationCertificateAuthorityService, "validDays", validDays);
-        ReflectionTestUtils.setField(attestationCertificateAuthorityService, "acaCertificate", acaCertificate);
-
-        // prepare identity proof interactions
-        when(identityProof.getLabel()).thenReturn(identityProofLabel);
-
-        // perform the test
-        X509Certificate certificate = abstractProcessor.accessGenerateCredential(keyPair.getPublic(),
-                null,
-                new LinkedList<>(),
-                "exampleIdLabel",
-                acaCertificate);
-
-        // grab the modulus from the generate certificate
-        byte[] resultMod = ((RSAPublicKey) certificate.getPublicKey()).getModulus().toByteArray();
-
-        // today and tomorrow, when the certificate should be valid for
-        Calendar today = Calendar.getInstance();
-        Calendar tomorrow = Calendar.getInstance();
-        tomorrow.add(Calendar.DATE, 1);
-
-        // validate the certificate
-        assertTrue(certificate.getIssuerX500Principal().toString().contains("CN=TEST"));
-        assertTrue(certificate.getIssuerX500Principal().toString().contains("OU=TEST"));
-        assertTrue(certificate.getIssuerX500Principal().toString().contains("O=TEST"));
-        assertTrue(certificate.getIssuerX500Principal().toString().contains("C=TEST"));
-
-        // validate the format of the subject and subject alternative name
-        assertEquals("", certificate.getSubjectX500Principal().getName());
-        assertEquals("exampleIdLabel",
-                ((X500Name) GeneralNames.fromExtensions(((TBSCertificate.getInstance(
-                        certificate.getTBSCertificate()).getExtensions())), Extension.
-                        subjectAlternativeName).getNames()[0].getName()).getRDNs(
-                        IssuedCertificateAttributeHelper.TCPA_AT_TPM_ID_LABEL)[0].getFirst()
-                        .getValue().toString());
-
-        assertArrayEquals(modulus, resultMod);
-
-        // obtain the expiration dates from the certificate
-        Calendar beforeDate = Calendar.getInstance();
-        Calendar afterDate = Calendar.getInstance();
-        beforeDate.setTime(certificate.getNotBefore());
-        afterDate.setTime(certificate.getNotAfter());
-
-        // assert the dates are set correctly
-        assertEquals(today.get(Calendar.DATE), beforeDate.get(Calendar.DATE));
-        assertEquals(tomorrow.get(Calendar.DATE), afterDate.get(Calendar.DATE));
-
-        // validate mock interactions
-        verifyNoMoreInteractions(identityProof, asymmetricPublicKey, storePubKey);
-    }
-
-    /**
-     * Creates a self-signed X.509 public-key certificate.
-     *
-     * @param pair KeyPair to create the cert for
-     * @return self-signed X509Certificate
-     */
-    private X509Certificate createSelfSignedCertificate(final KeyPair pair) {
-        Security.addProvider(new BouncyCastleProvider());
-        final int timeRange = 10000;
-        X509Certificate cert = null;
-        try {
-            X500Name issuerName = new X500Name("CN=TEST2, OU=TEST2, O=TEST2, C=TEST2");
-            X500Name subjectName = new X500Name("CN=TEST, OU=TEST, O=TEST, C=TEST");
-            BigInteger serialNumber = BigInteger.ONE;
-            Date notBefore = new Date(System.currentTimeMillis() - timeRange);
-            Date notAfter = new Date(System.currentTimeMillis() + timeRange);
-            X509v3CertificateBuilder builder =
-                    new JcaX509v3CertificateBuilder(issuerName, serialNumber, notBefore, notAfter,
-                            subjectName, pair.getPublic());
-            ContentSigner signer =
-                    new JcaContentSignerBuilder("SHA256WithRSA").setProvider("BC").build(
-                            pair.getPrivate());
-            return new JcaX509CertificateConverter().setProvider("BC").getCertificate(
-                    builder.build(signer));
-        } catch (Exception e) {
-            fail("Exception occurred while creating a cert", e);
-        }
-        return cert;
-    }
-
-
-    /**
-     * This internal class handles setup for testing the function
-     * generateCredential() from class AbstractProcessor. Because the
-     * function is Protected and in a different package than the test,
-     * it cannot be accessed directly.
-     */
-    @Nested
-    public class AccessAbstractProcessor extends AbstractProcessor {
-
-        /**
-         * Constructor.
-         *
-         * @param privateKey the private key of the ACA
-         * @param validDays  int for the time in which a certificate is valid.
-         */
-        public AccessAbstractProcessor(final PrivateKey privateKey,
-                                       final int validDays) {
-            super(privateKey, validDays);
-        }
-
-        /**
-         * Public wrapper for the protected function generateCredential(), to access for testing.
-         *
-         * @param publicKey             cannot be null
-         * @param endorsementCredential the endorsement credential
-         * @param platformCredentials   the set of platform credentials
-         * @param deviceName            The host name used in the subject alternative name
-         * @param acaCertificate        the aca certificate
-         * @return the generated X509 certificate
-         */
-        public X509Certificate accessGenerateCredential(final PublicKey publicKey,
-                                                        final EndorsementCredential endorsementCredential,
-                                                        final List<PlatformCredential> platformCredentials,
-                                                        final String deviceName,
-                                                        final X509Certificate acaCertificate) {
-
-            return generateCredential(publicKey,
-                    endorsementCredential,
-                    platformCredentials,
-                    deviceName,
-                    acaCertificate);
-        }
-    }
-
 }
