@@ -183,14 +183,12 @@
                                         This Event Log file does NOT cover the following critical items:
                                     </li>
                                     <ul>
-                                        <li th:if="${not initialData.get('crtm')
-                                        || not initialData.get('bootManager')
+                                        <li th:if="${not initialData.get('bootManager')
                                         || not initialData.get('osLoader')
                                         || not initialData.get('osKernel')}">
                                             PC Client Boot path
                                         </li>
                                         <ul>
-                                            <li th:if="${not initialData.get('crtm')}">Firmware modules</li>
                                             <li th:if="${not initialData.get('bootManager')}">Boot Manager</li>
                                             <li th:if="${not initialData.get('osLoader')}">OS Loader</li>
                                             <li th:if="${not initialData.get('osKernel')}">OS Kernel</li>

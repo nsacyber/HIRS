@@ -129,7 +129,8 @@ public class ReferenceManifestDetailsPageService {
         for (TpmPcrEvent tpe : eventList) {
             contentStr = tpe.getEventContentStr();
             // check for specific events
-            if (contentStr.contains("CRTM")) {
+            if (contentStr.contains("CRTM")
+                || contentStr.contains("IBB")) {
                 crtm = true;
             } else if (contentStr.contains("shimx64.efi")
                     || contentStr.contains("bootmgfw.efi")) {
