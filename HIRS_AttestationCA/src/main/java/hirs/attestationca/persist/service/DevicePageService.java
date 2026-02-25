@@ -28,7 +28,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -231,107 +230,127 @@ public class DevicePageService {
         // hashmap containing the device-certificate relationship
         HashMap<String, Object> deviceCertMap = new HashMap<>();
 
-        final List<UUID> deviceIdList = getDevicesId(deviceList);
-        List<PlatformCredential> platformCredentialList = new ArrayList<>();
-        List<EndorsementCredential> endorsementCredentialList = new ArrayList<>();
-        List<IssuedAttestationCertificate> issuedCertificateList = new ArrayList<>();
-        List<Object> certificateListFromMap;
-
-        // parse if there is a Device
-        if (!deviceList.isEmpty()) {
-            // get a list of Certificates that contains the device IDs from the list
-            for (UUID id : deviceIdList) {
-                platformCredentialList.addAll(this.platformCertificateRepository.findByDeviceId(id));
-                endorsementCredentialList.addAll(this.endorsementCredentialRepository.findByDeviceId(id));
-                issuedCertificateList.addAll(this.issuedCertificateRepository.findByDeviceId(id));
+        for (Device device : deviceList) {
+            if (device == null) {
+                log.error("Encountered a null device in the list. Skipping to the next device in list...");
+                continue;
             }
 
-            HashMap<String, List<Object>> certificatePropertyMap;
+            // hashmap that uses the certificate type as the key and the list of device associated certificate ids
+            // as the value
+            HashMap<String, List<UUID>> certificatePropertyMap = new HashMap<>();
 
-            for (Device device : deviceList) {
-                // hashmap containing the list of certificates based on the certificate type
-                certificatePropertyMap = new HashMap<>();
+            deviceCertMap.put("device", device);
 
-                deviceCertMap.put("device", device);
+            // create a new entry for platform certificates associated with the current device in the map
+            addPlatformCredentialEntryToDeviceMap(device, certificatePropertyMap);
 
-                String deviceName;
+            // create a new entry for the endorsement certificate associated with the current device in the map
+            addEndorsementCredentialEntryToDeviceMap(device, certificatePropertyMap);
 
-                // loop all the certificates and combine the ones that match the ID
-                for (PlatformCredential pc : platformCredentialList) {
-                    deviceName = deviceRepository.findById(pc.getDeviceId()).get().getName();
+            // create a new entry for issued certificates associated with the current device in the map
+            addIssuedCertificateEntryToDeviceMap(device, certificatePropertyMap);
 
-                    // verify that the platform certificate is associated with this
-                    // device
-                    if (device.getName().equals(deviceName)) {
-                        final String platformCredentialIdsKey =
-                                PlatformCredential.class.getSimpleName() + "Ids";
-
-                        // create a new list for the certificate type if it does not exist
-                        // else add it to the current certificate type list
-                        certificateListFromMap = certificatePropertyMap.get(platformCredentialIdsKey);
-
-                        if (certificateListFromMap != null) {
-                            certificateListFromMap.add(pc.getId());
-                        } else {
-                            certificatePropertyMap.put(platformCredentialIdsKey,
-                                    Collections.singletonList(pc.getId()));
-                        }
-                    }
-                }
-
-                for (EndorsementCredential ec : endorsementCredentialList) {
-
-                    deviceName = deviceRepository.findById(ec.getDeviceId()).get().getName();
-
-                    // verify that the endorsement certificate is associated with this
-                    // device
-                    if (device.getName().equals(deviceName)) {
-                        final String endorsementCredentialIdsKey =
-                                EndorsementCredential.class.getSimpleName() + "Ids";
-
-                        // create a new list for the certificate type if it does not exist
-                        // else add it to the current certificate type list
-                        certificateListFromMap = certificatePropertyMap.get(endorsementCredentialIdsKey);
-
-                        if (certificateListFromMap != null) {
-                            certificateListFromMap.add(ec.getId());
-                        } else {
-                            certificatePropertyMap.put(endorsementCredentialIdsKey,
-                                    Collections.singletonList(ec.getId()));
-                        }
-                    }
-                }
-
-                for (IssuedAttestationCertificate ic : issuedCertificateList) {
-                    // verify that the issued attestation certificate is associated with this
-                    // device's id
-                    if (device.getName().equals(ic.getDeviceName())) {
-                        final String issuedCertificatesIdsKey =
-                                IssuedAttestationCertificate.class.getSimpleName() + "Ids";
-
-                        // create a new list for the certificate type if it does not exist
-                        // else add it to the current certificate type list
-                        certificateListFromMap = certificatePropertyMap.get(issuedCertificatesIdsKey);
-
-                        if (certificateListFromMap != null) {
-                            certificateListFromMap.add(ic.getId());
-                        } else {
-                            certificatePropertyMap.put(issuedCertificatesIdsKey,
-                                    Collections.singletonList(ic.getId()));
-                        }
-                    }
-                }
-
-                // add the device-certificate map to the record
-                deviceCertMap.putAll(certificatePropertyMap);
-                records.add(new HashMap<>(deviceCertMap));
-                deviceCertMap.clear();
-            }
+            // add the device-certificate map to the record
+            deviceCertMap.putAll(certificatePropertyMap);
+            records.add(new HashMap<>(deviceCertMap));
+            deviceCertMap.clear();
         }
+
         // set pagination values
         records.setRecordsTotal(deviceList.getRecordsTotal());
         records.setRecordsFiltered(deviceList.getRecordsFiltered());
         return records;
+    }
+
+    /**
+     * Helper method that attempts to find all the platform certificates that are associated with the provided device
+     * and add a new entry to the device-certificate hash map for platform certificate ids.
+     *
+     * @param device                 device
+     * @param certificatePropertyMap hash map of the certificate type and list of associated certificate ids
+     */
+    private void addPlatformCredentialEntryToDeviceMap(final Device device,
+                                                       final HashMap<String, List<UUID>> certificatePropertyMap) {
+        // find all platform certificates associated with this device id
+        final List<PlatformCredential> platformCredentialList =
+                this.platformCertificateRepository.findByDeviceId(device.getId());
+
+        final String platformCredentialIdsKey = PlatformCredential.class.getSimpleName() + "Ids";
+
+        for (PlatformCredential pc : platformCredentialList) {
+            // verify that the platform certificate is associated with this device
+            if (device.getName().equals(pc.getDeviceName())) {
+                // if there is not a platform credential entry already in the map
+                certificatePropertyMap.computeIfAbsent(platformCredentialIdsKey, _ -> {
+                            // create a new list for the platform certificate ids and add it to the map
+                            List<UUID> newPlatformCertificateIdsList = new ArrayList<>();
+                            newPlatformCertificateIdsList.add(pc.getId());
+                            return newPlatformCertificateIdsList;
+                        })
+                        .add(pc.getId());  // otherwise add the new id to associated list of platform credential ids
+            }
+        }
+    }
+
+    /**
+     * Helper method that attempts to find all the endorsement certificates that are associated with the provided device
+     * and add a new entry to the device-certificate hash map for endorsement certificate ids.
+     *
+     * @param device                 device
+     * @param certificatePropertyMap hash map of the certificate type and list of associated certificate ids
+     */
+    private void addEndorsementCredentialEntryToDeviceMap(final Device device,
+                                                          final HashMap<String, List<UUID>> certificatePropertyMap) {
+        // find all endorsement certificates associated with this device id
+        final List<EndorsementCredential> endorsementCredentialList =
+                this.endorsementCredentialRepository.findByDeviceId(device.getId());
+
+        final String endorsementCredentialIdsKey = EndorsementCredential.class.getSimpleName() + "Ids";
+
+        for (EndorsementCredential ec : endorsementCredentialList) {
+            // verify that the endorsement certificate is associated with this device
+            if (device.getName().equals(ec.getDeviceName())) {
+                // if there is not an endorsement credential entry already in the map
+                certificatePropertyMap.computeIfAbsent(endorsementCredentialIdsKey, _ -> {
+                            // create a new list for the endorsement certificate ids and add it to the map
+                            List<UUID> newEndorsementCertificateIdsList = new ArrayList<>();
+                            newEndorsementCertificateIdsList.add(ec.getId());
+                            return newEndorsementCertificateIdsList;
+                        })
+                        .add(ec.getId());  // otherwise add the new id to associated list of endorsement credential ids
+            }
+        }
+    }
+
+    /**
+     * Helper method that attempts to find all the issued certificates that are associated with the provided device
+     * and add a new entry to the device-certificate hash map for issued certificate ids.
+     *
+     * @param device                 device
+     * @param certificatePropertyMap hash map of the certificate type and list of associated certificate ids
+     */
+    private void addIssuedCertificateEntryToDeviceMap(final Device device,
+                                                      final HashMap<String, List<UUID>> certificatePropertyMap) {
+        // find all issued certificates associated with this device id
+        final List<IssuedAttestationCertificate> issuedCertificateList =
+                this.issuedCertificateRepository.findByDeviceId(device.getId());
+
+        final String issuedCertificatesIdsKey = IssuedAttestationCertificate.class.getSimpleName() + "Ids";
+
+        for (IssuedAttestationCertificate ic : issuedCertificateList) {
+            // verify that the issued attestation certificate is associated with this device
+            if (device.getName().equals(ic.getDeviceName())) {
+                // if there is not an issued attestation certificate entry already in the map
+                certificatePropertyMap.computeIfAbsent(issuedCertificatesIdsKey, _ -> {
+                            // create a new list for the issued attestation certificate ids and add it to the map
+                            List<UUID> newIssuedAttestationCertificateIdsList = new ArrayList<>();
+                            newIssuedAttestationCertificateIdsList.add(ic.getId());
+                            return newIssuedAttestationCertificateIdsList;
+                        })
+                        .add(ic.getId());  // otherwise add the new id to associated list of issued attestation cert ids
+            }
+        }
     }
 
     /**
@@ -438,15 +457,5 @@ public class DevicePageService {
         }
 
         return criteriaBuilder.and(combinedColumnSearchPredicates.toArray(new Predicate[0]));
-    }
-
-    /**
-     * Returns the list of devices IDs.
-     *
-     * @param deviceList list containing the devices
-     * @return a list of the devices IDs
-     */
-    private List<UUID> getDevicesId(final FilteredRecordsList<Device> deviceList) {
-        return deviceList.stream().map(Device::getId).toList();
     }
 }
