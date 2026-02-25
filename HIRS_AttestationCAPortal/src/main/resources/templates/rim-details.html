@@ -8,7 +8,7 @@
         <script th:inline="javascript">
             function eventSearch(txtInput) {
                 let input, filter, table, tr, td, i, txtValue, txtFound;
-                if(txtInput == null) {
+                if (txtInput == null) {
                     input = document.getElementById("eventInput");
                     filter = input.value.toUpperCase();
                 } else {
@@ -30,7 +30,7 @@
                             txtFound = false;
                         }
                     }
-                    if(txtFound) {
+                    if (txtFound) {
                         tr[i].style.display = "";
                     } else {
                         tr[i].style.display = "none";
