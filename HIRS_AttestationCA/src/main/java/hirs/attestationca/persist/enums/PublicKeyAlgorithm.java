@@ -4,10 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.security.PublicKey;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
-
 /**
  * Enum representing public key algorithms for asymmetric cryptography.
  * <p>
@@ -27,29 +23,24 @@ public enum PublicKeyAlgorithm {
     /**
      * RSA Public Key Algorithm.
      */
-    RSA("RSA", RSAPublicKey.class),
+    RSA("RSA"),
 
     /**
      * ECC Public Key Algorithm.
      */
-    ECC("ECC", ECPublicKey.class),
+    ECC("ECC"),
 
     /**
      * Represents an unknown public key algorithm.
      * This is used when the application encounters a public key algorithm that is not recognized or supported.
      * It may occur if the algorithm is unsupported or not implemented in the current version of the application.
      */
-    UNKNOWN("UNKNOWN", null);
+    UNKNOWN("UNKNOWN");
 
     /**
      * The name of the cryptographic algorithm.
      */
     private final String algorithmName;
-
-    /**
-     * The Java Security class corresponding to the public key type used by the algorithm.
-     */
-    private final Class<? extends PublicKey> keyClass;
 
     /**
      * Converts the provided string public key algorithm into an ENUM.

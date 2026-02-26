@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.GeneralSecurityException;
-
 /**
  * REST Controller for the ACA that communicates with the Provisioner during the provisioning process.
  */
@@ -41,7 +39,7 @@ public class AttestationCertificateAuthorityRestController {
      */
     @ResponseBody
     @PostMapping(value = "/identity-claim-tpm2/process", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public byte[] processIdentityClaimTpm2(@RequestBody final byte[] identityClaim) throws GeneralSecurityException {
+    public byte[] processIdentityClaimTpm2(@RequestBody final byte[] identityClaim) {
         return this.attestationCertificateAuthorityService.processIdentityClaimTpm2(identityClaim);
     }
 

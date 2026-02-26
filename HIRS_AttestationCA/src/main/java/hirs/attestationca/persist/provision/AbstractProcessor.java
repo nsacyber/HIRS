@@ -45,7 +45,7 @@ import java.util.List;
 @Getter
 @Log4j2
 @NoArgsConstructor
-public class AbstractProcessor {
+public abstract class AbstractProcessor {
 
     private int validDays;
 
@@ -299,10 +299,10 @@ public class AbstractProcessor {
                 if (issuedAc != null && !issuedAc.isEmpty()
                         && (ldevID ? policySettings.isGenerateDevIdCertificateOnExpiration()
                         : policySettings.isGenerateAttestationCertificateOnExpiration())) {
-                    if (issuedAc.get(0).getEndValidity().after(currentDate)) {
+                    if (issuedAc.getFirst().getEndValidity().after(currentDate)) {
                         // so the issued AC is not expired
                         // however are we within the threshold
-                        days = ProvisionUtils.daysBetween(currentDate, issuedAc.get(0).getEndValidity());
+                        days = ProvisionUtils.daysBetween(currentDate, issuedAc.getFirst().getEndValidity());
                         generateCertificate =
                                 days < (ldevID ? policySettings.getDevIdReissueThreshold()
                                         : policySettings.getReissueThreshold());

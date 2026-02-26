@@ -284,7 +284,7 @@ public class AttestationCertificateAuthorityServiceTest {
         final BigInteger modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus();
 
         // perform test
-        RSAPublicKey publicKey = (RSAPublicKey) ProvisionUtils.assembleRSAPublicKey(modulus.toByteArray());
+        RSAPublicKey publicKey = ProvisionUtils.assembleRSAPublicKey(modulus.toByteArray());
 
         // assert that the exponent and the modulus are the same. the exponents should be the well
         // known prime, 101
