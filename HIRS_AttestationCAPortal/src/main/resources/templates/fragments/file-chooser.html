@@ -5,10 +5,10 @@
     </a>
 
     <!-- Include modal fragment -->
-    <th:block th:replace="fragments/modal :: modal(
+    <th:block th:replace="~{fragments/modal :: modal(
         id=${id},
         label=${label},
         bodyContent=${bodyContent},
         customFooterButtons=${null}
-        )"></th:block>
+        )}"></th:block>
 </th:block>

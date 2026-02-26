@@ -1,10 +1,11 @@
-# Updated: 10/29/2025
+# Updated: 02/03/2026
 name: Dotnet Provisioner Unit Tests and Packages
 
 on: push
 env:
-  DOTNET_VERSION: 8.0.x
-  DOTNET_MSI_TARGETFRAMEWORK: net8.0
+  DOTNET_VERSION: 10.0.x
+  DOTNET_MSI_TARGETFRAMEWORK: net10.0
+  DOTNET_ROLL_FORWARD: LatestMajor
 jobs:
   test:
     name: Run Unit Tests
@@ -19,7 +20,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -31,13 +32,16 @@ jobs:
       - name: Restore dependencies
         working-directory: HIRS_Provisioner.NET
         run: dotnet restore
+      - name: Restore Tools
+        working-directory: HIRS_Provisioner.NET
+        run: dotnet tool restore
       - name: Build
         working-directory: HIRS_Provisioner.NET
         run: dotnet build
       - name: Test
         working-directory: HIRS_Provisioner.NET
         run: dotnet test
-    
+
   package:
     needs: test
     name: Packages
@@ -47,7 +51,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -56,11 +60,17 @@ jobs:
         run: |
           echo "::remove-matcher owner=csc::"
           echo "::remove-matcher owner=dotnet::"
+      - name: Restore dependencies
+        working-directory: HIRS_Provisioner.NET
+        run: dotnet restore
+      - name: Restore Tools
+        working-directory: HIRS_Provisioner.NET
+        run: dotnet tool restore
       - name: Install Package Tools
         working-directory: HIRS_Provisioner.NET/hirs
         run: |
-          dotnet tool install --global dotnet-deb
-          dotnet tool install --global dotnet-rpm
+          dotnet tool install --global dotnet-deb --allow-roll-forward
+          dotnet tool install --global dotnet-rpm --allow-roll-forward
       - name: Linux Packages
         working-directory: HIRS_Provisioner.NET/hirs
         run: |
@@ -78,7 +88,7 @@ jobs:
           sha256sum HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
           ls -go --full-time HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
       - name: Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dists
           retention-days: 5

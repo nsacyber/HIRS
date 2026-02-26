@@ -1,40 +1,33 @@
 [versions]
-apacheHttpClientVersion = "4.5.14"
-authleteCborVersion = "1.19"
-bouncyCastleVersion = "1.79"
-commonsCodecVersion = "1.17.1"
-commonsIoVersion = "2.18.0"
-commonsLang3Version = "3.17.0"
-gsonVersion = "2.11.0"
+authleteCborVersion = "1.21"
+bouncyCastleVersion = "1.83"
+commonsCodecVersion = "1.20.0"
+commonsIoVersion = "2.21.0"
+commonsLang3Version = "3.20.0"
+gsonVersion = "2.13.2"
 glassfishJakartaJsonVersion = "2.0.1"
-glassfishJaxbRuntimeVersion = "4.0.5"
-guavaVersion = "33.4.0-jre"
-jacksonVersion = "2.18.2"
-jakartaPersistenceApiVersion = "3.1.0"
-jakartaXmlVersion = "4.0.2"
+glassfishJaxbRuntimeVersion = "4.0.6"
+guavaVersion = "33.5.0-jre"
+jacksonVersion = "2.21.0"
+jakartaPersistenceApiVersion = "3.2.0"
+jakartaXmlVersion = "4.0.4"
 jcommanderVersion = "2.0"
 lombokVersion = "1.18.42"
-mariadbVersion = "3.5.1"
+mariadbVersion = "3.5.7"
 minimalJsonVersion = "0.9.5"
-nimbusJwtVersion = "10.0.1"
+nimbusJwtVersion = "10.7"
 pciVersion = "0.3"
-protobufJavaVersion = "4.32.0"
-snakeYamlVersion = "2.0"
-springBootVersion = "3.5.6"
-springFrameworkVersion = "6.2.11"
+protobufJavaVersion = "4.33.5"
+springBootVersion = "4.0.2"
 springRetryVersion = "2.0.12"
-tomcatVersion = "10.1.34"
-thymeleafDialectVersion = "3.3.0"
+thymeleafDialectVersion = "3.4.0"
 
 #test dependencies versions
-hsqldbVersion = "2.7.3"
-jsonPathVersion = "2.9.0"
-junitPlatformLauncherVersion = "1.12.2"
-spotBugAnnotationVersion = "4.8.6"
-xmlunitCoreVersion = "2.10.0"
+hsqldbVersion = "2.7.4"
+junitJupiterVersion = "6.0.2"
+spotBugAnnotationVersion = "4.9.7"
 
 [libraries]
-apacheHttpClient = { module = "org.apache.httpcomponents:httpclient", version.ref = "apacheHttpClientVersion" }
 authlete-cbor = { module = "com.authlete:cbor", version.ref = "authleteCborVersion" }
 bouncycastle = { module = "org.bouncycastle:bcmail-jdk18on", version.ref = "bouncyCastleVersion" }
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commonsCodecVersion" }
@@ -57,28 +50,21 @@ nimbus-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbusJwt
 pci = { module = "com.github.marandus:pci-ids", version.ref = "pciVersion" }
 protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufJavaVersion" }
 protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobufJavaVersion" }
-snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "snakeYamlVersion" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "springBootVersion" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "springBootVersion" }
 spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2", version.ref = "springBootVersion" }
 spring-boot-starter-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf", version.ref = "springBootVersion" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "springBootVersion" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBootVersion" }
-spring-framework-expression = { module = "org.springframework:spring-expression", version.ref = "springFrameworkVersion" }
-spring-framework-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "springFrameworkVersion" }
-spring-framework-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "springFrameworkVersion" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "springRetryVersion" }
 thymeleaf-layout-dialect = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleafDialectVersion" }
-tomcat-embed-core = { module = "org.apache.tomcat.embed:tomcat-embed-core", version.ref = "tomcatVersion" }
-tomcat-embed-websocket = { module = "org.apache.tomcat.embed:tomcat-embed-websocket", version.ref = "tomcatVersion" }
-
 
 # test dependencies
 hsqldb = { module = "org.hsqldb:hsqldb", version.ref = "hsqldbVersion" }
-jsonPath = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonPathVersion" }
-junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformLauncherVersion" }
+junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junitJupiterVersion" }
+junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junitJupiterVersion" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitJupiterVersion" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBootVersion" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version.ref = "spotBugAnnotationVersion" }
-xmlunit-core = { module = "org.xmlunit:xmlunit-core", version.ref = "xmlunitCoreVersion" }
 
 [plugins]

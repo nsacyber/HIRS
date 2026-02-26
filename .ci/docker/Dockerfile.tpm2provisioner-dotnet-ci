@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.description Tools for testing the build and deplo
 
 # Purpose: This image is designed for HIRS Provisioner.Net testing on Rocky 9. It is meant to be used in
 #          the .ci, and does not automatically start the Provisioner upon running the container.
-# Date Modified: 5/31/24
+# Date Modified: 2/20/2026
 # Notes: The image to be built should be named "tpm2provisioner-dotnet-ci:latest".
 #        For local image build, use this command from the /HIRS/ directory to build the image:
 #           $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
@@ -28,7 +28,7 @@ ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-pyt
 #   OS tools
 ENV HIRS_DNF_OS_TOOLS="git sudo vim wget"
 #   ACA compile
-ENV HIRS_DNF_ACA_COMPILE="java-17-openjdk-devel"
+ENV HIRS_DNF_ACA_COMPILE="java-25-openjdk-devel"
 #   ACA run
 ENV HIRS_DNF_ACA_RUN="mariadb-server"
 #   IBM TPM simulator compile
@@ -36,7 +36,7 @@ ENV HIRS_DNF_TPM_COMPILE="tpm2-tools gcc cmake openssl-devel"
 #   IBM TSS compile
 ENV HIRS_DNF_TSS_COMPILE="autoconf automake libtool"
 #   .NET SDK
-ENV HIRS_DNF_DOTNET_SDK="dotnet-sdk-6.0"
+ENV HIRS_DNF_DOTNET_SDK="dotnet-sdk-10.0"
 # Download and install all dependencies at one time
 RUN dnf -y install $(echo "$HIRS_DNF_OS_SETUP") $(echo "$HIRS_DNF_OS_TOOLS") $(echo "$HIRS_DNF_ACA_COMPILE") $(echo "$HIRS_DNF_ACA_RUN") $(echo "$HIRS_DNF_TPM_COMPILE") $(echo "$HIRS_DNF_TSS_COMPILE") $(echo "$HIRS_DNF_DOTNET_SDK")
 
@@ -69,9 +69,9 @@ WORKDIR /hirs
 RUN ./gradlew bootWar
 
 # Install dotnet tools
-RUN dotnet tool install --global dotnet-deb
-RUN dotnet tool install --global dotnet-rpm
-RUN dotnet tool install --global dotnet-zip
+RUN dotnet tool install --global dotnet-deb --allow-roll-forward
+RUN dotnet tool install --global dotnet-rpm --allow-roll-forward
+RUN dotnet tool install --global dotnet-zip --allow-roll-forward
 # Add dotnet PATHs
 ENV PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"
 # Build .NET

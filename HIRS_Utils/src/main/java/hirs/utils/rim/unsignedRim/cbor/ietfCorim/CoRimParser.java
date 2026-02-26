@@ -1,6 +1,21 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim;
 
-import static java.lang.Long.valueOf;
+import com.authlete.cbor.CBORDecoder;
+import com.authlete.cbor.CBORItem;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid.Comid;
+import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.Coswid;
+import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidParser;
+import hirs.utils.rim.unsignedRim.common.IanaHashAlg;
+import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
+import hirs.utils.rim.unsignedRim.common.measurement.MeasurementType;
+import hirs.utils.signature.cose.Cbor.CborTagProcessor;
 
 import java.io.IOException;
 import java.text.Format;
@@ -13,23 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
-import com.authlete.cbor.CBORDecoder;
-import com.authlete.cbor.CBORItem;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
-import hirs.utils.signature.cose.Cbor.CborTagProcessor;
-import hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid.Comid;
-import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.Coswid;
-import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidParser;
-import hirs.utils.rim.unsignedRim.common.IanaHashAlg;
-import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
-import hirs.utils.rim.unsignedRim.common.measurement.MeasurementType;
+import static java.lang.Long.valueOf;
 
 /**
  * Class that parses a Cbor encoded CoRim object. CoRims are defined by IETF. Current version of spec is:
@@ -40,14 +39,17 @@ import hirs.utils.rim.unsignedRim.common.measurement.MeasurementType;
  */
 public class CoRimParser extends CoRim {
     protected List<Comid> comidList = new ArrayList<>();
-    protected List<Coswid> coswidList = new ArrayList<Coswid>();
+    protected List<Coswid> coswidList = new ArrayList<>();
     List<Object[]> dependentRims = new ArrayList<>();
-    /** Contains a list of measurements pertaining to various objects within the CoRIM (CoMID, CoSWID, etc.).
-     * Populated after construction and parsing. */
+    /**
+     * Contains a list of measurements pertaining to various objects within the CoRIM (CoMID, CoSWID, etc.).
+     * Populated after construction and parsing.
+     */
     List<Measurement> measurements = new ArrayList<>();
 
     /**
      * Constructor used to parse Cbor Encoded Corim data.
+     *
      * @param corimData byte arra holding the cbor encoded corim data
      */
     public CoRimParser(final byte[] corimData) {
@@ -222,6 +224,7 @@ public class CoRimParser extends CoRim {
 
     /**
      * Provides a human-readable representation of the CoRim object.
+     *
      * @return String representing the CoRIm object in human-readable form
      */
     public String toString() {
@@ -232,15 +235,15 @@ public class CoRimParser extends CoRim {
         returnString += indent + "Corim tag = " + getTagLabel(getCorimTag()) + " (" + getCorimTag() + ") "
                 + "\n";
         // Iterate through CoMID list
-        final ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-        // Add serializer for hexadecimal byte[] printing
-        final SimpleModule module = new SimpleModule();
-        module.addSerializer(byte[].class, new HexByteArraySerializer());
-        mapper.registerModule(module);
-        // Enable print features
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+        final ObjectMapper mapper = JsonMapper
+                .builder()
+                // Add serializer for hexadecimal byte[] printing
+                .addModule(new SimpleModule().addSerializer(byte[].class, new HexByteArraySerializer()))
+                .enable(SerializationFeature.INDENT_OUTPUT)
+                .defaultPropertyInclusion(JsonInclude.Value.ALL_NON_NULL)
+                .propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE)
+                .build();
+
         for (int currComid = 0; currComid < comidList.size(); currComid++) {
             returnString += indent + "CoMID at index " + currComid + ":" + "\n";
             try {
@@ -263,28 +266,34 @@ public class CoRimParser extends CoRim {
                 }
             }
         } // dependentRims
+
         // Profile
         if (!profile.isEmpty()) {
             returnString += indent + "Profile is: " + profile + "\n";
         }
+
         // Validity
         if ((!notBeforeStr.isEmpty()) || (!notAfterStr.isEmpty())) {
             returnString += indent + "Corim Validity:" + "\n";
         }
+
         if (!notBeforeStr.isEmpty()) {
             returnString += indent + indent + "notBefore: " + notBeforeStr + "\n";
         }
         if (!notAfterStr.isEmpty()) {
             returnString += indent + indent + "notAfter: " + notAfterStr + "\n";
         }
+
         // Process Entity Map
         if (!entityName.isEmpty()) {
             returnString += indent + "Entity Info: " + "\n";
             returnString += indent + indent + "Entity Name: " + entityName + "\n";
         }
+
         if (!entityRegId.isEmpty()) {
             returnString += indent + indent + "Entity Registration ID (URI): " + entityRegId + "\n";
         }
+
         if (!entityRole.isEmpty()) {
             returnString += indent + indent + "Entity Role: " + entityRole + "\n";
         }

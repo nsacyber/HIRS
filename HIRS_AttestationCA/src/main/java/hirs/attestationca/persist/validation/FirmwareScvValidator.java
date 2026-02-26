@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -93,7 +94,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         } else if (measurement == null) {
             measurement = (EventLogMeasurements) referenceManifestRepository
                     .findByHexDecHashAndRimTypeUnarchived(baseReferenceManifest.getEventLogHash(),
-                                                            ReferenceManifest.MEASUREMENT_RIM);
+                            ReferenceManifest.MEASUREMENT_RIM);
 
             if (measurement == null) {
                 measurement = referenceManifestRepository.byMeasurementDeviceNameUnarchived(
@@ -166,7 +167,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             try {
                 keyStore = ValidationService.caCertSetToKeystore(set);
             } catch (Exception e) {
-                log.error("Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
+                log.error("Error building CA chain for "
+                        + Arrays.toString(signingCert.getSubjectKeyIdentifier()) + ": "
                         + e.getMessage());
             }
 
@@ -176,7 +178,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                     certs.add(cac.getX509Certificate());
                 } catch (IOException e) {
                     log.error(
-                            "Error building CA chain for " + signingCert.getSubjectKeyIdentifier() + ": "
+                            "Error building CA chain for "
+                                    + Arrays.toString(signingCert.getSubjectKeyIdentifier()) + ": "
                                     + e.getMessage());
                 }
             }
@@ -330,7 +333,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                     }
                     if (pcrAppraisalStatus.getAppStatus().equals(FAIL)) {
                         pcrAppraisalStatus = new AppraisalStatus(FAIL, String.format("%s%n%s",
-                                pcrAppraisalStatus.getMessage(), sb.toString()));
+                                pcrAppraisalStatus.getMessage(), sb));
                     } else {
                         pcrAppraisalStatus = new AppraisalStatus(FAIL,
                                 sb.toString(), ReferenceManifest.MEASUREMENT_RIM);

@@ -3,9 +3,6 @@ def packVersion = properties.get("packageVersion")
 def jarVersion = properties.get("jarVersion")
 
 configurations {
-    configureEach {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -32,15 +29,14 @@ dependencies {
     implementation libs.spring.boot.starter.log4j2
     implementation libs.minimal.json
     implementation libs.nimbus.jwt
-
     implementation libs.pci
-    // explicitly include the patched version of the apache http client dependency
-    implementation libs.apacheHttpClient
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
     testRuntimeOnly libs.junit.platform.launcher
 
     testImplementation project(path: ':HIRS_AttestationCA')

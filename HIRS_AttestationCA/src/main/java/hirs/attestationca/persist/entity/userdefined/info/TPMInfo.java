@@ -56,7 +56,6 @@ public class TPMInfo implements Serializable {
     @XmlElement
     @XmlJavaTypeAdapter(X509CertificateAdapter.class)
     @Lob
-//    @Type(type = "hirs.data.persist.type.X509CertificateType")
     @JsonIgnore
     private X509Certificate identityCertificate;
 
