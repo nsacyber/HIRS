@@ -1,7 +1,6 @@
 rootProject.name = 'HIRS'
 
 include 'HIRS_Utils',
-        'HIRS_Structs',
         'HIRS_AttestationCA',
         'HIRS_AttestationCAPortal',
         ':tools:tcg_eventlog_tool',

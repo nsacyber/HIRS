@@ -10,7 +10,6 @@ import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
-import hirs.structs.converters.StructConverter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,7 +50,6 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
      * @param supplyChainValidationService   scp service
      * @param privateKey                     the ACA private key
      * @param acaCertificate                 the ACA certificate
-     * @param structConverter                the struct converter
      * @param componentResultRepository      the component result repository
      * @param componentInfoRepository        the component info repository
      * @param certificateRepository          the certificate manager
@@ -68,7 +66,6 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey,
             @Qualifier("leafACACert") final X509Certificate acaCertificate,
-            final StructConverter structConverter,
             final ComponentResultRepository componentResultRepository,
             final ComponentInfoRepository componentInfoRepository,
             final CertificateRepository certificateRepository,
@@ -79,8 +76,8 @@ public class RestfulAttestationCertificateAuthority extends AttestationCertifica
             @Value("${aca.certificates.validity}") final int validDays,
             final PolicyRepository policyRepository,
             final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository) {
-        super(supplyChainValidationService, privateKey, acaCertificate, structConverter,
-                componentResultRepository, componentInfoRepository,
+        super(supplyChainValidationService, privateKey, acaCertificate, componentResultRepository,
+                componentInfoRepository,
                 certificateRepository, issuedCertificateRepository,
                 referenceManifestRepository,
                 validDays, deviceRepository,

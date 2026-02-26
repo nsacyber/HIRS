@@ -10,7 +10,6 @@ import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
-import hirs.structs.converters.StructConverter;
 import lombok.extern.log4j.Log4j2;
 
 import java.security.PrivateKey;
@@ -32,12 +31,6 @@ public abstract class AttestationCertificateAuthority {
      * Container wired ACA certificate.
      */
     private final X509Certificate acaCertificate;
-
-    /**
-     * Container wired {@link StructConverter} to be used in
-     * serialization / deserialization of TPM data structures.
-     */
-    private final StructConverter structConverter;
 
     /**
      * A handle to the service used to validate the supply chain.
@@ -67,7 +60,6 @@ public abstract class AttestationCertificateAuthority {
      * @param supplyChainValidationService   the supply chain service
      * @param privateKey                     the ACA private key
      * @param acaCertificate                 the ACA certificate
-     * @param structConverter                the struct converter
      * @param componentResultRepository      the component result manager
      * @param componentInfoRepository        the component info manager
      * @param certificateRepository          the certificate manager
@@ -82,7 +74,6 @@ public abstract class AttestationCertificateAuthority {
     public AttestationCertificateAuthority(
             final SupplyChainValidationService supplyChainValidationService,
             final PrivateKey privateKey, final X509Certificate acaCertificate,
-            final StructConverter structConverter,
             final ComponentResultRepository componentResultRepository,
             final ComponentInfoRepository componentInfoRepository,
             final CertificateRepository certificateRepository,
@@ -96,7 +87,6 @@ public abstract class AttestationCertificateAuthority {
         this.supplyChainValidationService = supplyChainValidationService;
         this.privateKey = privateKey;
         this.acaCertificate = acaCertificate;
-        this.structConverter = structConverter;
         this.componentResultRepository = componentResultRepository;
         this.componentInfoRepository = componentInfoRepository;
         this.certificateRepository = certificateRepository;

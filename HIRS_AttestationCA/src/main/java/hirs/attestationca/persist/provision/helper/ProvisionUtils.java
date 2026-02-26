@@ -3,19 +3,11 @@ package hirs.attestationca.persist.provision.helper;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
-import hirs.attestationca.persist.exceptions.CertificateProcessingException;
 import hirs.attestationca.persist.exceptions.IdentityProcessingException;
 import hirs.attestationca.persist.exceptions.UnexpectedServerException;
-import hirs.structs.converters.SimpleStructBuilder;
-import hirs.structs.elements.aca.SymmetricAttestation;
-import hirs.structs.elements.tpm.EncryptionScheme;
-import hirs.structs.elements.tpm.IdentityRequest;
-import hirs.structs.elements.tpm.SymmetricKey;
-import hirs.structs.elements.tpm.SymmetricKeyParams;
 import hirs.utils.HexUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import javax.crypto.BadPaddingException;
@@ -37,7 +29,6 @@ import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.CertificateEncodingException;
@@ -147,6 +138,7 @@ public final class ProvisionUtils {
      *
      * @param certificate the X509 certificate to be converted to PEM encoding
      * @return the string representing the PEM encoded certificate
+     * @throws {@link UnexpectedServerException} if error occurs during encoding retrieval
      */
     public static String getPemEncodedCertificate(final X509Certificate certificate) {
         try {
@@ -221,97 +213,6 @@ public final class ProvisionUtils {
             throw new UnexpectedServerException(
                     "Encountered unexpected error creating public key: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * Will attempt to decrypt the asymmetric blob that originated from an
-     * {@link hirs.structs.elements.tpm.IdentityRequest} using the cipher transformation.
-     *
-     * @param asymmetricBlob to be decrypted
-     * @param scheme         to decrypt with
-     * @param privateKey     cipher private key
-     * @return decrypted blob
-     */
-    public static byte[] decryptAsymmetricBlob(final byte[] asymmetricBlob,
-                                               final EncryptionScheme scheme,
-                                               final PrivateKey privateKey) {
-        try {
-            // create a cipher from the specified transformation
-            Cipher cipher = Cipher.getInstance(scheme.toString());
-
-            if (scheme == EncryptionScheme.OAEP) {
-                OAEPParameterSpec spec =
-                        new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
-                                new PSource.PSpecified("".getBytes(StandardCharsets.UTF_8)));
-
-                cipher.init(Cipher.PRIVATE_KEY, privateKey, spec);
-            } else {
-                // initialize the cipher to decrypt using the ACA private key.
-                cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            }
-
-            cipher.update(asymmetricBlob);
-
-            return cipher.doFinal();
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException
-                 | BadPaddingException | IllegalBlockSizeException
-                 | InvalidAlgorithmParameterException e) {
-            throw new IdentityProcessingException(
-                    "Encountered error while decrypting asymmetric blob of an identity request: "
-                            + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Will attempt to decrypt the symmetric blob that originated from an
-     * {@link hirs.structs.elements.tpm.IdentityRequest} using the specified symmetric key
-     * and cipher transformation.
-     *
-     * @param symmetricBlob  to be decrypted
-     * @param symmetricKey   to use to decrypt
-     * @param iv             to use with decryption cipher
-     * @param transformation of the cipher
-     * @return decrypted symmetric blob
-     */
-    public static byte[] decryptSymmetricBlob(final byte[] symmetricBlob, final byte[] symmetricKey,
-                                              final byte[] iv, final String transformation) {
-        try {
-            // create a cipher from the specified transformation
-            Cipher cipher = Cipher.getInstance(transformation);
-
-            // generate a key specification to initialize the cipher
-            SecretKeySpec keySpec = new SecretKeySpec(symmetricKey, "AES");
-
-            // initialize the cipher to decrypt using the symmetric key
-            cipher.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(iv));
-
-            // decrypt the symmetric blob
-            return cipher.doFinal(symmetricBlob);
-        } catch (IllegalBlockSizeException | InvalidKeyException | NoSuchAlgorithmException
-                 | BadPaddingException | NoSuchPaddingException
-                 | InvalidAlgorithmParameterException exception) {
-            log.error("Encountered error while decrypting symmetric blob of an identity request: "
-                    + exception.getMessage(), exception);
-        }
-
-        return new byte[0];
-    }
-
-    /**
-     * Generates a symmetric key.
-     *
-     * @return a symmetric key
-     */
-    public static SymmetricKey generateSymmetricKey() {
-        // create a session key for the CA contents
-        byte[] responseSymmetricKey =
-                generateRandomBytes(DEFAULT_IV_SIZE);
-
-        // create a symmetric key struct for the CA contents
-        return new SimpleStructBuilder<>(SymmetricKey.class)
-                .set("algorithmId", SymmetricKey.ALGORITHM_AES)
-                .set("encryptionScheme", SymmetricKey.SCHEME_CBC)
-                .set("key", responseSymmetricKey).build();
     }
 
     /**
@@ -405,128 +306,6 @@ public final class ProvisionUtils {
             throw new IdentityProcessingException(
                     "Encountered error while making the identity claim challenge: "
                             + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Generate asymmetric contents part of the identity response.
-     *
-     * @param identityKey identity requests symmetric contents, otherwise, the identity proof
-     * @param sessionKey  identity response session key
-     * @param publicKey   of the EK certificate contained within the identity proof
-     * @return encrypted asymmetric contents
-     */
-    public static byte[] generateAsymmetricContents(final byte[] identityKey,
-                                                    final byte[] sessionKey,
-                                                    final PublicKey publicKey) {
-        try {
-            // create a SHA1 digest of the identity key
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            md.update(identityKey);
-
-            // generate the digest
-            byte[] identityDigest = md.digest();
-
-            // combine the session key with the digest of the identity key
-            byte[] asymmetricContents = ArrayUtils.addAll(sessionKey, identityDigest);
-
-            // encrypt the asymmetric contents and return
-            OAEPParameterSpec oaepSpec =
-                    new OAEPParameterSpec("Sha1", "MGF1", MGF1ParameterSpec.SHA1,
-                            new PSource.PSpecified("TCPA".getBytes(StandardCharsets.UTF_8)));
-
-            // initialize the asymmetric cipher using the default OAEP transformation
-            Cipher cipher = Cipher.getInstance(EncryptionScheme.OAEP.toString());
-
-            // initialize the cipher using the public spec with the additional OAEP specification
-            cipher.init(Cipher.PUBLIC_KEY, publicKey, oaepSpec);
-
-            return cipher.doFinal(asymmetricContents);
-        } catch (NoSuchAlgorithmException | IllegalBlockSizeException | NoSuchPaddingException
-                 | InvalidKeyException | BadPaddingException
-                 | InvalidAlgorithmParameterException e) {
-            throw new CertificateProcessingException(
-                    "Encountered error while generating ACA session key: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Extracts the IV from the identity request. That is, take the first block of data from the
-     * symmetric blob and treat that as the IV. This modifies the original symmetric block.
-     *
-     * @param identityRequest to extract the IV from
-     * @return the IV from the identity request
-     */
-    public static byte[] extractInitialValue(final IdentityRequest identityRequest) {
-        // make a reference to the symmetric blob
-        byte[] symmetricBlob = identityRequest.getSymmetricBlob();
-
-        // create the IV
-        byte[] iv = new byte[DEFAULT_IV_SIZE];
-
-        // initialize a new symmetric blob with the length of the original minus the IV
-        byte[] updatedBlob = new byte[symmetricBlob.length - iv.length];
-
-        // copy the IV out of the original symmetric blob
-        System.arraycopy(symmetricBlob, 0, iv, 0, iv.length);
-
-        // copy everything but the IV out of the original blob into the new blob
-        System.arraycopy(symmetricBlob, iv.length, updatedBlob, 0, updatedBlob.length);
-
-        // reassign the symmetric blob to the request.
-        identityRequest.setSymmetricBlob(updatedBlob);
-
-        return iv;
-    }
-
-    /**
-     * Generate the Identity Response using the identity credential and the session key.
-     *
-     * @param credential   the identity credential
-     * @param symmetricKey generated session key for this request/response chain
-     * @return identity response for an identity request
-     */
-    public static SymmetricAttestation generateAttestation(final X509Certificate credential,
-                                                           final SymmetricKey symmetricKey) {
-        try {
-            // initialize the symmetric cipher
-            Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-
-            // generate a key specification to initialize the cipher
-            SecretKeySpec keySpec = new SecretKeySpec(symmetricKey.getKey(), "AES");
-
-            // fill IV with random bytes
-            byte[] credentialIV = generateRandomBytes(DEFAULT_IV_SIZE);
-
-            // create IV encryption parameter specification
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(credentialIV);
-
-            // initialize the cipher to decrypt using the symmetric key
-            aesCipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParameterSpec);
-
-            // encrypt the credential
-            byte[] encryptedCredential = aesCipher.doFinal(credential.getEncoded());
-
-            // prepend the IV to the encrypted credential
-            byte[] credentialBytes = ArrayUtils.addAll(credentialIV, encryptedCredential);
-
-            // create attestation for identity response that contains the credential
-
-            return new SimpleStructBuilder<>(SymmetricAttestation.class)
-                    .set("credential", credentialBytes)
-                    .set("algorithm",
-                            new SimpleStructBuilder<>(SymmetricKeyParams.class)
-                                    .set("algorithmId", SymmetricKeyParams.ALGORITHM_AES)
-                                    .set("encryptionScheme",
-                                            SymmetricKeyParams.SCHEME_CBC_PKCS5PADDING)
-                                    .set("signatureScheme", 0).build()).build();
-
-        } catch (BadPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException
-                 | InvalidKeyException | InvalidAlgorithmParameterException | NoSuchPaddingException
-                 | CertificateEncodingException exception) {
-            throw new CertificateProcessingException(
-                    "Encountered error while generating Identity Response: "
-                            + exception.getMessage(), exception);
         }
     }
 
