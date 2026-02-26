@@ -417,11 +417,11 @@ public final class ProvisionUtils {
                                                          final byte[] secret) {
 
         // generate a random 32 byte seed
-        byte[] seed = generateRandomBytes(SEED_LENGTH);
+        //byte[] seed = generateRandomBytes(SEED_LENGTH);
 
         try {
             // encrypt seed with endorsement ECC Public Key
-            Cipher asymCipher = Cipher.getInstance("");
+            // Cipher asymCipher = Cipher.getInstance("");
 
         } catch (Exception e) {
             throw new IdentityProcessingException(
