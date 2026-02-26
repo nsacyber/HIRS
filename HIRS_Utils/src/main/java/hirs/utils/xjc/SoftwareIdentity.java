@@ -170,6 +170,8 @@ public class SoftwareIdentity
      * {@link JAXBElement }{@code <}{@link ResourceCollection }{@code >}
      * {@link Element }
      * {@link JAXBElement }{@code <}{@link Evidence }{@code >}
+     *
+     * @return list of objects
      */
     public List<Object> getEntityOrEvidenceOrLink() {
         if (entityOrEvidenceOrLink == null) {

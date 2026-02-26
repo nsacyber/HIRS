@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK event per PFP.
  *
- * <p>
+ * <pre>
  * typedef union tdDEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK {
  * .     UINT16                  SpdmVersion;
  * .     UINT8                   SpdmMeasurementBlockCount;
@@ -21,8 +21,8 @@ import java.util.List;
  * .     UINT32                  SpdmMeasurementHashAlgo;
  * .     SPDM_MEASUREMENT_BLOCK  SpdmMeasurementBlock[SpdmMeasurementBlockCount];
  * } DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK;
- * <p>
- * <p>
+ * </pre>
+ * <pre>
  * SpdmMeasurementBlock is an array of SPDM_MEASUREMENT_BLOCKs
  * .  The size of each block is the same and can be found by either:
  * .      1) 4 + SpdmMeasurementBlock MeasurementSize
@@ -30,6 +30,7 @@ import java.util.List;
  * .      2) 4 + hash length of the hash algorithm found in
  * .             DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK SpdmMeasurementHashAlgo
  * .      where 4 is the size of the SpdmMeasurementBlock header
+ * </pre>
  */
 public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends DeviceSecurityEventDataSubHeader {
 
@@ -37,21 +38,25 @@ public class DeviceSecurityEventDataSubHeaderSpdmMeasurementBlock extends Device
      * List of SPDM Measurement Blocks.
      */
     private final List<SpdmMeasurementBlock> spdmMeasurementBlockList;
+
     /**
      * SPDM version.
      */
     @Getter
     private int spdmVersion = 0;
+
     /**
      * SPDM measurement block count.
      */
     @Getter
     private int spdmMeasurementBlockCount = 0;
+
     /**
      * SPDM measurement hash algorithm.
      */
     @Getter
     private int spdmMeasurementHashAlgo = -1;
+
     /**
      * Error reading SPDM Measurement Block.
      */

@@ -18,10 +18,11 @@ public class TcgCompRimCoswidBuilder extends CoswidBuilder {
     /**
      * Holds the TCG Component RIM Coswid.
      */
-    private TcgCompRimCoswid tcRim = new TcgCompRimCoswid();
+    private final TcgCompRimCoswid tcRim = new TcgCompRimCoswid();
 
     /**
      * Constructor for the Component Rim Builder.
+     *
      * @param config TcgComponentRimConfig config created from a json file.
      */
     public TcgCompRimCoswidBuilder(final TcgCompRimCoswidConfig config) {
@@ -41,7 +42,9 @@ public class TcgCompRimCoswidBuilder extends CoswidBuilder {
 
     /**
      * Writes a TCG Component RIM Coswid object to a file.
+     *
      * @param fileName file to hold the new TCG Component rim
+     * @throws IOException if any issues arise attempting to create a TCG Component RIM
      */
     public void createTcgComponentRim(final String fileName) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -56,6 +59,7 @@ public class TcgCompRimCoswidBuilder extends CoswidBuilder {
 
     /**
      * Creates a TCG Component RIM Coswid object.
+     *
      * @param out ByteArrayOutputStream to wite the object to
      */
     public void initTcgRim(final ByteArrayOutputStream out) {

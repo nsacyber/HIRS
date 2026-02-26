@@ -70,6 +70,8 @@ public class Directory
      * Objects of the following type(s) are allowed in the list
      * {@link Directory }
      * {@link File }
+     *
+     * @return list of file system items
      */
     public List<FilesystemItem> getDirectoryOrFile() {
         if (directoryOrFile == null) {

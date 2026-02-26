@@ -17,7 +17,7 @@ import jakarta.xml.bind.annotation.XmlType;
  * <p>Java class for Use.
  *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * <p>
+ *
  * <pre>
  * &lt;simpleType name="Use">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}NMTOKEN">
@@ -31,8 +31,6 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlType(name = "Use", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 @XmlEnum
 public enum Use {
-
-
     /**
      * The [Link]'d software is absolutely required for installation
      */

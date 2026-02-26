@@ -71,6 +71,7 @@ public class CoswidBuilder extends Coswid {
      *
      * @param out Byte array to write Coswid data to
      * @return updated Byte array.
+     * @throws IOException if an I/O error occurs during the COSWID data creation.
      */
     public ByteArrayOutputStream createCoswidData(final ByteArrayOutputStream out) throws IOException {
         initCoswid(out);
@@ -85,6 +86,7 @@ public class CoswidBuilder extends Coswid {
      * Note 1398229316 is the IANA CBOR Tag for coswid
      *
      * @param fileName File name to place the encoded Coswid data
+     * @throws IOException if an I/O error occurs during the creation of the COSWID data.
      */
     public void createCoswidData(final String fileName) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -411,7 +413,8 @@ public class CoswidBuilder extends Coswid {
      * hash-value: bytes,
      * ]
      * where hash-alg-id value is defined by Iana :
-     * https://www.iana.org/assignments/named-information/named-information.xhtml
+     * <a href="https://www.iana.org/assignments/named-information/named-information.xhtml">
+     * named-information </a>
      *
      * @param out  ByteArrayOutputStream to add the tagid into.
      * @param hash String holding the text representation of the hash value

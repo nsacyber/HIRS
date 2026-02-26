@@ -13,6 +13,15 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Repository interface for managing {@link ReferenceManifest} entities in the database.
+ *
+ * <p>
+ * The {@link ReferenceManifestRepository} interface extends {@link JpaRepository} to provide basic CRUD operations,
+ * including save, find, delete, and query methods. Custom query methods can be defined
+ * using Spring Data JPA's query method naming conventions or with the Query annotation.
+ * </p>
+ */
 @Repository
 public interface ReferenceManifestRepository extends JpaRepository<ReferenceManifest, UUID> {
     /**
@@ -229,6 +238,7 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
 
     /**
      * Query that retrieves a page of base and support reference manifests and pageable value.
+     *
      * @param pageable pageable
      * @return a page of reference manifests
      */

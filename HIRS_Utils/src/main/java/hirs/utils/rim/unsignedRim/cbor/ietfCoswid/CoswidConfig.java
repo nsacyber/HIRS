@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.nio.file.Files;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Map;
 
 /**
@@ -16,10 +16,12 @@ import java.util.Map;
 @NoArgsConstructor
 public class CoswidConfig extends Coswid {
     protected JsonNode rootNode = null;
+
     /**
      * Constructor that takes in a filename and runs a validation on the config file.
+     *
      * @param filename name of the Json formatted configration file.
-     * @throws IOException  if parsing errrors are encountered.
+     * @throws IOException if parsing errrors are encountered.
      */
     public CoswidConfig(final String filename) throws IOException {
         try {
@@ -48,7 +50,8 @@ public class CoswidConfig extends Coswid {
     /**
      * Initializes Class variables based upon a JsonNode object.
      * Used by inherited classes to fill in Coswid variables from a json node
-     * @param initNode
+     *
+     * @param initNode initial node
      */
     protected void init(final JsonNode initNode) {
         lang = rootNode.path(CoswidItems.LANG_STR).asText();

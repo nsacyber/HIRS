@@ -3,7 +3,6 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.service.PolicyPageService;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.PolicyPageModel;
 import hirs.attestationca.portal.page.params.NoPageParams;

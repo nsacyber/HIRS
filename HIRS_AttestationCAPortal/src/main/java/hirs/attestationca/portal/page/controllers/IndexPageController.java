@@ -1,7 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;

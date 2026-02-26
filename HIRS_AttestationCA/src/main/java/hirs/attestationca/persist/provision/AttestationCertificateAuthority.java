@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.persist.provision;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
@@ -9,8 +9,6 @@ import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
-import hirs.attestationca.persist.provision.CertificateRequestProcessor;
-import hirs.attestationca.persist.provision.IdentityClaimProcessor;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import lombok.extern.log4j.Log4j2;
 
@@ -115,7 +113,7 @@ public abstract class AttestationCertificateAuthority {
      * @param identityClaim a byte array representation of the identity claim
      * @return processed identity claim response
      */
-    byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
+    public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
         return this.identityClaimHandler.processIdentityClaimTpm2(identityClaim);
     }
 
@@ -125,7 +123,7 @@ public abstract class AttestationCertificateAuthority {
      * @param certificateRequest a byte array representation of the certificate request
      * @return processed certificate request response
      */
-    byte[] processCertificateRequest(final byte[] certificateRequest) {
+    public byte[] processCertificateRequest(final byte[] certificateRequest) {
         return this.certificateRequestHandler.processCertificateRequest(certificateRequest);
     }
 

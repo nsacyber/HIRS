@@ -60,7 +60,7 @@ docker exec -i $aca_container mysql -u root -proot -D hirs_db -e "Update PolicyS
 clearAcaDb() {
 docker exec -i $aca_container mysql -u root -proot -e "use hirs_db; set foreign_key_checks=0; truncate Appraiser;
  truncate Certificate;truncate Issued_Attestation_Platform_Join_Table;truncate CertificatesUsedToValidate;truncate ComponentAttributeResult;
- truncate ComponentInfo;truncate ComponentResult;truncate Device;truncate DeviceInfoReport;truncate PortalInfo;
+ truncate ComponentInfo;truncate ComponentResult;truncate Device;truncate DeviceInfoReport;
  truncate ReferenceDigestValue;truncate ReferenceManifest;truncate Report;truncate SupplyChainValidation;
  truncate SupplyChainValidationSummary;truncate SupplyChainValidationSummary_SupplyChainValidation;
  truncate TPM2ProvisionerState;set foreign_key_checks=1;"

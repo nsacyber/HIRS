@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
  * .     UINT16                          DataSize;
  * .     UINT8                           Data[DataSize];
  * } NV_INDEX_DYNAMIC_EVENT_LOG_DATA;
- * <p>
  */
 public class NvIndexDynamicEventLogData {
 

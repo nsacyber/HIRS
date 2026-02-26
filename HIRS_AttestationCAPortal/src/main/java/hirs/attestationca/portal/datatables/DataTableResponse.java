@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.datatables;
 
-import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

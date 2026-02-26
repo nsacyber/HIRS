@@ -489,7 +489,8 @@ public abstract class Certificate extends ArchivableEntity {
      * found in various RFCs.
      *
      * @param certificate the certificate holding subject DNs
-     * @return IOException if there is an issue decoding the subject DNs
+     * @return subject distinguished name
+     * @throws IOException if there is an issue decoding the subject DNs
      */
     public static String getSubjectDNString(final X509Certificate certificate)
             throws IOException {
@@ -509,7 +510,8 @@ public abstract class Certificate extends ArchivableEntity {
      * in various RFCs.
      *
      * @param certificate the certificate holding issuer DNs
-     * @return IOException if there is an issue decoding the issuer DNs
+     * @return issuer distinguished name
+     * @throws IOException if there is an issue decoding the issuer distinguished names
      */
     public static String getIssuerDNString(final X509Certificate certificate)
             throws IOException {

@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.service;
 
-import hirs.attestationca.persist.DBServiceException;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
@@ -12,8 +11,10 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import hirs.attestationca.persist.exceptions.DBServiceException;
+import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
+import hirs.attestationca.persist.util.CredentialHelper;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
-import hirs.attestationca.persist.validation.SupplyChainValidatorException;
 import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
@@ -36,7 +37,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -306,7 +306,7 @@ public class ReferenceManifestDetailsPageService {
             KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
             try {
                 List<X509Certificate> truststore =
-                        convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
+                        CredentialHelper.convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
                                 Collections.emptySet(),
                                 caCertificateRepository));
                 referenceManifestValidator.setTrustStore(truststore);
@@ -554,20 +554,4 @@ public class ReferenceManifestDetailsPageService {
                 || eventType == EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY
                 || eventType == EvConstants.EV_EFI_SPDM_DEVICE_POLICY;
     }
-
-    /**
-     * This method converts a Set of CertificateAuthorityCredentials to a List of X509Certificates.
-     *
-     * @param set of CACs to convert
-     * @return list of X509Certificates
-     */
-    private List<X509Certificate> convertCACsToX509Certificates(final Set<CertificateAuthorityCredential> set)
-            throws IOException {
-        List<X509Certificate> certs = new ArrayList<>(set.size());
-        for (CertificateAuthorityCredential cac : set) {
-            certs.add(cac.getX509Certificate());
-        }
-        return certs;
-    }
-
 }

@@ -91,6 +91,8 @@ public class SignaturePropertyType {
      * {@link Object }
      * {@link Element }
      * {@link String }
+     *
+     * @return list of objects
      */
     public List<Object> getContent() {
         if (content == null) {

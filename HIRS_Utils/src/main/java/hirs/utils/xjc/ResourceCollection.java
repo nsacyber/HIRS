@@ -80,6 +80,8 @@ public class ResourceCollection
      * {@link File }
      * {@link Process }
      * {@link Resource }
+     *
+     * @return list of {@link Meta} objects
      */
     public List<Meta> getDirectoryOrFileOrProcess() {
         if (directoryOrFileOrProcess == null) {

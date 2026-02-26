@@ -39,6 +39,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Service class responsible for validating platform credentials, endorsement credentials, firmware
+ * components and other types of data based on what was set in the {@link PolicySettings}.
+ */
 @Log4j2
 public final class ValidationService {
 
@@ -133,6 +137,7 @@ public final class ValidationService {
      * @param ignoreRevisionAttribute      whether to ignore revision attribute
      * @param ignorePcieVpdAttribute       whether to ignore the pcie vpd attribute
      * @return a supply chain validation
+     * @throws IOException if any issues arise while evaluating the platform credential attributes
      */
     public static SupplyChainValidation evaluatePCAttributesStatus(
             final PlatformCredential platformCredential, final DeviceInfoReport deviceInfoReport,

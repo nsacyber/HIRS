@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.persist.entity.userdefined;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

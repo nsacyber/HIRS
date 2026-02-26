@@ -78,6 +78,8 @@ public class ManifestType {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link ReferenceType }
+     *
+     * @return list of {@link ReferenceType}
      */
     public List<ReferenceType> getReference() {
         if (reference == null) {

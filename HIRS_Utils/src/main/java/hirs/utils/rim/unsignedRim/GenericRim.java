@@ -14,12 +14,12 @@ import java.util.List;
  * <li>SIGTYPE_COSE: IETF RFC 9052 defined CBOR Signatures
  *     (https://datatracker.ietf.org/doc/html/rfc9052)</li>
  * <li>SIGTYPE_DSIG: W3C Defined Signatures for XML (https://www.w3.org/TR/xmldsig-core1/)</li>
- * </ul></p>
+ * </ul>
  * <p>Unsigned RIM Types used for PC
  * <ul>
  *   <li>RIMTYPE_PCRIM: TCG Defined PC Client RIM which uses SWID</li>
  *   <li>RIMTYPE_COMP_SWID: TCG Component-RIM which uses SWID</li>
- * </ul></p>
+ * </ul>
  * <p>Unsigned RIM Types used for PC Components
  * <ul>
  *   <li>RIMTYPE_COSWID: IETF RFC 9393 defined CoSWID (Concise SWID) tags</li>
@@ -27,7 +27,6 @@ import java.util.List;
  *   <li>RIMTYPE_CORIM_COMID: IETF CoRIM (Concise RIM) which envelopes a comid</li>
  *   <li>RIMTYPE_CORIM_COSWID: IETF CoRIM which envelopes a CoSWID</li>
  * </ul>
- * </p>
  */
 public interface GenericRim {
 
@@ -137,7 +136,7 @@ public interface GenericRim {
     /**
      * Returns a list of Measurement objects for given RIM identifier that were found in payload (if any).
      *
-     * @return List<Measurement> that holds the reference measurements
+     * @return list of reference measurements
      */
     List<Measurement> getReferenceMeasurements();
 

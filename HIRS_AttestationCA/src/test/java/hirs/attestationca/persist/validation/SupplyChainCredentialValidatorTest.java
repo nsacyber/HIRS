@@ -22,6 +22,7 @@ import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
 import hirs.utils.enums.DeviceInfoEnums;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;

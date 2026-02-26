@@ -7,6 +7,15 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Repository interface for managing {@link ComponentResult} entities in the database.
+ *
+ * <p>
+ * The {@link ComponentResultRepository} interface extends {@link JpaRepository} to provide basic CRUD operations,
+ * including save, find, delete, and query methods. Custom query methods can be defined
+ * using Spring Data JPA's query method naming conventions or with the Query annotation.
+ * </p>
+ */
 @Repository
 public interface ComponentResultRepository extends JpaRepository<ComponentResult, UUID> {
 

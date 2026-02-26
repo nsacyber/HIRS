@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
  * .    UINT8[6]                        Reserved;
  * .    DEVICE_SECURITY_EVENT_DATA2     Data;
  * } NV_INDEX_INSTANCE_EVENT_LOG_DATA;
- * <p>
  */
 public class NvIndexInstanceEventLogData {
 

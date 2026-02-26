@@ -17,7 +17,7 @@ import jakarta.xml.bind.annotation.XmlType;
  * <p>Java class for Ownership.
  *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * <p>
+ *
  * <pre>
  * &lt;simpleType name="Ownership">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}NMTOKEN">
@@ -31,8 +31,6 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlType(name = "Ownership", namespace = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd")
 @XmlEnum
 public enum Ownership {
-
-
     /**
      * Determines the relative strength of ownership of the target
      * piece of software.

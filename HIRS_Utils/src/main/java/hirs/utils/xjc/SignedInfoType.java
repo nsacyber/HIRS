@@ -91,6 +91,8 @@ public class SignedInfoType {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link ReferenceType }
+     *
+     * @return list of reference types
      */
     public List<ReferenceType> getReference() {
         if (reference == null) {
