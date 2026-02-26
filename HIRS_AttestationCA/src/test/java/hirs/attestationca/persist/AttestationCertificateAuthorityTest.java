@@ -2,6 +2,7 @@ package hirs.attestationca.persist;
 
 import com.google.protobuf.ByteString;
 import hirs.attestationca.persist.provision.AbstractProcessor;
+import hirs.attestationca.persist.provision.AttestationCertificateAuthority;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.utils.HexUtils;
 import org.apache.commons.codec.binary.Hex;
