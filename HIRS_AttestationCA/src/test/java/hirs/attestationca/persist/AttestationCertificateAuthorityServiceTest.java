@@ -18,7 +18,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -177,11 +176,9 @@ public class AttestationCertificateAuthorityServiceTest {
     /**
      * Tests {@link AttestationCertificateAuthorityService#processCertificateRequest(byte[])}
      * where the byte array is null or empty. Expects an {@link IllegalArgumentException} to be thrown.
-     *
-     * @throws GeneralSecurityException if any issues arise while processing the certificate request
      */
     @Test
-    public void testProcessCertificateRequestNullOrEmptyRequest() throws GeneralSecurityException {
+    public void testProcessCertificateRequestNullOrEmptyRequest() {
         final String expectedExceptionMsg = "The CertificateRequest sent by the client cannot be null or empty.";
 
         // test 1: test null certificate request
@@ -212,11 +209,9 @@ public class AttestationCertificateAuthorityServiceTest {
     /**
      * Tests {@link AttestationCertificateAuthorityService#processCertificateRequest(byte[])}
      * where the byte array is invalid. Expects a {@link CertificateProcessingException} to be thrown.
-     *
-     * @throws GeneralSecurityException if any issues arise while processing the certificate request
      */
     @Test
-    public void testProcessCertificateRequestProcessorDeserializationError() throws GeneralSecurityException {
+    public void testProcessCertificateRequestProcessorDeserializationError() {
         final String expectedExceptionMsg = "Could not deserialize Protobuf Certificate Request object";
 
         final byte[] badCertificateRequest = {0, 0, 0, 0, 0, 1, 0, 0};
@@ -234,11 +229,9 @@ public class AttestationCertificateAuthorityServiceTest {
 
     /**
      * Tests {@link AttestationCertificateAuthorityService#processCertificateRequest(byte[])}.
-     *
-     * @throws GeneralSecurityException if any issues arise while processing the certificate request
      */
     @Test
-    public void testProcessCertificateRequest() throws GeneralSecurityException {
+    public void testProcessCertificateRequest() {
         final byte[] certificateRequest = {0, 1, 0, 1};
 
         final byte[] expectedCertificateResponse = {1, 1, 1, 1};

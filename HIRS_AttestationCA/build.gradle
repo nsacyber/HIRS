@@ -10,7 +10,6 @@ configurations {
 
 dependencies {
     implementation project(':HIRS_Utils')
-    implementation project(':HIRS_Structs')
 
     implementation libs.bouncycastle
     implementation libs.commons.codec

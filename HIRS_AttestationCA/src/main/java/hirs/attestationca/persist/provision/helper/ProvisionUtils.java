@@ -25,7 +25,6 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -37,10 +36,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
-import java.security.spec.ECPublicKeySpec;
-import java.security.spec.EllipticCurve;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
@@ -89,7 +85,7 @@ public final class ProvisionUtils {
 
     private static final int DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES = 256;
 
-    private static final int DEFAULT_ECC_LENGTH = 0;
+    private static final int DEFAULT_ECC_CURVE_LENGTH_IN_BYTES = 32;
 
     // Constants used to parse out the ak name from the ak public data. Used in generateAkName
     private static final String AK_NAME_PREFIX = "000b";
@@ -161,19 +157,18 @@ public final class ProvisionUtils {
 
     /**
      * Parses a public key from a byte array and returns it as a generic PublicKey.
-     * Supports RSA and EC (Elliptic Curve) keys.
+     * Currently supports RSA and ECC.
      *
      * @param publicKeyAlgorithm public key algorithm
      * @param keyBytes           the DER-encoded public key bytes
      * @return the parsed PublicKey instance
-     * @throws GeneralSecurityException if the key cannot be parsed
      */
     public static PublicKey parsePublicKeyFromPublicDataSegment(final PublicKeyAlgorithm publicKeyAlgorithm,
-                                                                final byte[] keyBytes) throws GeneralSecurityException {
+                                                                final byte[] keyBytes) {
         return switch (publicKeyAlgorithm) {
             case RSA -> parseRSAKeyFromPublicDataSegment(keyBytes);
             case ECC -> parseECCKeyFromPublicDataSegment(keyBytes);
-            default -> throw new GeneralSecurityException("Unsupported or invalid public key");
+            default -> throw new UnsupportedOperationException("Unsupported or invalid public key algorithm");
         };
     }
 
@@ -184,37 +179,30 @@ public final class ProvisionUtils {
      * @return the RSA public key of the supplied public data
      */
     public static RSAPublicKey parseRSAKeyFromPublicDataSegment(final byte[] publicAreaSegment) {
-        final int publicAreaLen = publicAreaSegment.length;
+        final int publicAreaSegmentLen = publicAreaSegment.length;
 
-        if (publicAreaLen < DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES) {
-            throw new IllegalArgumentException("EK or AK public data segment is not long enough");
+        if (publicAreaSegmentLen < DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES) {
+            final String errorMsg = "Could not parse RSA Public Key due to public data segment not being long enough.";
+            log.error(errorMsg);
+            throw new IllegalArgumentException(errorMsg);
         }
 
         // public data ends with 256 byte modulus
         byte[] modulus =
-                HexUtils.subarray(publicAreaSegment, publicAreaLen - DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES,
-                        publicAreaLen - 1);
+                HexUtils.subarray(publicAreaSegment, publicAreaSegmentLen - DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES,
+                        publicAreaSegmentLen - 1);
         return (RSAPublicKey) assembleRSAPublicKey(modulus);
-    }
-
-    /**
-     * Constructs an RSA public key where the modulus is in raw form.
-     *
-     * @param modulus in byte array form
-     * @return RSA public key using specific modulus and the well known exponent
-     */
-    public static PublicKey assembleRSAPublicKey(final byte[] modulus) {
-        return assembleRSAPublicKey(Hex.encodeHexString(modulus));
     }
 
     /**
      * Constructs an RSA public key where the modulus is Hex encoded.
      *
-     * @param modulus hex encoded modulus
+     * @param modulus in byte array form
      * @return RSA public key using specific modulus and the well known exponent
      */
-    public static PublicKey assembleRSAPublicKey(final String modulus) {
-        return assembleRSAPublicKey(new BigInteger(modulus, DEFAULT_IV_SIZE));
+    public static PublicKey assembleRSAPublicKey(final byte[] modulus) {
+        final String modulusHexString = Hex.encodeHexString(modulus);
+        return assembleRSAPublicKey(new BigInteger(modulusHexString, DEFAULT_IV_SIZE));
     }
 
     /**
@@ -229,7 +217,7 @@ public final class ProvisionUtils {
 
         // create the RSA public key
         try {
-            KeyFactory keyFactory = KeyFactory.getInstance(PublicKeyAlgorithm.RSA.getAlgorithmName());
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new UnexpectedServerException(
@@ -245,49 +233,75 @@ public final class ProvisionUtils {
      * @return the ECC public key of the supplied public data
      */
     public static ECPublicKey parseECCKeyFromPublicDataSegment(final byte[] publicAreaSegment) {
-        //final int pubLen = publicArea.length;
+        final int publicAreaSegmentLen = publicAreaSegment.length;
 
-        final BigInteger x = new BigInteger("0");
-        final BigInteger y = new BigInteger("0");
-
-        return assembleECCPublicKey(new ECPoint(x, y));
-    }
-
-    /**
-     * todo
-     *
-     * @param ecPoint
-     * @return
-     */
-    public static ECPublicKey assembleECCPublicKey(final ECPoint ecPoint) {
-        BigInteger a = new BigInteger("0");
-        BigInteger b = new BigInteger("0");
-
-        EllipticCurve ellipticCurve = new EllipticCurve(null, a, b);
-        ECParameterSpec ecParameterSpec = null;
-
-        return (ECPublicKey) assembleECCPublicKey(ecPoint, ecParameterSpec);
-    }
-
-    /**
-     * todo
-     *
-     * @param ecpoint
-     * @param ecParameterSpec
-     * @return
-     */
-    public static PublicKey assembleECCPublicKey(final ECPoint ecpoint, final ECParameterSpec ecParameterSpec) {
-        final ECPublicKeySpec ecPublicKeySpec = new ECPublicKeySpec(ecpoint, ecParameterSpec);
-
-        // create the ECC public key
-        try {
-            KeyFactory keyFactory = KeyFactory.getInstance(PublicKeyAlgorithm.ECC.getAlgorithmName());
-            return keyFactory.generatePublic(ecPublicKeySpec);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new UnexpectedServerException(
-                    "Encountered unexpected error creating ECC public key: " + e.getMessage(), e);
+        if (publicAreaSegmentLen > DEFAULT_ECC_CURVE_LENGTH_IN_BYTES) {
+            final String errorMsg = "Could not parse ECC Public Key due to public data segment not being long enough.";
+            log.error(errorMsg);
+            throw new IllegalArgumentException(errorMsg);
         }
+
+//        final BigInteger x = new BigInteger("0");
+//        final BigInteger y = new BigInteger("0");
+
+        return new ECPublicKey() {
+            @Override
+            public ECPoint getW() {
+                return null;
+            }
+
+            @Override
+            public String getAlgorithm() {
+                return "";
+            }
+
+            @Override
+            public String getFormat() {
+                return "";
+            }
+
+            @Override
+            public byte[] getEncoded() {
+                return new byte[0];
+            }
+        };
     }
+
+//    /**
+//     * todo
+//     *
+//     * @param ecPoint
+//     * @return
+//     */
+//    public static ECPublicKey assembleECCPublicKey(final ECPoint ecPoint) {
+//        BigInteger a = new BigInteger("0");
+//        BigInteger b = new BigInteger("0");
+//
+//        EllipticCurve ellipticCurve = new EllipticCurve(null, a, b);
+//        ECParameterSpec ecParameterSpec = null;
+//
+//        return (ECPublicKey) assembleECCPublicKey(ecPoint, ecParameterSpec);
+//    }
+//
+//    /**
+//     * todo
+//     *
+//     * @param ecpoint
+//     * @param ecParameterSpec
+//     * @return
+//     */
+//    public static PublicKey assembleECCPublicKey(final ECPoint ecpoint, final ECParameterSpec ecParameterSpec) {
+//        final ECPublicKeySpec ecPublicKeySpec = new ECPublicKeySpec(ecpoint, ecParameterSpec);
+//
+//        // create the ECC public key
+//        try {
+//            KeyFactory keyFactory = KeyFactory.getInstance(PublicKeyAlgorithm.ECC.getAlgorithmName());
+//            return keyFactory.generatePublic(ecPublicKeySpec);
+//        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+//            throw new UnexpectedServerException(
+//                    "Encountered unexpected error creating ECC public key: " + e.getMessage(), e);
+//        }
+//    }
 
     /**
      * Performs the first step of the TPM 2.0 identity claim process. Takes an ek, ak, and secret

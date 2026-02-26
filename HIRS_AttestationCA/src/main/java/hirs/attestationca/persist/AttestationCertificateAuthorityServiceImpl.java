@@ -6,8 +6,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.GeneralSecurityException;
-
 /**
  * Service layer class responsible for handling both certificate and identity claim requests made by the provisioner.
  */
@@ -47,7 +45,7 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
      * @param certificateRequest a byte array representation of the certificate request
      * @return processed certificate request response
      */
-    public byte[] processCertificateRequest(final byte[] certificateRequest) throws GeneralSecurityException {
+    public byte[] processCertificateRequest(final byte[] certificateRequest) {
         return this.certificateRequestProcessor.processCertificateRequest(certificateRequest);
     }
 

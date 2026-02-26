@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -94,7 +93,7 @@ public class CertificateRequestProcessor extends AbstractProcessor {
      *                           claim handshake
      * @return a certificateResponse containing the signed certificate
      */
-    public byte[] processCertificateRequest(final byte[] certificateRequest) throws GeneralSecurityException {
+    public byte[] processCertificateRequest(final byte[] certificateRequest) {
         log.info("Certificate Request has been received and is ready to be processed");
 
         if (ArrayUtils.isEmpty(certificateRequest)) {

@@ -55,8 +55,7 @@ public class AttestationCertificateAuthorityRestController {
      */
     @ResponseBody
     @PostMapping(value = "/request-certificate-tpm2", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest)
-            throws GeneralSecurityException {
+    public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest) {
         return this.attestationCertificateAuthorityService.processCertificateRequest(certificateRequest);
     }
 

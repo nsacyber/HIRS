@@ -32,7 +32,7 @@ public enum PublicKeyAlgorithm {
     /**
      * ECC Public Key Algorithm.
      */
-    ECC("EC", ECPublicKey.class),
+    ECC("ECC", ECPublicKey.class),
 
     /**
      * Represents an unknown public key algorithm.
