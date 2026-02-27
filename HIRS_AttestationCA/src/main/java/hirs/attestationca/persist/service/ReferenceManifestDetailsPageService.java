@@ -149,8 +149,6 @@ public class ReferenceManifestDetailsPageService {
                 gptTable = true;
             } else if (contentStr.contains("BootOrder")) {
                 bootOrder = true;
-            } else if (contentStr.contains("Boot0000")) {
-                defaultBootDevice = true;
             } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + " PK")) {
                 pk = true;
             } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + " KEK")) {
