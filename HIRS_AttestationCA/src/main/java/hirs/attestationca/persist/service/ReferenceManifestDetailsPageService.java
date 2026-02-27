@@ -19,6 +19,7 @@ import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
+import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,7 +129,8 @@ public class ReferenceManifestDetailsPageService {
         for (TpmPcrEvent tpe : eventList) {
             contentStr = tpe.getEventContentStr();
             // check for specific events
-            if (contentStr.contains("CRTM")) {
+            if (contentStr.contains("CRTM")
+                || contentStr.contains("IBB")) {
                 crtm = true;
             } else if (contentStr.contains("shimx64.efi")
                     || contentStr.contains("bootmgfw.efi")) {
@@ -147,13 +149,11 @@ public class ReferenceManifestDetailsPageService {
                 gptTable = true;
             } else if (contentStr.contains("BootOrder")) {
                 bootOrder = true;
-            } else if (contentStr.contains("Boot0000")) {
-                defaultBootDevice = true;
-            } else if (contentStr.contains("variable named PK")) {
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + " PK")) {
                 pk = true;
-            } else if (contentStr.contains("variable named KEK")) {
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + " KEK")) {
                 kek = true;
-            } else if (contentStr.contains("variable named db")) {
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + " db")) {
                 if (contentStr.contains("dbx")) {
                     forbiddenDbx = true;
                 } else {

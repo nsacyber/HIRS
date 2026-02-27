@@ -1,643 +1,591 @@
-<!--<my:page>-->
-<!--    <jsp:attribute name="style">-->
-<!--        <link type="text/css" rel="stylesheet" href="${common}/certificate_details.css"/>-->
-<!--        <link type="text/css" rel="stylesheet" href="${common}/rim_details.css"/>-->
-<!--    </jsp:attribute>-->
-<!--    <jsp:attribute name="pageHeaderTitle">-->
-<!--    <c:choose>-->
-<!--        <c:when test="${initialData.rimType=='Measurement'}">-->
-<!--            <c:if test="${initialData.validationResult=='PASS'}">-->
-<!--                TCG Log events-->
-<!--            </c:if>-->
-<!--            <c:if test="${initialData.validationResult=='FAIL'}">-->
-<!--                TCG Log event(s) not found in the RIM DB-->
-<!--            </c:if>-->
-<!--        </c:when>-->
-<!--        <c:otherwise>-->
-<!--            ${initialData.rimType} Reference Integrity Manifest-->
-<!--            <a href="${portal}/reference-manifests/download?id=${param.id}">-->
-<!--                <img src="${icons}/ic_file_download_black_24dp.png" title="Download ${initialData.rimType} RIM">-->
-<!--            </a>-->
-<!--        </c:otherwise>-->
-<!--    </c:choose>-->
-<!--    </jsp:attribute>-->
-<!--    <jsp:body>-->
-<!--        <c:set var="passIcon" value="${icons}/ic_checkbox_marked_circle_black_green_24dp.png"/>-->
-<!--        <c:set var="failIcon" value="${icons}/ic_error_red_24dp.png"/>-->
-<!--        <c:set var="signatureValidText" value="Signature valid!"/>-->
-<!--        <c:set var="signatureInvalidText" value="Signature not valid!"/>-->
-<!--        <c:set var="supportRimHashValidText" value="Support RIM hash valid!"/>-->
-<!--        <c:set var="supportRimHashInvalidText" value="Support RIM hash not valid!"/>-->
-<!--        <div id="certificate-details-page" class="container-fluid">-->
-<!--            <c:choose>-->
-<!--                <c:when test="${initialData.rimType=='Support' || (initialData.rimType=='Measurement' && initialData.validationResult=='PASS')}">-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1"><span class="colHeader">Additional<br />RIM Info</span></div>-->
-<!--                        <div class="col col-md-8">-->
-<!--                            <c:choose>-->
-<!--                                <c:when test="${not empty initialData.associatedRim}">-->
-<!--                                    <a href="${portal}/rim-details?id=${initialData.associatedRim}">-->
-<!--                                        ${initialData.tagId}-->
-<!--                                    </a>-->
-<!--                                    <c:if test="${not empty initialData.hostName}">-->
-<!--                                        <div>Device:&nbsp;<span>${initialData.hostName}</span></div>-->
-<!--                                    </c:if>-->
-<!--                                    <c:if test="${not empty initialData.supportId}">-->
-<!--                                        <div>Support:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.supportId}">${initialData.supportFilename}</a></span>-->
-<!--                                        </div>-->
-<!--                                    </c:if>-->
-<!--                                </c:when>-->
-<!--                                <c:otherwise>-->
-<!--                                    <div class="component col col-md-10" style="color: red; padding-left: 20px">RIM not uploaded from the ACA RIM Page</div>-->
-<!--                                </c:otherwise>-->
-<!--                            </c:choose>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    <c:if test="${not initialData.swidBase}">-->
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-1 col-md-offset-1">-->
-<!--                                <span class="colHeader">RIM Type</span>-->
-<!--                            </div>-->
-<!--                            <div id="baseRim" class="col col-md-8">-->
-<!--                                <c:if test="${initialData.swidCorpus}">-->
-<!--                                    <div>SWID Corpus</div>-->
-<!--                                </c:if>-->
-<!--                                <c:if test="${initialData.swidPatch}">-->
-<!--                                    <div>SWID Patch</div>-->
-<!--                                </c:if>-->
-<!--                                <c:if test="${initialData.swidSupplemental}">-->
-<!--                                    <div>SWID Supplemental</div>-->
-<!--                                </c:if>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-1 col-md-offset-1">-->
-<!--                            <span class="colRimHeader">-->
-<!--                                <a role="button" data-toggle="collapse" class="collapsed" href="#eventOptions"-->
-<!--                                   aria-expanded="true" data-placement="top" aria-controls="eventOptions">-->
-<!--                                    Event Summary-->
-<!--                                </a>-->
-<!--                            </span>-->
-<!--                        </div>-->
-<!--                        <div id="eventsCol" class="col col-md-8">-->
-<!--                            <div id="eventOptions" class="collapse" class="collapsed" aria-expanded="false">-->
-<!--                                <ul>-->
-<!--                                    <c:choose>-->
-<!--                                        <c:when test="${initialData.rimType=='Support'}">-->
-<!--                                            <li>This Support RIM file covers the following critical items:</li>-->
-<!--                                        </c:when>-->
-<!--                                        <c:otherwise>-->
-<!--                                            <li>This Event Log file covers the following critical items:</li>-->
-<!--                                        </c:otherwise>-->
-<!--                                    </c:choose>-->
-<!--                                    <ul>-->
-<!--                                        <c:if test="${initialData.crtm || initialData.bootManager || initialData.osLoader || initialData.osKernel}">-->
-<!--                                            <li>PC Client Boot path</li>-->
-<!--                                        </c:if>-->
-<!--                                        <ul>-->
-<!--                                            <c:if test="${initialData.crtm}">-->
-<!--                                                <li>Software Core Root of Trust for Measurement (SRTM)</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.bootManager}">-->
-<!--                                                <li>Boot Manager</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.osLoader}">-->
-<!--                                                <li>OS Loader</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.osKernel}">-->
-<!--                                                <li>OS Kernel</li>-->
-<!--                                            </c:if>-->
-<!--                                        </ul>-->
-<!--                                        <c:if test="${initialData.acpiTables || initialData.smbiosTables || initialData.gptTable || initialData.defaultBootDevice}">-->
-<!--                                            <li>Device Configuration</li>-->
-<!--                                        </c:if>-->
-<!--                                        <ul>-->
-<!--                                            <c:if test="${initialData.acpiTables}">-->
-<!--                                                <li>ACPI Tables</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.smbiosTables}">-->
-<!--                                                <li>SMBIOS Tables</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.gptTable}">-->
-<!--                                                <li>GPT Table</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.bootOrder}">-->
-<!--                                                <li>Boot Order</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.defaultBootDevice}">-->
-<!--                                                <li>Default boot device</li>-->
-<!--                                            </c:if>-->
-<!--                                        </ul>-->
-<!--                                        <c:if test="${initialData.secureBoot || initialData.pk || initialData.kek || initialData.sigDb || initialData.forbiddenDbx}">-->
-<!--                                            <li>Secure Boot Variables</li>-->
-<!--                                        </c:if>-->
-<!--                                        <ul>-->
-<!--                                            <c:if test="${initialData.secureBoot}">-->
-<!--                                                <li>Secure Boot Enabled</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.pk}">-->
-<!--                                                <li>Platform Key (PK)</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.kek}">-->
-<!--                                                <li>Key Exchange Key (KEK)</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.sigDb}">-->
-<!--                                                <li>Signature Database (db)</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${initialData.forbiddenDbx}">-->
-<!--                                                <li>Forbidden Signatures Database (dbx)</li>-->
-<!--                                            </c:if>-->
-<!--                                        </ul>-->
-<!--                                    </ul>-->
-<!--                                </ul>-->
-<!--                                <ul>-->
-<!--                                    <c:choose>-->
-<!--                                        <c:when test="${initialData.rimType=='Support'}">-->
-<!--                                            <li>This Support RIM file covers the following critical items:</li>-->
-<!--                                        </c:when>-->
-<!--                                        <c:otherwise>-->
-<!--                                            <li>This Event Log file covers the following critical items:</li>-->
-<!--                                        </c:otherwise>-->
-<!--                                    </c:choose>-->
-<!--                                    <ul>-->
-<!--                                        <c:if test="${not initialData.crtm || not initialData.bootManager || not initialData.osLoader || not initialData.osKernel}">-->
-<!--                                            <li>PC Client Boot path</li>-->
-<!--                                        </c:if>-->
-<!--                                        <ul>-->
-<!--                                            <c:if test="${not initialData.crtm}">-->
-<!--                                                <li>Software Core Root of Trust for Measurement (SRTM)</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.bootManager}">-->
-<!--                                                <li>Boot Manager</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.osLoader}">-->
-<!--                                                <li>OS Loader</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.osKernel}">-->
-<!--                                                <li>OS Kernel</li>-->
-<!--                                            </c:if>-->
-<!--                                        </ul>-->
-<!--                                        <c:if test="${not initialData.acpiTables || not initialData.smbiosTables || not initialData.gptTable || not initialData.bootOrder || not initialData.defaultBootDevice}">-->
-<!--                                            <li>Device Configuration</li>-->
-<!--                                        </c:if>-->
-<!--                                        <ul>-->
-<!--                                            <c:if test="${not initialData.acpiTables}">-->
-<!--                                                <li>ACPI Tables</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.smbiosTables}">-->
-<!--                                                <li>SMBIOS Tables</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.gptTable}">-->
-<!--                                                <li>GPT Table</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.bootOrder}">-->
-<!--                                                <li>Boot Order</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.defaultBootDevice}">-->
-<!--                                                <li>Default boot device</li>-->
-<!--                                            </c:if>-->
-<!--                                        </ul>-->
-<!--                                        <c:if test="${not initialData.secureBoot || not initialData.pk || not initialData.kek || not initialData.sigDb || not initialData.forbiddenDbx}">-->
-<!--                                            <li>Secure Boot Variables</li>-->
-<!--                                        </c:if>-->
-<!--                                        <ul>-->
-<!--                                            <c:if test="${not initialData.secureBoot}">-->
-<!--                                                <li>Secure Boot Enabled</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.pk}">-->
-<!--                                                <li>Platform Key (PK)</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.kek}">-->
-<!--                                                <li>Key Exchange Key (KEK)</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.sigDb}">-->
-<!--                                                <li>Signature Database (db)</li>-->
-<!--                                            </c:if>-->
-<!--                                            <c:if test="${not initialData.forbiddenDbx}">-->
-<!--                                                <li>Forbidden Signatures Database (dbx)</li>-->
-<!--                                            </c:if>-->
-<!--                                        </ul>-->
-<!--                                    </ul>-->
-<!--                                </ul>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--        </div>-->
-<!--        <div id="tableDivTag">-->
-<!--            <input type="text" id="eventInput" onkeyup="eventSearch(null)" placeholder="Search for text..." /><br />-->
-<!--            <table id="eventLog">-->
-<!--                <thead>-->
-<!--                <tr class="header">-->
-<!--                    <th>Event #</th>-->
-<!--                    <th>PCR Index</th>-->
-<!--                    <th style="width: 20%">Event Type</th>-->
-<!--                    <th>Digest</th>-->
-<!--                    <th style="width: 50%">Event Content</th>-->
-<!--                </tr>-->
-<!--                </thead>-->
-<!--                <tbody>-->
-<!--                <c:if test="${not empty initialData.events}">-->
-<!--                    <c:set var="count" value="1" scope="page"/>-->
-<!--                    <c:forEach items="${initialData.events}" var="event">-->
-<!--                        <c:choose>-->
-<!--                            <c:when test="${event.isError()}">-->
-<!--                                <tr style="background: tomato">-->
-<!--                            </c:when>-->
-<!--                            <c:otherwise>-->
-<!--                                <tr>-->
-<!--                            </c:otherwise>-->
-<!--                        </c:choose>-->
-<!--                        <td style="width: 75px">${count}</td>-->
-<!--                        <td class="pcrCell">PCR${event.getPcrIndex()}</td>-->
-<!--                        <td>${event.getEventTypeStr()}</td>-->
-<!--                        <td class="digestCell">${event.getEventDigestStr()}</td>-->
-<!--                        <td title="${event.getEventContentStr()}"><div style="height: 50px; overflow: auto">${event.getEventContentStr()}</div></td>-->
-<!--                        </tr>-->
-<!--                        <c:set var="count" value="${count + 1}" scope="page"/>-->
-<!--                    </c:forEach>-->
-<!--                </c:if>-->
-<!--                </tbody>-->
-<!--            </table>-->
-<!--        </div>-->
-<!--        <div class="col-md-a col-md-offset-1"><span class="colHeader">${initialData.events.size()} entries</span></div>-->
-<!--        </c:when>-->
-<!--        <c:when test="${initialData.rimType=='Measurement' && initialData.validationResult=='FAIL'}">-->
-<!--            <div style="display: inline">-->
-<!--                <div class="row">-->
-<!--                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">Base/Support</span></div>-->
-<!--                    <div id="measurements" class="col col-md-8">-->
-<!--                        <div>Download Measurement:&nbsp;-->
-<!--                            <span>-->
-<!--                                    <a href="${portal}/reference-manifests/download?id=${param.id}">-->
-<!--                                        BIOS Measurements-->
-<!--                                    </a>-->
-<!--                                </span>-->
-<!--                        </div>-->
-<!--                        <c:if test="${not empty initialData.hostName}">-->
-<!--                            <div>Device:&nbsp;<span>${initialData.hostName}</span>-->
-<!--                            </div>-->
-<!--                        </c:if>-->
-<!--                        <c:if test="${not empty initialData.tagId}">-->
-<!--                            <div>Base:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.associatedRim}">${initialData.tagId}</a></span>-->
-<!--                            </div>-->
-<!--                        </c:if>-->
-<!--                        <c:if test="${not empty initialData.supportId}">-->
-<!--                            <div>Support:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.supportId}">${initialData.supportFilename}</a></span>-->
-<!--                            </div>-->
-<!--                        </c:if>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <br />-->
-<!--                <div class="row" style="margin: auto 260px auto 125px">-->
-<!--                    <div class="panel panel-default" style="flex: 1">-->
-<!--                        <div class="panel-heading">Client Log</div>-->
-<!--                        <c:if test="${not empty initialData.livelogEvents}">-->
-<!--                            <c:set var="iterator" value="0" scope="page"/>-->
-<!--                            <c:forEach items="${initialData.livelogEvents}" var="lEvent">-->
-<!--                                <div>-->
-<!--                                    <div style="display: flex; background: lightgray;">-->
-<!--                                        <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">Failed Event Digest:<br />-->
-<!--                                        </div>-->
-<!--                                        <div style="display: flex 2; margin: 2px auto 2px 25px">-->
-<!--                                            <span class="mappedData">PCR Index:</span> ${lEvent.getPcrIndex()}<br />-->
-<!--                                            <span class="mappedData">Digest:</span> ${lEvent.getEventDigestStr()}<br />-->
-<!--                                            <span class="mappedData">Event Content:</span> ${lEvent.getEventContentStr()}-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                                <div style="display: flex;">-->
-<!--                                    <div class="mappedButton">-->
-<!--                                        Expected Events from RIM DB:<br />-->
-<!--                                        <span style="word-wrap: break-word"><a role="button" data-toggle="collapse" href="#eventContent${iterator}">${lEvent.getEventTypeString()}</a></span>-->
-<!--                                    </div>-->
-<!--                                    <div id="eventContent${iterator}" class="panel-collapse collapse in" style="flex: 2">-->
-<!--                                        <c:forEach items="${initialData.eventTypeMap}" var="mappedDigest">-->
-<!--                                            <c:if test="${mappedDigest.key == lEvent.getEventDigestStr()}">-->
-<!--                                                <c:set var="event" value="${mappedDigest.value}" scope="page"/>-->
-<!--                                                <c:forEach items="${mappedDigest.value}" var="event">-->
-<!--                                                    <div class="mappedOverhead">-->
-<!--                                                        <div><span class="mappedData">PCR Index:</span> ${event.getPcrIndex()}</div>-->
-<!--                                                        <div><span class="mappedData">Digest:</span> ${event.getEventDigestStr()}</div>-->
-<!--                                                        <div><span class="mappedData">Event Content:</span> ${event.getEventContentStr()}</div>-->
-<!--                                                    </div>-->
-<!--                                                </c:forEach>-->
-<!--                                            </c:if>-->
-<!--                                        </c:forEach>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                                <c:set var="iterator" value="${iterator+1}" scope="page"/>-->
-<!--                            </c:forEach>-->
-<!--                        </c:if>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </c:when>-->
-<!--        <c:when test="${initialData.rimType=='Base'}">-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Software Identity</span></div>-->
-<!--                <div id="softwareIdentity" class="col col-md-8">-->
-<!--                    <div>SWID Name:&nbsp;<span>${initialData.swidName}</span></div>-->
-<!--                    <div>SWID Version:&nbsp;<span>${initialData.swidVersion}</span></div>-->
-<!--                    <div>SWID Tag ID:&nbsp;<span>${initialData.swidTagId}</span></div>-->
-<!--                    <div>SWID Tag Version:&nbsp;<span>${initialData.swidTagVersion}</span></div>-->
-<!--                    <c:if test="${initialData.swidCorpus}">-->
-<!--                        <div>SWID Corpus:&nbsp;<span><img src="${icons}/ic_checkbox_marked_circle_black_green_24dp.png" title="Corpus Flag"></span>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${initialData.swidPatch}">-->
-<!--                        <div>SWID Patch:&nbsp;<span><img src="${icons}/ic_checkbox_marked_circle_black_green_24dp.png" title="Patch Flag"></span>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${initialData.swidSupplemental}">-->
-<!--                        <div>SWID Supplemental:&nbsp;<span><img src="${icons}/ic_checkbox_marked_circle_black_green_24dp.png" title="Supplemental Flag"></span>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Entity</span></div>-->
-<!--                <div id="entity" class="col col-md-8">-->
-<!--                    <div>Entity Name:&nbsp;<span>${initialData.entityName}</span></div>-->
-<!--                    <c:if test="${not empty initialData.entityRegId}">-->
-<!--                        <div>Entity Reg ID:&nbsp;<span>${initialData.entityRegId}</span></div>-->
-<!--                    </c:if>-->
-<!--                    <div>Entity Role:&nbsp;<span>${initialData.entityRole}</span></div>-->
-<!--                    <div>Entity Thumbprint:&nbsp;<span>${initialData.entityThumbprint}</span></div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Link</span></div>-->
-<!--                <div id="link" class="col col-md-8">-->
-<!--                    <c:if test="${not empty initialData.linkHref}">-->
-<!--                        <div>-->
-<!--                                <span>-->
-<!--                                    <c:choose>-->
-<!--                                        <c:when test="${not empty initialData.linkHrefLink}">-->
-<!--                                            <a href="${portal}/rim-details?id=${initialData.linkHrefLink}" rel="${initialData.linkRel}">${initialData.linkHref}</a>-->
-<!--                                        </c:when>-->
-<!--                                        <c:otherwise>-->
-<!--                                            <a href="${initialData.linkHref}" rel="${initialData.linkRel}">${initialData.linkHref}</a>-->
-<!--                                        </c:otherwise>-->
-<!--                                    </c:choose>-->
-<!--                                </span>-->
-<!--                        </div>-->
-<!--                        <div>Rel:&nbsp;<span>${initialData.linkRel}</span>-->
-<!--                        </div>-->
-<!--                    </c:if>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Meta</span></div>-->
-<!--                <div id="link" class="col col-md-8">-->
-<!--                    <div>Platform Manufacturer ID:&nbsp;<span>${initialData.platformManufacturerId}</span></div>-->
-<!--                    <div>Platform Manufacturer:&nbsp;<span>${initialData.platformManufacturer}</span></div>-->
-<!--                    <div>Platform Model:&nbsp;<span>${initialData.platformModel}</span></div>-->
-<!--                    <c:if test="${not empty initialData.platformVersion}">-->
-<!--                        <div>Platform Version:&nbsp;<span>${initialData.platformVersion}</span></div>-->
-<!--                    </c:if>-->
-<!--                    <div>Colloquial Version:&nbsp;<span>${initialData.colloquialVersion}</span></div>-->
-<!--                    <div>Edition:&nbsp;<span>${initialData.edition}</span></div>-->
-<!--                    <div>Product:&nbsp;<span>${initialData.product}</span></div>-->
-<!--                    <div>Revision:&nbsp;<span>${initialData.revision}</span></div>-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 
-<!--                    <c:if test="${not empty initialData.payloadType}">-->
-<!--                        <div>Payload Type:&nbsp;<span>${initialData.payloadType}</span></div>-->
-<!--                    </c:if>-->
-<!--                    <div>Binding Spec:&nbsp;<span>${initialData.bindingSpec}</span></div>-->
-<!--                    <div>Binding Spec Version:&nbsp;<span>${initialData.bindingSpecVersion}</span></div>-->
-<!--                    <c:if test="${not empty initialData.pcUriGlobal}">-->
-<!--                        <div>PC URI Global:&nbsp;<span>${initialData.pcUriGlobal}</span></div>-->
-<!--                    </c:if>-->
-<!--                    <c:if test="${not empty initialData.pcUriLocal}">-->
-<!--                        <div>PC URI Local:&nbsp;<span>${initialData.pcUriLocal}</span></div>-->
-<!--                    </c:if>-->
-<!--                    <c:choose>-->
-<!--                        <c:when test="${not empty initialData.rimLinkId}">-->
-<!--                            <div>Rim Link Hash:&nbsp;<span><a href="${portal}/rim-details?id=${initialData.rimLinkId}">${initialData.rimLinkHash}</a></span>-->
-<!--                        </c:when>-->
-<!--                        <c:otherwise>-->
-<!--                            <div>Rim Link Hash:&nbsp;<span>${initialData.rimLinkHash}</span>-->
-<!--                        </c:otherwise>-->
-<!--                    </c:choose>-->
-<!--                    <c:if test="${not empty initialData.rimLinkHash}">-->
-<!--                            <span>-->
-<!--                                <c:choose>-->
-<!--                                <c:when test="${initialData.linkHashValid}">-->
-<!--                                    <img src="${passIcon}" title="SWID Tag exist.">-->
-<!--                                </c:when>-->
-<!--                                <c:otherwise>-->
-<!--                                    <img src="${failIcon}" title="SWID Tag doesn't exist.">-->
-<!--                                </c:otherwise>-->
-<!--                                </c:choose>-->
-<!--                            </span>-->
-<!--                    </c:if>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Payload/Support RIM(s)</span></div>-->
-<!--                <div id="platformConfiguration" class="col col-md-8">-->
-<!--                    <div class="panel panel-default">-->
-<!--                        <div class="panel-heading" role="tab" id="headingOne">-->
-<!--                            <h4 class="panel-title">-->
-<!--                                <a role="button" data-toggle="collapse" data-parent="#platformConfiguration" class="collapsed"-->
-<!--                                   href="#directorycollapse" aria-expanded="true" aria-controls="directorycollapse">-->
-<!--                                    Directory-->
-<!--                                </a>-->
-<!--                            </h4>-->
-<!--                        </div>-->
-<!--                        <div id="directorycollapse" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" aria-expanded="true">-->
-<!--                            <div class="panel-body">-->
-<!--                                <div class="panel-heading" role="tab" id="headingThree">-->
-<!--                                    <h3 class="panel-title">-->
-<!--                                        <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"-->
-<!--                                           href="#filescollapse" aria-expanded="false" aria-controls="filescollapse">-->
-<!--                                            Files-->
-<!--                                        </a>-->
-<!--                                    </h3>-->
-<!--                                </div>-->
-<!--                                <div id="filescollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">-->
-<!--                                    <c:if test="${not empty initialData.swidFiles}">-->
-<!--                                        <div id="componentIdentifier" class="row">-->
-<!--                                            <c:forEach items="${initialData.swidFiles}" var="resource">-->
-<!--                                                <div class="component col col-md-10" style="padding-left: 20px">-->
-<!--                                                    <div class="panel panel-default">-->
-<!--                                                        <div class="panel-heading">-->
-<!--                                                                <span data-toggle="tooltip" data-placement="top" title="Resource File">-->
-<!--                                                                    <c:choose>-->
-<!--                                                                        <c:when test="${not empty initialData.associatedRim}">-->
-<!--                                                                            <a href="${portal}/rim-details?id=${initialData.associatedRim}">${resource.getName()}</a>-->
-<!--                                                                            <c:choose>-->
-<!--                                                                                <c:when test="${not empty initialData.supportRimHashValid}">-->
-<!--                                                                                    <img src="${passIcon}" title="${supportRimHashValidText}"/>-->
-<!--                                                                                </c:when>-->
-<!--                                                                                <c:otherwise>-->
-<!--                                                                                    <img src="${failIcon}" title="${supportRimHashInvalidText}"/>-->
-<!--                                                                                </c:otherwise>-->
-<!--                                                                            </c:choose>-->
-<!--                                                                        </c:when>-->
-<!--                                                                        <c:otherwise>-->
-<!--                                                                            ${resource.getName()}-->
-<!--                                                                        </c:otherwise>-->
-<!--                                                                    </c:choose>-->
-<!--                                                                </span>-->
-<!--                                                        </div>-->
-<!--                                                        <div class="component col col-md-10">-->
-<!--                                                            <span class="fieldHeader">File Size:</span>-->
-<!--                                                            <span class="fieldValue">${resource.getSize()}</span><br/>-->
-<!--                                                            <span class="fieldHeader">Hash:</span>-->
-<!--                                                            <span class="fieldValue" style="overflow-wrap: break-word">${resource.getHashValue()}</span><br/>-->
-<!--                                                            <c:if test="${not empty resource.getRimFormat()}">-->
-<!--                                                                <span class="fieldHeader">RIM Format:</span>-->
-<!--                                                                <span class="fieldValue">${resource.getRimFormat()}</span><br/>-->
-<!--                                                            </c:if>-->
-<!--                                                            <c:if test="${not empty resource.getRimType()}">-->
-<!--                                                                <span class="fieldHeader">RIM Type:</span>-->
-<!--                                                                <span class="fieldValue">${resource.getRimType()}</span><br/>-->
-<!--                                                            </c:if>-->
-<!--                                                            <c:if test="${not empty resource.getRimUriGlobal()}">-->
-<!--                                                                <span class="fieldHeader">URI Global:</span>-->
-<!--                                                                <span class="fieldValue">${resource.getRimUriGlobal()}</span><br/>-->
-<!--                                                            </c:if>-->
-<!--                                                        </div>-->
-<!--                                                        <c:choose>-->
-<!--                                                            <c:when test="${not empty initialData.pcrList}">-->
-<!--                                                                <div class="component col col-md-10">-->
-<!--                                                                    <div class="panel-body">-->
-<!--                                                                        <div class="component" role="tab" id="pcrValues">-->
-<!--                                                                            <a role="button" data-toggle="collapse" data-parent="#directorycollapse" class="collapsed"-->
-<!--                                                                               href="#pcrscollapse" aria-expanded="false" aria-controls="pcrscollapse">-->
-<!--                                                                                Expected PCR Values-->
-<!--                                                                            </a>-->
-<!--                                                                        </div>-->
-<!--                                                                        <div id="pcrscollapse" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree" aria-expanded="true">-->
-<!--                                                                            <div>-->
-<!--                                                                                <c:set var="count" value="0" scope="page"/>-->
-<!--                                                                                <c:forEach items="${initialData.pcrList}" var="pcrValue">-->
-<!--                                                                                    <div id="componentIdentifier" class="row">-->
-<!--                                                                                        <div>-->
-<!--                                                                                            <span>PCR ${count} - </span>-->
-<!--                                                                                            <span style="overflow-wrap: break-word">${pcrValue}</span>-->
-<!--                                                                                        </div>-->
-<!--                                                                                    </div>-->
-<!--                                                                                    <c:set var="count" value="${count + 1}" scope="page"/>-->
-<!--                                                                                </c:forEach>-->
-<!--                                                                            </div>-->
-<!--                                                                        </div>-->
-<!--                                                                    </div>-->
-<!--                                                                </div>-->
-<!--                                                            </c:when>-->
-<!--                                                            <c:otherwise>-->
-<!--                                                                <c:if test="${not initialData.swidPatch and not initialData.swidSupplemental}">-->
-<!--                                                                    <div class="component col col-md-10" style="color: red; padding-left: 20px">Support RIM file named ${resource.getName()} was not imported via the Reference Integrity Manifest page.</div>-->
-<!--                                                                </c:if>-->
-<!--                                                            </c:otherwise>-->
-<!--                                                        </c:choose>-->
-<!--                                                    </div>-->
-<!--                                                </div>-->
-<!--                                        </div>-->
-<!--                                        </c:forEach>-->
-<!--                                </div>-->
-<!--                                </c:if>-->
-<!--                            </div>-->
+<head>
+    <link rel="stylesheet" th:href="@{/css/rim_details.css}" />
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+            function eventSearch(txtInput) {
+                let input, filter, table, tr, td, i, txtValue, txtFound;
+                if (txtInput == null) {
+                    input = document.getElementById("eventInput");
+                    filter = input.value.toUpperCase();
+                } else {
+                    filter = txtInput;
+                }
 
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            </div>-->
-<!--            <div class="row">-->
-<!--                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Signature</span></div>-->
-<!--                <div id="signature" class="col col-md-8">-->
-<!--                    <div>Validity:&nbsp;<span>-->
-<!--                                <c:choose>-->
-<!--                                    <c:when test="${initialData.signatureValid}">-->
-<!--                                        <img src="${passIcon}" title="${signatureValidText}"/>-->
-<!--                                    </c:when>-->
-<!--                                    <c:otherwise>-->
-<!--                                        <img src="${failIcon}" title="${signatureInvalidText}"/>-->
-<!--                                    </c:otherwise>-->
-<!--                                </c:choose>-->
-<!--                            </span>-->
-<!--                    </div>-->
-<!--                    <div>-->
-<!--                            <span>-->
-<!--                                <c:if test="${not empty initialData.issuerID}">-->
-<!--                                    <div><a href="${portal}/certificate-details?id=${initialData.issuerID}&type=certificateauthority">Signing certificate</a></div>-->
-<!--                                </c:if>-->
-<!--                            </span>-->
-<!--                    </div>-->
-<!--                    <div>-->
-<!--                            <span>-->
-<!--                                <c:if test="${not empty initialData.skID}">-->
-<!--                                    <div>Subject Key Identifier: ${initialData.skID}</div>-->
-<!--                                </c:if>-->
-<!--                            </span>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </c:when>-->
-<!--        <c:otherwise>-->
-<!--        </c:otherwise>-->
-<!--        </c:choose>-->
-<!--        </div>-->
-<!--        </div>-->
-<!--        </div>-->
-<!--        <script>-->
-<!--            function eventSearch(txtInput) {-->
-<!--                // Declare variables-->
-<!--                let input, filter, table, tr, td, i, txtValue, txtFound;-->
-<!--        -->
-<!--                if (txtInput === null) {-->
-<!--                    input = document.getElementById("eventInput");-->
-<!--                    filter = input.value.toUpperCase();-->
-<!--                } else {-->
-<!--                    filter = txtInput;-->
-<!--                }-->
-<!--        -->
-<!--                table = document.getElementById("eventLog");-->
-<!--                tr = table.getElementsByTagName("tr");-->
-<!--        -->
-<!--                // Loop through all table rows, and hide those who don't match the search query-->
-<!--                for (i = 0; i < tr.length; i++) {-->
-<!--                    txtFound = true;-->
-<!--                    tds = tr[i].getElementsByTagName("td");-->
-<!--                    for (j = 0; j < tds.length; j++) {-->
-<!--                        td = tds[j];-->
-<!--        -->
-<!--                        if (td) {-->
-<!--                            txtValue = td.textContent || td.innerText;-->
-<!--                            if (txtValue.toUpperCase().indexOf(filter) > -1) {-->
-<!--                                txtFound = true;-->
-<!--                                break;-->
-<!--                            } else {-->
-<!--                                txtFound = false;-->
-<!--                            }-->
-<!--                        }-->
-<!--                    }-->
-<!--                    if (txtFound) {-->
-<!--                        tr[i].style.display = "";-->
-<!--                    } else {-->
-<!--                        tr[i].style.display = "none";-->
-<!--                    }-->
-<!--                }-->
-<!--            }-->
-<!--            window.onload = function () {-->
-<!--                // Constant retrieved from server-side via JSP-->
-<!--                let maxRows = 11;-->
-<!--        -->
-<!--                let table = document.getElementById('eventLog');-->
-<!--                let wrapper = table.parentNode;-->
-<!--                let rowsInTable = table.rows.length;-->
-<!--                let height = 0;-->
-<!--                if (rowsInTable > maxRows) {-->
-<!--                    for (let i = 0; i < maxRows; i++) {-->
-<!--                        height += table.rows[i].clientHeight;-->
-<!--                    }-->
-<!--                    wrapper.style.height = height + "px";-->
-<!--                }-->
-<!--            }-->
-<!--        </script>-->
-<!--    </jsp:body>-->
-<!--</my:page>-->
+                table = document.getElementById("eventLog");
+                tr = document.getElementsByTagName("tr");
+                for (i = 0; i < tr.length; i++) {
+                    txtFound = true;
+                    tds = tr[i].getElementsByTagName("td");
+                    for (j = 0; j < tds.length; j++) {
+                        td = tds[j];
+                        txtValue = td.textContent || td.innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            txtFound = true;
+                            break;
+                        } else {
+                            txtFound = false;
+                        }
+                    }
+                    if (txtFound) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+            window.onload = function () {
+                let maxRows = 11;
+                let table = document.getElementById("eventLog");
+                let wrapper = table.parentNode;
+                let rowsInTable = table.rows.length;
+                let height = 0;
+                if (rowsInTable > maxRows) {
+                    for (i = 0; i < maxRows; i++) {
+                        height += table.rows[i].clientHeight;
+                    }
+                    wrapper.style.height = height + "px";
+                }
+            }
+        </script>
+    </section>
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">
+        <th:block th:if="${initialData?.get('rimType') == 'Measurement'}">
+            <th:block th:if="${initialData.get('validationResult')} == 'PASS'">
+                TPM Log events
+            </th:block>
+            <th:block th:unless="${initialData.get('validationResult')} == 'PASS'">
+                Firmware Errors
+                <h3>TPM Log event(s) not found in the RIM DB</h3>
+            </th:block>
+        </th:block>
+        <th:block th:unless="${initialData?.get('rimType') == 'Measurement'}">
+            <span th:text="${initialData?.get('rimType')} + ' Reference Integrity Manifest'">
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/download?(id=${param.id})}">
+                    <img th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download this RIM">
+                </a>
+            </span>
+        </th:block>
+    </h1>
+
+    <div id="rim-details-page" class="container-fluid" layout:fragment="content">
+        <th:block th:if="${initialData?.get('rimType') == 'Support'
+            || (initialData.get('rimType') == 'Measurement' && initialData.get('validationResult') == 'PASS')}">
+            <div class="row">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Additonal RIM Info</span></div>
+                <div class="col col-md-8">
+                    <th:block th:if="${#strings.isEmpty(initialData.get('associatedRim'))}">
+                        <div class="component col col-md-10" style="color: red; padding-left: 20px">Associated RIM not found</div>
+                    </th:block>
+                    <th:block th:unless="${#strings.isEmpty(initialData.get('associatedRim'))}">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.get('associatedRim')})}">
+                            <span th:text="${initialData.get('associatedRim')}"></span>
+                        </a>
+                        <th:block th:if="${#maps.containsKey(initialData, 'hostName')}">
+                            Device: <span th:text="${initialData.get('hostname')}"></span>
+                        </th:block>
+                        <th:block th:if="${#maps.containsKey(initialData, 'supportId')}">
+                            Support: <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.get('supportId')})}">
+                            <span th:text="${initialData.get('supportFilename')}"></span></a>
+                        </th:block>
+                    </th:block>
+                </div><!--col-->
+            </div><!--row-->
+            <th:block th:if="${not initialData.get('swidBase')}">
+                <div class="row">
+                    <div class="col-md-1 col-md-offset-1">
+                        <span>RIM Type</span>
+                    </div>
+                    <div id="baseRim" class="col col-md-8">
+                        <th:block th:if="${initialData.get('swidCorpus')}">SWID Corpus</th:block>
+                        <th:block th:if="${initialData.get('swidPatch')}">SWID Patch</th:block>
+                        <th:block th:if="${initialData.get('swidSupplemental')}">SWID Supplemental</th:block>
+                    </div>
+                </div>
+            </th:block>
+            <div class="row">
+                <div class="accordion" id="eventAccordion">
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="eventHeader">
+                            <button class="accordion-button collapsed"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#eventCollapse"
+                                    aria-expanded="false"
+                                    aria-controls="eventCollapse">
+                                Event Summary
+                            </button>
+                        </h3>
+                        <div class="accordion-collapse collapse"
+                             id="eventCollapse"
+                             data-bs-parent="#eventAccordion"
+                             aria-labelledby="eventHeader">
+                            <div class="accordion-body">
+                                <ul>
+                                    <li th:if="${initialData.get('rimType') == 'Support'}">
+                                        This Support RIM file covers the following critical items:
+                                    </li>
+                                    <li th:unless="${initialData.get('rimType') == 'Support'}">
+                                        This Event Log file covers the following critical items:
+                                    </li>
+                                    <ul>
+                                        <li th:if="${initialData.get('crtm')
+                                        || initialData.get('bootManager')
+                                        || initialData.get('osLoader')
+                                        || initialData.get('osKernel')}">
+                                            PC Client Boot path
+                                        </li>
+                                        <ul>
+                                            <li th:if="${initialData.get('crtm')}">Firmware modules</li>
+                                            <li th:if="${initialData.get('bootManager')}">Boot Manager</li>
+                                            <li th:if="${initialData.get('osLoader')}">OS Loader</li>
+                                            <li th:if="${initialData.get('osKernel')}">OS Kernel</li>
+                                        </ul>
+                                        <li th:if="${initialData.get('acpiTables')
+                                        || initialData.get('smbiosTables')
+                                        || initialData.get('gptTable')}">
+                                            Device Configuration
+                                        </li>
+                                        <ul>
+                                            <li th:if="${initialData.get('acpiTables')}">ACPI Tables</li>
+                                            <li th:if="${initialData.get('smbiosTables')}">SMBIOS Tables</li>
+                                            <li th:if="${initialData.get('gptTable')}">GPT Table</li>
+                                            <li th:if="${initialData.get('bootOrder')}">Boot Order</li>
+                                        </ul>
+                                        <li th:if="${initialData.get('secureBoot')
+                                        || initialData.get('pk')
+                                        || initialData.get('kek')
+                                        || initialData.get('sigDb')
+                                        || initialData.get('forbiddenDbx')}">
+                                            Secure Boot Variables
+                                        </li>
+                                        <ul>
+                                            <li th:if="${initialData.get('secureBoot')}">Secure Boot Enabled</li>
+                                            <li th:if="${initialData.get('pk')}">Platform Key (PK)</li>
+                                            <li th:if="${initialData.get('kek')}">Key Exchange Key (KEK)</li>
+                                            <li th:if="${initialData.get('sigDb')}">Signature Database (db)</li>
+                                            <li th:if="${initialData.get('forbiddenDbx')}">Forbidden Signatures Database (dbx)</li>
+                                        </ul>
+                                    </ul>
+                                </ul>
+                                <ul>
+                                    <li th:if="${initialData.get('rimType') == 'Support'}">
+                                        This Support RIM file does NOT cover the following critical items:
+                                    </li>
+                                    <li th:unless="${initialData.get('rimType') == 'Support'}">
+                                        This Event Log file does NOT cover the following critical items:
+                                    </li>
+                                    <ul>
+                                        <li th:if="${not initialData.get('bootManager')
+                                        || not initialData.get('osLoader')
+                                        || not initialData.get('osKernel')}">
+                                            PC Client Boot path
+                                        </li>
+                                        <ul>
+                                            <li th:if="${not initialData.get('bootManager')}">Boot Manager</li>
+                                            <li th:if="${not initialData.get('osLoader')}">OS Loader</li>
+                                            <li th:if="${not initialData.get('osKernel')}">OS Kernel</li>
+                                        </ul>
+                                        <li th:if="${not initialData.get('acpiTables')
+                                        || not initialData.get('smbiosTables')
+                                        || not initialData.get('gptTable')}">
+                                            Device Configuration
+                                        </li>
+                                        <ul>
+                                            <li th:if="${not initialData.get('acpiTables')}">ACPI Tables</li>
+                                            <li th:if="${not initialData.get('smbiosTables')}">SMBIOS Tables</li>
+                                            <li th:if="${not initialData.get('gptTable')}">GPT Table</li>
+                                            <li th:if="${not initialData.get('bootOrder')}">Boot Order</li>
+                                        </ul>
+                                        <li th:if="${not initialData.get('secureBoot')
+                                        || not initialData.get('pk')
+                                        || not initialData.get('kek')
+                                        || not initialData.get('sigDb')
+                                        || not initialData.get('forbiddenDbx')}">
+                                            Secure Boot Variables
+                                        </li>
+                                        <ul>
+                                            <li th:if="${not initialData.get('secureBoot')}">Secure Boot Enabled</li>
+                                            <li th:if="${not initialData.get('pk')}">Platform Key (PK)</li>
+                                            <li th:if="${not initialData.get('kek')}">Key Exchange Key (KEK)</li>
+                                            <li th:if="${not initialData.get('sigDb')}">Signature Database (db)</li>
+                                            <li th:if="${not initialData.get('forbiddenDbx')}">Forbidden Signatures Database (dbx)</li>
+                                        </ul>
+                                    </ul>
+                                </ul>
+                            </div>
+                        </div>
+                    </div><!--accordion item-->
+                </div><!--eventAccordion-->
+                <div id="tableDivTag">
+                    <input type="text" id="eventInput" onkeyup="eventSearch(null)" placeholder="Search for text..." />
+                    <br/>
+                    <table id="eventLog">
+                        <thead>
+                        <tr class="header">
+                            <th>Event #</th>
+                            <th>PCR Index</th>
+                            <th style="width: 20%">Event Type</th>
+                            <th>Digest</th>
+                            <th style="width: 50%">Event Content</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:if="${not #lists.isEmpty(initialData.get('events'))}" th:each="event, eventStat : ${initialData.get('events')}">
+                            <!--Only one of these <tr> elements will ever be present, so only one closing </tr> below-->
+                            <tr style="background: tomato" th:if="${event.error}">
+                            <tr th:unless="${event.error}">
+                                <td style="width: 75px"><span th:text="${eventStat.count}"/></td>
+                                <td class="pcrCell"><span th:text="${'PCR' + event.pcrIndex}"/></td>
+                                <td><span th:text="${event.eventTypeStr}"/></td>
+                                <td class="digestCell"><span th:text="${event.eventDigestStr}"/></td>
+                                <td title="Event content">
+                                    <div style="height: 50px; overflow: auto">
+                                        <span th:text="${event.eventContentStr}">[none]</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div><!--row-->
+            <div class="col-md-a col-md-offset-1">
+                <span class="colHeader" th:text="${#lists.size(initialData.get('events'))} + ' entries'"/>
+            </div>
+        </th:block><!--Support RIM and validation passed measurements-->
+
+
+        <th:block th:if="${initialData?.get('rimType') == 'Measurement'
+            && initialData.get('validationResult') == T(hirs.attestationca.persist.enums.AppraisalStatus.Status).FAIL}">
+                <div class="row rimrow">
+                    <div class="col-md-1 offset-md-1"><span class="colRimHeader">Base/Support</span></div>
+                    <div id="measurements" class="col col-md-7">
+                        <div>Download Measurement:
+                            <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/download?(id=${param.id})}">
+                                BIOS Measurements
+                            </a>
+                        </div>
+                        <span th:text="${'Device: ' + initialData.get('hostName')}"
+                                       th:if="${#maps.containsKey(initialData, 'hostName')}"/>
+                        <th:block th:if="${#maps.containsKey(initialData, 'tagId')}">
+                            <div>Base:
+                                <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.associatedRim})}">
+                                    <span th:text="${initialData.associatedRim}"></span>
+                                </a>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${#maps.containsKey(initialData, 'supportId')}">
+                            <div>Support:
+                                <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.get('supportId')})}">
+                                    <span th:text="${initialData.get('supportId')}"></span>
+                                </a>
+                            </div>
+                        </th:block>
+                    </div><!--measurements-->
+                </div><!--row-->
+                <div class="row">
+                    <div class="col col-md-8 offset-md-1" style="display: flex; background: gainsboro; margin-top: 1rem; padding: 1rem auto 1rem auto">
+                        <div>TPM Events</div>
+                    </div>
+                    <th:block th:if="${not #lists.isEmpty(initialData.get('livelogEvents'))}"
+                              th:each="lEvent, lEventStat : ${initialData.get('livelogEvents')}">
+                        <div class="col col-md-8 offset-md-1" style="display: flex; background: #FF6164">
+                            <div style="display: flex 1; font-weight: bold; margin: auto 1rem auto 1rem">
+                                Failed Event Digest:
+                                <br />
+                            </div>
+                            <div style="display: flex 2; margin: 2px auto 2px 25px">
+                                <span class="mappedData">PCR Index: </span><span th:text="${lEvent.pcrIndex}"/>
+                                <br />
+                                <span class="mappedData">Digest: </span><span th:text="${lEvent.eventDigestStr}"/>
+                                <br />
+                                <span class="mappedData">Event Content: </span><span th:text="${lEvent.eventContentStr}"/>
+                            </div>
+                        </div>
+                        <div class="col col-md-8 offset-md-1" style="display: flex; margin-bottom: 1rem; border-bottom: 1px ridge lightgray;">
+                            <div class="accordion" th:id="${'eventAccordion' + lEventStat.count}">
+                                <div class="accordion item">
+                                    <h3 class="accordion-header" th:id="${'eventHeader' + lEventStat.count}">
+                                        <button class="accordion-button collapsed"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                th:data-bs-target="${'#eventCollapse' + lEventStat.count}"
+                                                aria-expanded="false"
+                                                th:aria-controls="${'eventCollapse' + lEventStat.count}">
+                                            Expected Events from the RIM DB with the Event Type of&nbsp;
+                                            <span style="word-wrap: break-word" th:text="${lEvent.eventTypeString}"/>
+                                        </button>
+                                    </h3>
+                                    <div th:id="${'eventCollapse' + lEventStat.count}"
+                                         class="accordion-collapse collapse"
+                                         th:aria-labelledby="${'eventHeader' + lEventStat.count}"
+                                         th:data-bs-parent="${'#eventAccordion' + lEventStat.count}">
+                                        <div class="accordion-body">
+                                            <th:block th:each="mappedDigest : ${initialData.get('eventTypeMap')}">
+                                                <th:block th:if="${mappedDigest.key == lEvent.eventDigestStr}"
+                                                          th:each="event : ${mappedDigest.value}">
+                                                    <div class="mappedOverhead">
+                                                        <div><span class="mappedData">PCR Index: </span><span th:text="${event.pcrIndex}"/></div>
+                                                        <div><span class="mappedData">Digest: </span><span th:text="${event.eventDigestStr}"/></div>
+                                                        <div><span class="mappedData">Event Content: </span><span th:text="${event.eventContentStr}"/></div>
+                                                    </div>
+                                                </th:block>
+                                            </th:block>
+                                        </div><!--accordion body-->
+                                    </div><!--accordion collapse-->
+                                </div><!--accordion item-->
+                            </div><!--accordion-->
+                        </div>
+                    </th:block>
+                </div><!--row-->
+        </th:block><!--Failed measurements-->
+
+
+        <th:block th:if="${initialData.get('rimType') == 'Base'}">
+            <div class = "rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Software Identity</span>
+                </div>
+                <div id="softwareIdentity" class="col col-md-8">
+                    <span th:text="${'SWID Name: ' + initialData.get('swidName')}"/>
+                    <span th:text="${'SWID Version: ' + initialData.get('swidVersion')}"/>
+                    <span th:text="${'SWID Tag ID: ' + initialData.get('swidTagId')}"/>
+                    <span th:text="${'SWID Tag Version: ' + initialData.get('swidTagVersion')}"/>
+                    <span th:if="${initialData.get('swidCorpus')}">
+                        SWID Corpus:
+                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" alt="Check mark" title="Corpus Flag">
+                    </span>
+                    <span th:if="${initialData.get('swidPatch')}">
+                        SWID Patch:
+                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" alt="Check mark" title="Corpus Flag">
+                    </span>
+                    <span th:if="${initialData.get('swidSupplemental')}">
+                        SWID Supplemental:
+                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" alt="Check mark" title="Corpus Flag">
+                    </span>
+                </div>
+            </div><!--softwareIdentity row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Entity</span>
+                </div>
+                <div id="entity" class="col col-md-8">
+                    <span th:text="${'Entity Name: ' + initialData.entityName}"/>
+                    <span th:text="${'Entity Reg ID: ' + initialData.entityRegId}"
+                          th:if="${not #strings.isEmpty(initialData.entityRegId)}"/>
+                    <span th:text="${'Entity Role: ' + initialData.entityRole}"/>
+                    <span th:text="${'Entity Thumbprint: ' + initialData.entityThumbprint}"/>
+                </div>
+            </div><!--entity row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Link</span>
+                </div>
+                <div id="link" class="col col-md-8">
+                    <span th:if="${not #strings.isEmpty(initialData.get('linkHref'))}">
+                        <a th:href ="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.get('linkHrefLink')})}"
+                           rel="${initialData.get('linkRel')}"
+                           th:if="${not #strings.isEmpty(initialData.get('linkHrefLink'))}">
+                            <span th:text="${initialData.get('linkHref')}"/>
+                        </a>
+                        <a th:href ="@{(${initialData.get('linkHrefLink')})}" rel="${initialData.get('linkRel')}"
+                           th:if="${#strings.isEmpty(initialData.get('linkHrefLink'))}">
+                            <span th:text="${initialData.get('linkHref')}"/>
+                        </a>
+                    </span>
+                    <span th:text="${'Rel: ' + initialData.get('linkRel')}"/>
+                </div>
+            </div><!--link row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Meta</span>
+                </div>
+                <div id="meta" class="col col-md-8">
+                    <span th:text="${'Platform Manufacturer ID: ' + initialData.get('platformManufacturerId')}"/>
+                    <span th:text="${'Platform Manufacturer: ' + initialData.get('platformManufacturer')}"/>
+                    <span th:text="${'Platform Model: ' + initialData.get('platformModel')}"/>
+                    <span th:text="${'Platform Version: ' + initialData.get('platformVersion')}"
+                          th:if="${not #strings.isEmpty(initialData.get('platformVersion'))}"/>
+                    <span th:text="${'Colloquial Version: ' + initialData.get('colloquialVersion')}"/>
+                    <span th:text="${'Edition: ' + initialData.edition}"/>
+                    <span th:text="${'Product: ' + initialData.get('product')}"/>
+                    <span th:text="${'Revision: ' + initialData.get('revision')}"/>
+                    <span th:text="${'Payload Type: ' + initialData.get('payloadType')}"
+                          th:if="${not #strings.isEmpty(initialData.get('payloadType'))}"/>
+                    <span th:text="${'Binding Spec: ' + initialData.get('bindingSpec')}"/>
+                    <span th:text="${'Binding Spec Version: ' +initialData.get('bindingSpecVersion')}"/>
+                    <span th:text="${'PC URI Global: ' + initialData.get('pcUriGlobal')}"
+                          th:if="${not #strings.isEmpty(initialData.get('pcUriGlobal'))}"/>
+                    <span th:text="${'Rim Link Hash: ' + initialData.get('rimLinkHash')}"
+                          th:if="${#strings.isEmpty(initialData.get('rimLinkId'))}"/>
+                    <th:block th:unless="${#strings.isEmpty(initialData.get('rimLinkId'))}">
+                        <div>Rim Link Hash:
+                            <a href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.get('rimLinkId')})">
+                                <span>${initialData.get('rimLinkHash')}</span>
+                            </a>
+                    </th:block>
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('rimLinkHash'))}">
+                        <span>
+                            <img th:src="@{passIcon}" title="SWID Tag exists"
+                                 th:if="${initialData.get('linkHashValid')}">
+                            <img th:src="@{failIcon}" title="SWID Tag does not exist"
+                                 th:unless="${initialData.get('linkHashValid')}">
+                        </span>
+                    </th:block>
+                </div>
+            </div><!--meta row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Payload/Support RIM(s)</span>
+                </div>
+                <div id="payload" class="col col-md-8">
+                    <div id="directoryAccordion" class="accordion">
+                        <div class="accordion-item border rounded mb-2 overflow-hidden">
+                            <h4 id="directoryHeading" class="accordion-header">
+                                <button class="accordion-button collapsed"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#directorycollapse"
+                                        aria-expanded="true"
+                                        aria-controls="directorycollapse">
+                                    Directory
+                                </button>
+                            </h4>
+                            <div id="directorycollapse"
+                                 class="accordion-collapse collapse"
+                                 aria-labelledby="directoryHeading"
+                                 aria-expanded="true"
+                                 data-bs-parent="#directoryAccordion">
+                                <div class="accordion-body">
+                                    <th:block th:if="${not #lists.isEmpty(initialData.get('swidFiles'))}">
+                                        <div id="filesAccordion" class="accordion">
+                                            <th:block th:each="resource, resourceStat : ${initialData.get('swidFiles')}">
+                                                <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                                    <h3 th:id="${'filesHeading' + resourceStat.count}" class="accordion-header">
+                                                        <span data-toggle="tooltip" data-placement="top" title="Resource File">
+                                                            <th:block th:if="${not #strings.isEmpty(initialData.get('associatedRim'))}">
+                                                                <button class="accordion-button collapsed"
+                                                                        type="button"
+                                                                        data-bs-toggle="collapse"
+                                                                        th:data-bs-target="${'#filesCollapse' + resourceStat.count}"
+                                                                        aria-expanded="false"
+                                                                        th:aria-controls="${'filesCollapse' + resourceStat.count}">
+                                                                    <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.get('associatedRim')})}">
+                                                                        <span th:text="${resource.name}">Associated RIM</span>
+                                                                    </a>
+                                                                    <th:block th:if="${not #strings.isEmpty(initialData.get('supportRimHashValid'))}">
+                                                                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" title="Support RIM hash valid"/>
+                                                                    </th:block>
+                                                                    <th:block th:unless="${not #strings.isEmpty(initialData.get('supportRimHashValid'))}">
+                                                                        <img th:src="@{/icons/ic_error_red_24dp.png}" title="Support RIM hash not valid!"/>
+                                                                    </th:block>
+                                                                </button>
+                                                            </th:block>
+                                                            <th:block th:unless="${not #strings.isEmpty(initialData.get('associatedRim'))}">
+                                                                <button class="accordion-button collapsed"
+                                                                        type="button"
+                                                                        data-bs-toggle="collapse"
+                                                                        th:data-bs-target="${'#filesCollapse' + resourceStat.count}"
+                                                                        aria-expanded="false"
+                                                                        th:aria-controls="${'filesCollapse' + resourceStat.count}">
+                                                                    <span th:text="${resource.name}">Associated RIM</span>
+                                                                </button>
+                                                            </th:block>
+                                                        </span><!-- Tooltip -->
+                                                    </h3>
+                                                    <div th:id="${'filesCollapse' + resourceStat.count}"
+                                                         class="accordion-collapse collapse"
+                                                         th:aria-labelledby="${'filesHeading' + resourceStat.count}"
+                                                         aria-expanded="true"
+                                                         data-bs-parent="#filesAccordion">
+                                                        <div class="accordion-body">
+                                                            <span class="fieldHeader">File Size:</span>
+                                                            <span class="fieldValue" th:text="${resource.size}">[none]</span><br/>
+                                                            <span class="fieldHeader">Hash:</span>
+                                                            <span class="fieldValue"
+                                                                  th:text="${resource.hashValue}" style="overflow-wrap: break-word">[none]</span><br/>
+                                                            <th:block th:if="${not #strings.isEmpty(resource.rimFormat)}">
+                                                                <span class="fieldHeader">RIM Format:</span>
+                                                                <span class="fieldValue" th:text="${resource.rimFormat}"/><br/>
+                                                            </th:block>
+                                                            <th:block th:if="${not #strings.isEmpty(resource.rimType)}">
+                                                                <span class="fieldHeader">RIM Type:</span>
+                                                                <span class="fieldValue" th:text="${resource.rimType}"/><br/>
+                                                            </th:block>
+                                                            <th:block th:if="${not #strings.isEmpty(resource.rimUriGlobal)}">
+                                                                <span class="fieldHeader">URI Global:</span>
+                                                                <span class="fieldValue" th:text="${resource.rimUriGlobal}"/><br/>
+                                                            </th:block>
+                                                            <th:block th:if="${not #arrays.isEmpty(initialData.get('pcrList'))}">
+                                                                <div th:id="${'pcrAccordion' + resourceStat.count}" class="accordion">
+                                                                    <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                                                        <h3 class="accordion-header" th:id="${'pcrHeader' + resourceStat.count}">
+                                                                            <button class="accordion-button collapsed"
+                                                                                    type="button"
+                                                                                    data-bs-toggle="collapse"
+                                                                                    th:data-bs-target="${'#pcrCollapse' + resourceStat.count}"
+                                                                                    aria-expanded="false"
+                                                                                    th:aria-controls="${'pcrCollapse' + resourceStat.count}">
+                                                                                Expected PCR Values
+                                                                            </button>
+                                                                        </h3>
+                                                                        <div class="accordion-collapse collapse"
+                                                                             th:id="${'pcrCollapse' + resourceStat.count}"
+                                                                             th:aria-labelledby="${'pcrHeader' + resourceStat.count}"
+                                                                             aria-expanded="false"
+                                                                             th:data-bs-parent="${'#pcrAccordion' + resourceStat.count}">
+                                                                            <div class="accordion-body">
+                                                                                <th:block th:each="pcr, pcrStat : ${initialData.get('pcrList')}">
+                                                                                    <span th:text="${'PCR' + pcrStat.index + ': '}"/>
+                                                                                    <span style="overflow-wrap: break-word" th:text="${pcr}"></span><br/>
+                                                                                </th:block>
+                                                                            </div><!--accordion body-->
+                                                                        </div><!--accordion collapse-->
+                                                                    </div><!--accordion item-->
+                                                                </div><!--pcrAccordion-->
+                                                            </th:block>
+                                                            <span style="color: red; padding-left: 20px" th:text="Associated RIM ${resource.name} not found."
+                                                                  th:if="${#arrays.isEmpty(initialData.get('pcrList'))}
+                                                                        and not ${initialData.get('swidPatch')}
+                                                                        and not ${initialData.get('swidSupplemental')}"/>
+                                                        </div><!--accordion body-->
+                                                    </div><!--accordion collapse-->
+                                                </div><!--accordion item-->
+                                            </th:block><!--for each-->
+                                        </div><!--filesAccordion-->
+                                    </th:block>
+                                </div><!--accordion body-->
+                            </div><!--directory collapse-->
+                        </div><!--accordion item-->
+                    </div><!--directoryAccordion-->
+                </div>
+            </div><!--payload row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Signature</span>
+                </div>
+                <div id="signature" class="col col-md-8">
+                    <span>Validity:
+                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" title="Signature valid."
+                             th:if="${initialData.get('signatureValid')}"/>
+                        <img th:src="@{/icons/ic_error_red_24dp.png}" title="Signature not valid!"
+                             th:unless="${initialData.get('signatureValid')}"/>
+                    </span>
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=certificateauthority(id=${initialData.get('issuerID')})}"
+                           th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
+                            Signing certificate
+                    </a>
+                    <span th:text="${'Subject Key Identifier: ' + initialData.get('skID')}" th:if="${not #strings.isEmpty(initialData.get('skID'))}"/>
+                </div><!--signature-->
+            </div><!--signature row-->
+        </th:block><!--Base RIM-->
+    </div><!--content fragment-->
+</body>
+</html>
