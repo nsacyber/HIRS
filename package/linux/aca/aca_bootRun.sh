@@ -112,10 +112,10 @@ echo "Starting HIRS ACA on https://localhost:8443/HIRS_AttestationCAPortal/porta
 
 source /etc/hirs/aca/aca.properties;
 
-# Run the embedded tomcat server with Web TLS enabled and database client TLS enabled by overrding critical parameters
+# Run the embedded tomcat server with Web TLS enabled and database client TLS enabled by overriding critical parameters
 # Note "&" is a sub parameter continuation, space represents a new parameter. Spaces and quotes matter.
-# hibernate.connection.url is used fo    r the DB connector which established DB TLS connectivity
-# server.ssl arguments support the embeded tomcats use of TLS for the ACA Portal
+# hibernate.connection.url is used for the DB connector which established DB TLS connectivity
+# server.ssl arguments support the embedded tomcats use of TLS for the ACA Portal
 CONNECTOR_PARAMS="--hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&\
 user=$hirs_db_username&\
 password=$hirs_db_password&\
@@ -123,7 +123,7 @@ sslMode=VERIFY_CA&\
 serverSslCert=$CERT_CHAIN&\
 keyStoreType=PKCS12&\
 keyStorePassword=$hirs_pki_password&\
-keyStore="$CLIENT_DB_P12" "
+keyStore=$CLIENT_DB_P12 "
 
 WEB_TLS_PARAMS="--server.ssl.key-store-password=$hirs_pki_password \
 --server.ssl.trust-store-password=$hirs_pki_password"

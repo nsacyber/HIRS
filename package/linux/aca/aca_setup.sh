@@ -144,7 +144,7 @@ fi
 mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_JSON_DIR $ACA_OPT_DIR
 touch "$LOG_FILE"
 
-pushd "$SCRIPT_DIR" &>/dev/null
+pushd "$SCRIPT_DIR" &>/dev/null || echo "Unable to push directory to stack"
 # Check if build environment is being used and set up property files
 if [ -f  $PROP_FILE ]; then
    cp -n $PROP_FILE $HIRS_CONF_DIR/
@@ -242,4 +242,4 @@ fi
 
 echo "ACA setup complete" | tee -a "$LOG_FILE"
 
-popd &>/dev/null
+popd &>/dev/null || echo "Unable to pop directory from the stack"

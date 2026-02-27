@@ -1,7 +1,5 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.persist.provision;
 
-import hirs.attestationca.persist.provision.CertificateRequestProcessor;
-import hirs.attestationca.persist.provision.IdentityClaimProcessor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

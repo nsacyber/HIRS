@@ -12,36 +12,59 @@ import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.PublicKeyAlgorithm;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
+import hirs.attestationca.persist.provision.helper.CredentialManagementHelper;
+import hirs.attestationca.persist.provision.helper.IssuedCertificateAttributeHelper;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Service
 @Log4j2
-public class CertificateRequestProcessor extends AbstractProcessor {
+public class CertificateRequestProcessor {
     private final SupplyChainValidationService supplyChainValidationService;
     private final CertificateRepository certificateRepository;
     private final DeviceRepository deviceRepository;
     private final X509Certificate acaCertificate;
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
+    private final PolicyRepository policyRepository;
     private final PublicKeyAlgorithm publicKeyAlgorithm;
+    private final int certificateValidityInDays;
+    private final PrivateKey privateKey;
 
     /**
      * Constructor.
@@ -65,14 +88,15 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                                        @Value("${aca.certificates.validity}") final int certificateValidityInDays,
                                        final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
                                        final PolicyRepository policyRepository) {
-        super(privateKey, certificateValidityInDays);
+        this.certificateValidityInDays = certificateValidityInDays;
         this.supplyChainValidationService = supplyChainValidationService;
         this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;
         this.acaCertificate = acaCertificate;
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
         this.publicKeyAlgorithm = PublicKeyAlgorithm.fromString(publicKeyAlgorithmStr);
-        setPolicyRepository(policyRepository);
+        this.policyRepository = policyRepository;
+        this.privateKey = privateKey;
     }
 
     /**
@@ -102,7 +126,6 @@ public class CertificateRequestProcessor extends AbstractProcessor {
             throw new IllegalArgumentException(errorMsg);
         }
 
-        final PolicyRepository policyRepository = this.getPolicyRepository();
         final PolicySettings policySettings = policyRepository.findByName("Default");
 
         // attempt to deserialize Protobuf CertificateRequest
@@ -139,10 +162,11 @@ public class CertificateRequestProcessor extends AbstractProcessor {
                     claim.getAkPublicArea().toByteArray());
 
             // Get Endorsement Credential if it exists or was uploaded
-            EndorsementCredential endorsementCredential = parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
+            EndorsementCredential endorsementCredential =
+                    CredentialManagementHelper.parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
 
             // Get Platform Credentials if they exist or were uploaded
-            List<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
+            List<PlatformCredential> platformCredentials = CredentialManagementHelper.parsePcsFromIdentityClaim(claim,
                     endorsementCredential, certificateRepository);
 
             // Get LDevID public key if it exists
@@ -408,5 +432,150 @@ public class CertificateRequestProcessor extends AbstractProcessor {
         }
 
         return validationResult;
+    }
+
+    /**
+     * Generates a credential using the specified public key.
+     *
+     * @param publicKey             cannot be null
+     * @param endorsementCredential the endorsement credential
+     * @param platformCredentials   the set of platform credentials
+     * @param deviceName            The host name used in the subject alternative name
+     * @param acaCertificate        object used to create credential
+     * @return identity credential
+     */
+    private X509Certificate generateCredential(final PublicKey publicKey,
+                                               final EndorsementCredential endorsementCredential,
+                                               final List<PlatformCredential> platformCredentials,
+                                               final String deviceName,
+                                               final X509Certificate acaCertificate) {
+        try {
+            // have the certificate expire in the configured number of days
+            Calendar expiry = Calendar.getInstance();
+            expiry.add(Calendar.DAY_OF_YEAR, certificateValidityInDays);
+
+            X500Name issuer =
+                    new X509CertificateHolder(acaCertificate.getEncoded()).getSubject();
+            Date notBefore = new Date();
+            Date notAfter = expiry.getTime();
+            BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
+
+            SubjectPublicKeyInfo subjectPublicKeyInfo =
+                    SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+
+            // The subject should be left blank, per spec
+            X509v3CertificateBuilder builder =
+                    new X509v3CertificateBuilder(issuer, serialNumber,
+                            notBefore, notAfter, null /* subjectName */, subjectPublicKeyInfo);
+
+            Extension subjectAlternativeName =
+                    IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
+                            endorsementCredential, platformCredentials, deviceName);
+
+            Extension authKeyIdentifier = IssuedCertificateAttributeHelper
+                    .buildAuthorityKeyIdentifier(acaCertificate);
+
+            builder.addExtension(subjectAlternativeName);
+            if (authKeyIdentifier != null) {
+                builder.addExtension(authKeyIdentifier);
+            }
+            // identify cert as an AIK with this extension
+            if (IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION != null) {
+                builder.addExtension(IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION);
+            } else {
+                log.warn("Failed to build extended key usage extension and add to AIK");
+                throw new IllegalStateException("Extended Key Usage attribute unavailable. "
+                        + "Unable to issue certificates");
+            }
+
+            // Add signing extension
+            builder.addExtension(
+                    Extension.keyUsage,
+                    true,
+                    new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment)
+            );
+
+            // Basic constraints
+            builder.addExtension(
+                    Extension.basicConstraints,
+                    true,
+                    new BasicConstraints(false)
+            );
+
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA")
+                    .setProvider("BC").build(privateKey);
+            X509CertificateHolder holder = builder.build(signer);
+            return new JcaX509CertificateConverter()
+                    .setProvider("BC").getCertificate(holder);
+        } catch (IOException | OperatorCreationException | CertificateException exception) {
+            throw new CertificateProcessingException("Encountered error while generating "
+                    + "identity credential: " + exception.getMessage(), exception);
+        }
+    }
+
+    /**
+     * Helper method to create an {@link IssuedAttestationCertificate} object, set its
+     * corresponding device and persist it.
+     *
+     * @param certificateRepository            db store manager for certificates
+     * @param derEncodedAttestationCertificate the byte array representing the Attestation
+     *                                         certificate
+     * @param endorsementCredential            the endorsement credential used to generate the AC
+     * @param platformCredentials              the platform credentials used to generate the AC
+     * @param device                           the device to which the attestation certificate is tied
+     * @param ldevID                           whether the certificate is a ldevid
+     * @return whether the certificate was saved successfully
+     */
+    public boolean saveAttestationCertificate(final CertificateRepository certificateRepository,
+                                              final byte[] derEncodedAttestationCertificate,
+                                              final EndorsementCredential endorsementCredential,
+                                              final List<PlatformCredential> platformCredentials,
+                                              final Device device,
+                                              final boolean ldevID) {
+        List<IssuedAttestationCertificate> issuedAc;
+        boolean generateCertificate = true;
+        PolicySettings policySettings;
+        Date currentDate = new Date();
+        int days;
+        try {
+            // save issued certificate
+            IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
+                    derEncodedAttestationCertificate, endorsementCredential, platformCredentials, ldevID);
+
+            policySettings = policyRepository.findByName("Default");
+
+            Sort sortCriteria = Sort.by(Sort.Direction.DESC, "endValidity");
+            issuedAc = certificateRepository.findByDeviceIdAndLdevID(device.getId(), ldevID,
+                    sortCriteria);
+
+            generateCertificate = ldevID ? policySettings.isIssueDevIdCertificateEnabled()
+                    : policySettings.isIssueAttestationCertificateEnabled();
+
+            if (issuedAc != null && !issuedAc.isEmpty()
+                    && (ldevID ? policySettings.isGenerateDevIdCertificateOnExpiration()
+                    : policySettings.isGenerateAttestationCertificateOnExpiration())) {
+                if (issuedAc.getFirst().getEndValidity().after(currentDate)) {
+                    // so the issued AC is not expired
+                    // however are we within the threshold
+                    days = ProvisionUtils.daysBetween(currentDate, issuedAc.getFirst().getEndValidity());
+                    generateCertificate =
+                            days < (ldevID ? policySettings.getDevIdReissueThreshold()
+                                    : policySettings.getReissueThreshold());
+                }
+            }
+
+            if (generateCertificate) {
+                attCert.setDeviceId(device.getId());
+                attCert.setDeviceName(device.getName());
+                certificateRepository.save(attCert);
+            }
+        } catch (Exception e) {
+            log.error("Error saving generated Attestation Certificate to database.", e);
+            throw new CertificateProcessingException(
+                    "Encountered error while storing Attestation Certificate: "
+                            + e.getMessage(), e);
+        }
+
+        return generateCertificate;
     }
 }

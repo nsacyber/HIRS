@@ -1,6 +1,8 @@
 package hirs.attestationca.persist;
 
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
+import hirs.attestationca.persist.provision.AttestationCertificateAuthorityService;
+import hirs.attestationca.persist.provision.AttestationCertificateAuthorityServiceImpl;
 import hirs.attestationca.persist.provision.CertificateRequestProcessor;
 import hirs.attestationca.persist.provision.IdentityClaimProcessor;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;

@@ -37,6 +37,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifes
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.enums.PublicKeyAlgorithm;
 import hirs.attestationca.persist.exceptions.IdentityProcessingException;
+import hirs.attestationca.persist.provision.helper.CredentialManagementHelper;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.service.SupplyChainValidationService;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
@@ -74,7 +75,7 @@ import java.util.regex.Pattern;
 
 @Service
 @Log4j2
-public class IdentityClaimProcessor extends AbstractProcessor {
+public class IdentityClaimProcessor {
     /**
      * Number of bytes to include in the TPM2.0 nonce.
      */
@@ -90,6 +91,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final DeviceRepository deviceRepository;
+    private final PolicyRepository policyRepository;
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
     private final PublicKeyAlgorithm publicKeyAlgorithm;
 
@@ -127,7 +129,7 @@ public class IdentityClaimProcessor extends AbstractProcessor {
         this.deviceRepository = deviceRepository;
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
         this.publicKeyAlgorithm = PublicKeyAlgorithm.fromString(publicKeyAlgorithmStr);
-        setPolicyRepository(policyRepository);
+        this.policyRepository = policyRepository;
     }
 
     /**
@@ -148,7 +150,6 @@ public class IdentityClaimProcessor extends AbstractProcessor {
             throw new IllegalArgumentException(errorMsg);
         }
 
-        final PolicyRepository policyRepository = this.getPolicyRepository();
         final PolicySettings policySettings = policyRepository.findByName("Default");
 
         // attempt to deserialize Protobuf IdentityClaim
@@ -283,10 +284,10 @@ public class IdentityClaimProcessor extends AbstractProcessor {
 
         // attempt to find an endorsement credential to validate
         EndorsementCredential endorsementCredential =
-                parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
+                CredentialManagementHelper.parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
 
         // attempt to find platform credentials to validate
-        List<PlatformCredential> platformCredentials = parsePcsFromIdentityClaim(claim,
+        List<PlatformCredential> platformCredentials = CredentialManagementHelper.parsePcsFromIdentityClaim(claim,
                 endorsementCredential, certificateRepository);
 
         // Parse and save device info
