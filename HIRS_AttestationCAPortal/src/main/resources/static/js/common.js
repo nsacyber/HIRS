@@ -255,7 +255,7 @@ function generateLogLevelChangeButton(
   loggerName,
   currentLogLevel,
   newLogLevel,
-  logLevelColor
+  logLevelColor,
 ) {
   const modalTargetId = `#logLevelChangeConfirmationModal`;
 
@@ -286,7 +286,7 @@ function generateLogLevelChangeButton(
 function generateCertificateDetailsLink(
   certificateType,
   certificateId,
-  sameType
+  sameType,
 ) {
   const href =
     "/HIRS_AttestationCAPortal/portal/certificate-details?id=" +
@@ -434,6 +434,87 @@ function generateRimDownloadLink(pagePath, rimId) {
   </a>
 `;
 
+  return html;
+}
+
+/**
+ * Generates the HTML to display (icon tag) for the specified validation type.
+ * If a validation for the requested type is not found, an empty
+ * string is returned (and no icon will be displayed).
+ *
+ * @param {string} full - the entire validation report
+ * @param {string} validation_type - validation type
+ * @returns html string to be displayed on validation report page
+ */
+function getValidationDisplayHtml(full, validation_type) {
+  let html = "";
+
+  // loop through all the validations, looking for the one matching the validation type.
+  for (let i = 0; i < full.validations.length; i++) {
+    let currentValidation = full.validations[i];
+    let currentResult = currentValidation.validationResult;
+    let currentMessage = currentValidation.message;
+
+    if (currentValidation.validationType === validation_type) {
+      let unknownStatus = `<img class="icon" src="${unknownIcon}" title="${unknownText}" />`;
+
+      // display appropriate icon based on result
+      if (currentResult) {
+        // if this validation is associated with a certificate, link to the certificate details page
+        if (currentValidation.certificatesUsed.length > 0) {
+          let certType = "";
+
+          if (
+            validation_type === "PLATFORM_CREDENTIAL" ||
+            validation_type === "PLATFORM_CREDENTIAL_ATTRIBUTES"
+          ) {
+            certType = "platform";
+          } else if (validation_type === "ENDORSEMENT_CREDENTIAL") {
+            certType = "endorsement";
+          }
+
+          if (certType) {
+            html +=
+              '<a href="certificate-details?id=' +
+              currentValidation.certificatesUsed[0].id +
+              "&type=" +
+              certType +
+              '">';
+          }
+        }
+
+        if (currentValidation.rimId !== "" && validation_type === "FIRMWARE") {
+          html += `<a href="${portal}/rim-details?id=${currentValidation.rimId}">`;
+        }
+
+        switch (currentResult) {
+          case "PASS":
+            html += `<img src="${passIcon}" title="${currentMessage}" />`;
+            break;
+          case "FAIL":
+            html += `<img src="${failIcon}" title="${currentMessage}"/>`;
+            break;
+          case "ERROR":
+            console.log("im hereeee");
+            html += `<img src="${errorIcon}" title="${currentMessage}"/>`;
+            break;
+          default:
+            html += unknownStatus;
+            break;
+        }
+
+        // add closing tag for href tag if needed.
+        if (
+          currentValidation.certificatesUsed.length > 0 ||
+          currentValidation.rimId !== ""
+        ) {
+          html += "</a>";
+        }
+      } else {
+        html += unknownStatus;
+      }
+    }
+  }
   return html;
 }
 
