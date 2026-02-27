@@ -1,9 +1,9 @@
 plugins {
-    id "com.netflix.nebula.ospackage" version "11.10.0"
+    id "com.netflix.nebula.ospackage" version "12.2.0"
 }
 // Get version from main project gradle
-def packVersion = properties.get("packageVersion");
-def jarVersion = properties.get("jarVersion");
+def packVersion = properties.get("packageVersion")
+def jarVersion = properties.get("jarVersion")
 
 dependencies {
     implementation project(':HIRS_Utils')
@@ -38,13 +38,14 @@ ospackage {
     version = "$packVersion"
     release = '1'
 
-    user 'root'
+    user = 'root'
     fileMode = 0755
 
     into('/opt/eltool/lib') {
         from jar.outputs.files
         from configurations.runtimeClasspath
     }
+
     into('/opt/eltool/scripts') {
         from('scripts') {
             exclude {
@@ -53,6 +54,7 @@ ospackage {
             }
         }
     }
+
     into('/opt/eltool/docs') {
         from('docs') {
             exclude {
@@ -67,10 +69,11 @@ ospackage {
             }
         }
     }
+
     // Copy vendor-table into /tmp to avoid conflict with the ACA 
     into('/opt/eltool/default-properties') {
         from('../../HIRS_Utils/src/main/resources/vendor-table.json') {
-            fileMode 0664
+            fileMode = 0664
             addParentDirs = true
         }
     }
@@ -80,6 +83,7 @@ ospackage {
 
     // Post Install
     postInstall "echo ${jarVersion} > /opt/eltool/VERSION"
+
     // Post Uninstall
     postUninstall 'rm -rf /opt/eltool'
 
@@ -87,6 +91,7 @@ ospackage {
         arch = X86_64
         requires('hwdata', '0.314', GREATER | EQUAL)
     }
+
     buildDeb {
         arch = 'amd64'
         requires('hwdata', '0.314', GREATER | EQUAL)
@@ -95,7 +100,7 @@ ospackage {
 }
 
 
-task buildZip(type: Zip) {
+tasks.register('buildZip', Zip) {
     dependsOn jar
     from(tasks.jar.archiveFile) {
         rename(filename ->

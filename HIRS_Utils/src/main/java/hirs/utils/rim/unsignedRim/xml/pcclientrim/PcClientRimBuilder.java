@@ -445,7 +445,7 @@ public class PcClientRimBuilder {
                     HashSwid.get256Hash(rimEventLog));
         }
         this.addNonNullAttribute(attributes, SwidTagConstants.SHA_256_HASH,
-                fileHash,true);
+                fileHash, true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
                 "supportRIMFormat missing");
         if (!supportRimFormat.equals("supportRIMFormat missing")) {

@@ -159,8 +159,8 @@
     <!-- This modal will be triggered when the user selects one of the four log level buttons on the log level change table -->
     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/help/setLogLevel}">
       <div
-        th:replace="fragments/modal :: modal(id='logLevelChangeConfirmationModal', label='Confirm Log Level Change', 
-                bodyContent=~{this::#logLvlChangeConfirmationBody}, customFooterButtons=~{this::#logLvlChangeConfirmationFooterButtons})">
+        th:replace="~{fragments/modal :: modal(id='logLevelChangeConfirmationModal', label='Confirm Log Level Change', 
+                bodyContent=~{this::#logLvlChangeConfirmationBody}, customFooterButtons=~{this::#logLvlChangeConfirmationFooterButtons})}">
 
         <!-- Modal Body Content -->
         <div id="logLvlChangeConfirmationBody">

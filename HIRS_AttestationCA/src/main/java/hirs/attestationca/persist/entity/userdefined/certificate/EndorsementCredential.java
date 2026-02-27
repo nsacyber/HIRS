@@ -1,6 +1,8 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.CommonCriteriaMeasures;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.FIPSLevel;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TPMSecurityAssertions;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TPMSpecification;
 import jakarta.persistence.Column;
@@ -19,6 +21,7 @@ import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Null;
@@ -82,11 +85,32 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     private static final int EK_LOC_VAL_MAX = 2;
     private static final int EK_TYPE_VAL_MIN = 0;
     private static final int EK_TYPE_VAL_MAX = 3;
+    private static final int ASSURANCE_VAL_MIN = 1;
+    private static final int ASSURANCE_VAL_MAX = 7;
+    private static final int EVAL_STATUS_VAL_MIN = 0;
+    private static final int EVAL_STATUS_VAL_MAX = 2;
+    private static final int STRENGTH_VAL_MIN = 0;
+    private static final int STRENGTH_VAL_MAX = 2;
+    private static final int SECURITY_VAL_MIN = 1;
+    private static final int SECURITY_VAL_MAX = 4;
+
+    private static final int BYTE_MASK_UNSIGNED = 0xFF;
+    private static final int ASCII_PRINTABLE_MIN = 0x20;
+    private static final int ASCII_PRINTABLE_MAX = 0x7E;
+    private static final int DER_OID_TAG = 0x06;
 
     // EK Tag index values
     private static final int EK_TYPE_TAG = 0;
     private static final int EK_LOC_TAG = 1;
     private static final int EK_CERT_LOC_TAG = 2;
+    private static final int EK_CC_INFO_TAG = 3;
+    private static final int EK_FIPS_TAG = 4;
+    private static final int EK_ISO_9000_CERT_TAG = 5;
+    private static final int CC_INFO_STRENGTH_TAG = 0;
+    private static final int CC_INFO_PROF_OID_TAG = 1;
+    private static final int CC_INFO_PROF_URI_TAG = 2;
+    private static final int CC_INFO_TARGET_OID_TAG = 3;
+    private static final int CC_INFO_TARGET_URI_TAG = 4;
 
     private static final int ASN1_SEQ_UNKNOWN_SIZE = 2;
     private static final int ASN1_SEQ_KNOWN_SIZE = 3;
@@ -149,6 +173,25 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
     @Getter
     @Embedded
     private TPMSecurityAssertions tpmSecurityAssertions = null; //optional
+
+    // Though these following fields structurally fall inside TPM Security Assertions,
+    // they are being added as Transient fields to the parent Endorsement Credential to
+    // avoid modifying DB schema.
+    @Getter
+    @Transient
+    private CommonCriteriaMeasures commonCriteriaMeasures = null;
+
+    @Getter
+    @Transient
+    private FIPSLevel fipsLevel = null;
+
+    @Getter
+    @Transient
+    private boolean iso9000Certified = false;
+
+    @Getter
+    @Transient
+    private String iso9000Uri = null;
 
     @Transient
     private Set<String> expectedOids;
@@ -236,7 +279,7 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
      * @throws IOException the input certificate bytes were not readable into an X509
      *                     certificate format
      */
-    private void parseCertificate() throws IOException {
+    public void parseCertificate() throws IOException {
         prepareParser();
         // although we start with a byte representation, we need to change the encoding to
         // make it parseable
@@ -310,6 +353,11 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
                     // there may be subfields that are expected, so continue parsing
                     parseSingle((ASN1Primitive) obj2, false, null);
                 }
+            } else {
+                // parse the elements of the sequence individually
+                for (ASN1Encodable component : seq) {
+                    parseSingle((ASN1Primitive) component, false, null);
+                }
             }
             // The next two are special sequences that have already been matched with an OID.
         } else if (addToMapping && key.equals(TPM_SPECIFICATION)
@@ -351,39 +399,49 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             int tag;
             ASN1TaggedObject obj;
             for (int i = seqPosition; i < seq.size(); i++) {
-                if (seq.getObjectAt(i) instanceof ASN1TaggedObject) {
+                if (seq.getObjectAt(i) instanceof ASN1TaggedObject taggedObj) {
                     obj = (ASN1TaggedObject) seq.getObjectAt(i);
                     tag = obj.getTagNo();
-                    if (tag == EK_TYPE_TAG) {
-                        int ekGenTypeVal = ((ASN1Enumerated) obj.getBaseObject()).getValue().intValue();
-                        if (ekGenTypeVal >= EK_TYPE_VAL_MIN && ekGenTypeVal <= EK_TYPE_VAL_MAX) {
-                            TPMSecurityAssertions.EkGenerationType ekGenType
-                                    = TPMSecurityAssertions.EkGenerationType.values()[ekGenTypeVal];
-                            tpmSecurityAssertions.setEkGenType(ekGenType);
-                        }
-                    } else if (tag == EK_LOC_TAG) {
-                        int ekGenLocVal = ((ASN1Enumerated) obj.getBaseObject()).getValue().intValue();
-                        if (ekGenLocVal >= EK_LOC_VAL_MIN && ekGenLocVal <= EK_LOC_VAL_MAX) {
-                            TPMSecurityAssertions.EkGenerationLocation ekGenLocation
-                                    = TPMSecurityAssertions.EkGenerationLocation.values()[ekGenLocVal];
-                            tpmSecurityAssertions.setEkGenerationLocation(ekGenLocation);
-                        }
-                    } else if (tag == EK_CERT_LOC_TAG) {
-                        int ekCertGenLocVal = ((ASN1Enumerated) obj.getBaseObject())
-                                .getValue().intValue();
-                        if (ekCertGenLocVal >= EK_LOC_VAL_MIN
-                                && ekCertGenLocVal <= EK_LOC_VAL_MAX) {
-                            TPMSecurityAssertions.EkGenerationLocation ekCertGenLoc
-                                    = TPMSecurityAssertions.EkGenerationLocation.
-                                    values()[ekCertGenLocVal];
-                            tpmSecurityAssertions.setEkCertificateGenerationLocation(ekCertGenLoc);
-                        }
+                    switch (tag) {
+                        case EK_TYPE_TAG -> {
+                            int ekGenTypeVal = ((ASN1Enumerated) unwrapTaggedObject(taggedObj)).getValue().intValue();
+                            if (ekGenTypeVal >= EK_TYPE_VAL_MIN && ekGenTypeVal <= EK_TYPE_VAL_MAX) {
+                                TPMSecurityAssertions.EkGenerationType ekGenType
+                                        = TPMSecurityAssertions.EkGenerationType.values()[ekGenTypeVal];
+                                tpmSecurityAssertions.setEkGenType(ekGenType);
+                            }
+                        } case EK_LOC_TAG -> {
+                            int ekGenLocVal = ((ASN1Enumerated) unwrapTaggedObject(taggedObj)).getValue().intValue();
+                            if (ekGenLocVal >= EK_LOC_VAL_MIN && ekGenLocVal <= EK_LOC_VAL_MAX) {
+                                TPMSecurityAssertions.EkGenerationLocation ekGenLocation
+                                        = TPMSecurityAssertions.EkGenerationLocation.values()[ekGenLocVal];
+                                tpmSecurityAssertions.setEkGenerationLocation(ekGenLocation);
+                            }
+                        } case EK_CERT_LOC_TAG -> {
+                            int ekCertGenLocVal = ((ASN1Enumerated) unwrapTaggedObject(taggedObj)).getValue()
+                                    .intValue();
+                            if (ekCertGenLocVal >= EK_LOC_VAL_MIN
+                                    && ekCertGenLocVal <= EK_LOC_VAL_MAX) {
+                                TPMSecurityAssertions.EkGenerationLocation ekCertGenLoc
+                                        = TPMSecurityAssertions.EkGenerationLocation.
+                                        values()[ekCertGenLocVal];
+                                tpmSecurityAssertions.setEkCertificateGenerationLocation(ekCertGenLoc);
+                            }
+                        } case EK_CC_INFO_TAG -> parseCommonCriteria(ASN1Sequence.getInstance(
+                                unwrapTaggedObject(taggedObj)));
+                        case EK_FIPS_TAG -> parseFipsLevel(ASN1Sequence.getInstance(unwrapTaggedObject(taggedObj)));
+                        case EK_ISO_9000_CERT_TAG -> {
+                            this.iso9000Certified = ASN1Boolean.getInstance(taggedObj, false).isTrue();
+                        } default -> log.warn("Encountered unknown TPM Security Assertions tag "
+                                + "in Endorsement Credential: {}", tag);
                     }
-                    // ccInfo, fipsLevel, iso9000Certified, and iso9000Uri still to be implemented
                 }
-                // Will need additional else if case in the future for instanceof ASN1Boolean when
-                // supporting TPMSecurityAssertions iso9000Certified field, which could be either
-                // DERTaggedObject or ASN1Boolean
+                if (seq.size() > 0) {
+                    ASN1Encodable lastElement = seq.getObjectAt(seq.size() - 1);
+                    if (lastElement instanceof ASN1IA5String isoUri) {
+                        this.iso9000Uri = isoUri.getString();
+                    }
+                }
             }
         } else {
             //parse the elements of the sequence individually
@@ -567,5 +625,216 @@ public class EndorsementCredential extends DeviceAssociatedCertificate {
             // there are some deprecated types that we don't parse
             log.error("Unparsed type: {}", component.getClass());
         }
+    }
+
+    /**
+     * Parses the Common Criteria information from an ASN1Sequence and populates
+     * a {@link CommonCriteriaMeasures} object with the discovered fields.
+     *
+     * @param ccSeq the ASN1Sequence containing Common Criteria information
+     * @throws IOException parsing individual subcomponents failed
+     */
+    private void parseCommonCriteria(final ASN1Sequence ccSeq) throws IOException {
+        CommonCriteriaMeasures parsedCommonCriteria = new CommonCriteriaMeasures();
+        for (int i = 0; i < ccSeq.size(); i++) {
+            ASN1Encodable element = ccSeq.getObjectAt(i);
+            if (element instanceof ASN1IA5String ccVersion) {
+                parsedCommonCriteria.setCcVersion(ccVersion.getString());
+            } else if (element instanceof ASN1Enumerated assurance && i == 1) {
+                int assuranceVal = assurance.getValue().intValue();
+                if (assuranceVal >= ASSURANCE_VAL_MIN && assuranceVal <= ASSURANCE_VAL_MAX) {
+                    CommonCriteriaMeasures.EvaluationAssuranceLevel level =
+                            CommonCriteriaMeasures.EvaluationAssuranceLevel.values()[assuranceVal];
+                    parsedCommonCriteria.setAssuranceLevel(level);
+                }
+            } else if (element instanceof ASN1Enumerated evalStatus && i == 2) {
+                int evalStatusVal = evalStatus.getValue().intValue();
+                if (evalStatusVal >= EVAL_STATUS_VAL_MIN && evalStatusVal <= EVAL_STATUS_VAL_MAX) {
+                    CommonCriteriaMeasures.EvaluationStatus status =
+                            CommonCriteriaMeasures.EvaluationStatus.values()[evalStatusVal];
+                    parsedCommonCriteria.setEvaluationStatus(status);
+                }
+            } else if (element instanceof ASN1Boolean plus) {
+                parsedCommonCriteria.setCcPlus(plus.isTrue());
+            } else if (element instanceof ASN1TaggedObject) {
+                ASN1TaggedObject taggedObj = (ASN1TaggedObject) ccSeq.getObjectAt(i);
+                int tag = taggedObj.getTagNo();
+                switch (tag) {
+                    case CC_INFO_STRENGTH_TAG -> {
+                        int strengthVal = ((ASN1Enumerated) unwrapTaggedObject(taggedObj)).getValue().intValue();
+                        if (strengthVal >= STRENGTH_VAL_MIN && strengthVal <= STRENGTH_VAL_MAX) {
+                            CommonCriteriaMeasures.StrengthOfFunction strengthOfFunction
+                                    = CommonCriteriaMeasures.StrengthOfFunction.values()[strengthVal];
+                            parsedCommonCriteria.setStrengthOfFunction(strengthOfFunction);
+                        }
+                    } case CC_INFO_PROF_OID_TAG -> {
+                        parsedCommonCriteria.setTargetOid(parseTaggedOid(taggedObj));
+                    } case CC_INFO_PROF_URI_TAG -> {
+                        Map<String, Object> profileUriMap =
+                                parseUriReference(ASN1Sequence.getInstance(unwrapTaggedObject(taggedObj)));
+                        parsedCommonCriteria.setProfileUri((String) profileUriMap.get("uri"));
+                        parsedCommonCriteria.setProfileAlgOid((String) profileUriMap.get("algOid"));
+                        parsedCommonCriteria.setProfileAlgParameters((byte[]) profileUriMap.get("algParams"));
+                        parsedCommonCriteria.setProfileHashValue((byte[]) profileUriMap.get("hashValue"));
+                    } case CC_INFO_TARGET_OID_TAG -> {
+                        parsedCommonCriteria.setProfileOid(parseTaggedOid(taggedObj));
+                    } case CC_INFO_TARGET_URI_TAG -> {
+                        Map<String, Object> targetUriMap =
+                                parseUriReference(ASN1Sequence.getInstance(unwrapTaggedObject(taggedObj)));
+                        parsedCommonCriteria.setTargetUri((String) targetUriMap.get("uri"));
+                        parsedCommonCriteria.setTargetAlgOid((String) targetUriMap.get("algOid"));
+                        parsedCommonCriteria.setTargetAlgParameters((byte[]) targetUriMap.get("algParams"));
+                        parsedCommonCriteria.setTargetHashValue((byte[]) targetUriMap.get("hashValue"));
+                    } default -> log.warn("Encountered unknown Common Criteria tag "
+                            + "in Endorsement Credential: {}", tag);
+                }
+            }
+        }
+        this.commonCriteriaMeasures = parsedCommonCriteria;
+    }
+
+    /**
+     * Parses a URI reference structure from an ASN1Sequence.
+     * The sequence is expected to contain the URI itself, an optional
+     * algorithm identifier, and an optional hash value.
+     *
+     * @param uriReferenceSeq the ASN1Sequence containing the URI reference
+     * @return a Map with keys "uri", "algOid", "algParams", and "hashValue" representing
+     *         the parsed URI reference information
+     */
+    public static Map<String, Object> parseUriReference(final ASN1Sequence uriReferenceSeq) {
+        Map<String, Object> parsedUriReference = new HashMap<>();
+        for (int i = 0; i < uriReferenceSeq.size(); i++) {
+            ASN1Encodable element = uriReferenceSeq.getObjectAt(i);
+            if (element instanceof ASN1IA5String uri && i == 0) {
+                parsedUriReference.put("uri", String.valueOf(uri));
+            } else if (element instanceof ASN1Sequence algorithmIdSeq) {
+                parsedUriReference.putAll(parseAlgorithmIdentifier(ASN1Sequence.getInstance(algorithmIdSeq)));
+            } else if (element instanceof ASN1BitString hashValue) {
+                parsedUriReference.put("hashValue", hashValue.getBytes());
+            }
+        }
+        return parsedUriReference;
+    }
+
+    /**
+     * Parses an ASN1Sequence representing an AlgorithmIdentifier.
+     * Extracts the algorithm OID and optional algorithm parameters.
+     *
+     * @param algorithmIdSeq the ASN1Sequence containing the algorithm identifier
+     * @return a Map with keys "algOid" and "algParams" representing the parsed algorithm information
+     */
+    private static Map<String, Object> parseAlgorithmIdentifier(final ASN1Sequence algorithmIdSeq) {
+        Map<String, Object> parsedAlgorithmIdentifier = new HashMap<>();
+        for (int i = 0; i < algorithmIdSeq.size(); i++) {
+            ASN1Encodable element = algorithmIdSeq.getObjectAt(i);
+            if (element instanceof ASN1ObjectIdentifier oid && i == 0) {
+                parsedAlgorithmIdentifier.put("algOid", oid.getId());
+            } else if (i > 0) {
+                try {
+                    parsedAlgorithmIdentifier.put("algParams", element.toASN1Primitive().getEncoded());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to encode AlgorithmIdentifier parameters", e);
+                }
+            }
+        }
+        return parsedAlgorithmIdentifier;
+    }
+
+    /**
+     * Parses a FIPS level structure from an ASN1Sequence and populates a {@link FIPSLevel} object
+     * with the discovered fields, including version, security level, and optional FIPS Plus flag.
+     *
+     * @param fipsLevelSeq the ASN1Sequence containing FIPS level information
+     */
+    private void parseFipsLevel(final ASN1Sequence fipsLevelSeq) {
+        FIPSLevel parsedFips = new FIPSLevel();
+        for (int i = 0; i < fipsLevelSeq.size(); i++) {
+            ASN1Encodable element = fipsLevelSeq.getObjectAt(i);
+            if (element instanceof ASN1IA5String fipsVersion && i == 0) {
+                parsedFips.setFipsVersion(fipsVersion.getString());
+            } else if (element instanceof ASN1Enumerated securityLevel && i == 1) {
+                int securityLevelVal = securityLevel.getValue().intValue();
+                if (securityLevelVal >= SECURITY_VAL_MIN && securityLevelVal <= SECURITY_VAL_MAX) {
+                    FIPSLevel.SecurityLevel level =
+                            FIPSLevel.SecurityLevel.values()[securityLevelVal];
+                    parsedFips.setSecurityLevel(level);
+                }
+            } else if (element instanceof ASN1Boolean plus) {
+                parsedFips.setFipsPlus(plus.isTrue());
+            }
+        }
+        this.fipsLevel = parsedFips;
+    }
+
+    /**
+     * Unwraps an ASN1TaggedObject to get the underlying ASN1Primitive,
+     * handling both explicit (direct type) and implicit (octet string).
+     *
+     * @param taggedObj the ASN1TaggedObject to manually parse.
+     * @return the ASN1Primitive form of original object
+     */
+    private static ASN1Primitive unwrapTaggedObject(final ASN1TaggedObject taggedObj) {
+        ASN1Encodable encodable = taggedObj.getBaseObject();
+
+        // Explicit = Leave as is
+        if (!(encodable instanceof ASN1OctetString octetString)) {
+            return encodable.toASN1Primitive();
+        }
+
+        // Implicit = Manually extract data
+        byte[] bytes = octetString.getOctets();
+        // DER parse
+        try (ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(bytes))) {
+            ASN1Encodable parsed = ais.readObject();
+            if (parsed != null) {
+                return parsed.toASN1Primitive();
+            }
+        } catch (Exception e) {
+            log.debug("Failed DER parse of implicit tagged value, falling back to heuristics", e);
+        }
+        // Enum parse
+        if (bytes.length == 1) {
+            return new ASN1Enumerated(bytes[0] & BYTE_MASK_UNSIGNED);
+        }
+        // IA5String parse
+        boolean ascii = bytes.length > 0;
+        for (byte b : bytes) {
+            int c = b & BYTE_MASK_UNSIGNED;
+            if (c < ASCII_PRINTABLE_MIN || c > ASCII_PRINTABLE_MAX) {
+                ascii = false;
+                break;
+            }
+        }
+        if (ascii) {
+            return new DERIA5String(new String(bytes, java.nio.charset.StandardCharsets.US_ASCII));
+        }
+        return octetString.toASN1Primitive();
+    }
+
+    /**
+     * Parses an ASN.1 tagged object to extract an Object Identifier (OID) as a string.
+     *
+     * @param taggedObj the ASN1TaggedObject to manually parse
+     * @return oidString the Oid to return in String form
+     * @throws IOException parsing individual subcomponents failed
+     */
+    private static String parseTaggedOid(final ASN1TaggedObject taggedObj) throws IOException {
+        ASN1Primitive primitiveObj = unwrapTaggedObject(taggedObj);
+        String oidString = "";
+        if (primitiveObj instanceof ASN1ObjectIdentifier oid) {
+            oidString = oid.getId();
+        } else if (primitiveObj instanceof ASN1OctetString oct) {
+            byte[] body = oct.getOctets();
+            byte[] der = new byte[body.length + 2];
+            der[0] = DER_OID_TAG;
+            der[1] = (byte) body.length;
+            System.arraycopy(body, 0, der, 2, body.length);
+            oidString = ASN1ObjectIdentifier.getInstance(ASN1Primitive.fromByteArray(der))
+                    .getId();
+        } else {
+            log.warn("Unexpected type for OID: {}", primitiveObj.getClass());
+        }
+        return oidString;
     }
 }

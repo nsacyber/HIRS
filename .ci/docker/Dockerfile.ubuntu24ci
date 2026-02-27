@@ -1,9 +1,11 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
+
+# Date Modified: 2/06/2026
 
 RUN apt-get update -y && apt-get upgrade -y && apt-get clean -y
 
 # Install packages for building HIRS ACA
-RUN apt-get -y install openjdk-17-jdk  mariadb-server
+RUN apt-get -y install openjdk-25-jdk  mariadb-server
 RUN apt-get -y install git curl nano cron
 
 # Ports needed for system-level tests

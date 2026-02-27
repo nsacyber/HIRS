@@ -97,7 +97,7 @@
                 enctype="multipart/form-data">
                 Import IDevID Certificates
                 <th:block
-                    th:replace="fragments/file-chooser :: fileChooser(id='idevid-editor', label='Import IDevID Certificates', bodyContent=~{this :: bodyContent})">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='idevid-editor', label='Import IDevID Certificates', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" type="file" name="file" multiple="multiple" />
                     </th:block>
@@ -130,8 +130,8 @@
         <form method="POST"
             th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/delete}">
             <div
-                th:replace="fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of IDevID Certificate', 
-                bodyContent=~{this::#deleteDevIdConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+                th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of IDevID Certificate', 
+                bodyContent=~{this::#deleteDevIdConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})}">
 
                 <!-- Modal Body Content -->
                 <div id="deleteDevIdConfirmationBody">
@@ -153,8 +153,8 @@
         <form method="POST"
             th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-delete}">
             <div
-                th:replace="fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple IDevID Certificates', 
-                bodyContent=~{this::#deleteMultipleIdevidCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})">
+                th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple IDevID Certificates', 
+                bodyContent=~{this::#deleteMultipleIdevidCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})}">
 
                 <!-- Modal Body Content -->
                 <div id="deleteMultipleIdevidCertificatesConfirmationBody">

@@ -107,9 +107,9 @@
         <!-- Details icon and dialog for HIRS ACA Root certificate -->
         <span class="aca-input-box-header">HIRS Attestation Certificate Chain</span>
         <th:block
-            th:replace="fragments/details-viewer
+            th:replace="~{fragments/details-viewer
                 :: detailsViewer(id='aca-cert-viewer',
-                label='HIRS Attestation Root Certificate', customButtons=${null}, bodyContent=~{this :: aca-cert-viewer-modal})">
+                label='HIRS Attestation Root Certificate', customButtons=${null}, bodyContent=~{this :: aca-cert-viewer-modal})}">
             <th:block th:fragment="aca-cert-viewer-modal"> <!-- aca-cert-viewer-modal start -->
                 <div class="container-fluid">
                     <div class="row">
@@ -174,7 +174,7 @@
                 th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload}">
                 Trust Chain CA Certificates
                 <th:block
-                    th:replace="fragments/file-chooser :: fileChooser(id='tc-editor', label='Import Trust Chain Certificates', bodyContent=~{this :: bodyContent})">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='tc-editor', label='Import Trust Chain Certificates', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
@@ -206,8 +206,8 @@
         <!-- This modal will be triggered when the user hits the delete link on one of the table rows on the Trust Chain Certificate page -->
         <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/delete}">
             <div
-                th:replace="fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Trust Chain Certificate', 
-                bodyContent=~{this::#deleteTrustChainConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})">
+                th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Trust Chain Certificate', 
+                bodyContent=~{this::#deleteTrustChainConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})}">
 
                 <!-- Modal Body Content -->
                 <div id="deleteTrustChainConfirmationBody">
@@ -228,8 +228,8 @@
         <!-- This modal will be triggered when the user hits the Delete Selected button on the Trust Chain Certificate page-->
         <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-delete}">
             <div
-                th:replace="fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Trust Chain Certificates', 
-                bodyContent=~{this::#deleteMultipleTrustChainsConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})">
+                th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Trust Chain Certificates', 
+                bodyContent=~{this::#deleteMultipleTrustChainsConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})}">
 
                 <!-- Modal Body Content -->
                 <div id="deleteMultipleTrustChainsConfirmationBody">

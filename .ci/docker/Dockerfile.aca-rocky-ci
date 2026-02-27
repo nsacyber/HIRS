@@ -1,17 +1,34 @@
-FROM rockylinux:9
+FROM rockylinux:9.3
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority. Expose port 8443 to access the portal from outside the container.
 
 # Purpose: This image is designed for HIRS ACA testing on Rocky 9. It is meant to be used in
 #          the .ci, and does not automatically start the ACA upon running the container.
-# Date Modified: 5/3/24
+# Date Modified: 2/13/26
 # Notes: The image to be built should be named "aca-rocky-ci:latest".
 #        For local image build, use this command from the /HIRS/ directory to build the image:
 #           $ docker build -f ./.ci/docker/Dockerfile.aca-rocky-ci -t aca-rocky-ci:latest .
 #        For manually setting up and starting the ACA in the container, uncomment the CMD
 #        statement at the end of this Dockerfile, allowing those scripts to be executed upon
 #        running the container.
+# Notes:
+#   * This image installs java, installs project dependencies, and runs gradlew to download gradlew
+#     dependencies. This saves time during a docker run. This also means the image should be
+#     re-built and re-posted to github each time the following occurs:
+#       1) add/update a dependency
+#       2) update gradle
+#     If not re-built, the docker run will still work, but will take longer as it downloads updates
+#   * Steps to login to registry, build image, tag image with ghcr.io registry, and push to registry:
+#      $ sudo groupadd docker
+#      $ sudo usermod -aG docker $USER
+#     $ cat pat.txt | docker login ghcr.io -u iadgovuser## --password-stdin
+#       Note: pat requires permissions "upload packages from GitHub Package Registry" and possibly "repo"
+#     $ docker build . -f Dockerfile.aca-rocky-ci -t aca-rocky-ci:latest
+#       Note: may need to use --no-cache when building, if 'git clone HIRS' or 'gradlew' is cached
+#             (bc need any updated dependencies)
+#     $ docker image tag aca-rocky-ci:latest ghcr.io/nsacyber/hirs/aca-rocky-ci:latest
+#     $ docker push ghcr.io/nsacyber/hirs/aca-rocky-ci:latest
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ARG REF=main
@@ -29,7 +46,7 @@ ENV HIRS_DNF_OS_SETUP="initscripts firewalld policycoreutils policycoreutils-pyt
 #   OS tools
 ENV HIRS_DNF_OS_TOOLS="git sudo vim wget"
 #   ACA compile
-ENV HIRS_DNF_ACA_COMPILE="java-17-openjdk-devel"
+ENV HIRS_DNF_ACA_COMPILE="java-25-openjdk-devel"
 #   ACA run
 ENV HIRS_DNF_ACA_RUN="mariadb-server"
 #   IBM TPM simulator compile

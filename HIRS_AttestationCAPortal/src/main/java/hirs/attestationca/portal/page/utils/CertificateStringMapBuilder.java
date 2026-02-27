@@ -14,11 +14,15 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Comp
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
+import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.PciIds;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;
+
+import jakarta.persistence.NonUniqueResultException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -33,6 +37,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static hirs.utils.specificationLookups.PlatformClass.getPlatClassFromId;
@@ -43,10 +48,28 @@ import static hirs.utils.specificationLookups.PlatformClass.getPlatClassFromId;
  */
 @Log4j2
 public final class CertificateStringMapBuilder {
+
+    // Extended Key Usage (TCG KP) OIDs
+    private static final String TCG_KP_EK_CERTIFICATE = "2.23.133.8.1";
+    private static final String TCG_KP_PLATFORM_ATTRIBUTE_CERTIFICATE = "2.23.133.8.2";
+    private static final String TCG_KP_AIK_CERTIFICATE = "2.23.133.8.3";
+    private static final String TCG_KP_PLATFORM_KEY_CERTIFICATE = "2.23.133.8.4";
+    private static final String TCG_KP_DELTA_PLATFORM_ATTRIBUTE_CERTIFICATE = "2.23.133.8.5";
+
     /**
      * This private constructor was created to silence checkstyle error.
      */
     private CertificateStringMapBuilder() {
+    }
+
+    private static Map<String, String> getExtendedKeyUsageMap() {
+        Map<String, String> ekuMap = new HashMap<>();
+        ekuMap.put(TCG_KP_EK_CERTIFICATE, "tcg-kp-EKCertificate");
+        ekuMap.put(TCG_KP_PLATFORM_ATTRIBUTE_CERTIFICATE, "tcg-kp-PlatformAttributeCertificate");
+        ekuMap.put(TCG_KP_AIK_CERTIFICATE, "tcg-kp-AIKCertificate");
+        ekuMap.put(TCG_KP_PLATFORM_KEY_CERTIFICATE, "tcg-kp-PlatformKeyCertificate");
+        ekuMap.put(TCG_KP_DELTA_PLATFORM_ATTRIBUTE_CERTIFICATE, "tcg-kp-DeltaPlatformAttributeCertificate");
+        return ekuMap;
     }
 
     /**
@@ -62,6 +85,7 @@ public final class CertificateStringMapBuilder {
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCertificateRepository) {
         HashMap<String, String> data = new HashMap<>();
+        Map<String, String> ekuMap = getExtendedKeyUsageMap();
 
         if (certificate != null) {
             data.put("issuer", certificate.getIssuer());
@@ -137,14 +161,24 @@ public final class CertificateStringMapBuilder {
 
             if (certificate.getExtendedKeyUsage() != null
                     && !certificate.getExtendedKeyUsage().isEmpty()) {
-                data.put("extendedKeyUsage", certificate.getExtendedKeyUsage());
+                String eku = certificate.getExtendedKeyUsage().replaceAll("\\n$", "");
+                if (ekuMap.containsKey(eku)) {
+                    data.put("extendedKeyUsage", eku + " (" + ekuMap.get(eku) + ")");
+                } else {
+                    data.put("extendedKeyUsage", eku + " (Warning: Unexpected OID)");
+                }
             }
 
             //Get issuer ID if not self signed
             if (data.get("isSelfSigned").equals("false")) {
                 //Get the missing certificate chain for not self sign
-                Certificate missingCert =
-                        containsAllChain(certificate, caCertificateRepository);
+                Certificate missingCert = null;
+                try {
+                    missingCert = containsAllChain(certificate, caCertificateRepository);
+                } catch (NonUniqueSKIException e) {
+                    data.put("missingChainIssuer",
+                            "Chain contains Root CA whose SKI is non-unique within CA repository.");
+                }
                 String issuerResult;
 
                 if (missingCert != null) {
@@ -155,12 +189,17 @@ public final class CertificateStringMapBuilder {
                 // Match AKI against SKI
                 if (certificate.getAuthorityKeyIdentifier() != null
                         && !certificate.getAuthorityKeyIdentifier().isEmpty()) {
-                    CertificateAuthorityCredential keyIdMatch = caCertificateRepository
-                            .findBySubjectKeyIdStringAndArchiveFlag(
-                                    certificate.getAuthorityKeyIdentifier(), false);
-                    if (keyIdMatch != null) {
-                        data.put("issuerID", keyIdMatch.getId().toString());
-                        return data;
+                    try {
+                        CertificateAuthorityCredential keyIdMatch = caCertificateRepository
+                                .findBySubjectKeyIdStringAndArchiveFlag(
+                                        certificate.getAuthorityKeyIdentifier(), false);
+                        if (keyIdMatch != null) {
+                            data.put("issuerID", keyIdMatch.getId().toString());
+                            return data;
+                        }
+                    } catch (IncorrectResultSizeDataAccessException | NonUniqueResultException e) {
+                        log.error("Duplicate Root CA SKI detected while matching AKI to SKI: {}",
+                                certificate.getAuthorityKeyIdentifier(), e);
                     }
                 }
 
@@ -209,11 +248,19 @@ public final class CertificateStringMapBuilder {
         //Check if there is a subject organization
         if (certificate.getAuthorityKeyIdentifier() != null
                 && !certificate.getAuthorityKeyIdentifier().isEmpty()) {
-            skiCA = caCredentialRepository.findBySubjectKeyIdStringAndArchiveFlag(
-                    certificate.getAuthorityKeyIdentifier(), false);
+            try {
+                skiCA = caCredentialRepository.findBySubjectKeyIdStringAndArchiveFlag(
+                        certificate.getAuthorityKeyIdentifier(), false);
+            } catch (IncorrectResultSizeDataAccessException | NonUniqueResultException e) {
+                log.error("Duplicate Root CA SKI detected while resolving chain: {}",
+                        certificate.getAuthorityKeyIdentifier(), e);
+                throw new NonUniqueSKIException(
+                        "Duplicate Root CA SKI detected in CA Credential Repository: "
+                                + certificate.getAuthorityKeyIdentifier(), e);
+            }
         } else {
-            log.error("Certificate ({}) for {} has no authority key identifier.", certificate.getClass(),
-                    certificate.getSubject());
+            log.error("Certificate ({}) for {} has no authority key identifier.",
+                    certificate.getClass(), certificate.getSubject());
         }
 
         if (skiCA == null) {
@@ -348,6 +395,12 @@ public final class CertificateStringMapBuilder {
             //x509 credential version
             data.put("x509Version", Integer.toString(certificate
                     .getX509CredentialVersion()));
+            // Reparse certificate to fetch additional details for display
+            try {
+                certificate.parseCertificate();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to re-parse Endorsement Credential for details display", e);
+            }
             // Add hashmap with TPM information if available
             if (certificate.getTpmSpecification() != null) {
                 data.putAll(
@@ -356,6 +409,16 @@ public final class CertificateStringMapBuilder {
             if (certificate.getTpmSecurityAssertions() != null) {
                 data.putAll(
                         convertStringToHash(certificate.getTpmSecurityAssertions().toString()));
+                if (certificate.getCommonCriteriaMeasures() != null) {
+                    data.putAll(convertStringToHash(certificate.getCommonCriteriaMeasures().toString()));
+                }
+                if (certificate.getFipsLevel() != null) {
+                    data.putAll(convertStringToHash(certificate.getFipsLevel().toString()));
+                }
+                data.put("iso9000Certified", String.valueOf(certificate.isIso9000Certified()));
+                if (certificate.getIso9000Uri() != null) {
+                    data.put("iso9000Uri", certificate.getIso9000Uri());
+                }
             }
         } else {
             String notFoundMessage = "Unable to find Endorsement Credential "
@@ -542,17 +605,70 @@ public final class CertificateStringMapBuilder {
      */
     private static HashMap<String, String> convertStringToHash(final String str) {
         HashMap<String, String> map = new HashMap<>();
-        String name = str.substring(0, str.indexOf('(')).trim();
-        String data = str.trim().substring(str.trim().indexOf('(') + 1,
-                str.trim().length() - 1);
-        // Separate key and value and parse the key
-        for (String pair : data.split(",")) {
-            String[] keyValue = pair.split("=");
-            // Remove white space and change first character in the key to uppercase
-            keyValue[0] = Character.toUpperCase(
-                    keyValue[0].trim().charAt(0)) + keyValue[0].trim().substring(1);
+        if (str == null || str.isEmpty()) {
+            return map;
+        }
 
-            map.put(name + keyValue[0], keyValue[1].trim());
+        // Determine delimiter type
+        int startIdx = str.indexOf('(');
+        char openDelim = '(';
+        char closeDelim = ')';
+
+        if (startIdx < 0) {
+            startIdx = str.indexOf('{');
+            openDelim = '{';
+            closeDelim = '}';
+        }
+
+        // If no delimiters, cannot parse
+        if (startIdx < 0) {
+            return map;
+        }
+
+        String name = str.substring(0, startIdx).trim();
+        String data = str.substring(startIdx + 1, str.lastIndexOf(closeDelim)).trim();
+
+        int braceDepth = 0;
+        StringBuilder current = new StringBuilder();
+        List<String> pairs = new ArrayList<>();
+
+        // Split top-level key=value pairs, ignoring commas inside braces
+        for (char c : data.toCharArray()) {
+            if (c == '{' || c == '(') {
+                braceDepth++;
+            } else if (c == '}' || c == ')') {
+                braceDepth--;
+            }
+            if (c == ',' && braceDepth == 0) {
+                pairs.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
+        }
+        if (current.length() > 0) {
+            pairs.add(current.toString());
+        }
+
+        for (String pair : pairs) {
+            String[] keyValue = pair.split("=", 2);
+            if (keyValue.length < 2) {
+                continue;
+            }
+            String key = keyValue[0].trim();
+            String value = keyValue[1].trim();
+
+            // Capitalize first letter of key
+            key = Character.toUpperCase(key.charAt(0)) + key.substring(1);
+
+            // Handle nested object recursively if it contains braces or parentheses
+            if ((value.contains("{") && value.contains("}")) || (value.contains("(") && value.contains(")"))) {
+                HashMap<String, String> nestedMap = convertStringToHash(value);
+                // Prefix nested keys with parent key
+                map.putAll(nestedMap);
+            } else {
+                map.put(name + key, value);
+            }
         }
         return map;
     }
@@ -649,6 +765,7 @@ public final class CertificateStringMapBuilder {
                                                                        caCredentialRepository) {
 
         HashMap<String, String> data = new HashMap<>();
+        Map<String, String> ekuMap = getExtendedKeyUsageMap();
         IDevIDCertificate certificate = (IDevIDCertificate) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
@@ -708,7 +825,12 @@ public final class CertificateStringMapBuilder {
 
             if (certificate.getExtendedKeyUsage() != null
                     && !certificate.getExtendedKeyUsage().isEmpty()) {
-                data.put("extendedKeyUsage", certificate.getExtendedKeyUsage());
+                String eku = certificate.getExtendedKeyUsage().replaceAll("\\n$", "");
+                if (ekuMap.containsKey(eku)) {
+                    data.put("extendedKeyUsage", eku + " (" + ekuMap.get(eku) + ")");
+                } else {
+                    data.put("extendedKeyUsage", eku + " (Warning: Unexpected OID)");
+                }
             }
 
             if (certificate.getTpmPolicies() != null) {

@@ -1,4 +1,4 @@
-# Updated: 02/11/2025
+# Updated: 02/03/2026
 name: HIRS build and packages for Linux
 on:
   push:
@@ -16,11 +16,11 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v6
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
         with:
-          java-version: '17'
+          java-version: '25'
           distribution: 'temurin'
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
@@ -34,7 +34,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install git curl nano cron mariadb-server
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
       - name: Execute Gradle build
         run: |
           ./gradlew build;
@@ -45,12 +45,11 @@ jobs:
           cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
           cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
-          cp HIRS_Structs/build/libs/*.jar artifacts/jars/.
           cp tools/tcg_rim_tool/build/distributions/*.zip artifacts/win
           cp tools/tcg_eventlog_tool/build/distributions/*.zip artifacts/win
           cp package/win/tcg-rim-tool/* artifacts/win/hirstools
       - name: Archive RPM files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: RPM_Files
           path: |
@@ -59,25 +58,25 @@ jobs:
             tools/tcg_eventlog_tool/build/distributions/*.rpm
           if-no-files-found: error
       - name: Archive DEB files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: DEB_Files
           path: HIRS_AttestationCAPortal/build/distributions/*.deb
           if-no-files-found: error
       - name: War files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: WAR_Files
           path: HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war
           if-no-files-found: error
       - name: JAR_Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: JAR_Files
           path: artifacts/jars/
           if-no-files-found: error
       - name: ZIP_Files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ZIP_Files
           path: artifacts/win/

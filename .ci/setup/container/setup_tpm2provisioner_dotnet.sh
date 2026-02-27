@@ -16,7 +16,7 @@ echo "*** Setting up TPM emulator for the TPM2 Provisioner *** "
 waitForAca
 
 ## Un-package Provisioner.NET RPM
-yes | dnf install HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/HIRS_Provisioner.NET.2.2.0.linux-x64.rpm -y > /dev/null
+yes | dnf install HIRS_Provisioner.NET/hirs/bin/Release/**/linux-x64/*.rpm -y > /dev/null
 
 # Initiate startup for IBMTSS Tools
 startFreshTpmServer -f

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{layout}">
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <section layout:fragment="script">
@@ -250,30 +250,31 @@
 
     <form id="download" method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/validation-reports/download}">
       Download Validation Reports
-      <th:block th:replace="fragments/download-info
-                :: downloadInfo('validationReportsDownload',
-                'Download Validation Reports', ~{this :: bodyContent})">
+      <th:block th:replace="~{fragments/download-info
+                :: downloadInfo(id='validationReportsDownload',
+                label='Download Validation Reports',
+                bodyContent=~{this :: bodyContent})}">
         <th:block th:fragment="bodyContent">
-          <label>Company<input id="company" type="text" pattern="^\w*$" title="Letters, numbers, and spaces only"
-              name="company" /></label>
-          <label>Contract #<input id="contract" type="text" pattern="^\w*$" title="Letters, numbers, and spaces only"
-              name="contract" /></label>
+          <label>Company<input id="company" name="company" pattern="^\w*$" title="Letters, numbers, and spaces only"
+              type="text" /></label>
+          <label>Contract #<input id="contract" name="contract" pattern="^\w*$"
+              title="Letters, numbers, and spaces only" type="text" /></label>
           <br>
-          <label>Date range start<input id="dateStart" type="date" name="dateStart" /></label>
-          <label>Date range end<input id="dateEnd" type="date" name="dateEnd" /></label>
+          <label>Date range start<input id="dateStart" name="dateStart" type="date" /></label>
+          <label>Date range end<input id="dateEnd" name="dateEnd" type="date" /></label>
         </th:block>
       </th:block>
     </form>
 
     <div class="aca-data-table">
-      <table id="reportTable" class="table table-bordered table-striped table-hover">
+      <table class="table table-bordered table-striped table-hover" id="reportTable">
         <thead>
           <tr>
             <th rowspan="2"></th>
             <th rowspan="2">Result</th>
             <th rowspan="2">Timestamp</th>
             <th rowspan="2">Device</th>
-            <th colspan="3" class="text-center">Credential Validations</th>
+            <th class="text-center" colspan="3">Credential Validations</th>
           </tr>
           <tr>
             <th style="text-align: center">Endorsement</th>
