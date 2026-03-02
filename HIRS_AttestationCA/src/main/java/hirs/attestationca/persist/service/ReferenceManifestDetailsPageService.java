@@ -20,6 +20,7 @@ import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
+import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -109,75 +110,64 @@ public class ReferenceManifestDetailsPageService {
 
     private void getEventSummary(final HashMap<String, Object> data,
                                  final Collection<TpmPcrEvent> eventList) {
-        boolean crtm = false;
-        boolean bootManager = false;
-        boolean osLoader = false;
-        boolean osKernel = false;
-        boolean acpiTables = false;
-        boolean smbiosTables = false;
-        boolean gptTable = false;
-        boolean bootOrder = false;
-        boolean defaultBootDevice = false;
-        boolean secureBoot = false;
-        boolean pk = false;
-        boolean kek = false;
-        boolean sigDb = false;
-        boolean forbiddenDbx = false;
+        Map<String, Boolean> coveredEvents = new HashMap<>();
+        coveredEvents.put("crtm", false);
+        coveredEvents.put("firmwareBlob", false);
+        coveredEvents.put("bootManager", false);
+        coveredEvents.put("osLoader", false);
+        coveredEvents.put("osKernel", false);
+        coveredEvents.put("acpiTables", false);
+        coveredEvents.put("smbiosTables", false);
+        coveredEvents.put("gptTable", false);
+        coveredEvents.put("bootOrder", false);
+        coveredEvents.put("secureBoot", false);
+        coveredEvents.put("pk", false);
+        coveredEvents.put("kek", false);
+        coveredEvents.put("sigDb", false);
+        coveredEvents.put("forbiddenDbx", false);
 
         String contentStr;
         for (TpmPcrEvent tpe : eventList) {
             contentStr = tpe.getEventContentStr();
             // check for specific events
-            if (contentStr.contains("CRTM")) {
-                crtm = true;
+            if (contentStr.contains("CRTM")
+                || contentStr.contains("IBB")) {
+                coveredEvents.put("crtm", true);
+            } else if (contentStr.contains(UefiConstants.UEFI_FIRMWARE_BLOB_LABEL)) {
+                coveredEvents.put("firmwareBlob", true);
             } else if (contentStr.contains("shimx64.efi")
                     || contentStr.contains("bootmgfw.efi")) {
-                bootManager = true;
+                coveredEvents.put("bootManager", true);
             } else if (contentStr.contains("grubx64.efi")
                     || contentStr.contains("winload.efi")) {
-                osLoader = true;
+                coveredEvents.put("osLoader", true);
             } else if (contentStr.contains("vmlinuz")
                     || contentStr.contains("ntoskrnl.exe")) {
-                osKernel = true;
+                coveredEvents.put("osKernel", true);
             } else if (contentStr.contains("ACPI")) {
-                acpiTables = true;
+                coveredEvents.put("acpiTables", true);
             } else if (contentStr.contains("SMBIOS")) {
-                smbiosTables = true;
+                coveredEvents.put("smbiosTables", true);
             } else if (contentStr.contains("GPT")) {
-                gptTable = true;
+                coveredEvents.put("gptTable", true);
             } else if (contentStr.contains("BootOrder")) {
-                bootOrder = true;
-            } else if (contentStr.contains("Boot0000")) {
-                defaultBootDevice = true;
-            } else if (contentStr.contains("variable named PK")) {
-                pk = true;
-            } else if (contentStr.contains("variable named KEK")) {
-                kek = true;
-            } else if (contentStr.contains("variable named db")) {
+                coveredEvents.put("bootOrder", true);
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + ": PK")) {
+                coveredEvents.put("pk", true);
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + ": KEK")) {
+                coveredEvents.put("kek", true);
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + ": db")) {
                 if (contentStr.contains("dbx")) {
-                    forbiddenDbx = true;
+                    coveredEvents.put("forbiddenDbx", true);
                 } else {
-                    sigDb = true;
+                    coveredEvents.put("sigDb", true);
                 }
             } else if (contentStr.contains("Secure Boot is enabled")) {
-                secureBoot = true;
+                coveredEvents.put("secureBoot", true);
             }
         }
 
-        data.put("crtm", crtm);
-        data.put("bootManager", bootManager);
-        data.put("osLoader", osLoader);
-        data.put("osKernel", osKernel);
-        data.put("acpiTables", acpiTables);
-        data.put("smbiosTables", smbiosTables);
-        data.put("gptTable", gptTable);
-        data.put("bootOrder", bootOrder);
-        data.put("defaultBootDevice", defaultBootDevice);
-        data.put("secureBoot", secureBoot);
-        data.put("pk", pk);
-        data.put("kek", kek);
-        data.put("sigDb", sigDb);
-        data.put("forbiddenDbx", forbiddenDbx);
+        data.put("coveredEvents", coveredEvents);
     }
 
     /**
