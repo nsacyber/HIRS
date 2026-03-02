@@ -14,9 +14,24 @@
     overflow-y: scroll;
 }
 
+.rimrow {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.rimrow > [class*='col-'] {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-bottom: 1px solid black;
+}
+
 .colRimHeader{
     font-weight: bold;
-    margin: auto 0;
+    padding-top: 2rem;
 }
 
 #eventLog {
