@@ -175,7 +175,7 @@ public class SwidTagGateway {
     /**
      * This method generates a base RIM from the values in a JSON file.
      *
-     * @param filename
+     * @param filename json filename
      */
     public void generateSwidTag(final String filename) {
         Document swidtag = builder.newDocument();
@@ -261,7 +261,7 @@ public class SwidTagGateway {
      * This method writes a Document object out to the file specified by generatedFile.
      *
      * @param swidTag the XML representing the SWID tag to write
-     * @param output the file path to write the SWID tag to
+     * @param output  the file path to write the SWID tag to
      */
     public void writeSwidTagFile(final Document swidTag, final String output) {
         try {
@@ -571,6 +571,7 @@ public class SwidTagGateway {
     /**
      * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
      * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
+     *
      * @param doc the XML {@link Document} representing the SoftwareIdentity to sign
      * @return the signed XML {@link Document}
      */

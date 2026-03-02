@@ -1,12 +1,11 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.HIRSLogger;
 import hirs.attestationca.persist.service.HelpPageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import jakarta.servlet.http.HttpServletResponse;
@@ -125,6 +124,7 @@ public class HelpPageController extends PageController<NoPageParams> {
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
      * @return the redirection view
+     * @throws URISyntaxException if any issues arise from redirecting to the Help page.
      */
     @PostMapping("/setLogLevel")
     public RedirectView setLogLevel(@RequestParam final String loggerName,

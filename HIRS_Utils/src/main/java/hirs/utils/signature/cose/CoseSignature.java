@@ -1,64 +1,66 @@
 package hirs.utils.signature.cose;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
 import com.authlete.cbor.CBORByteArray;
+import com.authlete.cbor.CBORDecoder;
 import com.authlete.cbor.CBORInteger;
 import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORItemList;
-import com.authlete.cbor.CBORDecoder;
-import com.authlete.cbor.CBORTaggedItem;
 import com.authlete.cbor.CBORNull;
-import com.authlete.cose.COSESign1;
-import com.authlete.cose.COSEUnprotectedHeader;
+import com.authlete.cbor.CBORTaggedItem;
+import com.authlete.cose.COSEException;
 import com.authlete.cose.COSEProtectedHeader;
 import com.authlete.cose.COSEProtectedHeaderBuilder;
-import com.authlete.cose.COSEUnprotectedHeaderBuilder;
-import com.authlete.cose.COSEException;
+import com.authlete.cose.COSESign1;
 import com.authlete.cose.COSESign1Builder;
+import com.authlete.cose.COSEUnprotectedHeader;
+import com.authlete.cose.COSEUnprotectedHeaderBuilder;
 import com.authlete.cose.SigStructure;
 import com.authlete.cose.SigStructureBuilder;
 import hirs.utils.signature.SignatureFormat;
 import hirs.utils.signature.SignatureHelper;
 import hirs.utils.signature.cose.Cbor.CborContentTypes;
 import hirs.utils.signature.cose.Cbor.CborTagProcessor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 
 /**
  * Class for implementing rfc rfc9052 CBOR Object Signing and Encryption (COSE)
  * Refer to https://datatracker.ietf.org/doc/html/rfc9053
- *
+ * <p>
  * COSE_Sign = [
- *        Headers,
- *        payload : bstr / nil,
- *        signatures : [+ COSE_Signature]
- *    ]
- *    From section 4.4 of rfc 9052 "How to compute a signature:
- *    1.  Create a Sig_structure and populate it with the appropriate fields.
- *    2.  Create the value ToBeSigned by encoding the Sig_structure to a
- *        byte string, using the encoding described in Section 9.
- *    3.  Call the signature creation algorithm, passing in K (the key to
- *        sign with), alg (the algorithm to sign with), and ToBeSigned (the value to sign).
- *    4.  Strip off the DER encoding from the Signature field placed on by
- *        Java.Security. Even though RFC 9052 does not specify a format,
- *        The COSE Working Groups test patterns use a "Raw" (IEEE P1363) format.
- *    5.  Place the resulting signature value in the correct location.
- *        This is the "signature" field of the COSE_Signature or COSE_Sign1 structure.
+ * Headers,
+ * payload : bstr / nil,
+ * signatures : [+ COSE_Signature]
+ * ]
+ * From section 4.4 of rfc 9052 "How to compute a signature:
+ * 1.  Create a Sig_structure and populate it with the appropriate fields.
+ * 2.  Create the value ToBeSigned by encoding the Sig_structure to a
+ * byte string, using the encoding described in Section 9.
+ * 3.  Call the signature creation algorithm, passing in K (the key to
+ * sign with), alg (the algorithm to sign with), and ToBeSigned (the value to sign).
+ * 4.  Strip off the DER encoding from the Signature field placed on by
+ * Java.Security. Even though RFC 9052 does not specify a format,
+ * The COSE Working Groups test patterns use a "Raw" (IEEE P1363) format.
+ * 5.  Place the resulting signature value in the correct location.
+ * This is the "signature" field of the COSE_Signature or COSE_Sign1 structure.
  */
 @NoArgsConstructor
 public class CoseSignature implements SignatureFormat {
+    private static final Logger LOGGER = LogManager.getLogger(CoseSignature.class);
     // COSE Generic Header
     @Setter
     @Getter
@@ -69,21 +71,36 @@ public class CoseSignature implements SignatureFormat {
     private byte[] keyId = null;
     private byte[] protectedHeaders = null;
     private COSESign1Builder coseBuilder = null;
-    private static final Logger LOGGER = LogManager.getLogger(CoseSignature.class);
+
+    /**
+     * Obtain the SHA-256 thumbprint of an X.509 certificate (used for embedding).
+     *
+     * @param cert The input X.509 certificate.
+     * @return The SHA-256 thumbprint corresponding to the certificate.
+     * @throws NoSuchAlgorithmException     if the SHA-256 algorithm is unsupported
+     * @throws CertificateEncodingException if the certificate cannot be encoded to DER
+     */
+    public static byte[] getThumbprint(final X509Certificate cert) throws NoSuchAlgorithmException,
+            CertificateEncodingException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(cert.getEncoded());
+        return md.digest();
+    }
 
     /**
      * Create toBeSigned using supplied kid and algorithm for testing only.
      * Kid will be assigned to the unprotected header for tests.
-     * @param algId IANA registered COSE Algorithm String
-     * @param kid Key Identifier
-     * @param payload  data to be placed in the payload
-     * @param signingCert a signing certificate used if the embedded parameter is true
-     * @param embedded if true, embeds the signing certificate and thumbprint per RFC 9360
-     * @param rimType the type of RIM, for use with the protected header content-type
+     *
+     * @param algId             IANA registered COSE Algorithm String
+     * @param kid               Key Identifier
+     * @param payload           data to be placed in the payload
+     * @param signingCert       a signing certificate used if the embedded parameter is true
+     * @param embedded          if true, embeds the signing certificate and thumbprint per RFC 9360
+     * @param rimType           the type of RIM, for use with the protected header content-type
      * @param useUnprotectedKid will place kid in unprotected header if true
      * @return the COSE_Sign1 toBeSigned data
-     * @throws CertificateEncodingException
-     * @throws NoSuchAlgorithmException
+     * @throws CertificateEncodingException if an error occurs during certificate encoding or decoding.
+     * @throws NoSuchAlgorithmException     if the requested algorithm is not available in the system.
      */
     public byte[] createToBeSigned(final int algId, final byte[] kid, final byte[] payload,
                                    final X509Certificate signingCert, final boolean useUnprotectedKid,
@@ -133,12 +150,14 @@ public class CoseSignature implements SignatureFormat {
     /**
      * Follows the "The steps for verifying a signature are" of section 4.4. of rfc9052 Signing
      * and Verification Process.
-     *  https://datatracker.ietf.org/doc/html/rfc9052#section-4.4
-     *  Steps 1 and 2.
-     *  Note that step 3 (verify, the final step) is handled by a Cryptographic Engine
+     * <a href="https://datatracker.ietf.org/doc/html/rfc9052#section-4.4">rfc9052 Signing
+     * * and Verification Process</a>
+     * Steps 1 and 2.
+     * Note that step 3 (verify, the final step) is handled by a Cryptographic Engine
      *
      * @param coseData byte array holding the data to be verified
      * @return toBeVerified data
+     * @throws IOException if an I/O error occurs during processing.
      */
     public byte[] getToBeVerified(final byte[] coseData) throws IOException {
         processCose(coseData, true);
@@ -150,10 +169,11 @@ public class CoseSignature implements SignatureFormat {
      * used for signature verification.
      * Uses the protected header from the signed structure and the supplied payload
      * to create the toBeVerified data.
-     * @param coseData
+     *
+     * @param coseData        byte array representation of the sCOSE data
      * @param detachedPayload a detached signature (Cose detached content) which is actually just the payload
      * @return toBeVerfied data to be used with the java signature verification
-     * @throws IOException
+     * @throws IOException if an I/O error occurs during processing.
      */
     public byte[] getToBeVerified(final byte[] coseData, final byte[] detachedPayload) throws IOException {
         COSEProtectedHeader pheader = processCose(coseData, false);
@@ -162,11 +182,12 @@ public class CoseSignature implements SignatureFormat {
 
     /**
      * Parses a cose object and populated this classes member variables.
-     * @param coseData signed cose object
+     *
+     * @param coseData      signed cose object
      * @param genToBeSinged if true the toBeSigned variable will be populated.
      *                      Should be set to false when processing a detached signature
      * @return a protected header object
-     * @throws IOException
+     * @throws IOException if an I/O error occurs while attempting to process the COSE data.
      */
     private COSEProtectedHeader processCose(final byte[] coseData, final boolean genToBeSinged)
             throws IOException {
@@ -195,7 +216,7 @@ public class CoseSignature implements SignatureFormat {
             COSEUnprotectedHeader uheader = signOne.getUnprotectedHeader();
             status = "Checking Cose headers for required Algorithm Identifier";
             if (pheader.getAlg() != null) {
-                Object algObject = (Object) pheader.getAlg();
+                Object algObject = pheader.getAlg();
                 if (algObject instanceof String) {  // library will return a String if algorithm is unknown
                     String sAlg = (String) pheader.getAlg();
                     if (sAlg.compareToIgnoreCase("unknown") == 0) {
@@ -235,7 +256,8 @@ public class CoseSignature implements SignatureFormat {
 
     /**
      * Creates the toBeSigned structure from a pre-processed header and payload data.
-     * @param data byte array holding to be signed data
+     *
+     * @param data    byte array holding to be signed data
      * @param pHeader cose header to be included in final cose object
      * @return the COSE_Sign1 toBeSigned data
      */
@@ -254,47 +276,33 @@ public class CoseSignature implements SignatureFormat {
     }
 
     /**
-     *   Performs step 4 of  the  "How to compute a signature" section.
-     *      from https://datatracker.ietf.org/doc/html/rfc9052#section-4.4
+     * Performs step 4 of  the  "How to compute a signature" section.
+     * from https://datatracker.ietf.org/doc/html/rfc9052#section-4.4
+     * <p>
+     * 4. Place the resulting signature value in the correct location.
+     * This is the "signature" field of the COSE_Signature or COSE_Sign1 structure.
      *
-     *   4. Place the resulting signature value in the correct location.
-     *      This is the "signature" field of the COSE_Signature or COSE_Sign1 structure.
-     *
-     * @param  signatureBytes data generated from step 3. Note step 3 is performed by a Cryptographic Engine
+     * @param signatureBytes data generated from step 3. Note step 3 is performed by a Cryptographic Engine
      */
     @Override
-    public void addSignature(final byte[] signatureBytes) throws IOException {
+    public void addSignature(final byte[] signatureBytes) {
         signature = signatureBytes.clone();
         coseBuilder.signature(signatureBytes);
     }
 
     /**
      * Encodes the signature data an updates class variables.
-     * @return byte array holding the singed data
+     *
+     * @return byte array holding the signed data
      */
     @Override
-    public byte[] getSignedData() throws IOException {
+    public byte[] getSignedData() {
         COSESign1 sigData = coseBuilder.build();
         // Set local variables for future use
         // byte[] rawSignature = sigData.getSignature().getValue();
         protectedHeaders = sigData.getProtectedHeader().getValue();
         CBORTaggedItem taggedCose = new CBORTaggedItem(CoseType.COSE_SIGN_1, sigData);
         return taggedCose.encode().clone();
-    }
-
-    /**
-     * Obtain the SHA-256 thumbprint of an X.509 certificate (used for embedding).
-     *
-     * @param cert The input X.509 certificate.
-     * @return The SHA-256 thumbprint corresponding to the certificate.
-     * @throws NoSuchAlgorithmException if the SHA-256 algorithm is unsupported
-     * @throws CertificateEncodingException if the certificate cannot be encoded to DER
-     */
-    public static byte[] getThumbprint(final X509Certificate cert) throws NoSuchAlgorithmException,
-            CertificateEncodingException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(cert.getEncoded());
-        return md.digest();
     }
 
     /**
@@ -307,7 +315,8 @@ public class CoseSignature implements SignatureFormat {
 
     /**
      * Validates the thumbprint of a given protected header and certificate contents.
-     * @param cert The embedded cert to validate.
+     *
+     * @param cert    The embedded cert to validate.
      * @param pHeader The protected header contents (containing thumbprint) to validate against.
      * @return True if the contents are validated; false otherwise.
      */

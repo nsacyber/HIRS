@@ -226,7 +226,7 @@ public final class PciIds {
      *                     .      Class: "01"
      *                     .      Subclass: "08"
      *                     .      Programming Interface: "02"
-     * @return List<String> 3-element list with the class code
+     * @return 3-element string list with the class code
      * .      1st element: human-readable description of Class
      * .      2nd element: human-readable description of Subclass
      * .      3rd element: human-readable description of Programming Interface

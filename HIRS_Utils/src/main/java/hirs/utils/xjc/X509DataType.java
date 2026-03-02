@@ -79,13 +79,10 @@ public class X509DataType {
      *
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link String }{@code >}
-     * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
-     * {@link JAXBElement }{@code <}{@link X509IssuerSerialType }{@code >}
-     * {@link Object }
-     * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
-     * {@link Element }
-     * {@link JAXBElement }{@code <}{@link byte[]}{@code >}
+     * String, byte array, and X509 IssuerSerial Type representations of
+     * {@link JAXBElement }. {@link Object }, and {@link Element }
+     *
+     * @return list of objects
      */
     public List<Object> getX509IssuerSerialOrX509SKIOrX509SubjectName() {
         if (x509IssuerSerialOrX509SKIOrX509SubjectName == null) {

@@ -39,6 +39,9 @@ import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Date;
 
+/**
+ * Utility class that provides utility methods to assist with the device provisioning process.
+ */
 @Log4j2
 public final class ProvisionUtils {
 
@@ -135,6 +138,7 @@ public final class ProvisionUtils {
      *
      * @param certificate the X509 certificate to be converted to PEM encoding
      * @return the string representing the PEM encoded certificate
+     * @throws {@link UnexpectedServerException} if error occurs during encoding retrieval
      */
     public static String getPemEncodedCertificate(final X509Certificate certificate) {
         try {

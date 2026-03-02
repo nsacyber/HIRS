@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.service;
 
-import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
@@ -25,6 +24,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.exceptions.DBManagerException;
 import hirs.attestationca.persist.validation.PcrValidator;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import lombok.extern.log4j.Log4j2;
@@ -45,6 +45,9 @@ import java.util.UUID;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
+/**
+ * A service layer class responsible for validating the supply chain based on the policy settings.
+ */
 @Log4j2
 @Service
 public class SupplyChainValidationService {
@@ -105,6 +108,7 @@ public class SupplyChainValidationService {
      * @param device         The device to be validated.
      * @param componentInfos list of components from the device
      * @return A summary of the validation results.
+     * @throws IOException if any issues arise from validating the supply chain
      */
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
                                                             final List<PlatformCredential> pcs,

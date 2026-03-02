@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page.params;
 
-import hirs.attestationca.portal.page.PageParams;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,23 +18,6 @@ public class CertificateDetailsPageParams implements PageParams {
 
     private String id;
     private String type;
-
-    /**
-     * Constructor to set ID Certificate Details URL parameters.
-     *
-     * @param id the String parameter to set
-     */
-    public CertificateDetailsPageParams(final String id) {
-        this.id = id;
-    }
-
-    /**
-     * Default constructor for Spring.
-     */
-    public CertificateDetailsPageParams() {
-        id = null;
-        type = null;
-    }
 
     /**
      * Allows PageController to iterate over the url parameters.

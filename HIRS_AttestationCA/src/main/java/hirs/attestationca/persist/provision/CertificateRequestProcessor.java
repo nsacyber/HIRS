@@ -28,6 +28,9 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 
+/**
+ * Processor class that is responsible for processing certificate requests from and to the provisioner.
+ */
 @Log4j2
 public class CertificateRequestProcessor extends AbstractProcessor {
 
