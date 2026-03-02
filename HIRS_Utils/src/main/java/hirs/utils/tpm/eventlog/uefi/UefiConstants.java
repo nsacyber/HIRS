@@ -284,9 +284,14 @@ public final class UefiConstants {
     public static final String FILESTATUS_NOT_ACCESSIBLE = "fileNotAccessible";
 
     /**
-     * This string is used to assemble strings for output and also to search for events
+     * This string is used to assemble strings for output and also to search for events.
      */
-    public static final String UEFI_VARIABLE_LABEL = "UEFI Variable Name:";
+    public static final String UEFI_VARIABLE_LABEL = "UEFI Variable Name";
+
+    /**
+     * This string is used to assemble strings for output and also to search for events.
+     */
+    public static final String UEFI_FIRMWARE_BLOB_LABEL = "Platform Firmware Blob Address";
 
     /**
      * Default private constructor so checkstyles doesn't complain.

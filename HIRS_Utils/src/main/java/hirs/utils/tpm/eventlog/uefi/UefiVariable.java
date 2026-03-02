@@ -249,7 +249,7 @@ public class UefiVariable {
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
 
-        efiVariable.append("   " + UefiConstants.UEFI_VARIABLE_LABEL + " " + efiVarName + "\n");
+        efiVariable.append(String.format("   %s: %s%n", UefiConstants.UEFI_VARIABLE_LABEL, efiVarName));
         efiVariable.append("   UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
         if (efiVarName != "") {
             efiVariable.append("   UEFI Variable Contents => " + "\n");
