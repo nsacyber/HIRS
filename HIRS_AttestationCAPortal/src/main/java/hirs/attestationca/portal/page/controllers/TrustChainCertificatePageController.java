@@ -60,24 +60,33 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain")
 public class TrustChainCertificatePageController extends PageController<NoPageParams> {
     /**
-     * Model attribute name used by initPage for the Root ACA Trust Chain Certificate
+     * Model attribute name used by initPage for the Root ACA Trust Chain Certificate.
      */
-    final static String ROOT_ACA_CERT_DATA = "rootACACertData";
+    static final String ROOT_ACA_CERT_DATA = "rootACACertData";
 
     /**
-     * Model attribute name used by initPage for the Intermediate ACA Trust Chain Certificate
+     * Model attribute name used by initPage for the Intermediate ACA Trust Chain Certificate.
      */
-    final static String INTERMEDIATE_ACA_CERT_DATA = "intermediateACACertData";
+    static final String INTERMEDIATE_ACA_CERT_DATA = "intermediateACACertData";
 
     /**
-     * Model attribute name used by initPage for the Leaf ACA Trust Chain Certificate
+     * Model attribute name used by initPage for the Leaf ACA Trust Chain Certificate.
      */
-    final static String LEAF_ACA_CERT_DATA = "leafACACertData";
+    static final String LEAF_ACA_CERT_DATA = "leafACACertData";
+
+    /**
+     * Default length of the ACA trust chain certificates.
+     */
+    static final int ACA_TRUST_CHAIN_LEN = 3;
+
+    /**
+     * ACA's Trust Chain Certificates.
+     */
+    private final CertificateAuthorityCredential[] acaTrustChainCertificates;
 
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final CertificatePageService certificatePageService;
-    private final List<CertificateAuthorityCredential> certificateAuthorityCredentials;
     private final TrustChainCertificatePageService trustChainCertificatePageService;
 
     /**
@@ -87,7 +96,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
      * @param caCredentialRepository           caCredential repository
      * @param certificatePageService           certificate page service
      * @param trustChainCertificatePageService trust chain certificate page service
-     * @param acaTrustChainCertificates        ACA Trust Chain certificates
+     * @param acaTrustChainX509Certificates    ACA Trust Chain X509 certificates
      */
     @Autowired
     public TrustChainCertificatePageController(final CertificateRepository certificateRepository,
@@ -95,18 +104,18 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                                                final CertificatePageService certificatePageService,
                                                final TrustChainCertificatePageService trustChainCertificatePageService,
                                                @Qualifier("acaTrustChainCerts") final X509Certificate[]
-                                                       acaTrustChainCertificates) {
+                                                       acaTrustChainX509Certificates) {
         super(Page.TRUST_CHAIN);
         this.certificateRepository = certificateRepository;
         this.caCredentialRepository = caCredentialRepository;
         this.certificatePageService = certificatePageService;
         this.trustChainCertificatePageService = trustChainCertificatePageService;
-        this.certificateAuthorityCredentials = new ArrayList<>();
+        this.acaTrustChainCertificates = new CertificateAuthorityCredential[ACA_TRUST_CHAIN_LEN];
 
         try {
-            for (X509Certificate eachCert : acaTrustChainCertificates) {
-                this.certificateAuthorityCredentials.add(
-                        new CertificateAuthorityCredential(eachCert.getEncoded()));
+            for (int i = 0; i < ACA_TRUST_CHAIN_LEN; i++) {
+                this.acaTrustChainCertificates[i] =
+                        new CertificateAuthorityCredential(acaTrustChainX509Certificates[i].getEncoded());
             }
         } catch (IOException ioEx) {
             log.error("Failed to read ACA trust chain certificates", ioEx);
@@ -132,7 +141,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         mav.addObject(LEAF_ACA_CERT_DATA, new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInfoHelper(
                 this.certificateRepository,
                 this.caCredentialRepository,
-                this.certificateAuthorityCredentials.getFirst(),
+                this.acaTrustChainCertificates[0],
                 "Leaf ACA Certificate Not Found")));
 
         // add object that contains the intermediate ACA certificate information
@@ -140,14 +149,14 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                 new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInfoHelper(
                         this.certificateRepository,
                         this.caCredentialRepository,
-                        this.certificateAuthorityCredentials.get(1),
+                        this.acaTrustChainCertificates[1],
                         "Intermediate ACA Certificate Not Found")));
 
         // add object that contains the root ACA certificate information
         mav.addObject(ROOT_ACA_CERT_DATA, new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInfoHelper(
                 this.certificateRepository,
                 this.caCredentialRepository,
-                this.certificateAuthorityCredentials.getLast(),
+                this.acaTrustChainCertificates[2],
                 "Root ACA Certificate Not Found")));
 
         return mav;
@@ -244,12 +253,10 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         // Get the output stream of the response
         try (OutputStream outputStream = response.getOutputStream()) {
             // PEM file of the leaf certificate, intermediate certificate and root certificate (in that order)
-            final String fullChainPEM = ControllerPagesUtils.convertCertificateArrayToPem(
-                    new CertificateAuthorityCredential[]{certificateAuthorityCredentials.get(0),
-                            certificateAuthorityCredentials.get(1),
-                            certificateAuthorityCredentials.get(2)});
+            final String fullChainPEM =
+                    ControllerPagesUtils.convertCertificateArrayToPem(acaTrustChainCertificates);
 
-            final String pemFileName = "hirs-aca-trust_chain.pem ";
+            final String pemFileName = "hirs-aca-trust_chain.pem";
 
             response.setContentType("application/x-pem-file");  // MIME type for PEM files
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + pemFileName);
@@ -258,7 +265,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             outputStream.write(fullChainPEM.getBytes(StandardCharsets.UTF_8));
             outputStream.flush();
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to download the"
+            log.error("An exception was thrown while attempting to download the "
                     + "aca trust chain", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -284,7 +291,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
                     singleFileName);
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the"
+            log.error("An exception was thrown while attempting to bulk download all the "
                     + "trust chain certificates", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
