@@ -60,9 +60,19 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain")
 public class TrustChainCertificatePageController extends PageController<NoPageParams> {
     /**
-     * Model attribute name used by initPage for the aca cert info.
+     * Model attribute name used by initPage for the Root ACA Trust Chain Certificate
      */
-    static final String ACA_CERT_DATA = "acaCertData";
+    final static String ROOT_ACA_CERT_DATA = "rootACACertData";
+
+    /**
+     * Model attribute name used by initPage for the Intermediate ACA Trust Chain Certificate
+     */
+    final static String INTERMEDIATE_ACA_CERT_DATA = "intermediateACACertData";
+
+    /**
+     * Model attribute name used by initPage for the Leaf ACA Trust Chain Certificate
+     */
+    final static String LEAF_ACA_CERT_DATA = "leafACACertData";
 
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
@@ -99,9 +109,9 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                         new CertificateAuthorityCredential(eachCert.getEncoded()));
             }
         } catch (IOException ioEx) {
-            log.error("Failed to read ACA certificate", ioEx);
+            log.error("Failed to read ACA trust chain certificates", ioEx);
         } catch (CertificateEncodingException ceEx) {
-            log.error("Error getting encoded ACA certificate", ceEx);
+            log.error("Error getting the encoded ACA trust chain certificates", ceEx);
         }
     }
 
@@ -118,10 +128,27 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         ModelAndView mav = getBaseModelAndView(Page.TRUST_CHAIN);
 
-        mav.addObject(ACA_CERT_DATA,
-                new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInformation(
-                        this.certificateAuthorityCredentials, this.certificateRepository,
-                        this.caCredentialRepository)));
+        // add object that contains the leaf ACA certificate information
+        mav.addObject(LEAF_ACA_CERT_DATA, new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInfoHelper(
+                this.certificateRepository,
+                this.caCredentialRepository,
+                this.certificateAuthorityCredentials.getFirst(),
+                "Leaf ACA Certificate Not Found")));
+
+        // add object that contains the intermediate ACA certificate information
+        mav.addObject(INTERMEDIATE_ACA_CERT_DATA,
+                new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInfoHelper(
+                        this.certificateRepository,
+                        this.caCredentialRepository,
+                        this.certificateAuthorityCredentials.get(1),
+                        "Intermediate ACA Certificate Not Found")));
+
+        // add object that contains the root ACA certificate information
+        mav.addObject(ROOT_ACA_CERT_DATA, new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInfoHelper(
+                this.certificateRepository,
+                this.caCredentialRepository,
+                this.certificateAuthorityCredentials.getLast(),
+                "Root ACA Certificate Not Found")));
 
         return mav;
     }
@@ -153,10 +180,9 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                         dataTableInput.getColumns());
 
         // find all columns that are considered searchable
-        final Set<String> searchableColumnNames =
-                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(
-                        CertificateAuthorityCredential.class,
-                        dataTableInput.getColumns());
+        final Set<String> searchableColumnNames = ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(
+                CertificateAuthorityCredential.class,
+                dataTableInput.getColumns());
 
         Pageable pageable = ControllerPagesUtils.createPageableObject(
                 dataTableInput.getStart(),
@@ -219,7 +245,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         try (OutputStream outputStream = response.getOutputStream()) {
             // PEM file of the leaf certificate, intermediate certificate and root certificate (in that order)
             final String fullChainPEM = ControllerPagesUtils.convertCertificateArrayToPem(
-                    new CertificateAuthorityCredential[] {certificateAuthorityCredentials.get(0),
+                    new CertificateAuthorityCredential[]{certificateAuthorityCredentials.get(0),
                             certificateAuthorityCredentials.get(1),
                             certificateAuthorityCredentials.get(2)});
 

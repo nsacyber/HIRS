@@ -18,10 +18,9 @@ import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.PciIds;
+import jakarta.persistence.NonUniqueResultException;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;
-
-import jakarta.persistence.NonUniqueResultException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import java.io.IOException;
@@ -130,7 +129,8 @@ public final class CertificateStringMapBuilder {
                     try {
                         KeyFactory ecFactory = KeyFactory.getInstance("EC");
                         publicKey = ecFactory.generatePublic(keySpec);
-                    } catch (Exception ignore) { }
+                    } catch (Exception ignore) {
+                    }
                     // If no EC then RSA
                     if (publicKey == null) {
                         KeyFactory rsaFactory = KeyFactory.getInstance("RSA");
@@ -300,12 +300,12 @@ public final class CertificateStringMapBuilder {
     }
 
     /**
-     * Returns the Certificate Authority information.
+     * Returns the Certificate Authority information using the provided uuid.
      *
      * @param uuid                    ID for the certificate.
      * @param certificateRepository   the certificate manager for retrieving certs.
      * @param caCertificateRepository CA Certificate repository
-     * @return a hash map with the endorsement certificate information.
+     * @return a hash map with the certificate authority credential information.
      */
     public static HashMap<String, String>
     getCertificateAuthorityInformation(final UUID uuid,
@@ -317,52 +317,42 @@ public final class CertificateStringMapBuilder {
         }
         CertificateAuthorityCredential certificate = caCertificateRepository.getReferenceById(uuid);
 
-        String notFoundMessage = "Unable to find Certificate Authority "
-                + "Credential with ID: " + uuid;
+        final String notFoundMessage = "Unable to find Certificate Authority Credential with ID: " + uuid;
 
         return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository,
-                List.of(certificate),
+                certificate,
                 notFoundMessage);
     }
 
     /**
-     * Returns the Trust Chain credential information.
+     * Returns the Certificate Authority information using the provided certificate authority credential.
      *
-     * @param certificates            the certificates
-     * @param certificateRepository   the certificate repository for retrieving certs.
-     * @param caCertificateRepository the certificate repository for retrieving certs.
-     * @return a hash map with the endorsement certificate information.
+     * @param certificateRepository          the certificate manager for retrieving certs.
+     * @param caCertificateRepository        CA Certificate repository
+     * @param certificateAuthorityCredential certificate authority credential
+     * @param notFoundMessage                error message
+     * @return a hash map with the certificate authority credential information.
      */
-    public static HashMap<String, String> getCertificateAuthorityInformation(
-            final List<CertificateAuthorityCredential> certificates,
-            final CertificateRepository certificateRepository,
-            final CACredentialRepository caCertificateRepository) {
-        return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository, certificates,
-                "No cert provided for mapping");
-    }
-
-    private static HashMap<String, String> getCertificateAuthorityInfoHelper(
+    public static HashMap<String, String> getCertificateAuthorityInfoHelper(
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCertificateRepository,
-            final List<CertificateAuthorityCredential> certificates, final String notFoundMessage) {
-        HashMap<String, String> data = new HashMap<>();
+            final CertificateAuthorityCredential certificateAuthorityCredential,
+            final String notFoundMessage) {
 
-        if (certificates != null) {
-            for (CertificateAuthorityCredential certificate : certificates) {
-                data.putAll(
-                        getGeneralCertificateInfo(certificate, certificateRepository,
-                                caCertificateRepository));
-                data.put("subjectKeyIdentifier",
-                        Arrays.toString(certificate.getSubjectKeyIdentifier()));
-                //x509 credential version
-                data.put("x509Version", Integer.toString(certificate
-                        .getX509CredentialVersion()));
-                data.put("credentialType", certificate.getCredentialType());
-            }
-
-        } else {
+        if (certificateAuthorityCredential == null) {
             log.error(notFoundMessage);
+            return new HashMap<>();
         }
+
+        HashMap<String, String> data =
+                new HashMap<>(getGeneralCertificateInfo(certificateAuthorityCredential, certificateRepository,
+                        caCertificateRepository));
+
+        data.put("subjectKeyIdentifier", Arrays.toString(certificateAuthorityCredential.getSubjectKeyIdentifier()));
+        //x509 credential version
+        data.put("x509Version", Integer.toString(certificateAuthorityCredential.getX509CredentialVersion()));
+        data.put("credentialType", certificateAuthorityCredential.getCredentialType());
+
         return data;
     }
 

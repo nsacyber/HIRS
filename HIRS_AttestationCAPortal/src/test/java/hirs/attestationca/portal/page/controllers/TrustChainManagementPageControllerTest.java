@@ -108,9 +108,9 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath))
                 .andExpect(status().isOk())
-                .andExpect(model().attributeExists(TrustChainCertificatePageController.ACA_CERT_DATA))
+                .andExpect(model().attributeExists(TrustChainCertificatePageController.ROOT_ACA_CERT_DATA))
                 .andExpect(model().attribute(
-                        TrustChainCertificatePageController.ACA_CERT_DATA,
+                        TrustChainCertificatePageController.ROOT_ACA_CERT_DATA,
                         hasEntry("issuer", "CN=Fake Root CA"))
                 );
     }
