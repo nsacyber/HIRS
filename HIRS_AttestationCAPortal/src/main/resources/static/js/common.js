@@ -339,8 +339,8 @@ function generateCertificateDetailsLink(
  * @param {string} rimId - The unique identifier for the RIM.
  * @returns {string} An HTML string representing the RIM detail link.
  */
-function generateRimDetailsLink(pagePath, rimId) {
-  const href = pagePath + "/rim-details?id=" + rimId;
+function generateRimDetailsLink(rimId) {
+  const href = "rim-details?id=" + rimId;
   const fullIconPath = iconPath + "/ic_assignment_black_24dp.png";
   const title = "Details";
 

@@ -64,7 +64,7 @@ public class UefiFirmware {
     public String toString() {
         StringBuilder blobInfo = new StringBuilder();
         if (!bError) {
-            blobInfo.append(String.format("   Platform Firmware Blob Address = %s",
+            blobInfo.append(String.format("   %s = %s", UefiConstants.UEFI_FIRMWARE_BLOB_LABEL,
                     Integer.toHexString(physicalBlobAddress)));
             blobInfo.append(String.format(" length = %d", blobLength));
         } else {
