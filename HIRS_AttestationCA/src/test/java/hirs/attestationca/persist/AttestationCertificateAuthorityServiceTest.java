@@ -1,11 +1,10 @@
 package hirs.attestationca.persist;
 
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
-import hirs.attestationca.persist.provision.AttestationCertificateAuthorityService;
-import hirs.attestationca.persist.provision.AttestationCertificateAuthorityServiceImpl;
-import hirs.attestationca.persist.provision.CertificateRequestProcessor;
-import hirs.attestationca.persist.provision.IdentityClaimProcessor;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
+import hirs.attestationca.persist.provision.service.AttestationCertificateAuthorityServiceImpl;
+import hirs.attestationca.persist.provision.service.CertificateRequestProcessor;
+import hirs.attestationca.persist.provision.service.IdentityClaimProcessor;
 import hirs.utils.HexUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -124,7 +123,7 @@ public class AttestationCertificateAuthorityServiceTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthorityService#processIdentityClaimTpm2(byte[])}
+     * Tests {@link AttestationCertificateAuthorityServiceImpl#processIdentityClaimTpm2(byte[])}
      * where the byte array is null or empty. Expects an {@link IllegalArgumentException} to be thrown.
      */
     @Test
@@ -157,7 +156,7 @@ public class AttestationCertificateAuthorityServiceTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthorityService#processIdentityClaimTpm2(byte[])}.
+     * Tests {@link AttestationCertificateAuthorityServiceImpl#processIdentityClaimTpm2(byte[])}.
      */
     @Test
     public void testProcessIdentityClaimTpm2() {
@@ -176,7 +175,7 @@ public class AttestationCertificateAuthorityServiceTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthorityService#processCertificateRequest(byte[])}
+     * Tests {@link AttestationCertificateAuthorityServiceImpl#processCertificateRequest(byte[])}
      * where the byte array is null or empty. Expects an {@link IllegalArgumentException} to be thrown.
      */
     @Test
@@ -209,7 +208,7 @@ public class AttestationCertificateAuthorityServiceTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthorityService#processCertificateRequest(byte[])}
+     * Tests {@link AttestationCertificateAuthorityServiceImpl#processCertificateRequest(byte[])}
      * where the byte array is invalid. Expects a {@link CertificateProcessingException} to be thrown.
      */
     @Test
@@ -230,7 +229,7 @@ public class AttestationCertificateAuthorityServiceTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthorityService#processCertificateRequest(byte[])}.
+     * Tests {@link AttestationCertificateAuthorityServiceImpl#processCertificateRequest(byte[])}.
      */
     @Test
     public void testProcessCertificateRequest() {
@@ -249,7 +248,7 @@ public class AttestationCertificateAuthorityServiceTest {
     }
 
     /**
-     * Tests {@link AttestationCertificateAuthorityService#getLeafACACertPublicKey()}.
+     * Tests {@link AttestationCertificateAuthorityServiceImpl#getLeafACACertPublicKey()}.
      */
     @Test
     public void testGetPublicKey() {

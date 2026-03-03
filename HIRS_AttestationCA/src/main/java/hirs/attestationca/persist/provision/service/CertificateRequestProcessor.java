@@ -1,9 +1,8 @@
-package hirs.attestationca.persist.provision;
+package hirs.attestationca.persist.provision.service;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
@@ -12,17 +11,13 @@ import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
-import hirs.attestationca.persist.enums.PublicKeyAlgorithm;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
-import hirs.attestationca.persist.provision.helper.CredentialManagementHelper;
 import hirs.attestationca.persist.provision.helper.IssuedCertificateAttributeHelper;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
-import hirs.attestationca.persist.service.SupplyChainValidationService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -39,7 +34,6 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -57,12 +51,11 @@ import java.util.List;
 @Log4j2
 public class CertificateRequestProcessor {
     private final SupplyChainValidationService supplyChainValidationService;
-    private final CertificateRepository certificateRepository;
+    private final CredentialManagementService credentialManagementService;
     private final DeviceRepository deviceRepository;
-    private final X509Certificate acaCertificate;
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
     private final PolicyRepository policyRepository;
-    private final PublicKeyAlgorithm publicKeyAlgorithm;
+    private final X509Certificate acaCertificate;
     private final int certificateValidityInDays;
     private final PrivateKey privateKey;
 
@@ -70,31 +63,29 @@ public class CertificateRequestProcessor {
      * Constructor.
      *
      * @param supplyChainValidationService   object that is used to run provisioning
-     * @param certificateRepository          db connector for all certificates.
+     * @param credentialManagementService    credential management service
      * @param deviceRepository               database connector for Devices.
+     * @param tpm2ProvisionerStateRepository db connector for provisioner state.
      * @param privateKey                     private key used for communication authentication
      * @param acaCertificate                 object used to create credential
      * @param certificateValidityInDays      int for the time in which a certificate is valid.
-     * @param tpm2ProvisionerStateRepository db connector for provisioner state.
      * @param policyRepository               db connector for policies.
      */
     @Autowired
     public CertificateRequestProcessor(final SupplyChainValidationService supplyChainValidationService,
-                                       final CertificateRepository certificateRepository,
+                                       final CredentialManagementService credentialManagementService,
                                        final DeviceRepository deviceRepository,
+                                       final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
                                        final PrivateKey privateKey,
                                        @Qualifier("leafACACert") final X509Certificate acaCertificate,
-                                       @Value("${aca.current.public.key.algorithm}") final String publicKeyAlgorithmStr,
                                        @Value("${aca.certificates.validity}") final int certificateValidityInDays,
-                                       final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
                                        final PolicyRepository policyRepository) {
+        this.credentialManagementService = credentialManagementService;
         this.certificateValidityInDays = certificateValidityInDays;
         this.supplyChainValidationService = supplyChainValidationService;
-        this.certificateRepository = certificateRepository;
         this.deviceRepository = deviceRepository;
         this.acaCertificate = acaCertificate;
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
-        this.publicKeyAlgorithm = PublicKeyAlgorithm.fromString(publicKeyAlgorithmStr);
         this.policyRepository = policyRepository;
         this.privateKey = privateKey;
     }
@@ -154,25 +145,25 @@ public class CertificateRequestProcessor {
             ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
 
             // Get endorsement public key
-            PublicKey ekPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(publicKeyAlgorithm,
+            PublicKey ekPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
                     claim.getEkPublicArea().toByteArray());
 
             // Get attestation public key
-            PublicKey akPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(publicKeyAlgorithm,
+            PublicKey akPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
                     claim.getAkPublicArea().toByteArray());
 
             // Get Endorsement Credential if it exists or was uploaded
             EndorsementCredential endorsementCredential =
-                    CredentialManagementHelper.parseEcFromIdentityClaim(claim, ekPub, certificateRepository);
+                    credentialManagementService.parseEcFromIdentityClaim(claim, ekPublicKey);
 
             // Get Platform Credentials if they exist or were uploaded
-            List<PlatformCredential> platformCredentials = CredentialManagementHelper.parsePcsFromIdentityClaim(claim,
-                    endorsementCredential, certificateRepository);
+            List<PlatformCredential> platformCredentials = credentialManagementService.parsePcsFromIdentityClaim(claim,
+                    endorsementCredential);
 
             // Get LDevID public key if it exists
-            PublicKey ldevidPub = null;
+            PublicKey ldevidPublicKey = null;
             if (claim.hasLdevidPublicArea()) {
-                ldevidPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(publicKeyAlgorithm,
+                ldevidPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
                         claim.getLdevidPublicArea().toByteArray());
             }
 
@@ -209,11 +200,12 @@ public class CertificateRequestProcessor {
             AppraisalStatus.Status validationResult = doQuoteValidation(device);
             if (validationResult == AppraisalStatus.Status.PASS) {
                 // Create signed, attestation certificate
-                X509Certificate attestationCertificate = generateCredential(akPub,
+                X509Certificate attestationCertificate = generateCredential(akPublicKey,
                         endorsementCredential, platformCredentials, deviceName, acaCertificate);
-                if (ldevidPub != null) {
+
+                if (ldevidPublicKey != null) {
                     // Create signed LDevID certificate
-                    X509Certificate ldevidCertificate = generateCredential(ldevidPub,
+                    X509Certificate ldevidCertificate = generateCredential(ldevidPublicKey,
                             endorsementCredential, platformCredentials, deviceName, acaCertificate);
                     byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
                             attestationCertificate);
@@ -226,26 +218,29 @@ public class CertificateRequestProcessor {
 
                     // We validated the nonce and made use of the identity claim so state can be deleted
                     tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
-                    boolean generateAtt = saveAttestationCertificate(certificateRepository,
-                            derEncodedAttestationCertificate,
-                            endorsementCredential, platformCredentials, device, false);
+
+                    boolean generateAtt =
+                            credentialManagementService.saveAttestationCertificate(derEncodedAttestationCertificate,
+                                    endorsementCredential, platformCredentials, device, false);
+
                     boolean generateLDevID =
-                            saveAttestationCertificate(certificateRepository, derEncodedLdevidCertificate,
+                            credentialManagementService.saveAttestationCertificate(derEncodedLdevidCertificate,
                                     endorsementCredential, platformCredentials, device, true);
 
                     ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
                             ProvisionerTpm2.CertificateResponse.
                                     newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+
                     if (generateAtt) {
                         certificateResponseBuilder =
                                 certificateResponseBuilder.setCertificate(pemEncodedAttestationCertificate);
                     }
+
                     if (generateLDevID) {
                         certificateResponseBuilder =
                                 certificateResponseBuilder.setLdevidCertificate(pemEncodedLdevidCertificate);
                     }
-                    ProvisionerTpm2.CertificateResponse certificateResponse =
-                            certificateResponseBuilder.build();
+                    ProvisionerTpm2.CertificateResponse certificateResponse = certificateResponseBuilder.build();
 
                     String certResponseJsonStringAfterSuccess = "";
                     try {
@@ -291,9 +286,10 @@ public class CertificateRequestProcessor {
                             ProvisionerTpm2.CertificateResponse.
                                     newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
 
-                    boolean generateAtt = saveAttestationCertificate(certificateRepository,
+                    boolean generateAtt = credentialManagementService.saveAttestationCertificate(
                             derEncodedAttestationCertificate,
                             endorsementCredential, platformCredentials, device, false);
+
                     if (generateAtt) {
                         certificateResponseBuilder =
                                 certificateResponseBuilder.setCertificate(pemEncodedAttestationCertificate);
@@ -377,8 +373,7 @@ public class CertificateRequestProcessor {
                 log.info("------------- Start Of Protobuf Log Of Certificate Request After Failed "
                         + "Validation (Invalid Nonce) -------------");
 
-                log.error("Could not process credential request."
-                                + " Invalid nonce provided: {}",
+                log.error("Could not process credential request. Invalid nonce provided: {}",
                         certificateRequestJsonString.isEmpty() ? request : certificateRequestJsonString);
 
                 log.info("------------- End Of Protobuf Log Of Certificate Request After Failed "
@@ -511,71 +506,5 @@ public class CertificateRequestProcessor {
             throw new CertificateProcessingException("Encountered error while generating "
                     + "identity credential: " + exception.getMessage(), exception);
         }
-    }
-
-    /**
-     * Helper method to create an {@link IssuedAttestationCertificate} object, set its
-     * corresponding device and persist it.
-     *
-     * @param certificateRepository            db store manager for certificates
-     * @param derEncodedAttestationCertificate the byte array representing the Attestation
-     *                                         certificate
-     * @param endorsementCredential            the endorsement credential used to generate the AC
-     * @param platformCredentials              the platform credentials used to generate the AC
-     * @param device                           the device to which the attestation certificate is tied
-     * @param ldevID                           whether the certificate is a ldevid
-     * @return whether the certificate was saved successfully
-     */
-    public boolean saveAttestationCertificate(final CertificateRepository certificateRepository,
-                                              final byte[] derEncodedAttestationCertificate,
-                                              final EndorsementCredential endorsementCredential,
-                                              final List<PlatformCredential> platformCredentials,
-                                              final Device device,
-                                              final boolean ldevID) {
-        List<IssuedAttestationCertificate> issuedAc;
-        boolean generateCertificate = true;
-        PolicySettings policySettings;
-        Date currentDate = new Date();
-        int days;
-        try {
-            // save issued certificate
-            IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
-                    derEncodedAttestationCertificate, endorsementCredential, platformCredentials, ldevID);
-
-            policySettings = policyRepository.findByName("Default");
-
-            Sort sortCriteria = Sort.by(Sort.Direction.DESC, "endValidity");
-            issuedAc = certificateRepository.findByDeviceIdAndLdevID(device.getId(), ldevID,
-                    sortCriteria);
-
-            generateCertificate = ldevID ? policySettings.isIssueDevIdCertificateEnabled()
-                    : policySettings.isIssueAttestationCertificateEnabled();
-
-            if (issuedAc != null && !issuedAc.isEmpty()
-                    && (ldevID ? policySettings.isGenerateDevIdCertificateOnExpiration()
-                    : policySettings.isGenerateAttestationCertificateOnExpiration())) {
-                if (issuedAc.getFirst().getEndValidity().after(currentDate)) {
-                    // so the issued AC is not expired
-                    // however are we within the threshold
-                    days = ProvisionUtils.daysBetween(currentDate, issuedAc.getFirst().getEndValidity());
-                    generateCertificate =
-                            days < (ldevID ? policySettings.getDevIdReissueThreshold()
-                                    : policySettings.getReissueThreshold());
-                }
-            }
-
-            if (generateCertificate) {
-                attCert.setDeviceId(device.getId());
-                attCert.setDeviceName(device.getName());
-                certificateRepository.save(attCert);
-            }
-        } catch (Exception e) {
-            log.error("Error saving generated Attestation Certificate to database.", e);
-            throw new CertificateProcessingException(
-                    "Encountered error while storing Attestation Certificate: "
-                            + e.getMessage(), e);
-        }
-
-        return generateCertificate;
     }
 }

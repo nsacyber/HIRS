@@ -221,14 +221,12 @@ fi
   sed -i '/aca.certificates.leaf-three-key-alias/d' $SPRING_PROP_FILE
   sed -i '/aca.certificates.intermediate-key-alias/d' $SPRING_PROP_FILE
   sed -i '/aca.certificates.root-key-alias/d' $SPRING_PROP_FILE
-  sed -i '/aca.current.public.key.algorithm/d' $SPRING_PROP_FILE
 if [ "$ACA_ALG" == "rsa" ]; then
   # Add new lines for aca aliases for the RSA public key algorithm
   {
   echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_rsa_3k_sha384_key"
   echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_rsa_3k_sha384_key"
   echo "aca.certificates.root-key-alias=HIRS_root_ca_rsa_3k_sha384_key"
-  echo "aca.current.public.key.algorithm=rsa"
    } >> $SPRING_PROP_FILE
 elif [ "$ACA_ALG" == "ecc" ]; then
   {
@@ -236,7 +234,6 @@ elif [ "$ACA_ALG" == "ecc" ]; then
   echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_ecc_512_sha384_key"
   echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_ecc_512_sha384_key"
   echo "aca.certificates.root-key-alias=HIRS_root_ca_ecc_512_sha384_key"
-  echo "aca.current.public.key.algorithm=ecc"
   } >> $SPRING_PROP_FILE
 fi
 

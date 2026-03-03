@@ -1,4 +1,4 @@
-package hirs.attestationca.persist.provision;
+package hirs.attestationca.persist.provision.service;
 
 /**
  * Interface that defines the responsibilities of the Attestation Certificate Authority service.
