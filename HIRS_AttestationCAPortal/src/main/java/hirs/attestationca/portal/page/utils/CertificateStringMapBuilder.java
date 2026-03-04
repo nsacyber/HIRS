@@ -11,6 +11,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertifica
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceAttributes;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
@@ -69,6 +70,7 @@ public final class CertificateStringMapBuilder {
         ekuMap.put(TCG_KP_AIK_CERTIFICATE, "tcg-kp-AIKCertificate");
         ekuMap.put(TCG_KP_PLATFORM_KEY_CERTIFICATE, "tcg-kp-PlatformKeyCertificate");
         ekuMap.put(TCG_KP_DELTA_PLATFORM_ATTRIBUTE_CERTIFICATE, "tcg-kp-DeltaPlatformAttributeCertificate");
+        ekuMap.putAll(DiceAttributes.getExtendedKeyUsageMap());
         return ekuMap;
     }
 
@@ -830,6 +832,15 @@ public final class CertificateStringMapBuilder {
                     data.put("extendedKeyUsage", eku + " (" + ekuMap.get(eku) + ")");
                 } else {
                     data.put("extendedKeyUsage", eku + " (Warning: Unexpected OID)");
+                }
+            }
+
+            if (certificate.getDiceCertInfo() != null) {
+                if (certificate.getDiceCertInfo().getProfileType() != DiceAttributes.DiceProfileType.UNKNOWN) {
+                    data.put("diceProfileType", certificate.getDiceCertInfo().getProfileType().toString());
+                    data.put("diceHasKeyCertSign", Boolean.toString(certificate.getDiceCertInfo().isHasKeyCertSign()));
+                    data.put("diceIsCa", Boolean.toString(certificate.getDiceCertInfo().isCa()));
+                    data.put("diceHasCrl", Boolean.toString(certificate.getDiceCertInfo().isHasCrlSign()));
                 }
             }
 
