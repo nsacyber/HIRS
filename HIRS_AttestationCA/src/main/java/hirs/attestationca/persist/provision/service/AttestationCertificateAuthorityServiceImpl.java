@@ -10,21 +10,21 @@ import org.springframework.stereotype.Service;
 @Service
 @Log4j2
 public class AttestationCertificateAuthorityServiceImpl implements AttestationCertificateAuthorityService {
-    private final CertificateRequestProcessor certificateRequestProcessor;
-    private final IdentityClaimProcessor identityClaimProcessor;
+    private final CertificateRequestProcessorService certificateRequestProcessorService;
+    private final IdentityClaimProcessorService identityClaimProcessorService;
 
     /**
      * Constructor.
      *
-     * @param certificateRequestProcessor certificate request processor service
-     * @param identityClaimProcessor      identity claim processor service
+     * @param certificateRequestProcessorService certificate request processor service
+     * @param identityClaimProcessorService      identity claim processor service
      */
     @Autowired
     public AttestationCertificateAuthorityServiceImpl(
-            final CertificateRequestProcessor certificateRequestProcessor,
-            final IdentityClaimProcessor identityClaimProcessor) {
-        this.certificateRequestProcessor = certificateRequestProcessor;
-        this.identityClaimProcessor = identityClaimProcessor;
+            final CertificateRequestProcessorService certificateRequestProcessorService,
+            final IdentityClaimProcessorService identityClaimProcessorService) {
+        this.certificateRequestProcessorService = certificateRequestProcessorService;
+        this.identityClaimProcessorService = identityClaimProcessorService;
     }
 
     /**
@@ -34,7 +34,7 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
      * @return processed identity claim response
      */
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-        return this.identityClaimProcessor.processIdentityClaimTpm2(identityClaim);
+        return this.identityClaimProcessorService.processIdentityClaimTpm2(identityClaim);
     }
 
     /**
@@ -44,7 +44,7 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
      * @return processed certificate request response
      */
     public byte[] processCertificateRequest(final byte[] certificateRequest) {
-        return this.certificateRequestProcessor.processCertificateRequest(certificateRequest);
+        return this.certificateRequestProcessorService.processCertificateRequest(certificateRequest);
     }
 
     /**
@@ -53,6 +53,6 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
      * @return encoded public key of the leaf certificate
      */
     public byte[] getLeafACACertPublicKey() {
-        return this.certificateRequestProcessor.getLeafACACertificatePublicKey();
+        return this.certificateRequestProcessorService.getLeafACACertificatePublicKey();
     }
 }

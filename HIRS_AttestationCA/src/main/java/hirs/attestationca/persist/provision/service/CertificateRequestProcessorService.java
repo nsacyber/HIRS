@@ -49,7 +49,7 @@ import java.util.List;
 
 @Service
 @Log4j2
-public class CertificateRequestProcessor {
+public class CertificateRequestProcessorService {
     private final SupplyChainValidationService supplyChainValidationService;
     private final CredentialManagementService credentialManagementService;
     private final DeviceRepository deviceRepository;
@@ -72,14 +72,15 @@ public class CertificateRequestProcessor {
      * @param policyRepository               db connector for policies.
      */
     @Autowired
-    public CertificateRequestProcessor(final SupplyChainValidationService supplyChainValidationService,
-                                       final CredentialManagementService credentialManagementService,
-                                       final DeviceRepository deviceRepository,
-                                       final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
-                                       final PrivateKey privateKey,
-                                       @Qualifier("leafACACert") final X509Certificate acaCertificate,
-                                       @Value("${aca.certificates.validity}") final int certificateValidityInDays,
-                                       final PolicyRepository policyRepository) {
+    public CertificateRequestProcessorService(final SupplyChainValidationService supplyChainValidationService,
+                                              final CredentialManagementService credentialManagementService,
+                                              final DeviceRepository deviceRepository,
+                                              final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
+                                              final PrivateKey privateKey,
+                                              @Qualifier("leafACACert") final X509Certificate acaCertificate,
+                                              @Value("${aca.certificates.validity}")
+                                              final int certificateValidityInDays,
+                                              final PolicyRepository policyRepository) {
         this.credentialManagementService = credentialManagementService;
         this.certificateValidityInDays = certificateValidityInDays;
         this.supplyChainValidationService = supplyChainValidationService;

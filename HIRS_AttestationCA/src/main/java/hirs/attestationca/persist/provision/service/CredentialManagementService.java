@@ -131,9 +131,8 @@ public class CredentialManagementService {
         }
 
         if (endorsementBytes.length <= 1) {
-            throw new IllegalArgumentException(
-                    String.format("%d-length byte array given for endorsement credential",
-                            endorsementBytes.length)
+            throw new IllegalArgumentException(String.format("%d-length byte array given for endorsement credential",
+                    endorsementBytes.length)
             );
         }
 
@@ -141,8 +140,7 @@ public class CredentialManagementService {
 
         EndorsementCredential endorsementCredential;
         try {
-            endorsementCredential = EndorsementCredential
-                    .parseWithPossibleHeader(endorsementBytes);
+            endorsementCredential = EndorsementCredential.parseWithPossibleHeader(endorsementBytes);
         } catch (IllegalArgumentException iae) {
             log.error(iae.getMessage());
             throw iae;
@@ -183,9 +181,7 @@ public class CredentialManagementService {
 
         if (platformBytes.length == 0) {
             log.error("The provided platform credential byte array is null.");
-            throw new IllegalArgumentException(
-                    "zero-length byte array given for platform credential"
-            );
+            throw new IllegalArgumentException("zero-length byte array given for platform credential");
         }
 
         log.info("Parsing Platform Credential of length {}", platformBytes.length);
@@ -195,8 +191,7 @@ public class CredentialManagementService {
                     PlatformCredential.parseWithPossibleHeader(platformBytes);
 
             if (platformCredential == null) {
-                log.error("The platform credential that was parsed with the provided"
-                        + "byte array was null");
+                log.error("The platform credential that was parsed with the provided byte array was null");
                 return null;
             }
 
@@ -239,8 +234,7 @@ public class CredentialManagementService {
             log.error("Error parsing platform credential", e);
         }
 
-        log.error("Due to an exception being thrown while "
-                + " attempting to store platform certificate(s) "
+        log.error("Due to an exception being thrown while attempting to store platform certificate(s) "
                 + "this method will return a null platform certificate.");
         return null;
     }

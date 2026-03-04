@@ -39,7 +39,7 @@ import java.util.Map;
 
 @Service
 @Log4j2
-public class IdentityClaimProcessor {
+public class IdentityClaimProcessorService {
     /**
      * Number of bytes to include in the TPM2.0 nonce.
      */
@@ -48,7 +48,7 @@ public class IdentityClaimProcessor {
 
     private final SupplyChainValidationService supplyChainValidationService;
     private final CredentialManagementService credentialManagementService;
-    private final DeviceManagementService deviceManagementService;
+    private final DeviceInfoProcessorService deviceInfoProcessorService;
     private final CertificateRepository certificateRepository;
     private final ComponentResultRepository componentResultRepository;
     private final ComponentInfoRepository componentInfoRepository;
@@ -68,13 +68,13 @@ public class IdentityClaimProcessor {
      * @param policyRepository               policy repository
      */
     @Autowired
-    public IdentityClaimProcessor(
+    public IdentityClaimProcessorService(
             final SupplyChainValidationService supplyChainValidationService,
             final CredentialManagementService credentialManagementService,
             final CertificateRepository certificateRepository,
             final ComponentResultRepository componentResultRepository,
             final ComponentInfoRepository componentInfoRepository,
-            final DeviceRepository deviceRepository, DeviceManagementService deviceManagementService,
+            final DeviceRepository deviceRepository, DeviceInfoProcessorService deviceInfoProcessorService,
             final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
             final PolicyRepository policyRepository) {
         this.supplyChainValidationService = supplyChainValidationService;
@@ -83,7 +83,7 @@ public class IdentityClaimProcessor {
         this.componentResultRepository = componentResultRepository;
         this.componentInfoRepository = componentInfoRepository;
         this.deviceRepository = deviceRepository;
-        this.deviceManagementService = deviceManagementService;
+        this.deviceInfoProcessorService = deviceInfoProcessorService;
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
         this.policyRepository = policyRepository;
     }
@@ -245,11 +245,9 @@ public class IdentityClaimProcessor {
                 endorsementCredential);
 
         // Parse and save device info
-        Device device = deviceManagementService.processDeviceInfo(claim);
-
-//        device.getDeviceInfo().setPaccorOutputString(claim.getPaccorOutput());
-        handleDeviceComponents(device.getDeviceInfo().getNetworkInfo().getHostname(),
-                claim.getPaccorOutput());
+        Device device = deviceInfoProcessorService.processDeviceInfo(claim);
+        
+        handleDeviceComponents(device.getDeviceInfo().getNetworkInfo().getHostname(), claim.getPaccorOutput());
 
         // There are situations in which the claim is sent with no PCs
         // or a PC from the tpm which will be deprecated

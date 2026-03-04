@@ -3,8 +3,8 @@ package hirs.attestationca.persist;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.provision.service.AttestationCertificateAuthorityServiceImpl;
-import hirs.attestationca.persist.provision.service.CertificateRequestProcessor;
-import hirs.attestationca.persist.provision.service.IdentityClaimProcessor;
+import hirs.attestationca.persist.provision.service.CertificateRequestProcessorService;
+import hirs.attestationca.persist.provision.service.IdentityClaimProcessorService;
 import hirs.utils.HexUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,10 +89,10 @@ public class AttestationCertificateAuthorityServiceTest {
     private AttestationCertificateAuthorityServiceImpl attestationCertificateAuthorityService;
 
     @Mock
-    private CertificateRequestProcessor certificateRequestProcessor;
+    private CertificateRequestProcessorService certificateRequestProcessorService;
 
     @Mock
-    private IdentityClaimProcessor identityClaimProcessor;
+    private IdentityClaimProcessorService identityClaimProcessorService;
 
     /**
      * Setups configuration prior to each test method.
@@ -131,7 +131,7 @@ public class AttestationCertificateAuthorityServiceTest {
         final String expectedExceptionMsg = "The IdentityClaim sent by the client cannot be null or empty.";
 
         // test 1: test null identity claim
-        when(identityClaimProcessor.processIdentityClaimTpm2(null)).thenThrow(
+        when(identityClaimProcessorService.processIdentityClaimTpm2(null)).thenThrow(
                 new IllegalArgumentException(expectedExceptionMsg));
 
         // Act & Assert: Verify that the exception is thrown
@@ -145,7 +145,7 @@ public class AttestationCertificateAuthorityServiceTest {
         // initialize an empty byte array
         final byte[] emptyArr = {};
 
-        when(identityClaimProcessor.processIdentityClaimTpm2(emptyArr)).thenThrow(
+        when(identityClaimProcessorService.processIdentityClaimTpm2(emptyArr)).thenThrow(
                 new IllegalArgumentException(expectedExceptionMsg));
 
         // Act & Assert: Verify that the exception is thrown
@@ -164,11 +164,11 @@ public class AttestationCertificateAuthorityServiceTest {
 
         final byte[] expectedIdentityClaimResponse = {1, 1, 1, 1, 2, 2, 2, 2};
 
-        when(identityClaimProcessor.processIdentityClaimTpm2(identityClaim)).thenReturn(
+        when(identityClaimProcessorService.processIdentityClaimTpm2(identityClaim)).thenReturn(
                 expectedIdentityClaimResponse);
 
         final byte[] actualCertificateResponse =
-                identityClaimProcessor.processIdentityClaimTpm2(identityClaim);
+                identityClaimProcessorService.processIdentityClaimTpm2(identityClaim);
 
         // Assert that the byte arrays match
         assertArrayEquals(expectedIdentityClaimResponse, actualCertificateResponse);
@@ -183,7 +183,7 @@ public class AttestationCertificateAuthorityServiceTest {
         final String expectedExceptionMsg = "The CertificateRequest sent by the client cannot be null or empty.";
 
         // test 1: test null certificate request
-        when(certificateRequestProcessor.processCertificateRequest(null)).thenThrow(
+        when(certificateRequestProcessorService.processCertificateRequest(null)).thenThrow(
                 new IllegalArgumentException(expectedExceptionMsg));
 
         // Act & Assert: Verify that the exception is thrown
@@ -197,7 +197,7 @@ public class AttestationCertificateAuthorityServiceTest {
         // initialize an empty byte array
         final byte[] emptyArr = {};
 
-        when(certificateRequestProcessor.processCertificateRequest(emptyArr)).thenThrow(
+        when(certificateRequestProcessorService.processCertificateRequest(emptyArr)).thenThrow(
                 new IllegalArgumentException(expectedExceptionMsg));
 
         // Act & Assert: Verify that the exception is thrown
@@ -217,7 +217,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
         final byte[] badCertificateRequest = {0, 0, 0, 0, 0, 1, 0, 0};
 
-        when(certificateRequestProcessor.processCertificateRequest(badCertificateRequest)).thenThrow(
+        when(certificateRequestProcessorService.processCertificateRequest(badCertificateRequest)).thenThrow(
                 new CertificateProcessingException(expectedExceptionMsg));
 
         // Act & Assert: Verify that the exception is thrown
@@ -237,7 +237,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
         final byte[] expectedCertificateResponse = {1, 1, 1, 1};
 
-        when(certificateRequestProcessor.processCertificateRequest(certificateRequest)).thenReturn(
+        when(certificateRequestProcessorService.processCertificateRequest(certificateRequest)).thenReturn(
                 expectedCertificateResponse);
 
         final byte[] actualCertificateResponse =
