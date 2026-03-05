@@ -4,13 +4,17 @@ import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import lombok.extern.log4j.Log4j2;
@@ -30,21 +34,25 @@ import java.util.List;
  */
 @Service
 @Log4j2
-public class CredentialManagementService {
+public class CertificateManagementService {
     private final PolicyRepository policyRepository;
     private final CertificateRepository certificateRepository;
+    private final ComponentResultRepository componentResultRepository;
 
     /**
      * Constructor.
      *
-     * @param policyRepository      policy repository
-     * @param certificateRepository certificate repository
+     * @param policyRepository          policy repository
+     * @param certificateRepository     certificate repository
+     * @param componentResultRepository
      */
     @Autowired
-    private CredentialManagementService(final PolicyRepository policyRepository,
-                                        final CertificateRepository certificateRepository) {
+    private CertificateManagementService(final PolicyRepository policyRepository,
+                                         final CertificateRepository certificateRepository,
+                                         final ComponentResultRepository componentResultRepository) {
         this.policyRepository = policyRepository;
         this.certificateRepository = certificateRepository;
+        this.componentResultRepository = componentResultRepository;
     }
 
     /**
@@ -240,6 +248,36 @@ public class CredentialManagementService {
     }
 
     /**
+     * Stores the Platform Certificate's list of associated component results.
+     *
+     * @param platformCredentials list of platform credentials
+     * @throws IOException if any issues arise from storing the platform credentials components
+     */
+    public void saveOrUpdatePlatformCertificateComponents(List<PlatformCredential> platformCredentials)
+            throws IOException {
+
+        handleSpecialCaseForPlatformCertificates(platformCredentials);
+
+        // store component results objects
+        for (PlatformCredential platformCredential : platformCredentials) {
+            List<ComponentResult> componentResults =
+                    componentResultRepository.findByCertificateSerialNumberAndBoardSerialNumber(
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformSerial());
+
+            if (componentResults.isEmpty()) {
+                savePlatformCertificateComponents(platformCredential);
+            } else {
+                componentResults.forEach((componentResult) -> {
+                    componentResult.restore();
+                    componentResult.resetCreateTime();
+                    componentResultRepository.save(componentResult);
+                });
+            }
+        }
+    }
+
+    /**
      * Creates an {@link IssuedAttestationCertificate} object and set its corresponding device and persists it.
      *
      * @param derEncodedAttestationCertificate the byte array representing the Attestation
@@ -257,7 +295,7 @@ public class CredentialManagementService {
             final Device device,
             final boolean ldevID) {
         List<IssuedAttestationCertificate> issuedAc;
-        boolean generateCertificate = true;
+        boolean generateCertificate;
         PolicySettings policySettings;
         Date currentDate = new Date();
         int days;
@@ -349,6 +387,7 @@ public class CredentialManagementService {
             log.debug("Searching for platform credential(s) based on holder serial number: {}",
                     ec.getSerialNumber());
             credentials = certificateRepository.getByHolderSerialNumber(ec.getSerialNumber());
+
             if (credentials == null || credentials.isEmpty()) {
                 log.warn("No platform credential(s) found");
             } else {
@@ -357,5 +396,66 @@ public class CredentialManagementService {
         }
 
         return credentials;
+    }
+
+    /**
+     * There are situations in which the claim is sent with no platform certificates or a platform certificate
+     * from the tpm which will be deprecated. This is to check what is in the platform object and pull
+     * additional information from the DB if information exists.
+     *
+     * @param platformCredentials list of platform credentials
+     */
+    private void handleSpecialCaseForPlatformCertificates(List<PlatformCredential> platformCredentials) {
+
+        if (platformCredentials.size() == 1) {
+            List<PlatformCredential> additionalPC = new LinkedList<>();
+            PlatformCredential pc = platformCredentials.getFirst();
+            if (pc != null && pc.getPlatformSerial() != null) {
+                additionalPC.addAll(certificateRepository.byBoardSerialNumber(pc.getPlatformSerial()));
+            }
+            platformCredentials.addAll(additionalPC);
+        }
+    }
+
+    /**
+     * Helper method that saves the provided platform certificate's components in the database.
+     *
+     * @param certificate certificate
+     */
+    private void savePlatformCertificateComponents(final Certificate certificate) throws IOException {
+        PlatformCredential platformCredential;
+
+        if (certificate instanceof PlatformCredential) {
+            platformCredential = (PlatformCredential) certificate;
+            ComponentResult componentResult;
+
+            if (platformCredential.getPlatformConfigurationV1() != null) {
+                List<ComponentIdentifier> componentIdentifiers = platformCredential
+                        .getComponentIdentifiers();
+
+                for (ComponentIdentifier componentIdentifier : componentIdentifiers) {
+                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformChainType(),
+                            componentIdentifier);
+                    componentResult.setFailedValidation(false);
+                    componentResult.setDelta(!platformCredential.isPlatformBase());
+                    componentResultRepository.save(componentResult);
+                }
+            } else if (platformCredential.getPlatformConfigurationV2() != null) {
+                List<ComponentIdentifierV2> componentIdentifiersV2 = platformCredential
+                        .getComponentIdentifiersV2();
+
+                for (ComponentIdentifierV2 componentIdentifierV2 : componentIdentifiersV2) {
+                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
+                            platformCredential.getSerialNumber().toString(),
+                            platformCredential.getPlatformChainType(),
+                            componentIdentifierV2);
+                    componentResult.setFailedValidation(false);
+                    componentResult.setDelta(!platformCredential.isPlatformBase());
+                    componentResultRepository.save(componentResult);
+                }
+            }
+        }
     }
 }

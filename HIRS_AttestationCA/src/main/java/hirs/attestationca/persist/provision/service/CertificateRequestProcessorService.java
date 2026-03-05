@@ -51,7 +51,7 @@ import java.util.List;
 @Log4j2
 public class CertificateRequestProcessorService {
     private final SupplyChainValidationService supplyChainValidationService;
-    private final CredentialManagementService credentialManagementService;
+    private final CertificateManagementService certificateManagementService;
     private final DeviceRepository deviceRepository;
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
     private final PolicyRepository policyRepository;
@@ -63,7 +63,7 @@ public class CertificateRequestProcessorService {
      * Constructor.
      *
      * @param supplyChainValidationService   object that is used to run provisioning
-     * @param credentialManagementService    credential management service
+     * @param certificateManagementService   credential management service
      * @param deviceRepository               database connector for Devices.
      * @param tpm2ProvisionerStateRepository db connector for provisioner state.
      * @param privateKey                     private key used for communication authentication
@@ -73,7 +73,7 @@ public class CertificateRequestProcessorService {
      */
     @Autowired
     public CertificateRequestProcessorService(final SupplyChainValidationService supplyChainValidationService,
-                                              final CredentialManagementService credentialManagementService,
+                                              final CertificateManagementService certificateManagementService,
                                               final DeviceRepository deviceRepository,
                                               final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
                                               final PrivateKey privateKey,
@@ -81,7 +81,7 @@ public class CertificateRequestProcessorService {
                                               @Value("${aca.certificates.validity}")
                                               final int certificateValidityInDays,
                                               final PolicyRepository policyRepository) {
-        this.credentialManagementService = credentialManagementService;
+        this.certificateManagementService = certificateManagementService;
         this.certificateValidityInDays = certificateValidityInDays;
         this.supplyChainValidationService = supplyChainValidationService;
         this.deviceRepository = deviceRepository;
@@ -155,10 +155,10 @@ public class CertificateRequestProcessorService {
 
             // Get Endorsement Credential if it exists or was uploaded
             EndorsementCredential endorsementCredential =
-                    credentialManagementService.parseEcFromIdentityClaim(claim, ekPublicKey);
+                    certificateManagementService.parseEcFromIdentityClaim(claim, ekPublicKey);
 
             // Get Platform Credentials if they exist or were uploaded
-            List<PlatformCredential> platformCredentials = credentialManagementService.parsePcsFromIdentityClaim(claim,
+            List<PlatformCredential> platformCredentials = certificateManagementService.parsePcsFromIdentityClaim(claim,
                     endorsementCredential);
 
             // Get LDevID public key if it exists
@@ -221,11 +221,11 @@ public class CertificateRequestProcessorService {
                     tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
 
                     boolean generateAtt =
-                            credentialManagementService.saveAttestationCertificate(derEncodedAttestationCertificate,
+                            certificateManagementService.saveAttestationCertificate(derEncodedAttestationCertificate,
                                     endorsementCredential, platformCredentials, device, false);
 
                     boolean generateLDevID =
-                            credentialManagementService.saveAttestationCertificate(derEncodedLdevidCertificate,
+                            certificateManagementService.saveAttestationCertificate(derEncodedLdevidCertificate,
                                     endorsementCredential, platformCredentials, device, true);
 
                     ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
@@ -287,7 +287,7 @@ public class CertificateRequestProcessorService {
                             ProvisionerTpm2.CertificateResponse.
                                     newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
 
-                    boolean generateAtt = credentialManagementService.saveAttestationCertificate(
+                    boolean generateAtt = certificateManagementService.saveAttestationCertificate(
                             derEncodedAttestationCertificate,
                             endorsementCredential, platformCredentials, device, false);
 

@@ -4,26 +4,18 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
-import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
-import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
-import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
-import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
-import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
-import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.utils.HexUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
@@ -32,10 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Log4j2
@@ -47,10 +36,8 @@ public class IdentityClaimProcessorService {
     private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23";
 
     private final SupplyChainValidationService supplyChainValidationService;
-    private final CredentialManagementService credentialManagementService;
+    private final CertificateManagementService certificateManagementService;
     private final DeviceInfoProcessorService deviceInfoProcessorService;
-    private final CertificateRepository certificateRepository;
-    private final ComponentResultRepository componentResultRepository;
     private final ComponentInfoRepository componentInfoRepository;
     private final DeviceRepository deviceRepository;
     private final PolicyRepository policyRepository;
@@ -60,8 +47,6 @@ public class IdentityClaimProcessorService {
      * Constructor.
      *
      * @param supplyChainValidationService   supply chain validation service
-     * @param certificateRepository          certificate repository
-     * @param componentResultRepository      component result repository
      * @param componentInfoRepository        component info repository
      * @param deviceRepository               device repository
      * @param tpm2ProvisionerStateRepository tpm2 provisioner state repository
@@ -70,17 +55,13 @@ public class IdentityClaimProcessorService {
     @Autowired
     public IdentityClaimProcessorService(
             final SupplyChainValidationService supplyChainValidationService,
-            final CredentialManagementService credentialManagementService,
-            final CertificateRepository certificateRepository,
-            final ComponentResultRepository componentResultRepository,
+            final CertificateManagementService certificateManagementService,
             final ComponentInfoRepository componentInfoRepository,
             final DeviceRepository deviceRepository, DeviceInfoProcessorService deviceInfoProcessorService,
             final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
             final PolicyRepository policyRepository) {
         this.supplyChainValidationService = supplyChainValidationService;
-        this.credentialManagementService = credentialManagementService;
-        this.certificateRepository = certificateRepository;
-        this.componentResultRepository = componentResultRepository;
+        this.certificateManagementService = certificateManagementService;
         this.componentInfoRepository = componentInfoRepository;
         this.deviceRepository = deviceRepository;
         this.deviceInfoProcessorService = deviceInfoProcessorService;
@@ -238,49 +219,17 @@ public class IdentityClaimProcessorService {
 
         // attempt to find an endorsement credential to validate
         EndorsementCredential endorsementCredential =
-                credentialManagementService.parseEcFromIdentityClaim(claim, ekPub);
+                certificateManagementService.parseEcFromIdentityClaim(claim, ekPub);
 
         // attempt to find platform credentials to validate
-        List<PlatformCredential> platformCredentials = credentialManagementService.parsePcsFromIdentityClaim(claim,
+        List<PlatformCredential> platformCredentials = certificateManagementService.parsePcsFromIdentityClaim(claim,
                 endorsementCredential);
 
         // Parse and save device info
         Device device = deviceInfoProcessorService.processDeviceInfo(claim);
-        
-        handleDeviceComponents(device.getDeviceInfo().getNetworkInfo().getHostname(), claim.getPaccorOutput());
 
-        // There are situations in which the claim is sent with no PCs
-        // or a PC from the tpm which will be deprecated
-        // this is to check what is in the platform object and pull
-        // additional information from the DB if information exists
-        if (platformCredentials.size() == 1) {
-            List<PlatformCredential> tempList = new LinkedList<>();
-            for (PlatformCredential pc : platformCredentials) {
-                if (pc != null && pc.getPlatformSerial() != null) {
-                    tempList.addAll(certificateRepository.byBoardSerialNumber(pc.getPlatformSerial()));
-                }
-            }
-
-            platformCredentials.addAll(tempList);
-        }
-
-        // store component results objects
-        for (PlatformCredential platformCredential : platformCredentials) {
-            List<ComponentResult> componentResults =
-                    componentResultRepository.findByCertificateSerialNumberAndBoardSerialNumber(
-                            platformCredential.getSerialNumber().toString(),
-                            platformCredential.getPlatformSerial());
-
-            if (componentResults.isEmpty()) {
-                savePlatformComponents(platformCredential);
-            } else {
-                componentResults.forEach((componentResult) -> {
-                    componentResult.restore();
-                    componentResult.resetCreateTime();
-                    componentResultRepository.save(componentResult);
-                });
-            }
-        }
+        // Store the platform certificates' components
+        certificateManagementService.saveOrUpdatePlatformCertificateComponents(platformCredentials);
 
         // perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
@@ -294,79 +243,5 @@ public class IdentityClaimProcessorService {
         this.deviceRepository.save(device);
 
         return validationResult;
-    }
-
-
-    /**
-     * Helper method that saves the provided platform certificate's components in the database.
-     *
-     * @param certificate certificate
-     */
-    private void savePlatformComponents(final Certificate certificate) throws IOException {
-        PlatformCredential platformCredential;
-
-        if (certificate instanceof PlatformCredential) {
-            platformCredential = (PlatformCredential) certificate;
-            ComponentResult componentResult;
-
-            if (platformCredential.getPlatformConfigurationV1() != null) {
-                List<ComponentIdentifier> componentIdentifiers = platformCredential
-                        .getComponentIdentifiers();
-
-                for (ComponentIdentifier componentIdentifier : componentIdentifiers) {
-                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                            platformCredential.getSerialNumber().toString(),
-                            platformCredential.getPlatformChainType(),
-                            componentIdentifier);
-                    componentResult.setFailedValidation(false);
-                    componentResult.setDelta(!platformCredential.isPlatformBase());
-                    componentResultRepository.save(componentResult);
-                }
-            } else if (platformCredential.getPlatformConfigurationV2() != null) {
-                List<ComponentIdentifierV2> componentIdentifiersV2 = platformCredential
-                        .getComponentIdentifiersV2();
-
-                for (ComponentIdentifierV2 componentIdentifierV2 : componentIdentifiersV2) {
-                    componentResult = new ComponentResult(platformCredential.getPlatformSerial(),
-                            platformCredential.getSerialNumber().toString(),
-                            platformCredential.getPlatformChainType(),
-                            componentIdentifierV2);
-                    componentResult.setFailedValidation(false);
-                    componentResult.setDelta(!platformCredential.isPlatformBase());
-                    componentResultRepository.save(componentResult);
-                }
-            }
-        }
-    }
-
-    /**
-     * Helper method that attempts to find all the provided device's components.
-     *
-     * @param hostName     device's host name
-     * @param paccorString string representation of the paccor tool output
-     */
-    private void handleDeviceComponents(final String hostName, final String paccorString) {
-        Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
-
-        try {
-            List<ComponentInfo> componentInfos = SupplyChainCredentialValidator
-                    .getComponentInfoFromPaccorOutput(hostName, paccorString);
-
-            // check the DB for like component infos
-            List<ComponentInfo> dbComponentInfos = this.componentInfoRepository.findByDeviceName(hostName);
-            dbComponentInfos.forEach((infos) -> componentInfoMap.put(infos.hashCode(), infos));
-
-            for (ComponentInfo componentInfo : dbComponentInfos) {
-                if (componentInfoMap.containsKey(componentInfo.hashCode())) {
-                    componentInfos.remove(componentInfo);
-                }
-            }
-
-            for (ComponentInfo componentInfo : componentInfos) {
-                this.componentInfoRepository.save(componentInfo);
-            }
-        } catch (IOException ioEx) {
-            log.warn("Error parsing paccor string");
-        }
     }
 }

@@ -2,7 +2,7 @@ package hirs.attestationca.persist.provision.helper;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.provision.service.CredentialManagementService;
+import hirs.attestationca.persist.provision.service.CertificateManagementService;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,16 +20,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 /**
- * Unit tests for {@see CredentialManagementService}.
+ * Unit tests for {@see CertificateManagementService}.
  */
-public class CredentialManagementServiceTest {
+public class CertificateManagementServiceTest {
 
     private static final String EK_HEADER_TRUNCATED = "/certificates/nuc-1/ek_cert_7_byte_header_removed.cer";
 
     private static final String EK_UNTOUCHED = "/certificates/nuc-1/ek_cert_untouched.cer";
 
     @InjectMocks
-    private CredentialManagementService credentialManagementService;
+    private CertificateManagementService certificateManagementService;
 
     @Mock
     private CertificateRepository certificateRepository;
@@ -65,7 +65,7 @@ public class CredentialManagementServiceTest {
     @Test
     public void processNullEndorsementCredential() {
         assertThrows(IllegalArgumentException.class, () ->
-                credentialManagementService.storeEndorsementCredential(null,
+                certificateManagementService.storeEndorsementCredential(null,
                         "testName"));
     }
 
@@ -75,7 +75,7 @@ public class CredentialManagementServiceTest {
     @Test
     public void processEmptyEndorsementCredential() {
         assertThrows(IllegalArgumentException.class, () ->
-                credentialManagementService.storeEndorsementCredential(new byte[0], "testName"));
+                certificateManagementService.storeEndorsementCredential(new byte[0], "testName"));
     }
 
     /**
@@ -85,7 +85,7 @@ public class CredentialManagementServiceTest {
     public void processInvalidEndorsementCredentialCase1() {
         byte[] ekBytes = new byte[]{1};
         assertThrows(IllegalArgumentException.class, () ->
-                credentialManagementService.storeEndorsementCredential(ekBytes, "testName"));
+                certificateManagementService.storeEndorsementCredential(ekBytes, "testName"));
     }
 
     /**
@@ -95,7 +95,7 @@ public class CredentialManagementServiceTest {
     public void processInvalidEndorsementCredentialCase2() {
         byte[] ekBytes = new byte[]{1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0};
         assertThrows(IllegalArgumentException.class, () ->
-                credentialManagementService.storeEndorsementCredential(ekBytes,
+                certificateManagementService.storeEndorsementCredential(ekBytes,
                         "testName"));
     }
 
@@ -106,10 +106,11 @@ public class CredentialManagementServiceTest {
      */
     @Test
     public void parseUntouchedEndorsementCredential() throws IOException {
-        String path = Objects.requireNonNull(CredentialManagementServiceTest.class.getResource(EK_UNTOUCHED)).getPath();
+        String path =
+                Objects.requireNonNull(CertificateManagementServiceTest.class.getResource(EK_UNTOUCHED)).getPath();
         byte[] ekBytes = IOUtils.toByteArray(new FileInputStream(path));
 
-        credentialManagementService.storeEndorsementCredential(ekBytes, "testName");
+        certificateManagementService.storeEndorsementCredential(ekBytes, "testName");
         verify(certificateRepository).save(any(Certificate.class));
     }
 
@@ -120,11 +121,11 @@ public class CredentialManagementServiceTest {
      */
     @Test
     public void parseHeaderTruncatedEndorsementCredential() throws IOException {
-        String path = Objects.requireNonNull(CredentialManagementServiceTest.class.getResource(EK_HEADER_TRUNCATED))
+        String path = Objects.requireNonNull(CertificateManagementServiceTest.class.getResource(EK_HEADER_TRUNCATED))
                 .getPath();
         byte[] ekBytes = IOUtils.toByteArray(new FileInputStream(path));
 
-        credentialManagementService.storeEndorsementCredential(ekBytes, "testName");
+        certificateManagementService.storeEndorsementCredential(ekBytes, "testName");
         verify(certificateRepository).save(any(Certificate.class));
     }
 }
