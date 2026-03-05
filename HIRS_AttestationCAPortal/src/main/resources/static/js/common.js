@@ -484,7 +484,7 @@ function getValidationDisplayHtml(full, validation_type) {
         }
 
         if (currentValidation.rimId !== "" && validation_type === "FIRMWARE") {
-          html += `<a href="${portal}/rim-details?id=${currentValidation.rimId}">`;
+          html += `<a href="rim-details?id=${currentValidation.rimId}">`;
         }
 
         switch (currentResult) {
@@ -495,7 +495,6 @@ function getValidationDisplayHtml(full, validation_type) {
             html += `<img src="${failIcon}" title="${currentMessage}"/>`;
             break;
           case "ERROR":
-            console.log("im hereeee");
             html += `<img src="${errorIcon}" title="${currentMessage}"/>`;
             break;
           default:
