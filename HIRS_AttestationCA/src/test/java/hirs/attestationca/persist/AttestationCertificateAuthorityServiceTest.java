@@ -37,11 +37,11 @@ import static org.mockito.Mockito.when;
  * Tests the {@link AttestationCertificateAuthorityServiceImpl} service class.
  */
 public class AttestationCertificateAuthorityServiceTest {
-    private static final String EK_PUBLIC_KEY_PATH = "/public_keys/ek.pub";
+    private static final String EK_PUBLIC_KEY_PATH = "/tpm2/ek.pub";
 
-    private static final String AK_PUBLIC_KEY_PATH = "/public_keys/ak.pub";
+    private static final String AK_PUBLIC_KEY_PATH = "/tpm2/ak.pub";
 
-    private static final String AK_NAME_PATH = "/public_keys/ak.name";
+    private static final String AK_NAME_PATH = "/tpm2/ak.name";
 
     private static final String EK_MODULUS_HEX = "a3 b5 c2 1c 57 be 40 c4  3c 78 90 0d 00 81 01 78"
             + "13 ca 02 ec b6 75 89 60  ca 60 9b 10 b6 b4 d0 0b"

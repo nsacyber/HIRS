@@ -38,7 +38,7 @@ public enum PublicKeyAlgorithm {
     UNKNOWN(0xFFFF, "UNKNOWN");
 
     /**
-     * The hexadecimal representation of the algorithm ID.
+     * The hexadecimal representation of the algorithm ID as represented in the TCG documents.
      */
     private final int algorithmId;
 
@@ -46,22 +46,7 @@ public enum PublicKeyAlgorithm {
      * The name of the algorithm.
      */
     private final String algorithmName;
-
-    /**
-     * Converts the provided string public key algorithm into an ENUM.
-     *
-     * @param algorithmAsString public key algorithm name as a string
-     * @return ENUM representation of the public key algorithm
-     */
-    public static PublicKeyAlgorithm fromString(final String algorithmAsString) {
-        for (PublicKeyAlgorithm algorithmEnum : PublicKeyAlgorithm.values()) {
-            if (algorithmEnum.getAlgorithmName().equalsIgnoreCase(algorithmAsString)) {
-                return algorithmEnum;
-            }
-        }
-        return UNKNOWN; // Return UNKNOWN if no match is found
-    }
-
+    
     /**
      * Retrieves the enum by the algorithm ID.
      *

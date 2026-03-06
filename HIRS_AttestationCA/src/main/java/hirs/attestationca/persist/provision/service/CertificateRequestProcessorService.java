@@ -43,15 +43,21 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * Service class responsible for processing the Provisioner's certificate request.
+ */
 @Service
 @Log4j2
 public class CertificateRequestProcessorService {
     private final SupplyChainValidationService supplyChainValidationService;
-    private final CertificateManagementService certificateManagementService;
+    private final CredentialManagementService credentialManagementService;
     private final DeviceRepository deviceRepository;
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
     private final PolicyRepository policyRepository;
@@ -63,25 +69,25 @@ public class CertificateRequestProcessorService {
      * Constructor.
      *
      * @param supplyChainValidationService   object that is used to run provisioning
-     * @param certificateManagementService   credential management service
+     * @param credentialManagementService    credential management service
      * @param deviceRepository               database connector for Devices.
      * @param tpm2ProvisionerStateRepository db connector for provisioner state.
+     * @param policyRepository               db connector for policies.
      * @param privateKey                     private key used for communication authentication
      * @param acaCertificate                 object used to create credential
      * @param certificateValidityInDays      int for the time in which a certificate is valid.
-     * @param policyRepository               db connector for policies.
      */
     @Autowired
     public CertificateRequestProcessorService(final SupplyChainValidationService supplyChainValidationService,
-                                              final CertificateManagementService certificateManagementService,
+                                              final CredentialManagementService credentialManagementService,
                                               final DeviceRepository deviceRepository,
                                               final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
+                                              final PolicyRepository policyRepository,
                                               final PrivateKey privateKey,
                                               @Qualifier("leafACACert") final X509Certificate acaCertificate,
-                                              @Value("${aca.certificates.validity}")
-                                              final int certificateValidityInDays,
-                                              final PolicyRepository policyRepository) {
-        this.certificateManagementService = certificateManagementService;
+                                              @Value("${aca.certificates.validity}") final int certificateValidityInDays
+    ) {
+        this.credentialManagementService = credentialManagementService;
         this.certificateValidityInDays = certificateValidityInDays;
         this.supplyChainValidationService = supplyChainValidationService;
         this.deviceRepository = deviceRepository;
@@ -101,18 +107,16 @@ public class CertificateRequestProcessorService {
     }
 
     /**
-     * Basic implementation of the ACA processCertificateRequest method.
-     * Parses the nonce, validates its correctness, generates the signed,
-     * public attestation certificate, stores it, and returns it to the client.
+     * Basic implementation of the ACA processCertificateRequest method. Parses the nonce, validates its correctness,
+     * generates the signed, public attestation certificate, stores it, and returns it to the client.
      *
-     * @param certificateRequest request containing nonce from earlier identity
-     *                           claim handshake
+     * @param certificateRequestByteArray request containing nonce from earlier identity claim handshake
      * @return a certificateResponse containing the signed certificate
      */
-    public byte[] processCertificateRequest(final byte[] certificateRequest) {
+    public byte[] processCertificateRequest(final byte[] certificateRequestByteArray) {
         log.info("Certificate Request has been received and is ready to be processed");
 
-        if (ArrayUtils.isEmpty(certificateRequest)) {
+        if (ArrayUtils.isEmpty(certificateRequestByteArray)) {
             final String errorMsg = "The CertificateRequest sent by the client cannot be null or empty.";
             log.error(errorMsg);
             throw new IllegalArgumentException(errorMsg);
@@ -121,9 +125,9 @@ public class CertificateRequestProcessorService {
         final PolicySettings policySettings = policyRepository.findByName("Default");
 
         // attempt to deserialize Protobuf CertificateRequest
-        ProvisionerTpm2.CertificateRequest request;
+        ProvisionerTpm2.CertificateRequest certificateRequest;
         try {
-            request = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequest);
+            certificateRequest = ProvisionerTpm2.CertificateRequest.parseFrom(certificateRequestByteArray);
         } catch (InvalidProtocolBufferException ipbe) {
             final String errorMsg = "Could not deserialize Protobuf Certificate Request object.";
             log.error(errorMsg);
@@ -132,82 +136,57 @@ public class CertificateRequestProcessorService {
 
         String certificateRequestJsonString = "";
         try {
-            certificateRequestJsonString = JsonFormat.printer().print(request);
+            certificateRequestJsonString = JsonFormat.printer().print(certificateRequest);
         } catch (InvalidProtocolBufferException exception) {
             log.error("Certificate request could not be parsed properly into a JSON string");
         }
 
         // attempt to retrieve provisioner state based on nonce in request
-        TPM2ProvisionerState tpm2ProvisionerState = getTpm2ProvisionerState(request);
+        TPM2ProvisionerState tpm2ProvisionerState = getTpm2ProvisionerState(certificateRequest);
 
         if (tpm2ProvisionerState != null) {
-            // Reparse Identity Claim to gather necessary components
-            byte[] identityClaim = tpm2ProvisionerState.getIdentityClaim();
-            ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
+            // Parse Identity Claim to gather necessary components
+            ProvisionerTpm2.IdentityClaim identityClaim =
+                    ProvisionUtils.parseIdentityClaim(tpm2ProvisionerState.getIdentityClaim());
 
             // Get endorsement public key
             PublicKey ekPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
-                    claim.getEkPublicArea().toByteArray());
+                    identityClaim.getEkPublicArea().toByteArray());
 
             // Get attestation public key
             PublicKey akPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
-                    claim.getAkPublicArea().toByteArray());
-
-            // Get Endorsement Credential if it exists or was uploaded
-            EndorsementCredential endorsementCredential =
-                    certificateManagementService.parseEcFromIdentityClaim(claim, ekPublicKey);
-
-            // Get Platform Credentials if they exist or were uploaded
-            List<PlatformCredential> platformCredentials = certificateManagementService.parsePcsFromIdentityClaim(claim,
-                    endorsementCredential);
+                    identityClaim.getAkPublicArea().toByteArray());
 
             // Get LDevID public key if it exists
             PublicKey ldevidPublicKey = null;
-            if (claim.hasLdevidPublicArea()) {
+            if (identityClaim.hasLdevidPublicArea()) {
                 ldevidPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
-                        claim.getLdevidPublicArea().toByteArray());
+                        identityClaim.getLdevidPublicArea().toByteArray());
             }
 
-            // Get device name and device
-            String deviceName = claim.getDv().getNw().getHostname();
-            Device device = deviceRepository.findByName(deviceName);
+            // Get Endorsement Credential if it exists or was uploaded
+            EndorsementCredential endorsementCredential =
+                    credentialManagementService.parseEcFromIdentityClaim(identityClaim, ekPublicKey);
 
-            // Parse through the Provisioner supplied TPM Quote and pcr values
-            // these fields are optional
-            if (!request.getQuote().isEmpty()) {
-                TPMInfo savedInfo = device.getDeviceInfo().getTpmInfo();
-                TPMInfo tpmInfo = new TPMInfo(savedInfo.getTpmMake(),
-                        savedInfo.getTpmVersionMajor(),
-                        savedInfo.getTpmVersionMinor(),
-                        savedInfo.getTpmVersionRevMajor(),
-                        savedInfo.getTpmVersionRevMinor(),
-                        savedInfo.getPcrValues(),
-                        ProvisionUtils.parseTPMQuoteHash(request.getQuote().toStringUtf8())
-                                .getBytes(StandardCharsets.UTF_8),
-                        ProvisionUtils.parseTPMQuoteSignature(request.getQuote().toStringUtf8())
-                                .getBytes(StandardCharsets.UTF_8));
+            // Get Platform Credentials if they exist or were uploaded
+            List<PlatformCredential> platformCredentials =
+                    credentialManagementService.parsePcsFromIdentityClaim(identityClaim,
+                            endorsementCredential);
 
-                DeviceInfoReport dvReport = new DeviceInfoReport(
-                        device.getDeviceInfo().getNetworkInfo(),
-                        device.getDeviceInfo().getOSInfo(),
-                        device.getDeviceInfo().getFirmwareInfo(),
-                        device.getDeviceInfo().getHardwareInfo(), tpmInfo,
-                        claim.getClientVersion());
-
-                device.setDeviceInfo(dvReport);
-                device = this.deviceRepository.save(device);
-            }
+            // Get the device associated with the identity claim. Update the device if the cert request quote exists.
+            Device device = retrieveDeviceWithUpdatedTPMInfo(certificateRequest, identityClaim);
 
             AppraisalStatus.Status validationResult = doQuoteValidation(device);
+
             if (validationResult == AppraisalStatus.Status.PASS) {
                 // Create signed, attestation certificate
                 X509Certificate attestationCertificate = generateCredential(akPublicKey,
-                        endorsementCredential, platformCredentials, deviceName, acaCertificate);
+                        endorsementCredential, platformCredentials, device.getName(), acaCertificate);
 
                 if (ldevidPublicKey != null) {
                     // Create signed LDevID certificate
                     X509Certificate ldevidCertificate = generateCredential(ldevidPublicKey,
-                            endorsementCredential, platformCredentials, deviceName, acaCertificate);
+                            endorsementCredential, platformCredentials, device.getName(), acaCertificate);
                     byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
                             attestationCertificate);
                     byte[] derEncodedLdevidCertificate = ProvisionUtils.getDerEncodedCertificate(
@@ -221,16 +200,16 @@ public class CertificateRequestProcessorService {
                     tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
 
                     boolean generateAtt =
-                            certificateManagementService.saveAttestationCertificate(derEncodedAttestationCertificate,
+                            credentialManagementService.saveAttestationCertificate(derEncodedAttestationCertificate,
                                     endorsementCredential, platformCredentials, device, false);
 
                     boolean generateLDevID =
-                            certificateManagementService.saveAttestationCertificate(derEncodedLdevidCertificate,
+                            credentialManagementService.saveAttestationCertificate(derEncodedLdevidCertificate,
                                     endorsementCredential, platformCredentials, device, true);
 
                     ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
-                            ProvisionerTpm2.CertificateResponse.
-                                    newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+                            ProvisionerTpm2.CertificateResponse.newBuilder()
+                                    .setStatus(ProvisionerTpm2.ResponseStatus.PASS);
 
                     if (generateAtt) {
                         certificateResponseBuilder =
@@ -245,11 +224,11 @@ public class CertificateRequestProcessorService {
 
                     String certResponseJsonStringAfterSuccess = "";
                     try {
-                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(request);
+                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateRequest);
                     } catch (InvalidProtocolBufferException exception) {
                         log.error("Certificate response object after a successful validation, "
                                 + "assuming the LDevId public key exists, could not be parsed "
-                                + "properly into a json string");
+                                + "properly into a JSON string");
                     }
 
                     if (!policySettings.isSaveProtobufToLogNeverEnabled()
@@ -261,7 +240,7 @@ public class CertificateRequestProcessorService {
                         log.info("Certificate request object received after a successful validation "
                                         + " and if the LDevID public key exists {}",
                                 certificateRequestJsonString.isEmpty()
-                                        ? request : certificateRequestJsonString);
+                                        ? certificateRequest : certificateRequestJsonString);
 
                         log.info("Certificate Response "
                                 + "object after a successful validation and if the LDevID "
@@ -287,7 +266,7 @@ public class CertificateRequestProcessorService {
                             ProvisionerTpm2.CertificateResponse.
                                     newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
 
-                    boolean generateAtt = certificateManagementService.saveAttestationCertificate(
+                    boolean generateAtt = credentialManagementService.saveAttestationCertificate(
                             derEncodedAttestationCertificate,
                             endorsementCredential, platformCredentials, device, false);
 
@@ -300,11 +279,11 @@ public class CertificateRequestProcessorService {
 
                     String certResponseJsonStringAfterSuccess = "";
                     try {
-                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(request);
+                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateRequest);
                     } catch (InvalidProtocolBufferException exception) {
                         log.error("Certificate response object after a successful validation, "
                                 + "assuming the LDevId public key does not exist, could not be parsed "
-                                + "propertly into a json string");
+                                + "properly into a JSON string");
                     }
 
                     if (!policySettings.isSaveProtobufToLogNeverEnabled()
@@ -317,7 +296,7 @@ public class CertificateRequestProcessorService {
                         log.info("Certificate request object received after a successful validation "
                                         + " and if the LDevID public key does not exist {}",
                                 certificateRequestJsonString.isEmpty()
-                                        ? request : certificateRequestJsonString);
+                                        ? certificateRequest : certificateRequestJsonString);
 
                         log.info("Certificate Request Response "
                                         + "object after a successful validation and if the LDevID "
@@ -342,10 +321,10 @@ public class CertificateRequestProcessorService {
 
                 String certResponseJsonStringAfterFailure = "";
                 try {
-                    certResponseJsonStringAfterFailure = JsonFormat.printer().print(request);
+                    certResponseJsonStringAfterFailure = JsonFormat.printer().print(certificateRequest);
                 } catch (InvalidProtocolBufferException exception) {
                     log.error("Certificate response object after a failed validation could not be parsed"
-                            + " properly into a json string");
+                            + " properly into a JSON string");
                 }
 
                 if (!policySettings.isSaveProtobufToLogNeverEnabled()
@@ -355,9 +334,8 @@ public class CertificateRequestProcessorService {
                             + " After Failed Validation -------------");
 
                     log.info("Certificate request object received after a failed validation:"
-                            + " {}", request);
-                    log.info("Certificate Request Response "
-                                    + "object after a failed validation: {}",
+                            + " {}", certificateRequest);
+                    log.info("Certificate Request Response object after a failed validation: {}",
                             certResponseJsonStringAfterFailure.isEmpty()
                                     ? certificateResponse : certResponseJsonStringAfterFailure);
 
@@ -375,7 +353,7 @@ public class CertificateRequestProcessorService {
                         + "Validation (Invalid Nonce) -------------");
 
                 log.error("Could not process credential request. Invalid nonce provided: {}",
-                        certificateRequestJsonString.isEmpty() ? request : certificateRequestJsonString);
+                        certificateRequestJsonString.isEmpty() ? certificateRequest : certificateRequestJsonString);
 
                 log.info("------------- End Of Protobuf Log Of Certificate Request After Failed "
                         + "Validation (Invalid Nonce) -------------");
@@ -385,14 +363,56 @@ public class CertificateRequestProcessorService {
     }
 
     /**
+     * Helper method that retrieves a {@link Device} object from the Identity Claim and updates the {@link Device}
+     * object TPM info if the certificate request's nonce is present.
+     *
+     * @param certificateRequest certificate request
+     * @param identityClaim      identity claim
+     * @return a {@link Device} object
+     */
+    private Device retrieveDeviceWithUpdatedTPMInfo(final ProvisionerTpm2.CertificateRequest certificateRequest,
+                                                    final ProvisionerTpm2.IdentityClaim identityClaim) {
+        final String deviceName = identityClaim.getDv().getNw().getHostname();
+        Device device = deviceRepository.findByName(deviceName);
+
+        // Parse through the Provisioner supplied TPM Quote and pcr values. These fields are optional.
+        if (!certificateRequest.getQuote().isEmpty()) {
+            DeviceInfoReport deviceInfoReport = Objects.requireNonNull(device.getDeviceInfo());
+
+            TPMInfo savedInfo = deviceInfoReport.getTpmInfo();
+            TPMInfo tpmInfo = new TPMInfo(savedInfo.getTpmMake(),
+                    savedInfo.getTpmVersionMajor(),
+                    savedInfo.getTpmVersionMinor(),
+                    savedInfo.getTpmVersionRevMajor(),
+                    savedInfo.getTpmVersionRevMinor(),
+                    savedInfo.getPcrValues(),
+                    ProvisionUtils.parseTPMQuoteHash(certificateRequest.getQuote().toStringUtf8())
+                            .getBytes(StandardCharsets.UTF_8),
+                    ProvisionUtils.parseTPMQuoteSignature(certificateRequest.getQuote().toStringUtf8())
+                            .getBytes(StandardCharsets.UTF_8));
+
+            DeviceInfoReport dvReport = new DeviceInfoReport(
+                    deviceInfoReport.getNetworkInfo(),
+                    deviceInfoReport.getOSInfo(),
+                    deviceInfoReport.getFirmwareInfo(),
+                    deviceInfoReport.getHardwareInfo(), tpmInfo,
+                    identityClaim.getClientVersion());
+
+            device.setDeviceInfo(dvReport);
+            return deviceRepository.save(device);
+        }
+
+        return device;
+    }
+
+    /**
      * Helper method to unwrap the certificate request sent by the client and verify the
      * provided nonce.
      *
      * @param request Client Certificate Request containing nonce to complete identity claim
      * @return the {@link TPM2ProvisionerState} if valid nonce provided / null, otherwise
      */
-    private TPM2ProvisionerState getTpm2ProvisionerState(
-            final ProvisionerTpm2.CertificateRequest request) {
+    private TPM2ProvisionerState getTpm2ProvisionerState(final ProvisionerTpm2.CertificateRequest request) {
         if (request.hasNonce()) {
             byte[] nonce = request.getNonce().toByteArray();
             return TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository,
@@ -411,8 +431,7 @@ public class CertificateRequestProcessorService {
     private AppraisalStatus.Status doQuoteValidation(final Device device) {
         log.info("Beginning Quote Validation...");
         // perform supply chain validation
-        SupplyChainValidationSummary scvs = supplyChainValidationService.validateQuote(
-                device);
+        SupplyChainValidationSummary scvs = supplyChainValidationService.validateQuote(device);
         AppraisalStatus.Status validationResult;
 
         // either validation wasn't enabled or device already failed
@@ -433,9 +452,9 @@ public class CertificateRequestProcessorService {
     /**
      * Generates a credential using the specified public key.
      *
-     * @param publicKey             cannot be null
+     * @param publicKey             non-null public key
      * @param endorsementCredential the endorsement credential
-     * @param platformCredentials   the set of platform credentials
+     * @param platformCredentials   the list of platform credentials
      * @param deviceName            The host name used in the subject alternative name
      * @param acaCertificate        object used to create credential
      * @return identity credential
@@ -450,62 +469,67 @@ public class CertificateRequestProcessorService {
             Calendar expiry = Calendar.getInstance();
             expiry.add(Calendar.DAY_OF_YEAR, certificateValidityInDays);
 
-            X500Name issuer =
-                    new X509CertificateHolder(acaCertificate.getEncoded()).getSubject();
+            X500Name issuer = new X509CertificateHolder(acaCertificate.getEncoded()).getSubject();
             Date notBefore = new Date();
             Date notAfter = expiry.getTime();
             BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
 
-            SubjectPublicKeyInfo subjectPublicKeyInfo =
-                    SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+            SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
 
             // The subject should be left blank, per spec
-            X509v3CertificateBuilder builder =
-                    new X509v3CertificateBuilder(issuer, serialNumber,
-                            notBefore, notAfter, null /* subjectName */, subjectPublicKeyInfo);
+            X509v3CertificateBuilder x509v3CertificateBuilder = new X509v3CertificateBuilder(issuer, serialNumber,
+                    notBefore, notAfter, null /* subjectName */, subjectPublicKeyInfo);
 
-            Extension subjectAlternativeName =
-                    IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
-                            endorsementCredential, platformCredentials, deviceName);
+            Extension subjectAlternativeName = IssuedCertificateAttributeHelper.buildSubjectAlternativeNameFromCerts(
+                    endorsementCredential, platformCredentials, deviceName);
 
-            Extension authKeyIdentifier = IssuedCertificateAttributeHelper
-                    .buildAuthorityKeyIdentifier(acaCertificate);
+            Extension authKeyIdentifier = IssuedCertificateAttributeHelper.buildAuthorityKeyIdentifier(acaCertificate);
 
-            builder.addExtension(subjectAlternativeName);
+            x509v3CertificateBuilder.addExtension(subjectAlternativeName);
+
             if (authKeyIdentifier != null) {
-                builder.addExtension(authKeyIdentifier);
+                x509v3CertificateBuilder.addExtension(authKeyIdentifier);
             }
+
             // identify cert as an AIK with this extension
             if (IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION != null) {
-                builder.addExtension(IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION);
+                x509v3CertificateBuilder.addExtension(IssuedCertificateAttributeHelper.EXTENDED_KEY_USAGE_EXTENSION);
             } else {
                 log.warn("Failed to build extended key usage extension and add to AIK");
-                throw new IllegalStateException("Extended Key Usage attribute unavailable. "
-                        + "Unable to issue certificates");
+                throw new IllegalArgumentException(
+                        "Extended Key Usage attribute unavailable. Unable to issue certificates");
             }
 
             // Add signing extension
-            builder.addExtension(
-                    Extension.keyUsage,
-                    true,
-                    new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment)
-            );
+            x509v3CertificateBuilder.addExtension(Extension.keyUsage, true,
+                    new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
 
             // Basic constraints
-            builder.addExtension(
-                    Extension.basicConstraints,
-                    true,
-                    new BasicConstraints(false)
-            );
+            x509v3CertificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
 
-            ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA")
-                    .setProvider("BC").build(privateKey);
-            X509CertificateHolder holder = builder.build(signer);
-            return new JcaX509CertificateConverter()
-                    .setProvider("BC").getCertificate(holder);
-        } catch (IOException | OperatorCreationException | CertificateException exception) {
+            ContentSigner signer =
+                    new JcaContentSignerBuilder(getSignatureAlgorithm()).setProvider("BC").build(privateKey);
+
+            X509CertificateHolder holder = x509v3CertificateBuilder.build(signer);
+
+            return new JcaX509CertificateConverter().setProvider("BC").getCertificate(holder);
+        } catch (IOException | IllegalArgumentException | OperatorCreationException | CertificateException exception) {
             throw new CertificateProcessingException("Encountered error while generating "
                     + "identity credential: " + exception.getMessage(), exception);
         }
+    }
+
+    /**
+     * Returns a string representation of the signature algorithm that will be used with the provided private key.
+     *
+     * @return signature algorithm associated with the private key
+     */
+    private String getSignatureAlgorithm() {
+        if (privateKey instanceof RSAPrivateKey) {
+            return "SHA256WithRSA";
+        } else if (privateKey instanceof ECPrivateKey) {
+            return "SHA256withECDSA";
+        }
+        throw new IllegalArgumentException("Unsupported private key type: " + privateKey.getClass().getName());
     }
 }

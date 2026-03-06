@@ -30,11 +30,13 @@ import java.util.List;
 
 
 /**
- * Service layer class that encapsulates credential management functions used by the ACA.
+ * Service class responsible for parsing {@link PlatformCredential} and {@link EndorsementCredential} objects,
+ * along with related data such as device components from the Identity Claim. It also handles storing these objects
+ * and assists in generating credentials, including the {@link IssuedAttestationCertificate}.
  */
 @Service
 @Log4j2
-public class CertificateManagementService {
+public class CredentialManagementService {
     private final PolicyRepository policyRepository;
     private final CertificateRepository certificateRepository;
     private final ComponentResultRepository componentResultRepository;
@@ -44,12 +46,12 @@ public class CertificateManagementService {
      *
      * @param policyRepository          policy repository
      * @param certificateRepository     certificate repository
-     * @param componentResultRepository
+     * @param componentResultRepository component result repository
      */
     @Autowired
-    private CertificateManagementService(final PolicyRepository policyRepository,
-                                         final CertificateRepository certificateRepository,
-                                         final ComponentResultRepository componentResultRepository) {
+    public CredentialManagementService(final PolicyRepository policyRepository,
+                                       final CertificateRepository certificateRepository,
+                                       final ComponentResultRepository componentResultRepository) {
         this.policyRepository = policyRepository;
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
@@ -253,7 +255,7 @@ public class CertificateManagementService {
      * @param platformCredentials list of platform credentials
      * @throws IOException if any issues arise from storing the platform credentials components
      */
-    public void saveOrUpdatePlatformCertificateComponents(List<PlatformCredential> platformCredentials)
+    public void saveOrUpdatePlatformCertificateComponents(final List<PlatformCredential> platformCredentials)
             throws IOException {
 
         handleSpecialCaseForPlatformCertificates(platformCredentials);
@@ -319,7 +321,7 @@ public class CertificateManagementService {
                 if (issuedAc.getFirst().getEndValidity().after(currentDate)) {
                     // so the issued AC is not expired
                     // however are we within the threshold
-                    days = ProvisionUtils.daysBetween(currentDate, issuedAc.getFirst().getEndValidity());
+                    days = ProvisionUtils.calculateDaysBetweenDates(currentDate, issuedAc.getFirst().getEndValidity());
                     generateCertificate =
                             days < (ldevID ? policySettings.getDevIdReissueThreshold()
                                     : policySettings.getReissueThreshold());
@@ -405,7 +407,7 @@ public class CertificateManagementService {
      *
      * @param platformCredentials list of platform credentials
      */
-    private void handleSpecialCaseForPlatformCertificates(List<PlatformCredential> platformCredentials) {
+    private void handleSpecialCaseForPlatformCertificates(final List<PlatformCredential> platformCredentials) {
 
         if (platformCredentials.size() == 1) {
             List<PlatformCredential> additionalPC = new LinkedList<>();

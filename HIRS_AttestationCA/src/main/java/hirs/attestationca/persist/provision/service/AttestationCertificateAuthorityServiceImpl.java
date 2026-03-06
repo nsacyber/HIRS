@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Service layer class responsible for handling both certificate and identity claim requests made by the provisioner.
+ * Service class responsible for handling both certificate and identity claim requests made by the provisioner.
  */
 @Service
 @Log4j2

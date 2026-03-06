@@ -4,8 +4,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
-import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;
-import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
@@ -14,6 +12,8 @@ import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
+import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
+import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.utils.HexUtils;
@@ -25,7 +25,11 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * Service class responsible for processing the Provisioner's Identity Claim.
+ */
 @Service
 @Log4j2
 public class IdentityClaimProcessorService {
@@ -36,10 +40,8 @@ public class IdentityClaimProcessorService {
     private static final String PCR_QUOTE_MASK = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23";
 
     private final SupplyChainValidationService supplyChainValidationService;
-    private final CertificateManagementService certificateManagementService;
+    private final CredentialManagementService credentialManagementService;
     private final DeviceInfoProcessorService deviceInfoProcessorService;
-    private final ComponentInfoRepository componentInfoRepository;
-    private final DeviceRepository deviceRepository;
     private final PolicyRepository policyRepository;
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
 
@@ -47,41 +49,38 @@ public class IdentityClaimProcessorService {
      * Constructor.
      *
      * @param supplyChainValidationService   supply chain validation service
-     * @param componentInfoRepository        component info repository
-     * @param deviceRepository               device repository
+     * @param credentialManagementService    certificate processor service
+     * @param deviceInfoProcessorService     device info processor service
      * @param tpm2ProvisionerStateRepository tpm2 provisioner state repository
      * @param policyRepository               policy repository
      */
     @Autowired
     public IdentityClaimProcessorService(
             final SupplyChainValidationService supplyChainValidationService,
-            final CertificateManagementService certificateManagementService,
-            final ComponentInfoRepository componentInfoRepository,
-            final DeviceRepository deviceRepository, DeviceInfoProcessorService deviceInfoProcessorService,
+            final CredentialManagementService credentialManagementService,
+            final DeviceInfoProcessorService deviceInfoProcessorService,
             final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
             final PolicyRepository policyRepository) {
         this.supplyChainValidationService = supplyChainValidationService;
-        this.certificateManagementService = certificateManagementService;
-        this.componentInfoRepository = componentInfoRepository;
-        this.deviceRepository = deviceRepository;
+        this.credentialManagementService = credentialManagementService;
         this.deviceInfoProcessorService = deviceInfoProcessorService;
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
         this.policyRepository = policyRepository;
     }
 
     /**
-     * Basic implementation of the ACA processIdentityClaimTpm2 method. Parses the claim,
+     * Basic implementation of the ACA processIdentityClaimTpm2 method. Parses the identity claim,
      * stores the device info, performs supply chain validation, generates a nonce,
      * and wraps that nonce with the make credential process before returning it to the client.
      * attCert.setPcrValues(pcrValues);
      *
-     * @param identityClaim the request to process, cannot be null
+     * @param identityClaimByteArray the request to process, cannot be null
      * @return an identity claim response for the specified request containing a wrapped blob
      */
-    public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
+    public byte[] processIdentityClaimTpm2(final byte[] identityClaimByteArray) {
         log.info("Identity Claim has been received and is ready to be processed");
 
-        if (ArrayUtils.isEmpty(identityClaim)) {
+        if (ArrayUtils.isEmpty(identityClaimByteArray)) {
             final String errorMsg = "The IdentityClaim sent by the client cannot be null or empty.";
             log.error(errorMsg);
             throw new IllegalArgumentException(errorMsg);
@@ -89,25 +88,24 @@ public class IdentityClaimProcessorService {
 
         final PolicySettings policySettings = policyRepository.findByName("Default");
 
-        // attempt to deserialize Protobuf IdentityClaim
-        ProvisionerTpm2.IdentityClaim claim = ProvisionUtils.parseIdentityClaim(identityClaim);
+        // attempt to deserialize Protobuf Identity Claim
+        ProvisionerTpm2.IdentityClaim identityClaim = ProvisionUtils.parseIdentityClaim(identityClaimByteArray);
 
         String identityClaimJsonString = "";
         try {
-            identityClaimJsonString = JsonFormat.printer().print(claim);
+            identityClaimJsonString = JsonFormat.printer().print(identityClaim);
         } catch (InvalidProtocolBufferException exception) {
             log.error("Identity claim could not be parsed properly into a json string");
         }
 
-        // parse the EK Public key from the IdentityClaim once for use in supply chain validation
-        // and later tpm20MakeCredential function
+        // parse the EK Public key from the IdentityClaim
         PublicKey endorsementCredentialPublicKey =
-                ProvisionUtils.parsePublicKeyFromPublicDataSegment(claim.getEkPublicArea().toByteArray());
+                ProvisionUtils.parsePublicKeyFromPublicDataSegment(identityClaim.getEkPublicArea().toByteArray());
 
         AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
 
         try {
-            validationResult = doSupplyChainValidation(claim, endorsementCredentialPublicKey);
+            validationResult = doSupplyChainValidation(identityClaim, endorsementCredentialPublicKey);
         } catch (Exception ex) {
             log.error(ex.getMessage());
         }
@@ -115,7 +113,8 @@ public class IdentityClaimProcessorService {
         ByteString blobStr = ByteString.copyFrom(new byte[]{});
 
         if (validationResult == AppraisalStatus.Status.PASS) {
-            PublicKey akPub = ProvisionUtils.parsePublicKeyFromPublicDataSegment(claim.getAkPublicArea().toByteArray());
+            PublicKey akPub =
+                    ProvisionUtils.parsePublicKeyFromPublicDataSegment(identityClaim.getAkPublicArea().toByteArray());
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
             blobStr = ProvisionUtils.tpm20MakeCredential(endorsementCredentialPublicKey, akPub,
                     nonce);
@@ -124,9 +123,9 @@ public class IdentityClaimProcessorService {
 
             String strNonce = HexUtils.byteArrayToHexString(nonce);
             log.info("Sending nonce: {}", strNonce);
-            log.info("Persisting identity claim of length: {}", identityClaim.length);
+            log.info("Persisting identity claim of length: {}", identityClaimByteArray.length);
 
-            tpm2ProvisionerStateRepository.save(new TPM2ProvisionerState(nonce, identityClaim));
+            tpm2ProvisionerStateRepository.save(new TPM2ProvisionerState(nonce, identityClaimByteArray));
 
             if (policySettings.isIgnoreImaEnabled()) {
                 pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");
@@ -156,7 +155,7 @@ public class IdentityClaimProcessorService {
 
                 log.info("Identity Claim object received after a "
                         + "successful validation: {}", identityClaimJsonString.isEmpty()
-                        ? claim : identityClaimJsonString);
+                        ? identityClaim : identityClaimJsonString);
 
                 log.info("Identity Claim Response object after a "
                         + "successful validation: {}", identityClaimResponseJsonStringAfterSuccess.isEmpty()
@@ -193,7 +192,7 @@ public class IdentityClaimProcessorService {
 
                 log.info("Identity Claim object received after a "
                         + "failed validation: {}", identityClaimJsonString.isEmpty()
-                        ? claim : identityClaimJsonString);
+                        ? identityClaim : identityClaimJsonString);
 
                 log.info("Identity Claim Response object after a "
                         + "failed validation: {}", identityClaimResponseJsonStringAfterFailure.isEmpty()
@@ -210,37 +209,42 @@ public class IdentityClaimProcessorService {
     /**
      * Performs supply chain validation.
      *
-     * @param claim the identity claim
-     * @param ekPub the public endorsement key
+     * @param identityClaim the identity claim
+     * @param ekPublicKey   the public endorsement key
      * @return the {@link AppraisalStatus} of the supply chain validation
      */
-    private AppraisalStatus.Status doSupplyChainValidation(final ProvisionerTpm2.IdentityClaim claim,
-                                                           final PublicKey ekPub) throws IOException {
+    private AppraisalStatus.Status doSupplyChainValidation(final ProvisionerTpm2.IdentityClaim identityClaim,
+                                                           final PublicKey ekPublicKey) throws IOException {
 
-        // attempt to find an endorsement credential to validate
+        // Find an endorsement credential to validate
         EndorsementCredential endorsementCredential =
-                certificateManagementService.parseEcFromIdentityClaim(claim, ekPub);
+                credentialManagementService.parseEcFromIdentityClaim(identityClaim, ekPublicKey);
 
-        // attempt to find platform credentials to validate
-        List<PlatformCredential> platformCredentials = certificateManagementService.parsePcsFromIdentityClaim(claim,
-                endorsementCredential);
+        // Find platform credentials to validate
+        List<PlatformCredential> platformCredentials =
+                credentialManagementService.parsePcsFromIdentityClaim(identityClaim, endorsementCredential);
 
-        // Parse and save device info
-        Device device = deviceInfoProcessorService.processDeviceInfo(claim);
+        // Parse and store the device info
+        Device device = deviceInfoProcessorService.processDeviceInfo(identityClaim);
+
+        // Parse and store the device components
+        DeviceInfoReport deviceInfo = Objects.requireNonNull(device.getDeviceInfo());
+        List<ComponentInfo> componentInfoList = deviceInfoProcessorService.processDeviceComponents(
+                deviceInfo.getNetworkInfo().getHostname(),
+                deviceInfo.getPaccorOutputString());
 
         // Store the platform certificates' components
-        certificateManagementService.saveOrUpdatePlatformCertificateComponents(platformCredentials);
+        credentialManagementService.saveOrUpdatePlatformCertificateComponents(platformCredentials);
 
-        // perform supply chain validation
+        // Perform supply chain validation
         SupplyChainValidationSummary summary = supplyChainValidationService.validateSupplyChain(
-                endorsementCredential, platformCredentials, device,
-                componentInfoRepository.findByDeviceName(device.getName()));
+                endorsementCredential, platformCredentials, device, componentInfoList);
         device.setSummaryId(summary.getId().toString());
 
-        // update the validation result in the device
+        // Update the validation result in the device and update the updated device in the database
         AppraisalStatus.Status validationResult = summary.getOverallValidationResult();
         device.setSupplyChainValidationStatus(validationResult);
-        this.deviceRepository.save(device);
+        deviceInfoProcessorService.saveOrUpdateDevice(device);
 
         return validationResult;
     }

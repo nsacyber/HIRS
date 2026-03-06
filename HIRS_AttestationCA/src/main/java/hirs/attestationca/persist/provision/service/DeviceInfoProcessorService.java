@@ -19,7 +19,6 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
-import hirs.attestationca.persist.exceptions.IdentityProcessingException;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.utils.HexUtils;
 import hirs.utils.SwidResource;
@@ -49,8 +48,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * Service class that parses and processes Device information from the Identity Claim and uses it to update the Device
- * and RIMs.
+ * Service class that parses and processes device information from the provisioned Identity Claim and uses it to
+ * update the {@link Device} and {@link ReferenceManifest} objects.
  */
 @Service
 @Log4j2
@@ -86,28 +85,16 @@ public class DeviceInfoProcessorService {
     }
 
     /**
-     * Creates a {@link DeviceInfoReport} from the identity claim's Device Info and updates the corresponding
-     * {@link Device}.
+     * Creates and updates a {@link Device} object after parsing the identity claim's Device Info.
      *
      * @param identityClaim Identity Claim
-     * @return device
+     * @return the {@link Device} object representing the device
      */
     public Device processDeviceInfo(final ProvisionerTpm2.IdentityClaim identityClaim) {
-        DeviceInfoReport deviceInfoReport = null;
 
         log.info("Parsing Device Info from the Identity Claim");
 
-        try {
-            deviceInfoReport = parseDeviceInfo(identityClaim);
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
-        }
-
-        if (deviceInfoReport == null) {
-            final String errorMsg = "Failed to parse device info from Protobuf Identity Claim.";
-            log.error(errorMsg);
-            throw new IdentityProcessingException(errorMsg);
-        }
+        final DeviceInfoReport deviceInfoReport = parseDeviceInfo(identityClaim);
 
         log.info("Processing Device Info Report");
 
@@ -116,7 +103,7 @@ public class DeviceInfoProcessorService {
 
         if (deviceInfoReport.getNetworkInfo() != null &&
                 !StringUtils.isBlank(deviceInfoReport.getNetworkInfo().getHostname())) {
-            device = this.deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
+            device = deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
         }
 
         if (device == null) {
@@ -124,38 +111,79 @@ public class DeviceInfoProcessorService {
         }
         device.setDeviceInfo(deviceInfoReport);
 
-        processDeviceComponents(deviceInfoReport.getNetworkInfo().getHostname(),
-                deviceInfoReport.getPaccorOutputString());
-
-        return this.deviceRepository.save(device);
+        return saveOrUpdateDevice(device);
     }
 
     /**
-     * Helper method that creates a Device Info Report using the provided Identity Claim's Device Info.
+     * Finds all components for the given device by combining data from the provided Paccor string
+     * and the current database records, then saves or updates them in the database.
+     *
+     * @param hostName     device's host name
+     * @param paccorString string representation of the PACCOR tool output
+     * @return list of device components
+     */
+    public List<ComponentInfo> processDeviceComponents(final String hostName, final String paccorString) {
+        Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
+
+        try {
+            List<ComponentInfo> componentInfos =
+                    SupplyChainCredentialValidator.getComponentInfoFromPaccorOutput(hostName, paccorString);
+
+            // check the DB for like component infos
+            List<ComponentInfo> dbComponentInfos = componentInfoRepository.findByDeviceName(hostName);
+            dbComponentInfos.forEach((infos) -> componentInfoMap.put(infos.hashCode(), infos));
+
+            for (ComponentInfo componentInfo : dbComponentInfos) {
+                if (componentInfoMap.containsKey(componentInfo.hashCode())) {
+                    componentInfos.remove(componentInfo);
+                }
+            }
+
+            for (ComponentInfo componentInfo : componentInfos) {
+                componentInfoRepository.save(componentInfo);
+            }
+        } catch (IOException ioEx) {
+            log.warn("Error parsing PACCOR string");
+        }
+
+        return componentInfoRepository.findByDeviceName(hostName);
+    }
+
+    /**
+     * Saves or updates the provided {@link Device} object in the database.
+     *
+     * @param device device
+     * @return the {@link Device} representing the device
+     */
+    public Device saveOrUpdateDevice(final Device device) {
+        return deviceRepository.save(device);
+    }
+
+    /**
+     * Helper method that creates a {@link DeviceInfoReport} object using the provided Identity Claim's Device Info.
      *
      * @param identityClaim the protobuf serialized Identity Claim containing the device info
-     * @return {@link DeviceInfoReport}
+     * @return the {@link DeviceInfoReport} object representing the Device Info Report
      */
-    private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim identityClaim)
-            throws NoSuchAlgorithmException {
-        ProvisionerTpm2.DeviceInfo tpmDeviceInfo = identityClaim.getDv();
+    private DeviceInfoReport parseDeviceInfo(final ProvisionerTpm2.IdentityClaim identityClaim) {
+        ProvisionerTpm2.DeviceInfo provisionedDeviceInfo = identityClaim.getDv();
 
         // Get Hardware info
-        HardwareInfo hardwareInfo = getHardwareInfo(tpmDeviceInfo.getHw());
+        HardwareInfo hardwareInfo = getHardwareInfo(provisionedDeviceInfo.getHw());
 
         // Get TPM info ( todo Currently unimplemented)
-        TPMInfo tpmInfo = getTPMInfo(tpmDeviceInfo);
+        TPMInfo tpmInfo = getTPMInfo(provisionedDeviceInfo);
 
         // Get Network info
-        NetworkInfo networkInfo = getNetworkInfo(tpmDeviceInfo.getNw());
+        NetworkInfo networkInfo = getNetworkInfo(provisionedDeviceInfo.getNw());
 
         // Get Firmware info
-        FirmwareInfo firmwareInfo = getFirmwareInfo(tpmDeviceInfo.getFw());
+        FirmwareInfo firmwareInfo = getFirmwareInfo(provisionedDeviceInfo.getFw());
 
         // Get OS info
-        OSInfo osInfo = getOSInfo(tpmDeviceInfo.getOs());
+        OSInfo osInfo = getOSInfo(provisionedDeviceInfo.getOs());
 
-        getAndUpdateRIMSUsingTPMDeviceInfo(tpmDeviceInfo);
+        getAndUpdateRIMSUsingProvisionedDeviceInfo(provisionedDeviceInfo);
 
         // Create final device info report
         DeviceInfoReport dvReport = new DeviceInfoReport(networkInfo, osInfo, firmwareInfo, hardwareInfo, tpmInfo,
@@ -166,16 +194,17 @@ public class DeviceInfoProcessorService {
     }
 
     /**
-     * Helper method that creates a {@link TPMInfo} using the provided TPM Device Info ( todo Currently unimplemented)
+     * Helper method that creates a {@link TPMInfo} object using the provided provisioned Device Info.
+     * ( todo Currently unimplemented)
      *
-     * @param tpmDeviceInfo TPM Device Info
-     * @return {@link TPMInfo}
+     * @param provisionedDeviceInfo provisioned Device Info
+     * @return the {@link TPMInfo} object representing the Device's TPM Info
      */
-    private TPMInfo getTPMInfo(ProvisionerTpm2.DeviceInfo tpmDeviceInfo) {
+    private TPMInfo getTPMInfo(final ProvisionerTpm2.DeviceInfo provisionedDeviceInfo) {
         String pcrValues = "";
 
-        if (tpmDeviceInfo.hasPcrslist()) {
-            pcrValues = tpmDeviceInfo.getPcrslist().toStringUtf8();
+        if (provisionedDeviceInfo.hasPcrslist()) {
+            pcrValues = provisionedDeviceInfo.getPcrslist().toStringUtf8();
         }
 
         return new TPMInfo(DeviceInfoEnums.NOT_SPECIFIED,
@@ -188,44 +217,46 @@ public class DeviceInfoProcessorService {
     }
 
     /**
-     * Helper method that creates a {@link HardwareInfo} using the provided TPM Device Info's Hardware Info.
+     * Helper method that creates a {@link HardwareInfo} object using the provided provisioned Device Info's
+     * Hardware Info.
      *
-     * @param tpmHardwareInfo TPM Device Info's Hardware Info
-     * @return {@link HardwareInfo}
+     * @param provisionedHardwareInfo provisioned Device Info's Hardware Info
+     * @return the {@link HardwareInfo} object representing the Device's Hardware Info
      */
-    private HardwareInfo getHardwareInfo(final ProvisionerTpm2.HardwareInfo tpmHardwareInfo) {
+    private HardwareInfo getHardwareInfo(final ProvisionerTpm2.HardwareInfo provisionedHardwareInfo) {
 
         // Make sure chassis info has at least one chassis
         String firstChassisSerialNumber = DeviceInfoEnums.NOT_SPECIFIED;
-        if (tpmHardwareInfo.getChassisInfoCount() > 0) {
-            firstChassisSerialNumber = tpmHardwareInfo.getChassisInfo(0).getSerialNumber();
+        if (provisionedHardwareInfo.getChassisInfoCount() > 0) {
+            firstChassisSerialNumber = provisionedHardwareInfo.getChassisInfo(0).getSerialNumber();
         }
 
         // Make sure baseboard info has at least one baseboard
         String firstBaseboardSerialNumber = DeviceInfoEnums.NOT_SPECIFIED;
-        if (tpmHardwareInfo.getBaseboardInfoCount() > 0) {
-            firstBaseboardSerialNumber = tpmHardwareInfo.getBaseboardInfo(0).getSerialNumber();
+        if (provisionedHardwareInfo.getBaseboardInfoCount() > 0) {
+            firstBaseboardSerialNumber = provisionedHardwareInfo.getBaseboardInfo(0).getSerialNumber();
         }
 
-        return new HardwareInfo(tpmHardwareInfo.getManufacturer(), tpmHardwareInfo.getProductName(),
-                tpmHardwareInfo.getProductVersion(), tpmHardwareInfo.getSystemSerialNumber(),
+        return new HardwareInfo(provisionedHardwareInfo.getManufacturer(), provisionedHardwareInfo.getProductName(),
+                provisionedHardwareInfo.getProductVersion(), provisionedHardwareInfo.getSystemSerialNumber(),
                 firstChassisSerialNumber, firstBaseboardSerialNumber);
     }
 
     /**
-     * Helper method that creates a {@link NetworkInfo} using the provided TPM Device Info's Network Info.
+     * Helper method that creates a {@link NetworkInfo} object using the provided provisioned Device Info's Network
+     * Info.
      *
-     * @param tpmNetworkInfo TPM Device Info's Network Info
-     * @return {@link NetworkInfo}
+     * @param provisionedNetworkInfo provisioned Device Info's Network Info
+     * @return the {@link NetworkInfo} object representing the Device's Network Info
      */
-    private NetworkInfo getNetworkInfo(final ProvisionerTpm2.NetworkInfo tpmNetworkInfo) {
+    private NetworkInfo getNetworkInfo(final ProvisionerTpm2.NetworkInfo provisionedNetworkInfo) {
         InetAddress ip = null;
         try {
-            ip = InetAddress.getByName(tpmNetworkInfo.getIpAddress());
+            ip = InetAddress.getByName(provisionedNetworkInfo.getIpAddress());
         } catch (UnknownHostException uhEx) {
-            log.error("Unable to parse IP address from the TPM Device Info: ", uhEx);
+            log.error("Unable to parse IP address from the provisioned Device Info: ", uhEx);
         }
-        String[] macAddressParts = tpmNetworkInfo.getMacAddress().split(":");
+        String[] macAddressParts = provisionedNetworkInfo.getMacAddress().split(":");
 
         // convert mac hex string to byte values
         byte[] macAddressBytes = new byte[MAC_BYTES];
@@ -237,93 +268,97 @@ public class DeviceInfoProcessorService {
             }
         }
 
-        return new NetworkInfo(tpmNetworkInfo.getHostname(), ip, macAddressBytes);
+        return new NetworkInfo(provisionedNetworkInfo.getHostname(), ip, macAddressBytes);
     }
 
     /**
-     * Helper method that creates an {@link OSInfo} using the provided TPM Device Info's OS info.
+     * Helper method that creates an {@link OSInfo} using the provided provisioned Device Info's OS info.
      *
-     * @param tpmOsInfo TPM Device Info's OS Info
-     * @return {@link OSInfo}
+     * @param provisionedOsInfo provisioned Device Info's OS Info
+     * @return the {@link OSInfo} object representing the Device's OS Info
      */
-    private OSInfo getOSInfo(final ProvisionerTpm2.OsInfo tpmOsInfo) {
-        return new OSInfo(tpmOsInfo.getOsName(), tpmOsInfo.getOsVersion(), tpmOsInfo.getOsArch(),
-                tpmOsInfo.getDistribution(), tpmOsInfo.getDistributionRelease());
+    private OSInfo getOSInfo(final ProvisionerTpm2.OsInfo provisionedOsInfo) {
+        return new OSInfo(provisionedOsInfo.getOsName(), provisionedOsInfo.getOsVersion(),
+                provisionedOsInfo.getOsArch(),
+                provisionedOsInfo.getDistribution(), provisionedOsInfo.getDistributionRelease());
     }
 
     /**
-     * Helper method that creates a {@link FirmwareInfo}  using the provided TPM Device Info's Firmware Info.
+     * Helper method that creates a {@link FirmwareInfo}  using the provided provisioned Device Info's Firmware Info.
      *
-     * @param tpmFirmwareInfo TPM Device Info's Firmware Info
-     * @return {@link FirmwareInfo}
+     * @param provisionedFirmwareInfo provisioned Device Info's Firmware Info
+     * @return the {@link FirmwareInfo} object representing the Device's Firmware Info
      */
-    private FirmwareInfo getFirmwareInfo(final ProvisionerTpm2.FirmwareInfo tpmFirmwareInfo) {
-        return new FirmwareInfo(tpmFirmwareInfo.getBiosVendor(), tpmFirmwareInfo.getBiosVersion(),
-                tpmFirmwareInfo.getBiosReleaseDate());
+    private FirmwareInfo getFirmwareInfo(final ProvisionerTpm2.FirmwareInfo provisionedFirmwareInfo) {
+        return new FirmwareInfo(provisionedFirmwareInfo.getBiosVendor(), provisionedFirmwareInfo.getBiosVersion(),
+                provisionedFirmwareInfo.getBiosReleaseDate());
     }
 
     /**
-     * Helper method that updates all Reference Integrity Manifests (RIMs) using the provided TPM's Device Info.
+     * Helper method that updates all Reference Integrity Manifests (RIMs) using the provided provisioned Device Info.
      *
-     * @param tpmDeviceInfo TPM Device Info
+     * @param provisionedDeviceInfo provisioned Device Info
      */
-    private void getAndUpdateRIMSUsingTPMDeviceInfo(ProvisionerTpm2.DeviceInfo tpmDeviceInfo) {
+    private void getAndUpdateRIMSUsingProvisionedDeviceInfo(final ProvisionerTpm2.DeviceInfo provisionedDeviceInfo) {
         // check for RIM Base and Support files, if they don't exist in the database, load them
-        final String defaultClientName = String.format("%s_%s", tpmDeviceInfo.getHw().getManufacturer(),
-                tpmDeviceInfo.getHw().getProductName());
+        final String defaultClientName = String.format("%s_%s", provisionedDeviceInfo.getHw().getManufacturer(),
+                provisionedDeviceInfo.getHw().getProductName());
 
-        final String deviceInfoHostName = tpmDeviceInfo.getNw().getHostname();
+        final String deviceInfoHostName = provisionedDeviceInfo.getNw().getHostname();
 
         // update base RIMs using the identity claim's device information
-        if (tpmDeviceInfo.getSwidfileCount() > 0) {
-            updateBaseRIMSUsingTPMDeviceInfo(defaultClientName, tpmDeviceInfo);
+        if (provisionedDeviceInfo.getSwidfileCount() > 0) {
+            updateBaseRIMSUsingDeviceInfo(defaultClientName, provisionedDeviceInfo);
         } else {
             log.warn("Device {} did not send SWID tag files...", deviceInfoHostName);
         }
 
         // update support RIMs using the identity claim's device information
-        if (tpmDeviceInfo.getLogfileCount() > 0) {
-            updateSupportRIMSUsingTPMDeviceInfo(defaultClientName, tpmDeviceInfo);
+        if (provisionedDeviceInfo.getLogfileCount() > 0) {
+            updateSupportRIMSUsingDeviceInfo(defaultClientName, provisionedDeviceInfo);
         } else {
             log.warn("Device {} did not send Support RIM files...", deviceInfoHostName);
         }
 
         // update both base and support RIMs to ensure updates are consistent
-        updateBaseSupportRIMSUsingTpmDeviceInfo(tpmDeviceInfo);
+        updateBaseSupportRIMSUsingDeviceInfo(provisionedDeviceInfo);
 
-        generateDigestRecords(tpmDeviceInfo.getHw().getManufacturer(), tpmDeviceInfo.getHw().getProductName());
+        generateDigestRecords(provisionedDeviceInfo.getHw().getManufacturer(),
+                provisionedDeviceInfo.getHw().getProductName());
 
         // update event log information
-        if (tpmDeviceInfo.hasLivelog()) {
-            updateEventLogInfoUsingTPMDeviceInfo(tpmDeviceInfo);
+        if (provisionedDeviceInfo.hasLivelog()) {
+            updateEventLogInfoUsingDeviceInfo(provisionedDeviceInfo);
         } else {
             log.warn("Device {} did not send BIOS measurement log...", deviceInfoHostName);
         }
     }
 
     /**
-     * Helper method that updates the Base RIMs in the database using the information provided by the TPM's Device Info.
+     * Helper method that updates the Base RIMs in the database using the information provided by the provisioned
+     * Device Info.
      *
-     * @param defaultClientName default client name
-     * @param tpmDeviceInfo     TPM Device Info
+     * @param defaultClientName     default client name
+     * @param provisionedDeviceInfo provisioned Device Info
      */
-    private void updateBaseRIMSUsingTPMDeviceInfo(final String defaultClientName,
-                                                  final ProvisionerTpm2.DeviceInfo tpmDeviceInfo) {
+    private void updateBaseRIMSUsingDeviceInfo(final String defaultClientName,
+                                               final ProvisionerTpm2.DeviceInfo provisionedDeviceInfo) {
         final List<BaseReferenceManifest> baseRims = referenceManifestRepository.findAllBaseRims();
         final List<ReferenceManifest> unarchivedRims = referenceManifestRepository.findByArchiveFlag(false);
-        final String deviceHostName = tpmDeviceInfo.getNw().getHostname();
+        final String deviceHostName = provisionedDeviceInfo.getNw().getHostname();
 
         log.info("Device {} sent SWID tag files", deviceHostName);
 
-        for (ByteString swidFile : tpmDeviceInfo.getSwidfileList()) {
+        final List<ByteString> swidfileList = provisionedDeviceInfo.getSwidfileList();
+
+        for (ByteString swidFile : swidfileList) {
             try {
                 final String swidFileHash =
                         Base64.getEncoder().encodeToString(messageDigest.digest(swidFile.toByteArray()));
 
                 final BaseReferenceManifest baseRim =
                         (BaseReferenceManifest) referenceManifestRepository.findByBase64Hash(swidFileHash);
-                /*
-                Either the swidFile does not have a corresponding base RIM in the backend,
+                /*  Either the swidFile does not have a corresponding base RIM in the backend,
                 or it was deleted. Check if there is a replacement by comparing tagId against
                 all other base RIMs, and then set the corresponding support rim's deviceName. */
                 if (baseRim == null) {
@@ -342,12 +377,12 @@ public class DeviceInfoProcessorService {
                         final BaseReferenceManifest matchedReplacementBaseRIM =
                                 matchedReplacementBaseRIMOptional.get();
                         matchedReplacementBaseRIM.setDeviceName(replacementBaseRIM.getDeviceName());
-                        this.referenceManifestRepository.save(matchedReplacementBaseRIM);
+                        referenceManifestRepository.save(matchedReplacementBaseRIM);
                         continue;
                     }
 
                     // otherwise save the replacement base RIM we created
-                    this.referenceManifestRepository.save(replacementBaseRIM);
+                    referenceManifestRepository.save(replacementBaseRIM);
                 } else if (baseRim.isArchived()) {
                         /*  This block accounts for RIMs that may have been soft-deleted (archived)
                         in an older version of the ACA. */
@@ -365,10 +400,10 @@ public class DeviceInfoProcessorService {
 
                     final BaseReferenceManifest matchedUnarchivedBaseRIM = matchedUnarchivedBaseRIMOptional.get();
                     matchedUnarchivedBaseRIM.setDeviceName(deviceHostName);
-                    this.referenceManifestRepository.save(matchedUnarchivedBaseRIM);
+                    referenceManifestRepository.save(matchedUnarchivedBaseRIM);
                 } else {
                     baseRim.setDeviceName(deviceHostName);
-                    this.referenceManifestRepository.save(baseRim);
+                    referenceManifestRepository.save(baseRim);
                 }
             } catch (Exception exception) {
                 log.error("Failed to process Base RIM file for device {}: {}", deviceHostName,
@@ -378,22 +413,23 @@ public class DeviceInfoProcessorService {
     }
 
     /**
-     * Helper method that updates the Support RIMs in the database using the information provided by the TPM's Device
-     * Info.
+     * Helper method that updates the Support RIMs in the database using the information provided by the provisioned
+     * Device Info.
      *
-     * @param defaultClientName default client name
-     * @param tpmDeviceInfo     TPM Device Info
+     * @param defaultClientName     default client name
+     * @param provisionedDeviceInfo provisioned Device Info
      */
-    private void updateSupportRIMSUsingTPMDeviceInfo(final String defaultClientName,
-                                                     final ProvisionerTpm2.DeviceInfo tpmDeviceInfo) {
-        final String deviceHostName = tpmDeviceInfo.getNw().getHostname();
+    private void updateSupportRIMSUsingDeviceInfo(final String defaultClientName,
+                                                  final ProvisionerTpm2.DeviceInfo provisionedDeviceInfo) {
+        final String deviceHostName = provisionedDeviceInfo.getNw().getHostname();
         final int NUM_OF_VARIABLES = 5;
 
         log.info("Device {} sent Support RIM files", deviceHostName);
 
         final List<ReferenceManifest> unarchivedRims = referenceManifestRepository.findByArchiveFlag(false);
+        final List<ByteString> logfileList = provisionedDeviceInfo.getLogfileList();
 
-        for (ByteString logFile : tpmDeviceInfo.getLogfileList()) {
+        for (ByteString logFile : logfileList) {
             try {
                 final String logFileHash = Hex.encodeHexString(messageDigest.digest(logFile.toByteArray()));
 
@@ -413,13 +449,13 @@ public class DeviceInfoProcessorService {
                     new TCGEventLog(replacementSupportRIM.getRimBytes());
 
                     // no issues, continue
-                    replacementSupportRIM.setPlatformManufacturer(tpmDeviceInfo.getHw().getManufacturer());
-                    replacementSupportRIM.setPlatformModel(tpmDeviceInfo.getHw().getProductName());
+                    replacementSupportRIM.setPlatformManufacturer(provisionedDeviceInfo.getHw().getManufacturer());
+                    replacementSupportRIM.setPlatformModel(provisionedDeviceInfo.getHw().getProductName());
                     replacementSupportRIM.setFileName(String.format("%s_[%s].rimel", defaultClientName,
                             replacementSupportRIM.getHexDecHash().substring(
                                     replacementSupportRIM.getHexDecHash().length() - NUM_OF_VARIABLES)));
                     replacementSupportRIM.setDeviceName(deviceHostName);
-                    this.referenceManifestRepository.save(replacementSupportRIM);
+                    referenceManifestRepository.save(replacementSupportRIM);
                 } else if (supportRim.isArchived()) {
                     /*
                      This block accounts for RIMs that may have been soft-deleted (archived)
@@ -440,10 +476,10 @@ public class DeviceInfoProcessorService {
                     final SupportReferenceManifest matchedUnarchivedSupportRIM =
                             matchedUnarchivedSupportRIMOptional.get();
                     matchedUnarchivedSupportRIM.setDeviceName(deviceHostName);
-                    this.referenceManifestRepository.save(matchedUnarchivedSupportRIM);
+                    referenceManifestRepository.save(matchedUnarchivedSupportRIM);
                 } else {
                     supportRim.setDeviceName(deviceHostName);
-                    this.referenceManifestRepository.save(supportRim);
+                    referenceManifestRepository.save(supportRim);
                 }
             } catch (Exception exception) {
                 log.error("Failed to process Support RIM file for device {}: {}", deviceHostName,
@@ -457,14 +493,16 @@ public class DeviceInfoProcessorService {
      * Helper method that updates both base and support RIMs after modifying each type of RIM, ensuring that the
      * updates are consistent and aligned.
      *
-     * @param tpmDeviceInfo TPM Device Info
+     * @param provisionedDeviceInfo provisioned Device Info
      */
-    private void updateBaseSupportRIMSUsingTpmDeviceInfo(ProvisionerTpm2.DeviceInfo tpmDeviceInfo) {
-        final String SUPPORT_RIM_FILE_PATTERN = "(\\S+(\\.(?i)(rimpcr|rimel|bin|log))$)";
-        final Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
+    private void updateBaseSupportRIMSUsingDeviceInfo(final ProvisionerTpm2.DeviceInfo provisionedDeviceInfo) {
+        final String supportRimFilePattern = "(\\S+(\\.(?i)(rimpcr|rimel|bin|log))$)";
+        final Pattern supportRimPattern = Pattern.compile(supportRimFilePattern);
+
+        final List<ByteString> swidfileList = provisionedDeviceInfo.getSwidfileList();
 
         //update Support RIMs and Base RIMs.
-        for (ByteString swidFile : tpmDeviceInfo.getSwidfileList()) {
+        for (ByteString swidFile : swidfileList) {
             final String swidFileHash =
                     Base64.getEncoder().encodeToString(messageDigest.digest(swidFile.toByteArray()));
 
@@ -472,7 +510,9 @@ public class DeviceInfoProcessorService {
                     (BaseReferenceManifest) referenceManifestRepository.findByBase64Hash(swidFileHash);
 
             if (baseRim != null) {
-                for (SwidResource swid : baseRim.getFileResources()) {
+                final List<SwidResource> swidResourceList = baseRim.getFileResources();
+
+                for (SwidResource swid : swidResourceList) {
                     if (supportRimPattern.matcher(swid.getName()).matches()) {
                         final int dotIndex = swid.getName().lastIndexOf(".");
                         final String fileName = swid.getName().substring(0, dotIndex);
@@ -498,10 +538,10 @@ public class DeviceInfoProcessorService {
                     dbSupportRIM.setUpdated(true);
                     dbSupportRIM.setAssociatedRim(baseRim.getId());
                     baseRim.setAssociatedRim(dbSupportRIM.getId());
-                    this.referenceManifestRepository.save(dbSupportRIM);
+                    referenceManifestRepository.save(dbSupportRIM);
                 }
 
-                this.referenceManifestRepository.save(baseRim);
+                referenceManifestRepository.save(baseRim);
             }
         }
     }
@@ -519,7 +559,7 @@ public class DeviceInfoProcessorService {
         List<SupportReferenceManifest> supplementalRims = new ArrayList<>();
         List<SupportReferenceManifest> patchRims = new ArrayList<>();
 
-        List<SupportReferenceManifest> dbSupportRims = this.referenceManifestRepository
+        List<SupportReferenceManifest> dbSupportRims = referenceManifestRepository
                 .getSupportByManufacturerModel(manufacturer, model);
         List<ReferenceDigestValue> expectedValues = referenceDigestValueRepository
                 .findByManufacturerAndModel(manufacturer, model);
@@ -610,18 +650,20 @@ public class DeviceInfoProcessorService {
     }
 
     /**
-     * @param tpmDeviceInfo TPM Device Info
+     * Helper method that updates the event log information using the provisioned Device Info.
+     *
+     * @param provisionedDeviceInfo provisioned Device Info
      */
-    private void updateEventLogInfoUsingTPMDeviceInfo(ProvisionerTpm2.DeviceInfo tpmDeviceInfo) {
-        final String deviceHostName = tpmDeviceInfo.getNw().getHostname();
+    private void updateEventLogInfoUsingDeviceInfo(final ProvisionerTpm2.DeviceInfo provisionedDeviceInfo) {
+        final String deviceHostName = provisionedDeviceInfo.getNw().getHostname();
         final String fileName = String.format("%s.measurement", deviceHostName);
 
         log.info("Device {} sent bios measurement log...", deviceHostName);
 
         try {
-            // grab the event log from TPM's device info
-            EventLogMeasurements tpmEventLog = new EventLogMeasurements(fileName,
-                    tpmDeviceInfo.getLivelog().toByteArray());
+            // grab the event log from provisioned device info
+            EventLogMeasurements provisionedEventLog = new EventLogMeasurements(fileName,
+                    provisionedDeviceInfo.getLivelog().toByteArray());
 
             // find the previous event log that's stored in the database.
             EventLogMeasurements integrityMeasurements =
@@ -631,17 +673,17 @@ public class DeviceInfoProcessorService {
             if (integrityMeasurements != null) {
                 // archive it and update the entity in the database
                 integrityMeasurements.archive();
-                this.referenceManifestRepository.save(integrityMeasurements);
+                referenceManifestRepository.save(integrityMeasurements);
             }
 
             List<BaseReferenceManifest> baseRims = referenceManifestRepository.getBaseByManufacturerModel(
-                    tpmDeviceInfo.getHw().getManufacturer(),
-                    tpmDeviceInfo.getHw().getProductName());
+                    provisionedDeviceInfo.getHw().getManufacturer(),
+                    provisionedDeviceInfo.getHw().getProductName());
 
-            tpmEventLog.setDeviceName(deviceHostName);
-            tpmEventLog.setPlatformManufacturer(tpmDeviceInfo.getHw().getManufacturer());
-            tpmEventLog.setPlatformModel(tpmDeviceInfo.getHw().getProductName());
-            this.referenceManifestRepository.save(tpmEventLog);
+            provisionedEventLog.setDeviceName(deviceHostName);
+            provisionedEventLog.setPlatformManufacturer(provisionedDeviceInfo.getHw().getManufacturer());
+            provisionedEventLog.setPlatformModel(provisionedDeviceInfo.getHw().getProductName());
+            referenceManifestRepository.save(provisionedEventLog);
 
             for (BaseReferenceManifest bRim : baseRims) {
                 if (bRim != null) {
@@ -650,8 +692,8 @@ public class DeviceInfoProcessorService {
                     SupportReferenceManifest sBaseRim = referenceManifestRepository
                             .getSupportRimEntityById(bRim.getAssociatedRim());
                     if (sBaseRim != null) {
-                        bRim.setEventLogHash(tpmEventLog.getHexDecHash());
-                        sBaseRim.setEventLogHash(tpmEventLog.getHexDecHash());
+                        bRim.setEventLogHash(provisionedEventLog.getHexDecHash());
+                        sBaseRim.setEventLogHash(provisionedEventLog.getHexDecHash());
                         referenceManifestRepository.save(bRim);
                         referenceManifestRepository.save(sBaseRim);
                     } else {
@@ -661,37 +703,6 @@ public class DeviceInfoProcessorService {
             }
         } catch (Exception exception) {
             log.error(exception);
-        }
-    }
-
-    /**
-     * Helper method that attempts to find all the provided device's components and stores them in the database.
-     *
-     * @param hostName     device's host name
-     * @param paccorString string representation of the PACCOR tool output
-     */
-    private void processDeviceComponents(final String hostName, final String paccorString) {
-        Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
-
-        try {
-            List<ComponentInfo> componentInfos =
-                    SupplyChainCredentialValidator.getComponentInfoFromPaccorOutput(hostName, paccorString);
-
-            // check the DB for like component infos
-            List<ComponentInfo> dbComponentInfos = this.componentInfoRepository.findByDeviceName(hostName);
-            dbComponentInfos.forEach((infos) -> componentInfoMap.put(infos.hashCode(), infos));
-
-            for (ComponentInfo componentInfo : dbComponentInfos) {
-                if (componentInfoMap.containsKey(componentInfo.hashCode())) {
-                    componentInfos.remove(componentInfo);
-                }
-            }
-
-            for (ComponentInfo componentInfo : componentInfos) {
-                this.componentInfoRepository.save(componentInfo);
-            }
-        } catch (IOException ioEx) {
-            log.warn("Error parsing paccor string");
         }
     }
 }

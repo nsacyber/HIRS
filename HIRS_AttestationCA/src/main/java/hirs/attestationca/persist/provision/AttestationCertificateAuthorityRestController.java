@@ -59,9 +59,9 @@ public class AttestationCertificateAuthorityRestController {
     }
 
     /**
-     * Processes a GET request to retrieve the byte array representation of the public key.
+     * Processes a GET request to retrieve the byte array representation of the leaf ACA certificate's public key.
      *
-     * @return byte array representation of the public key
+     * @return byte array representation of the leaf ACA certificate's public key
      */
     @ResponseBody
     @GetMapping("/public-key")
