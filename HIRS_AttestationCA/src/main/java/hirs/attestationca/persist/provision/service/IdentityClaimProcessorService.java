@@ -231,7 +231,7 @@ public class IdentityClaimProcessorService {
         DeviceInfoReport deviceInfo = Objects.requireNonNull(device.getDeviceInfo());
         List<ComponentInfo> componentInfoList = deviceInfoProcessorService.processDeviceComponents(
                 deviceInfo.getNetworkInfo().getHostname(),
-                deviceInfo.getPaccorOutputString());
+                identityClaim.getPaccorOutput());
 
         // Store the platform certificates' components
         credentialManagementService.saveOrUpdatePlatformCertificateComponents(platformCredentials);
