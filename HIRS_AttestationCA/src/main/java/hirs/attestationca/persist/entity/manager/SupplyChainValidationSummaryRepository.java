@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface SupplyChainValidationSummaryRepository
-        extends JpaRepository<SupplyChainValidationSummary, UUID> {
+public interface SupplyChainValidationSummaryRepository extends JpaRepository<SupplyChainValidationSummary, UUID> {
 
     /**
      * Query that retrieves a supply chain validation summary using the provided device.

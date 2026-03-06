@@ -1,4 +1,4 @@
-package hirs.attestationca.persist.service;
+package hirs.attestationca.persist.provision.service;
 
 import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.entity.ArchivableEntity;
@@ -9,7 +9,6 @@ import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
-import hirs.attestationca.persist.entity.manager.SupplyChainValidationRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
@@ -25,6 +24,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.service.ValidationService;
 import hirs.attestationca.persist.validation.PcrValidator;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import lombok.extern.log4j.Log4j2;
@@ -45,8 +45,8 @@ import java.util.UUID;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
-@Log4j2
 @Service
+@Log4j2
 public class SupplyChainValidationService {
 
     private final CACredentialRepository caCredentialRepository;
@@ -56,7 +56,6 @@ public class SupplyChainValidationService {
     private final ComponentResultRepository componentResultRepository;
     private final ComponentAttributeRepository componentAttributeRepository;
     private final CertificateRepository certificateRepository;
-    private final SupplyChainValidationRepository supplyChainValidationRepository;
     private final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
     private UUID provisionSessionId;
 
@@ -69,7 +68,6 @@ public class SupplyChainValidationService {
      * @param componentResultRepository              the comp result manager
      * @param componentAttributeRepository           component attribute repository
      * @param referenceManifestRepository            the RIM manager
-     * @param supplyChainValidationRepository        the scv manager
      * @param supplyChainValidationSummaryRepository the summary manager
      * @param referenceDigestValueRepository         the even manager
      */
@@ -81,7 +79,6 @@ public class SupplyChainValidationService {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final ReferenceManifestRepository referenceManifestRepository,
-            final SupplyChainValidationRepository supplyChainValidationRepository,
             final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository) {
         this.caCredentialRepository = caCredentialRepository;
@@ -90,7 +87,6 @@ public class SupplyChainValidationService {
         this.componentResultRepository = componentResultRepository;
         this.componentAttributeRepository = componentAttributeRepository;
         this.referenceManifestRepository = referenceManifestRepository;
-        this.supplyChainValidationRepository = supplyChainValidationRepository;
         this.supplyChainValidationSummaryRepository = supplyChainValidationSummaryRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
     }
