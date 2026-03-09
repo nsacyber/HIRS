@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateInfo;
 import jakarta.persistence.PostLoad;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -21,7 +22,7 @@ import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceAttributes;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateParser;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
@@ -60,7 +61,7 @@ public class IDevIDCertificate extends Certificate {
      * Parsed DICE attributes from the certificate, if present.
      */
     @Transient
-    private transient DiceAttributes.DiceCertInfo diceCertInfo;
+    private transient DiceCertificateInfo diceCertificateInfo;
 
     /**
      * Corresponds to the hwType field found in a Hardware Module Name (if present).
@@ -164,7 +165,7 @@ public class IDevIDCertificate extends Certificate {
      */
     @PostLoad
     private void parseTransientFields() throws IOException {
-        this.diceCertInfo = DiceAttributes.parseDiceCertificate(this.getX509Certificate());
+        this.diceCertificateInfo = DiceCertificateParser.parse(this.getX509Certificate());
         this.subjectAltName =
                 getX509Certificate().getExtensionValue(SUBJECT_ALTERNATIVE_NAME_EXTENSION);
     }

@@ -1465,51 +1465,6 @@
                         </div> <!-- Close row -->
                     </th:block> <!-- Close Credential Type is TCG -->
                 </th:block> <!-- Close certificate of type 'platform' -->
-                <th:block th:if="${not #strings.isEmpty(initialData.get('diceProfileType'))}">
-                    <!-- DICE Certificate Information -->
-                    <div class="certrow">
-                        <div class="col-md-1 col-md-offset-1">
-                            <span class="colHeader">
-                                <a role="button" data-bs-toggle="collapse" class="collapsed"
-                                    href="#diceInfoInner" aria-expanded="true" data-bs-placement="top"
-                                    aria-controls="diceInfoInner">
-                                    DICE Info ▼
-                                </a>
-                            </span>
-                        </div>
-                        <div class="col col-md-8">
-                            <div id="diceInfoInner" class="panel-body collapse" role="tabpanel"
-                                aria-expanded="false">
-                                <table class="table table-bordered table-sm">
-                                    <tr>
-                                        <th>Profile Type</th>
-                                        <td>
-                                            <span th:replace="~{fragments/field-displayer :: value(
-                                                ${initialData.get('diceProfileType')}
-                                            )}"></span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Has Key Cert Sign</th>
-                                        <td>
-                                            <span th:replace="~{fragments/field-displayer :: value(
-                                                ${initialData.get('diceHasKeyCertSign')}
-                                            )}"></span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Is CA</th>
-                                        <td>
-                                            <span th:replace="~{fragments/field-displayer :: value(
-                                                ${initialData.get('diceIsCa')}
-                                            )}"></span>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </th:block>
 
                 <!-- If this is a certificate of type 'issued' -->
                 <th:block th:if="${#strings.equals(param.type, 'issued')}">
@@ -1881,6 +1836,53 @@
                                 [[${initialData.get('extendedKeyUsage')}]]</div>
                         </div>
                     </th:block>
+                    <!-- Begin DICE Certificate Information -->
+                    <th:block th:if="${not #strings.isEmpty(initialData.get('diceProfileType'))}">
+                        <div class="certrow">
+                            <div class="col-md-1 col-md-offset-1">
+                                <span class="colHeader help-text"
+                                      title="DICE certficate information as defined in the TCG specification &quot;DICE Certificate Profiles&quot;.">
+                                    DICE Certificate Info
+                                </span>
+                            </div>
+                            <div class="col col-md-8">
+                                <table class="table table-bordered table-sm">
+                                    <tr>
+                                        <th>Profile Type</th>
+                                        <td>
+                                        <span th:replace="~{fragments/field-displayer :: value(
+                                            ${initialData.get('diceProfileType')}
+                                        )}"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Has Key Cert Sign</th>
+                                        <td>
+                                        <span th:replace="~{fragments/field-displayer :: value(
+                                            ${initialData.get('diceHasKeyCertSign')}
+                                        )}"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Has CRL Sign</th>
+                                        <td>
+                                        <span th:replace="~{fragments/field-displayer :: value(
+                                            ${initialData.get('diceHasCrlSign')}
+                                        )}"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Is CA</th>
+                                        <td>
+                                        <span th:replace="~{fragments/field-displayer :: value(
+                                            ${initialData.get('diceIsCa')}
+                                        )}"></span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </th:block> <!-- Close DICE Certificate Information -->
                 </th:block> <!-- Close certificate of type 'idevid' -->
             </th:block>
         </div> <!-- Close id="certificate-details-page" -->
