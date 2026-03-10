@@ -4,7 +4,6 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageControllerTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
@@ -37,22 +36,24 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
      * @throws IOException if test resources are not found
      */
     @BeforeAll
-    public void prepareTests() throws IOException {}
+    public void prepareTests() throws IOException {
+    }
 
     /**
      * Clears the database after each test run.
      */
     @AfterEach
-    public void afterEachTest() {}
+    public void afterEachTest() {
+    }
 
-    /**
-     * Tests the list REST endpoint on the Reference Manifest page controller.
-     * todo Finish writing up tests
-     *
-     * @throws Exception if any issues arise from performing this test.
-     */
-    @Test
-    public void testGetAllRIMs() throws Exception {
+//    /**
+//     * Tests the list REST endpoint on the Reference Manifest page controller.
+//     * todo Finish writing up tests
+//     *
+//     * @throws Exception if any issues arise from performing this test.
+//     */
+//    @Test
+//    public void testGetAllRIMs() throws Exception {
 //        final String[] pathTokens = FAKE_RIM.split("/");
 //
 //        // Upload the fake RIM to the ACA and confirm you get a 300 redirection status
@@ -75,17 +76,16 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
 //                .andExpect(status().isOk())
 //                .andExpect(jsonPath("$.data", hasSize(1)))
 //                .andReturn();
-    }
+//    }
 
-    /**
-     * Tests the delete REST endpoint on the Reference Manifest page controller.
-     * todo Finish writing up tests
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    public void testDeleteRIM() throws Exception {
-
+//    /**
+//     * Tests the delete REST endpoint on the Reference Manifest page controller.
+//     * todo Finish writing up tests
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    public void testDeleteRIM() throws Exception {
 //        // Upload the fake RIM to the ACA and confirm you get a 300 redirection status
 //        MvcResult result = getMockMvc().perform(MockMvcRequestBuilders
 //                        .multipart(pagePath + "/upload")
@@ -120,16 +120,16 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
 //                .andExpect(status().isOk())
 //                .andExpect(jsonPath("$.data", empty()))
 //                .andReturn();
-    }
+//    }
 
-    /**
-     * Tests the bulk-delete REST endpoint on the Reference Manifest page controller.
-     * todo Finish writing up tests
-     *
-     * @throws Exception if an exception occurs
-     */
-    @Test
-    public void testDeleteMultipleRIMS() throws Exception {
+//    /**
+//     * Tests the bulk-delete REST endpoint on the Reference Manifest page controller.
+//     * todo Finish writing up tests
+//     *
+//     * @throws Exception if an exception occurs
+//     */
+//    @Test
+//    public void testDeleteMultipleRIMS() throws Exception {
 //        final String[] pathTokens = FAKE_RIM.split("/");
 //
 //        // Upload multiple fake RIMS to the ACA and confirm you get a 300 redirection status for
@@ -169,5 +169,5 @@ public class ReferenceManifestPageControllerTest extends PageControllerTest {
 //                .andExpect(status().isOk())
 //                .andExpect(jsonPath("$.data", empty()))
 //                .andReturn();
-    }
+//}
 }

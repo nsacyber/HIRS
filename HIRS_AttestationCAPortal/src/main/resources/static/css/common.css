@@ -119,6 +119,17 @@ a:has(.action-icons) {
   transition: opacity 0.3s ease; /* Smooth transition for opacity */
 }
 
+/* Apply a background color on hover to the accordion button*/
+.accordion-button:hover {
+  background-color: #f8f9fa; /* Light gray background */
+  cursor: pointer; /* Change the cursor to pointer to indicate it's clickable */
+}
+
+/* Apply a box shadow color on hover to the accordion item*/
+.accordion-item:hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Soft shadow on hover */
+}
+
 /**********************************
 ***** Specific page styling *******
 ***********************************/
