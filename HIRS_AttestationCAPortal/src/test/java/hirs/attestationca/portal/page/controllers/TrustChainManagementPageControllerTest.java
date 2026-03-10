@@ -2,8 +2,10 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.portal.page.PageControllerTest;
 import hirs.attestationca.portal.page.PageMessages;
+import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -18,10 +20,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.servlet.FlashMap;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
 import static hirs.attestationca.portal.page.Page.TRUST_CHAIN;
+import static hirs.attestationca.portal.page.controllers.TrustChainCertificatePageController.ACA_TRUST_CHAIN_LEN;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,7 +57,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
 
     @Autowired
     @Qualifier("acaTrustChainCerts")
-    private X509Certificate[] acaTrustChain;
+    private X509Certificate[] acaTrustChainX509Certificates;
 
 
     // A file that contains a cert that is not an UTC Cert. Should be parsable as a general
@@ -104,29 +108,57 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
     @Test
     public void testInitPage() throws Exception {
 
-        // verify page is initialized with ACA cert properties
+        // verify page is initialized with ACA trust chain cert properties
         getMockMvc()
                 .perform(MockMvcRequestBuilders.get(pagePath))
                 .andExpect(status().isOk())
-                .andExpect(model().attributeExists(TrustChainCertificatePageController.ACA_CERT_DATA))
+                .andExpect(model().attributeExists(TrustChainCertificatePageController.ROOT_ACA_CERT_DATA,
+                        TrustChainCertificatePageController.INTERMEDIATE_ACA_CERT_DATA,
+                        TrustChainCertificatePageController.LEAF_ACA_CERT_DATA))
                 .andExpect(model().attribute(
-                        TrustChainCertificatePageController.ACA_CERT_DATA,
+                        TrustChainCertificatePageController.ROOT_ACA_CERT_DATA,
+                        hasEntry("subject", "CN=Fake Root CA"))
+                ).andExpect(model().attribute(
+                        TrustChainCertificatePageController.INTERMEDIATE_ACA_CERT_DATA,
+                        hasEntry("issuer", "CN=Fake Root CA"))
+                ).andExpect(model().attribute(
+                        TrustChainCertificatePageController.LEAF_ACA_CERT_DATA,
                         hasEntry("issuer", "CN=Fake Root CA"))
                 );
     }
 
     /**
      * Tests download the ACA full trust chain.
-     * todo write download aca-trust-chain cert method.
+     *
+     * @throws Exception when attempting to download the ACA trust chain certificates
      */
     @Test
-    public void testDownloadACATrustChainCert() {
+    public void testDownloadACATrustChainCert() throws Exception {
+
+        CertificateAuthorityCredential[] acaCACs = new CertificateAuthorityCredential[ACA_TRUST_CHAIN_LEN];
+
+        for (int i = 0; i < ACA_TRUST_CHAIN_LEN; i++) {
+            acaCACs[i] = new CertificateAuthorityCredential(acaTrustChainX509Certificates[i].getEncoded());
+        }
+
+        final String fullChainPEM = ControllerPagesUtils.convertCertificateArrayToPem(acaCACs);
+
+        final String pemFileName = "hirs-aca-trust_chain.pem";
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders.get(
+                        pagePath + "/download-aca-cert-chain")
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/x-pem-file"))
+                .andExpect(header().string("Content-Disposition", "attachment; filename=" + pemFileName))
+                .andExpect(content().bytes(fullChainPEM.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**
      * Tests downloading the certificate.
      *
-     * @throws Exception when getting raw report
+     * @throws Exception when attempting to download trust chain certificate
      */
     @Test
     @Rollback
@@ -189,7 +221,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         PageMessages pageMessages = (PageMessages) flashMap.get("messages");
         assertEquals("New certificate successfully uploaded (" + pathTokens[1] + "): ",
                 pageMessages.getSuccessMessages()
-                        .get(0));
+                        .getFirst());
         assertEquals(0, pageMessages.getErrorMessages().size());
 
         // verify the cert was actually stored
@@ -252,7 +284,7 @@ public class TrustChainManagementPageControllerTest extends PageControllerTest {
         assertEquals(1, pageMessages.getSuccessMessages().size());
         assertEquals(0, pageMessages.getErrorMessages().size());
         assertEquals("Pre-existing certificate found and unarchived (" + pathTokens[1] + "): ",
-                pageMessages.getSuccessMessages().get(0));
+                pageMessages.getSuccessMessages().getFirst());
 
         // verify the cert can be retrieved and that there is only 1 cert in db
         List<Certificate> records = certificateRepository.findAll();

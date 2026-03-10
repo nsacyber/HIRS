@@ -78,10 +78,13 @@ public class PageTestConfiguration {
     @Qualifier("acaTrustChainCerts")
     public X509Certificate[] acaTrustChainCertificates() throws URISyntaxException, IOException {
 
-        CertificateAuthorityCredential leafCredential = new CertificateAuthorityCredential(
+        CertificateAuthorityCredential trustChainCertificate = new CertificateAuthorityCredential(
                 Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getResource(FAKE_CA)).toURI()))
         );
-        return new X509Certificate[] {leafCredential.getX509Certificate()};
+
+        return new X509Certificate[]{trustChainCertificate.getX509Certificate(),
+                trustChainCertificate.getX509Certificate(),
+                trustChainCertificate.getX509Certificate()};
     }
 
     /**
