@@ -689,8 +689,8 @@ public class DeviceInfoProcessorService {
                 if (bRim != null) {
                     // pull the base versions of the swidtag and rimel and set the
                     // event log hash for use during provision
-                    SupportReferenceManifest sBaseRim = referenceManifestRepository
-                            .getSupportRimEntityById(bRim.getAssociatedRim());
+                    SupportReferenceManifest sBaseRim =
+                            referenceManifestRepository.getSupportRimEntityById(bRim.getAssociatedRim());
                     if (sBaseRim != null) {
                         bRim.setEventLogHash(provisionedEventLog.getHexDecHash());
                         sBaseRim.setEventLogHash(provisionedEventLog.getHexDecHash());

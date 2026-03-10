@@ -163,7 +163,7 @@ public final class ProvisionUtils {
      * @return the parsed PublicKey instance
      */
     public static PublicKey parsePublicKeyFromPublicDataSegment(final byte[] publicAreaSegment) {
-        final PublicKeyAlgorithm publicKeyAlgorithm = determinePublicKeyAlgorithm(publicAreaSegment);
+        final PublicKeyAlgorithm publicKeyAlgorithm = extractPublicKeyAlgorithmFromByteArray(publicAreaSegment);
 
         return switch (publicKeyAlgorithm) {
             case RSA -> parseRSAKeyFromPublicDataSegment(publicAreaSegment);
@@ -178,7 +178,7 @@ public final class ProvisionUtils {
      * @param byteArray byte array
      * @return public key algorithm
      */
-    public static PublicKeyAlgorithm determinePublicKeyAlgorithm(byte[] byteArray) {
+    public static PublicKeyAlgorithm extractPublicKeyAlgorithmFromByteArray(byte[] byteArray) {
 
         // Return UNKNOWN if there are not enough bytes for comparison
         if (byteArray == null || byteArray.length < 2) {
@@ -195,7 +195,7 @@ public final class ProvisionUtils {
         // - The bitwise OR (`|`) combines the two parts into a single 16-bit value (int).
         final int algorithmId = ((byteArray[0] & unsignedByteMask) << byteShiftVal) | (byteArray[1] & unsignedByteMask);
 
-        // Compare the extracted ID with the enums
+        // Compare the extracted ID with the enum's list of ids
         return PublicKeyAlgorithm.fromId(algorithmId);
     }
 

@@ -2,23 +2,32 @@ param (
     [switch]$sd, [switch]${skip-db} = $false,
 	[switch]$sp, [switch]${skip-pki} = $false,
 	[switch]$u, [switch]$unattended = $false,
-	[switch]$h, [switch]$help = $false
+	[switch]$h, [switch]$help = $false,
+    [string]$aa, [string]${aca-alg},
+    [string]$ta, [string]${ta-alg},
+    [string]$da, [string]${db-alg}
 )
 
 # Parameter Consolidation
-$skipdb=$sd -or ${skip-db}
-$skippki=$sp -or ${skip-pki}
-$unattended=$u -or $unattended
+$skipdb = $sd -or ${skip-db}
+$skippki= $sp -or ${skip-pki}
+$unattended = $u -or $unattended
 $help = $h -or $help
+$AcaAlg = $aa ?? ${aca-alg}
+$TlsAlg = $ta ?? ${ta-alg}
+$DbAlg  = $da ?? ${db-alg}
 
 if ($help) {
     Write-Host "  Setup script for the HIRS ACA on Windows"
-    Write-Host "  Syntax: .\aca_setup.ps1 [-u|-h|-sd|-sp|-skip-db|-skip-pki|-unattended|-help]"
+    Write-Host "  Syntax: .\aca_setup.ps1 [-u|-h|-sp|-sb|-aa|-ta|-da|-skip-db|-skip-pki|-unattended|-help]"
     Write-Host "  Flag options:"
     Write-Host "     [-u  | -unattended] Runs the script unattended."
     Write-Host "     [-h  | -help]   Prints this help message."
     Write-Host "     [-sp | -skip-pki] Skips the pki setup of the setup script."
     Write-Host "     [-sb | -skip-db] Skips the database setup of the setup script."
+    Write-Host "     [-aa | -aca-alg] Sets the ACA's default algorithm (RSA, ECC, or MLDSA) for Attestation Certificates."
+    Write-Host "     [-ta | -tls-alg] Sets the ACA's default algorithm (RSA, ECC, or MLDSA) for TLS on the ACA portal."
+    Write-Host "     [-da | -db-alg] Sets the ACA's default algorithm (RSA, ECC, or MLDSA) for use with MariaDB."
 	exit 1
 }
 
@@ -27,6 +36,41 @@ if(!(New-Object Security.Principal.WindowsPrincipal(
 	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 	Write-Host "This script requires root.  Please run as root" 
 	exit 1
+}
+
+# Set default algorithms to "RSA" if none provided
+if (-not $AcaAlg) {
+    $AcaAlg = "rsa"
+    Write-Host "Using default algorithm ($AcaAlg) for Attestation Certs."
+}
+
+if (-not $TlsAlg) {
+    $TlsAlg = "rsa"
+    Write-Host "Using default algorithm ($TlsAlg) for the ACA portal."
+}
+
+if (-not $DbAlg) {
+    $DbAlg = "rsa"
+    Write-Host "Using default algorithm ($DbAlg) for the Database."
+}
+
+# Define valid options
+$validAlgs = @("rsa", "ecc")
+
+# Check for valid algorithms
+if ($validAlgs -notcontains $AcaAlg) {
+    Write-Host "Invalid ACA algorithm $AcaAlg specified. Valid options are rsa or ecc."
+    exit 1
+}
+
+if ($validAlgs -notcontains $TlsAlg) {
+    Write-Host "Invalid TLS algorithm $TlsAlg specified. Valid options are rsa or ecc."
+    exit 1
+}
+
+if ($validAlgs -notcontains $DbAlg) {
+    Write-Host "Invalid DB algorithm $DbAlg specified. Valid options are rsa or ecc."
+    exit 1
 }
 
 $ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
@@ -139,6 +183,11 @@ if (!$skipdb) {
 } else {
     Write-Output ("ACA Database setup cannot be run because there are command line argument(s): "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-db|sd'})) | WriteAndLog
 }
+
+# Update properties file based upon algorithm choices
+Write-Host "Setting public key algorithm for TLS and ACA..."
+
+#setup_aca_tls_public_key_algorithm $TlsAlg $AcaAlg
 
 Write-Output "ACA setup complete" | WriteAndLog
 Write-Host "----------------------------------------------------------------------"

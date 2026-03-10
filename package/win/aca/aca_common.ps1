@@ -37,12 +37,14 @@ $global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME="mysql_admin_password"
 $global:ACA_PROPERTIES_HIRS_DB_USERNAME_PROPERTY_NAME="hirs_db_username"
 $global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME="hirs_db_password"
 
-
 #         Spring Property Keys
 $global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME="hibernate.connection.username"
 $global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME="hibernate.connection.password"
 $global:SPRING_PROPERTIES_SSL_KEY_STORE_PWD_PROPERTY_NAME="server.ssl.key-store-password"
 $global:SPRING_PROPERTIES_SSL_KEY_TRUST_STORE_PWD_PROPERTY_NAME="server.ssl.trust-store-password"
+$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME="aca.certificates.leaf-three-key-alias"
+$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME="aca.certificates.intermediate-key-alias"
+$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME="aca.certificates.root-key-alias"
 
 #         DB Configuration file
 $global:DB_CONF = (Resolve-Path ([System.IO.Path]::Combine($Env:ProgramFiles, 'MariaDB 11.1', 'data', 'my.ini'))).Path
@@ -309,6 +311,31 @@ Function add_new_spring_property () {
     Write-Output "$newKeyAndValue" >> $file
     $global:SPRING_PROPERTIES=$null
     read_spring_properties $file
+}
+
+Function setup_aca_tls_public_key_algorithm(){
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$tlsAlg,
+        [Parameter(Mandatory=$true)]
+        [string]$acaAlg
+    )
+
+    if (-not $tlsAlg -or -not $acaAlg) {
+        Write-Output "Exiting script while attempting to set the ACA's public key algorithm since the provided TLS and ACA Public Key Algorithm [$file]
+         do not exist/have noot been supplied" | WriteAndLog
+        exit 1
+    }
+
+    if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME")){
+		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME=hirs_db"
+		Write-Output "Stored the hibernate connection username in the spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
+	}
+
+	if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME")){
+		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME=$HIRS_DB_PASS"
+		Write-Output "Stored the hibernate connection password property in the spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
+	}
 }
 
 Function create_random () {

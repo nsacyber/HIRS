@@ -29,7 +29,7 @@ help () {
   echo "     -sd | --skip-db run the setup without database setup."
   echo "     -aa | --aca-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for Attestation Certificates"
   echo "     -ta | --tls-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for TLS on the ACA portal"
-  echo "     -da | --db-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for use with maraidb"
+  echo "     -da | --db-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for use with MariaDB"
   echo
 }
 
@@ -205,10 +205,12 @@ if [ -z "${ARG_SKIP_DB}" ]; then
 fi
 
 # Update properties file based upon algorithm choices
-echo "Setting algorithm setting for TLS and ACA..."
+echo "Setting public key algorithm for TLS and ACA..."
+
 # remove default config file lines for tomcat ssl aliases
   sed -i '/server.ssl.trust-alias/d' $SPRING_PROP_FILE
   sed -i '/server.ssl.key-alias/d' $SPRING_PROP_FILE
+
 if [ "$TLS_ALG" == "rsa" ]; then
   echo "server.ssl.trust-alias=hirs_aca_tls_rsa_3k_sha384" >> $SPRING_PROP_FILE
   echo "server.ssl.key-alias=hirs_aca_tls_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
@@ -221,6 +223,7 @@ fi
   sed -i '/aca.certificates.leaf-three-key-alias/d' $SPRING_PROP_FILE
   sed -i '/aca.certificates.intermediate-key-alias/d' $SPRING_PROP_FILE
   sed -i '/aca.certificates.root-key-alias/d' $SPRING_PROP_FILE
+  
 if [ "$ACA_ALG" == "rsa" ]; then
   # Add new lines for aca aliases for the RSA public key algorithm
   {
