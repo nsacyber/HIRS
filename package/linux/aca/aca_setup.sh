@@ -21,15 +21,16 @@ VENDOR_TABLE='../../../HIRS_Utils/src/main/resources/vendor-table.json'
 
 help () {
   echo "  Setup script for the HIRS ACA"
-  echo "  Syntax: sh aca_setup.sh [-u|h|sb|sp|--skip-db|--skip-pki]"
-  echo "  options:"
-  echo "     -u  | --unattended   Run unattended"
-  echo "     -h  | --help   Print this Help."
-  echo "     -sp | --skip-pki run the setup without pki setup."
-  echo "     -sd | --skip-db run the setup without database setup."
-  echo "     -aa | --aca-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for Attestation Certificates"
-  echo "     -ta | --tls-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for TLS on the ACA portal"
-  echo "     -da | --db-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for use with MariaDB"
+  echo "  Syntax (short form): sh aca_setup.sh [-u|h|sp|sd|aa|ta|da]"
+  echo "  Syntax (long form): sh aca_setup.sh [--unattended|--help|--skip-db|--skip-pki|--aca-alg|--tls-alg|--db-alg]"
+  echo "  Flag options:"
+  echo "     [-u  | --unattended] Runs the script unattended"
+  echo "     [-h  | --help]   Prints this help message."
+  echo "     [-sp | --skip-pki] Skips the pki setup of the setup script."
+  echo "     [-sd | --skip-db] Skips the database setup of the setup script."
+  echo "     [-aa | --aca-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for Attestation Certificates"
+  echo "     [-ta | --tls-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for TLS on the ACA portal"
+  echo "     [-da | --db-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for use with MariaDB"
   echo
 }
 

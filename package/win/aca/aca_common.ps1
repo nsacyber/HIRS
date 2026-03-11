@@ -40,6 +40,8 @@ $global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME="hirs_db_password"
 #         Spring Property Keys
 $global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME="hibernate.connection.username"
 $global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME="hibernate.connection.password"
+$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME="server.ssl.trust-alias"
+$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME="server.ssl.key-alias"
 $global:SPRING_PROPERTIES_SSL_KEY_STORE_PWD_PROPERTY_NAME="server.ssl.key-store-password"
 $global:SPRING_PROPERTIES_SSL_KEY_TRUST_STORE_PWD_PROPERTY_NAME="server.ssl.trust-store-password"
 $global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME="aca.certificates.leaf-three-key-alias"
@@ -313,28 +315,120 @@ Function add_new_spring_property () {
     read_spring_properties $file
 }
 
-Function setup_aca_tls_public_key_algorithm(){
-    param(
+Function remove_spring_property_value_pair(){
+     param (
         [Parameter(Mandatory=$true)]
-        [string]$tlsAlg,
+        [string]$file,
+        [Parameter(Mandatory=$true)]
+        [string]$keyToBeDeleted
+     )
+
+    if (-not $file -or -not $keyToBeDeleted -or -not (Test-Path $file)) {
+        Write-Output "Exiting script while attempting to delete a Spring property since the provided file [$file] does not exist and/or
+         the provided key to be deleted has not been supplied" | WriteAndLog
+        exit 1
+    }
+
+     # Read all lines
+    $lines = Get-Content $File
+
+    # Filter out lines that start with key=
+    $filteredLines = $lines | Where-Object { $_ -notmatch "^\s*$([regex]::Escape($KeyToBeDeleted))=" }
+
+    # Write back to the file (overwrite)
+    Set-Content -Path $File -Value $filteredLines
+
+    Write-Output "Removed property [$KeyToBeDeleted] from file [$File]."
+
+    # Reset the global spring property hashmap and reload
+    $global:SPRING_PROPERTIES = $null
+    Write-Output "Resetting and reloading the spring properties table" | WriteAndLog
+    read_spring_properties $file
+}
+
+Function setup_aca_public_key_algorithm(){
+    param(
         [Parameter(Mandatory=$true)]
         [string]$acaAlg
     )
 
-    if (-not $tlsAlg -or -not $acaAlg) {
-        Write-Output "Exiting script while attempting to set the ACA's public key algorithm since the provided TLS and ACA Public Key Algorithm [$file]
-         do not exist/have noot been supplied" | WriteAndLog
+    if (-not $acaAlg) {
+        Write-Output "Exiting script while attempting to set the ACA's public key algorithm since the provided ACA Public Key Algorithm
+         do not exist/have not been supplied" | WriteAndLog
         exit 1
     }
 
-    if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME")){
-		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME=hirs_db"
-		Write-Output "Stored the hibernate connection username in the spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
+    $aca_leaf_cert_val=$null
+    $aca_intermediate_cert_val=$null
+    $aca_root_cert_val=$null
+
+    if($acaAlg -eq "rsa"){
+        $aca_leaf_cert_val="HIRS_leaf_ca3_rsa_3k_sha384_key"
+        $aca_intermediate_cert_val="HIRS_intermediate_ca_rsa_3k_sha384_key"
+        $aca_root_cert_val="HIRS_root_ca_rsa_3k_sha384_key"
+    }
+    elseif($acaAlg -eq "ecc"){
+        $aca_leaf_cert_val="HIRS_leaf_ca3_ecc_512_sha384_key"
+        $aca_intermediate_cert_val="HIRS_intermediate_ca_ecc_512_sha384_key"
+        $aca_root_cert_val="HIRS_root_ca_ecc_512_sha384_key"
+    }
+
+    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME"
+    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME"
+    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME"
+
+    if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME")){
+		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME=$aca_leaf_cert_val"
+		Write-Output "Stored the $acaAlg ACA Leaf certificate alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
 	}
 
-	if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME")){
-		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME=$HIRS_DB_PASS"
-		Write-Output "Stored the hibernate connection password property in the spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
+	if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME")){
+		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME=$aca_intermediate_cert_val"
+		Write-Output "Stored the $acaAlg ACA Intermediate certificate alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
+	}
+
+    if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME")){
+		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME=$aca_root_cert_val"
+		Write-Output "Stored the $acaAlg ACA Root certificate alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
+	}
+}
+
+Function setup_tls_config_aliases(){
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$tlsAlg
+    )
+
+    if (-not $tlsAlg) {
+        Write-Output "Exiting script while attempting to set the config file lines for tomcat ssl aliases since the provided TLS 
+         do not exist/have not been supplied" | WriteAndLog
+        exit 1
+    }
+
+    $server_ssl_trust_alias_val=$null
+    $server_ssl_key_alias_val=$null
+
+    if($acaAlg -eq "rsa"){
+        $server_ssl_trust_alias_val="hirs_aca_tls_rsa_3k_sha384"
+        $server_ssl_key_alias_val="hirs_aca_tls_rsa_3k_sha384_key"
+    }
+    elseif($acaAlg -eq "ecc"){
+        $server_ssl_trust_alias_val="hirs_aca_tls_ecc_512_sha384"
+        $server_ssl_key_alias_val="hirs_aca_tls_ecc_512_sha384_key"
+    }
+
+    # remove default SSL config lines
+    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME"
+    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME"
+
+    if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME")){
+		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME=$server_ssl_trust_alias_val"
+		Write-Output "Stored the $tlsAlg SSL Trust Alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
+	}
+
+	if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME")){
+		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME=$server_ssl_key_alias_val"
+		Write-Output "Stored the $tlsAlg SSL Key alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
 	}
 }
 
