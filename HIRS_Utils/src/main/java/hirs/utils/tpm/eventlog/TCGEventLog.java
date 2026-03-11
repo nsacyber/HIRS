@@ -8,6 +8,7 @@ import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
@@ -34,6 +35,7 @@ import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA512_STR;
 /**
  * Class for handling different formats of TCG Event logs.
  */
+@Log4j2
 public final class TCGEventLog {
 
     // The TCG PC Client Platform TPM Profile Specification for TPM 2.0 defines 5 localities
@@ -230,11 +232,21 @@ public final class TCGEventLog {
         // put the remaining events into the event list
         while (is.available() > 0) {
             if (bCryptoAgile) {
-                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestEvLogHashAlgName);
-                eventList.put(eventNumber, event2);
-                if (event2.isStartupLocalityEvent()) {
-                    EvNoAction event = new EvNoAction(event2.getEventContent());
-                    startupLocality = event.getStartupLocality();
+                TpmPcrEvent2 event2 = null;
+                eventNumber++;
+                try {
+                    event2 = new TpmPcrEvent2(is, eventNumber, strongestEvLogHashAlgName);
+                    eventList.put(eventNumber, event2);
+                    if (event2.isStartupLocalityEvent()) {
+                        EvNoAction event = new EvNoAction(event2.getEventContent());
+                        startupLocality = event.getStartupLocality();
+                    }
+                } catch (Exception e) {
+                    log.warn("Couldn't parse event #{} {}: {}",
+                            eventNumber,
+                            (event2 != null) ? event2.getEventTypeStr() : "(couldn't parse)",
+                            e.getMessage());
+                    continue;
                 }
             } else {
                 TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
@@ -267,10 +279,12 @@ public final class TCGEventLog {
             // the if-statement is executed
             // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
             // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                    && (eventList.get(eventNumber - 1).getPciidsFileStatus()
-                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-                pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
+            if (eventList.containsKey(eventNumber - 1)) {
+                if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+                        && (eventList.get(eventNumber - 1).getPciidsFileStatus()
+                        != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+                    pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
+                }
             }
         }
         calculatePcrValues();
