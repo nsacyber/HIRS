@@ -138,7 +138,6 @@ public final class ProvisionUtils {
      *
      * @param certificate the X509 certificate to be converted to PEM encoding
      * @return the string representing the PEM encoded certificate
-     * @throws {@link UnexpectedServerException} if error occurs during encoding retrieval
      */
     public static String getPemEncodedCertificate(final X509Certificate certificate) {
         try {
