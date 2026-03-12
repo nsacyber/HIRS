@@ -338,7 +338,7 @@ Function remove_spring_property_value_pair(){
     # Write back to the file (overwrite)
     Set-Content -Path $File -Value $filteredLines
 
-    Write-Output "Removed property [$KeyToBeDeleted] from file [$File]."
+    Write-Output "Removed property [$KeyToBeDeleted] from file [$File]." | WriteAndLog
 
     # Reset the global spring property hashmap and reload
     $global:SPRING_PROPERTIES = $null
