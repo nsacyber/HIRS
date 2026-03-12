@@ -224,7 +224,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         // pass in the updated support rims
         // and either update or add the events
-        processTpmEvents(new ArrayList<>(updatedSupportRims.values()));
+        try {
+            processTpmEvents(new ArrayList<>(updatedSupportRims.values()));
+        } catch (CertificateException e) {
+            messages.addErrorMessage(e.getMessage());
+        }
 
         //Add messages to the model
         model.put(MESSAGES_ATTRIBUTE, messages);
@@ -578,7 +582,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         return null;
     }
 
-    private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) {
+    private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) throws CertificateException {
         List<ReferenceDigestValue> referenceValues;
         TCGEventLog logProcessor;
         ReferenceManifest baseRim;
@@ -603,7 +607,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
                             this.referenceDigestValueRepository.save(newRdv);
                         }
-                    } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
+                    } catch (CertificateException e) {
+                        throw new CertificateException(e.getMessage());
+                    } catch (NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
                     }
                 } else {
