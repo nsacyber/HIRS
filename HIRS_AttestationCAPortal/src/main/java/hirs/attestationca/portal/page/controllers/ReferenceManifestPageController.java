@@ -608,7 +608,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                             this.referenceDigestValueRepository.save(newRdv);
                         }
                     } catch (CertificateException e) {
-                        throw new CertificateException(e.getMessage());
+                        throw new CertificateException("Error processing support RIM "
+                                + dbSupport.getId() + ": " + e.getMessage());
                     } catch (NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
                     }
