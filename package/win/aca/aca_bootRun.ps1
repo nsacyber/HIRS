@@ -1,30 +1,18 @@
 param (
-    [string]$p, [string]$path = $null,
-	[switch]$w, [switch]$war = $false,
-	[switch]$d, [switch]$debug = $false,
-	[switch]$h, [switch]$help = $false
+    [Alias("p","path")][string]$PathToWarFile,
+	[Alias("w","war")][switch]$UseWarFile = $false,
+	[Alias("d","debug")][switch]$EnableDebugMode = $false,
+	[Alias("h","help")][switch]$ShowHelp = $false
 )
 
-# Parameter Consolidation
-if ($p -and $path -and ($p -ne $path)) {
-	"-p and -path were given different paths. Use only one." | WriteAndLog
-	$help=$true
-}
-if ($p) {
-	$path = $p
-}
-$war = $w -or $war
-$debug = $d -or $debug
-$help = $h -or $help
-
-if ($help) {
+if ($ShowHelp) {
   Write-Output "  Bootrun script for the HIRS ACA"
   Write-Output "  Syntax: powershell -ExecutionPolicy Bypass aca_bootRun.ps1 [-h|-p|-d|-w|-path|-war|-debug|-help]"
-  Write-Output "  options:"
+  Write-Output "  Flag options:"
   Write-Output "     [ -p  | -path]   Path to the HIRS_AttestationCAPortal.war file"
   Write-Output "     [ -w  | -war ]   Use deployed war file"
   Write-Output "     [ -d  | -debug ]  Launch the JVM with a debug port open"
-  Write-Output "     [ -h  | -help ]   Print this help"
+  Write-Output "     [ -h  | -help ]   Print this help menu"
   exit 1
 }
 
@@ -48,16 +36,16 @@ $DEBUG_OPTIONS='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:
 set_up_log
 
 # Read aca.properties
-read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
+read_aca_properties -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE"
 
 # Read spring application.properties
-read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
+read_spring_properties -file "$global:HIRS_DATA_SPRING_PROP_FILE"
 
 Write-Output "-----------------------------------------------------------" | WriteAndLog
 Write-Output ("Running with these arguments: "+($PSBoundParameters | Out-String)) | WriteAndLog
 
-if ($path) {
-    $DEPLOYED_WAR = $path
+if ($PathToWarFile) {
+    $DEPLOYED_WAR = $PathToWarFile
 }
 
 if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_HIRS_DIR)) {
@@ -75,9 +63,9 @@ if (!$DEPLOYED_WAR) {
 
 $SPRING_PROP_FILE_FORWARDSLASHES=($global:HIRS_DATA_SPRING_PROP_FILE | ChangeBackslashToForwardSlash)
 
-if ($w -or $war) {
+if ($UseWarFile) {
 	Write-Output "Booting the ACA from a war file..." | WriteAndLog
-    if ($d -or $debug) {
+    if ($EnableDebugMode) {
         Write-Output "... in debug"
         java $DEBUG_OPTIONS -jar $DEPLOYED_WAR --spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES
     } else {
@@ -85,7 +73,7 @@ if ($w -or $war) {
     }
 } else  {
     Write-Output "Booting the ACA from local build..." | WriteAndLog
-    if ($d -or $debug) {
+    if ($EnableDebugMode) {
         Write-Output "... in debug"
         ./gradlew bootRun --args="--spring.config.location=$SPRING_PROP_FILE_FORWARDSLASHES" -Pdebug="$DEBUG_OPTIONS"
     } else {

@@ -1,15 +1,11 @@
 #This script will check to see if the ACA has already been setup in a Windows environment
 
 param (
-    [switch]$v, [switch]$verbose = $false,
-	[switch]$h, [switch]$help = $false
+    [Alias("v","verbose")][switch]$ShowVerbose = $false,
+    [Alias("h","help")][switch]$ShowHelp = $false
 )
 
-# Parameter Consolidation
-$verbose=$v -or $verbose
-$help = $h -or $help
-
-if ($help) {
+if ($ShowHelp) {
     Write-Output "  aca check setup script for the HIRS ACA on Windows. Script checks if everything has been setup properly after the user has run the aca_setup.ps1 script."
     Write-Output "  Syntax: .\aca_check_setup.ps1 [-v|-h|-verbose|-help]"
     Write-Output "  Flag Options:"
@@ -93,28 +89,28 @@ Function check_pki() {
         return
     }
     
-    Push-Location $global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH | Out-Null
-    check_cert -TrustStore:$global:SSL_DB_RSA_CLIENT_CHAIN -Cert:$global:RSA_HIRS_ROOT
-    check_cert -TrustStore:$global:SSL_DB_RSA_CLIENT_CHAIN -Cert:$global:RSA_HIRS_INTERMEDIATE
-    check_cert -TrustStore:$global:SSL_DB_RSA_CLIENT_CHAIN -Cert:$global:RSA_HIRS_CA1
-    check_cert -TrustStore:$global:SSL_DB_RSA_CLIENT_CHAIN -Cert:$global:RSA_HIRS_CA2
-    check_cert -TrustStore:$global:SSL_DB_RSA_CLIENT_CHAIN -Cert:$global:RSA_HIRS_CA3
-    check_cert -TrustStore:$global:SSL_DB_RSA_CLIENT_CHAIN -Cert:$global:RSA_RIM_SIGNER
-    check_cert -TrustStore:$global:SSL_DB_RSA_CLIENT_CHAIN -Cert:$global:SSL_DB_RSA_SRV_CERT
-    check_cert -TrustStore:$global:SSL_DB_RSA_CLIENT_CHAIN -Cert:$global:SSL_DB_RSA_CLIENT_CERT
-    check_cert -TrustStore:$global:SSL_DB_RSA_CLIENT_CHAIN -Cert:$global:RSA_WEB_TLS_CERT
+    Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_RSA_PATH" | Out-Null
+    check_cert -TrustStore "$global:SSL_DB_RSA_CLIENT_CHAIN" -Cert "$global:RSA_HIRS_ROOT"
+    check_cert -TrustStore "$global:SSL_DB_RSA_CLIENT_CHAIN" -Cert "$global:RSA_HIRS_INTERMEDIATE"
+    check_cert -TrustStore "$global:SSL_DB_RSA_CLIENT_CHAIN" -Cert "$global:RSA_HIRS_CA1"
+    check_cert -TrustStore "$global:SSL_DB_RSA_CLIENT_CHAIN" -Cert "$global:RSA_HIRS_CA2"
+    check_cert -TrustStore "$global:SSL_DB_RSA_CLIENT_CHAIN" -Cert "$global:RSA_HIRS_CA3"
+    check_cert -TrustStore "$global:SSL_DB_RSA_CLIENT_CHAIN" -Cert "$global:RSA_RIM_SIGNER"
+    check_cert -TrustStore "$global:SSL_DB_RSA_CLIENT_CHAIN" -Cert "$global:SSL_DB_RSA_SRV_CERT"
+    check_cert -TrustStore "$global:SSL_DB_RSA_CLIENT_CHAIN" -Cert "$global:SSL_DB_RSA_CLIENT_CERT"
+    check_cert -TrustStore "$global:SSL_DB_RSA_CLIENT_CHAIN" -Cert "$global:RSA_WEB_TLS_CERT"
 
     Pop-Location | Out-Null
-    Push-Location $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH | Out-Null
-    check_cert -TrustStore:$global:SSL_DB_ECC_CLIENT_CHAIN -Cert:$global:ECC_HIRS_ROOT
-    check_cert -TrustStore:$global:SSL_DB_ECC_CLIENT_CHAIN -Cert:$global:ECC_HIRS_INTERMEDIATE
-    check_cert -TrustStore:$global:SSL_DB_ECC_CLIENT_CHAIN -Cert:$global:ECC_HIRS_CA1
-    check_cert -TrustStore:$global:SSL_DB_ECC_CLIENT_CHAIN -Cert:$global:ECC_HIRS_CA2
-    check_cert -TrustStore:$global:SSL_DB_ECC_CLIENT_CHAIN -Cert:$global:ECC_HIRS_CA3
-    check_cert -TrustStore:$global:SSL_DB_ECC_CLIENT_CHAIN -Cert:$global:ECC_RIM_SIGNER
-    check_cert -TrustStore:$global:SSL_DB_ECC_CLIENT_CHAIN -Cert:$global:SSL_DB_ECC_SRV_CERT
-    check_cert -TrustStore:$global:SSL_DB_ECC_CLIENT_CHAIN -Cert:$global:SSL_DB_ECC_CLIENT_CERT
-    check_cert -TrustStore:$global:SSL_DB_ECC_CLIENT_CHAIN -Cert:$global:ECC_WEB_TLS_CERT
+    Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH" | Out-Null
+    check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:ECC_HIRS_ROOT"
+    check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:ECC_HIRS_INTERMEDIATE"
+    check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:ECC_HIRS_CA1"
+    check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:ECC_HIRS_CA2"
+    check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:ECC_HIRS_CA3"
+    check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:ECC_RIM_SIGNER"
+    check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:SSL_DB_ECC_SRV_CERT"
+    check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:SSL_DB_ECC_CLIENT_CERT"
+    check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:ECC_WEB_TLS_CERT"
     Pop-Location | Out-Null
 
     # if the aca properties file does not exist
@@ -166,7 +162,7 @@ Function check_cert() {
         $global:ALL_CERTS_PASSED=$false
     }
 
-    if($verbose){
+    if($ShowVerbose){
         Write-Host "$result"
     }
 }
@@ -260,7 +256,22 @@ Function check_db() {
 
 Function check_fips() {
     Write-Host "Checking FIPS mode on this device..."
-    #todo
+
+    if (IsFipsEnabled) {
+        Write-Host "FIPS is ENABLED"
+    } else {
+        Write-Host "FIPS is DISABLED"
+    }
+}
+
+Function IsFipsEnabled {
+    try {
+        $fips = Get-ItemPropertyValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy" -Name Enabled -ErrorAction Stop
+        return [bool]$fips
+    } catch {
+        # Key not found → FIPS not enabled
+        return $false
+    }
 }
 
 # Check if the aca passwords are stored in the aca.properties file

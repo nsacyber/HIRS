@@ -1,11 +1,8 @@
 param (
-    # Switches
     [Alias("sd","skip-db")][switch]$skipdb = $false,
     [Alias("sp","skip-pki")][switch]$skippki = $false,
     [Alias("u","unattended")][switch]$IsUnattended = $false,
     [Alias("h","help")][switch]$ShowHelp = $false,
-
-    # Strings
     [Alias("aa","aca-alg")][string]$AcaAlg,
     [Alias("ta","ta-alg")][string]$TlsAlg,
     [Alias("da","db-alg")][string]$DbAlg
@@ -20,9 +17,9 @@ if ($ShowHelp) {
     Write-Host "     [-h  | -help]   Prints this help message."
     Write-Host "     [-sp | -skip-pki] Skips the pki setup of the setup script."
     Write-Host "     [-sb | -skip-db] Skips the database setup of the setup script."
-    Write-Host "     [-aa | -aca-alg] Sets the ACA's default algorithm (RSA, ECC, or MLDSA) for Attestation Certificates."
-    Write-Host "     [-ta | -tls-alg] Sets the ACA's default algorithm (RSA, ECC, or MLDSA) for TLS on the ACA portal."
-    Write-Host "     [-da | -db-alg] Sets the ACA's default algorithm (RSA, ECC, or MLDSA) for use with MariaDB."
+    Write-Host "     [-aa | -aca-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for Attestation Certificates."
+    Write-Host "     [-ta | -tls-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for TLS on the ACA portal."
+    Write-Host "     [-da | -db-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for use with MariaDB."
 	exit 1
 }
 
@@ -141,49 +138,52 @@ if (-not (Test-Path $global:HIRS_DATA_SPRING_PROP_FILE)) {
     Write-Output "File already exists: $global:HIRS_DATA_SPRING_PROP_FILE" | WriteAndLog
 }
   
-read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
+read_spring_properties -file "$global:HIRS_DATA_SPRING_PROP_FILE"
 
 # Runs the pki_setup script (along with the other scripts under the PKI folder)
-# if (!$skippki) {
-# 	if (!$Env:HIRS_PKI_PWD) {
-# 		$HIRS_PKI_PWD=(create_random)
-# 		# NOTE: Writing to the environment variable did not work within the container
-# 		# This password will be stored in the ACA properties file.
-# 		Write-Output "Using randomly generated password for the PKI key password" | WriteAndLog
-# 		Write-Host "NOT LOGGED: Using pki password=$HIRS_PKI_PWD"
-# 	} else {
-# 		$HIRS_PKI_PWD=$Env:HIRS_PKI_PWD
-# 		Write-Output "Using system supplied password for the PKI key password" | WriteAndLog
-# 	}
-# 	pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_PKI_SETUP -LOG_FILE:"$global:LOG_FILE" -PKI_PASS:"$HIRS_PKI_PWD" -UNATTENDED:"$IsUnattended"
-#     if ($LastExitCode -eq 0) { 
-#         Write-Output "ACA PKI setup complete" | WriteAndLog
-#     } else {
-#         Write-Output "Error setting up ACA PKI" | WriteAndLog
-#         exit 1
-#     }
-# } else {
-#     Write-Output ("ACA PKI setup cannot be run because there are command line argument(s): "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-pki|sp' } )) | WriteAndLog
-# }
+if (!$skippki) {
+	if (!$Env:HIRS_PKI_PWD) {
+		$HIRS_PKI_PWD=(create_random)
+		# NOTE: Writing to the environment variable did not work within the container
+		# This password will be stored in the ACA properties file.
+		Write-Output "Using randomly generated password for the PKI key password" | WriteAndLog
+		Write-Host "NOT LOGGED: Using pki password=$HIRS_PKI_PWD"
+	} else {
+		$HIRS_PKI_PWD=$Env:HIRS_PKI_PWD
+		Write-Output "Using system supplied password for the PKI key password" | WriteAndLog
+	}
+	pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_PKI_SETUP -LOG_FILE "$global:LOG_FILE" -PKI_PASS "$HIRS_PKI_PWD"
+    if ($LastExitCode -eq 0) { 
+        Write-Output "ACA PKI setup complete" | WriteAndLog
+    } else {
+        Write-Output "Error setting up ACA PKI" | WriteAndLog
+        exit 1
+    }
+} else {
+    Write-Output ("ACA PKI setup cannot be run because there are command line argument(s): "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-pki|sp' } )) | WriteAndLog
+}
 
-# # Runs the create_db script (along with the other scripts under the DB folder)
-# if (!$skipdb) {
-# 	pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_DB_CREATE -LOG_FILE:"$global:LOG_FILE" -UNATTENDED:"$IsUnattended"
-#     if ($LastExitCode -eq 0) { 
-#         Write-Output "ACA database setup complete" | WriteAndLog
-#     } else {
-#         Write-Output "Error setting up ACA DB" | WriteAndLog
-#         exit 1
-#     }
-# } else {
-#     Write-Output ("ACA Database setup cannot be run because there are command line argument(s): "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-db|sd'})) | WriteAndLog
-# }
+# Runs the create_db script (along with the other scripts under the DB folder)
+if (!$skipdb) {
+	pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_DB_CREATE -LOG_FILE "$global:LOG_FILE" -UNATTENDED:$IsUnattended -DB_ALG "$DbAlg"
+    if ($LastExitCode -eq 0) { 
+        Write-Output "ACA database setup complete" | WriteAndLog
+    } else {
+        Write-Output "Error setting up ACA DB" | WriteAndLog
+        exit 1
+    }
+} else {
+    Write-Output ("ACA Database setup cannot be run because there are command line argument(s): "+($PSBoundParameters.Keys | Where-Object { $_ -match 'skip-db|sd'})) | WriteAndLog
+}
 
 # Update properties file based upon algorithm choices
 Write-Host "Setting public key algorithm for TLS and ACA..."
 
-setup_tls_config_aliases -tlsAlg $TlsAlg
-setup_aca_public_key_algorithm -acaAlg $AcaAlg
+# setup the tls configuration using the provided public key algorithm
+setup_tls_config_aliases -tlsAlg "$TlsAlg"
+
+# setup the aca using the provided public key algorithm
+setup_aca_public_key_algorithm -acaAlg "$AcaAlg"
 
 Write-Output "ACA setup complete" | WriteAndLog
 Write-Host "----------------------------------------------------------------------"

@@ -10,8 +10,7 @@ param (
 	[Parameter(Mandatory=$true)]
     [string]$LOG_FILE,
 	[Parameter(Mandatory=$true)]
-	[string]$PKI_PASS,
-	[switch]$UNATTENDED = $false
+	[string]$PKI_PASS
 )
 
 $ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
@@ -21,10 +20,10 @@ $ACA_COMMON_SCRIPT=(Join-Path "$ACA_SCRIPTS_HOME" .. aca aca_common.ps1)
 . $ACA_COMMON_SCRIPT
 
 # Read aca.properties
-read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
+read_aca_properties -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE"
 
 # Read spring application.properties
-read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
+read_spring_properties -file "$global:HIRS_DATA_SPRING_PROP_FILE"
 
 # Parameter check
 if (-not (Test-Path -Path $LOG_FILE)) {
@@ -70,11 +69,11 @@ if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_DIR)) {
     pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$global:LOG_FILE"
 
     # Save the password to the ACA properties file.
-	add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"$global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME=$PKI_PASS"
+	add_new_aca_property -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue "$global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME=$PKI_PASS"
     
     # Save connector information to the application properties file.
-    add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_SSL_KEY_STORE_PWD_PROPERTY_NAME=$PKI_PASS"
-    add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_SSL_KEY_TRUST_STORE_PWD_PROPERTY_NAME=$PKI_PASS"
+    add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_SSL_KEY_STORE_PWD_PROPERTY_NAME=$PKI_PASS"
+    add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_SSL_KEY_TRUST_STORE_PWD_PROPERTY_NAME=$PKI_PASS"
 } else {
     Write-Output "$global:HIRS_DATA_CERTIFICATES_DIR exists, skipping" | WriteAndLog
 }

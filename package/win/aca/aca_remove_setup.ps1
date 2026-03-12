@@ -62,7 +62,7 @@ if(-not $DB_ADMIN_PWD){
 
 # remove the hrs-db and hirs_db user (execute the .\db_drop.ps1 script)
 Write-Host "Calling the db_drop.ps1 script to drop the hirs_db"
-. $global:HIRS_REL_WIN_DB_DROP -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
+. $global:HIRS_REL_WIN_DB_DROP -DB_ADMIN_PWD "$DB_ADMIN_PWD"
 
 # remove the entire hirs directory which contains the rsa/ecc certificates, the logs and the war file
 Write-Host "Removing the [$global:HIRS_DATA_DIR] directory"

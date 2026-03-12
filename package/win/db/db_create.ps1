@@ -10,7 +10,9 @@
 param (
 	[Parameter(Mandatory=$true)]
     [string]$LOG_FILE,
-	[switch]$unattended = $false
+	[switch]$UNATTENDED = $false,
+	[Parameter(Mandatory=$true)]
+	[string]$DB_ALG
 )
 
 $ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
@@ -21,10 +23,10 @@ $ACA_COMMON_SCRIPT=(Join-Path "$ACA_SCRIPTS_HOME" .. aca aca_common.ps1)
 . $global:HIRS_REL_WIN_DB_MYSQL_UTIL
 
 # Read aca.properties
-read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
+read_aca_properties -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE"
 
 # Read spring application.properties
-read_spring_properties $global:HIRS_DATA_SPRING_PROP_FILE
+read_spring_properties -file "$global:HIRS_DATA_SPRING_PROP_FILE"
 
 # Parameter check
 if (-not (Test-Path -Path $LOG_FILE)) {
@@ -46,7 +48,6 @@ if (-not (Test-Path -Path $global:DB_CONF)) {
     Write-Output "File already exists: $global:DB_CONF"
 }
 
-
 # Make sure required paths exist
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
@@ -65,7 +66,7 @@ Function check_mysql_root_pwd () {
         Write-Output "Using randomly generated password for the DB admin" | WriteAndLog
 
 		# Attempt to find the mysql password from the aca property file
-		$DB_ADMIN_PWD=find_property_value -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key "$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME"
+		$DB_ADMIN_PWD=find_property_value -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key "$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME"
 
 		# if the value associated with the mysql_admin_password key is empty
 		if(!$DB_ADMIN_PWD) {
@@ -77,16 +78,16 @@ Function check_mysql_root_pwd () {
 			Write-Host "NOT LOGGED: DB Admin password will be set to [$DB_ADMIN_PWD]. Please make note of it for future uses of MYSQL."
 
 			# Check if unattended flag is set if not then prompt user for permission to store mysql root password
-			if (!$unattended) {
+			if (!$UNATTENDED) {
 				$confirm=Read-Host 'Do you wish to save this password to the aca.properties file?'
 				if (($confirm -eq "y") -or ($confirm -eq "yes")) { # case-insensitive
-					add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME=$DB_ADMIN_PWD"
+					add_new_aca_property -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue "$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME=$DB_ADMIN_PWD"
 					Write-Output "A new MYSQL password for the root user has been saved locally." | WriteAndLog
 				} else {
 					Write-Output "MYSQL password for the root user has not been saved locally" | WriteAndLog
 				}
 			} else { # unattended install
-				add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME=$DB_ADMIN_PWD"
+				add_new_aca_property -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue "$global:ACA_PROPERTIES_MYSQL_ADMIN_PWD_PROPERTY_NAME=$DB_ADMIN_PWD"
 				Write-Output "A new MYSQL password for the root user has been saved locally." | WriteAndLog
 			}
 			mysqladmin --user=root password "$DB_ADMIN_PWD"
@@ -111,18 +112,37 @@ Function check_mysql_root_pwd () {
 }
 
 Function set_mysql_tls () {
+	param (
+		[Parameter(Mandatory=$true)]
+        [string]$ALG
+    )
+
     # Check DB server setup. If ssl params dont exist then we need to add them.
 	if (!(Get-Content $global:DB_CONF | Select-String "ssl")) {
-		# Add TLS files to my.ini- Assumes [client] section at the end, and no [server] section
-		Write-Output "Updating $global:DB_CONF with ssl parameters..." | WriteAndLog
-        Write-Output "ssl_ca=$SSL_DB_RSA_CLIENT_CHAIN" >> $global:DB_CONF
-		Write-Output "ssl_cert=$SSL_DB_RSA_CLIENT_CERT" >> $global:DB_CONF
-        Write-Output "ssl_key=$SSL_DB_RSA_CLIENT_KEY" >> $global:DB_CONF
-		Write-Output "[server]" >> $global:DB_CONF
-		Write-Output "ssl_ca=$global:SSL_DB_RSA_SRV_CHAIN" >> $global:DB_CONF
-		Write-Output "ssl_cert=$global:SSL_DB_RSA_SRV_CERT" >> $global:DB_CONF
-		Write-Output "ssl_key=$global:SSL_DB_RSA_SRV_KEY" >> $global:DB_CONF
-		ChangeFileBackslashToForwardSlash $global:DB_CONF
+
+		Write-Output "Updating $global:DB_CONF with $ALG ssl parameters..." | WriteAndLog
+		if($ALG -eq "rsa"){
+			# Add RSA TLS files to my.ini- Assumes [client] section at the end, and no [server] section
+			Write-Output "ssl_ca=$SSL_DB_RSA_CLIENT_CHAIN" >> $global:DB_CONF
+			Write-Output "ssl_cert=$SSL_DB_RSA_CLIENT_CERT" >> $global:DB_CONF
+			Write-Output "ssl_key=$SSL_DB_RSA_CLIENT_KEY" >> $global:DB_CONF
+			Write-Output "[server]" >> $global:DB_CONF
+			Write-Output "ssl_ca=$global:SSL_DB_RSA_SRV_CHAIN" >> $global:DB_CONF
+			Write-Output "ssl_cert=$global:SSL_DB_RSA_SRV_CERT" >> $global:DB_CONF
+			Write-Output "ssl_key=$global:SSL_DB_RSA_SRV_KEY" >> $global:DB_CONF
+		}
+		elseif ($AlG -eq "ecc") {
+			# Add ECC TLS files to my.ini- Assumes [client] section at the end, and no [server] section
+			Write-Output "ssl_ca=$SSL_DB_ECC_CLIENT_CHAIN" >> $global:DB_CONF
+			Write-Output "ssl_cert=$SSL_DB_ECC_CLIENT_CERT" >> $global:DB_CONF
+			Write-Output "ssl_key=$SSL_DB_ECC_CLIENT_KEY" >> $global:DB_CONF
+			Write-Output "[server]" >> $global:DB_CONF
+			Write-Output "ssl_ca=$global:SSL_DB_ECC_SRV_CHAIN" >> $global:DB_CONF
+			Write-Output "ssl_cert=$global:SSL_DB_ECC_SRV_CERT" >> $global:DB_CONF
+			Write-Output "ssl_key=$global:SSL_DB_ECC_SRV_KEY" >> $global:DB_CONF
+		}
+
+		ChangeFileBackslashToForwardSlash -file $global:DB_CONF
 	} else {
         Write-Output "$global:DB_CONF contains existing entry for ssl. Skipping this step ..." | WriteAndLog
 	}
@@ -153,23 +173,23 @@ Function set_hirs_db_pwd () {
 			Write-Output "Using randomly generated password for the HIRS_DB key password" | WriteAndLog
 		}
 
-		if(-not (find_property_value -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key "$global:ACA_PROPERTIES_HIRS_DB_USERNAME_PROPERTY_NAME")){
-			add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"$global:ACA_PROPERTIES_HIRS_DB_USERNAME_PROPERTY_NAME=hirs_db"
+		if(-not (find_property_value -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key "$global:ACA_PROPERTIES_HIRS_DB_USERNAME_PROPERTY_NAME")){
+			add_new_aca_property -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue "$global:ACA_PROPERTIES_HIRS_DB_USERNAME_PROPERTY_NAME=hirs_db"
 			Write-Output "Stored hirs_db username in the ACA properties file [$global:HIRS_DATA_ACA_PROPERTIES_FILE]" | WriteAndLog
 		}
 
-		if(-not (find_property_value -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key "$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME")){
-			add_new_aca_property -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue:"$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME=$HIRS_DB_PASS"
+		if(-not (find_property_value -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key "$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME")){
+			add_new_aca_property -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue "$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME=$HIRS_DB_PASS"
 			Write-Output "Stored hirs_db password in the ACA properties file [$global:HIRS_DATA_ACA_PROPERTIES_FILE]" | WriteAndLog
 		}
 
-		if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME")){
-			add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME=hirs_db"
+		if(-not (find_property_value -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME")){
+			add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_USERNAME_PROPERTY_NAME=hirs_db"
 			Write-Output "Stored the hibernate connection username in the spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
 		}
 
-		if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME")){
-			add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME=$HIRS_DB_PASS"
+		if(-not (find_property_value -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME")){
+			add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_HIBERNATE_CONNECTION_PWD_PROPERTY_NAME=$HIRS_DB_PASS"
 			Write-Output "Stored the hibernate connection password property in the spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
 		}
 	}
@@ -190,13 +210,13 @@ Function create_hirs_db_with_tls () {
 		exit 1
 	}
 
-	$HIRS_DB_EXISTS = check_hirs_db -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
+	$HIRS_DB_EXISTS = check_hirs_db -DB_ADMIN_PWD "$DB_ADMIN_PWD"
 
 	#if the hirs_db has already been created, skip this step
 	if($HIRS_DB_EXISTS -eq 1){
       Write-Output "hirs_db already exists. Skipping this step" | WriteAndLog
 	} else { #othewrise create the hirs_db
-	  $HIRS_PASS=find_property_value -file:"$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key:$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME
+	  $HIRS_PASS=find_property_value -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -key "$global:ACA_PROPERTIES_HIRS_DB_PWD_PROPERTY_NAME"
 
 	  if(!$HIRS_PASS){
 		Write-Output "Exiting script since the property file does not have the hirs_db password" | WriteAndLog
@@ -228,11 +248,11 @@ Function create_hibernate_url () {
     $CONNECTOR_URL="hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&user="+$global:ACA_PROPERTIES.'hirs_db_username'+"&password="+$global:ACA_PROPERTIES.'hirs_db_password'+"&sslMode=VERIFY_CA&serverSslCert=$CERT_CHAIN&keyStoreType=PKCS12&keyStorePassword="+$global:ACA_PROPERTIES.'hirs_pki_password'+"&keyStore=$CLIENT_DB_P12" | ChangeBackslashToForwardSlash
 
     # Save connector information to the application win properties file
-    add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$CONNECTOR_URL"
+    add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$CONNECTOR_URL"
 }
 
 # Setup the ssl settings in the my.ini settings file that's in the C:\\Program Files\MariaDB 11.1\data directory
-set_mysql_tls
+set_mysql_tls -ALG "$DB_ALG"
 
 # Start the MariaDB service
 start_mysqlsd -p
@@ -241,13 +261,13 @@ start_mysqlsd -p
 $DB_ADMIN_PWD=check_mysql_root_pwd
 
 # Set the password for the hirs_db user in the aca properties and spring properties files
-set_hirs_db_pwd -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
+set_hirs_db_pwd -DB_ADMIN_PWD "$DB_ADMIN_PWD"
 
 # Create the hirs_db and hirs_db user with the values that were set in the aca properties file
-create_hirs_db_with_tls -DB_ADMIN_PWD:"$DB_ADMIN_PWD"
+create_hirs_db_with_tls -DB_ADMIN_PWD "$DB_ADMIN_PWD"
 
-# Create the hibernate url using the RSA algorithm and set the url in the aca.properties file
-create_hibernate_url -ALG:"RSA"
+# Create the hibernate url using the provided public key algorithm and set the url in the aca.properties file
+create_hibernate_url -ALG "$DB_ALG"
 
 # Reboot mariadb service
 mysqld_reboot -p

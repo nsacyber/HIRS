@@ -254,7 +254,7 @@ Function find_property_value(){
           # Reset the global spring property hashmap and reload
           $global:SPRING_PROPERTIES = $null
           Write-Output "Resetting and reloading the spring properties table" | WriteAndLog
-          read_spring_properties $file
+          read_spring_properties -file $file
         }
     } else {
         Write-Host "NOT LOGGED: There are no values associated with the provided key [$key]"
@@ -312,7 +312,7 @@ Function add_new_spring_property () {
     Write-Host "NOT LOGGED: KeyValue pair: $newKeyAndValue to file $file"
     Write-Output "$newKeyAndValue" >> $file
     $global:SPRING_PROPERTIES=$null
-    read_spring_properties $file
+    read_spring_properties -file $file
 }
 
 Function remove_spring_property_value_pair(){
@@ -343,7 +343,7 @@ Function remove_spring_property_value_pair(){
     # Reset the global spring property hashmap and reload
     $global:SPRING_PROPERTIES = $null
     Write-Output "Resetting and reloading the spring properties table" | WriteAndLog
-    read_spring_properties $file
+    read_spring_properties -file $file
 }
 
 Function setup_aca_public_key_algorithm(){
@@ -363,32 +363,32 @@ Function setup_aca_public_key_algorithm(){
     $aca_root_cert_val=$null
 
     if($acaAlg -eq "rsa"){
-        $aca_leaf_cert_val="HIRS_leaf_ca3_rsa_3k_sha384_key"
-        $aca_intermediate_cert_val="HIRS_intermediate_ca_rsa_3k_sha384_key"
-        $aca_root_cert_val="HIRS_root_ca_rsa_3k_sha384_key"
+        $aca_leaf_cert_val="HIRS_leaf_ca3_rsa_3k_sha384"
+        $aca_intermediate_cert_val="HIRS_intermediate_ca_rsa_3k_sha384"
+        $aca_root_cert_val="HIRS_root_ca_rsa_3k_sha384"
     }
     elseif($acaAlg -eq "ecc"){
-        $aca_leaf_cert_val="HIRS_leaf_ca3_ecc_512_sha384_key"
-        $aca_intermediate_cert_val="HIRS_intermediate_ca_ecc_512_sha384_key"
-        $aca_root_cert_val="HIRS_root_ca_ecc_512_sha384_key"
+        $aca_leaf_cert_val="HIRS_leaf_ca3_ecc_512_sha384"
+        $aca_intermediate_cert_val="HIRS_intermediate_ca_ecc_512_sha384"
+        $aca_root_cert_val="HIRS_root_ca_ecc_512_sha384"
     }
 
-    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME"
-    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME"
-    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME"
+    remove_spring_property_value_pair -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME"
+    remove_spring_property_value_pair -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME"
+    remove_spring_property_value_pair -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME"
 
-    if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME")){
-		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME=$aca_leaf_cert_val"
+    if(-not (find_property_value -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME")){
+		add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME=$aca_leaf_cert_val"
 		Write-Output "Stored the $acaAlg ACA Leaf certificate alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
 	}
 
-	if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME")){
-		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME=$aca_intermediate_cert_val"
+	if(-not (find_property_value -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME")){
+		add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_ACA_INTERMEDIATE_CERTIFICATE_ALIAS_NAME=$aca_intermediate_cert_val"
 		Write-Output "Stored the $acaAlg ACA Intermediate certificate alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
 	}
 
-    if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME")){
-		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME=$aca_root_cert_val"
+    if(-not (find_property_value -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME")){
+		add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_ACA_ROOT_CERTIFICATE_ALIAS_NAME=$aca_root_cert_val"
 		Write-Output "Stored the $acaAlg ACA Root certificate alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
 	}
 }
@@ -408,26 +408,26 @@ Function setup_tls_config_aliases(){
     $server_ssl_trust_alias_val=$null
     $server_ssl_key_alias_val=$null
 
-    if($acaAlg -eq "rsa"){
+    if($tlsAlg -eq "rsa"){
         $server_ssl_trust_alias_val="hirs_aca_tls_rsa_3k_sha384"
-        $server_ssl_key_alias_val="hirs_aca_tls_rsa_3k_sha384_key"
+        $server_ssl_key_alias_val="hirs_aca_tls_rsa_3k_sha384"
     }
-    elseif($acaAlg -eq "ecc"){
+    elseif($tlsAlg -eq "ecc"){
         $server_ssl_trust_alias_val="hirs_aca_tls_ecc_512_sha384"
-        $server_ssl_key_alias_val="hirs_aca_tls_ecc_512_sha384_key"
+        $server_ssl_key_alias_val="hirs_aca_tls_ecc_512_sha384"
     }
 
     # remove default SSL config lines
-    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME"
-    remove_spring_property_value_pair -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME"
+    remove_spring_property_value_pair -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME"
+    remove_spring_property_value_pair -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME"
 
-    if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME")){
-		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME=$server_ssl_trust_alias_val"
+    if(-not (find_property_value -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME")){
+		add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_SSL_TRUST_ALIAS_PROPERTY_NAME=$server_ssl_trust_alias_val"
 		Write-Output "Stored the $tlsAlg SSL Trust Alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
 	}
 
-	if(-not (find_property_value -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME")){
-		add_new_spring_property -file:"$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue:"$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME=$server_ssl_key_alias_val"
+	if(-not (find_property_value -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME")){
+		add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_SSL_KEY_ALIAS_PROPERTY_NAME=$server_ssl_key_alias_val"
 		Write-Output "Stored the $tlsAlg SSL Key alias property name and value in the Spring properties file [$global:HIRS_DATA_SPRING_PROP_FILE]" | WriteAndLog
 	}
 }
