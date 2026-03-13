@@ -5,7 +5,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
-import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
@@ -42,29 +41,29 @@ public class IdentityClaimProcessorService {
     private final SupplyChainValidationService supplyChainValidationService;
     private final CredentialManagementService credentialManagementService;
     private final DeviceInfoProcessorService deviceInfoProcessorService;
+    private final Tpm2ProvisionerStateService tpm2ProvisionerStateService;
     private final PolicyRepository policyRepository;
-    private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
 
     /**
      * Constructor.
      *
-     * @param supplyChainValidationService   supply chain validation service
-     * @param credentialManagementService    certificate processor service
-     * @param deviceInfoProcessorService     device info processor service
-     * @param tpm2ProvisionerStateRepository tpm2 provisioner state repository
-     * @param policyRepository               policy repository
+     * @param supplyChainValidationService supply chain validation service
+     * @param credentialManagementService  certificate processor service
+     * @param deviceInfoProcessorService   device info processor service
+     * @param tpm2ProvisionerStateService  tpm2 provisioner state service
+     * @param policyRepository             policy repository
      */
     @Autowired
     public IdentityClaimProcessorService(
             final SupplyChainValidationService supplyChainValidationService,
             final CredentialManagementService credentialManagementService,
             final DeviceInfoProcessorService deviceInfoProcessorService,
-            final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
+            final Tpm2ProvisionerStateService tpm2ProvisionerStateService,
             final PolicyRepository policyRepository) {
         this.supplyChainValidationService = supplyChainValidationService;
         this.credentialManagementService = credentialManagementService;
         this.deviceInfoProcessorService = deviceInfoProcessorService;
-        this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
+        this.tpm2ProvisionerStateService = tpm2ProvisionerStateService;
         this.policyRepository = policyRepository;
     }
 
@@ -125,7 +124,8 @@ public class IdentityClaimProcessorService {
             log.info("Sending nonce: {}", strNonce);
             log.info("Persisting identity claim of length: {}", identityClaimByteArray.length);
 
-            tpm2ProvisionerStateRepository.save(new TPM2ProvisionerState(nonce, identityClaimByteArray));
+            tpm2ProvisionerStateService.saveTPM2ProvisionerState(
+                    new TPM2ProvisionerState(nonce, identityClaimByteArray));
 
             if (policySettings.isIgnoreImaEnabled()) {
                 pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");

@@ -171,7 +171,7 @@ public class DeviceInfoProcessorService {
         // Get Hardware info
         HardwareInfo hardwareInfo = getHardwareInfo(provisionedDeviceInfo.getHw());
 
-        // Get TPM info ( todo Currently unimplemented)
+        // Get TPM info (todo Currently unimplemented)
         TPMInfo tpmInfo = getTPMInfo(provisionedDeviceInfo);
 
         // Get Network info
@@ -195,7 +195,7 @@ public class DeviceInfoProcessorService {
 
     /**
      * Helper method that creates a {@link TPMInfo} object using the provided provisioned Device Info.
-     * ( todo Currently unimplemented)
+     * (todo Currently unimplemented)
      *
      * @param provisionedDeviceInfo provisioned Device Info
      * @return the {@link TPMInfo} object representing the Device's TPM Info

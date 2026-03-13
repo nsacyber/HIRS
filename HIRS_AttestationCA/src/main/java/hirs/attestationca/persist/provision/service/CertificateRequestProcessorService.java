@@ -5,7 +5,6 @@ import com.google.protobuf.util.JsonFormat;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
-import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
@@ -58,8 +57,8 @@ import java.util.Objects;
 public class CertificateRequestProcessorService {
     private final SupplyChainValidationService supplyChainValidationService;
     private final CredentialManagementService credentialManagementService;
+    private final Tpm2ProvisionerStateService tpm2ProvisionerStateService;
     private final DeviceRepository deviceRepository;
-    private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
     private final PolicyRepository policyRepository;
     private final X509Certificate acaCertificate;
     private final int certificateValidityInDays;
@@ -68,31 +67,31 @@ public class CertificateRequestProcessorService {
     /**
      * Constructor.
      *
-     * @param supplyChainValidationService   object that is used to run provisioning
-     * @param credentialManagementService    credential management service
-     * @param deviceRepository               database connector for Devices.
-     * @param tpm2ProvisionerStateRepository db connector for provisioner state.
-     * @param policyRepository               db connector for policies.
-     * @param privateKey                     private key used for communication authentication
-     * @param acaCertificate                 object used to create credential
-     * @param certificateValidityInDays      int for the time in which a certificate is valid.
+     * @param supplyChainValidationService object that is used to run provisioning
+     * @param credentialManagementService  credential management service
+     * @param tpm2ProvisionerStateService  tpm2 provisioner state service
+     * @param deviceRepository             database connector for Devices.
+     * @param policyRepository             db connector for policies.
+     * @param privateKey                   private key used for communication authentication
+     * @param acaCertificate               object used to create credential
+     * @param certificateValidityInDays    int for the time in which a certificate is valid.
      */
     @Autowired
     public CertificateRequestProcessorService(final SupplyChainValidationService supplyChainValidationService,
                                               final CredentialManagementService credentialManagementService,
+                                              final Tpm2ProvisionerStateService tpm2ProvisionerStateService,
                                               final DeviceRepository deviceRepository,
-                                              final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
                                               final PolicyRepository policyRepository,
                                               final PrivateKey privateKey,
                                               @Qualifier("leafACACert") final X509Certificate acaCertificate,
                                               @Value("${aca.certificates.validity}") final int certificateValidityInDays
     ) {
         this.credentialManagementService = credentialManagementService;
+        this.tpm2ProvisionerStateService = tpm2ProvisionerStateService;
         this.certificateValidityInDays = certificateValidityInDays;
         this.supplyChainValidationService = supplyChainValidationService;
         this.deviceRepository = deviceRepository;
         this.acaCertificate = acaCertificate;
-        this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
         this.policyRepository = policyRepository;
         this.privateKey = privateKey;
     }
@@ -197,7 +196,7 @@ public class CertificateRequestProcessorService {
                             ldevidCertificate);
 
                     // We validated the nonce and made use of the identity claim so state can be deleted
-                    tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
+                    tpm2ProvisionerStateService.deleteTPM2ProvisionerState(tpm2ProvisionerState);
 
                     boolean generateAtt =
                             credentialManagementService.saveAttestationCertificate(derEncodedAttestationCertificate,
@@ -260,7 +259,7 @@ public class CertificateRequestProcessorService {
                             attestationCertificate);
 
                     // We validated the nonce and made use of the identity claim so state can be deleted
-                    tpm2ProvisionerStateRepository.delete(tpm2ProvisionerState);
+                    tpm2ProvisionerStateService.deleteTPM2ProvisionerState(tpm2ProvisionerState);
 
                     ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
                             ProvisionerTpm2.CertificateResponse.
@@ -409,14 +408,13 @@ public class CertificateRequestProcessorService {
      * Helper method to unwrap the certificate request sent by the client and verify the
      * provided nonce.
      *
-     * @param request Client Certificate Request containing nonce to complete identity claim
+     * @param certificateRequest Client Certificate Request containing nonce to complete identity claim
      * @return the {@link TPM2ProvisionerState} if valid nonce provided / null, otherwise
      */
-    private TPM2ProvisionerState getTpm2ProvisionerState(final ProvisionerTpm2.CertificateRequest request) {
-        if (request.hasNonce()) {
-            byte[] nonce = request.getNonce().toByteArray();
-            return TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository,
-                    nonce);
+    private TPM2ProvisionerState getTpm2ProvisionerState(final ProvisionerTpm2.CertificateRequest certificateRequest) {
+        if (certificateRequest.hasNonce()) {
+            byte[] nonce = certificateRequest.getNonce().toByteArray();
+            return tpm2ProvisionerStateService.getTPM2ProvisionerState(nonce);
         }
         return null;
     }

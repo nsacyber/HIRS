@@ -7,14 +7,14 @@
 ############################################################################################
 
 param (
-	[Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$LOG_FILE,
-	[Parameter(Mandatory=$true)]
-	[string]$PKI_PASS
+    [Parameter(Mandatory = $true)]
+    [string]$PKI_PASS
 )
 
-$ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
-$ACA_COMMON_SCRIPT=(Join-Path "$ACA_SCRIPTS_HOME" .. aca aca_common.ps1)
+$ACA_SCRIPTS_HOME = (Split-Path -parent $PSCommandPath)
+$ACA_COMMON_SCRIPT = (Join-Path "$ACA_SCRIPTS_HOME" .. aca aca_common.ps1)
 
 # Load other scripts
 . $ACA_COMMON_SCRIPT
@@ -27,50 +27,50 @@ read_spring_properties -file "$global:HIRS_DATA_SPRING_PROP_FILE"
 
 # Parameter check
 if (-not (Test-Path -Path $LOG_FILE)) {
-	New-Item -ItemType File -Path $LOG_FILE
-	$global:LOG_FILE=$LOG_FILE
+    New-Item -ItemType File -Path $LOG_FILE
+    $global:LOG_FILE = $LOG_FILE
 } else {
-	set_up_log
+    set_up_log
 }
 
 if (!$PKI_PASS) {
-	if ($Env:HIRS_PKI_PWD) {
-		$PKI_PASS=$Env:HIRS_PKI_PWD
-	} else {
-		$PKI_PASS=(create_random)
-		Write-Output "Using randomly generated password for the PKI key password" | WriteAndLog
-	}
+    if ($Env:HIRS_PKI_PWD) {
+        $PKI_PASS = $Env:HIRS_PKI_PWD
+    } else {
+        $PKI_PASS = (create_random)
+        Write-Output "Using randomly generated password for the PKI key password" | WriteAndLog
+    }
 }
 
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
 Write-Output "APP_HOME is $ACA_SCRIPTS_HOME" | WriteAndLog
 
 # Check for sudo or root user 
-if(!(New-Object Security.Principal.WindowsPrincipal(
-		[Security.Principal.WindowsIdentity]::GetCurrent())
-	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	Write-Output "This script requires root.  Please run as root" | WriteAndLog
-	exit 1
+if (!(New-Object Security.Principal.WindowsPrincipal(
+[Security.Principal.WindowsIdentity]::GetCurrent())
+).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Output "This script requires root.  Please run as root" | WriteAndLog
+    exit 1
 }
 
 # Create Cert Chains
 if (![System.IO.Directory]::Exists($global:HIRS_DATA_CERTIFICATES_DIR)) {
-    if ([System.IO.Directory]::Exists($global:HIRS_REL_WIN_PKI_HOME)) {
-		$PKI_SETUP_DIR=$global:HIRS_REL_WIN_PKI_HOME
-	} else {
-        $PKI_SETUP_DIR=$ACA_SCRIPTS_HOME
-	}
-	Write-Output "PKI_SETUP_DIR is $PKI_SETUP_DIR" | WriteAndLog
+    if ( [System.IO.Directory]::Exists($global:HIRS_REL_WIN_PKI_HOME)) {
+        $PKI_SETUP_DIR = $global:HIRS_REL_WIN_PKI_HOME
+    } else {
+        $PKI_SETUP_DIR = $ACA_SCRIPTS_HOME
+    }
+    Write-Output "PKI_SETUP_DIR is $PKI_SETUP_DIR" | WriteAndLog
 
     New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_DIR -Force | Out-Null
 
     Copy-Item $PKI_SETUP_DIR\ca.conf $global:HIRS_DATA_CERTIFICATES_DIR
-	pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$global:LOG_FILE"
+    pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$global:LOG_FILE"
     pwsh -ExecutionPolicy Bypass $PKI_SETUP_DIR/pki_chain_gen.ps1 "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$global:LOG_FILE"
 
     # Save the password to the ACA properties file.
-	add_new_aca_property -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue "$global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME=$PKI_PASS"
-    
+    add_new_aca_property -file "$global:HIRS_DATA_ACA_PROPERTIES_FILE" -newKeyAndValue "$global:ACA_PROPERTIES_PKI_PWD_PROPERTY_NAME=$PKI_PASS"
+
     # Save connector information to the application properties file.
     add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_SSL_KEY_STORE_PWD_PROPERTY_NAME=$PKI_PASS"
     add_new_spring_property -file "$global:HIRS_DATA_SPRING_PROP_FILE" -newKeyAndValue "$global:SPRING_PROPERTIES_SSL_KEY_TRUST_STORE_PWD_PROPERTY_NAME=$PKI_PASS"
