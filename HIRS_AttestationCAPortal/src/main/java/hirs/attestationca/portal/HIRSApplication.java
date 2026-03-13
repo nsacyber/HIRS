@@ -3,6 +3,9 @@ package hirs.attestationca.portal;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Spring Boot Application starting point for the HIRS application.
+ */
 @SuppressWarnings("checkstyle:hideutilityclassconstructor")
 @SpringBootApplication
 public class HIRSApplication {

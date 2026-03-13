@@ -1,8 +1,8 @@
 package hirs.attestationca.persist.exceptions;
 
 /**
- * Generic exception thrown while a {@link hirs.attestationca.persist.AttestationCertificateAuthority}
- * is processing a newly created Attestation Certificate for a validated identity.
+ * Generic exception thrown while the ACA is processing a newly created Attestation Certificate
+ * for a validated identity.
  */
 public class CertificateProcessingException extends RuntimeException {
     /**

@@ -1,26 +1,26 @@
 package hirs.utils.rim.unsignedRim.cbor.ietfCorim;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.authlete.cbor.CBORByteArray;
 import com.authlete.cbor.CBORInteger;
 import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORItemList;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a {@code digest} containing hash information relevant to CoMID
  * measurements. See Section 7.7 of the IETF CoRIM specification.
  * <p>
  * Note that this is conceptually the same as
- * {@link hirs.rim.unsignedRim.cbor.ietfCorim.comid.ComidDigest}, though this
+ * {@link hirs.utils.rim.unsignedRim.cbor.ietfCorim.comid.ComidDigest}, though this
  * class is used exclusively for CoRIM CBOR building.
  */
 public class CoRimDigest {
-    @Getter @Setter
+    @Getter
+    @Setter
     private int alg;
     private byte[] val;
 

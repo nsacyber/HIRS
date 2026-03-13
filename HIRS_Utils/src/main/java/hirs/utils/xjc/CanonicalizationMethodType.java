@@ -76,10 +76,12 @@ public class CanonicalizationMethodType {
      * Objects of the following type(s) are allowed in the list
      * {@link Object }
      * {@link String }
+     *
+     * @return list of objects that represent the content
      */
     public List<Object> getContent() {
         if (content == null) {
-            content = new ArrayList<Object>();
+            content = new ArrayList<>();
         }
         return this.content;
     }

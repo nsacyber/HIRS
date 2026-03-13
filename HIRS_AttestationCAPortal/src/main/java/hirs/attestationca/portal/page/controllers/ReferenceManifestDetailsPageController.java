@@ -2,7 +2,6 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.service.ReferenceManifestDetailsPageService;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import lombok.extern.log4j.Log4j2;
@@ -21,7 +20,8 @@ import java.util.UUID;
 @Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-details")
-public class ReferenceManifestDetailsPageController extends PageController<ReferenceManifestDetailsPageParams> {
+public class ReferenceManifestDetailsPageController
+        extends PageController<ReferenceManifestDetailsPageParams> {
     private final ReferenceManifestDetailsPageService referenceManifestDetailsPageService;
 
     /**

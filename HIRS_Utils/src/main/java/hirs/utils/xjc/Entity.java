@@ -91,6 +91,8 @@ public class Entity
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link Meta }
+     *
+     * @return list of Meta objects
      */
     public List<Meta> getMeta() {
         if (meta == null) {
@@ -132,6 +134,8 @@ public class Entity
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link String }
+     *
+     * @return list of string roles
      */
     public List<String> getRole() {
         if (role == null) {

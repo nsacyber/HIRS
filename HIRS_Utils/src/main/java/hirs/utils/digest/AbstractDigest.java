@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
  * <p>
  * Two classes were made to facilitate persisting them with Hibernate in different ways.
  * To persist non-nullable entries in an embedded collection, use {@link hirs.utils.digest.Digest} (see
- * {@link TPMBaseline} for reference.)  To persist nullable entries,
- * use {@link hirs.utils.digest.OptionalDigest} (see {@link ImaBlacklistRecord} for reference.)
+ * TPMBaseline for reference.)  To persist nullable entries,
+ * use {@link hirs.utils.digest.OptionalDigest} (see ImaBlacklistRecord for reference.)
  */
 @Log4j2
 public abstract class AbstractDigest {
@@ -24,22 +24,27 @@ public abstract class AbstractDigest {
      * Length of MD2 digest.
      */
     public static final int MD2_DIGEST_LENGTH = 16;
+
     /**
      * Length of MD5 digest.
      */
     public static final int MD5_DIGEST_LENGTH = 16;
+
     /**
      * Length of SHA1 digest.
      */
     public static final int SHA1_DIGEST_LENGTH = 20;
+
     /**
      * Length of SHA256 digest.
      */
     public static final int SHA256_DIGEST_LENGTH = 32;
+
     /**
      * Length of SHA384 digest.
      */
     public static final int SHA384_DIGEST_LENGTH = 48;
+    
     /**
      * Length of SHA512 digest.
      */
@@ -52,25 +57,19 @@ public abstract class AbstractDigest {
      * @param digest list of pcr values.
      * @return the associated algorithm.
      */
-    public static final DigestAlgorithm getDigestAlgorithm(final byte[] digest) {
+    public static DigestAlgorithm getDigestAlgorithm(final byte[] digest) {
         if (digest == null || ArrayUtils.isEmpty(digest)) {
             return DigestAlgorithm.UNSPECIFIED;
         }
 
-        switch (digest.length) {
-            case MD2_DIGEST_LENGTH:
-                return DigestAlgorithm.MD5;
-            case SHA1_DIGEST_LENGTH:
-                return DigestAlgorithm.SHA1;
-            case SHA256_DIGEST_LENGTH:
-                return DigestAlgorithm.SHA256;
-            case SHA384_DIGEST_LENGTH:
-                return DigestAlgorithm.SHA384;
-            case SHA512_DIGEST_LENGTH:
-                return DigestAlgorithm.SHA512;
-            default:
-                return DigestAlgorithm.UNSPECIFIED;
-        }
+        return switch (digest.length) {
+            case MD2_DIGEST_LENGTH -> DigestAlgorithm.MD5;
+            case SHA1_DIGEST_LENGTH -> DigestAlgorithm.SHA1;
+            case SHA256_DIGEST_LENGTH -> DigestAlgorithm.SHA256;
+            case SHA384_DIGEST_LENGTH -> DigestAlgorithm.SHA384;
+            case SHA512_DIGEST_LENGTH -> DigestAlgorithm.SHA512;
+            default -> DigestAlgorithm.UNSPECIFIED;
+        };
     }
 
     /**
@@ -80,7 +79,7 @@ public abstract class AbstractDigest {
      * @param digest list of pcr values.
      * @return the associated algorithm.
      */
-    public static final DigestAlgorithm getDigestAlgorithm(final String digest) {
+    public static DigestAlgorithm getDigestAlgorithm(final String digest) {
         try {
             return getDigestAlgorithm(Hex.decodeHex(digest.toCharArray()));
         } catch (Exception deEx) {

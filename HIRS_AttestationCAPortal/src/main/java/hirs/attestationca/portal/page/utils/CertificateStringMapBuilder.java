@@ -140,7 +140,8 @@ public final class CertificateStringMapBuilder {
                     if (publicKey != null) {
                         String keySizeStr;
                         if (publicKey instanceof ECPublicKey ecKey) {
-                            keySizeStr = Integer.toString(ecKey.getParams().getCurve().getField().getFieldSize());
+                            keySizeStr =
+                                    Integer.toString(ecKey.getParams().getCurve().getField().getFieldSize());
                         } else {
                             keySizeStr = String.valueOf(certificate.getPublicKeySize());
                         }
@@ -389,7 +390,8 @@ public final class CertificateStringMapBuilder {
             try {
                 certificate.parseCertificate();
             } catch (IOException e) {
-                throw new RuntimeException("Failed to re-parse Endorsement Credential for details display", e);
+                throw new RuntimeException("Failed to re-parse Endorsement Credential for details display",
+                        e);
             }
             // Add hashmap with TPM information if available
             if (certificate.getTpmSpecification() != null) {
@@ -652,7 +654,8 @@ public final class CertificateStringMapBuilder {
             key = Character.toUpperCase(key.charAt(0)) + key.substring(1);
 
             // Handle nested object recursively if it contains braces or parentheses
-            if ((value.contains("{") && value.contains("}")) || (value.contains("(") && value.contains(")"))) {
+            if ((value.contains("{") && value.contains("}")) ||
+                    (value.contains("(") && value.contains(")"))) {
                 HashMap<String, String> nestedMap = convertStringToHash(value);
                 // Prefix nested keys with parent key
                 map.putAll(nestedMap);

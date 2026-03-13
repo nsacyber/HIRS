@@ -9,6 +9,15 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Repository interface for managing {@link IssuedAttestationCertificate} entities in the database.
+ *
+ * <p>
+ * The {@link IssuedCertificateRepository} interface extends {@link JpaRepository} to provide basic CRUD operations,
+ * including save, find, delete, and query methods. Custom query methods can be defined
+ * using Spring Data JPA's query method naming conventions or with the Query annotation.
+ * </p>
+ */
 @Repository
 public interface IssuedCertificateRepository extends JpaRepository<IssuedAttestationCertificate, UUID> {
 

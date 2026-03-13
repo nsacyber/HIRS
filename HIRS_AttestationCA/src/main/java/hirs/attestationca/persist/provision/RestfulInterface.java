@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.persist.provision;
 
 /**
  * Defines the responsibilities of the Attestation Certificate Authority.

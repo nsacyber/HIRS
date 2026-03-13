@@ -8,36 +8,44 @@ import lombok.Setter;
  * Abstract base class to process the DEVICE_SECURITY_EVENT_DATA or ..DATA2 event.
  * Parses event data per PFP v1.06 Rev52 Tables 20 and 26.
  * The event data comes in 2 forms:
- * .   1) DEVICE_SECURITY_EVENT_DATA or
- * .   2) DEVICE_SECURITY_EVENT_DATA2
+ * 1) DEVICE_SECURITY_EVENT_DATA or
+ * 2) DEVICE_SECURITY_EVENT_DATA2
+ * <p>
  * The first 2 fields of the respective headers are the same in both ..DATA and ..DATA2.
+ * <p>
  * Field 1:
- * .   The first 16 bytes of the event data header MUST be a String based identifier (Signature),
- * .   per PFP. The only currently defined Signatures are "SPDM Device Sec" and "SPDM Device Sec2",
- * .   which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2, respectively.
+ * The first 16 bytes of the event data header MUST be a String based identifier (Signature),
+ * per PFP. The only currently defined Signatures are "SPDM Device Sec" and "SPDM Device Sec2",
+ * which implies the data is a DEVICE_SECURITY_EVENT_DATA or ..DATA2, respectively.
+ * <p>
  * Field 2:
- * .   The Version field also indicates whether the Device Security Event is ..DATA or ..DATA2.
+ * The Version field also indicates whether the Device Security Event is ..DATA or ..DATA2.
  * <p>
  * DEVICE SECURITY EVENT structures defined by PFP v1.06 Rev 52:
- * <p>
+ *
+ * <pre>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA {
  * .     DEVICE_SECURITY_EVENT_DATA_HEADER            EventDataHeader;
  * .     DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
  * } DEVICE_SECURITY_EVENT_DATA;
- * <p>
+ * </pre>
+ *
+ * <pre>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA2 {
  * .     DEVICE_SECURITY_EVENT_DATA_HEADER2           EventDataHeader;
  * .     DEVICE_SECURITY_EVENT_DATA_SUB_HEADER        EventDataSubHeader;
  * .     DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
  * } DEVICE_SECURITY_EVENT_DATA2;
- * <p>
+ * </pre>
+ *
+ * <pre>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER or HEADER2 {
  * .     UINT8                           Signature[16];
  * .     UINT16                          Version;
  * .     ...                             ...
  * .     (The rest of the components are different for HEADER vs HEADER2)
  * }
- * <p>
+ * </pre>
  */
 @Getter
 public abstract class DeviceSecurityEvent {

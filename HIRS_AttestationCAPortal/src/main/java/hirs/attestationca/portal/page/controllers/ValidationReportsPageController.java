@@ -1,14 +1,13 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
 import hirs.attestationca.persist.service.ValidationSummaryPageService;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -116,6 +115,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      *
      * @param request  http request
      * @param response http response
+     * @throws IOException if any issues arise from downloading the validation report.
      */
     @PostMapping("/download")
     public void downloadValidationReports(final HttpServletRequest request,
