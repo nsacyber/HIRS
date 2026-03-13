@@ -18,12 +18,30 @@
   </Target>
   <Target Name="SetWixPath" BeforeTargets="Msi">
     <PropertyGroup>
+      <_WindowsFipsEnabled>false</_WindowsFipsEnabled>
+      <!--Test if FIPS is enabled on Windows-->
+      <_WindowsFipsEnabled Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' And '$([MSBuild]::GetRegistryValue(`HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy`,`Enabled`,`0`))' == '1'">true</_WindowsFipsEnabled>
+
+      <EnableFipsCompliantWix Condition="'$(EnableFipsCompliantWix)'==''">$(_WindowsFipsEnabled)</EnableFipsCompliantWix>
+        
       <ProductSourceFilePath>$(MSBuildThisFileDirectory)\Resources\Product.wxs</ProductSourceFilePath>
       <WixInstallPath>$(NuGetPackageRoot)wix\3.14.1\tools\</WixInstallPath>
       <Heat>$(WixInstallPath)heat.exe</Heat>
       <Candle>$(WixInstallPath)candle.exe</Candle>
       <Light>$(WixInstallPath)light.exe</Light>
+      <SetupFilePath>$(TargetDir)$(AssemblyName).$(PackageVersion).msi</SetupFilePath>
+      <WixFipsArg Condition="'$(EnableFipsCompliantWix)'=='true'">-fips</WixFipsArg>
     </PropertyGroup>
+  </Target>
+  <Target Name="Msi" DependsOnTargets="Publish">
+    <PropertyGroup>
+      <WixArguments>-nologo -dPublishDir="$(PublishDir)\" -dSetupProductName="$(SetupProductName)" -dSetupProductManufacturer="HIRS" -dSetupFeatureId="$(SetupFeatureId)" -dSetupFeatureName="$(SetupFeatureName)" -dSetupInstallFolderName="$(SetupInstallFolderName)" -dSetupProductVersion="$(Version)" -dSetupProductLanguage="$(SetupProductLanguage)"</WixArguments>
+    </PropertyGroup>
+    <Message Text="Creating msi package $(SetupFilePath)" Importance="high"/>
+    <Exec Command='"$(Heat)" dir "$(PublishDir)\" -nologo -scom -sreg -sfrag -srd -gg -dr INSTALLFOLDER -cg SourceComponentGroup -var var.PublishDir $(WixFipsArg) -o $(HarvestSourceFilePath)'/>
+    <Exec Command='"$(Candle)" $(WixArguments) $(WixFipsArg) "$(HarvestSourceFilePath)" -o "$(HarvestObjectFilePath)"'/>
+    <Exec Command='"$(Candle)" $(WixArguments) $(WixFipsArg) "$(ProductSourceFilePath)" -o "$(ProductObjectFilePath)"'/>
+    <Exec Command='"$(Light)" $(WixArguments) "$(HarvestObjectFilePath)" "$(ProductObjectFilePath)" -o "$(SetupFilePath)"'/>
   </Target>
   <Target Name="DeletePDB" AfterTargets="RenameBeforePublishLinux;RenameBeforePublishWindows">
     <ItemGroup>
