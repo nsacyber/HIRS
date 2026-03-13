@@ -82,7 +82,7 @@ public class UefiVariable {
      * the class used to parse the data within the "VariableData".
      *
      * @param variableData byte array holding the UEFI Variable.
-     * @throws java.security.cert.CertificateException If there a problem
+     * @throws java.security.cert.CertificateException If there's a problem
      *                                                 parsing the X509 certificate.
      * @throws java.security.NoSuchAlgorithmException  if there's a problem
      *                                                 hashing the certificate.
@@ -127,7 +127,13 @@ public class UefiVariable {
             case "KEK":
             case "db":
             case "dbx":
-                processSigList(uefiVariableData);
+                try {
+                    processSigList(uefiVariableData);
+                }
+                catch (CertificateException e) {
+                    throw new CertificateException("Error processing signature list with name: "
+                            + tmpName + "; " + e.getMessage());
+                }
                 break;
             case "devdb":
                 processSigList(uefiVariableData);

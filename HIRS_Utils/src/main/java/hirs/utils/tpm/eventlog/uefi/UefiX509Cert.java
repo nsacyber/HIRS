@@ -6,10 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
+import java.security.cert.*;
 
 /**
  * Class for processing a Secure Boot certificate stored in the UEFI DB or DBX.
@@ -30,10 +27,14 @@ public class UefiX509Cert {
      */
     public UefiX509Cert(final byte[] certData) throws CertificateException,
             NoSuchAlgorithmException {
-        CertificateFactory cf;
-        cf = CertificateFactory.getInstance("X.509");
-        InputStream targetStream = new ByteArrayInputStream(certData);
-        cert = cf.generateCertificate(targetStream);
+        try {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            InputStream targetStream = new ByteArrayInputStream(certData);
+            cert = cf.generateCertificate(targetStream);
+        } catch (CertificateException e) {
+            throw new CertificateException("Error parsing UEFI X509 certificate: " + e.getMessage());
+        }
+
         MessageDigest md = MessageDigest.getInstance("SHA1");
         md.update(certData);
     }

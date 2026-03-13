@@ -352,6 +352,7 @@ public class ReferenceManifestPageService {
      * @param supportRims     list of support reference manifests
      */
     public void storeRIMS(final List<String> successMessages,
+                          final List<String> errorMessages,
                           final List<BaseReferenceManifest> baseRims,
                           final List<SupportReferenceManifest> supportRims) {
 
@@ -387,7 +388,11 @@ public class ReferenceManifestPageService {
 
         // pass in the updated support rims
         // and either update or add the events
-        processTpmEvents(new ArrayList<>(updatedSupportRims.values()));
+        try {
+            processTpmEvents(new ArrayList<>(updatedSupportRims.values()));
+        } catch (CertificateException e) {
+            errorMessages.add(e.getMessage());
+        }
     }
 
     /**
@@ -606,7 +611,7 @@ public class ReferenceManifestPageService {
         return null;
     }
 
-    private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) {
+    private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) throws CertificateException {
         List<ReferenceDigestValue> referenceValues;
         TCGEventLog logProcessor;
         ReferenceManifest baseRim;
@@ -631,7 +636,10 @@ public class ReferenceManifestPageService {
 
                             this.referenceDigestValueRepository.save(newRdv);
                         }
-                    } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
+                    } catch (CertificateException e) {
+                        throw new CertificateException("Error processing support RIM "
+                                + dbSupport.getId() + ": " + e.getMessage());
+                    } catch (NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
                     }
                 } else {
