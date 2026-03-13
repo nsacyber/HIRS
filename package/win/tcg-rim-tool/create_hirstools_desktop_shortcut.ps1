@@ -7,5 +7,5 @@ $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\HIRS_tools.lnk")
 $Shortcut.TargetPath = "powershell.exe"
 $ScriptPath = "$PWD\hirsshell.ps1"
 $Shortcut.Arguments = "-ExecutionPolicy Bypass -File `"$ScriptPath`""
-$Shortcut.WorkingDirectory =  "$PWD"
+$Shortcut.WorkingDirectory = "$PWD"
 $Shortcut.Save()

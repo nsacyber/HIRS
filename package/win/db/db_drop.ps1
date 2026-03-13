@@ -1,21 +1,21 @@
 # Helper ps1 script to the aca_remove_setup that drops the hirs_db database 
 
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string] $DB_ADMIN_PWD
 )
 
-if(!(New-Object Security.Principal.WindowsPrincipal(
-		[Security.Principal.WindowsIdentity]::GetCurrent())
-	).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	Write-Host "This script requires root.  Please run as root" 
-	exit 1
+if (!(New-Object Security.Principal.WindowsPrincipal(
+[Security.Principal.WindowsIdentity]::GetCurrent())
+).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "This script requires root.  Please run as root"
+    exit 1
 }
 
 Write-Host "Dropping the hirs_db database"
 
 $ACA_SCRIPTS_HOME = Join-Path -Path (Split-Path -Parent $PSCommandPath) -ChildPath "..\aca"
-$ACA_COMMON_SCRIPT=(Join-Path $ACA_SCRIPTS_HOME 'aca_common.ps1')
+$ACA_COMMON_SCRIPT = (Join-Path $ACA_SCRIPTS_HOME 'aca_common.ps1')
 
 # load other scripts
 . $ACA_COMMON_SCRIPT
