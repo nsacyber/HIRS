@@ -131,8 +131,8 @@ public class UefiVariable {
                     processSigList(uefiVariableData);
                 }
                 catch (CertificateException e) {
-                    throw new CertificateException("Error processing signature list with name: "
-                            + tmpName + "; " + e.getMessage());
+                    throw new CertificateException("\n   Error processing signature list with name: "
+                            + tmpName + e.getMessage());
                 }
                 break;
             case "devdb":

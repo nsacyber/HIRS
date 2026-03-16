@@ -172,6 +172,18 @@ public class TpmPcrEvent {
     }
 
     /**
+     * Constructor - special case, if event parsing causes exception.
+     *
+     * @param eventErrorMsg String holding the errors that occurred during event parsing.
+     * @param eventPosition event position within the event log.
+     */
+    public TpmPcrEvent(final String eventErrorMsg, final int eventPosition) {
+
+        description = "Event# " + eventPosition + ": ";
+        description += eventErrorMsg;
+    }
+
+    /**
      * Converts the Event ID into a String As defined in the TCG PC Client FW Profile.
      * Event IDs have values larger than an integer,so a Long is used hold the value.
      *
@@ -515,101 +527,108 @@ public class TpmPcrEvent {
         md2.update(eventData);
         eventDataSha256hash = md2.digest();
 
-        switch (eventID) {
-            case EvConstants.EV_PREBOOT_CERT:
-                description += " EV_PREBOOT_CERT" + "\n";
-                break;
-            case EvConstants.EV_POST_CODE:
-                EvPostCode postCode = new EvPostCode(content);
-                description += "Event Content:\n" + postCode;
-                break;
-            case EvConstants.EV_UNUSED, EvConstants.EV_EFI_RUNTIME_SERVICES_DRIVER,
-                 EvConstants.EV_EFI_HCRTM_EVENT, EvConstants.EV_EFI_EVENT_BASE,
-                 EvConstants.EV_EV_OMIT_BOOT_DEVICES_EVENTS, EvConstants.EV_NONHOST_INFO,
-                 EvConstants.EV_NONHOST_CONFIG, EvConstants.EV_NONHOST_CODE,
-                 EvConstants.EV_IPL_PARTITION_DATA, EvConstants.EV_PLATFORM_CONFIG_FLAGS,
-                 EvConstants.EV_CPU_MICROCODE, EvConstants.EV_TABLE_OF_DEVICES:
-                break;
-            case EvConstants.EV_NO_ACTION:
-                EvNoAction noAction = new EvNoAction(content);
-                description += "Event Content:\n" + noAction;
-                if (noAction.isSpecIdEvent()) {
-                    specVersion = noAction.getSpecVersion();
-                    specErrataVersion = noAction.getSpecErrataVersion();
-                    isNoActionSpecIdEvent = true;
-                } else if (noAction.isStartupLocality()) {
-                    isStartupLocalityEvent = true;
-                }
-                pciidsFileStatus = noAction.getPciidsFileStatus();
-                break;
-            case EvConstants.EV_SEPARATOR:
-                if (EvPostCode.isAscii(content)) {
-                    String separatorEventData = new String(content, StandardCharsets.UTF_8);
-                    if (!this.isBlank(content)) {
-                        description += "Separator event content = " + separatorEventData;
+        try {
+            switch (eventID) {
+                case EvConstants.EV_PREBOOT_CERT:
+                    description += " EV_PREBOOT_CERT" + "\n";
+                    break;
+                case EvConstants.EV_POST_CODE:
+                    EvPostCode postCode = new EvPostCode(content);
+                    description += "Event Content:\n" + postCode;
+                    break;
+                case EvConstants.EV_UNUSED, EvConstants.EV_EFI_RUNTIME_SERVICES_DRIVER,
+                     EvConstants.EV_EFI_HCRTM_EVENT, EvConstants.EV_EFI_EVENT_BASE,
+                     EvConstants.EV_EV_OMIT_BOOT_DEVICES_EVENTS, EvConstants.EV_NONHOST_INFO,
+                     EvConstants.EV_NONHOST_CONFIG, EvConstants.EV_NONHOST_CODE,
+                     EvConstants.EV_IPL_PARTITION_DATA, EvConstants.EV_PLATFORM_CONFIG_FLAGS,
+                     EvConstants.EV_CPU_MICROCODE, EvConstants.EV_TABLE_OF_DEVICES:
+                    break;
+                case EvConstants.EV_NO_ACTION:
+                    EvNoAction noAction = new EvNoAction(content);
+                    description += "Event Content:\n" + noAction;
+                    if (noAction.isSpecIdEvent()) {
+                        specVersion = noAction.getSpecVersion();
+                        specErrataVersion = noAction.getSpecErrataVersion();
+                        isNoActionSpecIdEvent = true;
+                    } else if (noAction.isStartupLocality()) {
+                        isStartupLocalityEvent = true;
                     }
-                }
-                break;
-            case EvConstants.EV_ACTION:
-                description += "Event Content:\n"
-                        + new String(content, StandardCharsets.UTF_8);
-                break;
-            case EvConstants.EV_EVENT_TAG:
-                EvEventTag eventTag = new EvEventTag(content);
-                description += eventTag.toString();
-                break;
-            case EvConstants.EV_S_CRTM_CONTENTS:
-                EvSCrtmContents sCrtmContents = new EvSCrtmContents(content);
-                description += "Event Content:\n   " + sCrtmContents;
-                break;
-            case EvConstants.EV_S_CRTM_VERSION:
-                EvSCrtmVersion sCrtmVersion = new EvSCrtmVersion(content);
-                description += "Event Content:\n" + sCrtmVersion;
-                break;
-            case EvConstants.EV_COMPACT_HASH:
-                EvCompactHash compactHash = new EvCompactHash(content);
-                description += "Event Content:\n" + compactHash;
-                break;
-            case EvConstants.EV_IPL:
-                EvIPL ipl = new EvIPL(content);
-                description += "Event Content:\n" + ipl;
-                break;
-            case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-            case EvConstants.EV_EFI_VARIABLE_BOOT:
-            case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
-            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
-                UefiVariable efiVar = new UefiVariable(content);
-                description += "Event Content:\n" + efiVar;
-//                guidTableFileStatus = efiVar.getGuidTableFileStatus();
-                break;
-            case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
-            case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER:
-                EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(content);
-                description += "Event Content:\n" + bootServices;
-                break;
-            case EvConstants.EV_EFI_GPT_EVENT:
-                description += "Event Content:\n" + new EvEfiGptPartition(content);
-                break;
-            case EvConstants.EV_EFI_ACTION:
-                description += new String(content, StandardCharsets.UTF_8);
-                break;
-            case EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB:
-                description += "Event Content:\n"
-                        + new UefiFirmware(content);
-                break;
-            case EvConstants.EV_EFI_HANDOFF_TABLES:
-                EvEfiHandoffTable efiTable = new EvEfiHandoffTable(content);
-                description += "Event Content:\n" + efiTable;
-                break;
-            case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
-            case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
-                EvEfiSpdmDeviceSecurityEvent efiSpdmDse = new EvEfiSpdmDeviceSecurityEvent(content);
-                description += "Event Content:\n" + efiSpdmDse;
-                pciidsFileStatus = efiSpdmDse.getPciidsFileStatus();
-                break;
-            default:
-                description += " Unknown Event found" + "\n";
+                    pciidsFileStatus = noAction.getPciidsFileStatus();
+                    break;
+                case EvConstants.EV_SEPARATOR:
+                    if (EvPostCode.isAscii(content)) {
+                        String separatorEventData = new String(content, StandardCharsets.UTF_8);
+                        if (!this.isBlank(content)) {
+                            description += "Separator event content = " + separatorEventData;
+                        }
+                    }
+                    break;
+                case EvConstants.EV_ACTION:
+                    description += "Event Content:\n"
+                            + new String(content, StandardCharsets.UTF_8);
+                    break;
+                case EvConstants.EV_EVENT_TAG:
+                    EvEventTag eventTag = new EvEventTag(content);
+                    description += eventTag.toString();
+                    break;
+                case EvConstants.EV_S_CRTM_CONTENTS:
+                    EvSCrtmContents sCrtmContents = new EvSCrtmContents(content);
+                    description += "Event Content:\n   " + sCrtmContents;
+                    break;
+                case EvConstants.EV_S_CRTM_VERSION:
+                    EvSCrtmVersion sCrtmVersion = new EvSCrtmVersion(content);
+                    description += "Event Content:\n" + sCrtmVersion;
+                    break;
+                case EvConstants.EV_COMPACT_HASH:
+                    EvCompactHash compactHash = new EvCompactHash(content);
+                    description += "Event Content:\n" + compactHash;
+                    break;
+                case EvConstants.EV_IPL:
+                    EvIPL ipl = new EvIPL(content);
+                    description += "Event Content:\n" + ipl;
+                    break;
+                case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
+                case EvConstants.EV_EFI_VARIABLE_BOOT:
+                case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+                case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+                case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
+                    UefiVariable efiVar = new UefiVariable(content);
+                    description += "Event Content:\n" + efiVar;
+                    //                guidTableFileStatus = efiVar.getGuidTableFileStatus();
+                    break;
+                case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
+                case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER:
+                    EvEfiBootServicesApp bootServices = new EvEfiBootServicesApp(content);
+                    description += "Event Content:\n" + bootServices;
+                    break;
+                case EvConstants.EV_EFI_GPT_EVENT:
+                    description += "Event Content:\n" + new EvEfiGptPartition(content);
+                    break;
+                case EvConstants.EV_EFI_ACTION:
+                    description += new String(content, StandardCharsets.UTF_8);
+                    break;
+                case EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB:
+                    description += "Event Content:\n"
+                            + new UefiFirmware(content);
+                    break;
+                case EvConstants.EV_EFI_HANDOFF_TABLES:
+                    EvEfiHandoffTable efiTable = new EvEfiHandoffTable(content);
+                    description += "Event Content:\n" + efiTable;
+                    break;
+                case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
+                case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
+                    EvEfiSpdmDeviceSecurityEvent efiSpdmDse = new EvEfiSpdmDeviceSecurityEvent(content);
+                    description += "Event Content:\n" + efiSpdmDse;
+                    pciidsFileStatus = efiSpdmDse.getPciidsFileStatus();
+                    break;
+                default:
+                    description += " Unknown Event found" + "\n";
+            }
+        }
+        catch (CertificateException e) {
+            throw new CertificateException("\n   Error processing event for PCR[" +
+                    getPcrIndex() + "], Event Type: 0x" + Long.toHexString(eventType) + " " +
+                    eventString(eventID) + e.getMessage());
         }
         return description;
     }

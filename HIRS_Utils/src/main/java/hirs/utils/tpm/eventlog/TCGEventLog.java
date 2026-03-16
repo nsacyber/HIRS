@@ -242,10 +242,11 @@ public final class TCGEventLog {
                         startupLocality = event.getStartupLocality();
                     }
                 } catch (Exception e) {
-                    log.warn("Couldn't parse event #{} {}: {}",
-                            eventNumber,
-                            (event2 != null) ? event2.getEventTypeStr() : "(couldn't parse)",
-                            e.getMessage());
+                    String errorMsg = "Error:\n   Couldn't fully parse event #" + eventNumber +
+                        ((event2 != null) ? ("\n  " + event2.getEventTypeStr()) : "") + e.getMessage();
+                    log.warn(errorMsg);
+                    TpmPcrEvent errorEvent = new TpmPcrEvent(errorMsg, eventNumber);
+                    eventList.put(eventNumber, errorEvent);
                     continue;
                 }
             } else {

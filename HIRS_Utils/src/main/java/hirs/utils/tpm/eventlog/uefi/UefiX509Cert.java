@@ -32,7 +32,7 @@ public class UefiX509Cert {
             InputStream targetStream = new ByteArrayInputStream(certData);
             cert = cf.generateCertificate(targetStream);
         } catch (CertificateException e) {
-            throw new CertificateException("Error parsing UEFI X509 certificate: " + e.getMessage());
+            throw new CertificateException("\n   Error parsing UEFI X509 certificate: " + e.getMessage());
         }
 
         MessageDigest md = MessageDigest.getInstance("SHA1");
