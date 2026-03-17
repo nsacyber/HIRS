@@ -38,7 +38,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="paccor.HardwareManifestPlugin" Version="2.1.0" />
     <PackageReference Include="paccor.HardwareManifestPluginManager" Version="2.1.0" />
-    <PackageReference Include="paccor.paccor_scripts" Version="2.5.0" />
+    <PackageReference Include="paccor.paccor_scripts" Version="2.5.1" />
     <PackageReference Include="paccor.pcie" Version="0.8.5" />
     <PackageReference Include="paccor.smbios" Version="0.8.5" />
     <PackageReference Include="paccor.storage" Version="0.8.5" />
@@ -87,7 +87,7 @@
     <Exec Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'" Command="for /f %%i in ('dir /s /b $(FOLDER_PROTO)\*.proto') do (  $(protoc) -I=$(FOLDER_PROTO) --csharp_out=$(FOLDER_OUT) %%i )" />
     <Exec Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'" Command="for file in `ls -1R $(FOLDER_PROTO)/*.proto` ; do $(protoc) -I=$(FOLDER_PROTO) --csharp_out=$(FOLDER_OUT) $file; done " />
   </Target>
-  <Import Project="$(NuGetPackageRoot)paccor.paccor_scripts/2.5.0/contentFiles/any/net10.0/resources/paccor.paccor_scripts.targets" Condition="Exists('$(NuGetPackageRoot)paccor.paccor_scripts/2.5.0/contentFiles/any/net10.0/resources/paccor.paccor_scripts.targets')" />
+  <Import Project="$(NuGetPackageRoot)paccor.paccor_scripts/2.5.1/contentFiles/any/net10.0/resources/paccor.paccor_scripts.targets" Condition="Exists('$(NuGetPackageRoot)paccor.paccor_scripts/2.5.1/contentFiles/any/net10.0/resources/paccor.paccor_scripts.targets')" />
   <Target Name="ImportPaccorScripts" BeforeTargets="PreBuildEvent">
     <ItemGroup>
       <PaccorScriptsLinux Include="$(dotnet_paccor_scripts_directory)/*" />
