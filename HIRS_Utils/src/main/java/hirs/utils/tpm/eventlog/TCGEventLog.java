@@ -250,8 +250,19 @@ public final class TCGEventLog {
                     continue;
                 }
             } else {
-                TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
-                eventList.put(eventNumber, event1);
+                TpmPcrEvent1 event1 = null;
+                eventNumber++;
+                try {
+                    event1 = new TpmPcrEvent1(is, eventNumber);
+                    eventList.put(eventNumber, event1);
+                } catch (Exception e) {
+                    String errorMsg = "Error:\n   Couldn't fully parse event #" + eventNumber +
+                            ((event1 != null) ? ("\n  " + event1.getEventTypeStr()) : "") + e.getMessage();
+                    log.warn(errorMsg);
+                    TpmPcrEvent errorEvent = new TpmPcrEvent(errorMsg, eventNumber);
+                    eventList.put(eventNumber, errorEvent);
+                    continue;
+                }
             }
 
             // first check if any previous event has not been able to access vendor-table.json,

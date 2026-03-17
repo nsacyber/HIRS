@@ -624,9 +624,9 @@ public class ReferenceManifestPageService {
                 referenceValues = referenceDigestValueRepository.findBySupportRimId(dbSupport.getId());
                 baseRim = findBaseRim(dbSupport);
                 if (referenceValues.isEmpty()) {
-                    try {
-                        logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                    logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                        try {
                             newRdv = new ReferenceDigestValue(baseRim.getId(),
                                     dbSupport.getId(), dbSupport.getPlatformManufacturer(),
                                     dbSupport.getPlatformModel(), tpe.getPcrIndex(),
@@ -634,13 +634,15 @@ public class ReferenceManifestPageService {
                                     tpe.getEventTypeStr(), false, false,
                                     true, tpe.getEventContent());
 
-                            this.referenceDigestValueRepository.save(newRdv);
+
+                        } catch (CertificateException e) {
+                            throw new CertificateException("Error processing support RIM "
+                                    + dbSupport.getId() + ": " + e.getMessage());
+                        } catch (NoSuchAlgorithmException | IOException e) {
+                            e.printStackTrace();
                         }
-                    } catch (CertificateException e) {
-                        throw new CertificateException("Error processing support RIM "
-                                + dbSupport.getId() + ": " + e.getMessage());
-                    } catch (NoSuchAlgorithmException | IOException e) {
-                        e.printStackTrace();
+
+                        this.referenceDigestValueRepository.save(newRdv);
                     }
                 } else {
                     for (ReferenceDigestValue referenceValue : referenceValues) {

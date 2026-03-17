@@ -10,17 +10,17 @@ import java.util.ArrayList;
 
 /**
  * Class for processing either
- * 1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
- * used for EFIVariables associated with Secure Boot,
- * as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
- * 2) the contents of an SPDM devdb,
- * used for SPDM Device Policy, whose data is an EFIVariable
- * as defined by PFP v1.06 Rev52, Section 10.4
+ *   1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
+ *      used for EFIVariables associated with Secure Boot,
+ *      as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
+ *   2) the contents of an SPDM devdb,
+ *      used for SPDM Device Policy, whose data is an EFIVariable
+ *      as defined by PFP v1.06 Rev52, Section 10.4
  * <p>
  * An EFI Signature List is actually a list of Certificates used to verify a Signature.
  * This is mainly found in PCR[7] UEFI variables for either the
- * Secure Boot PK, KEK, Db and DBx variables
- * or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY).
+ *    - Secure Boot PK, KEK, Db and DBx variables
+ *    - or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY).
  * <p>
  * typedef struct _EFI_SIGNATURE_LIST {
  * EFI_GUID            SignatureType;
@@ -32,18 +32,18 @@ import java.util.ArrayList;
  * } EFI_SIGNATURE_LIST;
  * <p>
  * SignatureListHeader (contents common to any Signature Type)
- * - SignatureType
- * - SignatureListSize
- * - SignatureHeaderSize
- * - SignatureSize
+ *   - SignatureType (SHA256, X509)
+ *   - SignatureListSize
+ *   - SignatureHeaderSize
+ *   - SignatureSize
  * SignatureHeader (contents depend on the SignatureType)
- * - The format of this header is specified by the SignatureType (SHA256, X509).
+ *   - The format of this header is specified by the SignatureType (SHA256, X509).
  * Signatures[][] is an array of signatures.
- * - Each signature is SignatureSize bytes in length.
- * - The format of the signature is defined by SignatureType (SHA256, X509).
+ *   - Each signature is SignatureSize bytes in length.
+ *   - The format of the signature is defined by SignatureType (SHA256, X509).
  * <p>
- * / |-------------------------| ------- SignatureType
- * /  | Signature List Header   |         SignatureListSize
+ * /                             / |-------------------------| ------- SignatureType
+ * /                            /  | Signature List Header   |         SignatureListSize
  * |---------------------|     /   |-------------------------|\        SignatureHeaderSize
  * | Signature List #0   |    /    |    Signature Header     | \ _____ SignatureSize
  * |                     |   /     |-------------------------|
@@ -54,10 +54,10 @@ import java.util.ArrayList;
  * |                     |         |      Signature #2       |      (1 cert or hash)
  * |                     |         |-------------------------|
  * |---------------------|         |           ...           |
- * \       |                         |
- * \     |-------------------------|
- * \   |      Signature #n       |
- * \ |-------------------------|
+ * |                     | \       |                         |
+ * |                     |   \     |-------------------------|
+ * |                     |     \   |      Signature #n       |
+ * |                     |       \ |-------------------------|
  */
 public class UefiSignatureList {
     /**
@@ -151,7 +151,7 @@ public class UefiSignatureList {
      * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
      */
     UefiSignatureList(final ByteArrayInputStream lists)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException, NoSuchAlgorithmException {
         byte[] guid = new byte[UefiConstants.SIZE_16];
         lists.read(guid);
         signatureType = new UefiGuid(guid);
@@ -190,13 +190,13 @@ public class UefiSignatureList {
      * @throws java.io.IOException                     If there's a problem parsing the signature data.
      */
     private void processSignatureList(final byte[] efiSigData)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws NoSuchAlgorithmException, IOException {
         efiSigDataIS = new ByteArrayInputStream(efiSigData);
         while (efiSigDataIS.available() > 0) {
             UefiSignatureData tmpSigData = new UefiSignatureData(efiSigDataIS, signatureType);
             if (!tmpSigData.isValid()) {
                 dataValid = false;
-                dataInvalidStatus = tmpSigData.getStatus();
+                dataInvalidStatus = tmpSigData.getErrorStatus();
                 break;
             }
             sigList.add(tmpSigData);

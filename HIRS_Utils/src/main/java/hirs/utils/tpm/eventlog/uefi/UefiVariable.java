@@ -90,7 +90,7 @@ public class UefiVariable {
      *                                                 parsing the signature data.
      */
     public UefiVariable(final byte[] variableData)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws  NoSuchAlgorithmException, IOException {
         certSuperList = new ArrayList<>();
         byte[] guid = new byte[UefiConstants.SIZE_16];
         byte[] nameLength = new byte[UefiConstants.SIZE_8];
@@ -127,13 +127,7 @@ public class UefiVariable {
             case "KEK":
             case "db":
             case "dbx":
-                try {
-                    processSigList(uefiVariableData);
-                }
-                catch (CertificateException e) {
-                    throw new CertificateException("\n   Error processing signature list with name: "
-                            + tmpName + e.getMessage());
-                }
+                processSigList(uefiVariableData);
                 break;
             case "devdb":
                 processSigList(uefiVariableData);
@@ -170,7 +164,7 @@ public class UefiVariable {
      *                                                 parsing the signature data.
      */
     private void processSigList(final byte[] data)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws NoSuchAlgorithmException, IOException {
         ByteArrayInputStream certData = new ByteArrayInputStream(data);
         while (certData.available() > 0) {
             UefiSignatureList list;
@@ -210,7 +204,7 @@ public class UefiVariable {
      * @throws java.io.IOException                     If there's a problem parsing the signature data.
      */
     private void processSigDataX509(final byte[] efiSigData)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws NoSuchAlgorithmException, IOException {
 
         ByteArrayInputStream efiSigDataIS = new ByteArrayInputStream(efiSigData);
         ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
@@ -228,7 +222,7 @@ public class UefiVariable {
             UefiSignatureData tmpSigData = new UefiSignatureData(efiSigDataIS, signatureType);
             if (!tmpSigData.isValid()) {
                 dataValid = false;
-                dataInvalidStatus = tmpSigData.getStatus();
+                dataInvalidStatus = tmpSigData.getErrorStatus();
                 break;
             }
             sigList.add(tmpSigData);
