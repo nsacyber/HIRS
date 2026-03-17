@@ -15,6 +15,7 @@ import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
+import hirs.attestationca.persist.validation.SupplyChainValidationService;
 import hirs.utils.HexUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;

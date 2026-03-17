@@ -17,6 +17,7 @@ import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
 import hirs.attestationca.persist.provision.helper.IssuedCertificateAttributeHelper;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
+import hirs.attestationca.persist.validation.SupplyChainValidationService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.asn1.x500.X500Name;

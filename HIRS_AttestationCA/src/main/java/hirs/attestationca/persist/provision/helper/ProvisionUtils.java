@@ -14,6 +14,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
@@ -28,14 +29,18 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECPoint;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
@@ -342,8 +347,8 @@ public final class ProvisionUtils {
      * <p>
      * Equivalent to calling tpm2_makecredential using tpm2_tools.
      *
-     * @param endorsementRSAKey endorsement key in the identity claim
-     * @param attestationRSAKey attestation key in the identity claim
+     * @param endorsementRSAKey endorsement RSA key in the identity claim
+     * @param attestationRSAKey attestation RSA key in the identity claim
      * @param secret            a nonce
      * @return the encrypted blob forming the identity claim challenge
      */
@@ -381,10 +386,9 @@ public final class ProvisionUtils {
             byte[] hmacKey = cryptKDFa(seed, "INTEGRITY", null, HMAC_KEY_LENGTH_BYTES);
 
             // use two bytes to add a size prefix on secret
-            ByteBuffer b;
-            b = ByteBuffer.allocate(2);
-            b.putShort((short) (secret.length));
-            byte[] secretLength = b.array();
+            ByteBuffer lengthBuffer = ByteBuffer.allocate(2);
+            lengthBuffer.putShort((short) (secret.length));
+            byte[] secretLength = lengthBuffer.array();
             byte[] secretBytes = new byte[secret.length + 2];
             System.arraycopy(secretLength, 0, secretBytes, 0, 2);
             System.arraycopy(secret, 0, secretBytes, 2, secret.length);
@@ -405,9 +409,9 @@ public final class ProvisionUtils {
             System.arraycopy(akName, 0, message, encSecret.length, akName.length);
             integrityHmac.update(message);
             byte[] integrity = integrityHmac.doFinal();
-            b = ByteBuffer.allocate(2);
-            b.putShort((short) (HMAC_SIZE_LENGTH_BYTES + HMAC_KEY_LENGTH_BYTES + encSecret.length));
-            byte[] topSize = b.array();
+            lengthBuffer = ByteBuffer.allocate(2);
+            lengthBuffer.putShort((short) (HMAC_SIZE_LENGTH_BYTES + HMAC_KEY_LENGTH_BYTES + encSecret.length));
+            byte[] topSize = lengthBuffer.array();
 
             // return ordered blob of assembled credentials
             byte[] bytesToReturn = assembleCredential(topSize, integrity, encSecret, encSeed);
@@ -423,7 +427,6 @@ public final class ProvisionUtils {
     }
 
     /**
-     * todo
      * Performs the first step of the TPM 2.0 identity claim process using the ECC public key algorithm:
      * <ul>
      *      <li>Takes an ek, ak, and secret and generates a seed that is used to generate AES and HMAC keys.</li>
@@ -439,17 +442,207 @@ public final class ProvisionUtils {
      * <p>
      * Equivalent to calling tpm2_makecredential using tpm2_tools.
      *
-     * @param endorsementECCKey endorsement key in the identity claim
-     * @param attestationECCKey attestation key in the identity claim
+     * @param endorsementECCKey endorsement ECC key in the identity claim
+     * @param attestationECCKey attestation ECC key in the identity claim
      * @param secret            a nonce
      * @return the encrypted blob forming the identity claim challenge
      */
     public static ByteString tpm20MakeCredentialUsingECC(final ECPublicKey endorsementECCKey,
                                                          final ECPublicKey attestationECCKey,
                                                          final byte[] secret) {
+        try {
+            // --- Step 1: Generate ephemeral ECC key pair for encryption ---
 
-        throw new UnsupportedOperationException("");
+            // This temporary key pair is used for ECC "encryption" via ECDH.
+            // Only the TPM with the corresponding private EK can recover the shared secret.
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
+
+            // Initialize the key pair generator with the same curve parameters as the TPM's EK.
+            // This ensures ECDH works correctly between the ephemeral key and the EK.
+            kpg.initialize(endorsementECCKey.getParams());
+
+            // Generate the ephemeral key pair (random, unique for this credential)
+            KeyPair ephKeyPair = kpg.generateKeyPair();
+
+            // Extract the private key from the ephemeral pair
+            // This will stay secret and is used to compute the ECDH shared secret with the EK public key.
+            ECPrivateKey ephemeralPrivateKey = (ECPrivateKey) ephKeyPair.getPrivate();
+
+            // Extract the public key from the ephemeral pair
+            // This will be sent to the TPM so it can also compute the shared secret using its private EK.
+            ECPublicKey ephemeralPublicKey = (ECPublicKey) ephKeyPair.getPublic();
+
+            // Encode ephemeral and endorsement keys as bytes for KDF context
+            byte[] ephemeralPublicKeyBytes = convertECPublicKeyToBytes(ephemeralPublicKey);
+
+            // --- Step 2: Compute ECDH shared secret Z ---
+
+            KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH");
+            keyAgreement.init(ephemeralPrivateKey);
+
+            // Combine your ephemeral private key with the TPM's Endorsement Key public key
+            // This performs the elliptic curve math needed to derive the shared secret
+            keyAgreement.doPhase(endorsementECCKey, true);
+
+            // Generate the shared secret bytes (traditionally called 'Z' in the spec)
+            byte[] sharedSecret = keyAgreement.generateSecret();
+
+            // --- Step 3: Derive AES and HMAC keys using cryptKDFa ---
+
+            byte[] aesKey = cryptKDFa(sharedSecret, "STORAGE", ephemeralPublicKeyBytes, AES_KEY_LENGTH_BYTES);
+            byte[] hmacKey = cryptKDFa(sharedSecret, "INTEGRITY", null, HMAC_KEY_LENGTH_BYTES);
+
+            // --- Step 4: Encrypt the secret using AES-GCM ---
+
+            final int aesBlockSizeBytes = 16;
+            final byte[] zeroIv = new byte[aesBlockSizeBytes];
+            IvParameterSpec ivSpec = new IvParameterSpec(zeroIv);
+
+            Cipher aesCipher = Cipher.getInstance("AES/CFB/NoPadding");
+            SecretKeySpec aesKeySpec = new SecretKeySpec(aesKey, "AES");
+            aesCipher.init(Cipher.ENCRYPT_MODE, aesKeySpec, ivSpec);
+
+            // ---- ADD LENGTH PREFIX (REQUIRED) ----
+
+            // Allocate 2 bytes to store secret length
+            ByteBuffer lengthBuffer = ByteBuffer.allocate(2);
+            lengthBuffer.putShort((short) secret.length);
+            byte[] lengthBytes = lengthBuffer.array();
+
+            // Create new array: [length (2 bytes) | secret]
+            byte[] secretWithLength = new byte[2 + secret.length];
+            System.arraycopy(lengthBytes, 0, secretWithLength, 0, 2);
+            System.arraycopy(secret, 0, secretWithLength, 2, secret.length);
+
+            // Encrypt the combined array
+            byte[] encryptedSecret = aesCipher.doFinal(secretWithLength);
+
+            // Encrypt the credential value
+
+            //todo
+            
+            // --- Step 5: Compute HMAC over (encryptedSecret || akName) ---
+            // Generate the AK name (this uniquely identifies the attestation key)
+            // TPM uses this to ensure the credential is tied to the correct AK
+            //byte[] akName = generateAkName(attestationECCKey);
+//
+            //// Create HMAC instance using SHA-256 (matches your KDF and TPM expectations)
+            //Mac hmac = Mac.getInstance("HmacSHA256");
+            //SecretKeySpec hmacKeySpec = new SecretKeySpec(hmacKey, "HmacSHA256");
+            //hmac.init(hmacKeySpec);
+            //hmac.update(encryptedSecret);
+            //hmac.update(akName);
+//
+            //// Compute final HMAC value
+            //byte[] hmacValue = hmac.doFinal();
+//
+//
+            //byte[] bytesToReturn = assembleCredential(topSize, hmacValue, encryptedSecret, encSeed);
+            //return ByteString.copyFrom(bytesToReturn);
+
+            throw new UnsupportedOperationException("");
+
+        } catch (BadPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException
+                 | InvalidKeyException | InvalidAlgorithmParameterException
+                 | NoSuchPaddingException e) {
+            throw new IdentityProcessingException(
+                    "Encountered error while making the identity claim challenge for the provided RSA public keys: "
+                            + e.getMessage(), e);
+        }
     }
+
+    /**
+     * Converts an EC public key point into a fixed-length uncompressed byte array.
+     * This format is required for TPM key derivation functions (KDFe).
+     * <pre>
+     * Format: 0x04 || X || Y
+     * </pre>
+     *
+     * <p>
+     * TPM ECC operations (like making a credential) require the public point to be
+     * encoded as a deterministic byte array. Both sides (client and TPM) must
+     * compute the same bytes for the ECDH key derivation to work.
+     *
+     * @param publicKey The EC public key to encode.
+     * @return Byte array representing the uncompressed EC point.
+     */
+    public static byte[] convertECPublicKeyToBytes(final ECPublicKey publicKey) {
+        // Get the raw EC point (X, Y coordinates)
+        ECPoint ecPoint = publicKey.getW();
+
+        // Constants for calculation
+        // Example: 521 bits + 7 = 528 → 528 / 8 = 66 bytes
+        final int fieldSizeInBytes = getFieldSizeInBytes(publicKey);
+
+        // Convert X and Y coordinates to fixed-length byte arrays
+        byte[] xBytes = convertBigIntegerToFixedLength(ecPoint.getAffineX(), fieldSizeInBytes);
+        byte[] yBytes = convertBigIntegerToFixedLength(ecPoint.getAffineY(), fieldSizeInBytes);
+
+        // Constants for encoding the EC point
+        final byte uncompressedPointPrefix = 0x04;  // Indicates this is an uncompressed point (X and Y)
+        final int numCoordinates = 2;               // X + Y
+
+        // Allocate the byte array for the encoded point. Total length = 1 byte prefix + X bytes + Y bytes
+        int encodedPointLength = 1 + (numCoordinates * fieldSizeInBytes);
+        byte[] encodedPointByteArray = new byte[encodedPointLength];
+
+        // Set the uncompressed point prefix at the first byte
+        encodedPointByteArray[0] = uncompressedPointPrefix;
+
+        // Copy X coordinate bytes into the array
+        System.arraycopy(xBytes, 0, encodedPointByteArray, 1, fieldSizeInBytes);
+
+        // Copy Y coordinate bytes immediately after X
+        System.arraycopy(yBytes, 0, encodedPointByteArray, 1 + fieldSizeInBytes, fieldSizeInBytes);
+
+        return encodedPointByteArray;
+    }
+
+    /**
+     * Calculates the number of bytes required for each coordinate (X or Y).
+     *
+     * @param eccPublicKey {@link ECPublicKey}
+     * @return {@link ECPublicKey}'s field size in bytes
+     */
+    public static int getFieldSizeInBytes(final ECPublicKey eccPublicKey) {
+        // Standard: 8 bits in a byte
+        final int bitsPerByte = 8;
+
+        // Add 7 to bits before dividing by 8 to round up
+        final int roundUpOffset = 7;
+
+        // The field size of the curve is in bits (e.g., P-256 = 256 bits)
+        // TPM expects each coordinate to be **fixed-length**, even if the number would normally take fewer bytes
+        return (eccPublicKey.getParams().getCurve().getField().getFieldSize()
+                + roundUpOffset) / bitsPerByte;
+    }
+
+    /**
+     * Converts a BigInteger to a fixed-length byte array. Pads with leading zeros if necessary or trims extra bytes
+     * if needed.
+     *
+     * @param value  The BigInteger to convert.
+     * @param length Desired byte length of the output array.
+     * @return Byte array of exact length representing the BigInteger.
+     */
+    public static byte[] convertBigIntegerToFixedLength(final BigInteger value, final int length) {
+        byte[] rawBytes = value.toByteArray(); // default BigInteger encoding
+        byte[] fixedLengthBytes = new byte[length];
+
+        if (rawBytes.length == length) {
+            // Already the correct size, just return
+            return rawBytes;
+        } else if (rawBytes.length > length) {
+            // Trim leading byte(s) (sometimes BigInteger adds a sign byte)
+            System.arraycopy(rawBytes, rawBytes.length - length, fixedLengthBytes, 0, length);
+        } else {
+            // Pad with leading zeros to reach the correct length
+            System.arraycopy(rawBytes, 0, fixedLengthBytes, length - rawBytes.length, rawBytes.length);
+        }
+
+        return fixedLengthBytes;
+    }
+
 
     /**
      * Assembles a credential blob.
@@ -541,24 +734,28 @@ public final class ProvisionUtils {
      * @throws NoSuchAlgorithmException Wrong crypto algorithm selected
      * @throws InvalidKeyException      Invalid key used
      */
-
-    public static byte[] cryptKDFa(final byte[] seed, final String label, final byte[] context,
-                                   final int sizeInBytes)
+    public static byte[] cryptKDFa(final byte[] seed, final String label, final byte[] context, final int sizeInBytes)
             throws NoSuchAlgorithmException, InvalidKeyException {
+        // --- Step 1: Set up the counter (always 1 for this simplified version) ---
         final int capacity = 4;
         ByteBuffer b = ByteBuffer.allocate(capacity);
         b.putInt(1);
         byte[] counter = b.array();
-        // get the label
+
+        // --- Step 2: Ensure label ends with null byte (\0) as per TPM spec ---
         String labelWithEnding = label;
         if (label.charAt(label.length() - 1) != '\u0000') {
             labelWithEnding = label + "\0";
         }
         byte[] labelBytes = labelWithEnding.getBytes(StandardCharsets.UTF_8);
+
+        // --- Step 3: Prepare size of desired output in bits ---
         final int byteOffset = 8;
         b = ByteBuffer.allocate(capacity);
         b.putInt(sizeInBytes * byteOffset);
         byte[] desiredSizeInBits = b.array();
+
+        // --- Step 4: Compute total length of the message to HMAC ---
         int sizeOfMessage = byteOffset + labelBytes.length;
         if (context != null) {
             sizeOfMessage += context.length;
@@ -567,23 +764,37 @@ public final class ProvisionUtils {
         int marker = 0;
 
         final int markerLength = 4;
+
+        // --- Step 5: Copy counter into message ---
         System.arraycopy(counter, 0, message, marker, markerLength);
         marker += markerLength;
+
+        // --- Step 6: Copy label into message ---
         System.arraycopy(labelBytes, 0, message, marker, labelBytes.length);
         marker += labelBytes.length;
+
+        // --- Step 5: Copy counter into message ---
         if (context != null) {
             System.arraycopy(context, 0, message, marker, context.length);
             marker += context.length;
         }
-        System.arraycopy(desiredSizeInBits, 0, message, marker, markerLength);
-        Mac hmac;
-        byte[] toReturn = new byte[sizeInBytes];
 
-        hmac = Mac.getInstance("HmacSHA256");
+        // --- Step 8: Copy desired size in bits at the end of message ---
+        System.arraycopy(desiredSizeInBits, 0, message, marker, markerLength);
+
+        // --- Step 9: Initialize HMAC-SHA256 with the seed as key ---
+        Mac hmac = Mac.getInstance("HmacSHA256");
         SecretKeySpec hmacKey = new SecretKeySpec(seed, hmac.getAlgorithm());
         hmac.init(hmacKey);
+
+        // --- Step 10: Feed the constructed message into HMAC ---
         hmac.update(message);
+
+        // --- Step 11: Compute HMAC output ---
         byte[] hmacResult = hmac.doFinal();
+
+        // --- Step 12: Copy required number of bytes to return array ---
+        byte[] toReturn = new byte[sizeInBytes];
         System.arraycopy(hmacResult, 0, toReturn, 0, sizeInBytes);
         return toReturn;
     }

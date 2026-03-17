@@ -14,6 +14,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.persist.validation.SupplyChainValidatorException;
+import hirs.attestationca.persist.validation.ValidationService;
 import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
@@ -131,7 +132,7 @@ public class ReferenceManifestDetailsPageService {
             contentStr = tpe.getEventContentStr();
             // check for specific events
             if (contentStr.contains("CRTM")
-                || contentStr.contains("IBB")) {
+                    || contentStr.contains("IBB")) {
                 coveredEvents.put("crtm", true);
             } else if (contentStr.contains(UefiConstants.UEFI_FIRMWARE_BLOB_LABEL)) {
                 coveredEvents.put("firmwareBlob", true);

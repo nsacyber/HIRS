@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.Arrays;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -23,6 +24,7 @@ public class Tpm2ProvisionerStateService {
      *
      * @param tpm2ProvisionerStateRepository TPM2 Provisioner State Repository
      */
+    @Autowired
     public Tpm2ProvisionerStateService(final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository) {
         this.tpm2ProvisionerStateRepository = tpm2ProvisionerStateRepository;
     }
