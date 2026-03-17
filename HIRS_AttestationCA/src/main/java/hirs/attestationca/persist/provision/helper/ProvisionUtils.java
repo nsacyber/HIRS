@@ -490,7 +490,7 @@ public final class ProvisionUtils {
             // --- Step 3: Derive AES and HMAC keys using cryptKDFa ---
 
             byte[] aesKey = cryptKDFa(sharedSecret, "STORAGE", ephemeralPublicKeyBytes, AES_KEY_LENGTH_BYTES);
-            byte[] hmacKey = cryptKDFa(sharedSecret, "INTEGRITY", null, HMAC_KEY_LENGTH_BYTES);
+            //byte[] hmacKey = cryptKDFa(sharedSecret, "INTEGRITY", null, HMAC_KEY_LENGTH_BYTES);
 
             // --- Step 4: Encrypt the secret using AES-GCM ---
 
@@ -503,7 +503,7 @@ public final class ProvisionUtils {
             aesCipher.init(Cipher.ENCRYPT_MODE, aesKeySpec, ivSpec);
 
             // ---- ADD LENGTH PREFIX (REQUIRED) ----
-
+            //todo
             // Allocate 2 bytes to store secret length
             ByteBuffer lengthBuffer = ByteBuffer.allocate(2);
             lengthBuffer.putShort((short) secret.length);
@@ -515,12 +515,11 @@ public final class ProvisionUtils {
             System.arraycopy(secret, 0, secretWithLength, 2, secret.length);
 
             // Encrypt the combined array
-            byte[] encryptedSecret = aesCipher.doFinal(secretWithLength);
+            //byte[] encryptedSecret = aesCipher.doFinal(secretWithLength);
 
             // Encrypt the credential value
 
-            //todo
-            
+
             // --- Step 5: Compute HMAC over (encryptedSecret || akName) ---
             // Generate the AK name (this uniquely identifies the attestation key)
             // TPM uses this to ensure the credential is tied to the correct AK
@@ -533,7 +532,7 @@ public final class ProvisionUtils {
             //hmac.update(encryptedSecret);
             //hmac.update(akName);
 //
-            //// Compute final HMAC value
+            // Compute final HMAC value
             //byte[] hmacValue = hmac.doFinal();
 //
 //
@@ -542,7 +541,7 @@ public final class ProvisionUtils {
 
             throw new UnsupportedOperationException("");
 
-        } catch (BadPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException
+        } catch (NoSuchAlgorithmException
                  | InvalidKeyException | InvalidAlgorithmParameterException
                  | NoSuchPaddingException e) {
             throw new IdentityProcessingException(
