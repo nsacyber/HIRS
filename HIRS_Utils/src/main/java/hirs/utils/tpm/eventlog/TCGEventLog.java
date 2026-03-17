@@ -234,35 +234,35 @@ public final class TCGEventLog {
             if (bCryptoAgile) {
                 TpmPcrEvent2 event2 = null;
                 eventNumber++;
-                try {
+//                try {
                     event2 = new TpmPcrEvent2(is, eventNumber, strongestEvLogHashAlgName);
                     eventList.put(eventNumber, event2);
                     if (event2.isStartupLocalityEvent()) {
                         EvNoAction event = new EvNoAction(event2.getEventContent());
                         startupLocality = event.getStartupLocality();
                     }
-                } catch (Exception e) {
-                    String errorMsg = "Error:\n   Couldn't fully parse event #" + eventNumber +
-                        ((event2 != null) ? ("\n  " + event2.getEventTypeStr()) : "") + e.getMessage();
-                    log.warn(errorMsg);
-                    TpmPcrEvent errorEvent = new TpmPcrEvent(errorMsg, eventNumber);
-                    eventList.put(eventNumber, errorEvent);
-                    continue;
-                }
+//                } catch (Exception e) {
+//                    String errorMsg = "Error:\n   Couldn't fully parse event #" + eventNumber +
+//                        ((event2 != null) ? ("\n  " + event2.getEventTypeStr()) : "") + e.getMessage();
+//                    log.warn(errorMsg);
+//                    TpmPcrEvent errorEvent = new TpmPcrEvent(errorMsg, eventNumber);
+//                    eventList.put(eventNumber, errorEvent);
+//                    continue;
+//                }
             } else {
                 TpmPcrEvent1 event1 = null;
                 eventNumber++;
-                try {
+//                try {
                     event1 = new TpmPcrEvent1(is, eventNumber);
                     eventList.put(eventNumber, event1);
-                } catch (Exception e) {
-                    String errorMsg = "Error:\n   Couldn't fully parse event #" + eventNumber +
-                            ((event1 != null) ? ("\n  " + event1.getEventTypeStr()) : "") + e.getMessage();
-                    log.warn(errorMsg);
-                    TpmPcrEvent errorEvent = new TpmPcrEvent(errorMsg, eventNumber);
-                    eventList.put(eventNumber, errorEvent);
-                    continue;
-                }
+//                } catch (Exception e) {
+//                    String errorMsg = "Error:\n   Couldn't fully parse event #" + eventNumber +
+//                            ((event1 != null) ? ("\n  " + event1.getEventTypeStr()) : "") + e.getMessage();
+//                    log.warn(errorMsg);
+//                    TpmPcrEvent errorEvent = new TpmPcrEvent(errorMsg, eventNumber);
+//                    eventList.put(eventNumber, errorEvent);
+//                    continue;
+//                }
             }
 
             // first check if any previous event has not been able to access vendor-table.json,
