@@ -35,7 +35,6 @@ import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA512_STR;
 /**
  * Class for handling different formats of TCG Event logs.
  */
-@Log4j2
 public final class TCGEventLog {
 
     // The TCG PC Client Platform TPM Profile Specification for TPM 2.0 defines 5 localities
