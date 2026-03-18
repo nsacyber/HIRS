@@ -557,10 +557,11 @@
                                                                     </div><!--accordion item-->
                                                                 </div><!--pcrAccordion-->
                                                             </th:block>
-                                                            <span style="color: red; padding-left: 20px" th:text="Associated RIM ${resource.name} not found."
-                                                                  th:if="${#arrays.isEmpty(initialData.get('pcrList'))}
+                                                            <th:block th:if="${#arrays.isEmpty(initialData.get('pcrList'))}
                                                                         and not ${initialData.get('swidPatch')}
-                                                                        and not ${initialData.get('swidSupplemental')}"/>
+                                                                        and not ${initialData.get('swidSupplemental')}">
+                                                                <span style="color: red">PCR values not found.</span>
+                                                            </th:block>
                                                         </div><!--accordion body-->
                                                     </div><!--accordion collapse-->
                                                 </div><!--accordion item-->
