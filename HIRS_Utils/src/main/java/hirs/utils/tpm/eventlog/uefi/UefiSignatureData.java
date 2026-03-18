@@ -143,14 +143,13 @@ public class UefiSignatureData {
         inputStream.read(certType);
         byte[] certLength = new byte[UefiConstants.SIZE_2];
         inputStream.read(certLength);
-        int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
-        byte[] certData = new byte[cLength];
+        int certDataLength = new BigInteger(certLength).intValue();
+        byte[] certData = new byte[certDataLength];
         inputStream.read(certData);
-        // put the cert back together
-        byte[] certBlob = new byte[cLength + UefiConstants.SIZE_4];
+        byte[] certBlob = new byte[certDataLength + UefiConstants.SIZE_4];
         System.arraycopy(certType, 0, certBlob, 0, 2);
         System.arraycopy(certLength, 0, certBlob, 2, 2);
-        System.arraycopy(certData, 0, certBlob, UefiConstants.OFFSET_4, cLength);
+        System.arraycopy(certData, 0, certBlob, UefiConstants.OFFSET_4, certDataLength);
         try {
             cert = new UefiX509Cert(certBlob);
         } catch (CertificateException e) {
