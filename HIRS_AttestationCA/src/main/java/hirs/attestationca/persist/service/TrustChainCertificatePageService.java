@@ -9,11 +9,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the Trust Chain
+ * Service class responsible for encapsulating all business logic related to the Trust Chain
  * Certificates Management Page.
  */
-@Log4j2
 @Service
+@Log4j2
 public class TrustChainCertificatePageService {
     private final CACredentialRepository caCredentialRepository;
 
@@ -33,7 +33,7 @@ public class TrustChainCertificatePageService {
      * @return total number of records in the certificate authority (trust chain) repository.
      */
     public long findTrustChainCertificateRepoCount() {
-        return this.caCredentialRepository.findByArchiveFlag(false).size();
+        return caCredentialRepository.countByArchiveFlag(false);
     }
 
     /**
@@ -45,6 +45,6 @@ public class TrustChainCertificatePageService {
      */
     public Page<CertificateAuthorityCredential> findCACredentialsByArchiveFlag(final boolean archiveFlag,
                                                                                final Pageable pageable) {
-        return this.caCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
+        return caCredentialRepository.findByArchiveFlagOrderByCreateTimeDesc(archiveFlag, pageable);
     }
 }

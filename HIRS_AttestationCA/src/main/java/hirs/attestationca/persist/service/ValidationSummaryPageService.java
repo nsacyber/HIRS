@@ -53,8 +53,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the Validation Summary
- * Page.
+ * Service class responsible for encapsulating all business logic related to the Validation Summary Page.
  */
 @Service
 @Log4j2
@@ -111,7 +110,7 @@ public class ValidationSummaryPageService {
             final String globalSearchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<SupplyChainValidationSummary> query =
                 criteriaBuilder.createQuery(SupplyChainValidationSummary.class);
         Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot =
@@ -133,7 +132,7 @@ public class ValidationSummaryPageService {
                 getSortingOrders(criteriaBuilder, supplyChainValidationSummaryRoot, pageable.getSort()));
 
         // Apply pagination
-        TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
+        TypedQuery<SupplyChainValidationSummary> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
@@ -158,7 +157,7 @@ public class ValidationSummaryPageService {
             final Set<DataTablesColumn> columnsWithSearchCriteria,
             final boolean archiveFlag,
             final Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<SupplyChainValidationSummary> query =
                 criteriaBuilder.createQuery(SupplyChainValidationSummary.class);
         Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot =
@@ -176,7 +175,7 @@ public class ValidationSummaryPageService {
                 getSortingOrders(criteriaBuilder, supplyChainValidationSummaryRoot, pageable.getSort()));
 
         // Apply pagination
-        TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
+        TypedQuery<SupplyChainValidationSummary> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
@@ -213,7 +212,7 @@ public class ValidationSummaryPageService {
             final Set<DataTablesColumn> columnsWithSearchCriteria,
             final boolean archiveFlag,
             final Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<SupplyChainValidationSummary> query =
                 criteriaBuilder.createQuery(SupplyChainValidationSummary.class);
         Root<SupplyChainValidationSummary> supplyChainValidationSummaryRoot =
@@ -241,7 +240,7 @@ public class ValidationSummaryPageService {
                 getSortingOrders(criteriaBuilder, supplyChainValidationSummaryRoot, pageable.getSort()));
 
         // Apply pagination
-        TypedQuery<SupplyChainValidationSummary> typedQuery = this.entityManager.createQuery(query);
+        TypedQuery<SupplyChainValidationSummary> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
@@ -257,9 +256,8 @@ public class ValidationSummaryPageService {
      * @param pageable pageable
      * @return page of supply chain validation summaries
      */
-    public Page<SupplyChainValidationSummary> findValidationSummaryReportsByPageable(
-            final Pageable pageable) {
-        return this.supplyChainValidationSummaryRepository.findByArchiveFlagFalse(pageable);
+    public Page<SupplyChainValidationSummary> findValidationSummaryReportsByPageable(final Pageable pageable) {
+        return supplyChainValidationSummaryRepository.findByArchiveFlagFalseOrderByCreateTimeDesc(pageable);
     }
 
     /**
@@ -268,7 +266,7 @@ public class ValidationSummaryPageService {
      * @return total number of records in the supply chain validation summary repository
      */
     public long findValidationSummaryRepositoryCount() {
-        return this.supplyChainValidationSummaryRepository.count();
+        return supplyChainValidationSummaryRepository.count();
     }
 
     /**
@@ -290,7 +288,7 @@ public class ValidationSummaryPageService {
         LocalDate startDate = null;
         LocalDate endDate = null;
         ArrayList<LocalDate> createTimes = new ArrayList<>();
-        String[] deviceNames = new String[] {};
+        String[] deviceNames = new String[]{};
 
         final Enumeration<String> parameters = request.getParameterNames();
 

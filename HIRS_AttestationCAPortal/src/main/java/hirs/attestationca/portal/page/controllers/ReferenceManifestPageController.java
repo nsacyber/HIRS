@@ -49,9 +49,9 @@ import java.util.zip.ZipOutputStream;
 /**
  * Controller for the Reference Manifest Page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/reference-manifests")
+@Log4j2
 public class ReferenceManifestPageController extends PageController<NoPageParams> {
 
     private static final String BASE_RIM_FILE_PATTERN = "(\\S+(\\.(?i)swidtag)$)";
@@ -167,12 +167,12 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
             if (isBaseRim) {
                 final BaseReferenceManifest baseReferenceManifest =
-                        this.referenceManifestPageService.parseBaseRIM(errorMessages, file);
+                        referenceManifestPageService.parseBaseRIM(errorMessages, file);
                 baseRims.add(baseReferenceManifest);
                 messages.addErrorMessages(errorMessages);
             } else if (isSupportRim) {
                 final SupportReferenceManifest supportReferenceManifest =
-                        this.referenceManifestPageService.parseSupportRIM(errorMessages, file);
+                        referenceManifestPageService.parseSupportRIM(errorMessages, file);
                 supportRims.add(supportReferenceManifest);
                 messages.addErrorMessages(errorMessages);
             } else {
@@ -185,7 +185,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
             }
         }
 
-        this.referenceManifestPageService.storeRIMS(successMessages, baseRims, supportRims);
+        referenceManifestPageService.storeRIMS(successMessages, baseRims, supportRims);
 
         messages.addSuccessMessages(successMessages);
 
@@ -207,13 +207,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         log.info("Received request to download RIM id {}", id);
 
         try {
-            final DownloadFile downloadFile =
-                    this.referenceManifestPageService.downloadRIM(UUID.fromString(id));
+            final DownloadFile downloadFile = referenceManifestPageService.downloadRIM(UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment;" + "filename=\"" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
-
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the "
                     + " specified RIM", exception);
@@ -237,7 +235,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.referenceManifestPageService.bulkDownloadRIMS(zipOut);
+            referenceManifestPageService.bulkDownloadRIMS(zipOut);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
                     + "reference integrity manifests", exception);
@@ -266,7 +264,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.referenceManifestPageService.deleteRIM(UUID.fromString(id), successMessages, errorMessages);
+            referenceManifestPageService.deleteRIM(UUID.fromString(id), successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -301,8 +299,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.referenceManifestPageService.bulkDeleteRIMs(ids, successMessages,
-                    errorMessages);
+            referenceManifestPageService.bulkDeleteRIMs(ids, successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -353,31 +350,27 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult = this.referenceManifestPageService.findAllBaseAndSupportRIMSByPageable(pageable);
+            pagedResult = referenceManifestPageService.findAllBaseAndSupportRIMSByPageable(pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.referenceManifestPageService.findRIMSByGlobalAndColumnSpecificSearchTerm(
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
+            pagedResult = referenceManifestPageService.findRIMSByGlobalAndColumnSpecificSearchTerm(
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.referenceManifestPageService.
-                            findRIMSByColumnSpecificSearchTermAndArchiveFlag(
-                                    columnsWithSearchCriteria,
-                                    false,
-                                    pageable);
+            pagedResult = referenceManifestPageService.findRIMSByColumnSpecificSearchTermAndArchiveFlag(
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else {
             // if a value has been entered ONLY in the global search textbox
-            pagedResult = this.referenceManifestPageService.
-                    findRIMSByGlobalSearchTermAndArchiveFlag(searchableColumnNames,
-                            globalSearchTerm,
-                            false,
-                            pageable);
+            pagedResult = referenceManifestPageService.findRIMSByGlobalSearchTermAndArchiveFlag(searchableColumnNames,
+                    globalSearchTerm,
+                    false,
+                    pageable);
         }
 
         FilteredRecordsList<ReferenceManifest> rimFilteredRecordsList = new FilteredRecordsList<>();
@@ -387,7 +380,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         }
 
         rimFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        rimFilteredRecordsList.setRecordsTotal(this.referenceManifestPageService.findRIMRepositoryCount());
+        rimFilteredRecordsList.setRecordsTotal(referenceManifestPageService.findRIMRepositoryCount());
 
         return rimFilteredRecordsList;
     }

@@ -14,29 +14,22 @@ import java.util.UUID;
 public interface EndorsementCredentialRepository extends JpaRepository<EndorsementCredential, UUID> {
 
     /**
-     * Query that retrieves a list of endorsement credentials using the provided archive flag.
+     * Query that retrieves a count of endorsement credentials in the database filtered by the provided archive flag.
      *
      * @param archiveFlag archive flag
-     * @return a list of endorsement credentials
+     * @return a count of endorsement credentials
      */
-    List<EndorsementCredential> findByArchiveFlag(boolean archiveFlag);
+    long countByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of endorsement credentials using provided archive flag and pageable value.
+     * Query that retrieves a page of endorsement credentials filtered by the specified archive flag,
+     * sorted by create time in descending order.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable value
      * @return a page of endorsement credentials
      */
-    Page<EndorsementCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
-
-    /**
-     * Query that retrieves an endorsement credential using the provided holder serial number.
-     *
-     * @param holderSerialNumber big integer representation of the holder serial number
-     * @return an endorsement credential
-     */
-    EndorsementCredential findByHolderSerialNumber(BigInteger holderSerialNumber);
+    Page<EndorsementCredential> findByArchiveFlagOrderByCreateTimeDesc(boolean archiveFlag, Pageable pageable);
 
     /**
      * Query that retrieves an endorsement credential using the provided serial number.

@@ -13,22 +13,22 @@ import java.util.UUID;
 public interface PlatformCertificateRepository extends JpaRepository<PlatformCredential, UUID> {
 
     /**
-     * Query that retrieves a list of platform credentials using the provided archive flag.
+     * Query that retrieves a count of platform credentials in the database filtered by the provided archive flag.
      *
      * @param archiveFlag archive flag
-     * @return a list of platform credentials
+     * @return a count of platform credentials
      */
-    List<PlatformCredential> findByArchiveFlag(boolean archiveFlag);
+    long countByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of platform credentials using the provided archive flag
-     * and pageable value.
+     * Query that retrieves a page of platform credentials filtered by the specified archive flag,
+     * sorted by create time in descending order.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable
      * @return a page of platform credentials
      */
-    Page<PlatformCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
+    Page<PlatformCredential> findByArchiveFlagOrderByCreateTimeDesc(boolean archiveFlag, Pageable pageable);
 
     /**
      * Query that retrieves a list of platform credentials using the provided device id.

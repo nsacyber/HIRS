@@ -13,22 +13,23 @@ import java.util.UUID;
 public interface CACredentialRepository extends JpaRepository<CertificateAuthorityCredential, UUID> {
 
     /**
-     * Query that retrieves a list of certificate authority credentials using the provided archive flag.
+     * Query that retrieves a count of certificate authority credentials in the database filtered by the provided
+     * archive flag.
      *
      * @param archiveFlag archive flag
-     * @return a list of certificate authority credentials
+     * @return a count of certificate authority credentials
      */
-    List<CertificateAuthorityCredential> findByArchiveFlag(boolean archiveFlag);
+    long countByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of certificate authority credentials using the provided archive
-     * flag and the provided pageable.
+     * Query that retrieves a page of certificate authority credentials filtered by the specified archive flag,
+     * sorted by create time in descending order.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable
      * @return a page of certificate authority credentials
      */
-    Page<CertificateAuthorityCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
+    Page<CertificateAuthorityCredential> findByArchiveFlagOrderByCreateTimeDesc(boolean archiveFlag, Pageable pageable);
 
     /**
      * Query that retrieves a list of certificate authority credentials using the provided subject.

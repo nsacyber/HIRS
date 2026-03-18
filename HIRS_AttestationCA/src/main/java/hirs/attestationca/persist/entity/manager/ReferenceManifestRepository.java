@@ -219,20 +219,21 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     List<ReferenceManifest> findByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of reference manifests using the provided archive flag and pageable value.
+     * Query that retrieves a count of reference manifests in the database filtered by the provided archive flag.
      *
      * @param archiveFlag archive flag
-     * @param pageable    pageable
-     * @return a page of reference manifests
+     * @return a count of reference manifests
      */
-    Page<ReferenceManifest> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
+    long countByArchiveFlag(boolean archiveFlag);
 
     /**
      * Query that retrieves a page of base and support reference manifests and pageable value.
+     *
      * @param pageable pageable
      * @return a page of reference manifests
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE DTYPE IN "
-            + "('BaseReferenceManifest', 'SupportReferenceManifest')", nativeQuery = true)
-    Page<ReferenceManifest> findAllBaseAndSupportRimsPageable(Pageable pageable);
+            + "('BaseReferenceManifest', 'SupportReferenceManifest') "
+            + "ORDER BY create_time DESC", nativeQuery = true)
+    Page<ReferenceManifest> findAllBaseAndSupportRimsPageableOrderByCreateTime(Pageable pageable);
 }

@@ -13,12 +13,12 @@ import java.util.UUID;
 public interface IssuedCertificateRepository extends JpaRepository<IssuedAttestationCertificate, UUID> {
 
     /**
-     * Query that retrieves a list of issued attestation certificates using the provided archive flag.
+     * Query that retrieves a count of issued certificates in the database filtered by the provided archive flag.
      *
      * @param archiveFlag archive flag
-     * @return a list of issued attestation certificates
+     * @return a count of issued certificates
      */
-    List<IssuedAttestationCertificate> findByArchiveFlag(boolean archiveFlag);
+    long countByArchiveFlag(boolean archiveFlag);
 
     /**
      * Query that retrieves a page of issued attestation certificates using the provided archive flag
@@ -28,7 +28,7 @@ public interface IssuedCertificateRepository extends JpaRepository<IssuedAttesta
      * @param pageable    pageable value
      * @return a page of issued attestation certificates
      */
-    Page<IssuedAttestationCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
+    Page<IssuedAttestationCertificate> findByArchiveFlagOrderByCreateTimeDesc(boolean archiveFlag, Pageable pageable);
 
     /**
      * Query that retrieves a list of issued attestation certificates using the provided device id.

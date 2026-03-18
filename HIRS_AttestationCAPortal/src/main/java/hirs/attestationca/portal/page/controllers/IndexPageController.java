@@ -13,9 +13,9 @@ import org.springframework.web.servlet.ModelAndView;
  * Controller for the Index page.
  */
 @Controller
+@RequestMapping(value = {"/", "/HIRS_AttestationCAPortal", "/HIRS_AttestationCAPortal/",
+        "/HIRS_AttestationCAPortal/portal/index"})
 @Log4j2
-@RequestMapping(value = {"/", "/HIRS_AttestationCAPortal",
-        "/HIRS_AttestationCAPortal/", "/HIRS_AttestationCAPortal/portal/index"})
 public class IndexPageController extends PageController<NoPageParams> {
 
     /**

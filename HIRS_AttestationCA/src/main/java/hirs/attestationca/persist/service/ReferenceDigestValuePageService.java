@@ -29,10 +29,10 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the RIM Database Page.
+ * Service class responsible for encapsulating all business logic related to the RIM Database Page.
  */
-@Log4j2
 @Service
+@Log4j2
 public class ReferenceDigestValuePageService {
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
@@ -69,10 +69,8 @@ public class ReferenceDigestValuePageService {
             final String globalSearchTerm,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<ReferenceDigestValue> query =
-                criteriaBuilder.createQuery(ReferenceDigestValue.class);
-        Root<ReferenceDigestValue> referenceDigestValueRoot =
-                query.from(ReferenceDigestValue.class);
+        CriteriaQuery<ReferenceDigestValue> query = criteriaBuilder.createQuery(ReferenceDigestValue.class);
+        Root<ReferenceDigestValue> referenceDigestValueRoot = query.from(ReferenceDigestValue.class);
 
         final Predicate combinedGlobalSearchPredicates =
                 createPredicatesForGlobalSearch(searchableColumnNames, criteriaBuilder,
@@ -109,10 +107,8 @@ public class ReferenceDigestValuePageService {
             final Set<DataTablesColumn> columnsWithSearchCriteria,
             final Pageable pageable) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<ReferenceDigestValue> query =
-                criteriaBuilder.createQuery(ReferenceDigestValue.class);
-        Root<ReferenceDigestValue> referenceDigestValueRoot =
-                query.from(ReferenceDigestValue.class);
+        CriteriaQuery<ReferenceDigestValue> query = criteriaBuilder.createQuery(ReferenceDigestValue.class);
+        Root<ReferenceDigestValue> referenceDigestValueRoot = query.from(ReferenceDigestValue.class);
 
         final Predicate combinedColumnSearchPredicates =
                 createPredicatesForColumnSpecificSearch(columnsWithSearchCriteria, criteriaBuilder,
@@ -161,8 +157,7 @@ public class ReferenceDigestValuePageService {
             final Pageable pageable) {
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<ReferenceDigestValue> query =
-                criteriaBuilder.createQuery(ReferenceDigestValue.class);
+        CriteriaQuery<ReferenceDigestValue> query = criteriaBuilder.createQuery(ReferenceDigestValue.class);
         Root<ReferenceDigestValue> referenceDigestValueRoot = query.from(ReferenceDigestValue.class);
 
         final Predicate globalSearchPartOfChainedPredicates =
@@ -200,7 +195,7 @@ public class ReferenceDigestValuePageService {
      * @return page full of reference digest values
      */
     public Page<ReferenceDigestValue> findAllReferenceDigestValues(final Pageable pageable) {
-        return this.referenceDigestValueRepository.findAll(pageable);
+        return referenceDigestValueRepository.findAllByOrderByCreateTimeDesc(pageable);
     }
 
     /**
@@ -209,7 +204,7 @@ public class ReferenceDigestValuePageService {
      * @param referenceDigestValue reference digest value
      */
     public void saveReferenceDigestValue(final ReferenceDigestValue referenceDigestValue) {
-        this.referenceDigestValueRepository.save(referenceDigestValue);
+        referenceDigestValueRepository.save(referenceDigestValue);
     }
 
     /**
@@ -218,7 +213,7 @@ public class ReferenceDigestValuePageService {
      * @return total number of records in the reference digest value repository.
      */
     public long findReferenceDigestValueRepositoryCount() {
-        return this.referenceDigestValueRepository.count();
+        return referenceDigestValueRepository.count();
     }
 
     /**
@@ -229,7 +224,7 @@ public class ReferenceDigestValuePageService {
      * otherwise it returns false if it doesn't exist
      */
     public boolean doesRIMExist(final UUID uuid) {
-        return this.referenceManifestRepository.existsById(uuid);
+        return referenceManifestRepository.existsById(uuid);
     }
 
     /**
@@ -239,7 +234,7 @@ public class ReferenceDigestValuePageService {
      * @return the found Reference Manifest
      */
     public ReferenceManifest findRIMById(final UUID uuid) {
-        return this.referenceManifestRepository.getReferenceById(uuid);
+        return referenceManifestRepository.getReferenceById(uuid);
     }
 
     /**

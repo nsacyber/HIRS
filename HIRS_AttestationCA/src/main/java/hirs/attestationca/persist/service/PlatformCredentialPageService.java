@@ -20,8 +20,8 @@ import java.util.List;
  * A service layer class responsible for encapsulating all business logic related to the Platform Credential
  * Page.
  */
-@Log4j2
 @Service
+@Log4j2
 public class PlatformCredentialPageService {
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
@@ -48,7 +48,7 @@ public class PlatformCredentialPageService {
      */
     public Page<PlatformCredential> findPlatformCredentialsByArchiveFlag(final boolean archiveFlag,
                                                                          final Pageable pageable) {
-        return this.platformCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
+        return platformCertificateRepository.findByArchiveFlagOrderByCreateTimeDesc(archiveFlag, pageable);
     }
 
     /**
@@ -58,7 +58,7 @@ public class PlatformCredentialPageService {
      * @return endorsement credential
      */
     public EndorsementCredential findECBySerialNumber(final BigInteger holderSerialNumber) {
-        return this.endorsementCredentialRepository.findBySerialNumber(holderSerialNumber);
+        return endorsementCredentialRepository.findBySerialNumber(holderSerialNumber);
     }
 
     /**
@@ -67,7 +67,7 @@ public class PlatformCredentialPageService {
      * @return total number of records in the platform credential repository.
      */
     public long findPlatformCredentialRepositoryCount() {
-        return this.platformCertificateRepository.findByArchiveFlag(false).size();
+        return platformCertificateRepository.countByArchiveFlag(false);
     }
 
     /**
@@ -86,8 +86,8 @@ public class PlatformCredentialPageService {
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to read uploaded platform credential file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to read uploaded platform credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
@@ -96,26 +96,25 @@ public class PlatformCredentialPageService {
         try {
             return new PlatformCredential(fileBytes);
         } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded platform credential file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to parse uploaded platform credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
         } catch (DecoderException dEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded platform credential pem file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to parse uploaded platform credential pem file (%s): ", fileName);
             log.error(failMessage, dEx);
             errorMessages.add(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
-            final String failMessage = String.format(
-                    "Platform credential format not recognized(%s): ", fileName);
+            final String failMessage = String.format("Platform credential format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
             errorMessages.add(failMessage + iaEx.getMessage());
             return null;
         } catch (IllegalStateException isEx) {
-            final String failMessage = String.format(
-                    "Unexpected object while parsing platform credential %s ", fileName);
+            final String failMessage =
+                    String.format("Unexpected object while parsing platform credential %s ", fileName);
             log.error(failMessage, isEx);
             errorMessages.add(failMessage + isEx.getMessage());
             return null;
