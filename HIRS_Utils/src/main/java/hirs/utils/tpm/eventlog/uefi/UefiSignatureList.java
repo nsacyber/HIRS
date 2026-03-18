@@ -2,6 +2,8 @@ package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -58,6 +60,7 @@ import java.util.ArrayList;
  * |                     |     \   |      Signature #n       |
  * |                     |       \ |-------------------------|
  */
+@Log4j2
 public class UefiSignatureList {
     /**
      * Array List of Signature found in the list.

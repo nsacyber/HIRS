@@ -2,6 +2,8 @@ package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -20,6 +22,7 @@ import java.util.List;
  * INT8 VariableData[];
  * } UEFI_VARIABLE_DATA
  */
+@Log4j2
 public class UefiVariable {
 
     /**

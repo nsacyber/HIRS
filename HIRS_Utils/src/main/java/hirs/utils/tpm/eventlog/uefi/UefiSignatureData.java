@@ -154,7 +154,7 @@ public class UefiSignatureData {
             cert = new UefiX509Cert(certBlob);
         } catch (CertificateException e) {
             errorStatus = "\n   **** UefiSignatureData Certificate Issue ****: " + e.getMessage();
-            log.warn("UefiSignatureData Certificate Issue: " + e.getMessage());
+            log.warn("UefiSignatureData Certificate Issue: {}", e.getMessage());
         }
     }
 

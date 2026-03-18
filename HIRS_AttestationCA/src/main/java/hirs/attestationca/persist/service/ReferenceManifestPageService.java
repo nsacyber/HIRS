@@ -348,12 +348,10 @@ public class ReferenceManifestPageService {
      * Stores the base and support reference manifests to the reference manifest repository.
      *
      * @param successMessages contains any success messages that will be displayed on the page
-     * @param errorMessages contains any error messages that will be displayed on the page
      * @param baseRims        list of base reference manifests
      * @param supportRims     list of support reference manifests
      */
     public void storeRIMS(final List<String> successMessages,
-                          final List<String> errorMessages,
                           final List<BaseReferenceManifest> baseRims,
                           final List<SupportReferenceManifest> supportRims) {
 
@@ -389,11 +387,7 @@ public class ReferenceManifestPageService {
 
         // pass in the updated support rims
         // and either update or add the events
-        try {
-            processTpmEvents(new ArrayList<>(updatedSupportRims.values()));
-        } catch (CertificateException e) {
-            errorMessages.add(e.getMessage());
-        }
+        processTpmEvents(new ArrayList<>(updatedSupportRims.values()));
     }
 
     /**
@@ -612,7 +606,7 @@ public class ReferenceManifestPageService {
         return null;
     }
 
-    private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) throws CertificateException {
+    private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) {
         List<ReferenceDigestValue> referenceValues;
         TCGEventLog logProcessor;
         ReferenceManifest baseRim;
