@@ -112,8 +112,6 @@
         //Set data tables
         let dataTable = setDataTables(viewName, "#reportTable", url, columns);
 
-        dataTable.order([1, "desc"]).draw(); //order by createTime
-
         $("#download").submit(function (e) {
           let tableLength = $("#reportTable").rows;
           let createTimes = "";

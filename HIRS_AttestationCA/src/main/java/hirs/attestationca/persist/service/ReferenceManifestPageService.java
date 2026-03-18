@@ -225,8 +225,9 @@ public class ReferenceManifestPageService {
      * @param pageable pageable
      * @return page of RIMs
      */
-    public Page<ReferenceManifest> findAllBaseAndSupportRIMSByPageable(final Pageable pageable) {
-        return referenceManifestRepository.findAllBaseAndSupportRimsPageableOrderByCreateTime(pageable);
+    public Page<ReferenceManifest> findAllBaseAndSupportRIMS(final Pageable pageable) {
+        return referenceManifestRepository.findByClassIn(
+                List.of(BaseReferenceManifest.class, SupportReferenceManifest.class), pageable);
     }
 
     /**

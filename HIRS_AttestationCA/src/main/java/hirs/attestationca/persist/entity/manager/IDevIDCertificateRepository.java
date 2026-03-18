@@ -20,12 +20,11 @@ public interface IDevIDCertificateRepository extends JpaRepository<IDevIDCertifi
     long countByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of IDevId certificates filtered by the specified archive flag,
-     * sorted by create time in descending order.
+     * Query that retrieves a page of IDevId certificates filtered by the specified archive flag.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable value
      * @return a page of IDevId certificates
      */
-    Page<IDevIDCertificate> findByArchiveFlagOrderByCreateTimeDesc(boolean archiveFlag, Pageable pageable);
+    Page<IDevIDCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 }

@@ -195,7 +195,7 @@ public class ReferenceDigestValuePageService {
      * @return page full of reference digest values
      */
     public Page<ReferenceDigestValue> findAllReferenceDigestValues(final Pageable pageable) {
-        return referenceDigestValueRepository.findAllByOrderByCreateTimeDesc(pageable);
+        return referenceDigestValueRepository.findAll(pageable);
     }
 
     /**

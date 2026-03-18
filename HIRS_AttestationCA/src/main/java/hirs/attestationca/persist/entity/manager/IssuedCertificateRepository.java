@@ -28,7 +28,7 @@ public interface IssuedCertificateRepository extends JpaRepository<IssuedAttesta
      * @param pageable    pageable value
      * @return a page of issued attestation certificates
      */
-    Page<IssuedAttestationCertificate> findByArchiveFlagOrderByCreateTimeDesc(boolean archiveFlag, Pageable pageable);
+    Page<IssuedAttestationCertificate> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 
     /**
      * Query that retrieves a list of issued attestation certificates using the provided device id.

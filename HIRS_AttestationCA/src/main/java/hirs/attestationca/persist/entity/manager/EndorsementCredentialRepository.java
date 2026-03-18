@@ -22,14 +22,13 @@ public interface EndorsementCredentialRepository extends JpaRepository<Endorseme
     long countByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of endorsement credentials filtered by the specified archive flag,
-     * sorted by create time in descending order.
+     * Query that retrieves a page of endorsement credentials filtered by the specified archive flag.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable value
      * @return a page of endorsement credentials
      */
-    Page<EndorsementCredential> findByArchiveFlagOrderByCreateTimeDesc(boolean archiveFlag, Pageable pageable);
+    Page<EndorsementCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 
     /**
      * Query that retrieves an endorsement credential using the provided serial number.

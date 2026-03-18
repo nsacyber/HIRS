@@ -48,7 +48,7 @@ public class PlatformCredentialPageService {
      */
     public Page<PlatformCredential> findPlatformCredentialsByArchiveFlag(final boolean archiveFlag,
                                                                          final Pageable pageable) {
-        return platformCertificateRepository.findByArchiveFlagOrderByCreateTimeDesc(archiveFlag, pageable);
+        return platformCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
     /**

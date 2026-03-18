@@ -257,7 +257,7 @@ public class ValidationSummaryPageService {
      * @return page of supply chain validation summaries
      */
     public Page<SupplyChainValidationSummary> findValidationSummaryReportsByPageable(final Pageable pageable) {
-        return supplyChainValidationSummaryRepository.findByArchiveFlagFalseOrderByCreateTimeDesc(pageable);
+        return supplyChainValidationSummaryRepository.findByArchiveFlagFalse(pageable);
     }
 
     /**

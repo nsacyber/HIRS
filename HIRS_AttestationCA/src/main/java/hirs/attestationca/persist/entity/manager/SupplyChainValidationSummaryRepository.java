@@ -13,10 +13,10 @@ public interface SupplyChainValidationSummaryRepository extends JpaRepository<Su
 
     /**
      * Query that retrieves a page of supply chain validation summaries using the provided pageable value
-     * and where the archive flag is false, sorted by create time in descending order.
+     * and where the archive flag is false.
      *
      * @param pageable pageable
      * @return a page of supply chain validation summary
      */
-    Page<SupplyChainValidationSummary> findByArchiveFlagFalseOrderByCreateTimeDesc(Pageable pageable);
+    Page<SupplyChainValidationSummary> findByArchiveFlagFalse(Pageable pageable);
 }

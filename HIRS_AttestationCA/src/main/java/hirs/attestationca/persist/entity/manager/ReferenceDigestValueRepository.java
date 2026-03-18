@@ -1,8 +1,6 @@
 package hirs.attestationca.persist.entity.manager;
 
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -60,14 +58,4 @@ public interface ReferenceDigestValueRepository extends JpaRepository<ReferenceD
      * @return a list of reference digest values
      */
     List<ReferenceDigestValue> findByManufacturerAndModel(String manufacturer, String model);
-
-
-    /**
-     * Query that retrieves a page of all reference digest values using the provided pageable value sorted in
-     * descending order by their creation time.
-     *
-     * @param pageable pageable
-     * @return a page of all reference digest values sorted in descending order by their creation time
-     */
-    Page<ReferenceDigestValue> findAllByOrderByCreateTimeDesc(Pageable pageable);
 }

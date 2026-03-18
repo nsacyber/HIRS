@@ -40,7 +40,7 @@ public class IDevIdCertificatePageService {
      */
     public Page<IDevIDCertificate> findIDevCertificatesByArchiveFlag(final boolean archiveFlag,
                                                                      final Pageable pageable) {
-        return iDevIDCertificateRepository.findByArchiveFlagOrderByCreateTimeDesc(archiveFlag, pageable);
+        return iDevIDCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
     /**

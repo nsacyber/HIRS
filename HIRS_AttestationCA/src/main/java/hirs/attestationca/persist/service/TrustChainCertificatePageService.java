@@ -45,6 +45,6 @@ public class TrustChainCertificatePageService {
      */
     public Page<CertificateAuthorityCredential> findCACredentialsByArchiveFlag(final boolean archiveFlag,
                                                                                final Pageable pageable) {
-        return caCredentialRepository.findByArchiveFlagOrderByCreateTimeDesc(archiveFlag, pageable);
+        return caCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 }

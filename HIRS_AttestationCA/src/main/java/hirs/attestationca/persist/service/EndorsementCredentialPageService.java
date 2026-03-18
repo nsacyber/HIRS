@@ -40,7 +40,7 @@ public class EndorsementCredentialPageService {
      */
     public Page<EndorsementCredential> findEndorsementCredentialsByArchiveFlag(final boolean archiveFlag,
                                                                                final Pageable pageable) {
-        return endorsementCredentialRepository.findByArchiveFlagOrderByCreateTimeDesc(archiveFlag, pageable);
+        return endorsementCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
     /**

@@ -22,14 +22,13 @@ public interface CACredentialRepository extends JpaRepository<CertificateAuthori
     long countByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of certificate authority credentials filtered by the specified archive flag,
-     * sorted by create time in descending order.
+     * Query that retrieves a page of certificate authority credentials filtered by the specified archive flag.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable
      * @return a page of certificate authority credentials
      */
-    Page<CertificateAuthorityCredential> findByArchiveFlagOrderByCreateTimeDesc(boolean archiveFlag, Pageable pageable);
+    Page<CertificateAuthorityCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 
     /**
      * Query that retrieves a list of certificate authority credentials using the provided subject.

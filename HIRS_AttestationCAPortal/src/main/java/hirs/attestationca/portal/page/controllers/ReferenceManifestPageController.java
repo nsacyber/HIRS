@@ -350,7 +350,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult = referenceManifestPageService.findAllBaseAndSupportRIMSByPageable(pageable);
+            pagedResult = referenceManifestPageService.findAllBaseAndSupportRIMS(pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult = referenceManifestPageService.findRIMSByGlobalAndColumnSpecificSearchTerm(

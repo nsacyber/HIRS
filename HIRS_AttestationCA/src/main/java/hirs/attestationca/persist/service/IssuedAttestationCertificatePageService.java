@@ -36,7 +36,7 @@ public class IssuedAttestationCertificatePageService {
      */
     public Page<IssuedAttestationCertificate> findIssuedCertificatesByArchiveFlag(final boolean archiveFlag,
                                                                                   final Pageable pageable) {
-        return issuedCertificateRepository.findByArchiveFlagOrderByCreateTimeDesc(archiveFlag, pageable);
+        return issuedCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
     /**

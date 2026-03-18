@@ -206,7 +206,7 @@ public class DevicePageService {
      * @return a page of all devices
      */
     public Page<Device> findAllDevices(final Pageable pageable) {
-        return deviceRepository.findAllByOrderByCreateTimeDesc(pageable);
+        return deviceRepository.findAll(pageable);
     }
 
     /**
