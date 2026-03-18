@@ -75,7 +75,7 @@
     </h1>
 
     <div id="rim-details-page" class="container-fluid" layout:fragment="content">
-        <th:block th:if="${initialData?.get('rimType') == 'Support'
+        <th:block th:if="${initialData.get('rimType') == 'Support'
             || (initialData.get('rimType') == 'Measurement' && initialData.get('validationResult') == 'PASS')}">
             <div class="row">
                 <div class="col-md-1 col-md-offset-1"><span class="colHeader">Additonal RIM Info</span></div>
@@ -268,7 +268,7 @@
         </th:block><!--Support RIM and validation passed measurements-->
 
 
-        <th:block th:if="${initialData?.get('rimType') == 'Measurement'
+        <th:block th:if="${initialData.get('rimType') == 'Measurement'
             && initialData.get('validationResult') == T(hirs.attestationca.persist.enums.AppraisalStatus.Status).FAIL}">
                 <div class="row rimrow">
                     <div class="col-md-1 offset-md-1"><span class="colRimHeader">Base/Support</span></div>
@@ -557,10 +557,11 @@
                                                                     </div><!--accordion item-->
                                                                 </div><!--pcrAccordion-->
                                                             </th:block>
-                                                            <span style="color: red; padding-left: 20px" th:text="Associated RIM ${resource.name} not found."
-                                                                  th:if="${#arrays.isEmpty(initialData.get('pcrList'))}
+                                                            <th:block th:if="${#arrays.isEmpty(initialData.get('pcrList'))}
                                                                         and not ${initialData.get('swidPatch')}
-                                                                        and not ${initialData.get('swidSupplemental')}"/>
+                                                                        and not ${initialData.get('swidSupplemental')}">
+                                                                <span style="color: red">PCR values not found.</span>
+                                                            </th:block>
                                                         </div><!--accordion body-->
                                                     </div><!--accordion collapse-->
                                                 </div><!--accordion item-->
