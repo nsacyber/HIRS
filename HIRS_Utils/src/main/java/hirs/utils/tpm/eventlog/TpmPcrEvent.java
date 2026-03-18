@@ -172,18 +172,6 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Constructor - special case, if event parsing causes exception.
-     *
-     * @param eventErrorMsg String holding the errors that occurred during event parsing.
-     * @param eventPosition event position within the event log.
-     */
-    public TpmPcrEvent(final String eventErrorMsg, final int eventPosition) {
-
-        description = "Event# " + eventPosition + ": ";
-        description += eventErrorMsg;
-    }
-
-    /**
      * Converts the Event ID into a String As defined in the TCG PC Client FW Profile.
      * Event IDs have values larger than an integer,so a Long is used hold the value.
      *
@@ -593,7 +581,7 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 UefiVariable efiVar = new UefiVariable(content);
                 description += "Event Content:\n" + efiVar;
-                //                guidTableFileStatus = efiVar.getGuidTableFileStatus();
+//                guidTableFileStatus = efiVar.getGuidTableFileStatus();
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
             case EvConstants.EV_EFI_BOOT_SERVICES_DRIVER:

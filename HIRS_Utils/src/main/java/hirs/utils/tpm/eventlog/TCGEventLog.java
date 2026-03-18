@@ -232,37 +232,15 @@ public final class TCGEventLog {
         // put the remaining events into the event list
         while (is.available() > 0) {
             if (bCryptoAgile) {
-                TpmPcrEvent2 event2 = null;
-                eventNumber++;
-//                try {
-                    event2 = new TpmPcrEvent2(is, eventNumber, strongestEvLogHashAlgName);
-                    eventList.put(eventNumber, event2);
-                    if (event2.isStartupLocalityEvent()) {
-                        EvNoAction event = new EvNoAction(event2.getEventContent());
-                        startupLocality = event.getStartupLocality();
-                    }
-//                } catch (Exception e) {
-//                    String errorMsg = "Error:\n   Couldn't fully parse event #" + eventNumber +
-//                        ((event2 != null) ? ("\n  " + event2.getEventTypeStr()) : "") + e.getMessage();
-//                    log.warn(errorMsg);
-//                    TpmPcrEvent errorEvent = new TpmPcrEvent(errorMsg, eventNumber);
-//                    eventList.put(eventNumber, errorEvent);
-//                    continue;
-//                }
+                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestEvLogHashAlgName);
+                eventList.put(eventNumber, event2);
+                if (event2.isStartupLocalityEvent()) {
+                    EvNoAction event = new EvNoAction(event2.getEventContent());
+                    startupLocality = event.getStartupLocality();
+                }
             } else {
-                TpmPcrEvent1 event1 = null;
-                eventNumber++;
-//                try {
-                    event1 = new TpmPcrEvent1(is, eventNumber);
-                    eventList.put(eventNumber, event1);
-//                } catch (Exception e) {
-//                    String errorMsg = "Error:\n   Couldn't fully parse event #" + eventNumber +
-//                            ((event1 != null) ? ("\n  " + event1.getEventTypeStr()) : "") + e.getMessage();
-//                    log.warn(errorMsg);
-//                    TpmPcrEvent errorEvent = new TpmPcrEvent(errorMsg, eventNumber);
-//                    eventList.put(eventNumber, errorEvent);
-//                    continue;
-//                }
+                TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
+                eventList.put(eventNumber, event1);
             }
 
             // first check if any previous event has not been able to access vendor-table.json,
@@ -291,12 +269,10 @@ public final class TCGEventLog {
             // the if-statement is executed
             // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
             // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if (eventList.containsKey(eventNumber - 1)) {
-                if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                        && (eventList.get(eventNumber - 1).getPciidsFileStatus()
-                        != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-                    pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
-                }
+            if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+                    && (eventList.get(eventNumber - 1).getPciidsFileStatus()
+                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+                pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
             }
         }
         calculatePcrValues();

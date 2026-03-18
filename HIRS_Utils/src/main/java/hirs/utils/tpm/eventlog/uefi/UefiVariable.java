@@ -2,8 +2,6 @@ package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -22,7 +20,6 @@ import java.util.List;
  * INT8 VariableData[];
  * } UEFI_VARIABLE_DATA
  */
-@Log4j2
 public class UefiVariable {
 
     /**
@@ -84,8 +81,6 @@ public class UefiVariable {
      * the class used to parse the data within the "VariableData".
      *
      * @param variableData byte array holding the UEFI Variable.
-     * @throws java.security.cert.CertificateException If there's a problem
-     *                                                 parsing the X509 certificate.
      * @throws java.security.NoSuchAlgorithmException  if there's a problem
      *                                                 hashing the certificate.
      * @throws java.io.IOException                     If there's a problem
