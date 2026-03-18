@@ -413,7 +413,7 @@ public final class ProvisionUtils {
             lengthBuffer.putShort((short) (HMAC_SIZE_LENGTH_BYTES + HMAC_KEY_LENGTH_BYTES + encSecret.length));
             byte[] topSize = lengthBuffer.array();
 
-            // return ordered blob of assembled credentials
+            // return ordered blob of assembled credential
             byte[] bytesToReturn = assembleCredential(topSize, integrity, encSecret, encSeed);
             return ByteString.copyFrom(bytesToReturn);
 
@@ -462,15 +462,15 @@ public final class ProvisionUtils {
             kpg.initialize(endorsementECCKey.getParams());
 
             // Generate the ephemeral key pair (random, unique for this credential)
-            KeyPair ephKeyPair = kpg.generateKeyPair();
+            KeyPair ephemeralKeyPair = kpg.generateKeyPair();
 
             // Extract the private key from the ephemeral pair
             // This will stay secret and is used to compute the ECDH shared secret with the EK public key.
-            ECPrivateKey ephemeralPrivateKey = (ECPrivateKey) ephKeyPair.getPrivate();
+            ECPrivateKey ephemeralPrivateKey = (ECPrivateKey) ephemeralKeyPair.getPrivate();
 
             // Extract the public key from the ephemeral pair
             // This will be sent to the TPM so it can also compute the shared secret using its private EK.
-            ECPublicKey ephemeralPublicKey = (ECPublicKey) ephKeyPair.getPublic();
+            ECPublicKey ephemeralPublicKey = (ECPublicKey) ephemeralKeyPair.getPublic();
 
             // Encode ephemeral and endorsement keys as bytes for KDF context
             byte[] ephemeralPublicKeyBytes = convertECPublicKeyToBytes(ephemeralPublicKey);
@@ -489,60 +489,65 @@ public final class ProvisionUtils {
 
             // --- Step 3: Derive AES and HMAC keys using cryptKDFa ---
 
+            // Derive AES key for encrypting the secret
             byte[] aesKey = cryptKDFa(sharedSecret, "STORAGE", ephemeralPublicKeyBytes, AES_KEY_LENGTH_BYTES);
-            //byte[] hmacKey = cryptKDFa(sharedSecret, "INTEGRITY", null, HMAC_KEY_LENGTH_BYTES);
+
+            // Derive HMAC key for authenticating the encrypted secret
+            byte[] hmacKey = cryptKDFa(sharedSecret, "INTEGRITY", null, HMAC_KEY_LENGTH_BYTES);
 
             // --- Step 4: Encrypt the secret using AES-GCM ---
 
             final int aesBlockSizeBytes = 16;
-            final byte[] zeroIv = new byte[aesBlockSizeBytes];
-            IvParameterSpec ivSpec = new IvParameterSpec(zeroIv);
+            final byte[] defaultIv = new byte[aesBlockSizeBytes];
+            IvParameterSpec ivSpec = new IvParameterSpec(defaultIv);
 
             Cipher aesCipher = Cipher.getInstance("AES/CFB/NoPadding");
-            SecretKeySpec aesKeySpec = new SecretKeySpec(aesKey, "AES");
-            aesCipher.init(Cipher.ENCRYPT_MODE, aesKeySpec, ivSpec);
+            SecretKeySpec aesSecretKeySpec = new SecretKeySpec(aesKey, "AES");
+            aesCipher.init(Cipher.ENCRYPT_MODE, aesSecretKeySpec, ivSpec);
 
-            // ---- ADD LENGTH PREFIX (REQUIRED) ----
-            //todo
-            // Allocate 2 bytes to store secret length
+            // --- Add 2-byte length prefix to the secret ---
+            // TPM expects the secret length encoded before the actual secret
             ByteBuffer lengthBuffer = ByteBuffer.allocate(2);
             lengthBuffer.putShort((short) secret.length);
             byte[] lengthBytes = lengthBuffer.array();
 
-            // Create new array: [length (2 bytes) | secret]
+            // Combine length prefix + secret into a single array
             byte[] secretWithLength = new byte[2 + secret.length];
             System.arraycopy(lengthBytes, 0, secretWithLength, 0, 2);
             System.arraycopy(secret, 0, secretWithLength, 2, secret.length);
 
-            // Encrypt the combined array
-            //byte[] encryptedSecret = aesCipher.doFinal(secretWithLength);
-
-            // Encrypt the credential value
-
+            // Encrypt the combined array using AES
+            byte[] encryptedSecret = aesCipher.doFinal(secretWithLength);
 
             // --- Step 5: Compute HMAC over (encryptedSecret || akName) ---
-            // Generate the AK name (this uniquely identifies the attestation key)
-            // TPM uses this to ensure the credential is tied to the correct AK
-            //byte[] akName = generateAkName(attestationECCKey);
-//
-            //// Create HMAC instance using SHA-256 (matches your KDF and TPM expectations)
-            //Mac hmac = Mac.getInstance("HmacSHA256");
-            //SecretKeySpec hmacKeySpec = new SecretKeySpec(hmacKey, "HmacSHA256");
-            //hmac.init(hmacKeySpec);
-            //hmac.update(encryptedSecret);
-            //hmac.update(akName);
-//
-            // Compute final HMAC value
-            //byte[] hmacValue = hmac.doFinal();
-//
-//
-            //byte[] bytesToReturn = assembleCredential(topSize, hmacValue, encryptedSecret, encSeed);
-            //return ByteString.copyFrom(bytesToReturn);
 
-            throw new UnsupportedOperationException("");
+            // Generate the Attestation Key (AK) name (unique identifier for the AK)
+            byte[] akName = generateAkName(attestationECCKey.getEncoded());
 
+            // Create HMAC instance using SHA-256 (matches your KDF and TPM expectations)
+            Mac hmac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec hmacSecretKeySpec = new SecretKeySpec(hmacKey, hmac.getAlgorithm());
+            hmac.init(hmacSecretKeySpec);
+
+            // Combine encrypted secret and AK name into one message buffer
+            byte[] hmacMessage = new byte[encryptedSecret.length + akName.length];
+            System.arraycopy(encryptedSecret, 0, hmacMessage, 0, encryptedSecret.length);
+            System.arraycopy(akName, 0, hmacMessage, encryptedSecret.length, akName.length);
+
+            // Compute the final HMAC
+            hmac.update(hmacMessage);
+            byte[] hmacValue = hmac.doFinal();
+
+            lengthBuffer = ByteBuffer.allocate(2);
+            lengthBuffer.putShort((short) (HMAC_SIZE_LENGTH_BYTES + HMAC_KEY_LENGTH_BYTES + encryptedSecret.length));
+            byte[] topSize = lengthBuffer.array();
+
+            // return ordered blob of assembled credential
+            byte[] bytesToReturn = assembleCredential(topSize, hmacValue, encryptedSecret, ephemeralPublicKeyBytes);
+            return ByteString.copyFrom(bytesToReturn);
         } catch (NoSuchAlgorithmException
-                 | InvalidKeyException | InvalidAlgorithmParameterException
+                 | InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException |
+                 BadPaddingException
                  | NoSuchPaddingException e) {
             throw new IdentityProcessingException(
                     "Encountered error while making the identity claim challenge for the provided RSA public keys: "
@@ -642,7 +647,6 @@ public final class ProvisionUtils {
         return fixedLengthBytes;
     }
 
-
     /**
      * Assembles a credential blob.
      *
@@ -700,23 +704,28 @@ public final class ProvisionUtils {
     }
 
     /**
-     * Determines the AK name from the AK Modulus.
+     * Generates a byte array representation of the AK name from the Attestation Key bytes.
      *
-     * @param akModulus modulus of an attestation key
+     * @param attestationKeyBytes attestation key
      * @return the ak name byte array
      * @throws NoSuchAlgorithmException Underlying SHA256 method used a bad algorithm
      */
-    public static byte[] generateAkName(final byte[] akModulus) throws NoSuchAlgorithmException {
+    public static byte[] generateAkName(final byte[] attestationKeyBytes) throws NoSuchAlgorithmException {
         byte[] namePrefix = HexUtils.hexStringToByteArray(AK_NAME_PREFIX);
         byte[] hashPrefix = HexUtils.hexStringToByteArray(AK_NAME_HASH_PREFIX);
-        byte[] toHash = new byte[hashPrefix.length + akModulus.length];
-        System.arraycopy(hashPrefix, 0, toHash, 0, hashPrefix.length);
-        System.arraycopy(akModulus, 0, toHash, hashPrefix.length, akModulus.length);
-        byte[] nameHash = sha256hash(toHash);
-        byte[] toReturn = new byte[namePrefix.length + nameHash.length];
-        System.arraycopy(namePrefix, 0, toReturn, 0, namePrefix.length);
-        System.arraycopy(nameHash, 0, toReturn, namePrefix.length, nameHash.length);
-        return toReturn;
+
+        // Combine hashPrefix + akModulus
+        ByteBuffer buffer = ByteBuffer.allocate(hashPrefix.length + attestationKeyBytes.length);
+        buffer.put(hashPrefix);
+        buffer.put(attestationKeyBytes);
+        byte[] nameHash = sha256hash(buffer.array());
+
+        // Combine namePrefix + nameHash
+        buffer = ByteBuffer.allocate(namePrefix.length + nameHash.length);
+        buffer.put(namePrefix);
+        buffer.put(nameHash);
+
+        return buffer.array();
     }
 
     /**
@@ -772,7 +781,7 @@ public final class ProvisionUtils {
         System.arraycopy(labelBytes, 0, message, marker, labelBytes.length);
         marker += labelBytes.length;
 
-        // --- Step 5: Copy counter into message ---
+        // --- Step 7: Copy context into message ---
         if (context != null) {
             System.arraycopy(context, 0, message, marker, context.length);
             marker += context.length;
