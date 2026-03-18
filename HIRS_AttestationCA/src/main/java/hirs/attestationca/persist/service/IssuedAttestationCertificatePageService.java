@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the Issued Attestation
+ * Service class responsible for encapsulating all business logic related to the Issued Attestation
  * Certificate Page.
  */
 @Service

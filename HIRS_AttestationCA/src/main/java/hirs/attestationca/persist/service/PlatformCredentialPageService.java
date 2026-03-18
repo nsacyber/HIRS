@@ -17,7 +17,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the Platform Credential
+ * Service class responsible for encapsulating all business logic related to the Platform Credential
  * Page.
  */
 @Service
