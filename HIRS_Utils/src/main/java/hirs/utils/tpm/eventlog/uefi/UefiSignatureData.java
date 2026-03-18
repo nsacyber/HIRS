@@ -2,6 +2,7 @@ package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.security.cert.CertificateException;
  * will contain the "the SHA-256 hash of the binary".
  * So the Signature Data depends upon the Signature Type from the EFI Signature List.
  */
+@Log4j2
 public class UefiSignatureData {
     /**
      * UEFI Certificate GUID.
@@ -153,6 +155,7 @@ public class UefiSignatureData {
             cert = new UefiX509Cert(certBlob);
         } catch (CertificateException e) {
             errorStatus = "\n   **** UefiSignatureData Certificate Issue ****: " + e.getMessage();
+            log.warn("UefiSignatureData Certificate Issue: " + e.getMessage());
         }
     }
 
@@ -171,10 +174,9 @@ public class UefiSignatureData {
                 sigInfo += "      Binary Hash = " + HexUtils.byteArrayToHexString(binaryHash) + "\n";
             } else {
                 sigInfo += "    UEFI Signature Owner = " + efiVarGuid.toString() + "\n";
-                if(errorStatus.isEmpty()) {
+                if (errorStatus.isEmpty()) {
                     sigInfo += cert.toString();
-                }
-                else {
+                } else {
                     sigInfo += errorStatus;
                 }
             }

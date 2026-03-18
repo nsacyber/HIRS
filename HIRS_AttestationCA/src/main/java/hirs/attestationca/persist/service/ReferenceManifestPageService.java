@@ -348,6 +348,7 @@ public class ReferenceManifestPageService {
      * Stores the base and support reference manifests to the reference manifest repository.
      *
      * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages contains any error messages that will be displayed on the page
      * @param baseRims        list of base reference manifests
      * @param supportRims     list of support reference manifests
      */
@@ -624,9 +625,9 @@ public class ReferenceManifestPageService {
                 referenceValues = referenceDigestValueRepository.findBySupportRimId(dbSupport.getId());
                 baseRim = findBaseRim(dbSupport);
                 if (referenceValues.isEmpty()) {
-                    logProcessor = new TCGEventLog(dbSupport.getRimBytes());
-                    for (TpmPcrEvent tpe : logProcessor.getEventList()) {
-                        try {
+                    try {
+                        logProcessor = new TCGEventLog(dbSupport.getRimBytes());
+                        for (TpmPcrEvent tpe : logProcessor.getEventList()) {
                             newRdv = new ReferenceDigestValue(baseRim.getId(),
                                     dbSupport.getId(), dbSupport.getPlatformManufacturer(),
                                     dbSupport.getPlatformModel(), tpe.getPcrIndex(),
@@ -634,15 +635,10 @@ public class ReferenceManifestPageService {
                                     tpe.getEventTypeStr(), false, false,
                                     true, tpe.getEventContent());
 
-
-                        } catch (CertificateException e) {
-                            throw new CertificateException("Error processing support RIM "
-                                    + dbSupport.getId() + ": " + e.getMessage());
-                        } catch (NoSuchAlgorithmException | IOException e) {
-                            e.printStackTrace();
+                            this.referenceDigestValueRepository.save(newRdv);
                         }
-
-                        this.referenceDigestValueRepository.save(newRdv);
+                    } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
+                        e.printStackTrace();
                     }
                 } else {
                     for (ReferenceDigestValue referenceValue : referenceValues) {
