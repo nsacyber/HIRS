@@ -281,7 +281,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
             final String errorMessage =
-                    "An exception was thrown while attempting to delete  multiple idevid certificates";
+                    "An exception was thrown while attempting to delete multiple idevid certificates";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }
