@@ -2,7 +2,6 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.service.ReferenceManifestDetailsPageService;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
 import lombok.extern.log4j.Log4j2;

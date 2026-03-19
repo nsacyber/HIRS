@@ -9,7 +9,7 @@ import lombok.Getter;
  * returned by the SPDM "GET_MEASUREMENTS" function.
  * <p>
  * HEADERS defined by PFP v1.06 Rev 52:
- * <p>
+ * <pre>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA_HEADER2 {
  * .    UINT8                           Signature[16];
  * .    UINT16                          Version;
@@ -23,7 +23,7 @@ import lombok.Getter;
  * .    UINT64                          DevicePathLength;
  * .    UNIT8                           DevicePath[DevicePathLength]
  * } DEVICE_SECURITY_EVENT_DATA_HEADER2;
- * <p>
+ * </pre>
  */
 public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
 
@@ -31,38 +31,46 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      * Auth state - success.
      */
     public static final int AUTH_SUCCESS = 0;
+
     /**
      * Auth state - digital signature of the data is valid, but the public key certificate chain is not
      * validated with the entry in the UEFI device signature variable.
      */
     public static final int AUTH_NO_AUTHORITY = 1;
+
     /**
      * Auth state - digital signature of the measurement data is valid, but the reported device capabilities,
      * negotiated parameters or certificate chains were not validated by a transcript.
      */
     public static final int AUTH_NO_BINDING = 2;
+
     /**
      * Auth state - data has no digital signature.
      */
     public static final int AUTH_FAIL_NO_SIG = 3;
+
     /**
      * Auth state - data is invalid.
      */
     public static final int AUTH_FAIL_INVALID = 4;
+
     /**
      * Auth state - device is not an SPDM-capable device.
      */
     public static final int AUTH_NO_SPDM = 0xFF;
+
     /**
      * Event auth state.
      */
     @Getter
     private int authState = 0;
+
     /**
      * Event data length.
      */
     @Getter
     private int length = 0;
+
     /**
      * Event sub headerType.
      * SUBHEADERTYPE_MEAS_BLOCK = 0
@@ -70,11 +78,13 @@ public class DeviceSecurityEventDataHeader2 extends DeviceSecurityEventHeader {
      */
     @Getter
     private int subHeaderType = -1;
+
     /**
      * Event sub header length.
      */
     @Getter
     private int subHeaderLength = 0;
+
     /**
      * Event sub header UID.
      */

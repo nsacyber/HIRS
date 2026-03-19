@@ -1,15 +1,15 @@
 package hirs.attestationca.persist.service;
 
-import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
 import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
 import hirs.attestationca.persist.entity.userdefined.Device;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.service.util.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -151,9 +151,11 @@ public class DevicePageService {
      * The results are returned with pagination support.
      * <p>
      * This method combines the logic of two search functionalities:
-     * - Global search: Searches across all specified columns for a matching term.
-     * - Column-specific search: Filters based on individual column search criteria, such as text or date searches.
-     * <p>
+     * <ul>
+     * <li> Global search: Searches across all specified columns for a matching term.</li>
+     * <li> Column-specific search: Filters based on individual column search criteria,
+     * such as text or date searches.</li>
+     * </ul>
      *
      * @param searchableColumnNames     list of the searchable column names
      * @param globalSearchTerm          The term that the user enters in the global search box.

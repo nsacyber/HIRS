@@ -1,8 +1,8 @@
 package hirs.attestationca.portal.page.utils;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.portal.datatables.Column;
 import hirs.attestationca.portal.datatables.Order;
 import io.micrometer.common.util.StringUtils;

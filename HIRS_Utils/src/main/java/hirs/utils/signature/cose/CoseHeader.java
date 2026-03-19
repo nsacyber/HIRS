@@ -3,7 +3,6 @@ package hirs.utils.signature.cose;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,28 +10,33 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class to hold COSE header components common to both Protected and Unprotected headers,
- * specified in rfc rfc8152 (https://datatracker.ietf.org/doc/html/rfc8152#section-3.1).
+ * Class to hold COSE header components common to both Protected and Unprotected headers, specified in
+ * rfc rfc8152 (<a href="https://datatracker.ietf.org/doc/html/rfc8152#section-3.1">rfc rfc8152</a>).
  */
 public class CoseHeader {
 
     @Setter
     @Getter
     protected String algIdentifier = "";
+
     @Setter
     @Getter
     protected String keyIdentifier = "";
+
     @Setter
     @Getter
     protected String contentType = "";
+
     protected Map<Object, Object> parameters = null;
+
     protected List<X509Certificate> x5chain = null;
 
     /**
      * Prints the processed COSE Header data that is common to both Protected and Unprotected headers.
+     *
      * @return a formated string representation of the data in the COSE header object
      */
-    public String printHeaderCommonContentsPretty() throws IOException {
+    public String printHeaderCommonContentsPretty() {
         String returnString = "";
 
         if (!algIdentifier.isEmpty()) {

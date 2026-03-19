@@ -1,4 +1,4 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.persist.provision;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;

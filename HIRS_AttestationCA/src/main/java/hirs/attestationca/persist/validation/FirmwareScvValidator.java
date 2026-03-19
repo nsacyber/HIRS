@@ -11,6 +11,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
 import hirs.attestationca.persist.service.ValidationService;
 import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
@@ -36,6 +37,9 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
+/**
+ * Validator class responsible for validating firmware-related information.
+ */
 @Log4j2
 public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 

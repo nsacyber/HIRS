@@ -62,7 +62,7 @@ public class SignatureType {
 
     @XmlElement(name = "SignatureValue", required = true)
     protected SignatureValueType signatureValue;
-    
+
     @XmlElement(name = "KeyInfo")
     protected KeyInfoType keyInfo;
 
@@ -96,6 +96,8 @@ public class SignatureType {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link ObjectType }
+     *
+     * @return list of object types
      */
     public List<ObjectType> getObject() {
         if (object == null) {

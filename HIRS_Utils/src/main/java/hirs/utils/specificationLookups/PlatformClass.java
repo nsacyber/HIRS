@@ -8,9 +8,9 @@ import java.util.Map;
 
 /**
  * Enum to lookup values for platform class specified by section 4 of the following registry.
- * @see <a href="https://trustedcomputinggroup.org/wp-content/uploads/Registry-of-Reserved-TPM-2.0-
- *               Handles-and-Localities-Version-1.2-Revision-1.00_pub.pdf">
- *     Registry of Reserved TPM 2.0 Handles and Localities</a>
+ *
+ * @see <a href="https://trustedcomputinggroup.org/resource/tcg-platform-certificate-profile/">
+ * Registry of Reserved TPM 2.0 Handles and Localities</a>
  */
 @Getter
 @AllArgsConstructor
@@ -32,9 +32,6 @@ public enum PlatformClass {
     MULTITENANT(0xE, "Multi Tenant (Deprecated)"),
     TC(0xF, "TC (Deprecated)");
 
-    private final int platformClassId;
-    private final String comments;
-
     /**
      * Map of PlatformClass values.
      */
@@ -46,8 +43,12 @@ public enum PlatformClass {
         }
     }
 
+    private final int platformClassId;
+    private final String comments;
+
     /**
      * Searches platform class array for match to an enum value.
+     *
      * @param platformClassId int id of the platform class you want to look up
      * @return the corresponding platform class
      */

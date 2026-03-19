@@ -1,4 +1,4 @@
-package hirs.attestationca.persist.validation;
+package hirs.attestationca.persist.exceptions;
 
 /**
  * This class represents exceptions thrown by the SupplyChainValidator class.

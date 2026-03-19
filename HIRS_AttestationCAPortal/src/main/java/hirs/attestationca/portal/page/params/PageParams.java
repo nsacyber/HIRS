@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.page;
+package hirs.attestationca.portal.page.params;
 
 import java.util.LinkedHashMap;
 

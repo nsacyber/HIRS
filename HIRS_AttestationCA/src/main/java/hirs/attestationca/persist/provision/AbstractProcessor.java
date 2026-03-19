@@ -42,6 +42,11 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Contains the default properties required for a processor that communicates with the provisioner.
+ * This class serves as a base for processors, providing essential configuration and functionality
+ * needed to interact with the provisioning system.
+ */
 @Getter
 @Log4j2
 @NoArgsConstructor

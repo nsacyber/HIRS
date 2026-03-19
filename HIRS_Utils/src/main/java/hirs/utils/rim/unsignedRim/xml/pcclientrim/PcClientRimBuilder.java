@@ -3,7 +3,20 @@ package hirs.utils.rim.unsignedRim.xml.pcclientrim;
 import hirs.utils.swid.CredentialParser;
 import hirs.utils.swid.HashSwid;
 import hirs.utils.swid.SwidTagConstants;
+import hirs.utils.xjc.Directory;
+import hirs.utils.xjc.Entity;
 import hirs.utils.xjc.File;
+import hirs.utils.xjc.FilesystemItem;
+import hirs.utils.xjc.Link;
+import hirs.utils.xjc.ObjectFactory;
+import hirs.utils.xjc.ResourceCollection;
+import hirs.utils.xjc.SoftwareIdentity;
+import hirs.utils.xjc.SoftwareMeta;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
@@ -16,6 +29,14 @@ import org.w3c.dom.Node;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dom.DOMStructure;
+import javax.xml.crypto.dsig.Reference;
+import javax.xml.crypto.dsig.SignatureProperties;
+import javax.xml.crypto.dsig.SignatureProperty;
+import javax.xml.crypto.dsig.SignedInfo;
+import javax.xml.crypto.dsig.XMLObject;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureException;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMSignContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
@@ -27,58 +48,34 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
-
-import hirs.utils.xjc.Directory;
-import hirs.utils.xjc.Entity;
-import hirs.utils.xjc.FilesystemItem;
-import hirs.utils.xjc.Link;
-import hirs.utils.xjc.ObjectFactory;
-import hirs.utils.xjc.ResourceCollection;
-import hirs.utils.xjc.SoftwareIdentity;
-import hirs.utils.xjc.SoftwareMeta;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonException;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.xml.crypto.dsig.Reference;
-import javax.xml.crypto.dsig.SignatureProperties;
-import javax.xml.crypto.dsig.SignatureProperty;
-import javax.xml.crypto.dsig.SignedInfo;
-import javax.xml.crypto.dsig.XMLObject;
-import javax.xml.crypto.dsig.XMLSignature;
-import javax.xml.crypto.dsig.XMLSignatureException;
-import javax.xml.crypto.dsig.XMLSignatureFactory;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 
 /**
  * Class that builds a PC Client RIM.
@@ -129,6 +126,7 @@ public class PcClientRimBuilder {
 
     /**
      * Generate a SWIDtag from a file.
+     *
      * @param filename path to the file
      */
     public void generateSwidTag(final String filename) {
@@ -177,6 +175,7 @@ public class PcClientRimBuilder {
 
     /**
      * Assemble a composite payload from json config properties.
+     *
      * @param configProperties the json config
      * @return the assembled composite payload as a Document object
      */
@@ -187,10 +186,9 @@ public class PcClientRimBuilder {
         Document dirDoc = this.convertToDocument(jaxbDirectory);
         JsonArray files = configProperties.getJsonObject("Payload").getJsonObject("Directory")
                 .getJsonArray("File");
-        Iterator itr = files.iterator();
 
-        while (itr.hasNext()) {
-            File file = this.createFile((JsonObject) itr.next());
+        for (jakarta.json.JsonValue jsonValue : files) {
+            File file = this.createFile((JsonObject) jsonValue);
             JAXBElement<FilesystemItem> jaxbFile = this.objectFactory.createDirectoryFile(file);
             Document fileDoc = this.convertToDocument(jaxbFile);
             Node fileNode = dirDoc.importNode(fileDoc.getDocumentElement(), true);
@@ -208,8 +206,9 @@ public class PcClientRimBuilder {
 
     /**
      * Transform a SWIDtag Document to a string output.
+     *
      * @param swidTag the Document object with the SWIDtag
-     * @param output the output string
+     * @param output  the output string
      */
     public void writeSwidTagFile(final Document swidTag, final String output) {
         try {
@@ -234,6 +233,7 @@ public class PcClientRimBuilder {
 
     /**
      * Create software identity from a json object.
+     *
      * @param jsonObject the object with the attributes
      * @return the created SoftwareIdentity object
      */
@@ -269,6 +269,7 @@ public class PcClientRimBuilder {
 
     /**
      * Create entity from a json object.
+     *
      * @param jsonObject the object with the attributes
      * @return the created entity object
      */
@@ -285,9 +286,9 @@ public class PcClientRimBuilder {
 
             String[] roles = jsonObject.getString("role", "").split(",");
 
-            for (int i = 0; i < roles.length; ++i) {
-                entity.getRole().add(roles[i]);
-                if (roles[i].equals("tagCreator")) {
+            for (String role : roles) {
+                entity.getRole().add(role);
+                if (role.equals("tagCreator")) {
                     isTagCreator = true;
                 }
             }
@@ -312,6 +313,7 @@ public class PcClientRimBuilder {
 
     /**
      * Create link from a json object.
+     *
      * @param jsonObject the object with the attributes
      * @return the created link object
      */
@@ -332,6 +334,7 @@ public class PcClientRimBuilder {
 
     /**
      * Create software metadata from a json object.
+     *
      * @param jsonObject the object with the attributes
      * @return the created SoftwareMeta object
      */
@@ -379,6 +382,7 @@ public class PcClientRimBuilder {
 
     /**
      * Create a payload from a json object.
+     *
      * @param jsonObject the object with the attributes
      * @return the created ResourceCollection object that holds the payload
      */
@@ -401,6 +405,7 @@ public class PcClientRimBuilder {
 
     /**
      * Create a directory from a json object.
+     *
      * @param jsonObject the object with the attributes
      * @return the created directory
      */
@@ -409,10 +414,12 @@ public class PcClientRimBuilder {
         directory.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         directory.setLocation(jsonObject.getString(SwidTagConstants.LOCATION, ""));
         Map<QName, String> attributes = directory.getOtherAttributes();
-        String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, "supportRIMFormat missing");
+        String supportRimFormat =
+                jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT, "supportRIMFormat missing");
         if (!supportRimFormat.equals("supportRIMFormat missing")) {
             if (supportRimFormat.isEmpty()) {
-                attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, SwidTagConstants.TCG_EVENTLOG_ASSERTION);
+                attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT,
+                        SwidTagConstants.TCG_EVENTLOG_ASSERTION);
             } else {
                 attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, supportRimFormat);
             }
@@ -429,6 +436,7 @@ public class PcClientRimBuilder {
 
     /**
      * Create a file from a json object.
+     *
      * @param jsonObject the object with the attributes
      * @return the created file
      */
@@ -450,7 +458,8 @@ public class PcClientRimBuilder {
                 "supportRIMFormat missing");
         if (!supportRimFormat.equals("supportRIMFormat missing")) {
             if (supportRimFormat.isEmpty()) {
-                attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, SwidTagConstants.TCG_EVENTLOG_ASSERTION);
+                attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT,
+                        SwidTagConstants.TCG_EVENTLOG_ASSERTION);
             } else {
                 attributes.put(SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT, supportRimFormat);
             }
@@ -465,10 +474,11 @@ public class PcClientRimBuilder {
 
     /**
      * Add an attribute.
+     *
      * @param attributes the map of attributes
-     * @param key key for the added attribute
-     * @param value value for the added attribute
-     * @param required true if the attribute is required
+     * @param key        key for the added attribute
+     * @param value      value for the added attribute
+     * @param required   true if the attribute is required
      */
     protected void addNonNullAttribute(final Map<QName, String> attributes, final QName key,
                                        final String value, final boolean required) {
@@ -482,9 +492,10 @@ public class PcClientRimBuilder {
 
     /**
      * Add an attribute.
+     *
      * @param attributes the map of attributes
-     * @param key key for the added attribute
-     * @param value value for the added attribute
+     * @param key        key for the added attribute
+     * @param value      value for the added attribute
      */
     protected void addNonNullAttribute(final Map<QName, String> attributes, final QName key,
                                        final String value) {
@@ -495,6 +506,7 @@ public class PcClientRimBuilder {
 
     /**
      * Convert a JAXBElement to Document type.
+     *
      * @param element the element to convert
      * @return the created Document
      */
@@ -513,6 +525,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sign an XML document.
+     *
      * @param doc document to sign
      * @return the signed document
      */
@@ -616,7 +629,8 @@ public class PcClientRimBuilder {
 
     /**
      * Create XML timestamp.
-     * @param doc data to be timestamped
+     *
+     * @param doc        data to be timestamped
      * @param sigFactory class used for generating the signature
      * @return XMLObject the created timestamp
      */
@@ -666,6 +680,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sets RIM config file.
+     *
      * @param configFile the RIM config file
      */
     @Generated
@@ -675,6 +690,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sets RIM default credentials.
+     *
      * @param defaultCredentials the RIM default credentials
      */
     @Generated
@@ -684,6 +700,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sets RIM truststore file.
+     *
      * @param jksTruststoreFile the truststore file
      */
     @Generated
@@ -693,6 +710,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sets RIM private key file.
+     *
      * @param pemPrivateKeyFile the RIM private key file
      */
     @Generated
@@ -702,6 +720,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sets RIM certificate file.
+     *
      * @param pemCertificateFile the RIM certifcate file
      */
     @Generated
@@ -711,6 +730,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sets true/false for embedded certificate.
+     *
      * @param embeddedCert true if cert is embedded
      */
     @Generated
@@ -720,6 +740,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sets RIM event log.
+     *
      * @param rimEventLog the RIM event log
      */
     @Generated
@@ -729,6 +750,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sets timestamp format.
+     *
      * @param timestampFormat the timestamp format
      */
     @Generated
@@ -738,6 +760,7 @@ public class PcClientRimBuilder {
 
     /**
      * Sets timestamp.
+     *
      * @param timestampArgument the timestamp
      */
     @Generated
