@@ -440,7 +440,7 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 try {
                     sb.append(new UefiVariable(eventContent));
-                } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+                } catch (NoSuchAlgorithmException | IOException exception) {
                     log.error(exception);
                     sb.append(exception);
                 }
