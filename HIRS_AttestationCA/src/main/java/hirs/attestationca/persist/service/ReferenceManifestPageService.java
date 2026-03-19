@@ -46,11 +46,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the
- * Reference Manifest Page.
+ * Service class responsible for encapsulating all business logic related to the Reference Manifest Page.
  */
-@Log4j2
 @Service
+@Log4j2
 public class ReferenceManifestPageService {
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
@@ -87,7 +86,7 @@ public class ReferenceManifestPageService {
             final String globalSearchTerm,
             final boolean archiveFlag,
             final Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
         Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
 
@@ -107,7 +106,7 @@ public class ReferenceManifestPageService {
         query.orderBy(getSortingOrders(criteriaBuilder, rimRoot, pageable.getSort()));
 
         // Apply pagination
-        TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
+        TypedQuery<ReferenceManifest> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
@@ -131,7 +130,7 @@ public class ReferenceManifestPageService {
             final Set<DataTablesColumn> columnsWithSearchCriteria,
             final boolean archiveFlag,
             final Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
         Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
 
@@ -150,7 +149,7 @@ public class ReferenceManifestPageService {
         query.orderBy(getSortingOrders(criteriaBuilder, rimRoot, pageable.getSort()));
 
         // Apply pagination
-        TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
+        TypedQuery<ReferenceManifest> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
@@ -185,7 +184,7 @@ public class ReferenceManifestPageService {
             final Set<DataTablesColumn> columnsWithSearchCriteria,
             final boolean archiveFlag,
             final Pageable pageable) {
-        CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ReferenceManifest> query = criteriaBuilder.createQuery(ReferenceManifest.class);
         Root<ReferenceManifest> rimRoot = query.from(ReferenceManifest.class);
 
@@ -210,7 +209,7 @@ public class ReferenceManifestPageService {
         query.orderBy(getSortingOrders(criteriaBuilder, rimRoot, pageable.getSort()));
 
         // Apply pagination
-        TypedQuery<ReferenceManifest> typedQuery = this.entityManager.createQuery(query);
+        TypedQuery<ReferenceManifest> typedQuery = entityManager.createQuery(query);
         int totalRows = typedQuery.getResultList().size();  // Get the total count for pagination
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
@@ -226,8 +225,9 @@ public class ReferenceManifestPageService {
      * @param pageable pageable
      * @return page of RIMs
      */
-    public Page<ReferenceManifest> findAllBaseAndSupportRIMSByPageable(final Pageable pageable) {
-        return this.referenceManifestRepository.findAllBaseAndSupportRimsPageable(pageable);
+    public Page<ReferenceManifest> findAllBaseAndSupportRIMS(final Pageable pageable) {
+        return referenceManifestRepository.findByClassIn(
+                List.of(BaseReferenceManifest.class, SupportReferenceManifest.class), pageable);
     }
 
     /**
@@ -236,7 +236,7 @@ public class ReferenceManifestPageService {
      * @return total number of records in the RIM repository.
      */
     public long findRIMRepositoryCount() {
-        return this.referenceManifestRepository.findByArchiveFlag(false).size();
+        return referenceManifestRepository.countByArchiveFlag(false);
     }
 
     /**
@@ -259,7 +259,7 @@ public class ReferenceManifestPageService {
      * @return download file of a RIM
      */
     public DownloadFile downloadRIM(final UUID uuid) {
-        final ReferenceManifest referenceManifest = this.findSpecifiedRIM(uuid);
+        final ReferenceManifest referenceManifest = findSpecifiedRIM(uuid);
 
         if (referenceManifest == null) {
             final String notFoundMessage = "Unable to locate RIM with ID: " + uuid;
@@ -277,7 +277,7 @@ public class ReferenceManifestPageService {
      * @throws IOException if there are any issues packaging or downloading the zip file
      */
     public void bulkDownloadRIMS(final ZipOutputStream zipOut) throws IOException {
-        List<ReferenceManifest> allRIMs = this.referenceManifestRepository.findAll();
+        List<ReferenceManifest> allRIMs = referenceManifestRepository.findAll();
 
         // create a list of all the RIMs that are of base rim or support rim type
         final List<ReferenceManifest> referenceManifestList =
@@ -309,7 +309,7 @@ public class ReferenceManifestPageService {
     public void deleteRIM(final UUID uuid,
                           final List<String> successMessages,
                           final List<String> errorMessages) {
-        ReferenceManifest referenceManifest = this.findSpecifiedRIM(uuid);
+        ReferenceManifest referenceManifest = findSpecifiedRIM(uuid);
 
         if (referenceManifest == null) {
             final String notFoundMessage = "Unable to locate RIM to delete with ID: " + uuid;
@@ -318,7 +318,7 @@ public class ReferenceManifestPageService {
             throw new EntityNotFoundException(notFoundMessage);
         }
 
-        this.referenceManifestRepository.delete(referenceManifest);
+        referenceManifestRepository.delete(referenceManifest);
 
         final String deleteCompletedMessage = "RIM successfully deleted";
         successMessages.add(deleteCompletedMessage);
@@ -357,10 +357,10 @@ public class ReferenceManifestPageService {
 
         // save the base rims in the repo if they don't already exist in the repo
         baseRims.forEach((baseRIM) -> {
-            if (this.referenceManifestRepository.findByHexDecHashAndRimType(
+            if (referenceManifestRepository.findByHexDecHashAndRimType(
                     baseRIM.getHexDecHash(), baseRIM.getRimType()) == null) {
                 final String successMessage = "Stored swidtag " + baseRIM.getFileName() + " successfully";
-                this.referenceManifestRepository.save(baseRIM);
+                referenceManifestRepository.save(baseRIM);
                 log.info(successMessage);
                 successMessages.add(successMessage);
             }
@@ -368,11 +368,10 @@ public class ReferenceManifestPageService {
 
         // save the support rims in the repo if they don't already exist in the repo
         supportRims.forEach((supportRIM) -> {
-            if (this.referenceManifestRepository.findByHexDecHashAndRimType(
+            if (referenceManifestRepository.findByHexDecHashAndRimType(
                     supportRIM.getHexDecHash(), supportRIM.getRimType()) == null) {
-                final String successMessage =
-                        "Stored event log " + supportRIM.getFileName() + " successfully";
-                this.referenceManifestRepository.save(supportRIM);
+                final String successMessage = "Stored event log " + supportRIM.getFileName() + " successfully";
+                referenceManifestRepository.save(supportRIM);
                 log.info(successMessage);
                 successMessages.add(successMessage);
             }
@@ -383,7 +382,7 @@ public class ReferenceManifestPageService {
         // or already exist create a map of the supports rims in case an uploaded swidtag
         // isn't one to one with the uploaded support rims.
         Map<String, SupportReferenceManifest> updatedSupportRims
-                = updateSupportRimInfo(this.referenceManifestRepository.findAllSupportRims());
+                = updateSupportRimInfo(referenceManifestRepository.findAllSupportRims());
 
         // pass in the updated support rims
         // and either update or add the events
@@ -404,8 +403,7 @@ public class ReferenceManifestPageService {
         try {
             fileBytes = file.getBytes();
         } catch (IOException e) {
-            final String failMessage =
-                    String.format("Failed to read uploaded Base RIM file (%s): ", fileName);
+            final String failMessage = String.format("Failed to read uploaded Base RIM file (%s): ", fileName);
             log.error(failMessage, e);
             errorMessages.add(failMessage + e.getMessage());
         }
@@ -436,8 +434,7 @@ public class ReferenceManifestPageService {
         try {
             fileBytes = file.getBytes();
         } catch (IOException e) {
-            final String failMessage =
-                    String.format("Failed to read uploaded Support RIM file (%s): ", fileName);
+            final String failMessage = String.format("Failed to read uploaded Support RIM file (%s): ", fileName);
             log.error(failMessage, e);
             errorMessages.add(failMessage + e.getMessage());
         }
@@ -553,8 +550,7 @@ public class ReferenceManifestPageService {
             hashValues.put(support.getHexDecHash(), support);
         }
 
-        List<BaseReferenceManifest> baseReferenceManifests =
-                this.referenceManifestRepository.findAllBaseRims();
+        List<BaseReferenceManifest> baseReferenceManifests = referenceManifestRepository.findAllBaseRims();
 
         for (BaseReferenceManifest dbBaseRim : baseReferenceManifests) {
             for (Map.Entry<String, SupportReferenceManifest> entry : hashValues.entrySet()) {
@@ -573,11 +569,11 @@ public class ReferenceManifestPageService {
                     supportRim.setAssociatedRim(dbBaseRim.getId());
                     dbBaseRim.setAssociatedRim(supportRim.getId());
                     supportRim.setUpdated(true);
-                    this.referenceManifestRepository.save(supportRim);
+                    referenceManifestRepository.save(supportRim);
                     updatedSupportRims.put(supportHash, supportRim);
                 }
             }
-            this.referenceManifestRepository.save(dbBaseRim);
+            referenceManifestRepository.save(dbBaseRim);
         }
 
         return updatedSupportRims;
@@ -592,7 +588,7 @@ public class ReferenceManifestPageService {
      */
     private ReferenceManifest findBaseRim(final SupportReferenceManifest supportRim) {
         if (supportRim != null && (supportRim.getId() != null && !supportRim.getId().toString().isEmpty())) {
-            List<BaseReferenceManifest> baseRims = new LinkedList<>(this.referenceManifestRepository
+            List<BaseReferenceManifest> baseRims = new LinkedList<>(referenceManifestRepository
                     .getBaseByManufacturerModel(supportRim.getPlatformManufacturer(),
                             supportRim.getPlatformModel()));
 
@@ -629,7 +625,7 @@ public class ReferenceManifestPageService {
                                     tpe.getEventTypeStr(), false, false,
                                     true, tpe.getEventContent());
 
-                            this.referenceDigestValueRepository.save(newRdv);
+                            referenceDigestValueRepository.save(newRdv);
                         }
                     } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
@@ -638,7 +634,7 @@ public class ReferenceManifestPageService {
                     for (ReferenceDigestValue referenceValue : referenceValues) {
                         if (!referenceValue.isUpdated()) {
                             referenceValue.updateInfo(dbSupport, baseRim.getId());
-                            this.referenceDigestValueRepository.save(referenceValue);
+                            referenceDigestValueRepository.save(referenceValue);
                         }
                     }
                 }
@@ -646,3 +642,5 @@ public class ReferenceManifestPageService {
         }
     }
 }
+
+

@@ -14,11 +14,10 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the Endorsement
- * Credentials Page.
+ * Service class responsible for encapsulating all business logic related to the Endorsement Credentials Page.
  */
-@Log4j2
 @Service
+@Log4j2
 public class EndorsementCredentialPageService {
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
@@ -28,8 +27,7 @@ public class EndorsementCredentialPageService {
      * @param endorsementCredentialRepository endorsement credential repository
      */
     @Autowired
-    public EndorsementCredentialPageService(
-            final EndorsementCredentialRepository endorsementCredentialRepository) {
+    public EndorsementCredentialPageService(final EndorsementCredentialRepository endorsementCredentialRepository) {
         this.endorsementCredentialRepository = endorsementCredentialRepository;
     }
 
@@ -42,7 +40,7 @@ public class EndorsementCredentialPageService {
      */
     public Page<EndorsementCredential> findEndorsementCredentialsByArchiveFlag(final boolean archiveFlag,
                                                                                final Pageable pageable) {
-        return this.endorsementCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
+        return endorsementCredentialRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
     /**
@@ -51,7 +49,7 @@ public class EndorsementCredentialPageService {
      * @return total number of records in the endorsement credential repository.
      */
     public long findEndorsementCredentialRepositoryCount() {
-        return this.endorsementCredentialRepository.findByArchiveFlag(false).size();
+        return endorsementCredentialRepository.countByArchiveFlag(false);
     }
 
     /**
@@ -71,8 +69,8 @@ public class EndorsementCredentialPageService {
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to read uploaded endorsement credential file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to read uploaded endorsement credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
@@ -81,26 +79,25 @@ public class EndorsementCredentialPageService {
         try {
             return new EndorsementCredential(fileBytes);
         } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded endorsement credential file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to parse uploaded endorsement credential file (%s): ", fileName);
             log.error(failMessage, ioEx);
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
         } catch (DecoderException dEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded endorsement credential pem file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to parse uploaded endorsement credential pem file (%s): ", fileName);
             log.error(failMessage, dEx);
             errorMessages.add(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
-            final String failMessage = String.format(
-                    "Endorsement credential format not recognized(%s): ", fileName);
+            final String failMessage = String.format("Endorsement credential format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
             errorMessages.add(failMessage + iaEx.getMessage());
             return null;
         } catch (IllegalStateException isEx) {
-            final String failMessage = String.format(
-                    "Unexpected object while parsing endorsement credential %s ", fileName);
+            final String failMessage =
+                    String.format("Unexpected object while parsing endorsement credential %s ", fileName);
             log.error(failMessage, isEx);
             errorMessages.add(failMessage + isEx.getMessage());
             return null;

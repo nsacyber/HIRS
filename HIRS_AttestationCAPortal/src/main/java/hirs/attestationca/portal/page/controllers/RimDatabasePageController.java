@@ -31,9 +31,9 @@ import java.util.Set;
 /**
  * Controller for the TPM Events page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-database")
+@Log4j2
 public class RimDatabasePageController extends PageController<NoPageParams> {
     private final ReferenceDigestValuePageService referenceDigestValuePageService;
 
@@ -108,12 +108,12 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
         for (ReferenceDigestValue rdv : rdvFilteredRecordsList) {
             // We are updating the base rim ID field if necessary and
             if (rdv.getBaseRimId() == null
-                    && this.referenceDigestValuePageService.doesRIMExist(rdv.getSupportRimId())) {
-                support = (SupportReferenceManifest) this.referenceDigestValuePageService.findRIMById(
+                    && referenceDigestValuePageService.doesRIMExist(rdv.getSupportRimId())) {
+                support = (SupportReferenceManifest) referenceDigestValuePageService.findRIMById(
                         rdv.getSupportRimId());
                 rdv.setBaseRimId(support.getAssociatedRim());
                 try {
-                    this.referenceDigestValuePageService.saveReferenceDigestValue(rdv);
+                    referenceDigestValuePageService.saveReferenceDigestValue(rdv);
                 } catch (DBManagerException dbMEx) {
                     log.error("Failed to update TPM Event with Base RIM ID");
                 }
@@ -162,23 +162,21 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult = this.referenceDigestValuePageService.findAllReferenceDigestValues(pageable);
+            pagedResult = referenceDigestValuePageService.findAllReferenceDigestValues(pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.referenceDigestValuePageService.findReferenceDigestValuesByGlobalAndColumnSpecificSearchTerm(
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            columnsWithSearchCriteria,
-                            pageable);
+            pagedResult = referenceDigestValuePageService.findReferenceDigestValuesByGlobalAndColumnSpecificSearchTerm(
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    columnsWithSearchCriteria,
+                    pageable);
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.referenceDigestValuePageService.findReferenceDigestValuesByColumnSpecificSearchTerm(
-                            columnsWithSearchCriteria, pageable);
+            pagedResult = referenceDigestValuePageService.findReferenceDigestValuesByColumnSpecificSearchTerm(
+                    columnsWithSearchCriteria, pageable);
         } else {
             // if a value has been entered ONLY in the global search textbox
-            pagedResult = this.referenceDigestValuePageService.findReferenceDigestValuesByGlobalSearchTerm(
+            pagedResult = referenceDigestValuePageService.findReferenceDigestValuesByGlobalSearchTerm(
                     searchableColumnNames,
                     globalSearchTerm, pageable);
         }
@@ -191,7 +189,7 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
 
         rdvFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         rdvFilteredRecordsList.setRecordsTotal(
-                this.referenceDigestValuePageService.findReferenceDigestValueRepositoryCount());
+                referenceDigestValuePageService.findReferenceDigestValueRepositoryCount());
 
         return rdvFilteredRecordsList;
     }

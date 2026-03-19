@@ -22,9 +22,9 @@ import java.util.UUID;
 /**
  * Controller for the Certificate Details page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-details")
+@Log4j2
 public class CertificateDetailsPageController extends PageController<CertificateDetailsPageParams> {
 
     /**
