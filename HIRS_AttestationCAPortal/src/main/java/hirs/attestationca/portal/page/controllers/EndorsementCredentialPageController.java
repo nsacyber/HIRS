@@ -46,9 +46,9 @@ import java.util.zip.ZipOutputStream;
 /**
  * Controller for the Endorsement Key Credentials page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
+@Log4j2
 public class EndorsementCredentialPageController extends PageController<NoPageParams> {
     private final EndorsementCredentialPageService endorsementCredentialPageService;
     private final CertificatePageService certificatePageService;
@@ -144,9 +144,8 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         log.info("Received request to download endorsement credential id {}", id);
 
         try {
-            final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(EndorsementCredential.class,
-                            UUID.fromString(id));
+            final DownloadFile downloadFile = certificatePageService.downloadCertificate(EndorsementCredential.class,
+                    UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -175,8 +174,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificatePageService.bulkDownloadCertificates(zipOut,
-                    CertificateType.ENDORSEMENT_CREDENTIALS,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
@@ -207,10 +205,10 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             List<String> successMessages = new ArrayList<>();
 
             EndorsementCredential parsedEndorsementCredential =
-                    this.endorsementCredentialPageService.parseEndorsementCredential(file, errorMessages);
+                    endorsementCredentialPageService.parseEndorsementCredential(file, errorMessages);
 
             if (parsedEndorsementCredential != null) {
-                this.certificatePageService.storeCertificate(CertificateType.ENDORSEMENT_CREDENTIALS,
+                certificatePageService.storeCertificate(CertificateType.ENDORSEMENT_CREDENTIALS,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedEndorsementCredential);
             }
@@ -245,8 +243,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id),
-                    successMessages, errorMessages);
+            certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
@@ -282,7 +279,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
+            certificatePageService.bulkDeleteCertificates(ids, successMessages,
                     errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
@@ -334,29 +331,27 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult = this.endorsementCredentialPageService.
-                    findEndorsementCredentialsByArchiveFlag(false, pageable);
+            pagedResult =
+                    endorsementCredentialPageService.findEndorsementCredentialsByArchiveFlag(false, pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
-                            EndorsementCredential.class,
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
+            pagedResult = certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                    EndorsementCredential.class,
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
-                            EndorsementCredential.class,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
+            pagedResult = certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                    EndorsementCredential.class,
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else {
             // if a value has been entered ONLY in the global search textbox
-            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+            pagedResult = certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     EndorsementCredential.class,
                     searchableColumnNames,
                     globalSearchTerm,
@@ -371,7 +366,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         ekFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         ekFilteredRecordsList.setRecordsTotal(
-                this.endorsementCredentialPageService.findEndorsementCredentialRepositoryCount());
+                endorsementCredentialPageService.findEndorsementCredentialRepositoryCount());
 
         return ekFilteredRecordsList;
     }

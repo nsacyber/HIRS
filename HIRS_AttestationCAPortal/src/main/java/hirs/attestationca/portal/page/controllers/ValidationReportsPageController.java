@@ -31,9 +31,9 @@ import java.util.Set;
 /**
  * Controller for the Validation Summary Reports page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/validation-reports")
+@Log4j2
 public class ValidationReportsPageController extends PageController<NoPageParams> {
     private final ValidationSummaryPageService validationSummaryPageService;
 
@@ -122,7 +122,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                                           final HttpServletResponse response)
             throws IOException {
         log.info("Received request to download validation summary reports");
-        this.validationSummaryPageService.downloadValidationReports(request, response);
+        validationSummaryPageService.downloadValidationReports(request, response);
     }
 
     /**
@@ -162,11 +162,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult = this.validationSummaryPageService.findValidationSummaryReportsByPageable(pageable);
+            pagedResult = validationSummaryPageService.findValidationSummaryReportsByPageable(pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
-                    this.validationSummaryPageService.findValidationSummaryReportsByGlobalAndColumnSpecificSearchTerm(
+                    validationSummaryPageService.findValidationSummaryReportsByGlobalAndColumnSpecificSearchTerm(
                             searchableColumnNames,
                             globalSearchTerm,
                             columnsWithSearchCriteria,
@@ -174,17 +174,16 @@ public class ValidationReportsPageController extends PageController<NoPageParams
                             pageable);
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
-            pagedResult = this.validationSummaryPageService
-                    .findValidationSummaryReportsByColumnSpecificSearchTermAndArchiveFlag(
+            pagedResult =
+                    validationSummaryPageService.findValidationSummaryReportsByColumnSpecificSearchTermAndArchiveFlag(
                             columnsWithSearchCriteria, false, pageable);
         } else {
             // if a value has been entered ONLY in the global search textbox
-            pagedResult = this.validationSummaryPageService
-                    .findValidationReportsByGlobalSearchTermAndArchiveFlag(
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            false,
-                            pageable);
+            pagedResult = validationSummaryPageService.findValidationReportsByGlobalSearchTermAndArchiveFlag(
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    false,
+                    pageable);
         }
 
         FilteredRecordsList<SupplyChainValidationSummary> reportsFilteredRecordsList =
@@ -195,8 +194,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
         }
 
         reportsFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        reportsFilteredRecordsList.setRecordsTotal(
-                this.validationSummaryPageService.findValidationSummaryRepositoryCount());
+        reportsFilteredRecordsList.setRecordsTotal(validationSummaryPageService.findValidationSummaryRepositoryCount());
 
         return reportsFilteredRecordsList;
     }

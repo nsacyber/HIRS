@@ -54,9 +54,9 @@ import java.util.zip.ZipOutputStream;
 /**
  * Controller for the Trust Chain Certificates page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain")
+@Log4j2
 public class TrustChainCertificatePageController extends PageController<NoPageParams> {
     /**
      * Model attribute name used by initPage for the Root ACA Trust Chain Certificate.
@@ -138,24 +138,24 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         // add object that contains the leaf ACA certificate information
         mav.addObject(LEAF_ACA_CERT_DATA, new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInfoHelper(
-                this.certificateRepository,
-                this.caCredentialRepository,
-                this.acaTrustChainCertificates[0],
+                certificateRepository,
+                caCredentialRepository,
+                acaTrustChainCertificates[0],
                 "Leaf ACA Certificate Not Found")));
 
         // add object that contains the intermediate ACA certificate information
         mav.addObject(INTERMEDIATE_ACA_CERT_DATA,
                 new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInfoHelper(
-                        this.certificateRepository,
-                        this.caCredentialRepository,
-                        this.acaTrustChainCertificates[1],
+                        certificateRepository,
+                        caCredentialRepository,
+                        acaTrustChainCertificates[1],
                         "Intermediate ACA Certificate Not Found")));
 
         // add object that contains the root ACA certificate information
         mav.addObject(ROOT_ACA_CERT_DATA, new HashMap<>(CertificateStringMapBuilder.getCertificateAuthorityInfoHelper(
-                this.certificateRepository,
-                this.caCredentialRepository,
-                this.acaTrustChainCertificates[2],
+                certificateRepository,
+                caCredentialRepository,
+                acaTrustChainCertificates[2],
                 "Root ACA Certificate Not Found")));
 
         return mav;
@@ -225,7 +225,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         try {
             final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(CertificateAuthorityCredential.class,
+                    certificatePageService.downloadCertificate(CertificateAuthorityCredential.class,
                             UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
@@ -252,8 +252,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         // Get the output stream of the response
         try (OutputStream outputStream = response.getOutputStream()) {
             // PEM file of the leaf certificate, intermediate certificate and root certificate (in that order)
-            final String fullChainPEM =
-                    ControllerPagesUtils.convertCertificateArrayToPem(acaTrustChainCertificates);
+            final String fullChainPEM = ControllerPagesUtils.convertCertificateArrayToPem(acaTrustChainCertificates);
 
             final String pemFileName = "hirs-aca-trust_chain.pem";
 
@@ -287,7 +286,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
@@ -320,8 +319,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
             List<String> successMessages = new ArrayList<>();
 
             CertificateAuthorityCredential parsedTrustChainCertificate =
-                    this.certificatePageService.parseTrustChainCertificate(file, successMessages,
-                            errorMessages);
+                    certificatePageService.parseTrustChainCertificate(file, successMessages, errorMessages);
 
             if (parsedTrustChainCertificate != null) {
                 certificatePageService.storeCertificate(
@@ -360,8 +358,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages,
-                    errorMessages);
+            certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -396,8 +393,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
-                    errorMessages);
+            certificatePageService.bulkDeleteCertificates(ids, successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -448,30 +444,26 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult =
-                    this.trustChainCertificatePageService.
-                            findCACredentialsByArchiveFlag(false, pageable);
+            pagedResult = trustChainCertificatePageService.findCACredentialsByArchiveFlag(false, pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
-                            CertificateAuthorityCredential.class,
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
+            pagedResult = certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                    CertificateAuthorityCredential.class,
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
-                            CertificateAuthorityCredential.class,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
+            pagedResult = certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                    CertificateAuthorityCredential.class,
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else {
-            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
-                    // if a value has been entered ONLY in the global search textbox
+            // if a value has been entered ONLY in the global search textbox
+            pagedResult = certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     CertificateAuthorityCredential.class,
                     searchableColumnNames,
                     globalSearchTerm,
@@ -486,8 +478,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         }
 
         caFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        caFilteredRecordsList.setRecordsTotal(
-                this.trustChainCertificatePageService.findTrustChainCertificateRepoCount());
+        caFilteredRecordsList.setRecordsTotal(trustChainCertificatePageService.findTrustChainCertificateRepoCount());
 
         return caFilteredRecordsList;
     }

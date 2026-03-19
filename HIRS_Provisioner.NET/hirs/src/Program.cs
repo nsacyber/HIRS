@@ -2,13 +2,16 @@
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace hirs {
     class Program {
-        public static readonly string VERSION = "17";
+        public static readonly string VERSION = typeof(Program).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
 
         static async Task<int> Main(string[] args) {
             ClientExitCodes result = 0;

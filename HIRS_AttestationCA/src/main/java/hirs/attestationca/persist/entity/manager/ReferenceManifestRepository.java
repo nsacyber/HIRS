@@ -25,68 +25,68 @@ import java.util.UUID;
 @Repository
 public interface ReferenceManifestRepository extends JpaRepository<ReferenceManifest, UUID> {
     /**
-     * Query that retrieves a reference manifest using the provided hex/dec hash.
+     * Query that retrieves a {@link ReferenceManifest} object using the provided hex/dec hash.
      *
      * @param hexDecHash string representation of the hex dec hash
-     * @return a reference manifest
+     * @return a {@link ReferenceManifest} object
      */
     ReferenceManifest findByHexDecHash(String hexDecHash);
 
     /**
-     * Query that retrieves a reference manifest using the provided base 64 hash.
+     * Query that retrieves a {@link ReferenceManifest} object using the provided base 64 hash.
      *
      * @param base64Hash string representation of the base 64 hash
-     * @return a reference manifest
+     * @return a {@link ReferenceManifest} object
      */
     ReferenceManifest findByBase64Hash(String base64Hash);
 
     /**
-     * Query that retrieves a reference manifest using the provided hex/dec hash and rim type.
+     * Query that retrieves a {@link ReferenceManifest} object using the provided hex/dec hash and rim type.
      *
      * @param hexDecHash string representation of the hex dec hash
      * @param rimType    string representation of the rim type
-     * @return a reference manifest
+     * @return a {@link ReferenceManifest} object
      */
     ReferenceManifest findByHexDecHashAndRimType(String hexDecHash, String rimType);
 
     /**
-     * Query that retrieves an unarchived reference manifest using the provided hex/dec hash and rim type.
+     * Query that retrieves an unarchived {@link ReferenceManifest} object using the provided hex/dec hash and rim type.
      *
      * @param hexDecHash string representation of the hex dec hash
      * @param rimType    string representation of the rim type
-     * @return a reference manifest
+     * @return a {@link ReferenceManifest} object
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE hexDecHash = ?1 AND rimType = ?2 "
             + "AND archiveFlag is false", nativeQuery = true)
     ReferenceManifest findByHexDecHashAndRimTypeUnarchived(String hexDecHash, String rimType);
 
     /**
-     * Query that retrieves a reference manifest using the provided event log hash and rim type.
+     * Query that retrieves a {@link ReferenceManifest} object using the provided event log hash and rim type.
      *
      * @param hexDecHash string representation of the event log hash
      * @param rimType    string representation of the rim type
-     * @return a reference manifest
+     * @return a {@link ReferenceManifest} object
      */
     ReferenceManifest findByEventLogHashAndRimType(String hexDecHash, String rimType);
 
     /**
-     * Query that retrieves a list of base reference manifests using the provided manufacturer and model
+     * Query that retrieves a list of {@link BaseReferenceManifest} objects using the provided manufacturer and model
      * and where the rim type is equal to base.
      *
      * @param manufacturer string representation of platform manufacturer
      * @param model        string representation of platform model
-     * @return a list of base reference manifests
+     * @return a list of {@link BaseReferenceManifest} objects
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 "
             + "AND rimType = 'Base'", nativeQuery = true)
     List<BaseReferenceManifest> getBaseByManufacturerModel(String manufacturer, String model);
 
     /**
-     * Query that retrieves a list of base reference manifests using the provided manufacturer and model.
+     * Query that retrieves a list of {@link BaseReferenceManifest} objects using the provided manufacturer and model.
      *
      * @param manufacturer string representation of platform manufacturer
      * @param dType        dtype
-     * @return a list of base reference manifests
+     * @return a list of {@link BaseReferenceManifest} objects
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND DTYPE = ?2",
             nativeQuery = true)
@@ -104,19 +104,19 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     ReferenceManifest getByModel(String model, String dType);
 
     /**
-     * Query that retrieves a list of base reference manifests where the dtype is a base reference manifest.
+     * Query that retrieves a list of {@link BaseReferenceManifest} objects where the dtype is a base reference manifest.
      *
-     * @return a list of base reference manifests
+     * @return a list of {@link BaseReferenceManifest} objects
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE DTYPE = 'BaseReferenceManifest'",
             nativeQuery = true)
     List<BaseReferenceManifest> findAllBaseRims();
 
     /**
-     * Query that retrieves a list of support reference manifests where the dtype is a
+     * Query that retrieves a list of {@link SupportReferenceManifest} objects where the dtype is a
      * support reference manifest.
      *
-     * @return a list of support reference manifests
+     * @return a list of {@link SupportReferenceManifest} objects
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE DTYPE = 'SupportReferenceManifest'",
             nativeQuery = true)
@@ -156,11 +156,11 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     EventLogMeasurements getEventLogRimEntityById(UUID uuid);
 
     /**
-     * Query that retrieves a list of support reference manifests using the provided device name and where the
-     * dtype is a support reference manifest.
+     * Query that retrieves a list of {@link SupportReferenceManifest} objects using the provided device name and where
+     * the dtype is a support reference manifest.
      *
      * @param deviceName string representation of the device name
-     * @return a list of support reference manifests
+     * @return a list of {@link SupportReferenceManifest} objects
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE deviceName = ?1 "
             + "AND DTYPE = 'SupportReferenceManifest'", nativeQuery = true)
@@ -189,60 +189,58 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     EventLogMeasurements byMeasurementDeviceNameUnarchived(String deviceName);
 
     /**
-     * Query that retrieves a list of support reference manifests using the provided manufacturer and platform
-     * model and where the rim type is support.
+     * Query that retrieves a list of {@link SupportReferenceManifest} objects using the provided manufacturer and
+     * platform model and where the rim type is support.
      *
      * @param manufacturer string representation of platform manufacturer
      * @param model        string representation of platform model
-     * @return a list of support reference manifests
+     * @return a list of {@link SupportReferenceManifest} objects
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 "
             + "AND rimType = 'Support'", nativeQuery = true)
     List<SupportReferenceManifest> getSupportByManufacturerModel(String manufacturer, String model);
 
     /**
-     * Query that retrieves event log measurements using the provided platform model and where the dtype is
-     * event log measurements.
+     * Query that retrieves an {@link EventLogMeasurements} object using the provided platform model and where the
+     * dtype is event log measurements.
      *
      * @param model string representation of platform model.
-     * @return event log measurements
+     * @return an {@link EventLogMeasurements} object
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformModel = ?1 "
             + "AND DTYPE = 'EventLogMeasurements'", nativeQuery = true)
     EventLogMeasurements getLogByModel(String model);
 
     /**
-     * Query that retrieves a list of reference manifests using the provided device name.
+     * Query that retrieves a list of {@link ReferenceManifest} objects using the provided device name.
      *
      * @param deviceName string representation of device name
-     * @return a list of reference manifests
+     * @return a list of {@link ReferenceManifest} objects
      */
     List<ReferenceManifest> findByDeviceName(String deviceName);
 
     /**
-     * Query that retrieves a list of reference manifests using the provided archive flag.
+     * Query that retrieves a list of {@link ReferenceManifest} objects using the provided archive flag.
      *
      * @param archiveFlag archive flag
-     * @return a list of reference manifests
+     * @return a list of {@link ReferenceManifest} objects
      */
     List<ReferenceManifest> findByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of reference manifests using the provided archive flag and pageable value.
+     * Query that retrieves a count of {@link ReferenceManifest} objects in the database filtered by the provided archive flag.
      *
      * @param archiveFlag archive flag
-     * @param pageable    pageable
-     * @return a page of reference manifests
+     * @return a count of {@link ReferenceManifest} objects
      */
-    Page<ReferenceManifest> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
+    long countByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of base and support reference manifests and pageable value.
+     * Retrieves a paginated list of {@link ReferenceManifest} instances matching the specified subclass types.
      *
+     * @param types    the list of {@link ReferenceManifest} subclass types to include
      * @param pageable pageable
-     * @return a page of reference manifests
+     * @return a page of matching {@link ReferenceManifest} instances
      */
-    @Query(value = "SELECT * FROM ReferenceManifest WHERE DTYPE IN "
-            + "('BaseReferenceManifest', 'SupportReferenceManifest')", nativeQuery = true)
-    Page<ReferenceManifest> findAllBaseAndSupportRimsPageable(Pageable pageable);
+    Page<ReferenceManifest> findByClassIn(List<Class<? extends ReferenceManifest>> types, Pageable pageable);
 }

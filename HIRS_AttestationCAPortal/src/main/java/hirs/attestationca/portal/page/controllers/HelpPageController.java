@@ -35,9 +35,9 @@ import java.util.zip.ZipOutputStream;
 /**
  * Controller for the Help page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/help")
+@Log4j2
 public class HelpPageController extends PageController<NoPageParams> {
     private final HelpPageService helpPageService;
 
@@ -65,31 +65,6 @@ public class HelpPageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Processes the request to download a zip file of the HIRS application's log files.
-     *
-     * @param response response that will be sent out after processing download request
-     * @throws IOException when writing to response output stream
-     */
-    @GetMapping("/hirs-logs-download")
-    public void downloadHIRSLogs(final HttpServletResponse response) throws IOException {
-        log.info(
-                "Received request to download a zip file of all the HIRS Attestation application's log files");
-
-        final String zipFileName = "HIRS_AttestationCAPortal_Logs.zip";
-
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
-        response.setContentType("application/zip");
-
-        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.helpPageService.bulkDownloadHIRSLogFiles(zipOut);
-        } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the "
-                    + "HIRS Attestation Logs", exception);
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
-    }
-
-    /**
      * Processes the request to retrieve the main HIRS logger for display on the help page.
      *
      * @param dataTableInput data table input received from the front-end
@@ -105,7 +80,7 @@ public class HelpPageController extends PageController<NoPageParams> {
 
         FilteredRecordsList<HIRSLogger> mainHIRSLoggersFilteredRecordsList = new FilteredRecordsList<>();
 
-        final HIRSLogger mainHIRSLogger = this.helpPageService.getMainHIRSLogger();
+        final HIRSLogger mainHIRSLogger = helpPageService.getMainHIRSLogger();
         mainHIRSLoggersFilteredRecordsList.add(mainHIRSLogger);
         mainHIRSLoggersFilteredRecordsList.setRecordsTotal(1);
         mainHIRSLoggersFilteredRecordsList.setRecordsFiltered(1);
@@ -114,6 +89,30 @@ public class HelpPageController extends PageController<NoPageParams> {
                 + "{}", mainHIRSLoggersFilteredRecordsList.getRecordsFiltered());
 
         return new DataTableResponse<>(mainHIRSLoggersFilteredRecordsList, dataTableInput);
+    }
+
+    /**
+     * Processes the request to download a zip file of the HIRS application's log files.
+     *
+     * @param response response that will be sent out after processing download request
+     * @throws IOException when writing to response output stream
+     */
+    @GetMapping("/hirs-logs-download")
+    public void downloadHIRSLogs(final HttpServletResponse response) throws IOException {
+        log.info("Received request to download a zip file of all the HIRS Attestation application's log files");
+
+        final String zipFileName = "HIRS_AttestationCAPortal_Logs.zip";
+
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
+        response.setContentType("application/zip");
+
+        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+            helpPageService.bulkDownloadHIRSLogFiles(zipOut);
+        } catch (Exception exception) {
+            log.error("An exception was thrown while attempting to bulk download all the "
+                    + "HIRS Attestation Logs", exception);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     /**
@@ -140,14 +139,13 @@ public class HelpPageController extends PageController<NoPageParams> {
             log.info("Received a request to set the log level [{}] for the provided logger [{}]", logLevel,
                     loggerName);
 
-            this.helpPageService.setLoggerLevel(loggerName, logLevel, successMessages, errorMessages);
+            helpPageService.setLoggerLevel(loggerName, logLevel, successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
-            final String errorMessage =
-                    "An exception was thrown while attempting to set the logging level for the"
-                            + " selected logger";
+            final String errorMessage = "An exception was thrown while attempting to set the logging level for the"
+                    + " selected logger";
             log.error(errorMessage, exception);
             messages.addErrorMessage(errorMessage);
         }

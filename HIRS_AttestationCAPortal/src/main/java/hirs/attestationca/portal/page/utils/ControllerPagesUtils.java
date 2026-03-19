@@ -65,8 +65,12 @@ public final class ControllerPagesUtils {
             return PageRequest.of(currentPage, pageSize, sort);
         }
 
-        // Create the Pageable object without sorting if no order column is provided
-        return PageRequest.of(currentPage, pageSize);
+        final String defaultSortColumnName = "createTime";
+        Sort defaultSort = Sort.by(new Sort.Order(Sort.Direction.DESC, defaultSortColumnName));
+
+        // Create the Pageable object using the default sorting (which is sorting the table based on the creation
+        // time ), if no order column is provided
+        return PageRequest.of(currentPage, pageSize, defaultSort);
     }
 
     /**

@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the Device Page.
+ * Service class responsible for encapsulating all business logic related to the Device Page.
  */
 @Service
 @Log4j2
@@ -208,7 +208,7 @@ public class DevicePageService {
      * @return a page of all devices
      */
     public Page<Device> findAllDevices(final Pageable pageable) {
-        return this.deviceRepository.findAll(pageable);
+        return deviceRepository.findAll(pageable);
     }
 
     /**
@@ -217,7 +217,7 @@ public class DevicePageService {
      * @return total number of records in the device repository.
      */
     public long findDeviceRepositoryCount() {
-        return this.deviceRepository.count();
+        return deviceRepository.count();
     }
 
     /**
@@ -277,7 +277,7 @@ public class DevicePageService {
                                                        final HashMap<String, Set<UUID>> certificatePropertyMap) {
         // find all platform certificates associated with this device id
         final List<PlatformCredential> platformCredentialList =
-                this.platformCertificateRepository.findByDeviceId(device.getId());
+                platformCertificateRepository.findByDeviceId(device.getId());
 
         final String platformCredentialIdsKey = PlatformCredential.class.getSimpleName() + "Ids";
 
@@ -302,7 +302,7 @@ public class DevicePageService {
                                                           final HashMap<String, Set<UUID>> certificatePropertyMap) {
         // find all endorsement certificates associated with this device id
         final List<EndorsementCredential> endorsementCredentialList =
-                this.endorsementCredentialRepository.findByDeviceId(device.getId());
+                endorsementCredentialRepository.findByDeviceId(device.getId());
 
         final String endorsementCredentialIdsKey = EndorsementCredential.class.getSimpleName() + "Ids";
 
@@ -327,7 +327,7 @@ public class DevicePageService {
                                                       final HashMap<String, Set<UUID>> certificatePropertyMap) {
         // find all issued certificates associated with this device id
         final List<IssuedAttestationCertificate> issuedCertificateList =
-                this.issuedCertificateRepository.findByDeviceId(device.getId());
+                issuedCertificateRepository.findByDeviceId(device.getId());
 
         final String issuedCertificatesIdsKey = IssuedAttestationCertificate.class.getSimpleName() + "Ids";
 

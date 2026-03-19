@@ -17,11 +17,10 @@ import java.util.UUID;
 /**
  * Controller for the Reference Manifest Details Page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-details")
-public class ReferenceManifestDetailsPageController
-        extends PageController<ReferenceManifestDetailsPageParams> {
+@Log4j2
+public class ReferenceManifestDetailsPageController extends PageController<ReferenceManifestDetailsPageParams> {
     private final ReferenceManifestDetailsPageService referenceManifestDetailsPageService;
 
     /**

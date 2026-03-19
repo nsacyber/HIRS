@@ -23,43 +23,36 @@ import java.util.UUID;
 public interface EndorsementCredentialRepository extends JpaRepository<EndorsementCredential, UUID> {
 
     /**
-     * Query that retrieves a list of endorsement credentials using the provided archive flag.
+     * Query that retrieves a count of {@link EndorsementCredential} objects in the database filtered by the
+     * provided archive flag.
      *
      * @param archiveFlag archive flag
-     * @return a list of endorsement credentials
+     * @return a count of {@link EndorsementCredential} objects
      */
-    List<EndorsementCredential> findByArchiveFlag(boolean archiveFlag);
+    long countByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of endorsement credentials using provided archive flag and pageable value.
+     * Query that retrieves a page of {@link EndorsementCredential} objects filtered by the specified archive flag.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable value
-     * @return a page of endorsement credentials
+     * @return a page of {@link EndorsementCredential} objects
      */
     Page<EndorsementCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 
     /**
-     * Query that retrieves an endorsement credential using the provided holder serial number.
-     *
-     * @param holderSerialNumber big integer representation of the holder serial number
-     * @return an endorsement credential
-     */
-    EndorsementCredential findByHolderSerialNumber(BigInteger holderSerialNumber);
-
-    /**
-     * Query that retrieves an endorsement credential using the provided serial number.
+     * Query that retrieves an {@link EndorsementCredential} object using the provided serial number.
      *
      * @param serialNumber big integer representation of the serial number
-     * @return an endorsement credential
+     * @return an {@link EndorsementCredential} object
      */
     EndorsementCredential findBySerialNumber(BigInteger serialNumber);
 
     /**
-     * Query that retrieves a list of endorsement credentials using the provided device id.
+     * Query that retrieves a list of {@link EndorsementCredential} objects using the provided device id.
      *
      * @param deviceId uuid representation of the device id
-     * @return an endorsement credential
+     * @return a list of {@link EndorsementCredential} objects
      */
     List<EndorsementCredential> findByDeviceId(UUID deviceId);
 }

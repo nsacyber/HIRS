@@ -819,11 +819,11 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // if it exists, don't save the component
         List<ComponentResult> remainingComponentResults = new ArrayList<>();
         for (ComponentResult componentResult : compiledComponentList) {
-            if (CertificateAttributeScvValidator.isNotSpecifiedOrUnknown(
+            if (CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(
                     componentResult.getSerialNumber().trim())) {
                 componentResult.setSerialNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
             }
-            if (CertificateAttributeScvValidator.isNotSpecifiedOrUnknown(
+            if (CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(
                     componentResult.getRevisionNumber().trim())) {
                 componentResult.setRevisionNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
             }

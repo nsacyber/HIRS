@@ -14,11 +14,10 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the IDevId Certificate
- * Page.
+ * Service class responsible for encapsulating all business logic related to the IDevId Certificate Page.
  */
-@Log4j2
 @Service
+@Log4j2
 public class IDevIdCertificatePageService {
     private final IDevIDCertificateRepository iDevIDCertificateRepository;
 
@@ -41,7 +40,7 @@ public class IDevIdCertificatePageService {
      */
     public Page<IDevIDCertificate> findIDevCertificatesByArchiveFlag(final boolean archiveFlag,
                                                                      final Pageable pageable) {
-        return this.iDevIDCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
+        return iDevIDCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
     /**
@@ -50,7 +49,7 @@ public class IDevIdCertificatePageService {
      * @return total number of records in the idevid certificate repository.
      */
     public long findIDevIdCertificateRepositoryCount() {
-        return iDevIDCertificateRepository.findByArchiveFlag(false).size();
+        return iDevIDCertificateRepository.countByArchiveFlag(false);
     }
 
     /**
@@ -69,8 +68,8 @@ public class IDevIdCertificatePageService {
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to read uploaded IDevId certificate file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to read uploaded IDevId certificate file (%s): ", fileName);
             log.error(failMessage, ioEx);
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
@@ -79,26 +78,25 @@ public class IDevIdCertificatePageService {
         try {
             return new IDevIDCertificate(fileBytes);
         } catch (IOException ioEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded IDevId certificate file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to parse uploaded IDevId certificate file (%s): ", fileName);
             log.error(failMessage, ioEx);
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
         } catch (DecoderException dEx) {
-            final String failMessage = String.format(
-                    "Failed to parse uploaded IDevId certificate pem file (%s): ", fileName);
+            final String failMessage =
+                    String.format("Failed to parse uploaded IDevId certificate pem file (%s): ", fileName);
             log.error(failMessage, dEx);
             errorMessages.add(failMessage + dEx.getMessage());
             return null;
         } catch (IllegalArgumentException iaEx) {
-            final String failMessage = String.format(
-                    "IDevId certificate format not recognized(%s): ", fileName);
+            final String failMessage = String.format("IDevId certificate format not recognized(%s): ", fileName);
             log.error(failMessage, iaEx);
             errorMessages.add(failMessage + iaEx.getMessage());
             return null;
         } catch (IllegalStateException isEx) {
-            final String failMessage = String.format(
-                    "Unexpected object while parsing IDevId certificate %s ", fileName);
+            final String failMessage =
+                    String.format("Unexpected object while parsing IDevId certificate %s ", fileName);
             log.error(failMessage, isEx);
             errorMessages.add(failMessage + isEx.getMessage());
             return null;
