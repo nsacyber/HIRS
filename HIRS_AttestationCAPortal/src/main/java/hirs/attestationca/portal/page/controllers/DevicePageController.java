@@ -29,9 +29,9 @@ import java.util.Set;
 /**
  * Controller for the Devices page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/devices")
+@Log4j2
 public class DevicePageController extends PageController<NoPageParams> {
     private final DevicePageService devicePageService;
 
@@ -109,7 +109,7 @@ public class DevicePageController extends PageController<NoPageParams> {
                 pageable);
 
         FilteredRecordsList<HashMap<String, Object>> devicesAndAssociatedCertificates
-                = this.devicePageService.retrieveDevicesAndAssociatedCertificates(deviceList);
+                = devicePageService.retrieveDevicesAndAssociatedCertificates(deviceList);
 
         log.info("Returning the size of the filtered list of devices: {}",
                 devicesAndAssociatedCertificates.size());
@@ -140,7 +140,7 @@ public class DevicePageController extends PageController<NoPageParams> {
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable
-     * @return A {@link FilteredRecordsList<Device>} containing the filtered and paginated list of devices,
+     * @return A {@link FilteredRecordsList} containing the filtered and paginated list of devices,
      * along with the total number of records and the number of records matching the filter criteria.
      */
     private FilteredRecordsList<Device> getFilteredDeviceList(
@@ -153,24 +153,21 @@ public class DevicePageController extends PageController<NoPageParams> {
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult =
-                    this.devicePageService.findAllDevices(pageable);
+            pagedResult = devicePageService.findAllDevices(pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.devicePageService.findDevicesByGlobalAndColumnSpecificSearchTerm(
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            columnsWithSearchCriteria,
-                            pageable);
+            pagedResult = devicePageService.findDevicesByGlobalAndColumnSpecificSearchTerm(
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    columnsWithSearchCriteria,
+                    pageable);
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.devicePageService.findDevicesByColumnSpecificSearchTerm(columnsWithSearchCriteria,
-                            pageable);
+            pagedResult = devicePageService.findDevicesByColumnSpecificSearchTerm(columnsWithSearchCriteria,
+                    pageable);
         } else {
             // if a value has been entered ONLY in the global search textbox
-            pagedResult = this.devicePageService.findDevicesByGlobalSearchTerm(
+            pagedResult = devicePageService.findDevicesByGlobalSearchTerm(
                     searchableColumnNames,
                     globalSearchTerm,
                     pageable);
@@ -181,7 +178,7 @@ public class DevicePageController extends PageController<NoPageParams> {
             deviceList.addAll(pagedResult.getContent());
         }
         deviceList.setRecordsFiltered(pagedResult.getTotalElements());
-        deviceList.setRecordsTotal(this.devicePageService.findDeviceRepositoryCount());
+        deviceList.setRecordsTotal(devicePageService.findDeviceRepositoryCount());
 
         return deviceList;
     }

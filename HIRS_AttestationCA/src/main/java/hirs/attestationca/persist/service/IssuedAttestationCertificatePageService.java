@@ -9,11 +9,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- * A service layer class responsible for encapsulating all business logic related to the Issued Attestation
+ * Service class responsible for encapsulating all business logic related to the Issued Attestation
  * Certificate Page.
  */
-@Log4j2
 @Service
+@Log4j2
 public class IssuedAttestationCertificatePageService {
     private final IssuedCertificateRepository issuedCertificateRepository;
 
@@ -36,7 +36,7 @@ public class IssuedAttestationCertificatePageService {
      */
     public Page<IssuedAttestationCertificate> findIssuedCertificatesByArchiveFlag(final boolean archiveFlag,
                                                                                   final Pageable pageable) {
-        return this.issuedCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
+        return issuedCertificateRepository.findByArchiveFlag(archiveFlag, pageable);
     }
 
     /**
@@ -45,6 +45,6 @@ public class IssuedAttestationCertificatePageService {
      * @return total number of records in the issued certificate repository.
      */
     public long findIssuedCertificateRepoCount() {
-        return this.issuedCertificateRepository.findByArchiveFlag(false).size();
+        return issuedCertificateRepository.countByArchiveFlag(false);
     }
 }
