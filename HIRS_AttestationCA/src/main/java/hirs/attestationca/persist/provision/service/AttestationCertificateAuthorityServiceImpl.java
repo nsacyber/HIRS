@@ -34,7 +34,7 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
      * @return processed identity claim response
      */
     public byte[] processIdentityClaimTpm2(final byte[] identityClaim) {
-        return this.identityClaimProcessorService.processIdentityClaimTpm2(identityClaim);
+        return identityClaimProcessorService.processIdentityClaimTpm2(identityClaim);
     }
 
     /**
@@ -44,7 +44,7 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
      * @return processed certificate request response
      */
     public byte[] processCertificateRequest(final byte[] certificateRequest) {
-        return this.certificateRequestProcessorService.processCertificateRequest(certificateRequest);
+        return certificateRequestProcessorService.processCertificateRequest(certificateRequest);
     }
 
     /**
@@ -53,6 +53,6 @@ public class AttestationCertificateAuthorityServiceImpl implements AttestationCe
      * @return encoded public key of the leaf certificate
      */
     public byte[] getLeafACACertPublicKey() {
-        return this.certificateRequestProcessorService.getLeafACACertificatePublicKey();
+        return certificateRequestProcessorService.getLeafACACertificatePublicKey();
     }
 }

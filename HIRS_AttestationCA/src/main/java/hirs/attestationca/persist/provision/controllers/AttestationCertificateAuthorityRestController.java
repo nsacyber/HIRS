@@ -1,4 +1,4 @@
-package hirs.attestationca.persist.provision;
+package hirs.attestationca.persist.provision.controllers;
 
 import hirs.attestationca.persist.provision.service.AttestationCertificateAuthorityService;
 import lombok.extern.log4j.Log4j2;
@@ -41,7 +41,7 @@ public class AttestationCertificateAuthorityRestController {
     @ResponseBody
     @PostMapping(value = "/identity-claim-tpm2/process", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processIdentityClaimTpm2(@RequestBody final byte[] identityClaim) {
-        return this.attestationCertificateAuthorityService.processIdentityClaimTpm2(identityClaim);
+        return attestationCertificateAuthorityService.processIdentityClaimTpm2(identityClaim);
     }
 
     /**
@@ -55,7 +55,7 @@ public class AttestationCertificateAuthorityRestController {
     @ResponseBody
     @PostMapping(value = "/request-certificate-tpm2", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] processCertificateRequest(@RequestBody final byte[] certificateRequest) {
-        return this.attestationCertificateAuthorityService.processCertificateRequest(certificateRequest);
+        return attestationCertificateAuthorityService.processCertificateRequest(certificateRequest);
     }
 
     /**
@@ -66,6 +66,6 @@ public class AttestationCertificateAuthorityRestController {
     @ResponseBody
     @GetMapping("/public-key")
     public byte[] getLeafACACertPublicKey() {
-        return this.attestationCertificateAuthorityService.getLeafACACertPublicKey();
+        return attestationCertificateAuthorityService.getLeafACACertPublicKey();
     }
 }

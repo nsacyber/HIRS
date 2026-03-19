@@ -183,7 +183,7 @@ public final class ProvisionUtils {
      * @param byteArray byte array
      * @return public key algorithm
      */
-    public static PublicKeyAlgorithm extractPublicKeyAlgorithmFromByteArray(byte[] byteArray) {
+    public static PublicKeyAlgorithm extractPublicKeyAlgorithmFromByteArray(final byte[] byteArray) {
 
         // Return UNKNOWN if there are not enough bytes for comparison
         if (byteArray == null || byteArray.length < 2) {
@@ -441,6 +441,11 @@ public final class ProvisionUtils {
      * to validate an identity claim.
      * <p>
      * Equivalent to calling tpm2_makecredential using tpm2_tools.
+     * <p>
+     * todo:
+     * DISCLAIMER: This method will need to be tested properly with a Provisioner that has been updated to handle
+     * multiple types of public keys. This UTILS class is becoming too large and will also need to be refactored
+     * to handle more algorithms like MLDSA.
      *
      * @param endorsementECCKey endorsement ECC key in the identity claim
      * @param attestationECCKey attestation ECC key in the identity claim
@@ -538,6 +543,8 @@ public final class ProvisionUtils {
             hmac.update(hmacMessage);
             byte[] hmacValue = hmac.doFinal();
 
+            // --- Step 6: Compute Top Size and Assemble Credential Blob ---
+
             lengthBuffer = ByteBuffer.allocate(2);
             lengthBuffer.putShort((short) (HMAC_SIZE_LENGTH_BYTES + HMAC_KEY_LENGTH_BYTES + encryptedSecret.length));
             byte[] topSize = lengthBuffer.array();
@@ -545,13 +552,10 @@ public final class ProvisionUtils {
             // return ordered blob of assembled credential
             byte[] bytesToReturn = assembleCredential(topSize, hmacValue, encryptedSecret, ephemeralPublicKeyBytes);
             return ByteString.copyFrom(bytesToReturn);
-        } catch (NoSuchAlgorithmException
-                 | InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException |
-                 BadPaddingException
-                 | NoSuchPaddingException e) {
-            throw new IdentityProcessingException(
-                    "Encountered error while making the identity claim challenge for the provided RSA public keys: "
-                            + e.getMessage(), e);
+        } catch (NoSuchAlgorithmException | InvalidKeyException | InvalidAlgorithmParameterException
+                 | IllegalBlockSizeException | BadPaddingException | NoSuchPaddingException e) {
+            throw new IdentityProcessingException("Encountered error while making the identity claim challenge for"
+                    + " the provided ECC public keys: " + e.getMessage(), e);
         }
     }
 
@@ -579,8 +583,8 @@ public final class ProvisionUtils {
         final int fieldSizeInBytes = getFieldSizeInBytes(publicKey);
 
         // Convert X and Y coordinates to fixed-length byte arrays
-        byte[] xBytes = convertBigIntegerToFixedLength(ecPoint.getAffineX(), fieldSizeInBytes);
-        byte[] yBytes = convertBigIntegerToFixedLength(ecPoint.getAffineY(), fieldSizeInBytes);
+        byte[] xBytes = convertBigIntegerToByteArray(ecPoint.getAffineX(), fieldSizeInBytes);
+        byte[] yBytes = convertBigIntegerToByteArray(ecPoint.getAffineY(), fieldSizeInBytes);
 
         // Constants for encoding the EC point
         final byte uncompressedPointPrefix = 0x04;  // Indicates this is an uncompressed point (X and Y)
@@ -617,8 +621,7 @@ public final class ProvisionUtils {
 
         // The field size of the curve is in bits (e.g., P-256 = 256 bits)
         // TPM expects each coordinate to be **fixed-length**, even if the number would normally take fewer bytes
-        return (eccPublicKey.getParams().getCurve().getField().getFieldSize()
-                + roundUpOffset) / bitsPerByte;
+        return (eccPublicKey.getParams().getCurve().getField().getFieldSize() + roundUpOffset) / bitsPerByte;
     }
 
     /**
@@ -629,7 +632,7 @@ public final class ProvisionUtils {
      * @param length Desired byte length of the output array.
      * @return Byte array of exact length representing the BigInteger.
      */
-    public static byte[] convertBigIntegerToFixedLength(final BigInteger value, final int length) {
+    public static byte[] convertBigIntegerToByteArray(final BigInteger value, final int length) {
         byte[] rawBytes = value.toByteArray(); // default BigInteger encoding
         byte[] fixedLengthBytes = new byte[length];
 

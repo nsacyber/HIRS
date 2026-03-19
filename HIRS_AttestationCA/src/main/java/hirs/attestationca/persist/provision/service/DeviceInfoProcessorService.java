@@ -101,8 +101,8 @@ public class DeviceInfoProcessorService {
         // store device and device info report.
         Device device = null;
 
-        if (deviceInfoReport.getNetworkInfo() != null &&
-                !StringUtils.isBlank(deviceInfoReport.getNetworkInfo().getHostname())) {
+        if (deviceInfoReport.getNetworkInfo() != null
+                && !StringUtils.isBlank(deviceInfoReport.getNetworkInfo().getHostname())) {
             device = deviceRepository.findByName(deviceInfoReport.getNetworkInfo().getHostname());
         }
 
@@ -422,7 +422,7 @@ public class DeviceInfoProcessorService {
     private void updateSupportRIMSUsingDeviceInfo(final String defaultClientName,
                                                   final ProvisionerTpm2.DeviceInfo provisionedDeviceInfo) {
         final String deviceHostName = provisionedDeviceInfo.getNw().getHostname();
-        final int NUM_OF_VARIABLES = 5;
+        final int numOfVariables = 5;
 
         log.info("Device {} sent Support RIM files", deviceHostName);
 
@@ -453,7 +453,7 @@ public class DeviceInfoProcessorService {
                     replacementSupportRIM.setPlatformModel(provisionedDeviceInfo.getHw().getProductName());
                     replacementSupportRIM.setFileName(String.format("%s_[%s].rimel", defaultClientName,
                             replacementSupportRIM.getHexDecHash().substring(
-                                    replacementSupportRIM.getHexDecHash().length() - NUM_OF_VARIABLES)));
+                                    replacementSupportRIM.getHexDecHash().length() - numOfVariables)));
                     replacementSupportRIM.setDeviceName(deviceHostName);
                     referenceManifestRepository.save(replacementSupportRIM);
                 } else if (supportRim.isArchived()) {
@@ -578,8 +578,8 @@ public class DeviceInfoProcessorService {
             }
         }
 
-        if (baseSupportRim != null &&
-                referenceDigestValueRepository.findBySupportRimHash(baseSupportRim.getHexDecHash()).isEmpty()) {
+        if (baseSupportRim != null
+                && referenceDigestValueRepository.findBySupportRimHash(baseSupportRim.getHexDecHash()).isEmpty()) {
             try {
                 TCGEventLog eventLog = new TCGEventLog(baseSupportRim.getRimBytes());
                 ReferenceDigestValue rdv;
