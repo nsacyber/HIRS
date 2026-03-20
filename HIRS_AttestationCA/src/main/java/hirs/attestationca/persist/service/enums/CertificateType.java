@@ -14,7 +14,7 @@ public enum CertificateType {
     /**
      * Represents the request mapping path for the endpoints inside the Platform Certificates Page controller.
      */
-    PLATFORM_CERTIFICATE("platform-credentials", "PlatformCredential"),
+    PLATFORM_CERTIFICATE("platform-certificates", "PlatformCredential"),
 
     /**
      * Holds the request mapping path and certificate type for the endpoints inside the
