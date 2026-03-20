@@ -417,6 +417,11 @@ public class ReferenceManifestDetailsPageService {
             }
             data.put("events", tpmPcrEvents);
         } else {
+            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                if (tpe.getEventContentStr().contains("Exception")) {
+                    tpe.setError(true);
+                }
+            }
             data.put("events", logProcessor.getEventList());
         }
 
