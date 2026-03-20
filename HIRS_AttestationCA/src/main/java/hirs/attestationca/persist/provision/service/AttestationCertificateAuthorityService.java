@@ -1,9 +1,9 @@
-package hirs.attestationca.persist;
+package hirs.attestationca.persist.provision.service;
 
 /**
- * Defines the responsibilities of the Attestation Certificate Authority.
+ * Interface that defines the responsibilities of the Attestation Certificate Authority service.
  */
-public interface RestfulInterface {
+public interface AttestationCertificateAuthorityService {
 
     /**
      * Processes the provided identity claim.
@@ -21,4 +21,11 @@ public interface RestfulInterface {
      */
     byte[] processCertificateRequest(byte[] certificateRequest);
 
+
+    /**
+     * Retrieves the encoded public key of the leaf certificate.
+     *
+     * @return encoded public key of the leaf certificate
+     */
+    byte[] getLeafACACertPublicKey();
 }

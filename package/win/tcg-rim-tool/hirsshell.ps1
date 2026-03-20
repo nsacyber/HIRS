@@ -9,5 +9,5 @@ $StartInfo.Arguments = "-NoExit -Command
                Write-Output 'for usage type: rim -h';
 	       Write-Output 'for eventlog usage type: elt -h'
                Set-Location -Path $PWD;
-               function prompt {'HIRS > '};" 
+               function prompt {'HIRS > '};"
 [System.Diagnostics.Process]::Start($StartInfo)
