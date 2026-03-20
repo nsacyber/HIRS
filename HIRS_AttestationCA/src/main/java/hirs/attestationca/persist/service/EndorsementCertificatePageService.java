@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Service
 @Log4j2
-public class EndorsementCredentialPageService {
+public class EndorsementCertificatePageService {
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
     /**
@@ -27,7 +27,7 @@ public class EndorsementCredentialPageService {
      * @param endorsementCredentialRepository endorsement credential repository
      */
     @Autowired
-    public EndorsementCredentialPageService(final EndorsementCredentialRepository endorsementCredentialRepository) {
+    public EndorsementCertificatePageService(final EndorsementCredentialRepository endorsementCredentialRepository) {
         this.endorsementCredentialRepository = endorsementCredentialRepository;
     }
 

@@ -81,7 +81,7 @@
             orderable: false,
             searchable: false,
             render: function (data, type, full, meta) {
-              //Display endorsement credential
+              //Display endorsement certificate
               let html = "";
               if (
                 full.endorsementCredential !== undefined &&
@@ -99,7 +99,7 @@
             orderable: false,
             searchable: false,
             render: function (data, type, full, meta) {
-              //Display platform credential
+              //Display platform certificate
               let html = "";
               if (
                 full.platformCredentials !== undefined &&
@@ -142,7 +142,7 @@
 
   <div layout:fragment="content">
     <div class="aca-input-box-header">
-      Issued Credentials
+      Issued Certificates
       <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}">
         <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
           title="Download All Issued Certificates" alt="Download Icon">
@@ -159,7 +159,7 @@
             <th rowspan="2">Issuer</th>
             <th rowspan="2">Valid (begin)</th>
             <th rowspan="2">Valid (end)</th>
-            <th colspan="2" class="text-center">Credentials</th>
+            <th colspan="2" class="text-center">Certificates</th>
             <th rowspan="2">Options</th>
           </tr>
           <tr>

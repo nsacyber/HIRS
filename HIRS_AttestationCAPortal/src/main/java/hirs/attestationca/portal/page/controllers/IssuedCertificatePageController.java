@@ -3,8 +3,8 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.IssuedAttestationCertificatePageService;
-import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.IssuedCertificatePageService;
+import hirs.attestationca.persist.service.enums.CertificateType;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -50,31 +50,31 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 @Log4j2
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
-    private final IssuedAttestationCertificatePageService issuedAttestationCertificateService;
+    private final IssuedCertificatePageService issuedAttestationCertificateService;
     private final CertificatePageService certificatePageService;
 
     /**
-     * Constructor for the Issued Attestation Certificate page.
+     * Constructor for the Issued Certificates page.
      *
-     * @param issuedAttestationCertificatePageService issued certificate page service
-     * @param certificatePageService                  certificate page service
+     * @param issuedCertificatePageService issued certificate page service
+     * @param certificatePageService       certificate page service
      */
     @Autowired
     public IssuedCertificatePageController(
-            final IssuedAttestationCertificatePageService issuedAttestationCertificatePageService,
+            final IssuedCertificatePageService issuedCertificatePageService,
             final CertificatePageService certificatePageService) {
         super(Page.ISSUED_CERTIFICATES);
-        this.issuedAttestationCertificateService = issuedAttestationCertificatePageService;
+        this.issuedAttestationCertificateService = issuedCertificatePageService;
         this.certificatePageService = certificatePageService;
     }
 
     /**
-     * Returns the path for the view and the data model for the Issued Attestation Certificate page.
+     * Returns the path for the view and the data model for the Issued Certificate page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
      *               redirect.
-     * @return the path for the view and data model for the Issued Attestation Certificate page.
+     * @return the path for the view and data model for the Issued Certificate page.
      */
     @RequestMapping
     public ModelAndView initPage(final NoPageParams params, final Model model) {
@@ -82,7 +82,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to retrieve a list of issued attestation certificates for display on the issued
+     * Processes the request to retrieve a list of issued certificates for display on the issued
      * certificates page.
      *
      * @param dataTableInput data table input received from the front-end
@@ -92,9 +92,9 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(
             final DataTableInput dataTableInput) {
-        log.info("Received request to display list of issued attestation certificates");
-        log.debug("Request received a datatable input object for the issued attestation"
-                + " certificate page: {}", dataTableInput);
+        log.info("Received request to display list of issued certificates");
+        log.debug("Request received a datatable input object for the issued certificate page: {}"
+                , dataTableInput);
 
         // grab the column to which ordering has been applied
         final Order orderColumn = dataTableInput.getOrderColumn();
@@ -131,9 +131,9 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to download the specified issued attestation certificate.
+     * Processes the request to download the specified issued certificate.
      *
-     * @param id       the UUID of the issued attestation certificate to download
+     * @param id       the UUID of the issued certificate to download
      * @param response the response object (needed to update the header with the
      *                 file name)
      * @throws IOException when writing to response output stream
@@ -151,13 +151,13 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + " specified issued attestation certificate", exception);
+                    + " specified issued certificate", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Processes the request to bulk download all the issued attestation certificates.
+     * Processes the request to bulk download all the issued certificates.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -175,19 +175,19 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATE,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
-                    + "issued attestation certificates", exception);
+                    + "issued certificates", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Processes the request to archive/soft delete the specified issued attestation certificate.
+     * Processes the request to archive/soft delete the specified issued certificate.
      *
-     * @param id                 the UUID of the issued attestation certificate to delete
+     * @param id                 the UUID of the issued certificate to delete
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
      * @return redirect to this page
@@ -197,7 +197,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     public RedirectView deleteIssuedCertificate(@RequestParam final String id,
                                                 final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
-        log.info("Received request to delete issued attestation certificate id {}", id);
+        log.info("Received request to delete issued certificate id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -211,7 +211,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while attempting to delete"
-                    + " the specified issued attestation certificate";
+                    + " the specified issued certificate";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }
@@ -221,18 +221,18 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to delete multiple issued attestation certificates.
+     * Processes the request to delete multiple issued certificates.
      *
-     * @param ids                the list of UUIDs of the issued attestation certificates to be deleted
+     * @param ids                the list of UUIDs of the issued certificates to be deleted
      * @param redirectAttributes used to pass data back to the original page after the operation
-     * @return a redirect to the issued attestation certificate page
+     * @return a redirect to the issued certificate page
      * @throws URISyntaxException if the URI is malformed
      */
     @PostMapping("/bulk-delete")
     public RedirectView bulkDeleteIssuedCertificates(@RequestParam final List<String> ids,
                                                      final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
-        log.info("Received request to delete multiple issued attestation certificates");
+        log.info("Received request to delete multiple issued certificates");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -246,7 +246,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while attempting to delete"
-                    + " multiple issued attestation certificates";
+                    + " multiple issued certificates";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }

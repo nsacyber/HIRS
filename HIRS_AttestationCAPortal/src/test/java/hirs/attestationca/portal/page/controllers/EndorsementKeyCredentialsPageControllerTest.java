@@ -20,7 +20,7 @@ import org.springframework.web.servlet.FlashMap;
 import java.io.IOException;
 import java.util.List;
 
-import static hirs.attestationca.portal.page.Page.ENDORSEMENT_KEY_CREDENTIALS;
+import static hirs.attestationca.portal.page.Page.ENDORSEMENT_KEY_CERTIFICATES;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -57,7 +57,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
      * Constructor providing the Endorsement Key Credential Page's display and routing specification.
      */
     public EndorsementKeyCredentialsPageControllerTest() {
-        super(ENDORSEMENT_KEY_CREDENTIALS);
+        super(ENDORSEMENT_KEY_CERTIFICATES);
         pagePath = getPagePath();
     }
 

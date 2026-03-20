@@ -22,7 +22,7 @@ import java.util.List;
  */
 @Service
 @Log4j2
-public class PlatformCredentialPageService {
+public class PlatformCertificatePageService {
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EndorsementCredentialRepository endorsementCredentialRepository;
 
@@ -33,8 +33,8 @@ public class PlatformCredentialPageService {
      * @param endorsementCredentialRepository endorsement credential repository
      */
     @Autowired
-    public PlatformCredentialPageService(final PlatformCertificateRepository platformCertificateRepository,
-                                         final EndorsementCredentialRepository endorsementCredentialRepository) {
+    public PlatformCertificatePageService(final PlatformCertificateRepository platformCertificateRepository,
+                                          final EndorsementCredentialRepository endorsementCredentialRepository) {
         this.platformCertificateRepository = platformCertificateRepository;
         this.endorsementCredentialRepository = endorsementCredentialRepository;
     }

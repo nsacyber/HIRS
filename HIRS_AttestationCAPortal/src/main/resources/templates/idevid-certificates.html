@@ -95,9 +95,9 @@
             <form method="POST"
                 th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/upload}"
                 enctype="multipart/form-data">
-                Import IDevID Certificates
+                Upload IDevID Certificates
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='idevid-editor', label='Import IDevID Certificates', bodyContent=~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='idevid-editor', label='Upload IDevID Certificates', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" type="file" name="file" multiple="multiple" />
                     </th:block>

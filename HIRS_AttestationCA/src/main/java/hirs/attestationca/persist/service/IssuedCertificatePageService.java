@@ -9,12 +9,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- * Service class responsible for encapsulating all business logic related to the Issued Attestation
- * Certificate Page.
+ * Service class responsible for encapsulating all business logic related to the Issued Certificates Page.
  */
 @Service
 @Log4j2
-public class IssuedAttestationCertificatePageService {
+public class IssuedCertificatePageService {
     private final IssuedCertificateRepository issuedCertificateRepository;
 
     /**
@@ -23,7 +22,7 @@ public class IssuedAttestationCertificatePageService {
      * @param issuedCertificateRepository issued certificate repository
      */
     @Autowired
-    public IssuedAttestationCertificatePageService(final IssuedCertificateRepository issuedCertificateRepository) {
+    public IssuedCertificatePageService(final IssuedCertificateRepository issuedCertificateRepository) {
         this.issuedCertificateRepository = issuedCertificateRepository;
     }
 

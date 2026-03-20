@@ -22,15 +22,15 @@ public enum Page {
             null, "certificate-request/"),
 
     /**
-     * Page to display and manage endorsement key credentials.
+     * Page to display and manage endorsement key certificates.
      */
-    ENDORSEMENT_KEY_CREDENTIALS("Endorsement Key Certificates", "ic_vpn_key_white_24dp.png",
+    ENDORSEMENT_KEY_CERTIFICATES("Endorsement Key Certificates", "ic_vpn_key_white_24dp.png",
             "first", "certificate-request/"),
 
     /**
-     * Page to display and manage platform credentials.
+     * Page to display and manage platform certificates.
      */
-    PLATFORM_CREDENTIALS("Platform Certificates", "ic_important_devices_white_24dp.png",
+    PLATFORM_CERTIFICATES("Platform Certificates", "ic_important_devices_white_24dp.png",
             null, "certificate-request/"),
 
     /**

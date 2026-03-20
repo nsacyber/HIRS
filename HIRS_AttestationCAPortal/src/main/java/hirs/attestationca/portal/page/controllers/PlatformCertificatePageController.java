@@ -2,9 +2,10 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.EndorsementCredentialPageService;
-import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.PlatformCertificatePageService;
+import hirs.attestationca.persist.service.enums.CertificateType;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -45,57 +46,55 @@ import java.util.UUID;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Controller for the Endorsement Key Credentials page.
+ * Controller for the Platform Credentials page.
  */
 @Controller
-@RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates")
 @Log4j2
-public class EndorsementCredentialPageController extends PageController<NoPageParams> {
-    private final EndorsementCredentialPageService endorsementCredentialPageService;
+public class PlatformCertificatePageController extends PageController<NoPageParams> {
     private final CertificatePageService certificatePageService;
+    private final PlatformCertificatePageService platformCertificatePageService;
 
     /**
-     * Constructor for the Endorsement Credential Page Controller.
+     * Constructor for the Platform Credential Page Controller.
      *
-     * @param endorsementCredentialPageService endorsement credential page service
-     * @param certificatePageService           certificate page service
+     * @param certificatePageService         certificate page service
+     * @param platformCertificatePageService platform certificate page service
      */
     @Autowired
-    public EndorsementCredentialPageController(
-            final EndorsementCredentialPageService endorsementCredentialPageService,
-            final CertificatePageService certificatePageService) {
-        super(Page.ENDORSEMENT_KEY_CREDENTIALS);
-        this.endorsementCredentialPageService = endorsementCredentialPageService;
+    public PlatformCertificatePageController(final CertificatePageService certificatePageService,
+                                             final PlatformCertificatePageService platformCertificatePageService) {
+        super(Page.PLATFORM_CERTIFICATES);
         this.certificatePageService = certificatePageService;
+        this.platformCertificatePageService = platformCertificatePageService;
     }
 
     /**
-     * Returns the path for the view and the data model for the Endorsement Key Credentials page.
+     * Returns the path for the view and the data model for the platform credential page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
      *               redirect.
-     * @return the path for the view and data model for the Endorsement Key Credentials page.
+     * @return the path for the view and data model for the platform credential page.
      */
     @RequestMapping
     public ModelAndView initPage(final NoPageParams params, final Model model) {
-        return getBaseModelAndView(Page.ENDORSEMENT_KEY_CREDENTIALS);
+        return getBaseModelAndView(Page.PLATFORM_CERTIFICATES);
     }
 
     /**
-     * Processes the request to retrieve a list of endorsement credentials for display on the endorsement credential's
-     * page.
+     * Processes the request to retrieve a list of platform credentials for display on the platform credentials page.
      *
      * @param dataTableInput data table input received from the front-end
-     * @return data table of endorsement credentials
+     * @return data table of platform credentials
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<EndorsementCredential> getEndorsementCredentialsTableData(
+    public DataTableResponse<PlatformCredential> getPlatformCredentialsTableData(
             final DataTableInput dataTableInput) {
-        log.info("Received request to display list of endorsement credentials");
-        log.debug("Request received a datatable input object for the endorsement "
-                + "credentials page: {}", dataTableInput);
+        log.info("Received request to display list of platform credentials");
+        log.debug("Request received a datatable input object for the platform credentials page: {}",
+                dataTableInput);
 
         // grab the column to which ordering has been applied
         final Order orderColumn = dataTableInput.getOrderColumn();
@@ -110,7 +109,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
 
         // find all columns that are considered searchable
         final Set<String> searchableColumnNames =
-                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(EndorsementCredential.class,
+                ControllerPagesUtils.findSearchableColumnNamesForGlobalSearch(PlatformCredential.class,
                         dataTableInput.getColumns());
 
         Pageable pageable = ControllerPagesUtils.createPageableObject(
@@ -118,74 +117,88 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
                 dataTableInput.getLength(),
                 orderColumn);
 
-        FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList =
-                getFilteredEndorsementCredentialList(
+        FilteredRecordsList<PlatformCredential> pcFilteredRecordsList =
+                getFilteredPlatformCredentialList(
                         globalSearchTerm,
                         columnsWithSearchCriteria,
                         searchableColumnNames,
                         pageable);
 
-        log.info("Returning the size of the filtered list of endorsement credentials: {}",
-                ekFilteredRecordsList.getRecordsFiltered());
-        return new DataTableResponse<>(ekFilteredRecordsList, dataTableInput);
+        // loop all the platform credentials
+        for (PlatformCredential pc : pcFilteredRecordsList) {
+            // find the EC using the PC's "holder serial number"
+            EndorsementCredential associatedEC = platformCertificatePageService
+                    .findECBySerialNumber(pc.getHolderSerialNumber());
+
+            if (associatedEC != null) {
+                log.debug("EC ID for holder s/n {} = {}", pc
+                        .getHolderSerialNumber(), associatedEC.getId());
+            }
+
+            pc.setEndorsementCredential(associatedEC);
+        }
+
+        log.info("Returning the size of the filtered list of platform credentials: {}",
+                pcFilteredRecordsList.getRecordsFiltered());
+        return new DataTableResponse<>(pcFilteredRecordsList, dataTableInput);
     }
 
     /**
-     * Processes the request to download the specified endorsement credential.
+     * Processes the request to download the selected platform credential.
      *
-     * @param id       the UUID of the endorsement credential to download
+     * @param id       the UUID of the platform credential to download
      * @param response the response object (needed to update the header with the
      *                 file name)
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
-    public void downloadEndorsementCredential(@RequestParam final String id,
-                                              final HttpServletResponse response)
+    public void downloadPlatformCredential(@RequestParam final String id, final HttpServletResponse response)
             throws IOException {
-        log.info("Received request to download endorsement credential id {}", id);
+        log.info("Received request to download platform credential id {}", id);
 
         try {
-            final DownloadFile downloadFile = certificatePageService.downloadCertificate(EndorsementCredential.class,
-                    UUID.fromString(id));
+            final DownloadFile downloadFile =
+                    certificatePageService.downloadCertificate(PlatformCredential.class,
+                            UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + " specified endorsement credential", exception);
+                    + " specified platform credential", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Processes the request to bulk download all the endorsement credentials.
+     * Processes the request to bulk download all the platform credentials.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/bulk-download")
-    public void bulkDownloadEndorsementCredentials(final HttpServletResponse response) throws IOException {
-        log.info("Received request to download all endorsement credentials");
+    public void bulkDownloadPlatformCredentials(final HttpServletResponse response) throws IOException {
+        log.info("Received request to download all platform credentials");
 
-        final String zipFileName = "endorsement_certificates.zip";
-        final String singleFileName = "Endorsement_Certificates";
+        final String zipFileName = "platform_certificates.zip";
+        final String singleFileName = "Platform_Certificate";
 
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CERTIFICATE,
                     singleFileName);
         } catch (Exception exception) {
-            log.error("An exception was thrown while attempting to bulk download all the "
-                    + "endorsement credentials", exception);
+            log.error("An exception was thrown while attempting to bulk download all the"
+                    + "platform credentials", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Processes the request to upload one or more endorsement credentials to the ACA.
+     * Processes the request to upload one or more platform credentials to the ACA.
      *
      * @param files              the files to process
      * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
@@ -193,10 +206,10 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
-    protected RedirectView uploadEndorsementCredential(@RequestParam("file") final MultipartFile[] files,
-                                                       final RedirectAttributes redirectAttributes)
-            throws URISyntaxException {
-        log.info("Received request to upload one or more endorsement credentials");
+    protected RedirectView uploadPlatformCredentials(
+            @RequestParam("file") final MultipartFile[] files,
+            final RedirectAttributes redirectAttributes) throws URISyntaxException {
+        log.info("Received request to upload one or more platform credentials");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -205,13 +218,15 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             List<String> errorMessages = new ArrayList<>();
             List<String> successMessages = new ArrayList<>();
 
-            EndorsementCredential parsedEndorsementCredential =
-                    endorsementCredentialPageService.parseEndorsementCredential(file, errorMessages);
+            PlatformCredential parsedPlatformCredential =
+                    platformCertificatePageService.parsePlatformCredential(file,
+                            errorMessages);
 
-            if (parsedEndorsementCredential != null) {
-                certificatePageService.storeCertificate(CertificateType.ENDORSEMENT_CREDENTIALS,
+            if (parsedPlatformCredential != null) {
+                certificatePageService.storeCertificate(
+                        CertificateType.PLATFORM_CERTIFICATE,
                         file.getOriginalFilename(),
-                        successMessages, errorMessages, parsedEndorsementCredential);
+                        successMessages, errorMessages, parsedPlatformCredential);
             }
 
             messages.addSuccessMessages(successMessages);
@@ -219,23 +234,23 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.PLATFORM_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
-     * Processes the request to archive/soft delete the specified endorsement credential.
+     * Processes the request to archive/soft delete the provided platform credential.
      *
-     * @param id                 the UUID of the endorsement certificate to delete
+     * @param id                 the UUID of the platform credential to delete
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return redirect to this page
-     * @throws URISyntaxException if malformed URI
+     * @return a redirect to the platform certificate page
+     * @throws URISyntaxException if the URI is malformed
      */
     @PostMapping("/delete")
-    public RedirectView deleteEndorsementCredential(@RequestParam final String id,
-                                                    final RedirectAttributes redirectAttributes)
+    public RedirectView deletePlatformCredential(@RequestParam final String id,
+                                                 final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
-        log.info("Received request to delete endorsement credential id {}", id);
+        log.info("Received request to delete platform credential id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -244,34 +259,35 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
+            certificatePageService.deleteCertificate(UUID.fromString(id),
+                    successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while attempting to delete"
-                    + " endorsement credential";
+                    + " the specified platform credential";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.PLATFORM_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
-     * Processes the request to delete multiple endorsement credentials.
+     * Processes the request to delete multiple platform certificates.
      *
-     * @param ids                the list of UUIDs of the endorsement credentials to be deleted
+     * @param ids                the list of UUIDs of the platform certificates to be deleted
      * @param redirectAttributes used to pass data back to the original page after the operation
-     * @return a redirect to the endorsement credential page
+     * @return a redirect to the platform certificate page
      * @throws URISyntaxException if the URI is malformed
      */
     @PostMapping("/bulk-delete")
-    public RedirectView bulkDeleteEndorsementCredentials(@RequestParam final List<String> ids,
-                                                         final RedirectAttributes redirectAttributes)
+    public RedirectView bulkDeletePlatformCertificates(@RequestParam final List<String> ids,
+                                                       final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
-        log.info("Received request to delete multiple endorsement credentials");
+        log.info("Received request to delete multiple platform certificates");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -286,13 +302,13 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while attempting to delete"
-                    + " multiple endorsement credentials";
+                    + " multiple platform certificates";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.PLATFORM_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -305,7 +321,7 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * The method handles four cases:
      * <ol>
      *     <li>If no global search term and no column-specific search criteria are provided,
-     *         all endorsement credentials are returned.</li>
+     *         all platform credentials are returned.</li>
      *     <li>If both a global search term and column-specific search criteria are provided,
      *         it performs filtering on both.</li>
      *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
@@ -314,30 +330,29 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the endorsement
+     * @param globalSearchTerm          A global search term that will be used to filter the platform
      *                                  credentials by the searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable
      * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
-     * endorsement credentials, along with the total number of records and the number of records matching the
+     * platform credentials, along with the total number of records and the number of records matching the
      * filter criteria.
      */
-    private FilteredRecordsList<EndorsementCredential> getFilteredEndorsementCredentialList(
+    private FilteredRecordsList<PlatformCredential> getFilteredPlatformCredentialList(
             final String globalSearchTerm,
             final Set<DataTablesColumn> columnsWithSearchCriteria,
             final Set<String> searchableColumnNames,
             final Pageable pageable) {
-        org.springframework.data.domain.Page<EndorsementCredential> pagedResult;
+        org.springframework.data.domain.Page<PlatformCredential> pagedResult;
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult =
-                    endorsementCredentialPageService.findEndorsementCredentialsByArchiveFlag(false, pageable);
+            pagedResult = platformCertificatePageService.findPlatformCredentialsByArchiveFlag(false, pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult = certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
-                    EndorsementCredential.class,
+                    PlatformCredential.class,
                     searchableColumnNames,
                     globalSearchTerm,
                     columnsWithSearchCriteria,
@@ -346,29 +361,29 @@ public class EndorsementCredentialPageController extends PageController<NoPagePa
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
             pagedResult = certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
-                    EndorsementCredential.class,
+                    PlatformCredential.class,
                     columnsWithSearchCriteria,
                     false,
                     pageable);
         } else {
             // if a value has been entered ONLY in the global search textbox
             pagedResult = certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
-                    EndorsementCredential.class,
+                    PlatformCredential.class,
                     searchableColumnNames,
                     globalSearchTerm,
                     false, pageable);
         }
 
-        FilteredRecordsList<EndorsementCredential> ekFilteredRecordsList = new FilteredRecordsList<>();
+        FilteredRecordsList<PlatformCredential> pcFilteredRecordsList = new FilteredRecordsList<>();
 
         if (pagedResult.hasContent()) {
-            ekFilteredRecordsList.addAll(pagedResult.getContent());
+            pcFilteredRecordsList.addAll(pagedResult.getContent());
         }
 
-        ekFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        ekFilteredRecordsList.setRecordsTotal(
-                endorsementCredentialPageService.findEndorsementCredentialRepositoryCount());
+        pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
+        pcFilteredRecordsList.setRecordsTotal(platformCertificatePageService.findPlatformCredentialRepositoryCount());
 
-        return ekFilteredRecordsList;
+
+        return pcFilteredRecordsList;
     }
 }

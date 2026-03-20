@@ -60,9 +60,9 @@ function parseSerialNumber(hexString) {
  */
 function initializeDataTableButtonSetup(pageName) {
   const pageNames = [
-    "endorsement-key-credentials",
+    "endorsement-key-certificates",
     "trust-chain",
-    "platform-credentials",
+    "platform-certificates",
     "idevid-certificates",
     "issued-certificates",
     "reference-manifests",
@@ -114,8 +114,14 @@ function initializeDataTableButtonSetup(pageName) {
     {
       text: "Clear All",
       action: function (e, dt, node, config) {
+        // Clear values entered in the global textbox and column textboxes
         dt.search("").columns().columnControl.searchClear().draw();
+
+        // Reset the order of the table entries to the default order
         dt.order([]).draw();
+
+        // Disable the Delete Selected button
+        $("#deleteSelectedButton").prop("disabled", true);
       },
     },
   ];
@@ -305,7 +311,7 @@ function generateCertificateDetailsLink(
     switch (certificateType) {
       case "issued":
         fullIconPath += "/ic_library_books_black_24dp.png";
-        title = "View Issued Attestation Certificate Details";
+        title = "View Issued Certificate Details";
         break;
       case "platform":
         fullIconPath += "/ic_important_devices_black_24dp.png";

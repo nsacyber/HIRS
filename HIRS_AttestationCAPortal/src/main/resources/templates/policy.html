@@ -15,7 +15,7 @@
                 <div class="aca-input-box">
                     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ec-validation}"
                         th:object="${initialData}">
-                        Endorsement Credential Validation:
+                        Endorsement Certificate Validation:
                         <span th:text="${initialData.ecValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                         <!-- trigger to open the modal -->
@@ -25,19 +25,19 @@
 
                         <!-- modal fragment -->
                         <div
-                            th:replace="~{fragments/modal :: modal( id='ecPolicyModal', label='Edit Endorsement Credential Validation Policy Settings', bodyContent=~{this::#ecPolicyBody}, customFooterButtons= ${null})}">
+                            th:replace="~{fragments/modal :: modal( id='ecPolicyModal', label='Edit Endorsement Certificate Validation Policy Settings', bodyContent=~{this::#ecPolicyBody}, customFooterButtons= ${null})}">
                             <!-- Define the content of the modal -->
                             <div id="ecPolicyBody">
                                 <div class="radio">
                                     <label>
                                         <input th:field="*{ecValidationEnabled}" type="radio" value="true" />
-                                        Endorsement Credentials will be validated
+                                        Endorsement Certificates will be validated
                                     </label>
                                 </div>
                                 <div class="radio">
                                     <label>
                                         <input th:field="*{ecValidationEnabled}" type="radio" value="false" />
-                                        Endorsement Credentials will not be validated
+                                        Endorsement Certificates will not be validated
                                     </label>
                                 </div>
                             </div>
@@ -51,7 +51,7 @@
                 <div class="aca-input-box">
                     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pc-validation}"
                         th:object="${initialData}">
-                        Platform Credential Validation:
+                        Platform Certificate Validation:
                         <span th:text="${initialData.pcValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
                         <!-- trigger to open the modal -->
@@ -61,19 +61,19 @@
 
                         <!-- modal fragment -->
                         <div
-                            th:replace="~{fragments/modal :: modal( id='pcPolicyModal',  label='Edit Platform Credential Validation Policy Settings', bodyContent=~{this::#pcPolicyBody}, customFooterButtons=${null})}">
+                            th:replace="~{fragments/modal :: modal( id='pcPolicyModal',  label='Edit Platform Certificate Validation Policy Settings', bodyContent=~{this::#pcPolicyBody}, customFooterButtons=${null})}">
                             <!-- Define the content of the modal -->
                             <div id="pcPolicyBody">
                                 <div class="radio">
                                     <label>
                                         <input th:field="*{pcValidationEnabled}" type="radio" value="true" />
-                                        Platform Credentials will be validated
+                                        Platform Certificates will be validated
                                     </label>
                                 </div>
                                 <div class="radio">
                                     <label>
                                         <input th:field="*{pcValidationEnabled}" type="radio" value="false" />
-                                        Platform Credentials will not be validated
+                                        Platform Certificates will not be validated
                                     </label>
                                 </div>
                             </div>

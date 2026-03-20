@@ -4,7 +4,7 @@ import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.IDevIdCertificatePageService;
-import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.enums.CertificateType;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
@@ -172,7 +172,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.IDEVID_CERTIFICATES,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.IDEVID_CERTIFICATE,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the idevid certificates",
@@ -206,7 +206,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
                     iDevIdCertificatePageService.parseIDevIDCertificate(file, errorMessages);
 
             if (parsedIDevIDCertificate != null) {
-                certificatePageService.storeCertificate(CertificateType.IDEVID_CERTIFICATES, file.getOriginalFilename(),
+                certificatePageService.storeCertificate(CertificateType.IDEVID_CERTIFICATE, file.getOriginalFilename(),
                         successMessages, errorMessages, parsedIDevIDCertificate);
             }
 

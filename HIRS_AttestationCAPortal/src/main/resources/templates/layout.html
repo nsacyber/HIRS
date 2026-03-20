@@ -71,7 +71,7 @@
     <div id="content" class="container-fluid">
 
         <!-- Side navigation fragment -->
-        <div th:replace="~{fragments/page-nav :: pageNav(page = ${page}, pages = ${pages})}"></div>
+        <div th:replace="~{fragments/side-navbar :: sideNavBar(page = ${page}, pages = ${pages})}"></div>
 
         <!-- Main content area with dynamic class -->
         <div th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">

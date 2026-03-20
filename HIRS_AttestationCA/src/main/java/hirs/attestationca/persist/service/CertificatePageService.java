@@ -8,7 +8,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
-import hirs.attestationca.persist.service.util.CertificateType;
+import hirs.attestationca.persist.service.enums.CertificateType;
 import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.service.util.PageServiceUtils;
 import hirs.attestationca.persist.service.util.PredicateFactory;
@@ -514,7 +514,7 @@ public class CertificatePageService {
                         List<String> moreErrorMessages = new ArrayList<>();
 
                         this.storeCertificate(
-                                CertificateType.TRUST_CHAIN,
+                                CertificateType.TRUST_CHAIN_CERTIFICATE,
                                 file.getOriginalFilename(),
                                 moreSuccessMessages,
                                 moreErrorMessages,

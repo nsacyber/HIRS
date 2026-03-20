@@ -348,7 +348,7 @@
                 th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload}">
                 Trust Chain CA Certificates
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='tc-editor', label='Import Trust Chain Certificates', bodyContent=~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='tc-editor', label='Upload Trust Chain Certificates', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>

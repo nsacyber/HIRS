@@ -21,7 +21,7 @@
                     $(this).find('#ekToDeleteId').val(endorsementKeyCertificateId);
                 });
 
-                // Setup Endorsement Key Credentials table columns
+                // Setup Endorsement Key Certificates table columns
                 let columns = [
                     {
                         data: null,
@@ -115,24 +115,24 @@
 
 <body>
 
-    <h1 layout:fragment="pageHeaderTitle">Endorsement Key Credentials</h1>
+    <h1 layout:fragment="pageHeaderTitle">Endorsement Key Certificates</h1>
 
     <div layout:fragment="content">
         <!-- text and icon resource variables -->
         <div class="aca-input-box-header">
             <form enctype="multipart/form-data" method="POST"
-                th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials/upload}">
-                Import Endorsement Key Credentials
+                th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/upload}">
+                Upload Endorsement Key Certificates
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='ek-editor', label='Import Endorsement Key Credentials',bodyContent= ~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='ek-editor', label='Upload Endorsement Key Certificates',bodyContent= ~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
                 </th:block>
                 <a
-                    th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials/bulk-download}">
-                    <img th:src="@{/icons/ic_file_download_black_24dp.png}" class="action-icons"
-                        title="Download All Endorsement Certificates" alt="Download Icon">
+                    th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/bulk-download}">
+                    <img alt="Download Icon" class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
+                        title="Download All Endorsement Certificates">
                 </a>
             </form>
         </div>
@@ -140,7 +140,7 @@
         <br />
 
         <div class="aca-data-table">
-            <table id="endorsementKeyTable" class="table table-bordered table-striped table-hover">
+            <table class="table table-bordered table-striped table-hover" id="endorsementKeyTable">
                 <thead>
                     <tr>
                         <th></th>
@@ -158,48 +158,48 @@
             </table>
         </div>
 
-        <!-- This modal will be triggered when the user hits the delete link on one of the table rows on the Endorsement Key Credentials page -->
+        <!-- This modal will be triggered when the user hits the delete link on one of the table rows on the Endorsement Key Certificates page -->
         <form method="POST"
-            th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials/delete}">
+            th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/delete}">
             <div
-                th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Endorsement Key Credential', 
+                th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Endorsement Key Certificate', 
                 bodyContent=~{this::#deleteEKConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})}">
 
                 <!-- Modal Body Content -->
                 <div id="deleteEKConfirmationBody">
                     <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this Endorsement Key
-                            Credential?</strong></p>
+                            Certificate?</strong></p>
                 </div>
 
                 <!-- Define custom footer buttons here -->
                 <div id="deleteConfirmationFooterButtons">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <!-- The endorsement key credential ID is stored in this hidden field -->
-                    <input type="hidden" name="id" id="ekToDeleteId" value="">
-                    <button type="submit" class="btn btn-danger">Delete EK Certificate</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <!-- The endorsement key certificate ID is stored in this hidden field -->
+                    <input id="ekToDeleteId" name="id" type="hidden" value="">
+                    <button class="btn btn-danger" type="submit">Delete EK Certificate</button>
                 </div>
             </div>
         </form>
 
-        <!-- This modal will be triggered when the user hits the Delete Selected button on the Endorsement Key Credentials page -->
+        <!-- This modal will be triggered when the user hits the Delete Selected button on the Endorsement Key Certificates page -->
         <form method="POST"
-            th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials/bulk-delete}">
+            th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/bulk-delete}">
             <div
-                th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Endorsement Key Credentials', 
+                th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Endorsement Key Certificates', 
                 bodyContent=~{this::#deleteMultipleEKConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})}">
 
                 <!-- Modal Body Content -->
                 <div id="deleteMultipleEKConfirmationBody">
                     <p class="text-center text-danger fs-4">
                         <strong>Are you sure you want to delete <span id="numRecordsToDelete"></span> Endorsement Key
-                            Credential(s)?</strong>
+                            Certificate(s)?</strong>
                     </p>
                 </div>
 
                 <!-- Define custom footer buttons here -->
                 <div id="deleteMultipleConfirmationFooterButtons">
                     <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
-                    <!-- The list of endorsement key credentials ids are stored in this hidden field -->
+                    <!-- The list of endorsement key certificates ids are stored in this hidden field -->
                     <input id="selectedRecordsToDeleteIds" name="ids" type="hidden" value="">
                     <button class="btn btn-danger" type="submit">Delete EK Certificate(s)</button>
                 </div>

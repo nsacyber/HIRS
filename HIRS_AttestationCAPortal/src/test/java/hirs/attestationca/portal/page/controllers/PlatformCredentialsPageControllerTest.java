@@ -19,7 +19,7 @@ import org.springframework.web.servlet.FlashMap;
 import java.io.IOException;
 import java.util.List;
 
-import static hirs.attestationca.portal.page.Page.PLATFORM_CREDENTIALS;
+import static hirs.attestationca.portal.page.Page.PLATFORM_CERTIFICATES;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -61,7 +61,7 @@ public class PlatformCredentialsPageControllerTest extends PageControllerTest {
      * Constructor providing the Page's display and routing specification.
      */
     public PlatformCredentialsPageControllerTest() {
-        super(PLATFORM_CREDENTIALS);
+        super(PLATFORM_CERTIFICATES);
         pagePath = getPagePath();
     }
 

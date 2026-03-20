@@ -1,0 +1,41 @@
+<th:block th:fragment="sideNavBar(page, pages)">
+    <nav class="navbar sidebar" role="navigation" th:if="${page?.hasMenu}">
+        <div class="container-fluid">
+            <div id="sidebar-navbar" class="">
+                <ul class="navbar-nav">
+                    <li th:each="p : ${pages}" th:if="${p?.inMenu}"
+                        th:class="'nav-item ' + ${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '') ">
+                        <a th:href="@{'/HIRS_AttestationCAPortal/portal/' + ${p?.prefixPath} + ${p?.viewName}}"
+                            class="nav-link">
+                            <span>
+                                <img th:src="@{/icons/{icon}(icon=${p?.icon})}" alt="nav icon" />
+                            </span>
+                            <span th:text="${p?.title}">Page Title</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- TODO: Offcanvas sidebar -->
+            <!-- <div class="offcanvas offcanvas-start show d-lg-block" data-bs-scroll="true" data-bs-backdrop="false"
+                stabindex="-1" id="sidebar-offcanvas" aria-labelledby="sidebarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="sidebarLabel">Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav">
+                        <li th:each="p : ${pages}" th:if="${p?.inMenu}"
+                            th:class="'nav-item ' + ${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '') ">
+                            <a th:href="@{'/HIRS_AttestationCAPortal/portal/' + ${p?.prefixPath} + ${p?.viewName}}"
+                                class="nav-link">
+                                <img th:src="@{/icons/{icon}(icon=${p?.icon})}" alt="nav icon" class="me-2" />
+                                <span th:text="${p?.title}">Page Title</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div> -->
+        </div>
+    </nav>
+</th:block>
