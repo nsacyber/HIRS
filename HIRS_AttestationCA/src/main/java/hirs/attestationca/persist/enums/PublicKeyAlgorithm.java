@@ -46,7 +46,7 @@ public enum PublicKeyAlgorithm {
      * The name of the algorithm.
      */
     private final String algorithmName;
-    
+
     /**
      * Retrieves the enum by the algorithm ID.
      *
@@ -62,4 +62,3 @@ public enum PublicKeyAlgorithm {
         return UNKNOWN; // If no match found, return UNKNOWN
     }
 }
-
