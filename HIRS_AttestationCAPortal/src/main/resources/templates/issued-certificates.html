@@ -123,9 +123,10 @@
             render: function (data, type, full, meta) {
               // set up link to details page
               let html = "";
-              html += generateCertificateDetailsLink("issued", data, true);
-              html += generateCertificateDownloadLink(viewName, data);
-              html += generateCertificateDeleteLink(data);
+              const thisPageCertificateType = "issued";
+              html += generateCertificateDetailsLink(thisPageCertificateType, data, true);
+              html += generateCertificateDownloadLink(thisPageCertificateType, viewName, data);
+              html += generateCertificateDeleteLink(thisPageCertificateType, data);
               return html;
             },
           },
@@ -144,8 +145,8 @@
     <div class="aca-input-box-header">
       Issued Certificates
       <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}">
-        <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
-          title="Download All Issued Certificates" alt="Download Icon">
+        <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" title="Download All Issued Certificates"
+          alt="Download Icon">
       </a>
     </div>
     <br />

@@ -94,8 +94,8 @@
                         render: function (data, type, full, meta) {
                             let html = "";
                             html += generateCertificateDetailsLink(certificateType, data, true);
-                            html += generateCertificateDownloadLink(viewName, data);
-                            html += generateCertificateDeleteLink(data);
+                            html += generateCertificateDownloadLink(certificateType, viewName, data);
+                            html += generateCertificateDeleteLink(certificateType, data);
                             return html;
                         },
                     },
@@ -339,8 +339,7 @@
         </th:block> <!-- aca-cert-viewer-modal end -->
 
         <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download-aca-cert-chain}">
-            <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
-                title="Download ACA Certificate Chain">
+            <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" title="Download ACA Certificate Chain">
         </a>
 
         <div class="aca-input-box-header">
@@ -354,7 +353,7 @@
                     </th:block>
                 </th:block>
                 <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-download}">
-                    <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
+                    <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
                         title="Download All Trust Chain Certificates">
                 </a>
             </form>

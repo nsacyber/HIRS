@@ -266,119 +266,172 @@ function generateLogLevelChangeButton(
   const modalTargetId = `#logLevelChangeConfirmationModal`;
 
   // Generate the modal trigger button for the specified log level
-  const html =
-    `<button type="button" ` +
-    `class="btn ${logLevelColor} btn-sm action-icons" ` + // Use dynamic color
-    `data-bs-toggle="modal" ` +
-    `data-bs-target="${modalTargetId}" ` +
-    `data-currentLogLevel="${currentLogLevel}" ` +
-    `data-loggerName="${loggerName}" ` +
-    `data-newLogLevel="${newLogLevel}" ` +
-    `aria-label="Change Log Level Link">` +
-    newLogLevel + // Display the log level text inside the button
-    `</button>`;
-  return html;
+  const generatedLogLevelChangeButton = `
+  <button type="button"
+          class="btn ${logLevelColor} btn-sm action-icons"
+          data-bs-toggle="modal"
+          data-bs-target="${modalTargetId}"
+          data-currentLogLevel="${currentLogLevel}"
+          data-loggerName="${loggerName}"
+          data-newLogLevel="${newLogLevel}"
+          aria-label="Change Log Level Link">
+    ${newLogLevel}
+  </button>
+`;
+
+  return generatedLogLevelChangeButton;
 }
 
 /**
  * Generates an HTML string for a certificate detail link based on the
  * specified certificate type and certificate ID.
  *
- * @param {string} type - The type of the certificate.
+ * @param {string} certificateType - The type of the certificate (e.g., 'issued', 'platform', etc.).
  * @param {string} certificateId - The unique identifier for the certificate.
- * @param {boolean} sameType - Indicates whether the details belong to the same certificate type.
+ * @param {boolean} isSameCertificatePage - True for certificate pages, false for non-certificate pages.
  * @returns {string} An HTML string representing the certificate detail link.
  */
 function generateCertificateDetailsLink(
   certificateType,
   certificateId,
-  sameType,
+  isSameCertificatePage,
 ) {
-  const href =
-    "/HIRS_AttestationCAPortal/portal/certificate-details?id=" +
-    certificateId +
-    "&type=" +
-    certificateType;
-  let fullIconPath = iconPath;
-  let title = "";
+  const href = `/HIRS_AttestationCAPortal/portal/certificate-details?id=${certificateId}&type=${certificateType}`;
 
-  //If the details is the same certificate type use assignment icon,
-  //otherwise use the icon for the certificate type.
-  if (sameType) {
-    title = "Details";
-    fullIconPath += "/ic_assignment_black_24dp.png";
+  // Determine icon path
+  let fullIconPath = "";
+
+  if (isSameCertificatePage) {
+    fullIconPath = `${iconPath}/svg/info-circle-blue-fill-24dp.svg`;
   } else {
     switch (certificateType) {
       case "issued":
-        fullIconPath += "/ic_library_books_black_24dp.png";
-        title = "View Issued Certificate Details";
+        fullIconPath = `${iconPath}/ic_library_books_black_24dp.png`;
         break;
       case "platform":
-        fullIconPath += "/ic_important_devices_black_24dp.png";
-        title = "View Platform Certificate Details";
+        fullIconPath = `${iconPath}/ic_important_devices_black_24dp.png`;
         break;
       case "endorsement":
-        fullIconPath += "/ic_vpn_key_black_24dp.png";
-        title = "View Endorsement Certificate Details";
-        break;
       case "idevid":
-        fullIconPath += "/ic_vpn_key_black_24dp.png";
-        title = "View IDevID Certificate Details";
+        fullIconPath = `${iconPath}/svg/key-fill-24dp.svg`;
         break;
+      default:
+        fullIconPath = `${iconPath}/ic_default_black_24dp.png`;
     }
   }
 
-  const html = `
-  <a href="${href}">
-    <img src="${fullIconPath}" class="action-icons" title="${title}">
-  </a>
-`;
+  // Determine title and alt info
+  let title = "";
+  let altInfo = "";
 
-  return html;
+  switch (certificateType) {
+    case "issued":
+      title = "View Issued Certificate Details";
+      altInfo = "View Issued Certificate Details Link";
+      break;
+    case "platform":
+      title = "View Platform Certificate Details";
+      altInfo = "View Platform Certificate Details Link";
+      break;
+    case "endorsement":
+      title = "View Endorsement Certificate Details";
+      altInfo = "View Endorsement Certificate Details Link";
+      break;
+    case "idevid":
+      title = "View IDevID Certificate Details";
+      altInfo = "View IDevID Certificate Details Link";
+      break;
+    case "certificateauthority":
+      title = "View Trust Chain Certificate Details";
+      altInfo = "View Endorsement Certificate Details Link";
+      break;
+    default:
+      title = "View Certificate Details";
+      altInfo = "View Certificate Details Link";
+  }
+
+  // Build HTML string using template literal
+  const generatedCertDetailsLink = `
+    <a href="${href}"
+     aria-label="${altInfo}">
+      <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}">
+    </a>
+  `;
+
+  return generatedCertDetailsLink;
 }
 
 /**
  * Generates an HTML string for a RIM detail link based on the specified
  * page path and the RIM ID.
  *
- * @param {string} pagePath - The prefix needed to find path to the details REST endpoint for RIMS.
  * @param {string} rimId - The unique identifier for the RIM.
  * @returns {string} An HTML string representing the RIM detail link.
  */
 function generateRimDetailsLink(rimId) {
-  const href = "rim-details?id=" + rimId;
-  const fullIconPath = iconPath + "/ic_assignment_black_24dp.png";
-  const title = "Details";
+  const href = `rim-details?id=${rimId}`;
+  const fullIconPath = `${iconPath}/svg/info-circle-blue-fill-24dp.svg`;
 
-  const html = `
+  const generatedRimDetailsLink = `
   <a href="${href}">
-    <img src="${fullIconPath}" class="action-icons" title="${title}">
+    <img src="${fullIconPath}" class="action-icons" alt="View RIM Details Link" title="View RIM Details">
   </a>
 `;
 
-  return html;
+  return generatedRimDetailsLink;
 }
 
 /**
  * Generates an HTML string for a certificate delete link based on the given certificate ID.
  *
+ * @param {string} certificateType - The type of the certificate (e.g., 'issued', 'platform', etc.).
  * @param {string} certificateId - The ID of the certificate to delete.
  * @returns {string} An HTML string representing a delete link for the certificate.
  */
-function generateCertificateDeleteLink(certificateId) {
-  const fullIconPath = iconPath + "/svg/trash-24dp.svg";
+function generateCertificateDeleteLink(certificateType, certificateId) {
+  const fullIconPath = `${iconPath}/svg/trash-red-24dp.svg`;
   const modalTargetId = `#deleteCertificateConfirmationModal`;
 
-  const html =
-    `<a href="${modalTargetId}" ` +
-    'data-bs-toggle="modal" ' +
-    `data-bs-target="${modalTargetId}" ` +
-    `data-id="${certificateId}" ` +
-    'aria-label="Delete Certificate Link">' +
-    `<img src="${fullIconPath}" class="action-icons" alt="Delete Certificate Link" title="Delete Certificate">` +
-    "</a>";
+  let title = "";
+  let altInfo = "";
 
-  return html;
+  switch (certificateType) {
+    case "issued":
+      title = "Delete Issued Certificate";
+      altInfo = "Delete Issued Certificate Link";
+      break;
+    case "platform":
+      title = "Delete Platform Certificate";
+      altInfo = "Delete Platform Certificate Link";
+      break;
+    case "endorsement":
+      title = "Delete Endorsement Certificate";
+      altInfo = "Delete Endorsement Certificate Link";
+      break;
+    case "idevid":
+      title = "Delete IDevID Certificate";
+      altInfo = "Delete IDevID Certificate Link";
+      break;
+    case "certificateauthority":
+      title = "Delete Trust Chain Certificate";
+      altInfo = "Delete Trust Chain Certificate Link";
+      break;
+    default:
+      title = "Delete Certificate";
+      altInfo = "Delete Certificate Link";
+  }
+
+  const generatedCertDeleteLink = `
+  <a href="${modalTargetId}"
+     data-bs-toggle="modal"
+     data-bs-target="${modalTargetId}"
+     data-id="${certificateId}"
+     aria-label="${altInfo}">
+    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}">
+  </a>
+`;
+
+  return generatedCertDeleteLink;
 }
 
 /**
@@ -388,39 +441,81 @@ function generateCertificateDeleteLink(certificateId) {
  * @returns {string} An HTML string representing a delete link for the RIM.
  */
 function generateRIMDeleteLink(rimId) {
-  const fullIconPath = iconPath + "/svg/trash-24dp.svg";
+  const fullIconPath = `${iconPath}/svg/trash-red-24dp.svg`;
   const modalTargetId = `#deleteRIMConfirmationModal`;
 
-  const html =
-    `<a href="${modalTargetId}" ` +
-    'data-bs-toggle="modal" ' +
-    `data-bs-target="${modalTargetId}" ` +
-    `data-id="${rimId}" ` +
-    'aria-label="Delete RIM Link">' +
-    `<img src="${fullIconPath}" class="action-icons" alt="Delete RIM Link" title="Delete RIM">` +
-    "</a>";
+  const generatedRimDeleteLink = `
+  <a 
+    href="${modalTargetId}" 
+    data-bs-toggle="modal" 
+    data-bs-target="${modalTargetId}" 
+    data-id="${rimId}" 
+    aria-label="Delete RIM Link"
+  >
+    <img 
+      src="${fullIconPath}" 
+      class="action-icons" 
+      alt="Delete RIM Link" 
+      title="Delete RIM"
+    >
+  </a>
+`;
 
-  return html;
+  return generatedRimDeleteLink;
 }
 
 /**
  * Generates a download link for the specified certificate ID.
  *
+ * @param {string} certificateType - The type of the certificate (e.g., 'issued', 'platform', etc.).
  * @param {string} pagePath - The prefix needed to find path to the download REST endpoint for certificates.
  * @param {string} certificateId - The unique identifier for the certificate.
  * @returns {string} An HTML string representing a download link for the certificate.
  */
-function generateCertificateDownloadLink(pagePath, certificateId) {
-  const href = pagePath + "/download?id=" + certificateId;
-  const fullIconPath = iconPath + "/ic_file_download_black_24dp.png";
+function generateCertificateDownloadLink(
+  certificateType,
+  pagePath,
+  certificateId,
+) {
+  const fullIconPath = `${iconPath}/svg/download-24dp.svg`;
+  const href = `${pagePath}/download?id=${certificateId}`;
 
-  const html = `
-  <a href="${href}">
-    <img src="${fullIconPath}" class="action-icons" title="Download Certificate">
+  let title = "";
+  let altInfo = "";
+
+  switch (certificateType) {
+    case "issued":
+      title = "Download Issued Certificate";
+      altInfo = "Download Issued Certificate Link";
+      break;
+    case "platform":
+      title = "Download Platform Certificate";
+      altInfo = "Download Platform Certificate Link";
+      break;
+    case "endorsement":
+      title = "Download Endorsement Certificate";
+      altInfo = "Download Endorsement Certificate Link";
+      break;
+    case "idevid":
+      title = "Download IDevID Certificate";
+      altInfo = "Download IDevID Certificate Link";
+      break;
+    case "certificateauthority":
+      title = "Download Trust Chain Certificate";
+      altInfo = "Download Trust Chain Certificate Link";
+      break;
+    default:
+      title = "Download Certificate";
+      altInfo = "Download Certificate Link";
+  }
+
+  const generatedCertDownloadLink = `
+  <a href="${href}" aria-label="${altInfo}">
+    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}">
   </a>
 `;
 
-  return html;
+  return generatedCertDownloadLink;
 }
 
 /**
@@ -431,16 +526,16 @@ function generateCertificateDownloadLink(pagePath, certificateId) {
  * @returns {string} An HTML string representing a download link for the RIM.
  */
 function generateRimDownloadLink(pagePath, rimId) {
-  const icon = iconPath + "/ic_file_download_black_24dp.png";
-  const href = pagePath + "/download?id=" + rimId;
+  const fullIconPath = `${iconPath}/svg/download-24dp.svg`;
+  const href = `${pagePath}/download?id=${rimId}`;
 
-  const html = `
-  <a href="${href}">
-    <img src="${icon}" class="action-icons" title="Download Reference Integrity Manifest">
+  const generatedRIMDownloadLink = `
+  <a href="${href}" aria-label="Download RIM Link">
+    <img src="${fullIconPath}" class="action-icons" alt="Download RIM Link" title="Download Reference Integrity Manifest">
   </a>
 `;
 
-  return html;
+  return generatedRIMDownloadLink;
 }
 
 /**
@@ -449,10 +544,10 @@ function generateRimDownloadLink(pagePath, rimId) {
  * string is returned (and no icon will be displayed).
  *
  * @param {string} full - the entire validation report
- * @param {string} validation_type - validation type
+ * @param {string} validationType - validation type
  * @returns html string to be displayed on validation report page
  */
-function getValidationDisplayHtml(full, validation_type) {
+function getValidationDisplayHtml(full, validationType) {
   let html = "";
 
   // loop through all the validations, looking for the one matching the validation type.
@@ -461,8 +556,8 @@ function getValidationDisplayHtml(full, validation_type) {
     let currentResult = currentValidation.validationResult;
     let currentMessage = currentValidation.message;
 
-    if (currentValidation.validationType === validation_type) {
-      let unknownStatus = `<img class="icon" src="${unknownIcon}" title="${unknownText}" />`;
+    if (currentValidation.validationType === validationType) {
+      let unknownStatus = `<img class="action-icons" src="${unknownIcon}" title="${unknownText}" />`;
 
       // display appropriate icon based on result
       if (currentResult) {
@@ -471,37 +566,32 @@ function getValidationDisplayHtml(full, validation_type) {
           let certType = "";
 
           if (
-            validation_type === "PLATFORM_CREDENTIAL" ||
-            validation_type === "PLATFORM_CREDENTIAL_ATTRIBUTES"
+            validationType === "PLATFORM_CREDENTIAL" ||
+            validationType === "PLATFORM_CREDENTIAL_ATTRIBUTES"
           ) {
             certType = "platform";
-          } else if (validation_type === "ENDORSEMENT_CREDENTIAL") {
+          } else if (validationType === "ENDORSEMENT_CREDENTIAL") {
             certType = "endorsement";
           }
 
           if (certType) {
-            html +=
-              '<a href="certificate-details?id=' +
-              currentValidation.certificatesUsed[0].id +
-              "&type=" +
-              certType +
-              '">';
+            html += `<a href="certificate-details?id=${currentValidation.certificatesUsed[0].id}&type=${certType}">`;
           }
         }
 
-        if (currentValidation.rimId !== "" && validation_type === "FIRMWARE") {
+        if (currentValidation.rimId !== "" && validationType === "FIRMWARE") {
           html += `<a href="rim-details?id=${currentValidation.rimId}">`;
         }
 
         switch (currentResult) {
           case "PASS":
-            html += `<img src="${passIcon}" title="${currentMessage}" />`;
+            html += `<img class="action-icons" src="${passIcon}" title="${currentMessage}" />`;
             break;
           case "FAIL":
-            html += `<img src="${failIcon}" title="${currentMessage}"/>`;
+            html += `<img class="action-icons" src="${failIcon}" title="${currentMessage}"/>`;
             break;
           case "ERROR":
-            html += `<img src="${errorIcon}" title="${currentMessage}"/>`;
+            html += `<img class="action-icons" src="${errorIcon}" title="${currentMessage}"/>`;
             break;
           default:
             html += unknownStatus;

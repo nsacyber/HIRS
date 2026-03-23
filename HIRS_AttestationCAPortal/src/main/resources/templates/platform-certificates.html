@@ -127,9 +127,10 @@
             searchable: false,
             render: function (data, type, full, meta) {
               let html = "";
-              html += generateCertificateDetailsLink("platform", data, true);
-              html += generateCertificateDownloadLink(viewName, data);
-              html += generateCertificateDeleteLink(data);
+              const thisPageCertificateType = "platform";
+              html += generateCertificateDetailsLink(thisPageCertificateType, data, true);
+              html += generateCertificateDownloadLink(thisPageCertificateType, viewName, data);
+              html += generateCertificateDeleteLink(thisPageCertificateType, data);
 
               return html;
             },
@@ -161,7 +162,7 @@
           </th:block>
         </th:block>
         <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/bulk-download}">
-          <img alt="Download Icon" class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
+          <img alt="Download Icon" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
             title="Download All Platform Certificates">
         </a>
       </form>

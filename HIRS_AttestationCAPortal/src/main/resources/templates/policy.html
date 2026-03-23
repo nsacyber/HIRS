@@ -10,7 +10,7 @@
     <h1 layout:fragment="pageHeaderTitle"> Attestation Identity CA Policy Options </h1>
     <section layout:fragment="content">
         <ul>
-            <!-- Endorsement validation  -->
+            <!-- Endorsement Certificate Validation  -->
             <li>
                 <div class="aca-input-box">
                     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-ec-validation}"
@@ -46,7 +46,7 @@
                 </div>
             </li>
 
-            <!-- Platform validation -->
+            <!-- Platform Certificate Validation -->
             <li>
                 <div class="aca-input-box">
                     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pc-validation}"
@@ -80,13 +80,13 @@
                         </div>
                     </form>
 
-                    <!-- Platform attribute validation -->
+                    <!-- Platform Certificate Attribute Validation -->
                     <ul>
                         <li>
                             <form method="POST"
                                 th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-pc-attribute-validation}"
                                 th:object="${initialData}">
-                                Platform Attribute Credential Validation:
+                                Platform Certificate Attribute Validation:
                                 <span
                                     th:text="${initialData.pcAttributeValidationEnabled ? 'Enabled' : 'Disabled'}"></span>
 
@@ -99,21 +99,21 @@
 
                                 <!-- modal fragment -->
                                 <div
-                                    th:replace="~{fragments/modal :: modal( id='pcAttrPolicyModal',  label='Edit Platform Credential Attribute Validation Policy Settings', bodyContent=~{this::#pcAttrPolicyBody}, customFooterButtons=${null})}">
+                                    th:replace="~{fragments/modal :: modal( id='pcAttrPolicyModal',  label='Edit Platform Certificate Attribute Validation Policy Settings', bodyContent=~{this::#pcAttrPolicyBody}, customFooterButtons=${null})}">
                                     <!-- Define the content of the modal -->
                                     <div id="pcAttrPolicyBody">
                                         <div class="radio">
                                             <label>
                                                 <input th:field="*{pcAttributeValidationEnabled}" type="radio"
                                                     value="true" />
-                                                Platform Credential Attributes will be validated
+                                                Platform Certificate Attributes will be validated
                                             </label>
                                         </div>
                                         <div class="radio">
                                             <label>
                                                 <input th:field="*{pcAttributeValidationEnabled}" type="radio"
                                                     value="false" />
-                                                Platform Credential Attributes will not be validated
+                                                Platform Certificate Attributes will not be validated
                                             </label>
                                         </div>
                                     </div>

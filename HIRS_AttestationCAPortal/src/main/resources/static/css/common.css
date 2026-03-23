@@ -110,6 +110,7 @@ hr {
 
 /* Options Icons Stying*/
 a:has(.action-icons) {
+  margin-inline: 2px;
   text-decoration: none; /* Remove underline from <a> tags containing .action-icons */
 }
 

@@ -95,13 +95,13 @@
                 th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}">
                 Upload Reference Integrity Manifests
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', label='Upload RIMs', bodyContent=~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', label='Upload Reference Integrity Manifests (RIMs)', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
                 </th:block>
                 <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}">
-                    <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon">
+                    <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon">
                 </a>
             </form>
         </div>

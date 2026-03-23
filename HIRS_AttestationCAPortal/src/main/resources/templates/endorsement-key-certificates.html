@@ -100,8 +100,8 @@
                         render: function (data, type, full, meta) {
                             let html = "";
                             html += generateCertificateDetailsLink(certificateType, data, true);
-                            html += generateCertificateDownloadLink(viewName, data);
-                            html += generateCertificateDeleteLink(data);
+                            html += generateCertificateDownloadLink(certificateType, viewName, data);
+                            html += generateCertificateDeleteLink(certificateType, data);
                             return html;
                         },
                     },
@@ -131,7 +131,7 @@
                 </th:block>
                 <a
                     th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/bulk-download}">
-                    <img alt="Download Icon" class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
+                    <img alt="Download Icon" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
                         title="Download All Endorsement Certificates">
                 </a>
             </form>
