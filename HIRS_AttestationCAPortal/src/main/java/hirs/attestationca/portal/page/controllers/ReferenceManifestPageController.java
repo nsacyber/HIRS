@@ -151,13 +151,13 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
 
-        log.info("Processing {} uploaded files", files.length);
+        log.info("Uploading {} RIM files", files.length);
 
         for (MultipartFile file : files) {
             String fileName = file.getOriginalFilename();
             List<String> errorMessages = new ArrayList<>();
 
-            if (fileName == null) {
+            if (fileName == null || fileName.isEmpty()) {
                 log.warn("File with empty or null name skipped");
                 continue;  // Skip processing this file
             }
@@ -170,11 +170,28 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                         referenceManifestPageService.parseBaseRIM(errorMessages, file);
                 baseRims.add(baseReferenceManifest);
                 messages.addErrorMessages(errorMessages);
+                if (baseReferenceManifest != null) {
+                    log.info("Uploaded base RIM with manufacturer {} and model {}.",
+                            baseReferenceManifest.getPlatformManufacturer(),
+                            baseReferenceManifest.getPlatformModel());
+                } else {
+                    log.info("Failed to parse Base RIM file {}", fileName);
+                }
             } else if (isSupportRim) {
                 final SupportReferenceManifest supportReferenceManifest =
                         referenceManifestPageService.parseSupportRIM(errorMessages, file);
                 supportRims.add(supportReferenceManifest);
                 messages.addErrorMessages(errorMessages);
+                if (supportReferenceManifest != null) {
+                    log.info("Uploaded support RIM with manufacturer {} and model {}.",
+                            supportReferenceManifest.getPlatformManufacturer(),
+                            supportReferenceManifest.getPlatformModel());
+                    String associatedBaseRim = supportReferenceManifest.getAssociatedRim() != null ?
+                            supportReferenceManifest.getAssociatedRim().toString() : "not found";
+                    log.info("Associated base RIM {}", associatedBaseRim);
+                } else {
+                    log.info("Failed to parse support RIM file {}", fileName);
+                }
             } else {
                 String errorString = "The file extension of " + fileName + " was not recognized."
                         + " Base RIMs support the extension \".swidtag\", and support RIMs support "
