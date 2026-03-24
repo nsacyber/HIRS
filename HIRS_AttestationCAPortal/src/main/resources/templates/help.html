@@ -142,7 +142,8 @@
       <div class="download-header">
         <h3>Download All HIRS Attestation Log Files</h3>
         <a th:href="@{/HIRS_AttestationCAPortal/portal/help/hirs-logs-download}">
-          <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download HIRS Logs" />
+          <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" alt="Download HIRS Logs Link"
+            data-bs-toggle="tooltip" data-bs-title="Download HIRS Logs" title="Download HIRS Logs" />
         </a>
       </div>
       <table id="loggersTable" class="table table-bordered table-striped table-hover">

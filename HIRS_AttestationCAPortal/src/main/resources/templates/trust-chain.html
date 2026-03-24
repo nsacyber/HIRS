@@ -339,7 +339,8 @@
         </th:block> <!-- aca-cert-viewer-modal end -->
 
         <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download-aca-cert-chain}">
-            <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" title="Download ACA Certificate Chain">
+            <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" title="Download ACA Certificate Chain"
+                data-bs-toggle="tooltip" data-bs-title="Download ACA Certificate Chain">
         </a>
 
         <div class="aca-input-box-header">
@@ -354,7 +355,8 @@
                 </th:block>
                 <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-download}">
                     <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
-                        title="Download All Trust Chain Certificates">
+                        title="Download All Trust Chain Certificates" data-bs-toggle="tooltip"
+                        data-bs-title="Download All Trust Chain Certificates">
                 </a>
             </form>
         </div>

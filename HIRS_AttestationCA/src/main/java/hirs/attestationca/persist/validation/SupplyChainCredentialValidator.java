@@ -37,26 +37,30 @@ import java.util.Set;
 public class SupplyChainCredentialValidator {
 
     /**
-     * used to identify and clear a nuc.
+     * Used to identify and clear a nuc.
      */
     public static final int NUC_VARIABLE_BIT = 159;
+
     /**
-     * AppraisalStatus message for a valid endorsement credential appraisal.
+     * AppraisalStatus message for a valid endorsement certificate appraisal.
      */
-    public static final String ENDORSEMENT_VALID = "Endorsement credential validated";
+    public static final String ENDORSEMENT_VALID = "Endorsement Certificate Successfully Validated";
+
     /**
-     * AppraisalStatus message for a valid platform credential appraisal.
+     * AppraisalStatus message for a valid platform certificate appraisal.
      */
-    public static final String PLATFORM_VALID = "Platform credential validated";
+    public static final String PLATFORM_VALID = "Platform Certificate Successfully Validated";
+
     /**
-     * AppraisalStatus message for a valid platform credential attributes appraisal.
+     * AppraisalStatus message for a valid platform certificate attributes appraisal.
      */
     public static final String PLATFORM_ATTRIBUTES_VALID =
-            "Platform credential attributes validated";
+            "Platform Certificate Attributes Successfully Validated";
+
     /**
      * AppraisalStatus message for a valid firmware appraisal.
      */
-    public static final String FIRMWARE_VALID = "Firmware validated";
+    public static final String FIRMWARE_VALID = "Firmware Successfully Validated";
 
     /*
      * Ensure that BouncyCastle is configured as a javax.security.Security provider, as this

@@ -354,7 +354,7 @@ function generateCertificateDetailsLink(
   const generatedCertDetailsLink = `
     <a href="${href}"
      aria-label="${altInfo}">
-      <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}">
+      <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}">
     </a>
   `;
 
@@ -371,10 +371,11 @@ function generateCertificateDetailsLink(
 function generateRimDetailsLink(rimId) {
   const href = `rim-details?id=${rimId}`;
   const fullIconPath = `${iconPath}/svg/info-circle-blue-fill-24dp.svg`;
+  const title = "View RIM Details";
 
   const generatedRimDetailsLink = `
   <a href="${href}">
-    <img src="${fullIconPath}" class="action-icons" alt="View RIM Details Link" title="View RIM Details">
+    <img src="${fullIconPath}" class="action-icons" alt="View RIM Details Link" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}">
   </a>
 `;
 
@@ -427,7 +428,7 @@ function generateCertificateDeleteLink(certificateType, certificateId) {
      data-bs-target="${modalTargetId}"
      data-id="${certificateId}"
      aria-label="${altInfo}">
-    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}">
+    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}"">
   </a>
 `;
 
@@ -443,6 +444,7 @@ function generateCertificateDeleteLink(certificateType, certificateId) {
 function generateRIMDeleteLink(rimId) {
   const fullIconPath = `${iconPath}/svg/trash-red-24dp.svg`;
   const modalTargetId = `#deleteRIMConfirmationModal`;
+  const title = "Delete Reference Integrity Manifest";
 
   const generatedRimDeleteLink = `
   <a 
@@ -456,7 +458,9 @@ function generateRIMDeleteLink(rimId) {
       src="${fullIconPath}" 
       class="action-icons" 
       alt="Delete RIM Link" 
-      title="Delete RIM"
+      title="${title}" 
+      data-bs-toggle="tooltip" 
+      data-bs-title="${title}"
     >
   </a>
 `;
@@ -511,7 +515,7 @@ function generateCertificateDownloadLink(
 
   const generatedCertDownloadLink = `
   <a href="${href}" aria-label="${altInfo}">
-    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}">
+    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}">
   </a>
 `;
 
@@ -528,10 +532,11 @@ function generateCertificateDownloadLink(
 function generateRimDownloadLink(pagePath, rimId) {
   const fullIconPath = `${iconPath}/svg/download-24dp.svg`;
   const href = `${pagePath}/download?id=${rimId}`;
+  const title = "Download Reference Integrity Manifest";
 
   const generatedRIMDownloadLink = `
   <a href="${href}" aria-label="Download RIM Link">
-    <img src="${fullIconPath}" class="action-icons" alt="Download RIM Link" title="Download Reference Integrity Manifest">
+    <img src="${fullIconPath}" class="action-icons" alt="Download RIM Link" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}">
   </a>
 `;
 
@@ -566,11 +571,11 @@ function getValidationDisplayHtml(full, validationType) {
           let certType = "";
 
           if (
-            validationType === "PLATFORM_CREDENTIAL" ||
-            validationType === "PLATFORM_CREDENTIAL_ATTRIBUTES"
+            validationType === "PLATFORM_CERTIFICATE" ||
+            validationType === "PLATFORM_CERTIFICATE_ATTRIBUTES"
           ) {
             certType = "platform";
-          } else if (validationType === "ENDORSEMENT_CREDENTIAL") {
+          } else if (validationType === "ENDORSEMENT_CERTIFICATE") {
             certType = "endorsement";
           }
 
@@ -585,13 +590,13 @@ function getValidationDisplayHtml(full, validationType) {
 
         switch (currentResult) {
           case "PASS":
-            html += `<img class="action-icons" src="${passIcon}" title="${currentMessage}" />`;
+            html += `<img class="action-icons" src="${passIcon}" title="${currentMessage}" data-bs-toggle="tooltip" data-bs-title="${currentMessage}" alt="Pass Icon Link"/>`;
             break;
           case "FAIL":
-            html += `<img class="action-icons" src="${failIcon}" title="${currentMessage}"/>`;
+            html += `<img class="action-icons" src="${failIcon}" title="${currentMessage}" data-bs-toggle="tooltip" data-bs-title="${currentMessage}" alt="Fail Icon Link"/>`;
             break;
           case "ERROR":
-            html += `<img class="action-icons" src="${errorIcon}" title="${currentMessage}"/>`;
+            html += `<img class="action-icons" src="${errorIcon}" title="${currentMessage}" data-bs-toggle="tooltip" data-bs-title="${currentMessage}" alt="Error Icon Link"/>`;
             break;
           default:
             html += unknownStatus;

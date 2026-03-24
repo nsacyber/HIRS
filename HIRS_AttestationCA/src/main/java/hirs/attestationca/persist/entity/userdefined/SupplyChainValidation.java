@@ -105,19 +105,19 @@ public class SupplyChainValidation extends ArchivableEntity {
      */
     public enum ValidationType {
         /**
-         * Validation of an endorsement credential.
+         * Validation of an endorsement certificate.
          */
-        ENDORSEMENT_CREDENTIAL,
+        ENDORSEMENT_CERTIFICATE,
 
         /**
-         * Validation of a platform credential and also delta platform credentials from spec 1.1.
+         * Validation of a platform certificate and also delta platform certificates from spec 1.1.
          */
-        PLATFORM_CREDENTIAL,
+        PLATFORM_CERTIFICATE,
 
         /**
-         * Validation of a platform credential's attributes.
+         * Validation of a platform certificate's attributes.
          */
-        PLATFORM_CREDENTIAL_ATTRIBUTES,
+        PLATFORM_CERTIFICATE_ATTRIBUTES,
 
         /**
          * Validation of the device firmware.

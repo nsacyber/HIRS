@@ -29,18 +29,24 @@
     <script th:src="@{/lib/bootstrap-5.3.8/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/js/common.js}"></script>
 
-    <!-- Toast initialization script -->
+    <!-- Bootstrap 5 Toast and Tooltips initialization script -->
     <script>
         $(document).ready(function () {
-            const disappearDelayTime = 8000; // Time in milliseconds before the toast disappears
+            const disappearDelayTime = 8000; // Time in milliseconds before the toast message disappears
 
-            // Triggering all toasts to show if present
+            // Show all toasts if present
             const toastElements = document.querySelectorAll('.toast');
             toastElements.forEach(function (toastElement) {
                 const toast = new bootstrap.Toast(toastElement, {
                     delay: disappearDelayTime
                 });
                 toast.show();
+            });
+
+            // Initalize Bootstrap tooltips
+            $('body').tooltip({
+                selector: '[data-bs-toggle="tooltip"]',
+                customClass: 'custom-tooltip-style'
             });
         });
     </script>

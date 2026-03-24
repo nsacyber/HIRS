@@ -1,7 +1,7 @@
 <th:block th:fragment="downloadInfo(id, label, bodyContent)">
     <!-- Download icon anchor -->
-    <a th:href="'#' + ${id}" data-bs-toggle="modal" th:title="${label}">
-        <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon" />
+    <a th:href="'#' + ${id}" data-bs-toggle="modal">
+        <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon" th:title="${label}" />
     </a>
 
     <!-- Include modal fragment, passing params -->
