@@ -90,21 +90,25 @@
     <h1 layout:fragment="pageHeaderTitle">Reference Integrity Manifests</h1>
 
     <div layout:fragment="content">
-        <div class="aca-input-box-header">
+        <!-- Upload RIMs button -->
+        <div class="d-flex justify-content-center gap-3">
             <form enctype="multipart/form-data" method="post"
                 th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}">
-                Upload Reference Integrity Manifests
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', label='Upload Reference Integrity Manifests (RIMs)', bodyContent=~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', label='Upload RIMs', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
                 </th:block>
-                <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}">
-                    <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon"
-                        title="Download All RIMs" data-bs-toggle="tooltip" data-bs-title="Download All RIMs">
-                </a>
             </form>
+
+            <!-- Download RIMs button -->
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}" class="btn btn-primary"
+                title="Click here to download a ZIP file of all RIMs" data-bs-toggle="tooltip"
+                data-bs-title="Click here to download a ZIP file of all RIMs">
+                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon">
+                Download RIMs
+            </a>
         </div>
 
         <br />

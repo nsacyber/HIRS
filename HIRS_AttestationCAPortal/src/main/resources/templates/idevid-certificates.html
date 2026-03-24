@@ -91,23 +91,27 @@
     <h1 layout:fragment="pageHeaderTitle">IDevID Certificates</h1>
 
     <div layout:fragment="content">
-        <div class="aca-input-box-header">
+        <div class="d-flex justify-content-center gap-3">
+            <!-- Upload IDevId Certificates Button-->
             <form method="POST"
                 th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/upload}"
                 enctype="multipart/form-data">
-                Upload IDevID Certificates
                 <th:block
                     th:replace="~{fragments/file-chooser :: fileChooser(id='idevid-editor', label='Upload IDevID Certificates', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" type="file" name="file" multiple="multiple" />
                     </th:block>
                 </th:block>
-                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-download}">
-                    <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
-                        title="Download All IDevID Certificates" alt="Download Icon" data-bs-toggle="tooltip"
-                        data-bs-title="Download All IDevID Certificates">
-                </a>
+
             </form>
+
+            <!-- Download All IDevId Certificates Button-->
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/bulk-download}"
+                class="btn btn-primary" title="Click here to download a ZIP file of all IDevId Certificates"
+                data-bs-toggle="tooltip" data-bs-title="Click here to download a ZIP file of all IDevId Certificates">
+                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon">
+                Download IDevId Certificates
+            </a>
         </div>
 
         <br />

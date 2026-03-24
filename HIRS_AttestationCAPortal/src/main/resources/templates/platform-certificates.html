@@ -148,11 +148,11 @@
   <h1 layout:fragment="pageHeaderTitle">Platform Certificates</h1>
 
   <div layout:fragment="content">
-    <!-- text and icon resource variables -->
-    <div class="aca-input-box-header">
+    <div class="d-flex justify-content-center gap-3">
+
+      <!--Upload Platform Certificates Button-->
       <form enctype="multipart/form-data" method="POST"
         th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/upload}">
-        Upload Platform Certificates
         <th:block th:replace="~{fragments/file-chooser
                 :: fileChooser(id='platformCertificateEditor',
                 label='Upload Platform Certificates',
@@ -161,12 +161,15 @@
             <input id="importFile" multiple="multiple" name="file" type="file" />
           </th:block>
         </th:block>
-        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/bulk-download}">
-          <img alt="Download Icon" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
-            title="Download All Platform Certificates" data-bs-toggle="tooltip"
-            data-bs-title="Download All Platform Certificates">
-        </a>
       </form>
+
+      <!--Download Platform Certificates Button-->
+      <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/bulk-download}"
+        class="btn btn-primary" title="Click here to download a ZIP file of all Platform Certificates"
+        data-bs-toggle="tooltip" data-bs-title="Click here to download a ZIP file of all Platform Certificates">
+        <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon">
+        Download Platform Certificates
+      </a>
     </div>
 
     <br />

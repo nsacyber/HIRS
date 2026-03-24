@@ -142,13 +142,16 @@
   <h1 layout:fragment="pageHeaderTitle">Issued Certificates </h1>
 
   <div layout:fragment="content">
-    <div class="aca-input-box-header">
-      Issued Certificates
-      <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}">
-        <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" title="Download All Issued Certificates"
-          alt="Download Icon" data-bs-toggle="tooltip" data-bs-title="Download All Issued Certificates">
+    <!-- Download Issued Certificates Button -->
+    <div class="d-flex justify-content-center gap-3">
+      <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}"
+        class="btn btn-primary" title="Click here to download a ZIP file of all Issued Certificates"
+        data-bs-toggle="tooltip" data-bs-title="Click here to download a ZIP file of all Issued Certificates">
+        <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon">
+        Download Issued Certificates
       </a>
     </div>
+
     <br />
     <div class="aca-data-table">
       <table id="issuedTable" class="table table-bordered table-striped table-hover">

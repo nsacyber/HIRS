@@ -118,24 +118,27 @@
     <h1 layout:fragment="pageHeaderTitle">Endorsement Key Certificates</h1>
 
     <div layout:fragment="content">
-        <!-- text and icon resource variables -->
-        <div class="aca-input-box-header">
+        <div class="d-flex justify-content-center gap-3">
+            <!--Upload Endorsement Certificates Button-->
             <form enctype="multipart/form-data" method="POST"
                 th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/upload}">
-                Upload Endorsement Key Certificates
                 <th:block
                     th:replace="~{fragments/file-chooser :: fileChooser(id='ek-editor', label='Upload Endorsement Key Certificates',bodyContent= ~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
                 </th:block>
-                <a
-                    th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/bulk-download}">
-                    <img alt="Download Icon" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
-                        title="Download All Endorsement Certificates" data-bs-toggle="tooltip"
-                        data-bs-title="Download All Endorsement Certificates">
-                </a>
+
             </form>
+
+            <!--Download Endorsement Certificates Button-->
+            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/bulk-download}"
+                class="btn btn-primary" title="Click here to download a ZIP file of all Endorsement Certificates"
+                data-bs-toggle="tooltip"
+                data-bs-title="Click here to download a ZIP file of all Endorsement Certificates">
+                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon">
+                Download Endorsement Certificates
+            </a>
         </div>
 
         <br />
