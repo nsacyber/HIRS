@@ -48,9 +48,9 @@ import java.util.zip.ZipOutputStream;
 /**
  * Controller for the Platform Credentials page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials")
+@Log4j2
 public class PlatformCredentialPageController extends PageController<NoPageParams> {
     private final CertificatePageService certificatePageService;
     private final PlatformCredentialPageService platformCredentialService;
@@ -127,7 +127,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         // loop all the platform credentials
         for (PlatformCredential pc : pcFilteredRecordsList) {
             // find the EC using the PC's "holder serial number"
-            EndorsementCredential associatedEC = this.platformCredentialService
+            EndorsementCredential associatedEC = platformCredentialService
                     .findECBySerialNumber(pc.getHolderSerialNumber());
 
             if (associatedEC != null) {
@@ -158,7 +158,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         try {
             final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(PlatformCredential.class,
+                    certificatePageService.downloadCertificate(PlatformCredential.class,
                             UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
@@ -188,7 +188,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
@@ -219,7 +219,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
             List<String> successMessages = new ArrayList<>();
 
             PlatformCredential parsedPlatformCredential =
-                    this.platformCredentialService.parsePlatformCredential(file,
+                    platformCredentialService.parsePlatformCredential(file,
                             errorMessages);
 
             if (parsedPlatformCredential != null) {
@@ -259,7 +259,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id),
+            certificatePageService.deleteCertificate(UUID.fromString(id),
                     successMessages, errorMessages);
 
             messages.addSuccessMessages(successMessages);
@@ -296,7 +296,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
+            certificatePageService.bulkDeleteCertificates(ids, successMessages,
                     errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
@@ -348,29 +348,26 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult =
-                    this.platformCredentialService.findPlatformCredentialsByArchiveFlag(false, pageable);
+            pagedResult = platformCredentialService.findPlatformCredentialsByArchiveFlag(false, pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
-                            PlatformCredential.class,
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
+            pagedResult = certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                    PlatformCredential.class,
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
-                            PlatformCredential.class,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
+            pagedResult = certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                    PlatformCredential.class,
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else {
             // if a value has been entered ONLY in the global search textbox
-            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+            pagedResult = certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     PlatformCredential.class,
                     searchableColumnNames,
                     globalSearchTerm,
@@ -384,8 +381,7 @@ public class PlatformCredentialPageController extends PageController<NoPageParam
         }
 
         pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        pcFilteredRecordsList.setRecordsTotal(
-                this.platformCredentialService.findPlatformCredentialRepositoryCount());
+        pcFilteredRecordsList.setRecordsTotal(platformCredentialService.findPlatformCredentialRepositoryCount());
 
 
         return pcFilteredRecordsList;

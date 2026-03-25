@@ -46,9 +46,9 @@ import java.util.zip.ZipOutputStream;
 /**
  * Controller for the Issued Certificates page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
+@Log4j2
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
     private final IssuedAttestationCertificatePageService issuedAttestationCertificateService;
     private final CertificatePageService certificatePageService;
@@ -145,8 +145,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         try {
             final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(IssuedAttestationCertificate.class,
-                            UUID.fromString(id));
+                    certificatePageService.downloadCertificate(IssuedAttestationCertificate.class, UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -176,7 +175,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ISSUED_CERTIFICATES,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
@@ -207,8 +206,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages,
-                    errorMessages);
+            certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -243,8 +241,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
-                    errorMessages);
+            certificatePageService.bulkDeleteCertificates(ids, successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -295,12 +292,12 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult = this.issuedAttestationCertificateService.
-                    findIssuedCertificatesByArchiveFlag(false, pageable);
+            pagedResult =
+                    issuedAttestationCertificateService.findIssuedCertificatesByArchiveFlag(false, pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
-                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                    certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
                             IssuedAttestationCertificate.class,
                             searchableColumnNames,
                             globalSearchTerm,
@@ -310,14 +307,14 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
             pagedResult =
-                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                    certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
                             IssuedAttestationCertificate.class,
                             columnsWithSearchCriteria,
                             false,
                             pageable);
         } else {
             // if a value has been entered ONLY in the global search textbox
-            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+            pagedResult = certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     IssuedAttestationCertificate.class,
                     searchableColumnNames,
                     globalSearchTerm,
@@ -334,7 +331,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         issuedCertificateFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         issuedCertificateFilteredRecordsList.setRecordsTotal(
-                this.issuedAttestationCertificateService.findIssuedCertificateRepoCount());
+                issuedAttestationCertificateService.findIssuedCertificateRepoCount());
 
         return issuedCertificateFilteredRecordsList;
     }

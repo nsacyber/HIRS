@@ -21,11 +21,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Service layer component that handles HIRS application logging
- * and supports various Help page-related operations.
+ * Service class that handles HIRS application logging and supports various Help page-related operations.
  */
-@Log4j2
 @Service
+@Log4j2
 public class HelpPageService {
     private static final String MAIN_HIRS_LOGGER_NAME = "hirs.attestationca";
 
@@ -33,16 +32,18 @@ public class HelpPageService {
 
     private final LoggersEndpoint loggersEndpoint;
 
-    @Value("${logging.file.path}")
-    private String logFilesPath;
+    private final String logFilesPath;
 
     /**
      * Constructor for Help Page Service.
      *
      * @param loggersEndpoint loggers endpoint
+     * @param logFilesPath    log files path
      */
-    public HelpPageService(final LoggersEndpoint loggersEndpoint) {
+    public HelpPageService(final LoggersEndpoint loggersEndpoint,
+                           @Value("${logging.file.path}") final String logFilesPath) {
         this.loggersEndpoint = loggersEndpoint;
+        this.logFilesPath = logFilesPath;
     }
 
     /**
@@ -81,8 +82,7 @@ public class HelpPageService {
                 final String fileName = fileNamePath.toString();
 
                 // and is a HIRS Attestation CA log file
-                if (fileName.startsWith(HIRS_ATTESTATION_CA_PORTAL_LOG_NAME)
-                        && fileName.endsWith(".log")) {
+                if (fileName.startsWith(HIRS_ATTESTATION_CA_PORTAL_LOG_NAME) && fileName.endsWith(".log")) {
                     // Create a new zip entry with the file's name
                     ZipEntry zipEntry = new ZipEntry(fileName);
                     zipEntry.setTime(System.currentTimeMillis());
@@ -108,8 +108,11 @@ public class HelpPageService {
      */
     public HIRSLogger getMainHIRSLogger() {
         // retrieve all the applications' loggers
-        Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allLoggers =
-                loggersEndpoint.loggers().getLoggers();
+        Map<String, LoggersEndpoint.LoggerLevelsDescriptor> allLoggers = loggersEndpoint.loggers().getLoggers();
+
+        if (allLoggers == null) {
+            throw new IllegalArgumentException("There are no loggers present in the HIRS Application.");
+        }
 
         // retrieve the ONE main HIRS Logger from the list of loggers
         Optional<Map.Entry<String, LoggersEndpoint.LoggerLevelsDescriptor>> mainLoggerEntry =
@@ -124,19 +127,16 @@ public class HelpPageService {
         if (mainLoggerEntry.isPresent()) {
             // grab the main HIRS logger's name and description
             final String loggerName = mainLoggerEntry.get().getKey();
-            final LoggersEndpoint.LoggerLevelsDescriptor loggerLevelsDescriptor =
-                    mainLoggerEntry.get().getValue();
+            final LoggersEndpoint.LoggerLevelsDescriptor loggerLevelsDescriptor = mainLoggerEntry.get().getValue();
 
             // set the log level of the HIRS logger based on the configured level
             LogLevel logLevel;
 
-            // if the log level has already been configured, find the enum equivalent of that
-            // configured log level
+            // if the log level has already been configured, find the enum equivalent of that configured log level
             if (loggerLevelsDescriptor.getConfiguredLevel() != null) {
                 logLevel = LogLevel.valueOf(loggerLevelsDescriptor.getConfiguredLevel());
             } else {
-                // if the log level has not been configured (current configured log level is null),
-                // set the log level to info
+                // if the log level has not been configured,  set the log level to info
                 logLevel = LogLevel.INFO;
             }
 

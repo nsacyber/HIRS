@@ -47,9 +47,9 @@ import java.util.zip.ZipOutputStream;
 /**
  * Controller for the IDevID Certificates page.
  */
-@Log4j2
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates")
+@Log4j2
 public class IDevIdCertificatePageController extends PageController<NoPageParams> {
     private final CertificatePageService certificatePageService;
     private final IDevIdCertificatePageService iDevIdCertificatePageService;
@@ -143,8 +143,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         try {
             final DownloadFile downloadFile =
-                    this.certificatePageService.downloadCertificate(IDevIDCertificate.class,
-                            UUID.fromString(id));
+                    certificatePageService.downloadCertificate(IDevIDCertificate.class, UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -173,7 +172,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            this.certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.IDEVID_CERTIFICATES,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.IDEVID_CERTIFICATES,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the idevid certificates",
@@ -204,11 +203,10 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
             List<String> successMessages = new ArrayList<>();
 
             IDevIDCertificate parsedIDevIDCertificate =
-                    this.iDevIdCertificatePageService.parseIDevIDCertificate(file, errorMessages);
+                    iDevIdCertificatePageService.parseIDevIDCertificate(file, errorMessages);
 
             if (parsedIDevIDCertificate != null) {
-                certificatePageService.storeCertificate(CertificateType.IDEVID_CERTIFICATES,
-                        file.getOriginalFilename(),
+                certificatePageService.storeCertificate(CertificateType.IDEVID_CERTIFICATES, file.getOriginalFilename(),
                         successMessages, errorMessages, parsedIDevIDCertificate);
             }
 
@@ -242,8 +240,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.deleteCertificate(UUID.fromString(id), successMessages,
-                    errorMessages);
+            certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -279,13 +276,12 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            this.certificatePageService.bulkDeleteCertificates(ids, successMessages,
-                    errorMessages);
+            certificatePageService.bulkDeleteCertificates(ids, successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
-            final String errorMessage = "An exception was thrown while attempting to delete"
-                    + " multiple idevid certificates";
+            final String errorMessage =
+                    "An exception was thrown while attempting to delete multiple idevid certificates";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }
@@ -331,29 +327,26 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
 
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
-            pagedResult = this.iDevIdCertificatePageService.
-                    findIDevCertificatesByArchiveFlag(false, pageable);
+            pagedResult = iDevIdCertificatePageService.findIDevCertificatesByArchiveFlag(false, pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
-                            IDevIDCertificate.class,
-                            searchableColumnNames,
-                            globalSearchTerm,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
+            pagedResult = certificatePageService.findCertificatesByGlobalAndColumnSpecificSearchTerm(
+                    IDevIDCertificate.class,
+                    searchableColumnNames,
+                    globalSearchTerm,
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else if (!columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered ONLY in the column search dropdown
-            pagedResult =
-                    this.certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
-                            IDevIDCertificate.class,
-                            columnsWithSearchCriteria,
-                            false,
-                            pageable);
+            pagedResult = certificatePageService.findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
+                    IDevIDCertificate.class,
+                    columnsWithSearchCriteria,
+                    false,
+                    pageable);
         } else {
             // if a value has been entered ONLY in the global search textbox
-            pagedResult = this.certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
+            pagedResult = certificatePageService.findCertificatesByGlobalSearchTermAndArchiveFlag(
                     IDevIDCertificate.class,
                     searchableColumnNames,
                     globalSearchTerm,
@@ -366,8 +359,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
         }
 
         idevidFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
-        idevidFilteredRecordsList.setRecordsTotal(
-                this.iDevIdCertificatePageService.findIDevIdCertificateRepositoryCount());
+        idevidFilteredRecordsList.setRecordsTotal(iDevIdCertificatePageService.findIDevIdCertificateRepositoryCount());
 
         return idevidFilteredRecordsList;
     }
