@@ -144,6 +144,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
         List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
 
         final Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
         final Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
@@ -155,7 +156,6 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
 
         for (MultipartFile file : files) {
             String fileName = file.getOriginalFilename();
-            List<String> errorMessages = new ArrayList<>();
 
             if (fileName == null || fileName.isEmpty()) {
                 log.warn("File with empty or null name skipped");
@@ -198,13 +198,14 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                         + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
                         + "Please verify your upload and retry.";
                 log.error("File extension in {} not recognized as base or support RIM.", fileName);
-                messages.addErrorMessage(errorString);
+                errorMessages.add(errorString);
             }
         }
 
-        referenceManifestPageService.storeRIMS(successMessages, baseRims, supportRims);
+        this.referenceManifestPageService.storeRIMS(successMessages, errorMessages, baseRims, supportRims);
 
         messages.addSuccessMessages(successMessages);
+        messages.addErrorMessages(errorMessages);
 
         model.put(MESSAGES_ATTRIBUTE, messages);
         return redirectTo(Page.REFERENCE_MANIFESTS, new NoPageParams(), model, redirectAttributes);
