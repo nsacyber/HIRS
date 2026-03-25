@@ -40,14 +40,10 @@ public enum DiceKeyPurpose {
         BY_OID = Collections.unmodifiableMap(byOid);
     }
 
-    /**
-     * Contains the TCG DICE OID for thjs key purpose.
-     */
+    /** Contains the TCG DICE OID for this key purpose. */
     @Getter
     private final String oid;
-    /**
-     * Contains the display name for this key purpose.
-     */
+    /** Contains the display name for this key purpose. */
     @Getter
     private final String displayName;
 
@@ -67,7 +63,6 @@ public enum DiceKeyPurpose {
 
     /**
      * Create a mapping of DICE EKU OIDs to their corresponding key purposes.
-     *
      * @return An unmodifiable {@link Map} of DICE EKU OIDs to human-readable key purpose descriptions.
      */
     public static Map<String, String> getExtendedKeyUsageMap() {

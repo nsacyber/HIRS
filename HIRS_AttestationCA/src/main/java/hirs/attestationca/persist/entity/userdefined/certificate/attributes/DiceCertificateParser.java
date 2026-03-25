@@ -18,26 +18,19 @@ import java.util.Set;
  */
 @Log4j2
 public final class DiceCertificateParser {
-    /**
-     * Private constructor to prevent instantiation of utility class.
-     */
+    /** Private constructor to prevent instantiation of utility class. */
     private DiceCertificateParser() {
         throw new UnsupportedOperationException("Utility class should not be instantiated");
     }
 
-    /**
-     * Key usage bit position for keyCertSign (bit 5).
-     */
+    /** Key usage bit position for keyCertSign (bit 5). */
     private static final int KEY_CERT_SIGN_BIT = 5;
-    /**
-     * Key usage bit position for cRLSign (bit 6).
-     */
+    /** Key usage bit position for cRLSign (bit 6). */
     private static final int CRL_SIGN_BIT = 6;
 
     /**
      * Parses a DICE certificate and extracts relevant attributes.
-     *
-     * @param cer\t the X.509 certificate to parse
+     * @param cert the X.509 certificate to parse
      * @return a {@link DiceCertificateInfo} object containing the extracted attributes, or null if invalid
      * @throws IOException if certificate parsing fails
      */
@@ -92,13 +85,12 @@ public final class DiceCertificateParser {
     /**
      * Classifies a DICE certificate profile based on key purposes and related attributes.
      * @param keyPurposes the key purposes to classify
-     * @param isCa input CA certificate field
-     * @param hasKeyCertSign input keyCertSign field
+     * @param isCa true if a CA certificate
+     * @param hasKeyCertSign true if cert contains keyCertSign
      * @return an output DICE profile type
      */
     private static DiceProfileType classifyProfile(final Set<DiceKeyPurpose> keyPurposes,
                                         final boolean isCa, final boolean hasKeyCertSign) {
-
         boolean hasIdentityInit = keyPurposes.contains(DiceKeyPurpose.IDENTITY_INIT);
         boolean hasIdentityLoc = keyPurposes.contains(DiceKeyPurpose.IDENTITY_LOC);
         boolean hasAttestInit = keyPurposes.contains(DiceKeyPurpose.ATTEST_INIT);

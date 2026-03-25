@@ -1,15 +1,15 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
+import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateInfo;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateParser;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 import jakarta.persistence.PostLoad;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -21,14 +21,14 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 
-import hirs.attestationca.persist.entity.userdefined.Certificate;
-import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateParser;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Transient;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Serial;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -57,33 +57,24 @@ public class IDevIDCertificate extends Certificate {
     @Transient
     private byte[] subjectAltName;
 
-    /**
-     * Parsed DICE attributes from the certificate, if present.
-     */
+    /** Parsed DICE attributes from the certificate, if present. */
     @Transient
     private transient DiceCertificateInfo diceCertificateInfo;
 
-    /**
-     * Corresponds to the hwType field found in a Hardware Module Name (if present).
-     */
+    /** Corresponds to the hwType field found in a Hardware Module Name (if present). */
     @Column
     private String hwType;
 
-    /**
-     * Corresponds to the serial number found in a Hardware Module Name (if present).
-     */
+    /** Corresponds to the serial number found in a Hardware Module Name (if present). */
     @Column
     private byte[] hwSerialNum;
 
-    /**
-     * TPM policy qualifiers (TCG only).
-     */
+    /** TPM policy qualifiers (TCG only). */
     @Column
     private String tpmPolicies;
 
-    /**
-     * Serial version UID for serialization.
-     */
+    /** Serial version UID for serialization. */
+    @Serial
     private static final long serialVersionUID = 9223372036854775807L;
 
     /**

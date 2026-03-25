@@ -14,26 +14,16 @@ import java.util.Set;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public final class DiceCertificateInfo {
-    /**
-     * The DICE profile type of the certificate.
-     */
+    /** The DICE profile type of the certificate. */
     private DiceProfileType profileType;
-    /**
-     * The DICE key purposes of the certificate.
-     */
+    /** The DICE key purposes of the certificate. */
     private Set<DiceKeyPurpose> diceKeyPurposes;
-    /**
-     * The CA flag of the certificate.
-     */
+    /** The CA flag of the certificate. */
     private boolean isCa;
-    /**
-     * The keyCertSign flag of the certificate.
-     */
+    /** The keyCertSign flag of the certificate. */
     @Getter(AccessLevel.NONE)
     private boolean hasKeyCertSign;
-    /**
-     * The CRL Sign flag of the certificate.
-     */
+    /** The cRLSign flag of the certificate. */
     @Getter(AccessLevel.NONE)
     private boolean hasCrlSign;
 
@@ -45,8 +35,8 @@ public final class DiceCertificateInfo {
         return hasKeyCertSign;
     }
     /**
-     * Returns the keyCertSign flag of this certificate.
-     * @return the keyCertSign boolean value
+     * Returns the cRLSign flag of this certificate.
+     * @return the cRLSign boolean value
      */
     public boolean hasCrlSign() {
         return hasCrlSign;
