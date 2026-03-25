@@ -163,7 +163,8 @@ public final class CertificateStringMapBuilder {
             }
 
             // Parse EKU OIDs into a comma-delimited list
-            if (certificate.getExtendedKeyUsage() != null && !certificate.getExtendedKeyUsage().isEmpty()) {
+            if (certificate.getExtendedKeyUsage() != null
+                    && !certificate.getExtendedKeyUsage().isEmpty()) {
                 String[] oids = certificate.getExtendedKeyUsage().split("\\n");
                 String displayNames = Arrays.stream(oids)
                         .filter(oid -> !oid.isBlank())

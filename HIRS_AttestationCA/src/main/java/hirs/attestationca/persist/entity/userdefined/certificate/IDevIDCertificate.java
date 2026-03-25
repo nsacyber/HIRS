@@ -61,15 +61,21 @@ public class IDevIDCertificate extends Certificate {
     @Transient
     private transient DiceCertificateInfo diceCertificateInfo;
 
-    /** Corresponds to the hwType field found in a Hardware Module Name (if present). */
+    /**
+     * Corresponds to the hwType field found in a Hardware Module Name (if present).
+     */
     @Column
     private String hwType;
 
-    /** Corresponds to the serial number found in a Hardware Module Name (if present). */
+    /**
+     * Corresponds to the serial number found in a Hardware Module Name (if present).
+     */
     @Column
     private byte[] hwSerialNum;
 
-    /** TPM policy qualifiers (TCG only). */
+    /**
+     * TPM policy qualifiers (TCG only).
+     */
     @Column
     private String tpmPolicies;
 
@@ -133,10 +139,17 @@ public class IDevIDCertificate extends Certificate {
             for (PolicyInformation policy : certPolicies.getPolicyInformation()) {
                 // Add the data based on the OIDs
                 switch (policy.getPolicyIdentifier().toString()) {
-                    case POLICY_QUALIFIER_VERIFIED_TPM_RESIDENCY -> verifiedTPMResidency = true;
-                    case POLICY_QUALIFIER_VERIFIED_TPM_FIXED -> verifiedTPMFixed = true;
-                    case POLICY_QUALIFIER_VERIFIED_TPM_RESTRICTED -> verifiedTPMRestricted = true;
-                    default -> { /* No action needed for unknown policies */ }
+                    case POLICY_QUALIFIER_VERIFIED_TPM_RESIDENCY:
+                        verifiedTPMResidency = true;
+                        break;
+                    case POLICY_QUALIFIER_VERIFIED_TPM_FIXED:
+                        verifiedTPMFixed = true;
+                        break;
+                    case POLICY_QUALIFIER_VERIFIED_TPM_RESTRICTED:
+                        verifiedTPMRestricted = true;
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -151,14 +164,12 @@ public class IDevIDCertificate extends Certificate {
 
     /**
      * Helper function to parse transient fields after load.
-     *
      * @throws IOException if there is an exception during parsing.
      */
     @PostLoad
     private void parseTransientFields() throws IOException {
         this.diceCertificateInfo = DiceCertificateParser.parse(this.getX509Certificate());
-        this.subjectAltName =
-                getX509Certificate().getExtensionValue(SUBJECT_ALTERNATIVE_NAME_EXTENSION);
+        this.subjectAltName = getX509Certificate().getExtensionValue(SUBJECT_ALTERNATIVE_NAME_EXTENSION);
     }
 
     /**
@@ -167,6 +178,7 @@ public class IDevIDCertificate extends Certificate {
      * @throws IOException if a problem is encountered during parsing
      */
     private void parseIDevIDCertificate() throws IOException {
+
         this.subjectAltName =
                 getX509Certificate().getExtensionValue(SUBJECT_ALTERNATIVE_NAME_EXTENSION);
 
