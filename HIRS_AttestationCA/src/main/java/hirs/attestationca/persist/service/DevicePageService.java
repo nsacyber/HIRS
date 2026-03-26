@@ -1,15 +1,15 @@
 package hirs.attestationca.persist.service;
 
-import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
-import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
+import hirs.attestationca.persist.entity.manager.EndorsementCertificateRepository;
 import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
 import hirs.attestationca.persist.entity.userdefined.Device;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.service.util.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -42,28 +42,28 @@ import java.util.UUID;
 public class DevicePageService {
     private final DeviceRepository deviceRepository;
     private final PlatformCertificateRepository platformCertificateRepository;
-    private final EndorsementCredentialRepository endorsementCredentialRepository;
+    private final EndorsementCertificateRepository endorsementCertificateRepository;
     private final IssuedCertificateRepository issuedCertificateRepository;
     private final EntityManager entityManager;
 
     /**
      * Constructor for Device Page Service.
      *
-     * @param deviceRepository                device repository
-     * @param platformCertificateRepository   platform certificate repository
-     * @param endorsementCredentialRepository endorsement credential repository
-     * @param issuedCertificateRepository     issued certificate repository
-     * @param entityManager                   entity manager
+     * @param deviceRepository                 device repository
+     * @param platformCertificateRepository    platform certificate repository
+     * @param endorsementCertificateRepository endorsement certificate repository
+     * @param issuedCertificateRepository      issued certificate repository
+     * @param entityManager                    entity manager
      */
     @Autowired
     public DevicePageService(final DeviceRepository deviceRepository,
                              final PlatformCertificateRepository platformCertificateRepository,
-                             final EndorsementCredentialRepository endorsementCredentialRepository,
+                             final EndorsementCertificateRepository endorsementCertificateRepository,
                              final IssuedCertificateRepository issuedCertificateRepository,
                              final EntityManager entityManager) {
         this.deviceRepository = deviceRepository;
         this.platformCertificateRepository = platformCertificateRepository;
-        this.endorsementCredentialRepository = endorsementCredentialRepository;
+        this.endorsementCertificateRepository = endorsementCertificateRepository;
         this.issuedCertificateRepository = issuedCertificateRepository;
         this.entityManager = entityManager;
     }
@@ -244,10 +244,10 @@ public class DevicePageService {
             deviceCertMap.put("device", device);
 
             // create a new entry for platform certificates associated with the current device in the map
-            addPlatformCredentialEntryToDeviceMap(device, certificatePropertyMap);
+            addPlatformCertificateEntryToDeviceMap(device, certificatePropertyMap);
 
             // create a new entry for the endorsement certificate associated with the current device in the map
-            addEndorsementCredentialEntryToDeviceMap(device, certificatePropertyMap);
+            addEndorsementCertificateEntryToDeviceMap(device, certificatePropertyMap);
 
             // create a new entry for issued certificates associated with the current device in the map
             addIssuedCertificateEntryToDeviceMap(device, certificatePropertyMap);
@@ -271,19 +271,19 @@ public class DevicePageService {
      * @param device                 device
      * @param certificatePropertyMap hash map of the certificate type and list of associated certificate ids
      */
-    private void addPlatformCredentialEntryToDeviceMap(final Device device,
-                                                       final HashMap<String, Set<UUID>> certificatePropertyMap) {
+    private void addPlatformCertificateEntryToDeviceMap(final Device device,
+                                                        final HashMap<String, Set<UUID>> certificatePropertyMap) {
         // find all platform certificates associated with this device id
-        final List<PlatformCredential> platformCredentialList =
+        final List<PlatformCredential> platformCertificateList =
                 platformCertificateRepository.findByDeviceId(device.getId());
 
-        final String platformCredentialIdsKey = PlatformCredential.class.getSimpleName() + "Ids";
+        final String platformCertificateIdsKey = PlatformCredential.class.getSimpleName() + "Ids";
 
-        for (PlatformCredential pc : platformCredentialList) {
+        for (PlatformCredential pc : platformCertificateList) {
             // verify that the platform certificate is associated with this device
             if (device.getName().equals(pc.getDeviceName())) {
-                // if there is not a platform credential entry already in the map, create a new set
-                certificatePropertyMap.computeIfAbsent(platformCredentialIdsKey, _ -> new HashSet<>())
+                // if there is not a platform certificate entry already in the map, create a new set
+                certificatePropertyMap.computeIfAbsent(platformCertificateIdsKey, _ -> new HashSet<>())
                         .add(pc.getId());  // Add the new ID to the set
             }
         }
@@ -296,19 +296,19 @@ public class DevicePageService {
      * @param device                 device
      * @param certificatePropertyMap hash map of the certificate type and list of associated certificate ids
      */
-    private void addEndorsementCredentialEntryToDeviceMap(final Device device,
-                                                          final HashMap<String, Set<UUID>> certificatePropertyMap) {
+    private void addEndorsementCertificateEntryToDeviceMap(final Device device,
+                                                           final HashMap<String, Set<UUID>> certificatePropertyMap) {
         // find all endorsement certificates associated with this device id
-        final List<EndorsementCredential> endorsementCredentialList =
-                endorsementCredentialRepository.findByDeviceId(device.getId());
+        final List<EndorsementCredential> endorsementCertificateList =
+                endorsementCertificateRepository.findByDeviceId(device.getId());
 
-        final String endorsementCredentialIdsKey = EndorsementCredential.class.getSimpleName() + "Ids";
+        final String endorsementCertificateIdsKey = EndorsementCredential.class.getSimpleName() + "Ids";
 
-        for (EndorsementCredential ec : endorsementCredentialList) {
+        for (EndorsementCredential ec : endorsementCertificateList) {
             // verify that the endorsement certificate is associated with this device
             if (device.getName().equals(ec.getDeviceName())) {
                 // if there is not an endorsement certificate entry already in the map, create a new set
-                certificatePropertyMap.computeIfAbsent(endorsementCredentialIdsKey, _ -> new HashSet<>())
+                certificatePropertyMap.computeIfAbsent(endorsementCertificateIdsKey, _ -> new HashSet<>())
                         .add(ec.getId());  // Add the new ID to the set
             }
         }
@@ -330,9 +330,9 @@ public class DevicePageService {
         final String issuedCertificatesIdsKey = IssuedAttestationCertificate.class.getSimpleName() + "Ids";
 
         for (IssuedAttestationCertificate ic : issuedCertificateList) {
-            // verify that the issued attestation certificate is associated with this device
+            // verify that the issued certificate is associated with this device
             if (device.getName().equals(ic.getDeviceName())) {
-                // if there is not an issued attestation certificate entry already in the map, create a new set
+                // if there is not an issued certificate entry already in the map, create a new set
                 certificatePropertyMap.computeIfAbsent(issuedCertificatesIdsKey, _ -> new HashSet<>())
                         .add(ic.getId());  // Add the new ID to the set
             }
