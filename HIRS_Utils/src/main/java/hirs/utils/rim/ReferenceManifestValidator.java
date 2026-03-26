@@ -58,6 +58,7 @@ import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyException;
+import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -67,7 +68,10 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -245,6 +249,38 @@ public class ReferenceManifestValidator {
             log.warn("Error while parsing certificate data: {}", e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    /**
+     * This is a stripped-down version of validateXmlSignature(PublicKey, String)
+     * meant for quick testing of a swidtag and public key.
+     *
+     * @param publicKeyPath path to the public key for validation
+     * @return true if signature is valid, false if not
+     */
+    public boolean validateXmlSignature(final String publicKeyPath) {
+        NodeList nodes = getXmlElement(XMLSignature.XMLNS, "Signature");
+        if (nodes.getLength() == 0) {
+            validationErrorMessage += "invalid XML, signature element not found.";
+            log.error(validationErrorMessage);
+            return false;
+        }
+        try {
+            DOMValidateContext context =
+                    new DOMValidateContext(parsePublicKeyFromPemFile(publicKeyPath, "RSA"),
+                            nodes.item(0));
+            return validateSignedXMLDocument(context);
+        } catch (IOException e) {
+            log.warn("Cannot read {}: {}", publicKeyPath, e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            log.warn("Cannot validate using {} because of an algorithm problem: {}",
+                    publicKeyPath, e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            log.warn("Cannot validate using {} because of a problem encoding the public key: {}",
+                    publicKeyPath, e.getMessage());
         }
 
         return false;
@@ -760,6 +796,31 @@ public class ReferenceManifestValidator {
         }
 
         return null;
+    }
+
+    /**
+     * This method parses a PEM string directly in to a Public Key object
+     *
+     * @param publicKeyPath PEM filename
+     * @param algorithm of the key
+     * @return a PublicKey object representation of the public key
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
+    private PublicKey parsePublicKeyFromPemFile(final String publicKeyPath, final String algorithm)
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        String fileContent = new String(Files.readAllBytes(Paths.get(publicKeyPath)));
+        String header = "-----BEGIN PUBLIC KEY-----";
+        String footer = "-----END PUBLIC KEY-----";
+        String keyString = fileContent.replace(header, "")
+                                      .replace(footer, "")
+                                      .replaceAll("\\s+", "");
+
+        byte[] decodedKey = Base64.getDecoder().decode(keyString);
+        X509EncodedKeySpec encodedKeySpec = new X509EncodedKeySpec(decodedKey);
+        KeyFactory factory = KeyFactory.getInstance(algorithm);
+        return factory.generatePublic(encodedKeySpec);
     }
 
     /**

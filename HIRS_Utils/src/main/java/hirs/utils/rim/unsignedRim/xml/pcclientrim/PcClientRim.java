@@ -68,67 +68,73 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
         boolean valid = false;
         ReferenceManifestValidator validator = new ReferenceManifestValidator();
         validator.setRim(verifyFile);
-        validator.setTrustStoreFile(trustStore);
-        HexFormat hexTool = HexFormat.of();
-        if (rimel != null) {
-            validator.setHasSupportRim(true);
-            validator.setSupportRimDirectory(rimel);
-        }
 
-        File rimFile = new File(verifyFile);
-
-        byte[] rimBytes = Files.readAllBytes(rimFile.toPath());
-
-        rim = validateSwidtagSchema(
-                removeXMLWhitespace(new StreamSource(new ByteArrayInputStream(rimBytes))));
-
-        NodeList si = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
-                SwidTagConstants.SOFTWARE_IDENTITY);
-        // Process TagID (Must be a GUID)
-        Element siElement = (Element) si.item(0);
-        if (siElement == null) {
-            throw new RemoteException(verifyFile + " did not contain a TagId attribute in the Base Rim");
-        }
-        String tagId = siElement.getAttribute(SwidTagConstants.TAGID);
-        tagUuid = UUID.fromString(tagId);
-
-        // Process Meta Data
-        NodeList metaNode = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
-                SwidTagConstants.META);
-        Element mElement = (Element) metaNode.item(0);
-        manufacturer = mElement.getAttributeNS(SwidTagConstants.TCG_NS,
-                SwidTagConstants.PLATFORM_MANUFACTURER_STR);
-        model = mElement.getAttributeNS(SwidTagConstants.TCG_NS, SwidTagConstants.PLATFORM_MODEL);
-        revision = mElement.getAttributeNS(SwidTagConstants.TCG_NS, SwidTagConstants.REVISION);
-        serialNumber = "N/A to PC Client RIMs";
-
-        // Process payload
-
-        // NodeList files = rim.getElementsByTagName(SwidTagConstants.FILE);
-        NodeList files = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
-                SwidTagConstants.FILE);
-        // Make a measurement for each Hash item and add it to the list of
-        // measurements
-        for (int count = 0; count < files.getLength(); count++) {
-            Element file = (Element) files.item(count);
-            digest = file.getAttributeNS(SwidTagConstants.SHA_256_HASH.getNamespaceURI(),
-                    SwidTagConstants.HASH);
-            byte[] digestBytes = hexTool.parseHex(digest);
-            // Create a Measurement from what was collected from the PC RIM
-            Measurement measurement = new Measurement();
-            measurement.setManufacturer(manufacturer);
-            measurement.setModel(model);
-            measurement.setSerialNumber(serialNumber);
-            measurement.setRevision(revision);
-            measurement.setRimID(tagUuid);
-            measurement.setMeasurementBytes(digestBytes);
-            measurements.add(measurement);
-        }
-
-        if (validator.validateBaseRim(certificateFile)) {
-            valid = true;
+        //This is a hack to allow quick testing using only a public key
+        if (verifyFile.equals(rimel) && verifyFile.equals(trustStore)) {
+            valid = validator.validateXmlSignature(certificateFile);
         } else {
-            throw new RuntimeException("Failed to verify " + verifyFile);
+            validator.setTrustStoreFile(trustStore);
+            HexFormat hexTool = HexFormat.of();
+            if (rimel != null) {
+                validator.setHasSupportRim(true);
+                validator.setSupportRimDirectory(rimel);
+            }
+
+            File rimFile = new File(verifyFile);
+
+            byte[] rimBytes = Files.readAllBytes(rimFile.toPath());
+
+            rim = validateSwidtagSchema(
+                    removeXMLWhitespace(new StreamSource(new ByteArrayInputStream(rimBytes))));
+
+            NodeList si = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
+                    SwidTagConstants.SOFTWARE_IDENTITY);
+            // Process TagID (Must be a GUID)
+            Element siElement = (Element) si.item(0);
+            if (siElement == null) {
+                throw new RemoteException(verifyFile + " did not contain a TagId attribute in the Base Rim");
+            }
+            String tagId = siElement.getAttribute(SwidTagConstants.TAGID);
+            tagUuid = UUID.fromString(tagId);
+
+            // Process Meta Data
+            NodeList metaNode = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
+                    SwidTagConstants.META);
+            Element mElement = (Element) metaNode.item(0);
+            manufacturer = mElement.getAttributeNS(SwidTagConstants.TCG_NS,
+                    SwidTagConstants.PLATFORM_MANUFACTURER_STR);
+            model = mElement.getAttributeNS(SwidTagConstants.TCG_NS, SwidTagConstants.PLATFORM_MODEL);
+            revision = mElement.getAttributeNS(SwidTagConstants.TCG_NS, SwidTagConstants.REVISION);
+            serialNumber = "N/A to PC Client RIMs";
+
+            // Process payload
+
+            // NodeList files = rim.getElementsByTagName(SwidTagConstants.FILE);
+            NodeList files = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
+                    SwidTagConstants.FILE);
+            // Make a measurement for each Hash item and add it to the list of
+            // measurements
+            for (int count = 0; count < files.getLength(); count++) {
+                Element file = (Element) files.item(count);
+                digest = file.getAttributeNS(SwidTagConstants.SHA_256_HASH.getNamespaceURI(),
+                        SwidTagConstants.HASH);
+                byte[] digestBytes = hexTool.parseHex(digest);
+                // Create a Measurement from what was collected from the PC RIM
+                Measurement measurement = new Measurement();
+                measurement.setManufacturer(manufacturer);
+                measurement.setModel(model);
+                measurement.setSerialNumber(serialNumber);
+                measurement.setRevision(revision);
+                measurement.setRimID(tagUuid);
+                measurement.setMeasurementBytes(digestBytes);
+                measurements.add(measurement);
+            }
+
+            if (validator.validateBaseRim(certificateFile)) {
+                valid = true;
+            } else {
+                throw new RuntimeException("Failed to verify " + verifyFile);
+            }
         }
         isValid = valid;
         return valid;
