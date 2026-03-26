@@ -1,5 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
+
 import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
 import hirs.attestationca.persist.entity.userdefined.DownloadFile;
 import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
@@ -58,7 +59,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
      * Constructor for the Platform Certificate Page Controller.
      *
      * @param certificatePageService         certificate page service
-     * @param platformCertificatePageService platform certificate service
+     * @param platformCertificatePageService platform certificate page service
      */
     @Autowired
     public PlatformCertificatePageController(final CertificatePageService certificatePageService,
@@ -69,12 +70,11 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     }
 
     /**
-     * Returns the path for the view and the data model for the platform certificate page.
+     * Returns the path for the view and the data model for the Platform Certificate page.
      *
      * @param params The object to map url parameters into.
-     * @param model  The data model for the request. Can contain data from
-     *               redirect.
-     * @return the path for the view and data model for the platform certificate page.
+     * @param model  The data model for the request. Can contain data from redirect.
+     * @return the path for the view and data model for the Platform Certificate page.
      */
     @RequestMapping
     public ModelAndView initPage(final NoPageParams params, final Model model) {
@@ -82,15 +82,15 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     }
 
     /**
-     * Processes the request to retrieve a list of platform certificates for display on the platform certificates page.
+     * Processes the request to retrieve a {@link PlatformCredential} objects for display on the Platform Certificate
+     * page.
      *
      * @param dataTableInput data table input received from the front-end
-     * @return data table of platform certificates
+     * @return data table of {@link PlatformCredential} objects
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DataTableResponse<PlatformCredential> getPlatformCertificatesTableData(
-            final DataTableInput dataTableInput) {
+    public DataTableResponse<PlatformCredential> getPlatformCertificatesTableData(final DataTableInput dataTableInput) {
         log.info("Received request to display list of platform certificates");
         log.debug("Request received a datatable input object for the platform certificates page: {}",
                 dataTableInput);
@@ -127,11 +127,10 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
         for (PlatformCredential pc : pcFilteredRecordsList) {
             // find the EC using the PC's "holder serial number"
             EndorsementCredential associatedEC = platformCertificatePageService
-                    .findECBySerialNumber(pc.getHolderSerialNumber());
+                    .findEndorsementCertificateBySerialNumber(pc.getHolderSerialNumber());
 
             if (associatedEC != null) {
-                log.debug("EC ID for holder s/n {} = {}", pc
-                        .getHolderSerialNumber(), associatedEC.getId());
+                log.debug("EC ID for holder s/n {} = {}", pc.getHolderSerialNumber(), associatedEC.getId());
             }
 
             pc.setEndorsementCredential(associatedEC);
@@ -143,22 +142,20 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     }
 
     /**
-     * Processes the request to download the selected platform certificate.
+     * Processes the request to download the selected {@link PlatformCredential} object.
      *
-     * @param id       the UUID of the platform certificate to download
-     * @param response the response object (needed to update the header with the
-     *                 file name)
+     * @param id       the UUID of the {@link PlatformCredential} object to download
+     * @param response the response object (needed to update the header with the file name)
      * @throws IOException when writing to response output stream
      */
     @GetMapping("/download")
     public void downloadPlatformCertificate(@RequestParam final String id, final HttpServletResponse response)
             throws IOException {
-        log.info("Received request to download platform certificate id {}", id);
+        log.info("Received request to download platform certificate with id {}", id);
 
         try {
             final DownloadFile downloadFile =
-                    certificatePageService.downloadCertificate(PlatformCredential.class,
-                            UUID.fromString(id));
+                    certificatePageService.downloadCertificate(PlatformCredential.class, UUID.fromString(id));
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;" + downloadFile.getFileName());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.getOutputStream().write(downloadFile.getFileBytes());
@@ -170,7 +167,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     }
 
     /**
-     * Processes the request to bulk download all the platform certificates.
+     * Processes the request to bulk download all the {@link PlatformCredential} objects.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -197,17 +194,17 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     }
 
     /**
-     * Processes the request to upload one or more platform certificates to the ACA.
+     * Processes the request to upload one or more {@link PlatformCredential} objects to the ACA.
      *
      * @param files              the files to process
      * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
-     * @return the redirection view
+     * @return a redirect to the Platform Certificates page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
-    protected RedirectView uploadPlatformCertificates(
-            @RequestParam("file") final MultipartFile[] files,
-            final RedirectAttributes redirectAttributes) throws URISyntaxException {
+    protected RedirectView uploadPlatformCertificates(@RequestParam("file") final MultipartFile[] files,
+                                                      final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
         log.info("Received request to upload one or more platform certificates");
 
         Map<String, Object> model = new HashMap<>();
@@ -218,8 +215,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
             List<String> successMessages = new ArrayList<>();
 
             PlatformCredential parsedPlatformCertificate =
-                    platformCertificatePageService.parsePlatformCertificate(file,
-                            errorMessages);
+                    platformCertificatePageService.parsePlatformCertificate(file, errorMessages);
 
             if (parsedPlatformCertificate != null) {
                 certificatePageService.storeCertificate(
@@ -237,19 +233,19 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     }
 
     /**
-     * Processes the request to archive/soft delete the provided platform certificate.
+     * Processes the request to archive/soft delete the specified {@link PlatformCredential} object.
      *
-     * @param id                 the UUID of the platform certificate to delete
+     * @param id                 the UUID of the specified {@link PlatformCredential} object to delete
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return a redirect to the platform certificate page
+     * @return a redirect to the Platform Certificates page
      * @throws URISyntaxException if the URI is malformed
      */
     @PostMapping("/delete")
     public RedirectView deletePlatformCertificate(@RequestParam final String id,
                                                   final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
-        log.info("Received request to delete platform certificate id {}", id);
+        log.info("Received request to delete platform certificate with id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -258,9 +254,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            certificatePageService.deleteCertificate(UUID.fromString(id),
-                    successMessages, errorMessages);
-
+            certificatePageService.deleteCertificate(UUID.fromString(id), successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -275,11 +269,11 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     }
 
     /**
-     * Processes the request to delete multiple platform certificates.
+     * Processes the request to delete multiple {@link PlatformCredential} objects.
      *
-     * @param ids                the list of UUIDs of the platform certificates to be deleted
+     * @param ids                the list of UUIDs of the {@link PlatformCredential} objects to be deleted
      * @param redirectAttributes used to pass data back to the original page after the operation
-     * @return a redirect to the platform certificate page
+     * @return a redirect to the Platform Certificates page
      * @throws URISyntaxException if the URI is malformed
      */
     @PostMapping("/bulk-delete")
@@ -295,8 +289,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
         List<String> errorMessages = new ArrayList<>();
 
         try {
-            certificatePageService.bulkDeleteCertificates(ids, successMessages,
-                    errorMessages);
+            certificatePageService.bulkDeleteCertificates(ids, successMessages, errorMessages);
             messages.addSuccessMessages(successMessages);
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
@@ -311,31 +304,32 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     }
 
     /**
-     * Helper method that retrieves a filtered and paginated list of platform certificates based on the
+     * Helper method that retrieves a filtered and paginated list of {@link PlatformCredential} objects based on the
      * provided search criteria.
+     * <p>
      * The method allows filtering based on a global search term and column-specific search criteria,
      * and returns the result in a paginated format.
-     *
      * <p>
      * The method handles four cases:
      * <ol>
      *     <li>If no global search term and no column-specific search criteria are provided,
-     *         all platform certificates are returned.</li>
+     *         all {@link PlatformCredential} objects are returned.</li>
      *     <li>If both a global search term and column-specific search criteria are provided,
-     *         it performs filtering on both.</li>
-     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
-     *         criteria.</li>
-     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     *         {@link PlatformCredential} objects are filtered based on both criteria.</li>
+     *     <li>If only column-specific search criteria are provided, {@link PlatformCredential} objects
+     *         are filtered according to the column-specific criteria.</li>
+     *     <li>If only a global search term is provided, {@link PlatformCredential} objects
+     *         are filtered according to the global search term.</li>
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the platform
-     *                                  certificates by the searchable fields.
+     * @param globalSearchTerm          A global search term that will be used to filter {@link PlatformCredential}
+     *                                  objects by the searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
-     * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
+     * @param searchableColumnNames     A set of searchable column names that are for the global search term.
      * @param pageable                  pageable
      * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
-     * platform certificates, along with the total number of records and the number of records matching the
+     * {@link PlatformCredential} objects, along with the total number of records and the number of records matching the
      * filter criteria.
      */
     private FilteredRecordsList<PlatformCredential> getFilteredPlatformCertificateList(
@@ -381,7 +375,6 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
 
         pcFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         pcFilteredRecordsList.setRecordsTotal(platformCertificatePageService.findPlatformCertificateRepositoryCount());
-
 
         return pcFilteredRecordsList;
     }

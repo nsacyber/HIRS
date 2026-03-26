@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Service class responsible for encapsulating all business logic related to the Endorsement Credentials Page.
+ * Service class responsible for encapsulating all business logic related to the Endorsement Certificates Page.
  */
 @Service
 @Log4j2
@@ -22,7 +22,7 @@ public class EndorsementCertificatePageService {
     private final EndorsementCertificateRepository endorsementCertificateRepository;
 
     /**
-     * Constructor for the Endorsement Credential Page Service.
+     * Constructor for the Endorsement Certificate Page Service.
      *
      * @param endorsementCertificateRepository endorsement certificate repository
      */
@@ -32,11 +32,11 @@ public class EndorsementCertificatePageService {
     }
 
     /**
-     * Retrieves a page of endorsement certificates using the provided archive flag and pageable value.
+     * Retrieves a page of {@link EndorsementCredential} objects using the provided archive flag and pageable value.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable
-     * @return page of endorsement certificates
+     * @return page of {@link EndorsementCredential} objects
      */
     public Page<EndorsementCredential> findEndorsementCertificatesByArchiveFlag(final boolean archiveFlag,
                                                                                 final Pageable pageable) {
@@ -44,20 +44,20 @@ public class EndorsementCertificatePageService {
     }
 
     /**
-     * Retrieves the total number of records in the endorsement certificate repository.
+     * Retrieves the total number of records stored in the {@link EndorsementCertificateRepository}.
      *
-     * @return total number of records in the endorsement certificate repository.
+     * @return total number of records stored in the {@link EndorsementCertificateRepository}.
      */
     public long findEndorsementCertificateRepositoryCount() {
         return endorsementCertificateRepository.countByArchiveFlag(false);
     }
 
     /**
-     * Attempts to parse the provided file in order to create an Endorsement Credential.
+     * Attempts to parse the provided file in order to create an {@link EndorsementCredential} object.
      *
      * @param file          file
      * @param errorMessages contains any error messages that will be displayed on the page
-     * @return endorsement certificate
+     * @return an {@link EndorsementCredential} object
      */
     public EndorsementCredential parseEndorsementCertificate(final MultipartFile file,
                                                              final List<String> errorMessages) {
@@ -65,7 +65,6 @@ public class EndorsementCertificatePageService {
 
         byte[] fileBytes;
         final String fileName = file.getOriginalFilename();
-
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
@@ -75,7 +74,6 @@ public class EndorsementCertificatePageService {
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
         }
-
         try {
             return new EndorsementCredential(fileBytes);
         } catch (IOException ioEx) {
@@ -86,7 +84,7 @@ public class EndorsementCertificatePageService {
             return null;
         } catch (DecoderException dEx) {
             final String failMessage =
-                    String.format("Failed to parse uploaded endorsement certificate pem file (%s): ", fileName);
+                    String.format("Failed to parse uploaded endorsement certificate PEM file (%s): ", fileName);
             log.error(failMessage, dEx);
             errorMessages.add(failMessage + dEx.getMessage());
             return null;

@@ -9,8 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- * Service class responsible for encapsulating all business logic related to the Issued Attestation
- * Certificate Page.
+ * Service class responsible for encapsulating all business logic related to the Issued Certificates Page.
  */
 @Service
 @Log4j2
@@ -28,11 +27,12 @@ public class IssuedCertificatePageService {
     }
 
     /**
-     * Retrieves a page of issued attestation certificates using the provided archive flag and pageable value.
+     * Retrieves a page of {@link IssuedAttestationCertificate} objects using the provided archive flag and pageable
+     * value.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable
-     * @return page of issued attestation certificates
+     * @return page of {@link IssuedAttestationCertificate} objects
      */
     public Page<IssuedAttestationCertificate> findIssuedCertificatesByArchiveFlag(final boolean archiveFlag,
                                                                                   final Pageable pageable) {
@@ -40,9 +40,9 @@ public class IssuedCertificatePageService {
     }
 
     /**
-     * Retrieves the total number of records in the issued certificate repository.
+     * Retrieves the total number of records stored in the {@link IssuedCertificateRepository}.
      *
-     * @return total number of records in the issued certificate repository.
+     * @return total number of records stored in the {@link IssuedCertificateRepository}.
      */
     public long findIssuedCertificateRepoCount() {
         return issuedCertificateRepository.countByArchiveFlag(false);

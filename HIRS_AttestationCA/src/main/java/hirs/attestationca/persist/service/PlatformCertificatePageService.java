@@ -17,7 +17,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- * Service class responsible for encapsulating all business logic related to the Platform Certificates
+ * Service class responsible for encapsulating all business logic related to the Platform Certificate
  * Page.
  */
 @Service
@@ -40,11 +40,11 @@ public class PlatformCertificatePageService {
     }
 
     /**
-     * Retrieves a page of platform certificates using the provided archive flag and pageable value.
+     * Retrieves a page of {@link PlatformCredential} objects using the provided archive flag and pageable value.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable
-     * @return page of platform certificates
+     * @return a page of {@link PlatformCredential} objects
      */
     public Page<PlatformCredential> findPlatformCertificatesByArchiveFlag(final boolean archiveFlag,
                                                                           final Pageable pageable) {
@@ -52,37 +52,36 @@ public class PlatformCertificatePageService {
     }
 
     /**
-     * Retrieves an endorsement certificate using the provided holder serial number.
+     * Retrieves an {@link EndorsementCredential} object using the provided holder serial number.
      *
      * @param holderSerialNumber big integer representation of the holder serial number
-     * @return endorsement certificate
+     * @return an {@link EndorsementCredential} object
      */
-    public EndorsementCredential findECBySerialNumber(final BigInteger holderSerialNumber) {
+    public EndorsementCredential findEndorsementCertificateBySerialNumber(final BigInteger holderSerialNumber) {
         return endorsementCertificateRepository.findBySerialNumber(holderSerialNumber);
     }
 
     /**
-     * Retrieves the total number of records in the platform certificate repository.
+     * Retrieves the total number of records stored in the {@link PlatformCertificateRepository}.
      *
-     * @return total number of records in the platform certificate repository.
+     * @return total number of records stored in the {@link PlatformCertificateRepository}.
      */
     public long findPlatformCertificateRepositoryCount() {
         return platformCertificateRepository.countByArchiveFlag(false);
     }
 
     /**
-     * Attempts to parse the provided file in order to create a Platform Certificate.
+     * Attempts to parse the provided file in order to create a {@link PlatformCredential} object.
      *
      * @param file          file
      * @param errorMessages contains any error messages that will be displayed on the page
-     * @return platform certificate
+     * @return a {@link PlatformCredential} object
      */
     public PlatformCredential parsePlatformCertificate(final MultipartFile file, final List<String> errorMessages) {
         log.info("Received platform certificate file of size: {}", file.getSize());
 
         byte[] fileBytes;
         final String fileName = file.getOriginalFilename();
-
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
@@ -92,7 +91,6 @@ public class PlatformCertificatePageService {
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
         }
-
         try {
             return new PlatformCredential(fileBytes);
         } catch (IOException ioEx) {
@@ -103,7 +101,7 @@ public class PlatformCertificatePageService {
             return null;
         } catch (DecoderException dEx) {
             final String failMessage =
-                    String.format("Failed to parse uploaded platform certificate pem file (%s): ", fileName);
+                    String.format("Failed to parse uploaded platform certificate PEM file (%s): ", fileName);
             log.error(failMessage, dEx);
             errorMessages.add(failMessage + dEx.getMessage());
             return null;

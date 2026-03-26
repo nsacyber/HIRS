@@ -1,7 +1,6 @@
 package hirs.attestationca.persist.provision.controllers;
 
 import hirs.attestationca.persist.provision.service.AttestationCertificateAuthorityService;
-import hirs.attestationca.persist.provision.service.AttestationCertificateAuthorityServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -13,8 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Restful implementation of the {@link AttestationCertificateAuthorityServiceImpl}.
- * Exposes the ACA methods as REST endpoints.
+ * REST Controller for the ACA, responsible for communicating with the Provisioner during the provisioning process.
  */
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
