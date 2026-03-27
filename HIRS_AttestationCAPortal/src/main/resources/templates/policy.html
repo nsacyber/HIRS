@@ -3,11 +3,11 @@
     xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title th:text="'Attestation Identity CA Policy Options'">Attestation Identity CA Policy Options</title>
+    <title th:text="'Attestation Identity CA Policy Settings'">Attestation Identity CA Policy Settings</title>
 </head>
 
 <body>
-    <h1 layout:fragment="pageHeaderTitle"> Attestation Identity CA Policy Options </h1>
+    <h1 layout:fragment="pageHeaderTitle"> Attestation Identity CA Policy Settings </h1>
     <section layout:fragment="content">
         <ul>
             <!-- Endorsement Certificate Validation  -->
@@ -22,8 +22,8 @@
                         <a data-bs-toggle="modal" th:href="'#' + ecPolicyModal">
                             <img class="action-icons" alt="Editor Icon"
                                 th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                title="Edit Endorsement Certificate Validation Policy" data-bs-toggle="tooltip"
-                                data-bs-title="Edit Endorsement Certificate Validation Policy" />
+                                title="Click here to edit the Endorsement Certificate Validation Policy"
+                                data-bs-toggle="tooltip" />
                         </a>
 
                         <!-- modal fragment -->
@@ -61,8 +61,8 @@
                         <a data-bs-toggle="modal" th:href="'#' + pcPolicyModal">
                             <img class="action-icons" alt="Editor Icon"
                                 th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                title="Edit Platform Certificate Validation Policy" data-bs-toggle="tooltip"
-                                data-bs-title="Edit Platform Certificate Validation Policy" />
+                                title="Click here to edit the Platform Certificate Validation Policy"
+                                data-bs-toggle="tooltip" />
                         </a>
 
                         <!-- modal fragment -->
@@ -101,9 +101,8 @@
                                 <a data-bs-toggle="modal" th:href="'#' + pcAttrPolicyModal">
                                     <img class="action-icons" alt="Editor Icon"
                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                        title="Edit Platform Certificate Attribute Validation Policy"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-title="Edit Platform Certificate Attribute Validation Policy" />
+                                        title="Click here to edit the Platform Certificate Attribute Validation Policy"
+                                        data-bs-toggle="tooltip" />
                                 </a>
 
                                 <!-- modal fragment -->
@@ -142,9 +141,8 @@
                                     <a data-bs-toggle="modal" th:href="'#' + revisionIgnoredPolicyModal">
                                         <img class="action-icons" alt="Editor Icon"
                                             th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                            title="Edit Ignore Component Revision Attribute Policy"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Edit Ignore Component Revision Attribute Policy" />
+                                            title="Click here to edit the Ignore Component Revision Attribute Policy"
+                                            data-bs-toggle="tooltip" />
                                     </a>
 
                                     <!-- modal fragment -->
@@ -183,8 +181,8 @@
                                     <a data-bs-toggle="modal" th:href="'#' + ignorePcieVpdPolicyModal">
                                         <img class="action-icons" alt="Editor Icon"
                                             th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                            title="Edit Ignore PCIE VPD Attribute Policy" data-bs-toggle="tooltip"
-                                            data-bs-title="Edit Ignore PCIE VPD Attribute Policy" />
+                                            title="Click here to edit the Ignore PCIE VPD Attribute Policy"
+                                            data-bs-toggle="tooltip" />
                                     </a>
 
                                     <!-- modal fragment -->
@@ -230,8 +228,7 @@
                         <a data-bs-toggle="modal" th:href="'#' + fwPolicyModal">
                             <img class="action-icons" alt="Editor Icon"
                                 th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                title="Edit Firmware Validation Policy" data-bs-toggle="tooltip"
-                                data-bs-title="Edit Firmware Validation Policy" />
+                                title="Click here to edit the Firmware Validation Policy" data-bs-toggle="tooltip" />
                         </a>
 
                         <!-- modal fragment -->
@@ -266,8 +263,7 @@
                                 <a data-bs-toggle="modal" th:href="'#' + ignoreImaPolicyModal">
                                     <img class="action-icons" alt="Editor Icon"
                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                        title="Edit Ignore IMA Policy" data-bs-toggle="tooltip"
-                                        data-bs-title="Edit Ignore IMA Policy" />
+                                        title="Click here to edit the Ignore IMA Policy" data-bs-toggle="tooltip" />
                                 </a>
 
                                 <!-- modal fragment -->
@@ -303,8 +299,7 @@
                                 <a data-bs-toggle="modal" th:href="'#' + ignoreTbootPolicyModal">
                                     <img class="action-icons" alt="Editor Icon"
                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                        title="Edit Ignore TBoot Policy" data-bs-toggle="tooltip"
-                                        data-bs-title="Edit Ignore TBoot Policy" />
+                                        title="Click here to edit the Ignore TBoot Policy" data-bs-toggle="tooltip" />
                                 </a>
 
                                 <!-- modal fragment -->
@@ -340,8 +335,7 @@
                                 <a data-bs-toggle="modal" th:href="'#' + ignoreGptPolicyModal">
                                     <img class="action-icons" alt="Editor Icon"
                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                        title="Edit Ignore GPT Policy" data-bs-toggle="tooltip"
-                                        data-bs-title="Edit Ignore GPT Policy" />
+                                        title="Click here to edit the Ignore GPT Policy" data-bs-toggle="tooltip" />
                                 </a>
 
                                 <!-- modal fragment -->
@@ -378,8 +372,8 @@
                                 <a data-bs-toggle="modal" th:href="'#' + ignoreOSPolicyModal">
                                     <img class="action-icons" alt="Editor Icon"
                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                        title="Edit Ignore OS Events Policy" data-bs-toggle="tooltip"
-                                        data-bs-title="Edit Ignore OS Events Policy" />
+                                        title="Click here to edit the Ignore OS Events Policy"
+                                        data-bs-toggle="tooltip" />
                                 </a>
 
                                 <!-- modal fragment -->
@@ -423,8 +417,8 @@
                         <a data-bs-toggle="modal" th:href="'#' + issuedCertificatePolicyModal">
                             <img class="action-icons" alt="Editor Icon"
                                 th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                title="Edit Generate Issued Attestation Certificates Policy" data-bs-toggle="tooltip"
-                                data-bs-title="Edit Generate Issued Attestation Certificates Policy" />
+                                title="Click here to edit the Generate Issued Attestation Certificates Policy"
+                                data-bs-toggle="tooltip" />
                         </a>
 
                         <!-- modal fragment -->
@@ -464,9 +458,8 @@
                                 <a data-bs-toggle="modal" th:href="'#' + issuedCertificatePolicyExpirationModal">
                                     <img class="action-icons" alt="Editor Icon"
                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                        title="Edit Issued Attestation Certificate's Validity Period Policy"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-title="Edit Issued Attestation Certificate's Validity Period Policy" />
+                                        title="Click here to edit the Issued Attestation Certificate's Validity Period Policy"
+                                        data-bs-toggle="tooltip" />
                                 </a>
 
                                 <!-- modal fragment -->
@@ -516,9 +509,8 @@
                                 <a data-bs-toggle="modal" th:href="'#' + issuedCertificatePolicyRenewalModal">
                                     <img class="action-icons" alt="Editor Icon"
                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                        title="Edit Issued Attestation Certificate's Renewal Period Policy"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-title="Edit Issued Attestation Certificate's Renewal Period Policy" />
+                                        title="Click here to edit the Issued Attestation Certificate's Renewal Period Policy"
+                                        data-bs-toggle="tooltip" />
                                 </a>
 
                                 <!-- modal fragment -->
@@ -575,8 +567,8 @@
                         <a data-bs-toggle="modal" th:href="'#' + LDevIDCertificatePolicyModal">
                             <img class="action-icons" alt="Editor Icon"
                                 th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                title="Edit Generate LDevId Certificate Policy" data-bs-toggle="tooltip"
-                                data-bs-title="Edit Generate LDevId Certificate Policy" />
+                                title="Click here to edit the Generate LDevId Certificate Policy"
+                                data-bs-toggle="tooltip" />
                         </a>
 
                         <!-- modal fragment -->
@@ -613,9 +605,8 @@
                                 <a data-bs-toggle="modal" th:href="'#' + LDevIDCertificateExpirationPolicyModal">
                                     <img class="action-icons" alt="Editor Icon"
                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                        title="Edit LDevId Certificate's Validity Period Policy"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-title="Edit LDevId Certificate's Validity Period Policy" />
+                                        title="Click here to edit the LDevId Certificate's Validity Period Policy"
+                                        data-bs-toggle="tooltip" />
                                 </a>
 
                                 <!-- modal fragment -->
@@ -665,8 +656,8 @@
                                 <a data-bs-toggle="modal" th:href="'#' + LDevIDCertificateRenewalPolicyModal">
                                     <img class="action-icons" alt="Editor Icon"
                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                        title="Edit LDevId Certificate's Renewal Period Policy" data-bs-toggle="tooltip"
-                                        data-bs-title="Edit LDevId Certificate's Renewal Period Policy" />
+                                        title="Click here to edit the LDevId Certificate's Renewal Period Policy"
+                                        data-bs-toggle="tooltip" />
                                 </a>
 
                                 <!-- modal fragment -->
@@ -723,8 +714,7 @@
                         <a data-bs-toggle="modal" th:href="'#' + protobufLogPolicyModal">
                             <img class="action-icons" alt="Editor Icon"
                                 th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
-                                title="Edit Protobuf Log Setting Policy" data-bs-toggle="tooltip"
-                                data-bs-title="Edit Protobuf Log Setting Policy" />
+                                title="Click here to edit the Save Protobuf To Log Policy" data-bs-toggle="tooltip" />
                         </a>
 
                         <!-- modal fragment -->

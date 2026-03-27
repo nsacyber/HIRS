@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -28,4 +29,13 @@ public interface SupplyChainValidationSummaryRepository extends JpaRepository<Su
      * @return a page of {@link SupplyChainValidationSummary} objects
      */
     Page<SupplyChainValidationSummary> findByArchiveFlagFalse(Pageable pageable);
+
+
+    /**
+     * Query that retrieves a list of {@link SupplyChainValidationSummary} objects where the archive flag is false
+     * and in order of creation time in descending order.
+     *
+     * @return a list of {@link SupplyChainValidationSummary} objects
+     */
+    List<SupplyChainValidationSummary> findByArchiveFlagFalseOrderByCreateTimeDesc();
 }

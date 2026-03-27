@@ -173,6 +173,7 @@ function initializeDataTableButtonSetup(pageName) {
  */
 function setDataTables(viewName, id, url, columns, customConfig = {}) {
   let defaultConfig = {
+    fixedHeader: true,
     processing: true,
     serverSide: true,
     colReorder: true,
@@ -354,7 +355,7 @@ function generateCertificateDetailsLink(
   const generatedCertDetailsLink = `
     <a href="${href}"
      aria-label="${altInfo}">
-      <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}">
+      <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}" data-bs-toggle="tooltip">
     </a>
   `;
 
@@ -375,7 +376,7 @@ function generateRimDetailsLink(rimId) {
 
   const generatedRimDetailsLink = `
   <a href="${href}">
-    <img src="${fullIconPath}" class="action-icons" alt="View RIM Details Link" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}">
+    <img src="${fullIconPath}" class="action-icons" alt="View RIM Details Link" title="${title}" data-bs-toggle="tooltip">
   </a>
 `;
 
@@ -428,7 +429,7 @@ function generateCertificateDeleteLink(certificateType, certificateId) {
      data-bs-target="${modalTargetId}"
      data-id="${certificateId}"
      aria-label="${altInfo}">
-    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}"">
+    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}" data-bs-toggle="tooltip">
   </a>
 `;
 
@@ -459,8 +460,7 @@ function generateRIMDeleteLink(rimId) {
       class="action-icons" 
       alt="Delete RIM Link" 
       title="${title}" 
-      data-bs-toggle="tooltip" 
-      data-bs-title="${title}"
+      data-bs-toggle="tooltip"
     >
   </a>
 `;
@@ -515,7 +515,7 @@ function generateCertificateDownloadLink(
 
   const generatedCertDownloadLink = `
   <a href="${href}" aria-label="${altInfo}">
-    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}">
+    <img src="${fullIconPath}" class="action-icons" alt="${altInfo}" title="${title}" data-bs-toggle="tooltip">
   </a>
 `;
 
@@ -536,7 +536,7 @@ function generateRimDownloadLink(pagePath, rimId) {
 
   const generatedRIMDownloadLink = `
   <a href="${href}" aria-label="Download RIM Link">
-    <img src="${fullIconPath}" class="action-icons" alt="Download RIM Link" title="${title}" data-bs-toggle="tooltip" data-bs-title="${title}">
+    <img src="${fullIconPath}" class="action-icons" alt="Download RIM Link" title="${title}" data-bs-toggle="tooltip">
   </a>
 `;
 
@@ -590,13 +590,13 @@ function getValidationDisplayHtml(full, validationType) {
 
         switch (currentResult) {
           case "PASS":
-            html += `<img class="action-icons" src="${passIcon}" title="${currentMessage}" data-bs-toggle="tooltip" data-bs-title="${currentMessage}" alt="Pass Icon Link"/>`;
+            html += `<img class="action-icons" src="${passIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Pass Icon Link"/>`;
             break;
           case "FAIL":
-            html += `<img class="action-icons" src="${failIcon}" title="${currentMessage}" data-bs-toggle="tooltip" data-bs-title="${currentMessage}" alt="Fail Icon Link"/>`;
+            html += `<img class="action-icons" src="${failIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Fail Icon Link"/>`;
             break;
           case "ERROR":
-            html += `<img class="action-icons" src="${errorIcon}" title="${currentMessage}" data-bs-toggle="tooltip" data-bs-title="${currentMessage}" alt="Error Icon Link"/>`;
+            html += `<img class="action-icons" src="${errorIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Error Icon Link"/>`;
             break;
           default:
             html += unknownStatus;

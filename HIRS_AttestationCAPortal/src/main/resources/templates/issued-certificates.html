@@ -143,16 +143,15 @@
 
   <div layout:fragment="content">
     <!-- Download Issued Certificates Button -->
-    <div class="d-flex justify-content-center gap-3">
+    <div class="download-upload-section">
       <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}"
         class="btn btn-primary" title="Click here to download a ZIP file of all Issued Certificates"
-        data-bs-toggle="tooltip" data-bs-title="Click here to download a ZIP file of all Issued Certificates">
-        <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon">
+        data-bs-toggle="tooltip">
+        <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
         Download Issued Certificates
       </a>
     </div>
 
-    <br />
     <div class="aca-data-table">
       <table id="issuedTable" class="table table-bordered table-striped table-hover">
         <thead>

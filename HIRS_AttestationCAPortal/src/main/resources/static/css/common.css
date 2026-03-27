@@ -3,7 +3,6 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden;
 }
 
 hr {
@@ -18,24 +17,23 @@ hr {
 }
 
 #content {
-  height: 100%;
   margin: 0;
   padding: 0;
+  display: flex;
+  min-height: 100vh; /* At least viewport height */
 }
 
 .main-without-navigation,
 .main {
-  overflow: auto;
-  padding: 0 15px;
-  height: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow: auto; /* scroll if content overflows */
 }
 
 .spacer {
   height: 25px;
-}
-
-.extra-spacer {
-  height: 50px;
 }
 
 .page-title {
@@ -86,9 +84,15 @@ hr {
   font-size: 125%;
 }
 
-.aca-input-box-header {
-  font-size: 150%;
-  padding: 10px;
+.icon-text-spacing {
+  margin-right: 0.25rem;
+}
+
+.download-upload-section {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .aca-data-table {
@@ -110,7 +114,7 @@ hr {
 
 /* Bootstrap 5 Tooltip Styling*/
 .custom-tooltip-style .tooltip-inner {
-  max-width: 400px; /* wider than default 200px */
+  max-width: 500px; /* wider than default 200px */
 }
 
 /* Options Icons Stying*/
@@ -134,85 +138,4 @@ a:has(.action-icons) {
 /* Apply a box shadow color on hover to the accordion item*/
 .accordion-item:hover {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Soft shadow on hover */
-}
-
-/**********************************
-***** Specific page styling *******
-***********************************/
-
-/*index page*/
-#index-page .col {
-  border: 0px solid black;
-}
-
-#index-page .row {
-  overflow: hidden;
-}
-
-#index-page .page-header {
-  margin: 0;
-}
-
-.index-left-side {
-  background: #d5f2e0;
-  height: 100%;
-}
-
-.index-left-side h1 {
-  background: #567361;
-  text-align: center;
-}
-
-.index-right-side {
-  background: #ffefc1;
-}
-
-.index-right-side h1 {
-  background: #b97042;
-  text-align: center;
-}
-
-.index-left-side h4,
-.index-right-side h4 {
-  padding-left: 30px;
-}
-
-div.row h3 a {
-  text-decoration: none; /* Remove underline from links specifically the links in the index.html page*/
-}
-
-div.row h3 a:hover {
-  color: darkblue;
-  text-decoration: underline; /* Add underline on hover for links specifically the links in the index.html page*/
-}
-
-div.row h3 {
-  margin: 10px; /* Add margin around h3 inside div with class row */
-}
-
-/*trust chain*/
-#aca-cert-viewer .row {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-#aca-cert-viewer .row > [class*="col-"] {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  border-bottom: 1px solid black;
-}
-
-#aca-cert-viewer .colHeader {
-  font-weight: bold;
-  margin: auto 0;
-}
-
-/*Help page styling*/
-.download-header {
-  display: flex;
-  align-items: center;
 }

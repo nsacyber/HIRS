@@ -32,13 +32,13 @@
                         render: function (data, type, full, meta) {
                             switch (data) {
                                 case "PASS":
-                                    return `<img src="${passIcon}" title="${passText}" data-bs-toggle="tooltip" data-bs-title="${passText}"/>`;
+                                    return `<img src="${passIcon}" title="${passText}" data-bs-toggle="tooltip" />`;
                                 case "FAIL":
-                                    return `<img src="${failIcon}" title="${failText}" data-bs-toggle="tooltip" data-bs-title="${failText}"/>`;
+                                    return `<img src="${failIcon}" title="${failText}" data-bs-toggle="tooltip" />`;
                                 case "ERROR":
-                                    return `<img src="${errorIcon}" title="${errorText}" data-bs-toggle="tooltip" data-bs-title="${errorText}"/>`;
+                                    return `<img src="${errorIcon}" title="${errorText}" data-bs-toggle="tooltip" />`;
                                 default:
-                                    return `<img src="${unknownIcon}" title="${unknownText}" data-bs-toggle="tooltip" data-bs-title="${unknownText}"/>`;
+                                    return `<img src="${unknownIcon}" title="${unknownText}" data-bs-toggle="tooltip" />`;
                             }
                         },
                     },

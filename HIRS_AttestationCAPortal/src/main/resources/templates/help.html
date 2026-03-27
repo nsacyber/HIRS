@@ -135,17 +135,20 @@
         <a th:href="@{https://github.com/nsacyber/HIRS/wiki}"> code repository. </a>
       </p>
     </div>
+
     <hr />
 
+    <h2 class="text-center">Attestation Certificate Authority's Logger Management</h2>
+
+    <div class="download-upload-section">
+      <a th:href="@{/HIRS_AttestationCAPortal/portal/help/hirs-logs-download}" class="btn btn-primary"
+        title="Click here to download a ZIP file of the ACA's Log files" data-bs-toggle="tooltip">
+        <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
+        Download ACA's Log Files
+      </a>
+    </div>
+
     <div class="aca-data-table">
-      <h2>Main HIRS Logger Management</h2>
-      <div class="download-header">
-        <h3>Download All HIRS Attestation Log Files</h3>
-        <a th:href="@{/HIRS_AttestationCAPortal/portal/help/hirs-logs-download}">
-          <img class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" alt="Download HIRS Logs Link"
-            data-bs-toggle="tooltip" data-bs-title="Download HIRS Logs" title="Download HIRS Logs" />
-        </a>
-      </div>
       <table id="loggersTable" class="table table-bordered table-striped table-hover">
         <thead>
           <tr>

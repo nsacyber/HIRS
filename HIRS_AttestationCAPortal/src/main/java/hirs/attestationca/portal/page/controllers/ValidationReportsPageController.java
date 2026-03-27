@@ -11,22 +11,24 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 /**
@@ -50,7 +52,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
-     * Returns the path for the view and the data model for the validation reports page.
+     * Returns the path for the view and the data model for the Validation Reports page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from redirect.
@@ -63,11 +65,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to retrieve a list of supply chain summary records for display
-     * on the validation reports page.
+     * Processes the request to retrieve a list of {@link SupplyChainValidationSummary} objects for display
+     * on the Validation Reports page.
      *
      * @param dataTableInput the data table query.
-     * @return the data table response containing the supply chain summary records
+     * @return the data table response containing the {@link SupplyChainValidationSummary} objects
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -112,22 +114,32 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to download the selected validation summary report.
+     * Processes the request to download a CSV file of all the {@link SupplyChainValidationSummary} objects.
      *
-     * @param request  http request
      * @param response http response
      */
-    @PostMapping("/download")
-    public void downloadValidationReports(final HttpServletRequest request,
-                                          final HttpServletResponse response)
-            throws IOException {
-        log.info("Received request to download validation summary reports");
-        validationSummaryPageService.downloadValidationReports(request, response);
+    @GetMapping("/download")
+    public void downloadValidationReports(final HttpServletResponse response) throws IOException {
+        log.info("Received request to download all Validation Summary Reports");
+        final String zipFileName = "validation_report.csv";
+
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
+        response.setContentType("text/csv");
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(
+                new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8))) {
+            validationSummaryPageService.downloadValidationReports(bufferedWriter);
+            bufferedWriter.flush();
+        } catch (Exception exception) {
+            log.error("An exception was thrown while attempting to download a CSV file of the "
+                    + "validation summary reports", exception);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     /**
-     * Helper method that retrieves a filtered and paginated list of endorsement credentials based on the
-     * provided search criteria.
+     * Helper method that retrieves a filtered and paginated list of {@link SupplyChainValidationSummary} objects
+     * based on the provided search criteria.
      * The method allows filtering based on a global search term and column-specific search criteria,
      * and returns the result in a paginated format.
      *
@@ -135,17 +147,18 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * The method handles four cases:
      * <ol>
      *     <li>If no global search term and no column-specific search criteria are provided,
-     *         all endorsement credentials are returned.</li>
+     *         all {@link SupplyChainValidationSummary} objects are returned.</li>
      *     <li>If both a global search term and column-specific search criteria are provided,
-     *         it performs filtering on both.</li>
-     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
-     *         criteria.</li>
-     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     *         {@link SupplyChainValidationSummary} objects are filtered based on both criteria.</li>
+     *     <li>If only column-specific search criteria are provided, {@link SupplyChainValidationSummary} objects
+     *         are filtered according to the column-specific criteria.</li>
+     *     <li>If only a global search term is provided, {@link SupplyChainValidationSummary} objects
+     *         are filtered according to the global search term.</li>
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the endorsement
-     *                                  credentials by the searchable fields.
+     * @param globalSearchTerm          A global search term that will be used to filter the
+     *                                  {@link SupplyChainValidationSummary} objects by the searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable

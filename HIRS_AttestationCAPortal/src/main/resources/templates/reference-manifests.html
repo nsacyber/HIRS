@@ -91,11 +91,11 @@
 
     <div layout:fragment="content">
         <!-- Upload RIMs button -->
-        <div class="d-flex justify-content-center gap-3">
+        <div class="download-upload-section">
             <form enctype="multipart/form-data" method="post"
                 th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}">
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', label='Upload RIMs', bodyContent=~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', label='Upload Reference Integrity Manifests', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
@@ -104,14 +104,11 @@
 
             <!-- Download RIMs button -->
             <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}" class="btn btn-primary"
-                title="Click here to download a ZIP file of all RIMs" data-bs-toggle="tooltip"
-                data-bs-title="Click here to download a ZIP file of all RIMs">
-                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download Icon">
+                title="Click here to download a ZIP file of all Reference Integrity Manifests" data-bs-toggle="tooltip">
+                <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
                 Download RIMs
             </a>
         </div>
-
-        <br />
 
         <div class="aca-data-table">
             <table class="table table-bordered table-striped table-hover" id="referenceManifestTable">

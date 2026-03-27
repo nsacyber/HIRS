@@ -1,8 +1,8 @@
 <th:block th:fragment="fileChooser(id, label,bodyContent)">
     <!-- File chooser icon anchor -->
-    <a class="btn btn-primary text-decoration-none" th:href="'#' + ${id}" data-bs-toggle="modal">
-        <img th:src="@{/icons/svg/upload-24dp.svg}" alt="File Chooser Icon" data-bs-toggle="tooltip" th:title="${label}"
-            th:attr="data-bs-title=${label}" /> <span th:text="${label}">Label</span>
+    <a class="btn btn-primary text-decoration-none" th:href="'#' + ${id}" data-bs-toggle="modal" th:title="${label}">
+        <img th:src="@{/icons/svg/upload-white-24dp.svg}" alt="File Chooser Icon" class="icon-text-spacing" />
+        [[${label}]]
     </a>
 
     <!-- Include modal fragment -->

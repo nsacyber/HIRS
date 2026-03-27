@@ -3,7 +3,7 @@
     xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <link rel="stylesheet" th:href="@{/css/certificate_details.css}" />
+    <link rel="stylesheet" th:href="@{/css/certificate-details.css}" />
     <section layout:fragment="script">
         <script th:inline="javascript">
             $(document).ready(function () {
@@ -170,8 +170,7 @@
                     <a
                         th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download?id={id}(id=${param.id})}">
                         <img alt="Download Icon" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
-                            title="Download Trust Chain Certificate" data-bs-toggle="tooltip"
-                            data-bs-title="Download Trust Chain Certificate">
+                            title="Download Trust Chain Certificate" data-bs-toggle="tooltip">
                     </a>
                 </th:block>
                 <th:block th:if="${#strings.equals(param.type, 'endorsement')}">
@@ -179,8 +178,7 @@
                     <a
                         th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/download?id={id}(id=${param.id})}">
                         <img alt="Download Icon" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
-                            title="Download Endorsement Certificate" data-bs-toggle="tooltip"
-                            data-bs-title="Download Endorsement Certificate">
+                            title="Download Endorsement Certificate" data-bs-toggle="tooltip">
                     </a>
                 </th:block>
                 <th:block th:if="${#strings.equals(param.type, 'platform')}">
@@ -188,8 +186,7 @@
                     <a
                         th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/download?id={id}(id=${param.id})}">
                         <img alt="Download Icon" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
-                            title="Download Platform Certificate" data-bs-toggle="tooltip"
-                            data-bs-title="Download Platform Certificate">
+                            title="Download Platform Certificate" data-bs-toggle="tooltip">
                     </a>
                 </th:block>
                 <th:block th:if="${#strings.equals(param.type, 'issued')}">
@@ -197,8 +194,7 @@
                     <a
                         th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/download?id={id}(id=${param.id})}">
                         <img alt="Download Icon" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
-                            title="Download Issued Certificate" data-bs-toggle="tooltip"
-                            data-bs-title="Download Issued Certificate">
+                            title="Download Issued Certificate" data-bs-toggle="tooltip">
                     </a>
                 </th:block>
                 <th:block th:if="${#strings.equals(param.type, 'idevid')}">
@@ -206,8 +202,7 @@
                     <a
                         th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates/download?id={id}(id=${param.id})}">
                         <img alt="Download Icon" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}"
-                            title="Download IDevID Certificate" data-bs-toggle="tooltip"
-                            data-bs-title="Download IDevID Certificate">
+                            title="Download IDevID Certificate" data-bs-toggle="tooltip">
                     </a>
                 </th:block>
             </th:block>
@@ -223,7 +218,7 @@
     </h1>
 
     <section layout:fragment="content">
-        <div class="container-fluid certificate-details-container" id="certificate-details-page">
+        <div class="container-fluid" id="certificate-details-page">
             <th:block th:if="${initialDataExists}">
                 <!-- Display issuer, and provide a link to issuer details if provided -->
                 <div class="certrow">
@@ -262,20 +257,18 @@
                                 <!-- Icon with link for missing certificate for the chain -->
                                 <th:block th:if="${not #strings.equals(initialData.get('isSelfSigned'), 'false')}">
                                     <img alt="Black Infinity Icon" th:src="@{/icons/ic_all_inclusive_black_24dp.png}"
-                                        title="Self Signed certificate." data-bs-toggle="tooltip"
-                                        data-bs-title="Self Signed certificate.">
+                                        title="Self Signed certificate." data-bs-toggle="tooltip">
                                 </th:block>
                                 <th:block th:if="${#strings.equals(initialData.get('isSelfSigned'), 'false')}">
                                     <th:block th:if="${#strings.isEmpty(initialData.get('missingChainIssuer'))}">
                                         <img alt="Green Checkbox Icon"
                                             th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}"
-                                            title="All certificates in the chain were found." data-bs-toggle="tooltip"
-                                            data-bs-title="All certificates in the chain were found.">
+                                            title="All certificates in the chain were found." data-bs-toggle="tooltip">
                                     </th:block>
                                     <th:block th:if="${not #strings.isEmpty(initialData.get('missingChainIssuer'))}">
                                         <img alt="Red Error Icon" th:src="@{/icons/ic_error_red_24dp.png}"
-                                            th:title="${initialData.get('missingChainIssuer')}" data-bs-toggle="tooltip"
-                                            th:attr="data-bs-title=${label}">
+                                            th:title="${initialData.get('missingChainIssuer')}"
+                                            data-bs-toggle="tooltip">
                                     </th:block>
                                 </th:block>
                             </span>
@@ -1240,14 +1233,12 @@
                                                                                 <th:block
                                                                                     th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
                                                                                     <span data-bs-toggle="tooltip"
-                                                                                        th:title="${component.getComponentClassToolTipStr()}"
-                                                                                        th:attr="data-bs-title=${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
+                                                                                        th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]</span>
                                                                                 </th:block>
                                                                                 <th:block
                                                                                     th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
                                                                                     <span data-bs-toggle="tooltip"
-                                                                                        title="Component Class"
-                                                                                        data-bs-title="Component Class">Platform
+                                                                                        title="Component Class">Platform
                                                                                         Components</span>
                                                                                 </th:block>
                                                                             </h5>
@@ -1260,15 +1251,13 @@
                                                                                 <th:block
                                                                                     th:if="${#strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
                                                                                     <span data-bs-toggle="tooltip"
-                                                                                        th:title="${component.getComponentClassToolTipStr()}"
-                                                                                        th:attr="data-bs-title=${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]
+                                                                                        th:title="${component.getComponentClassToolTipStr()}">[[${component.getComponentClassStr()}]]
                                                                                     </span>
                                                                                 </th:block>
                                                                                 <th:block
                                                                                     th:if="${not #strings.equals(#strings.toUpperCase(component.isVersion2()), 'TRUE')}">
                                                                                     <span data-bs-toggle="tooltip"
-                                                                                        title="Component Class"
-                                                                                        data-bs-title="Component Class">Platform
+                                                                                        title="Component Class">Platform
                                                                                         Components</span>
                                                                                 </th:block>
                                                                             </h5>
@@ -1521,8 +1510,7 @@
                                 <a
                                     th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=endorsement(id=${initialData.get('endorsementID')})}">
                                     <img alt="Key Icon" class="action-icons" th:src="@{/icons/svg/key-fill-24dp.svg}"
-                                        title="Endorsement Certificate" data-bs-toggle="tooltip"
-                                        data-bs-title="Endorsement Certificate">
+                                        title="Endorsement Certificate" data-bs-toggle="tooltip">
                                 </a>
                             </th:block>
                         </div>
