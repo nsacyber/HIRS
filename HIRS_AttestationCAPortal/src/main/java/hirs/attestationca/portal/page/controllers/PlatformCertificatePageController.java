@@ -150,7 +150,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     @GetMapping("/download")
     public void downloadPlatformCertificate(@RequestParam final String id, final HttpServletResponse response)
             throws IOException {
-        log.info("Received request to download platform credential id {}", id);
+        log.info("Received request to download platform certificate with id {}", id);
 
         try {
             final DownloadFile downloadFile =
