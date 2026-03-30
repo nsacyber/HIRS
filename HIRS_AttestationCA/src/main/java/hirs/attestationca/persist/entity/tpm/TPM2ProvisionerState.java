@@ -21,6 +21,9 @@ import java.util.Date;
 @Entity
 public class TPM2ProvisionerState {
     private static final int MAX_BLOB_SIZE = 16777215;
+    
+    @Column(nullable = false)
+    private final Date timestamp = new Date();
 
     @Column(nullable = false)
     private final Date timestamp = new Date();
