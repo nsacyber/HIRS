@@ -46,6 +46,8 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
     private static ReferenceManifest supportReferenceManifest;
 
     /**
+     * Validates the firmware and returns an {@link AppraisalStatus}.
+     *
      * @param device                         device
      * @param policySettings                 policy settings
      * @param referenceManifestRepository    reference manifest repository

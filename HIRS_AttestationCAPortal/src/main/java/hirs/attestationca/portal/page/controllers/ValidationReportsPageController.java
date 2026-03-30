@@ -128,6 +128,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     /**
      * Helper method that retrieves a filtered and paginated list of {@link SupplyChainValidationSummary} objects
      * based on the provided search criteria.
+     * <p>
      * The method allows filtering based on a global search term and column-specific search criteria,
      * and returns the result in a paginated format.
      *
@@ -137,10 +138,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      *     <li>If no global search term and no column-specific search criteria are provided,
      *         all {@link SupplyChainValidationSummary} objects are returned.</li>
      *     <li>If both a global search term and column-specific search criteria are provided,
-     *         it performs filtering on both.</li>
-     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
-     *         criteria.</li>
-     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     *         {@link SupplyChainValidationSummary} objects are filtered based on both criteria.</li>
+     *     <li>If only column-specific search criteria are provided, {@link SupplyChainValidationSummary} objects
+     *         are filtered according to the column-specific criteria.</li>
+     *     <li>If only a global search term is provided, {@link SupplyChainValidationSummary} objects
+     *         are filtered according to the global search term.</li>
      * </ol>
      * </p>
      *
