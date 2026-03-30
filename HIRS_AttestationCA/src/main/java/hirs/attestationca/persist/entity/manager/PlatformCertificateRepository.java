@@ -22,7 +22,8 @@ import java.util.UUID;
 public interface PlatformCertificateRepository extends JpaRepository<PlatformCredential, UUID> {
 
     /**
-     * Query that retrieves a count of {@link PlatformCredential} objects in the database filtered by the provided archive flag.
+     * Query that retrieves a count of {@link PlatformCredential} objects in the database filtered by the provided
+     * archive flag.
      *
      * @param archiveFlag archive flag
      * @return a count of {@link PlatformCredential} objects

@@ -1,4 +1,4 @@
-package hirs.attestationca.persist.provision.helper;
+package hirs.attestationca.persist.provision.service;
 
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
@@ -6,26 +6,29 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 /**
- * Unit tests for {@see CredentialManagementHelper}.
+ * Unit tests for {@link CredentialManagementService}.
  */
-public class CredentialManagementHelperTest {
+public class CredentialManagementServiceTest {
 
-    private static final String EK_HEADER_TRUNCATED
-            = "/certificates/nuc-1/ek_cert_7_byte_header_removed.cer";
+    private static final String EK_HEADER_TRUNCATED = "/certificates/nuc-1/ek_cert_7_byte_header_removed.cer";
 
-    private static final String EK_UNTOUCHED
-            = "/certificates/nuc-1/ek_cert_untouched.cer";
+    private static final String EK_UNTOUCHED = "/certificates/nuc-1/ek_cert_untouched.cer";
+
+    @InjectMocks
+    private CredentialManagementService credentialManagementService;
 
     @Mock
     private CertificateRepository certificateRepository;
@@ -40,7 +43,6 @@ public class CredentialManagementHelperTest {
      */
     @BeforeEach
     public void setUp() {
-        //certificateRepository = mock(CertificateRepository.class);
         mocks = MockitoAnnotations.openMocks(this);
     }
 
@@ -57,26 +59,12 @@ public class CredentialManagementHelperTest {
     }
 
     /**
-     * Tests exception generated if providing a null cert repository.
-     *
-     * @throws IOException if an IO error occurs
-     */
-    @Test
-    public void processNullCertRep() throws IOException {
-        // use valid EK byte array
-        String path = CredentialManagementHelperTest.class.getResource(EK_UNTOUCHED).getPath();
-        byte[] ekBytes = IOUtils.toByteArray(new FileInputStream(path));
-        assertThrows(IllegalArgumentException.class, () ->
-                CredentialManagementHelper.storeEndorsementCredential(null, ekBytes, "testName"));
-    }
-
-    /**
      * Tests exception generated when providing a null EK byte array.
      */
     @Test
     public void processNullEndorsementCredential() {
         assertThrows(IllegalArgumentException.class, () ->
-                CredentialManagementHelper.storeEndorsementCredential(certificateRepository, null,
+                credentialManagementService.storeEndorsementCredential(null,
                         "testName"));
     }
 
@@ -85,9 +73,8 @@ public class CredentialManagementHelperTest {
      */
     @Test
     public void processEmptyEndorsementCredential() {
-        assertThrows(IllegalArgumentException.class, () ->
-                CredentialManagementHelper.storeEndorsementCredential(
-                        certificateRepository, new byte[0], "testName"));
+        assertThrows(IllegalArgumentException.class, () -> credentialManagementService.storeEndorsementCredential(
+                new byte[0], "testName"));
     }
 
     /**
@@ -95,10 +82,9 @@ public class CredentialManagementHelperTest {
      */
     @Test
     public void processInvalidEndorsementCredentialCase1() {
-        byte[] ekBytes = new byte[] {1};
-        assertThrows(IllegalArgumentException.class, () ->
-                CredentialManagementHelper.storeEndorsementCredential(
-                        certificateRepository, ekBytes, "testName"));
+        byte[] ekBytes = new byte[]{1};
+        assertThrows(IllegalArgumentException.class, () -> credentialManagementService.storeEndorsementCredential(
+                ekBytes, "testName"));
     }
 
     /**
@@ -106,9 +92,9 @@ public class CredentialManagementHelperTest {
      */
     @Test
     public void processInvalidEndorsementCredentialCase2() {
-        byte[] ekBytes = new byte[] {1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0};
+        byte[] ekBytes = new byte[]{1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0};
         assertThrows(IllegalArgumentException.class, () ->
-                CredentialManagementHelper.storeEndorsementCredential(certificateRepository, ekBytes,
+                credentialManagementService.storeEndorsementCredential(ekBytes,
                         "testName"));
     }
 
@@ -119,10 +105,10 @@ public class CredentialManagementHelperTest {
      */
     @Test
     public void parseUntouchedEndorsementCredential() throws IOException {
-        String path = CredentialManagementHelperTest.class.getResource(EK_UNTOUCHED).getPath();
+        String path = Objects.requireNonNull(CredentialManagementServiceTest.class.getResource(EK_UNTOUCHED)).getPath();
         byte[] ekBytes = IOUtils.toByteArray(new FileInputStream(path));
 
-        CredentialManagementHelper.storeEndorsementCredential(certificateRepository, ekBytes, "testName");
+        credentialManagementService.storeEndorsementCredential(ekBytes, "testName");
         verify(certificateRepository).save(any(Certificate.class));
     }
 
@@ -133,11 +119,11 @@ public class CredentialManagementHelperTest {
      */
     @Test
     public void parseHeaderTruncatedEndorsementCredential() throws IOException {
-        String path = CredentialManagementHelperTest.class.getResource(EK_HEADER_TRUNCATED)
+        String path = Objects.requireNonNull(CredentialManagementServiceTest.class.getResource(EK_HEADER_TRUNCATED))
                 .getPath();
         byte[] ekBytes = IOUtils.toByteArray(new FileInputStream(path));
 
-        CredentialManagementHelper.storeEndorsementCredential(certificateRepository, ekBytes, "testName");
+        credentialManagementService.storeEndorsementCredential(ekBytes, "testName");
         verify(certificateRepository).save(any(Certificate.class));
     }
 }

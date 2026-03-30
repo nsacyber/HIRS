@@ -22,7 +22,8 @@ import java.util.UUID;
 public interface IssuedCertificateRepository extends JpaRepository<IssuedAttestationCertificate, UUID> {
 
     /**
-     * Query that retrieves a count of {@link IssuedAttestationCertificate} objects in the database filtered by the provided archive flag.
+     * Query that retrieves a count of {@link IssuedAttestationCertificate} objects in the database filtered by the
+     * provided archive flag.
      *
      * @param archiveFlag archive flag
      * @return a count of {@link IssuedAttestationCertificate} objects

@@ -89,30 +89,6 @@ public class PersistenceJPAConfig {
     private Environment environment;
 
     /**
-     * Initialization of the ACA. Detects environment and runs configuration
-     * methods as required. This method is intended to be invoked by the Spring
-     * application context.
-     */
-    @PostConstruct
-    void initialize() {
-        // ensure that Bouncy Castle is registered as a security provider
-        Security.addProvider(new BouncyCastleProvider());
-    }
-
-
-    /**
-     * Platform Transaction Manager bean.
-     *
-     * @return platform transaction manager bean
-     */
-    @Bean
-    public PlatformTransactionManager transactionManager() {
-        final JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
-        return transactionManager;
-    }
-
-    /**
      * Entity manager factory bean.
      *
      * @return a local container entity manager factory bean
@@ -146,6 +122,17 @@ public class PersistenceJPAConfig {
         dataSource.setPassword(environment.getProperty("hibernate.connection.password"));
 
         return dataSource;
+    }
+
+    /**
+     * Initialization of the ACA. Detects environment and runs configuration
+     * methods as required. This method is intended to be invoked by the Spring
+     * application context.
+     */
+    @PostConstruct
+    void initialize() {
+        // ensure that Bouncy Castle is registered as a security provider
+        Security.addProvider(new BouncyCastleProvider());
     }
 
     /**
@@ -221,7 +208,7 @@ public class PersistenceJPAConfig {
             // intermediate certificate has been signed by the root certificate
             validateCertificateChain(leafThreeACACert, intermediateACACert, rootACACert);
 
-            X509Certificate[] certsChainArray = new X509Certificate[] {leafThreeACACert,
+            X509Certificate[] certsChainArray = new X509Certificate[]{leafThreeACACert,
                     intermediateACACert, rootACACert};
 
             log.info("The ACA certificate chain is valid and trusted");
@@ -265,6 +252,18 @@ public class PersistenceJPAConfig {
             log.error("Exception message: {}", ex.getMessage());
             throw new BeanInitializationException(ex.getMessage(), ex);
         }
+    }
+
+    /**
+     * Platform Transaction Manager bean.
+     *
+     * @return platform transaction manager bean
+     */
+    @Bean
+    public PlatformTransactionManager transactionManager() {
+        final JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
+        return transactionManager;
     }
 
     /**

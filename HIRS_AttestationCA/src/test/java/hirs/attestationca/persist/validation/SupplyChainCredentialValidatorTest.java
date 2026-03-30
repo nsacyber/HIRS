@@ -2160,10 +2160,10 @@ public class SupplyChainCredentialValidatorTest {
     private DeviceInfoReport setupDeviceInfoReport() throws UnknownHostException {
 
         // setup network info
-        final byte[] byteAddress = new byte[] {127, 0, 0, 1};
+        final byte[] byteAddress = new byte[]{127, 0, 0, 1};
         InetAddress inetAddress = InetAddress.getByAddress(byteAddress);
         NetworkInfo networkInfo =
-                new NetworkInfo("the-device", inetAddress, new byte[] {1, 0, 1, 0, 1, 0});
+                new NetworkInfo("the-device", inetAddress, new byte[]{1, 0, 1, 0, 1, 0});
 
         // setup os info
         OSInfo osInfo = new OSInfo("Windows", "11.0", "Not Specified",
@@ -2281,7 +2281,7 @@ public class SupplyChainCredentialValidatorTest {
      */
     private InetAddress getTestIpAddress() {
         try {
-            final byte[] byteAddress = new byte[] {127, 0, 0, 1};
+            final byte[] byteAddress = new byte[]{127, 0, 0, 1};
             return InetAddress.getByAddress(byteAddress);
         } catch (UnknownHostException e) {
             return null;
@@ -2494,7 +2494,7 @@ public class SupplyChainCredentialValidatorTest {
      */
     private DeviceInfoReport buildDeviceInfoReportUsingHardwareInfo(final HardwareInfo givenHardwareInfo) {
         final InetAddress ipAddress = getTestIpAddress();
-        final byte[] macAddress = new byte[] {11, 22, 33, 44, 55, 66};
+        final byte[] macAddress = new byte[]{11, 22, 33, 44, 55, 66};
 
         OSInfo osInfo = new OSInfo();
         NetworkInfo networkInfo = new NetworkInfo("test", ipAddress, macAddress);

@@ -15,8 +15,8 @@ import java.util.LinkedHashMap;
 @AllArgsConstructor
 @ToString
 public class CertificateDetailsPageParams implements PageParams {
-
     private String id;
+
     private String type;
 
     /**

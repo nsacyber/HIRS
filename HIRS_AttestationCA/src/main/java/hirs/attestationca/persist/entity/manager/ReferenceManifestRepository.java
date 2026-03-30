@@ -104,7 +104,8 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     ReferenceManifest getByModel(String model, String dType);
 
     /**
-     * Query that retrieves a list of {@link BaseReferenceManifest} objects where the dtype is a base reference manifest.
+     * Query that retrieves a list of {@link BaseReferenceManifest} objects where the dtype is a base
+     * reference manifest.
      *
      * @return a list of {@link BaseReferenceManifest} objects
      */
@@ -228,7 +229,8 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     List<ReferenceManifest> findByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a count of {@link ReferenceManifest} objects in the database filtered by the provided archive flag.
+     * Query that retrieves a count of {@link ReferenceManifest} objects in the database filtered by the provided
+     * archive flag.
      *
      * @param archiveFlag archive flag
      * @return a count of {@link ReferenceManifest} objects
