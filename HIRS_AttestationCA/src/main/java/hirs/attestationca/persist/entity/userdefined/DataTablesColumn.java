@@ -1,4 +1,4 @@
-package hirs.attestationca.persist.service.util;
+package hirs.attestationca.persist.entity.userdefined;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

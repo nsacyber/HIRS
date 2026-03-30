@@ -1,4 +1,4 @@
-package hirs.attestationca.portal;
+package hirs.attestationca.portal.configuration;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.env.Environment;
-import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -22,7 +21,6 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import javax.sql.DataSource;
 import java.nio.file.Files;
@@ -210,7 +208,7 @@ public class PersistenceJPAConfig {
             // intermediate certificate has been signed by the root certificate
             validateCertificateChain(leafThreeACACert, intermediateACACert, rootACACert);
 
-            X509Certificate[] certsChainArray = new X509Certificate[] {leafThreeACACert,
+            X509Certificate[] certsChainArray = new X509Certificate[]{leafThreeACACert,
                     intermediateACACert, rootACACert};
 
             log.info("The ACA certificate chain is valid and trusted");
@@ -269,16 +267,6 @@ public class PersistenceJPAConfig {
     }
 
     /**
-     * Persistence Exception Translation Post Processor bean.
-     *
-     * @return persistence exception translation post processor bean
-     */
-    @Bean
-    public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
-        return new PersistenceExceptionTranslationPostProcessor();
-    }
-
-    /**
      * Helper method that validates the provided leaf certificate against the
      * established intermediate and root certificates.
      *
@@ -316,7 +304,7 @@ public class PersistenceJPAConfig {
         certPathValidator.validate(certPath, pkixParams);
     }
 
-    final Properties additionalProperties() {
+    private Properties additionalProperties() {
         final Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty("hibernate.hbm2ddl.auto",
                 environment.getProperty("hibernate.hbm2ddl.auto"));
@@ -326,16 +314,5 @@ public class PersistenceJPAConfig {
                 "false");
 
         return hibernateProperties;
-    }
-
-    /**
-     * Creates a Spring Resolver for Multi-part form uploads. This is required
-     * for spring controllers to be able to process Spring MultiPartFiles
-     *
-     * @return bean to handle multipart form requests
-     */
-    @Bean(name = "multipartResolver")
-    public StandardServletMultipartResolver multipartResolver() {
-        return new StandardServletMultipartResolver();
     }
 }

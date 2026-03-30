@@ -1,17 +1,16 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
+import hirs.attestationca.persist.entity.userdefined.DownloadFile;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
+import hirs.attestationca.persist.enums.CertificateType;
 import hirs.attestationca.persist.service.CertificatePageService;
-import hirs.attestationca.persist.service.IssuedAttestationCertificatePageService;
-import hirs.attestationca.persist.service.util.CertificateType;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
-import hirs.attestationca.persist.util.DownloadFile;
+import hirs.attestationca.persist.service.IssuedCertificatePageService;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
@@ -50,21 +49,21 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 @Log4j2
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
-    private final IssuedAttestationCertificatePageService issuedAttestationCertificateService;
+    private final IssuedCertificatePageService issuedAttestationCertificateService;
     private final CertificatePageService certificatePageService;
 
     /**
      * Constructor for the Issued Attestation Certificate page.
      *
-     * @param issuedAttestationCertificatePageService issued certificate page service
-     * @param certificatePageService                  certificate page service
+     * @param issuedCertificatePageService issued certificate page service
+     * @param certificatePageService       certificate page service
      */
     @Autowired
     public IssuedCertificatePageController(
-            final IssuedAttestationCertificatePageService issuedAttestationCertificatePageService,
+            final IssuedCertificatePageService issuedCertificatePageService,
             final CertificatePageService certificatePageService) {
         super(Page.ISSUED_CERTIFICATES);
-        this.issuedAttestationCertificateService = issuedAttestationCertificatePageService;
+        this.issuedAttestationCertificateService = issuedCertificatePageService;
         this.certificatePageService = certificatePageService;
     }
 

@@ -2,7 +2,6 @@ package hirs.attestationca.persist.provision.service;
 
 import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
-import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
@@ -16,6 +15,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
+import hirs.attestationca.persist.exceptions.DBManagerException;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,6 @@ import java.security.PublicKey;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-
 
 /**
  * Service class responsible for parsing {@link PlatformCredential} and {@link EndorsementCredential} objects,

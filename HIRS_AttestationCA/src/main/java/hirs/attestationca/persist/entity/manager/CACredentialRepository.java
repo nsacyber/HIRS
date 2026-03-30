@@ -23,7 +23,7 @@ public interface CACredentialRepository extends JpaRepository<CertificateAuthori
 
     /**
      * Query that retrieves a count of {@link CertificateAuthorityCredential} objects in the database filtered by the
-     * provided archive flag.
+     * provided  archive flag.
      *
      * @param archiveFlag archive flag
      * @return a count of {@link CertificateAuthorityCredential} objects
@@ -31,8 +31,8 @@ public interface CACredentialRepository extends JpaRepository<CertificateAuthori
     long countByArchiveFlag(boolean archiveFlag);
 
     /**
-     * Query that retrieves a page of {@link CertificateAuthorityCredential} objects filtered by the specified archive
-     * flag.
+     * Query that retrieves a page of {@link CertificateAuthorityCredential} objects filtered by the specified
+     * archive flag.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable

@@ -1,7 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined;
 
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.ConformanceCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
@@ -164,7 +163,7 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
     public void testConstructCertFromEmptyByteArray()
             throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
-                new CertificateAuthorityCredential(new byte[] {}));
+                new CertificateAuthorityCredential(new byte[]{}));
     }
 
     /**
@@ -457,11 +456,6 @@ public class CertificateTest extends AbstractUserdefinedEntityTest {
         assertNotEquals(
                 getTestCertificate(CertificateAuthorityCredential.class, FAKE_ROOT_CA_FILE),
                 getTestCertificate(CertificateAuthorityCredential.class, FAKE_INTEL_INT_CA_FILE)
-        );
-
-        assertNotEquals(
-                getTestCertificate(CertificateAuthorityCredential.class, FAKE_ROOT_CA_FILE),
-                getTestCertificate(ConformanceCredential.class, FAKE_ROOT_CA_FILE)
         );
 
         assertNotEquals(

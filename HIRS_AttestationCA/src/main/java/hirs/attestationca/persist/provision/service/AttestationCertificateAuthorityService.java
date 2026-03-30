@@ -21,7 +21,6 @@ public interface AttestationCertificateAuthorityService {
      */
     byte[] processCertificateRequest(byte[] certificateRequest);
 
-
     /**
      * Retrieves the encoded public key of the leaf certificate.
      *

@@ -9,6 +9,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 

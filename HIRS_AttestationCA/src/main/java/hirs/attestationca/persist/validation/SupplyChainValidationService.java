@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.validation;
 
-import hirs.attestationca.persist.DBManagerException;
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
@@ -9,6 +8,7 @@ import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
+import hirs.attestationca.persist.entity.manager.SupplyChainValidationRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
@@ -24,6 +24,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.exceptions.DBManagerException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +43,8 @@ import java.util.UUID;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
-@Service
 @Log4j2
+@Service
 public class SupplyChainValidationService {
 
     private final CACredentialRepository caCredentialRepository;
@@ -65,6 +66,7 @@ public class SupplyChainValidationService {
      * @param componentResultRepository              the comp result manager
      * @param componentAttributeRepository           component attribute repository
      * @param referenceManifestRepository            the RIM manager
+     * @param supplyChainValidationRepository        the scv manager
      * @param supplyChainValidationSummaryRepository the summary manager
      * @param referenceDigestValueRepository         the even manager
      */
@@ -76,6 +78,7 @@ public class SupplyChainValidationService {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final ReferenceManifestRepository referenceManifestRepository,
+            final SupplyChainValidationRepository supplyChainValidationRepository,
             final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository) {
         this.caCredentialRepository = caCredentialRepository;

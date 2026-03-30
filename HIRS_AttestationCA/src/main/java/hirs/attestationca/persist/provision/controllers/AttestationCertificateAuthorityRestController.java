@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST Controller for the ACA that communicates with the Provisioner during the provisioning process.
+ * REST Controller for the ACA, responsible for communicating with the Provisioner during the provisioning process.
  */
-@Log4j2
 @RestController
 @RequestMapping("/HIRS_AttestationCA")
+@Log4j2
 public class AttestationCertificateAuthorityRestController {
     private final AttestationCertificateAuthorityService attestationCertificateAuthorityService;
 
