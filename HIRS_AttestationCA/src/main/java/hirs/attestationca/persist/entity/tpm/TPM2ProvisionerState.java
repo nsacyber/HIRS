@@ -20,6 +20,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Log4j2
 public class TPM2ProvisionerState {
+
     private static final int MAX_BLOB_SIZE = 16777215;
 
     @Column(nullable = false)

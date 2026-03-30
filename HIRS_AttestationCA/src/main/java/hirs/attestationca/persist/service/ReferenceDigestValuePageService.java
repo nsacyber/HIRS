@@ -56,13 +56,13 @@ public class ReferenceDigestValuePageService {
 
     /**
      * Takes the provided column names, the search term that the user entered and attempts to find
-     * reference digest values whose field values matches the provided search term.
+     * {@link ReferenceDigestValue} objects whose field values matches the provided search term.
      *
      * @param searchableColumnNames list of the searchable column names
      * @param globalSearchTerm      text that was input in the global search textbox
      * @param pageable              pageable
-     * @return A Page containing a list of reference digest values that match the global search term entered
-     * in the global search textbox
+     * @return A Page containing a list of {@link ReferenceDigestValue} objects that match the global search term
+     * entered in the global search textbox
      */
     public Page<ReferenceDigestValue> findReferenceDigestValuesByGlobalSearchTerm(
             final Set<String> searchableColumnNames,
@@ -96,11 +96,11 @@ public class ReferenceDigestValuePageService {
 
     /**
      * Takes the provided columns that come with a search criteria and attempts to find
-     * reference digest values that match the column's specific search criteria's search value.
+     * {@link ReferenceDigestValue} objects that match the column's specific search criteria's search value.
      *
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param pageable                  pageable
-     * @return A Page containing a list of reference digest values that match the column specific search
+     * @return A Page containing a list of {@link ReferenceDigestValue} objects that match the column specific search
      * criteria
      */
     public Page<ReferenceDigestValue> findReferenceDigestValuesByColumnSpecificSearchTerm(
@@ -132,23 +132,24 @@ public class ReferenceDigestValuePageService {
     }
 
     /**
-     * Finds reference digest values based on both global search and column-specific search criteria.
+     * Finds {@link ReferenceDigestValue} objects based on both global search and column-specific search criteria.
      * The method applies the provided global search term across all searchable columns
      * and also applies column-specific filters based on the individual column search criteria.
      * The results are returned with pagination support.
      * <p>
      * This method combines the logic of two search functionalities:
-     * - Global search: Searches across all specified columns for a matching term.
-     * - Column-specific search: Filters based on individual column search criteria, such as text
-     * or date searches.
-     * <p>
+     * <ul>
+     * <li> Global search: Searches across all specified columns for a matching term.</li>
+     * <li> Column-specific search: Filters based on individual column search criteria,
+     * such as text or date searches.</li>
+     * </ul>
      *
      * @param searchableColumnNames     list of the searchable column names
      * @param globalSearchTerm          text that was input in the global search textbox
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param pageable                  pageable
-     * @return A Page containing a list of reference digest values that match both the global search term and
-     * the column-specific search criteria.
+     * @return A Page containing a list of {@link ReferenceDigestValue} objects that match both the global search term
+     * and the column-specific search criteria.
      */
     public Page<ReferenceDigestValue> findReferenceDigestValuesByGlobalAndColumnSpecificSearchTerm(
             final Set<String> searchableColumnNames,
@@ -189,17 +190,17 @@ public class ReferenceDigestValuePageService {
     }
 
     /**
-     * Retrieves a page full of reference digest values using the provided pageable value.
+     * Retrieves a page full of {@link ReferenceDigestValue} objects using the provided pageable value.
      *
      * @param pageable pageable
-     * @return page full of reference digest values
+     * @return page full of {@link ReferenceDigestValue} objects
      */
     public Page<ReferenceDigestValue> findAllReferenceDigestValues(final Pageable pageable) {
         return referenceDigestValueRepository.findAll(pageable);
     }
 
     /**
-     * Saves the provided reference digest value in the reference digest value repository.
+     * Saves the provided {@link ReferenceDigestValue} object in the reference digest value repository.
      *
      * @param referenceDigestValue reference digest value
      */
@@ -208,16 +209,16 @@ public class ReferenceDigestValuePageService {
     }
 
     /**
-     * Retrieves the total number of records in the reference digest value repository.
+     * Retrieves the total number of records stored in the {@link ReferenceDigestValueRepository}.
      *
-     * @return total number of records in the reference digest value repository.
+     * @return total number of records stored in the {@link ReferenceDigestValueRepository}.
      */
     public long findReferenceDigestValueRepositoryCount() {
         return referenceDigestValueRepository.count();
     }
 
     /**
-     * Determines if the RIM, using the provided id, exists in the repository.
+     * Determines if the RIM, using the provided id, exists in the {@link ReferenceManifestRepository}.
      *
      * @param uuid uuid representation of the reference manifest id
      * @return true if the provided RIM exists in the database,
@@ -228,10 +229,11 @@ public class ReferenceDigestValuePageService {
     }
 
     /**
-     * Retrieves the Reference Manifest in the repository using the provided id.
+     * Retrieves the {@link ReferenceManifest} object from the {@link ReferenceManifestRepository} using the
+     * provided id.
      *
      * @param uuid uuid representation of the RIM
-     * @return the found Reference Manifest
+     * @return the found {@link ReferenceManifest} object
      */
     public ReferenceManifest findRIMById(final UUID uuid) {
         return referenceManifestRepository.getReferenceById(uuid);

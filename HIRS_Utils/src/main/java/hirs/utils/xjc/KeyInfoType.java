@@ -109,6 +109,8 @@ public class KeyInfoType {
      * {@link Element }
      * {@link JAXBElement }{@code <}{@link SPKIDataType }{@code >}
      * {@link JAXBElement }{@code <}{@link RetrievalMethodType }{@code >}
+     *
+     * @return list of objects
      */
     public List<Object> getContent() {
         if (content == null) {

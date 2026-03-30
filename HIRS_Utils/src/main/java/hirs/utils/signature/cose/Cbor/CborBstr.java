@@ -8,46 +8,49 @@ import java.nio.ByteBuffer;
  * Note: use getContent() to retrieve the data with the byteSting encoding stripped off.
  */
 public class CborBstr {
+    private static final int TYPE_MASK = 0xE0;
+    private static final int INFO_MASK = 0x1F;
+    private static final int SHIFT_OFFSET = 0x05;
+    private static final int BYTE_STRING_TYPE = 0x02;
+    private static final int BYTE_STRING_LENGTH = 0x03;
+    private static final int COSE_NIL_BYTE = 0xa0; // Cose defined nil byte for empty payloads.
     private byte[] contents = null;
-    private static int typeMask = 0xE0;
-    private static int infoMask = 0x1F;
-    private static int shiftOffset = 0x05;
-    private static int byteStringType = 0x02;
-    private static int byteStringLength = 0x03;
-    private static int coseNilByte = 0xa0; // Cose defined nil byte for empty payloads.
+
     /**
      * Constructor for the Cbor Byte String.
+     *
      * @param data data holding the Cbor Byte String data.
      */
     public CborBstr(final byte[] data) {
 
         byte type = data[0];
         // Check if byte 0 is of major type 0x02 (Byte String)
-        byte cborType = (byte) ((type & typeMask) >> shiftOffset);
-        if (cborType != byteStringType) {
+        byte cborType = (byte) ((type & TYPE_MASK) >> SHIFT_OFFSET);
+        if (cborType != BYTE_STRING_TYPE) {
             throw new RuntimeException("Byte Array Decode Error, expecting a byte String (Type 2) but found "
                     + cborType);
         }
-        contents = new byte[data.length - byteStringLength];
-        System.arraycopy(data, byteStringLength, contents, 0, data.length - byteStringLength);
+        contents = new byte[data.length - BYTE_STRING_LENGTH];
+        System.arraycopy(data, BYTE_STRING_LENGTH, contents, 0, data.length - BYTE_STRING_LENGTH);
     }
+
     /**
      * Checks to see if byte array is a string.
+     *
      * @param data byte array holding the cbor data to check.
-     * @return  true if the byte array holds a string.
+     * @return true if the byte array holds a string.
      */
     public static boolean isByteString(final byte[] data) {
         byte type = data[0];
         // Check if byte 0 is of major type 0x02 (Byte String)
-        byte cborType = (byte) ((type & typeMask) >> shiftOffset);
-        if (cborType == byteStringType) {
-            return true;
-        }
-        return false;
+        byte cborType = (byte) ((type & TYPE_MASK) >> SHIFT_OFFSET);
+        return cborType == BYTE_STRING_TYPE;
     }
+
     /**
      * Checks to see if a byte array is empty.
-     * @param data  byte array to check.
+     *
+     * @param data byte array to check.
      * @return true of the byte array is empty.
      */
     public static boolean isEmptyByteString(final byte[] data) {
@@ -55,26 +58,25 @@ public class CborBstr {
             return false;
         }
         // per the cose spec 0xa0 is equivalent to {}
-        if ((data[3] & 0xFF) == coseNilByte) {
-            return true;
-        }
-        return false;
+        return (data[3] & 0xFF) == COSE_NIL_BYTE;
     }
+
     /**
      * Processes byte string length rfc 8489.
-     * @param data
+     *
+     * @param data byte array representation of the data
      * @return length of the byte string in bytes
      */
     public static int getByteStringLength(final byte[] data) {
         int length = 0;
         byte type = data[0];
-        byte tagInfo = (byte) (type & infoMask);
+        byte tagInfo = (byte) (type & INFO_MASK);
         if (tagInfo < CborTagProcessor.CBOR_ONE_BYTE_UNSIGNED_INT) {
             length = tagInfo; // values 0 to 0x17
         } else if (tagInfo == CborTagProcessor.CBOR_ONE_BYTE_UNSIGNED_INT) {
-            length = (int) data[1];
+            length = data[1];
         } else if (tagInfo == CborTagProcessor.CBOR_TWO_BYTE_UNSIGNED_INT) {
-            byte[] tmpArray = {0, 0, data[1], data[2] };
+            byte[] tmpArray = {0, 0, data[1], data[2]};
             ByteBuffer buf = ByteBuffer.wrap(tmpArray);
             length = buf.getInt();
         } else if (tagInfo == CborTagProcessor.CBOR_FOUR_BYTE_UNSIGNED_INT) {
@@ -84,16 +86,18 @@ public class CborBstr {
         }
         return length;
     }
+
     /**
      * Determines length of the byte sting header per rfc 8489.
+     *
      * @param data byte array holding cbor data
      * @return length of the byte string tag in bytes
      */
     public static int getByteStringTagLength(final byte[] data) {
         int length = 0;
         byte type = data[0];
-        byte tagInfo = (byte) (type & infoMask);
-        if (tagInfo <  CborTagProcessor.CBOR_ONE_BYTE_UNSIGNED_INT) {
+        byte tagInfo = (byte) (type & INFO_MASK);
+        if (tagInfo < CborTagProcessor.CBOR_ONE_BYTE_UNSIGNED_INT) {
             length = 1; // values 0 to 0x17
         } else if (tagInfo == CborTagProcessor.CBOR_ONE_BYTE_UNSIGNED_INT) {
             length = 2;
@@ -104,8 +108,10 @@ public class CborBstr {
         }
         return length;
     }
+
     /**
-     * Removes a preceeding byte string from the byte array.
+     * Removes a preceding byte string from the byte array.
+     *
      * @param data bate array holding cbor data.
      * @return new byte array with the byte string stripped off.
      */

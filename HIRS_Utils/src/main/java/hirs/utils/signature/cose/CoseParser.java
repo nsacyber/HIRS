@@ -1,19 +1,20 @@
 package hirs.utils.signature.cose;
 
-import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORDecoder;
+import com.authlete.cbor.CBORItem;
+import com.authlete.cose.COSEException;
+import com.authlete.cose.COSEProtectedHeader;
 import com.authlete.cose.COSESign1;
 import com.authlete.cose.COSEUnprotectedHeader;
-import com.authlete.cose.COSEProtectedHeader;
-import com.authlete.cose.COSEException;
 import hirs.utils.rim.unsignedRim.cbor.ietfCorim.CoRim;
 import hirs.utils.rim.unsignedRim.cbor.ietfCorim.CoRimParser;
 import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.Coswid;
-import hirs.utils.signature.cose.Cbor.CborTagProcessor;
 import hirs.utils.rim.unsignedRim.cbor.tcgCompRimCoswid.TcgCompRimCoswidParser;
 import hirs.utils.signature.cose.Cbor.CborBstr;
+import hirs.utils.signature.cose.Cbor.CborTagProcessor;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -24,24 +25,36 @@ public class CoseParser {
     @Setter
     @Getter
     private int coseTag = 0;
+
     private byte[] toBeSigned = null;
+
     private byte[] payload = null;
+
     private byte[] signature = null;
+
     @Setter
     @Getter
     private String algIdentifier = "";
+
     private byte[] keyIdBytes = null;
+
     @Setter
     @Getter
     private String keyIdentifier = "";
+
     private CoseHeaderProtected coseHeaderP = null;
+
     private CoseHeaderUnprotected coseHeaderU = null;
+
     @Getter
     private String contentType = "";
+
     private byte[] protectedHeaders = null;
+
     @Setter
     @Getter
     private String toStringCborDiag = "";
+
     private CborTagProcessor cborTag = null;
 
     /**
@@ -51,6 +64,7 @@ public class CoseParser {
      * If alg is not found, an error will be thrown.
      * Key Identifier (kid) should be in the protected header but can be in the unprotected header,
      * or not provided.
+     *
      * @param coseData Byte array holding the COSE data
      */
     public CoseParser(final byte[] coseData) {
@@ -114,10 +128,25 @@ public class CoseParser {
     }
 
     /**
+     * Method to print hex data.
+     *
+     * @param data byte containing hex data to be print
+     * @return String containing hex representation of the data
+     */
+    public static String hexToString(final byte[] data) {
+        StringBuilder sb2 = new StringBuilder();
+        for (byte b : data) {
+            sb2.append(String.format("%02X", b));
+        }
+        return sb2.toString();
+    }
+
+    /**
      * Checks the payload for a valid tag.
      * by parsing the first byte of the payload as a tag
      * and checking for one of the supported tags by this application
      * If a supported tag is found the payload and coswid tag references are adjusted
+     *
      * @param payloadData
      * @return true if a valid tag is found
      */
@@ -135,21 +164,9 @@ public class CoseParser {
     }
 
     /**
-     * Method to print hex data.
-     * @param data byte containing hex data to be print
-     * @return String containing hex representation of the data
-     */
-    public static String hexToString(final byte[] data) {
-        StringBuilder sb2 = new StringBuilder();
-        for (byte b : data) {
-            sb2.append(String.format("%02X", b));
-        }
-        return sb2.toString();
-    }
-
-    /**
      * Looks up the COSE types defined in Table 1 of RFC 9052.
      * Also processes CoRim options for COSE.
+     *
      * @param tag the CBOR Tag (int) defined in Table 1
      * @return a String defined in Table 1 that corresponds to the tag
      */
@@ -162,21 +179,29 @@ public class CoseParser {
         final int coseMac0 = 17;
 
         switch (tag) {
-            case coseSign: return "cose-sign";
-            case coseSignOne: return "cose-sign1";
-            case coseEncrypt: return "cose-encrypt";
-            case coseEncrypt0: return "cose-encrypt0";
-            case coseMac: return "cose-mac";
-            case coseMac0: return "cose-mac0";
-            default: return CoRim.getTagLabel(tag);
+            case coseSign:
+                return "cose-sign";
+            case coseSignOne:
+                return "cose-sign1";
+            case coseEncrypt:
+                return "cose-encrypt";
+            case coseEncrypt0:
+                return "cose-encrypt0";
+            case coseMac:
+                return "cose-mac";
+            case coseMac0:
+                return "cose-mac0";
+            default:
+                return CoRim.getTagLabel(tag);
         }
     }
 
     /**
      * Default toString.
+     *
      * @return default "pretty" version
      */
-    public String toString()   {
+    public String toString() {
         try {
             return toString("pretty");
         } catch (IOException e) {
@@ -186,12 +211,15 @@ public class CoseParser {
 
     /**
      * Creates human-readable text from a Cose Object.
+     *
      * @param format empty (default String) or "pretty"
      * @return a formated string representation of the data in the COSE object
+     * @throws IOException if issues arrise while trying to create the string representation
+     *                     of the provided string format.
      */
     public String toString(final String format) throws IOException {
         String returnString = "";
-        final int lineLength  = 100;
+        final int lineLength = 100;
         if (format.compareToIgnoreCase("pretty") == 0) {
             returnString = "  COSE Signed object:\n";
             returnString += "  tag = " + coseTagLookup(coseTag) + "\n";
@@ -199,7 +227,7 @@ public class CoseParser {
             returnString += coseHeaderU.toString("pretty");
             returnString += "COSE Payload: " + "\n";
             if (contentType.compareToIgnoreCase("application/rim+cbor") == 0) {
-                returnString += "  Processing payload as CoRim:"  + "\n";
+                returnString += "  Processing payload as CoRim:" + "\n";
                 CoRimParser cparser = new CoRimParser(payload);
                 returnString += cparser.toString();
             } else if (!cborTag.isTagged()) {
@@ -233,6 +261,7 @@ public class CoseParser {
 
     /**
      * Returns a copy of the toBeSigned bytes.
+     *
      * @return copy of toBeSigned
      */
     public byte[] getToBeSigned() {
@@ -241,6 +270,7 @@ public class CoseParser {
 
     /**
      * Sets a copy of the toBeSigned bytes.
+     *
      * @param toBeSigned byte array to set
      */
     public void setToBeSigned(final byte[] toBeSigned) {
@@ -249,6 +279,7 @@ public class CoseParser {
 
     /**
      * Returns a copy of the payload bytes.
+     *
      * @return copy of payload
      */
     public byte[] getPayload() {
@@ -257,6 +288,7 @@ public class CoseParser {
 
     /**
      * Sets a copy of the payload bytes.
+     *
      * @param payload byte array to set
      */
     public void setPayload(final byte[] payload) {
@@ -265,6 +297,7 @@ public class CoseParser {
 
     /**
      * Returns a copy of the signature bytes.
+     *
      * @return copy of signature
      */
     public byte[] getSignature() {
@@ -273,6 +306,7 @@ public class CoseParser {
 
     /**
      * Sets a copy of the signature bytes.
+     *
      * @param signature byte array to set
      */
     public void setSignature(final byte[] signature) {
@@ -281,6 +315,7 @@ public class CoseParser {
 
     /**
      * Returns a copy of the keyIdBytes.
+     *
      * @return copy of keyIdBytes
      */
     public byte[] getKeyIdBytes() {
@@ -289,6 +324,7 @@ public class CoseParser {
 
     /**
      * Sets a copy of the keyIdBytes.
+     *
      * @param keyIdBytes byte array to set
      */
     public void setKeyIdBytes(final byte[] keyIdBytes) {
@@ -297,6 +333,7 @@ public class CoseParser {
 
     /**
      * Returns a copy of the protected headers.
+     *
      * @return copy of protected headers
      */
     public byte[] getProtectedHeaders() {
@@ -305,6 +342,7 @@ public class CoseParser {
 
     /**
      * Sets a copy of the protected headers.
+     *
      * @param protectedHeaders byte array to set
      */
     public void setProtectedHeaders(final byte[] protectedHeaders) {

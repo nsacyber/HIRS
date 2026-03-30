@@ -84,7 +84,7 @@ public final class CredentialParser {
      * extracting the certificate, private key, and public key.
      *
      * @param certificateFile the path to the PEM-encoded certificate file
-     * @param privateKeyFile the path to the PEM-encoded private key file
+     * @param privateKeyFile  the path to the PEM-encoded private key file
      * @throws Exception if parsing fails or the certificate is self-signed
      */
     public void parsePEMCredentials(final String certificateFile, final String privateKeyFile)
@@ -126,8 +126,7 @@ public final class CredentialParser {
      * @param certificateFile the path to the PEM certificate file
      * @return a list of X509Certificate objects parsed from the file
      */
-    public List<X509Certificate> parseCertsFromPEM(final String certificateFile)
-            throws FileNotFoundException {
+    public List<X509Certificate> parseCertsFromPEM(final String certificateFile) {
         return parsePEMCertificates(certificateFile);
     }
 
@@ -250,8 +249,8 @@ public final class CredentialParser {
      * This method returns the private key from a JKS keystore.
      *
      * @param keystoreFile the path to the JKS keystore file
-     * @param alias the alias of the key entry in the keystore
-     * @param password the password for the keystore and key entry
+     * @param alias        the alias of the key entry in the keystore
+     * @param password     the password for the keystore and key entry
      * @return the PrivateKeyEntry containing the private key and certificate
      */
     private KeyStore.PrivateKeyEntry parseKeystorePrivateKey(final String keystoreFile,
@@ -275,6 +274,8 @@ public final class CredentialParser {
      * This method returns the authorityInfoAccess from an X509Certificate.
      *
      * @return a formatted string listing the AIA information from the certificate
+     * @throws IOException if an I/O error occurs while trying to retrieve the certificate authority info
+     *                     access.
      */
     public String getCertificateAuthorityInfoAccess() throws IOException {
         StringBuilder sb = new StringBuilder("Authority Info Access:\n");
@@ -298,7 +299,7 @@ public final class CredentialParser {
      * This method returns the subjectKeyIdentifier from the local X509Certificate.
      *
      * @return the String representation of the subjectKeyIdentifier
-     * @throws IOException
+     * @throws IOException if an I/O error occurs while retrieving the certificate subject key identifier.
      */
     public String getCertificateSubjectKeyIdentifier() throws IOException {
         byte[] extension = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
@@ -314,7 +315,7 @@ public final class CredentialParser {
      *
      * @param certificate the cert to pull the subjectKeyIdentifier from
      * @return the String representation of the subjectKeyIdentifier
-     * @throws IOException
+     * @throws IOException if an I/O error occurs while retrieving the certificate subject key identifier.
      */
     public String getCertificateSubjectKeyIdentifier(final X509Certificate certificate) throws IOException {
         byte[] extension = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());

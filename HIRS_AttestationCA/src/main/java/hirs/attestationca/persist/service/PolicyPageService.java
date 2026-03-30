@@ -374,7 +374,6 @@ public class PolicyPageService {
     /**
      * Updates the Attestation Certificate generation threshold value under the generate attestation
      * certificate policy setting  using the provided user input.
-     * <p>
      *
      * @param canGenerateAttestationCertificateOnExpiration boolean value representation of the current
      *                                                      policy option's state

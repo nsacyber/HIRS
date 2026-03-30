@@ -26,6 +26,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Represents the IEEE 802.1AR secure Device Identifier (DevID).
+ * <p>
+ * The IDevID is a cryptographic identity bound to a device, used to assert its identity in secure networks.
+ * It is generated during manufacturing (e.g., in factories) and remains valid throughout the device's
+ * lifecycle.  The IDevID, along with the Initial Attestation Key (IAK), provides a unique and
+ * persistent identity for the device, enabling secure authentication and communication within
+ * 802.1AR-compliant networks.
+ */
 @Entity
 @Getter
 @EqualsAndHashCode(callSuper = true)

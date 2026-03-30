@@ -81,7 +81,8 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to retrieve a list of idevid certificates for display on the idevid certificates page.
+     * Processes the request to retrieve a list of {@link IDevIDCertificate} objects for display on the
+     * idevid certificates page.
      *
      * @param dataTableInput data table input received from the front-end
      * @return data table of idevid certificates
@@ -128,9 +129,9 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to download the specified IDevId certificate.
+     * Processes the request to download the specified {@link IDevIDCertificate} object.
      *
-     * @param id       the UUID of the idevid certificate to download
+     * @param id       the UUID of the {@link IDevIDCertificate} object to download
      * @param response the response object (needed to update the header with the
      *                 file name)
      * @throws IOException when writing to response output stream
@@ -154,7 +155,7 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to bulk download all the IDevID Certificates.
+     * Processes the request to bulk download all the {@link IDevIDCertificate} objects.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -181,11 +182,11 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to upload one or more idevid certificates to the ACA.
+     * Processes the request to upload one or more {@link IDevIDCertificate} objects to the ACA.
      *
      * @param files              the files to process
      * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
-     * @return the redirection view
+     * @return a redirect to the IDevID Certificate Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
@@ -218,12 +219,12 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to archive/soft delete the provided idevid certificate.
+     * Processes the request to archive/soft delete the provided {@link IDevIDCertificate} object.
      *
-     * @param id                 the UUID of the idevid certificate to delete
+     * @param id                 the UUID of the {@link IDevIDCertificate} object to delete
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return redirect to this page
+     * @return a redirect to the IDevID Certificate Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
@@ -255,9 +256,9 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to delete multiple idevid certificates.
+     * Processes the request to delete multiple {@link IDevIDCertificate} objects.
      *
-     * @param ids                the list of UUIDs of the idevid certificates to be deleted
+     * @param ids                the list of UUIDs of the {@link IDevIDCertificate} objects to be deleted
      * @param redirectAttributes used to pass data back to the original page after the operation
      * @return a redirect to the IDevId certificate page
      * @throws URISyntaxException if the URI is malformed
@@ -290,8 +291,9 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Helper method that retrieves a filtered and paginated list of idevid certificates based on the
+     * Helper method that retrieves a filtered and paginated list of {@link IDevIDCertificate} objects based on the
      * provided search criteria.
+     * <p>
      * The method allows filtering based on a global search term and column-specific search criteria,
      * and returns the result in a paginated format.
      *
@@ -299,22 +301,23 @@ public class IDevIdCertificatePageController extends PageController<NoPageParams
      * The method handles four cases:
      * <ol>
      *     <li>If no global search term and no column-specific search criteria are provided,
-     *         all idevid certificates are returned.</li>
+     *         all {@link IDevIDCertificate} objects are returned.</li>
      *     <li>If both a global search term and column-specific search criteria are provided,
-     *         it performs filtering on both.</li>
-     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
-     *         criteria.</li>
-     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     *         {@link IDevIDCertificate} objects are filtered based on both criteria.</li>
+     *     <li>If only column-specific search criteria are provided, {@link IDevIDCertificate} objects
+     *         are filtered according to the column-specific criteria.</li>
+     *     <li>If only a global search term is provided, {@link IDevIDCertificate} objects
+     *         are filtered according to the global search term.</li>
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the idevid certificates
-     *                                  by the searchable fields.
+     * @param globalSearchTerm          A global search term that will be used to filter the
+     *                                  {@link IDevIDCertificate} objects by the searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable
      * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
-     * idevid certificates, along with the total number of records and the number of records matching the
+     * {@link IDevIDCertificate} objects, along with the total number of records and the number of records matching the
      * filter criteria.
      */
     private FilteredRecordsList<IDevIDCertificate> getFilteredIDevIdCertificateList(

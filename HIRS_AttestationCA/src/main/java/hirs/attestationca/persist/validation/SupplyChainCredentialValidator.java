@@ -34,6 +34,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Base class used for supply chain credential validators. This class provides common functionality and
+ * structure for validators
+ */
 @Log4j2
 public class SupplyChainCredentialValidator {
 

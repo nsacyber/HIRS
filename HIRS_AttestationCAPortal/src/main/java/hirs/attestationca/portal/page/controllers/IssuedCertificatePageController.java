@@ -49,11 +49,11 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates")
 @Log4j2
 public class IssuedCertificatePageController extends PageController<NoPageParams> {
-    private final IssuedCertificatePageService issuedAttestationCertificateService;
+    private final IssuedCertificatePageService issuedCertificatePageService;
     private final CertificatePageService certificatePageService;
 
     /**
-     * Constructor for the Issued Attestation Certificate page.
+     * Constructor for the Issued Certificate page.
      *
      * @param issuedCertificatePageService issued certificate page service
      * @param certificatePageService       certificate page service
@@ -63,17 +63,17 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             final IssuedCertificatePageService issuedCertificatePageService,
             final CertificatePageService certificatePageService) {
         super(Page.ISSUED_CERTIFICATES);
-        this.issuedAttestationCertificateService = issuedCertificatePageService;
+        this.issuedCertificatePageService = issuedCertificatePageService;
         this.certificatePageService = certificatePageService;
     }
 
     /**
-     * Returns the path for the view and the data model for the Issued Attestation Certificate page.
+     * Returns the path for the view and the data model for the Issued Certificate page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from
      *               redirect.
-     * @return the path for the view and data model for the Issued Attestation Certificate page.
+     * @return the path for the view and data model for the Issued Certificate page.
      */
     @RequestMapping
     public ModelAndView initPage(final NoPageParams params, final Model model) {
@@ -81,8 +81,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to retrieve a list of issued attestation certificates for display on the issued
-     * certificates page.
+     * Processes the request to retrieve a list of {@link IssuedAttestationCertificate} objects for display on the
+     * issued certificates page.
      *
      * @param dataTableInput data table input received from the front-end
      * @return data table of issued certificates
@@ -91,8 +91,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public DataTableResponse<IssuedAttestationCertificate> getIssuedCertificatesTableData(
             final DataTableInput dataTableInput) {
-        log.info("Received request to display list of issued attestation certificates");
-        log.debug("Request received a datatable input object for the issued attestation"
+        log.info("Received request to display list of issued certificates");
+        log.debug("Request received a datatable input object for the issued"
                 + " certificate page: {}", dataTableInput);
 
         // grab the column to which ordering has been applied
@@ -130,9 +130,9 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to download the specified issued attestation certificate.
+     * Processes the request to download the specified {@link IssuedAttestationCertificate} object.
      *
-     * @param id       the UUID of the issued attestation certificate to download
+     * @param id       the UUID of the {@link IssuedAttestationCertificate} object to download
      * @param response the response object (needed to update the header with the
      *                 file name)
      * @throws IOException when writing to response output stream
@@ -150,13 +150,13 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             response.getOutputStream().write(downloadFile.getFileBytes());
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to download the"
-                    + " specified issued attestation certificate", exception);
+                    + " specified issued certificate", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Processes the request to bulk download all the issued attestation certificates.
+     * Processes the request to bulk download all the {@link IssuedAttestationCertificate} objects.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -178,25 +178,25 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
-                    + "issued attestation certificates", exception);
+                    + "issued certificates", exception);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     /**
-     * Processes the request to archive/soft delete the specified issued attestation certificate.
+     * Processes the request to archive/soft delete the specified {@link IssuedAttestationCertificate} object.
      *
-     * @param id                 the UUID of the issued attestation certificate to delete
+     * @param id                 the UUID of the {@link IssuedAttestationCertificate} object to delete
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return redirect to this page
+     * @return a redirect to the Issued Certificate Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
     public RedirectView deleteIssuedCertificate(@RequestParam final String id,
                                                 final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
-        log.info("Received request to delete issued attestation certificate id {}", id);
+        log.info("Received request to delete issued certificate id {}", id);
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -210,7 +210,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while attempting to delete"
-                    + " the specified issued attestation certificate";
+                    + " the specified issued certificate";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }
@@ -220,18 +220,18 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to delete multiple issued attestation certificates.
+     * Processes the request to delete multiple {@link IssuedAttestationCertificate} objects.
      *
-     * @param ids                the list of UUIDs of the issued attestation certificates to be deleted
+     * @param ids                the list of UUIDs of the {@link IssuedAttestationCertificate} objects to be deleted
      * @param redirectAttributes used to pass data back to the original page after the operation
-     * @return a redirect to the issued attestation certificate page
+     * @return a redirect to the Issued Certificate Page
      * @throws URISyntaxException if the URI is malformed
      */
     @PostMapping("/bulk-delete")
     public RedirectView bulkDeleteIssuedCertificates(@RequestParam final List<String> ids,
                                                      final RedirectAttributes redirectAttributes)
             throws URISyntaxException {
-        log.info("Received request to delete multiple issued attestation certificates");
+        log.info("Received request to delete multiple issued certificates");
 
         Map<String, Object> model = new HashMap<>();
         PageMessages messages = new PageMessages();
@@ -245,7 +245,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
             messages.addErrorMessages(errorMessages);
         } catch (Exception exception) {
             final String errorMessage = "An exception was thrown while attempting to delete"
-                    + " multiple issued attestation certificates";
+                    + " multiple issued certificates";
             messages.addErrorMessage(errorMessage);
             log.error(errorMessage, exception);
         }
@@ -255,8 +255,8 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
     }
 
     /**
-     * Helper method that retrieves a filtered and paginated list of issued certificates based on the
-     * provided search criteria.
+     * Helper method that retrieves a filtered and paginated list of {@link IssuedAttestationCertificate} objects
+     * based on the provided search criteria.
      * The method allows filtering based on a global search term and column-specific search criteria,
      * and returns the result in a paginated format.
      *
@@ -264,23 +264,24 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
      * The method handles four cases:
      * <ol>
      *     <li>If no global search term and no column-specific search criteria are provided,
-     *         all issued certificates are returned.</li>
+     *         all {@link IssuedAttestationCertificate} objects are returned.</li>
      *     <li>If both a global search term and column-specific search criteria are provided,
-     *         it performs filtering on both.</li>
-     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
-     *         criteria.</li>
-     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     *         {@link IssuedAttestationCertificate} objects are filtered based on both criteria.</li>
+     *     <li>If only column-specific search criteria are provided, {@link IssuedAttestationCertificate} objects
+     *         are filtered according to the column-specific criteria.</li>
+     *     <li>If only a global search term is provided, {@link IssuedAttestationCertificate} objects
+     *         are filtered according to the global search term.</li>
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the issued certificates
-     *                                  by the searchable fields.
+     * @param globalSearchTerm          A global search term that will be used to filter the
+     *                                  {@link IssuedAttestationCertificate} objects by the searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable
      * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
-     * issued certificates, along with the total number of records and the number of records matching the
-     * filter criteria.
+     * {@link IssuedAttestationCertificate} objects, along with the total number of records and the number of records
+     * matching the filter criteria.
      */
     private FilteredRecordsList<IssuedAttestationCertificate> getFilteredIssuedCertificateList(
             final String globalSearchTerm,
@@ -292,7 +293,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
         // if no value has been entered in the global search textbox and in the column search dropdown
         if (StringUtils.isBlank(globalSearchTerm) && columnsWithSearchCriteria.isEmpty()) {
             pagedResult =
-                    issuedAttestationCertificateService.findIssuedCertificatesByArchiveFlag(false, pageable);
+                    issuedCertificatePageService.findIssuedCertificatesByArchiveFlag(false, pageable);
         } else if (!StringUtils.isBlank(globalSearchTerm) && !columnsWithSearchCriteria.isEmpty()) {
             // if a value has been entered in both the global search textbox and in the column search dropdown
             pagedResult =
@@ -330,7 +331,7 @@ public class IssuedCertificatePageController extends PageController<NoPageParams
 
         issuedCertificateFilteredRecordsList.setRecordsFiltered(pagedResult.getTotalElements());
         issuedCertificateFilteredRecordsList.setRecordsTotal(
-                issuedAttestationCertificateService.findIssuedCertificateRepoCount());
+                issuedCertificatePageService.findIssuedCertificateRepoCount());
 
         return issuedCertificateFilteredRecordsList;
     }

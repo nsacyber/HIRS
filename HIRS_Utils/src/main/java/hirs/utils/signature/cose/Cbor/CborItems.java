@@ -7,12 +7,18 @@ package hirs.utils.signature.cose.Cbor;
  */
 public class CborItems {
 
-    /** Array of item names.*/
-    private static final String[][] INDEX_NAMES = new String[0][0];
-    /** Default item name. */
+    /**
+     * Default item name.
+     */
     public static final String UNKNOWN_STR = "Unknown";
-    /** Default item id. */
+    /**
+     * Default item id.
+     */
     public static final int UNKNOWN_INT = 99;
+    /**
+     * Array of item names.
+     */
+    private static final String[][] INDEX_NAMES = new String[0][0];
 
     /**
      * Default constructor.
@@ -22,7 +28,8 @@ public class CborItems {
 
     /**
      * Converts the Item name to an item id.
-     * @param itemName
+     *
+     * @param itemName item name
      * @return id of the item.
      */
     public static int getIndex(final String itemName) {
@@ -33,8 +40,10 @@ public class CborItems {
         }
         return UNKNOWN_INT;
     }
+
     /**
      * Searches for an Rfc 9393 specified index and returns the item name associated with the index.
+     *
      * @param index int rfc 939 sepcified index value
      * @return String item name associated with the index
      */

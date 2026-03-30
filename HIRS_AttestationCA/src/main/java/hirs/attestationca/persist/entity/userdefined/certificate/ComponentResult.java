@@ -128,6 +128,8 @@ public class ComponentResult extends ArchivableEntity implements Cloneable {
     }
 
     /**
+     * Constructor.
+     *
      * @param boardSerialNumber       associated platform certificate serial number
      * @param certificateSerialNumber unique number associated with header info
      * @param certificateType         type of certificate. Parameter holds version 1.2 or 2.0.

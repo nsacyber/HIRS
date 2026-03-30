@@ -16,10 +16,11 @@ public class CsvParser {
 
     private static final char DEFAULT_SEPARATOR = ',';
     private static final char DEFAULT_QUOTE = '"';
-    private List<String> content;
+    private final List<String> content;
 
     /**
      * CsvParser constructor.
+     *
      * @param file name of the file contains the CSV data.
      */
     public CsvParser(final File file) {
@@ -28,6 +29,7 @@ public class CsvParser {
 
     /**
      * CsvParser constructor.
+     *
      * @param csvfile Sting containing the contents of the SCV file.
      */
     public CsvParser(final String csvfile) {
@@ -35,42 +37,9 @@ public class CsvParser {
     }
 
     /**
-     * This method takes an existing csv file and reads the file by line and
-     * adds the contents to a list of Strings.
-     *
-     * @param file valid path to a csv file.
-     * @return  List of Strings.
-     */
-    private List<String> readerCsv(final String file) {
-        String line = "";
-        String csvSplitBy = ",";
-        List<String> tempList = new LinkedList<>();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            while ((line = br.readLine()) != null) {
-                if (line.length() > 0
-                        && line.contains(csvSplitBy)) {
-                 tempList.add(line);
-                }
-            }
-        } catch (IOException ioEx) {
-            System.out.println(String.format("Error reading in CSV file...(%s)", file));
-            System.exit(1);
-        }
-        return tempList;
-    }
-
-    /**
-     * Gets content as a list of Stings.
-     * @return List of Strings.
-     */
-    public final List<String> getContent() {
-       return Collections.unmodifiableList(content);
-    }
-
-    /**
      * Gets a list of parsed lines.
-     * @param csvLine
+     *
+     * @param csvLine csv line
      * @return List of Strings.
      */
     public static List<String> parseLine(final String csvLine) {
@@ -79,8 +48,9 @@ public class CsvParser {
 
     /**
      * Parses a CSV Line.
-     * @param csvLine
-     * @param separators
+     *
+     * @param csvLine    csv line
+     * @param separators separators
      * @return List of Strings.
      */
     public static List<String> parseLine(final String csvLine, final char separators) {
@@ -89,9 +59,10 @@ public class CsvParser {
 
     /**
      * Parses a CSV Line.
-     * @param csvLine
-     * @param separators
-     * @param customQuote
+     *
+     * @param csvLine     csv line
+     * @param separators  separators
+     * @param customQuote custom quote
      * @return List of Stings.
      */
     public static List<String> parseLine(final String csvLine, final char separators, final char customQuote) {
@@ -158,5 +129,40 @@ public class CsvParser {
         }
         result.add(currVal.toString());
         return result;
+    }
+
+    /**
+     * This method takes an existing csv file and reads the file by line and
+     * adds the contents to a list of Strings.
+     *
+     * @param file valid path to a csv file.
+     * @return List of Strings.
+     */
+    private List<String> readerCsv(final String file) {
+        String line = "";
+        String csvSplitBy = ",";
+        List<String> tempList = new LinkedList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            while ((line = br.readLine()) != null) {
+                if (line.length() > 0
+                        && line.contains(csvSplitBy)) {
+                    tempList.add(line);
+                }
+            }
+        } catch (IOException ioEx) {
+            System.out.printf("Error reading in CSV file...(%s)%n", file);
+            System.exit(1);
+        }
+        return tempList;
+    }
+
+    /**
+     * Gets content as a list of Stings.
+     *
+     * @return List of Strings.
+     */
+    public final List<String> getContent() {
+        return Collections.unmodifiableList(content);
     }
 }

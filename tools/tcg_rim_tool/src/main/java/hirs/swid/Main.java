@@ -1,9 +1,9 @@
 package hirs.swid;
 
+import com.beust.jcommander.JCommander;
 import hirs.swid.utils.Commander;
 import hirs.swid.utils.TimestampArgumentValidator;
 import hirs.utils.rim.ReferenceManifestValidator;
-import com.beust.jcommander.JCommander;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.File;
@@ -13,12 +13,14 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 @Log4j2
 public class Main {
 
     /**
      * Processes tcg_rim_tool commands.
-     * @param args
+     *
+     * @param args args
      */
     public static void main(final String[] args) {
         Commander commander = new Commander();
@@ -69,7 +71,7 @@ public class Main {
             } else {
                 gateway = new SwidTagGateway();
                 if (commander.isVerbose()) {
-                    System.out.println(commander.toString());
+                    System.out.println(commander);
                 }
                 String createType = commander.getCreateType().toUpperCase();
                 String attributesFile = commander.getAttributesFile();
@@ -116,6 +118,7 @@ public class Main {
 
     /**
      * Use cases that exit with an error code are redirected here.
+     *
      * @param errorMessage
      */
     private static void exitWithErrorCode(final String errorMessage) {
