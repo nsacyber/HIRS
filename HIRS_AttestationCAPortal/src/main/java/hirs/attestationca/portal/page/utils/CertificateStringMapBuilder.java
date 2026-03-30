@@ -654,8 +654,7 @@ public final class CertificateStringMapBuilder {
             key = Character.toUpperCase(key.charAt(0)) + key.substring(1);
 
             // Handle nested object recursively if it contains braces or parentheses
-            if ((value.contains("{") && value.contains("}")) ||
-                    (value.contains("(") && value.contains(")"))) {
+            if ((value.contains("{") && value.contains("}")) || (value.contains("(") && value.contains(")"))) {
                 HashMap<String, String> nestedMap = convertStringToHash(value);
                 // Prefix nested keys with parent key
                 map.putAll(nestedMap);

@@ -8,7 +8,6 @@ import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
-import hirs.attestationca.persist.entity.manager.SupplyChainValidationRepository;
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
@@ -69,7 +68,6 @@ public class SupplyChainValidationService {
      * @param componentResultRepository              the comp result manager
      * @param componentAttributeRepository           component attribute repository
      * @param referenceManifestRepository            the RIM manager
-     * @param supplyChainValidationRepository        the scv manager
      * @param supplyChainValidationSummaryRepository the summary manager
      * @param referenceDigestValueRepository         the even manager
      */
@@ -81,7 +79,6 @@ public class SupplyChainValidationService {
             final ComponentResultRepository componentResultRepository,
             final ComponentAttributeRepository componentAttributeRepository,
             final ReferenceManifestRepository referenceManifestRepository,
-            final SupplyChainValidationRepository supplyChainValidationRepository,
             final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository,
             final ReferenceDigestValueRepository referenceDigestValueRepository) {
         this.caCredentialRepository = caCredentialRepository;

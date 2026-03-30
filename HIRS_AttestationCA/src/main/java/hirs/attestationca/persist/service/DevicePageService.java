@@ -70,7 +70,7 @@ public class DevicePageService {
 
     /**
      * Takes the provided column names, the search term that the user entered and attempts to find
-     * devices whose field values matches the provided search term.
+     * {@link Device} objects whose field values matches the provided search term.
      *
      * @param searchableColumnNames list of the searchable column name
      * @param globalSearchTerm      text that was input in the global search textbox
@@ -109,7 +109,7 @@ public class DevicePageService {
 
     /**
      * Takes the provided columns that come with a search criteria and attempts to find
-     * devices that match the column's specific search criteria's search value.
+     * {@link Device} objects that match the column's specific search criteria's search value.
      *
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param pageable                  pageable
@@ -145,7 +145,7 @@ public class DevicePageService {
 
 
     /**
-     * Finds devices based on both global search and column-specific search criteria.
+     * Finds {@link Device} objects based on both global search and column-specific search criteria.
      * The method applies the provided global search term across all searchable columns
      * and also applies column-specific filters based on the individual column search criteria.
      * The results are returned with pagination support.
@@ -161,7 +161,7 @@ public class DevicePageService {
      * @param globalSearchTerm          The term that the user enters in the global search box.
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param pageable                  pageable
-     * @return A Page containing a list of devices that match both the global search term and
+     * @return A Page containing a list of {@link Device} objects that match both the global search term and
      * the column-specific search criteria.
      */
     public Page<Device> findDevicesByGlobalAndColumnSpecificSearchTerm(
@@ -202,28 +202,28 @@ public class DevicePageService {
 
 
     /**
-     * Retrieves all devices from the database.
+     * Retrieves all {@link Device} objects from the database.
      *
      * @param pageable pageable
-     * @return a page of all devices
+     * @return a page of all {@link Device} objects
      */
     public Page<Device> findAllDevices(final Pageable pageable) {
         return deviceRepository.findAll(pageable);
     }
 
     /**
-     * Retrieves the total number of records in the device repository.
+     * Retrieves the total number of records stored in the {@link DeviceRepository}.
      *
-     * @return total number of records in the device repository.
+     * @return total number of records stored in the {@link DeviceRepository}
      */
     public long findDeviceRepositoryCount() {
         return deviceRepository.count();
     }
 
     /**
-     * Returns the list of devices associated with the platform and endorsement certificates.
+     * Returns the list of {@link Device} objects associated with the platform and endorsement certificates.
      *
-     * @param deviceList list containing the devices
+     * @param deviceList list containing the {@link Device} objects
      * @return a record list after the device and certificate was mapped together.
      */
     public FilteredRecordsList<HashMap<String, Object>> retrieveDevicesAndAssociatedCertificates(

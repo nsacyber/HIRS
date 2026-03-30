@@ -77,7 +77,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-ec-validation")
@@ -124,7 +124,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-pc-validation")
@@ -170,7 +170,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-pc-attribute-validation")
@@ -220,7 +220,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-revision-ignore")
@@ -269,7 +269,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-pcie-vpd-ignore")
@@ -317,7 +317,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-firmware-validation")
@@ -364,7 +364,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-ima-ignore")
@@ -410,7 +410,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-tboot-ignore")
@@ -457,7 +457,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-gpt-ignore")
@@ -503,7 +503,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-os-events-ignore")
@@ -548,7 +548,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-issued-attestation-generation")
@@ -585,7 +585,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-attestation-certificate-expiration")
@@ -637,7 +637,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-issued-cert-threshold")
@@ -688,7 +688,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-issued-ldevid-generation")
@@ -726,7 +726,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-ldevid-certificate-expiration")
@@ -778,7 +778,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      *
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the Policy Settings page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-ldevid-threshold")
@@ -830,7 +830,7 @@ public class PolicyPageController extends PageController<NoPageParams> {
      * @param ppModel            The data posted by the form mapped into an object.
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return View containing the url and parameters
+     * @return a redirect to the Policy Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("update-save-protobuf-data-to-log")

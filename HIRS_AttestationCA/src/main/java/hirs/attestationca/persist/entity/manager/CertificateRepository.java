@@ -26,49 +26,49 @@ import java.util.UUID;
 public interface CertificateRepository extends JpaRepository<Certificate, UUID> {
 
     /**
-     * Query that retrieves a certificate using the provided uuid.
+     * Query that retrieves a {@link Certificate} object using the provided uuid.
      *
      * @param uuid uuid
-     * @return a certificate
+     * @return a {@link Certificate} object
      */
     @Query(value = "SELECT * FROM Certificate where id = ?1", nativeQuery = true)
     Certificate getCertificate(UUID uuid);
 
     /**
-     * Query that retrieves a list of certificates using the provided subject and dtype.
+     * Query that retrieves a list of {@link Certificate} objects using the provided subject and dtype.
      *
      * @param subject subject
      * @param dType   dtype
-     * @return a list of certificates
+     * @return a list of {@link Certificate} objects
      */
     @Query(value = "SELECT * FROM Certificate where subject = ?1 AND DTYPE = ?2", nativeQuery = true)
     List<Certificate> findBySubject(String subject, String dType);
 
     /**
-     * Query that retrieves a sorted list of certificates using the provided subject and dtype.
+     * Query that retrieves a sorted list of {@link Certificate} objects using the provided subject and dtype.
      *
      * @param subjectSorted subject
      * @param dType         dtype
-     * @return a list of sorted certificates
+     * @return a list of sorted {@link Certificate} objects
      */
     @Query(value = "SELECT * FROM Certificate where subjectSorted = ?1 AND  DTYPE = ?2", nativeQuery = true)
     List<Certificate> findBySubjectSorted(String subjectSorted, String dType);
 
     /**
-     * Query that retrieves a list of certificates using the provided dtype.
+     * Query that retrieves a list of {@link Certificate} objects using the provided dtype.
      *
      * @param dType dtype
-     * @return a list of certificates
+     * @return a list of {@link Certificate} objects
      */
     @Query(value = "SELECT * FROM Certificate where DTYPE = ?1", nativeQuery = true)
     List<Certificate> findByType(String dType);
 
     /**
-     * Query that retrieves a list of certificates using the provided serial number and dtype.
+     * Query that retrieves a list of {@link Certificate} objects using the provided serial number and dtype.
      *
      * @param serialNumber serial number
      * @param dType        dtype
-     * @return a certificate
+     * @return a {@link Certificate} object
      */
     @Query(value = "SELECT * FROM Certificate where serialNumber = ?1 AND DTYPE = ?2", nativeQuery = true)
     Certificate findBySerialNumber(BigInteger serialNumber, String dType);
@@ -107,11 +107,11 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
     List<PlatformCredential> getByHolderSerialNumber(BigInteger holderSerialNumber);
 
     /**
-     * Query that retrieves a certificate using the provided certificate hash and dtype.
+     * Query that retrieves a {@link Certificate} object using the provided certificate hash and dtype.
      *
      * @param certificateHash integer certificate hash
      * @param dType           dtype
-     * @return a certificate
+     * @return a {@link Certificate} object
      */
     @Query(value = "SELECT * FROM Certificate where certificateHash = ?1 AND DTYPE = ?2", nativeQuery = true)
     Certificate findByCertificateHashAndDType(int certificateHash, String dType);
@@ -125,29 +125,21 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
     EndorsementCredential findByPublicKeyModulusHexValue(String publicKeyModulusHexValue);
 
     /**
-     * Query that retrieves an issued attestation certificate using the provided device id.
-     *
-     * @param deviceId uuid representation of the device id
-     * @return an issued attestation certificate
-     */
-    IssuedAttestationCertificate findByDeviceId(UUID deviceId);
-
-    /**
-     * Query that retrieves a list of issued attestation certificates using the provided device id,
+     * Query that retrieves a list of  {@link IssuedAttestationCertificate} objects using the provided device id,
      * ldevID value and sort value.
      *
      * @param deviceId device id
      * @param ldevID   is it a LDevId
      * @param sort     sort
-     * @return a list of issued attestation certificates
+     * @return a list of {@link IssuedAttestationCertificate} objects
      */
     List<IssuedAttestationCertificate> findByDeviceIdAndLdevID(UUID deviceId, boolean ldevID, Sort sort);
 
     /**
-     * Query that retrieves a certificates using the provided certificate hash.
+     * Query that retrieves a {@link Certificate} object using the provided certificate hash.
      *
      * @param certificateHash integer certificate hash
-     * @return a certificate
+     * @return a {@link Certificate} object
      */
     Certificate findByCertificateHash(int certificateHash);
 }

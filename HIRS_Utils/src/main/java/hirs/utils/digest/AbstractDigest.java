@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
  */
 @Log4j2
 public abstract class AbstractDigest {
+
     /**
      * Length of MD2 digest.
      */
@@ -44,7 +45,7 @@ public abstract class AbstractDigest {
      * Length of SHA384 digest.
      */
     public static final int SHA384_DIGEST_LENGTH = 48;
-    
+
     /**
      * Length of SHA512 digest.
      */

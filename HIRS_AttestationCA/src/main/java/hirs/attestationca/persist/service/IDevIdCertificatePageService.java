@@ -24,7 +24,7 @@ public class IDevIdCertificatePageService {
     /**
      * Constructor for the IDevId Certificate Page Service.
      *
-     * @param iDevIDCertificateRepository idevid certificate repository
+     * @param iDevIDCertificateRepository IDevId Certificate Repository
      */
     @Autowired
     public IDevIdCertificatePageService(final IDevIDCertificateRepository iDevIDCertificateRepository) {
@@ -32,11 +32,11 @@ public class IDevIdCertificatePageService {
     }
 
     /**
-     * Retrieves a page of idevid certificates using the provided archive flag and pageable value.
+     * Retrieves a page of {@link IDevIDCertificate} objects using the provided archive flag and pageable value.
      *
      * @param archiveFlag archive flag
      * @param pageable    pageable
-     * @return page of idevid certificates
+     * @return page of {@link IDevIDCertificate} objects
      */
     public Page<IDevIDCertificate> findIDevCertificatesByArchiveFlag(final boolean archiveFlag,
                                                                      final Pageable pageable) {
@@ -44,20 +44,20 @@ public class IDevIdCertificatePageService {
     }
 
     /**
-     * Retrieves the total number of records in the idevid certificate repository.
+     * Retrieves the total number of records stored in the {@link IDevIDCertificateRepository}.
      *
-     * @return total number of records in the idevid certificate repository.
+     * @return total number of records stored in the {@link IDevIDCertificateRepository}.
      */
     public long findIDevIdCertificateRepositoryCount() {
         return iDevIDCertificateRepository.countByArchiveFlag(false);
     }
 
     /**
-     * Attempts to parse the provided file in order to create an IDevId Certificate.
+     * Attempts to parse the provided file in order to create an {@link IDevIDCertificate} object.
      *
      * @param file          file
      * @param errorMessages contains any error messages that will be displayed on the page
-     * @return IDevId certificate
+     * @return an {@link IDevIDCertificate} object
      */
     public IDevIDCertificate parseIDevIDCertificate(final MultipartFile file, final List<String> errorMessages) {
         log.info("Received IDevId certificate file of size: {}", file.getSize());

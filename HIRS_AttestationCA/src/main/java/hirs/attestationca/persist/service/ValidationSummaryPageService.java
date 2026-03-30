@@ -97,7 +97,7 @@ public class ValidationSummaryPageService {
 
     /**
      * Takes the provided column names, the search term that the user entered and attempts to find
-     * validation summaries whose field values matches the provided search term.
+     * {@link SupplyChainValidationSummary} objects whose field values matches the provided search term.
      *
      * @param searchableColumnNames list of the searchable column name
      * @param globalSearchTerm      text that was input in the global search textbox
@@ -144,7 +144,7 @@ public class ValidationSummaryPageService {
 
     /**
      * Takes the provided columns that come with a search criteria and attempts to find
-     * supply chain validation summary reports that match the column's specific search criteria's search
+     * {@link SupplyChainValidationSummary} objects that match the column's specific search criteria's search
      * value.
      *
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
@@ -187,7 +187,7 @@ public class ValidationSummaryPageService {
 
 
     /**
-     * Finds supply chain validation summaries based on both global search and
+     * Finds {@link SupplyChainValidationSummary} objects based on both global search and
      * column-specific search criteria.
      * The method applies the provided global search term across all searchable columns
      * and also applies column-specific filters based on the individual column search criteria.
@@ -263,9 +263,9 @@ public class ValidationSummaryPageService {
     }
 
     /**
-     * Retrieves the total number of records in the supply chain validation summary repository.
+     * Retrieves the total number of records stored in the {@link SupplyChainValidationSummaryRepository}.
      *
-     * @return total number of records in the supply chain validation summary repository
+     * @return total number of records stored in the {@link SupplyChainValidationSummaryRepository}
      */
     public long findValidationSummaryRepositoryCount() {
         return supplyChainValidationSummaryRepository.count();

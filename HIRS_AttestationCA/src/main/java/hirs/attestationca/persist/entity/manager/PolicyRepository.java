@@ -19,10 +19,10 @@ import java.util.UUID;
 public interface PolicyRepository extends JpaRepository<PolicySettings, UUID> {
 
     /**
-     * Query that retrieves policy settings using the provided name.
+     * Query that retrieves a {@link PolicySettings} object using the provided name.
      *
      * @param name name
-     * @return policy settings
+     * @return a {@link PolicySettings} object
      */
     PolicySettings findByName(String name);
 }
