@@ -1,7 +1,13 @@
 package hirs.attestationca.persist.entity.tpm;
 
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
+import hirs.attestationca.persist.provision.service.Tpm2ProvisionerStateService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -12,15 +18,43 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Contains unit tests for {@link TPM2ProvisionerState}.
+ * Contains unit tests for {@link TPM2ProvisionerState} and {@link Tpm2ProvisionerStateService}.
  */
-public class TPM2ProvisionerStateTest {
+public class TPM2ProvisionerStateServiceTest {
 
     private static final Random RANDOM_GENERATOR = new Random();
+
+    @InjectMocks
+    private Tpm2ProvisionerStateService tpm2ProvisionerStateService;
+
+    @Mock
+    private TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
+
+    private AutoCloseable mocks;
+
+    /**
+     * Setups configuration prior to each test method.
+     */
+    @BeforeEach
+    public void setupTests() {
+        // Initializes mocks before each test
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    /**
+     * Closes mocks after the completion of each test method.
+     *
+     * @throws Exception if any issues arise while closing mocks.
+     */
+    @AfterEach
+    public void afterEach() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
+    }
 
     /**
      * Tests that the values passed to the constructor are equal to the values
@@ -36,7 +70,7 @@ public class TPM2ProvisionerStateTest {
         RANDOM_GENERATOR.nextBytes(nonce);
         RANDOM_GENERATOR.nextBytes(identityClaim);
 
-        TPM2ProvisionerState state = new TPM2ProvisionerState(nonce, identityClaim);
+        final TPM2ProvisionerState state = new TPM2ProvisionerState(nonce, identityClaim);
 
         assertArrayEquals(nonce, state.getNonce());
         assertArrayEquals(identityClaim, state.getIdentityClaim());
@@ -46,7 +80,7 @@ public class TPM2ProvisionerStateTest {
      * Test that the constructor throws an {@link IllegalArgumentException} when a null is
      * passed in for the nonce.
      *
-     * @throws IllegalArgumentException this will never happen
+     * @throws IllegalArgumentException if any issues any arise while retrieving the TPM Provisioner State
      */
     @Test
     public final void testNullNonce() throws IllegalArgumentException {
@@ -54,15 +88,14 @@ public class TPM2ProvisionerStateTest {
         byte[] identityClaim = new byte[identityClaimSize];
 
         RANDOM_GENERATOR.nextBytes(identityClaim);
-        assertThrows(IllegalArgumentException.class, () ->
-                new TPM2ProvisionerState(null, identityClaim));
+        assertThrows(IllegalArgumentException.class, () -> new TPM2ProvisionerState(null, identityClaim));
     }
 
     /**
      * Test that the constructor throws an {@link IllegalArgumentException} when a null is
      * passed in for the identity claim.
      *
-     * @throws IllegalArgumentException this will never happen
+     * @throws IllegalArgumentException if any issues any arise while retrieving the TPM Provisioner State
      */
     @Test
     public final void testNullIdentityClaim() throws IllegalArgumentException {
@@ -71,15 +104,14 @@ public class TPM2ProvisionerStateTest {
 
         RANDOM_GENERATOR.nextBytes(nonce);
 
-        assertThrows(IllegalArgumentException.class, () ->
-                new TPM2ProvisionerState(nonce, null));
+        assertThrows(IllegalArgumentException.class, () -> new TPM2ProvisionerState(nonce, null));
     }
 
     /**
      * Test that the constructor throws an {@link IllegalArgumentException} when a nonce is
      * passed in that is less than 8 bytes.
      *
-     * @throws IllegalArgumentException this will never happen
+     * @throws IllegalArgumentException if any issues any arise while retrieving the TPM Provisioner State
      */
     @Test
     public final void testNonceToSmall() throws IllegalArgumentException {
@@ -90,23 +122,17 @@ public class TPM2ProvisionerStateTest {
 
         RANDOM_GENERATOR.nextBytes(nonce);
         RANDOM_GENERATOR.nextBytes(identityClaim);
-        assertThrows(IllegalArgumentException.class, () ->
-                new TPM2ProvisionerState(nonce, identityClaim));
+        assertThrows(IllegalArgumentException.class, () -> new TPM2ProvisionerState(nonce, identityClaim));
     }
 
-
     /**
-     * Test that {@link TPM2ProvisionerState#getTPM2ProvisionerState(
-     *TPM2ProvisionerStateRepository, byte[])} works.
-     * {@link TPM2ProvisionerState#getTPM2ProvisionerState(
-     *TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     * Test the {@link Tpm2ProvisionerStateService#getTPM2ProvisionerState(byte[])} function call.
      *
-     * @throws IOException this will never happen
+     * @throws IOException if any issues any arise while retrieving the TPM Provisioner State
      */
     @Test
     public final void testGetTPM2ProvisionerStateNominal() throws IOException {
-        TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository =
-                mock(TPM2ProvisionerStateRepository.class);
+
         final int nonceSize = 32;
         final int identityClaimSize = 360;
         byte[] nonce = new byte[nonceSize];
@@ -118,25 +144,23 @@ public class TPM2ProvisionerStateTest {
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(nonce));
         Long index = dis.readLong();
         dis.close();
-        TPM2ProvisionerState value = new TPM2ProvisionerState(nonce, identityClaim);
+
+        final TPM2ProvisionerState value = new TPM2ProvisionerState(nonce, identityClaim);
         when(tpm2ProvisionerStateRepository.findByFirstPartOfNonce(index)).thenReturn(value);
-        TPM2ProvisionerState tpm2ProvisionerState
-                = TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository, nonce);
+
+        final TPM2ProvisionerState tpm2ProvisionerState = tpm2ProvisionerStateService.getTPM2ProvisionerState(nonce);
         assertNotNull(tpm2ProvisionerState);
         assertArrayEquals(value.getIdentityClaim(), tpm2ProvisionerState.getIdentityClaim());
     }
 
     /**
      * Test that if a null is passed as a nonce to
-     * {@link TPM2ProvisionerState#getTPM2ProvisionerState(
-     *TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     * {@link Tpm2ProvisionerStateService#getTPM2ProvisionerState(byte[])}, null is returned.
      *
-     * @throws IOException this will never happen
+     * @throws IOException if any issues any arise while retrieving the TPM Provisioner State
      */
     @Test
     public final void testGetTPM2ProvisionerStateNullNonce() throws IOException {
-        TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository =
-                mock(TPM2ProvisionerStateRepository.class);
         final int nonceSize = 32;
         final int identityClaimSize = 360;
         byte[] nonce = new byte[nonceSize];
@@ -148,23 +172,21 @@ public class TPM2ProvisionerStateTest {
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(nonce));
         Long index = dis.readLong();
         dis.close();
-        TPM2ProvisionerState value = new TPM2ProvisionerState(nonce, identityClaim);
+
+        final TPM2ProvisionerState value = new TPM2ProvisionerState(nonce, identityClaim);
         when(tpm2ProvisionerStateRepository.findByFirstPartOfNonce(index)).thenReturn(value);
-        assertThrows(NullPointerException.class, () ->
-                TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository, null));
+
+        assertThrows(NullPointerException.class, () -> tpm2ProvisionerStateService.getTPM2ProvisionerState(null));
     }
 
     /**
      * Test that if a nonce that is less than 8 bytes is passed to
-     * {@link TPM2ProvisionerState#getTPM2ProvisionerState(
-     *TPM2ProvisionerStateRepository, byte[])}, null is returned.
+     * {@link Tpm2ProvisionerStateService#getTPM2ProvisionerState(byte[])}, null is returned.
      *
-     * @throws IOException this will never happen
+     * @throws IOException if any issues any arise while retrieving the TPM Provisioner State
      */
     @Test
     public final void testGetTPM2ProvisionerStateNonceTooSmall() throws IOException {
-        TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository =
-                mock(TPM2ProvisionerStateRepository.class);
         final int nonceSize = 32;
         final int identityClaimSize = 360;
         byte[] nonce = new byte[nonceSize];
@@ -177,14 +199,12 @@ public class TPM2ProvisionerStateTest {
         Long index = dis.readLong();
         dis.close();
 
-        TPM2ProvisionerState value = new TPM2ProvisionerState(nonce, identityClaim);
+        final int nonce2Size = 7;
+        final TPM2ProvisionerState value = new TPM2ProvisionerState(nonce, identityClaim);
 
         when(tpm2ProvisionerStateRepository.findByFirstPartOfNonce(index)).thenReturn(value);
-
-        final int nonce2Size = 7;
-        TPM2ProvisionerState tpm2ProvisionerState =
-                TPM2ProvisionerState.getTPM2ProvisionerState(tpm2ProvisionerStateRepository,
-                        new byte[nonce2Size]);
+        final TPM2ProvisionerState tpm2ProvisionerState =
+                tpm2ProvisionerStateService.getTPM2ProvisionerState(new byte[nonce2Size]);
 
         assertNull(tpm2ProvisionerState);
     }
