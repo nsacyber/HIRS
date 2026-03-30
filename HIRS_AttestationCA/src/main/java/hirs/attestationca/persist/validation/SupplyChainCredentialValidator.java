@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
+import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;

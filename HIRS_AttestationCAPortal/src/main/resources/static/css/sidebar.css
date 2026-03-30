@@ -9,7 +9,12 @@
   margin: 0; /* Remove margin from all sides */
   flex-direction: column; /* Stack items vertically */
   justify-content: flex-start; /* Ensure the first item is at the top */
-  width: 225px; /* fixed width for the sidebar */
+  width: 230px; /* fixed width for the sidebar */
+  flex: 0 0 230px;
+  position: sticky; /* keeps the sidebar visible as you scroll */
+  top: 0; /* sticks to the top of the viewport */
+  align-self: flex-start; /* ensures sticky works in flex layout */
+  min-height: 100vh;
 }
 
 #sidebar-navbar > ul > li > a {

@@ -1,15 +1,15 @@
 package hirs.attestationca.persist.service;
 
-import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.DeviceRepository;
 import hirs.attestationca.persist.entity.manager.EndorsementCertificateRepository;
 import hirs.attestationca.persist.entity.manager.IssuedCertificateRepository;
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
 import hirs.attestationca.persist.entity.userdefined.Device;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.service.util.PredicateFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;

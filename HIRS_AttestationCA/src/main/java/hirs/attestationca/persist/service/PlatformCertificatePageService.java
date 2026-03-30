@@ -82,7 +82,6 @@ public class PlatformCertificatePageService {
 
         byte[] fileBytes;
         final String fileName = file.getOriginalFilename();
-
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
@@ -92,7 +91,6 @@ public class PlatformCertificatePageService {
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
         }
-
         try {
             return new PlatformCredential(fileBytes);
         } catch (IOException ioEx) {

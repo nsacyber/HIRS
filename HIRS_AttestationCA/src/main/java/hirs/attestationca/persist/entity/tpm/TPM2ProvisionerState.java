@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.entity.tpm;
 
-import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -22,7 +21,11 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 public class TPM2ProvisionerState {
+
     private static final int MAX_BLOB_SIZE = 16777215;
+
+    @Column(nullable = false)
+    private final Date timestamp = new Date();
 
     @Id
     private Long firstPartOfNonce;
@@ -33,9 +36,6 @@ public class TPM2ProvisionerState {
     @Lob
     @Column(nullable = false, length = MAX_BLOB_SIZE)
     private byte[] identityClaim;
-
-    @Column(nullable = false)
-    private final Date timestamp = new Date();
 
     /**
      * Constructor.
@@ -67,34 +67,6 @@ public class TPM2ProvisionerState {
             // This would only happen if there were not enough bytes; that is handled above.
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Convenience method for finding the {@link TPM2ProvisionerState} associated with the nonce.
-     *
-     * @param tpm2ProvisionerStateRepository the {@link TPM2ProvisionerStateRepository}
-     *                                       to use when looking for the
-     *                                       {@link TPM2ProvisionerState}
-     * @param nonce                          the nonce to use as the key for the {@link TPM2ProvisionerState}
-     * @return the {@link TPM2ProvisionerState} associated with the nonce;
-     * null if a match is not found
-     */
-    public static TPM2ProvisionerState getTPM2ProvisionerState(
-            final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository,
-            final byte[] nonce) {
-        try (DataInputStream dis
-                     = new DataInputStream(new ByteArrayInputStream(nonce))) {
-            long firstPartOfNonce = dis.readLong();
-            TPM2ProvisionerState stateFound = tpm2ProvisionerStateRepository
-                    .findByFirstPartOfNonce(firstPartOfNonce);
-            if (stateFound != null && Arrays.areEqual(stateFound.getNonce(), nonce)) {
-                return stateFound;
-            }
-        } catch (IOException ioEx) {
-            log.error(ioEx.getMessage());
-            return null;
-        }
-        return null;
     }
 
     /**

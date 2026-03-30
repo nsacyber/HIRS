@@ -65,7 +65,6 @@ public class EndorsementCertificatePageService {
 
         byte[] fileBytes;
         final String fileName = file.getOriginalFilename();
-
         try {
             fileBytes = file.getBytes();
         } catch (IOException ioEx) {
@@ -75,7 +74,6 @@ public class EndorsementCertificatePageService {
             errorMessages.add(failMessage + ioEx.getMessage());
             return null;
         }
-
         try {
             return new EndorsementCredential(fileBytes);
         } catch (IOException ioEx) {

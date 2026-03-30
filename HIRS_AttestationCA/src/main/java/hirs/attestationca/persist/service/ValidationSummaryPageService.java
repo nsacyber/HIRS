@@ -1,11 +1,10 @@
 package hirs.attestationca.persist.service;
 
-
 import hirs.attestationca.persist.entity.manager.SupplyChainValidationSummaryRepository;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidation;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
 import hirs.attestationca.persist.service.util.PageServiceUtils;
 import hirs.attestationca.persist.service.util.PredicateFactory;
 import jakarta.persistence.EntityManager;

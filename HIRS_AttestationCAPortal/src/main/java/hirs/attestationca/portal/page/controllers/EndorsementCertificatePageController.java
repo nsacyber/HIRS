@@ -1,17 +1,16 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
+import hirs.attestationca.persist.entity.userdefined.DownloadFile;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.enums.CertificateType;
 import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.EndorsementCertificatePageService;
-import hirs.attestationca.persist.service.enums.CertificateType;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
-import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
@@ -185,7 +184,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
      *
      * @param files              the files to process
      * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
-     * @return redirect to the Endorsement Credentials page
+     * @return redirect to the Endorsement Certificates page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
@@ -223,7 +222,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
      *
      * @param id                 the UUID of the specified {@link EndorsementCredential} object to delete
      * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
-     * @return redirect to the Endorsement Credentials page
+     * @return redirect to the Endorsement Certificates page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")

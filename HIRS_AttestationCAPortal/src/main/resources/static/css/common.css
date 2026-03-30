@@ -16,7 +16,7 @@ hr {
   min-width: 600px;
 }
 
-#content {
+#layout {
   margin: 0;
   padding: 0;
   display: flex;
@@ -25,7 +25,7 @@ hr {
 
 .main-without-navigation,
 .main {
-  flex-grow: 1;
+  flex: 1;
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -64,7 +64,7 @@ hr {
   }
 }
 
-#content .page-header {
+#layout .page-header {
   text-align: center;
   margin: 25px 0;
 }
@@ -108,7 +108,7 @@ hr {
   cursor: pointer;
 }
 
-#content .modal-dialog {
+#layout .modal-dialog {
   width: 900px;
 }
 

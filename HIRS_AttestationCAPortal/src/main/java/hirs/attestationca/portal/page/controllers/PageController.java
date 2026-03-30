@@ -1,0 +1,155 @@
+package hirs.attestationca.portal.page.controllers;
+
+import hirs.attestationca.portal.page.Page;
+import hirs.attestationca.portal.page.params.PageParams;
+import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.apache.http.client.utils.URIBuilder;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
+
+import java.net.URISyntaxException;
+import java.util.Map;
+
+/**
+ * Abstract class to provide common functionality for page Controllers.
+ *
+ * @param <P> PageParams class used by the subclass.
+ */
+@Log4j2
+@AllArgsConstructor
+public abstract class PageController<P extends PageParams> {
+
+    /**
+     * Model attribute name used by initPage for the initial data passed to the page.
+     */
+    public static final String INITIAL_DATA = "initialData";
+
+    /**
+     * Reserved attribute used by layout.html to identify a page's general
+     * information.
+     */
+    public static final String PAGE_ATTRIBUTE = "page";
+
+    /**
+     * Reserved attribute used by layout.html to identify the page collection used
+     * for navigation.
+     */
+    public static final String PAGES_ATTRIBUTE = "pages";
+
+    /**
+     * Reserved attribute used by layout.html to identify the messages the page
+     * should display.
+     */
+    public static final String MESSAGES_ATTRIBUTE = "messages";
+
+    private final Page page;
+
+    /**
+     * Returns the path for the view and the data model for the page.
+     *
+     * @param params The object to map url parameters into.
+     * @param model  The data model for the request. Can contain data from
+     *               redirect.
+     * @return the path for the view and data model for the page.
+     */
+    @RequestMapping
+    public abstract ModelAndView initPage(@ModelAttribute P params, Model model);
+
+    /**
+     * Creates a generic ModelAndView containing this page's configuration and
+     * the list of other pages for navigational purposes.
+     *
+     * @return A generic ModelAndView containing basic information for the page.
+     */
+    protected final ModelAndView getBaseModelAndView() {
+        return getBaseModelAndView(page);
+    }
+
+    /**
+     * Creates a generic ModelAndView containing the specify page
+     * configuration and the list of other pages for navigational
+     * purposes.
+     *
+     * @param newPage new page to get the model and view
+     * @return A generic ModelAndView containing basic information for the page.
+     */
+    protected final ModelAndView getBaseModelAndView(final Page newPage) {
+        ModelMap modelMap = new ExtendedModelMap();
+
+        // add page information
+        modelMap.addAttribute(PAGE_ATTRIBUTE, newPage);
+
+        // add other pages for navigation
+        modelMap.addAttribute(PAGES_ATTRIBUTE, Page.values());
+
+        return new ModelAndView(newPage.getViewName(), modelMap);
+    }
+
+    /**
+     * Redirects back to this controller's page with the specified data.
+     *
+     * @param params The url parameters to pass to the page.
+     * @param model  The model data to pass to the page.
+     * @param attr   The request's RedirectAttributes to hold the model data.
+     * @return RedirectView back to the page with the specified parameters.
+     * @throws URISyntaxException if malformed URI
+     */
+    protected final RedirectView redirectToSelf(
+            final P params,
+            final Map<String, ?> model,
+            final RedirectAttributes attr) throws URISyntaxException {
+        return redirectTo(page, params, model, attr);
+    }
+
+    /**
+     * Redirects controller's page with the specified data.
+     *
+     * @param newPage            new page to get the model and view
+     * @param params             The url parameters to pass to the page.
+     * @param model              The model data to pass to the page.
+     * @param redirectAttributes The request's RedirectAttributes to hold the model data.
+     * @return RedirectView back to the page with the specified parameters.
+     * @throws URISyntaxException if malformed URI
+     */
+    protected final RedirectView redirectTo(
+            final Page newPage,
+            final P params,
+            final Map<String, ?> model,
+            final RedirectAttributes redirectAttributes) throws URISyntaxException {
+
+        final String defaultUri = "../" + newPage.getViewName();
+
+        // create uri with default uri
+        URIBuilder uri = new URIBuilder(defaultUri);
+        log.debug("Redirection URI = {}", uri.toString());
+
+        if (params != null) {
+            for (Map.Entry<String, ?> e : params.asMap().entrySet()) {
+                Object v = e.getValue();
+                uri.addParameter(e.getKey(), v.toString());
+            }
+        }
+
+        // create redirect view
+        RedirectView redirectView = new RedirectView(uri.toString());
+
+        // do not put model attributes in the url
+        redirectView.setExposeModelAttributes(false);
+
+        // add model data to forward to redirected page
+        if (model != null) {
+            for (Map.Entry<String, ?> e : model.entrySet()) {
+                redirectAttributes.addFlashAttribute(e.getKey(), e.getValue());
+            }
+        }
+
+        return redirectView;
+    }
+}
