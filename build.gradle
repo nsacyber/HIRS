@@ -68,6 +68,18 @@ subprojects {
 //        options.deprecation = true
 //    }
 
+    tasks.withType(Javadoc).configureEach {
+        if (project.name == 'HIRS_AttestationCA') {
+            // Remove the generated files from the source set
+            source = source.filter { file ->
+                !file.path.contains('build/generated/sources/proto/main/java')
+            }
+        }
+        
+        // Uncomment this line if you wish to see all the warning signs produced by the JavaDoc command
+        // options.addStringOption('Xmaxwarns', '0')
+    }
+
     tasks.withType(Checkstyle).configureEach {
         reports {
             xml.required = false

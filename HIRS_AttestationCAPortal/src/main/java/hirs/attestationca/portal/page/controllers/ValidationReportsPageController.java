@@ -116,6 +116,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * Processes the request to download a CSV file of all the {@link SupplyChainValidationSummary} objects.
      *
      * @param response http response
+     * @throws IOException if any issues arise from downloading the validation report.
      */
     @GetMapping("/download")
     public void downloadValidationReports(final HttpServletResponse response) throws IOException {
@@ -139,6 +140,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     /**
      * Helper method that retrieves a filtered and paginated list of {@link SupplyChainValidationSummary} objects
      * based on the provided search criteria.
+     * <p>
      * The method allows filtering based on a global search term and column-specific search criteria,
      * and returns the result in a paginated format.
      *
@@ -162,8 +164,8 @@ public class ValidationReportsPageController extends PageController<NoPageParams
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable
      * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
-     * endorsement credentials, along with the total number of records and the number of records matching the
-     * filter criteria.
+     * {@link SupplyChainValidationSummary} objects, along with the total number of records and the number of records
+     * matching the filter criteria.
      */
     private FilteredRecordsList<SupplyChainValidationSummary> getFilteredValidationSummaryList(
             final String globalSearchTerm,

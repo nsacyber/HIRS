@@ -17,9 +17,9 @@ import java.util.Date;
  * This class is for saving the Identity Claim and the Nonce between the two passes of the
  * TPM 2.0 Provisioner.
  */
-@Log4j2
-@NoArgsConstructor
 @Entity
+@NoArgsConstructor
+@Log4j2
 public class TPM2ProvisionerState {
 
     private static final int MAX_BLOB_SIZE = 16777215;

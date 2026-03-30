@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.exceptions;
 
 /**
- * Generic exception thrown when the Attestation Certificate Authority Service
+ * Generic exception thrown when processing the REST requests made by the provisioner
  * encounters an unexpected condition that can't be handled.
  */
 public class UnexpectedServerException extends RuntimeException {

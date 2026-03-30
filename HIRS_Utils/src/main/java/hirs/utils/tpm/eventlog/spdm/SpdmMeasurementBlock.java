@@ -8,14 +8,16 @@ import java.io.IOException;
 
 /**
  * Class to process the SpdmMeasurementBlock.
- * <p>
+ *
+ * <pre>
  * Measurement block format, defined by SPDM v1.03, Sect 10.11.1, Table 53:
  * Measurement block format {
  * Index                           1 byte;
  * MeasurementSpec                 1 byte;
  * MeasurementSize                 2 bytes;
- * Measurement                     <MeasurementSize> bytes;
+ * Measurement                     (MeasurementSize) bytes;
  * }
+ * </pre>
  * <p>
  * Index: index of the measurement block, as there can be more than one
  * MeasurementSpec: bit mask; the measurement specification that the requested Measurement follows
@@ -27,24 +29,27 @@ import java.io.IOException;
 public class SpdmMeasurementBlock {
 
     /**
-     * Measurement block index, as an SPDM measurement exchange can contain several measurements.
-     */
-    @Getter
-    private int index = 0;
-    /**
-     * Measurement Spec.
-     */
-    @Getter
-    private int measurementSpec = 0;
-    /**
      * SPDM Measurement.
      */
     private final SpdmMeasurement spdmMeasurement;
 
     /**
+     * Measurement block index, as an SPDM measurement exchange can contain several measurements.
+     */
+    @Getter
+    private int index = 0;
+
+    /**
+     * Measurement Spec.
+     */
+    @Getter
+    private int measurementSpec = 0;
+
+    /**
      * SpdmMeasurementBlock Constructor.
      *
      * @param spdmMeasBlocks byte array holding the SPDM Measurement Block bytes.
+     * @throws IOException if any issues arise creating the SPDM Measurement Block object.
      */
     public SpdmMeasurementBlock(final ByteArrayInputStream spdmMeasBlocks) throws IOException {
 

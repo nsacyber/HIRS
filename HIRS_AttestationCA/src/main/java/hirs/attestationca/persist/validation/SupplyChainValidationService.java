@@ -42,6 +42,9 @@ import java.util.UUID;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
+/**
+ * A service layer class responsible for validating the supply chain based on the policy settings.
+ */
 @Log4j2
 @Service
 public class SupplyChainValidationService {
@@ -98,6 +101,7 @@ public class SupplyChainValidationService {
      * @param device         The device to be validated.
      * @param componentInfos list of components from the device
      * @return A summary of the validation results.
+     * @throws IOException if any issues arise from validating the supply chain
      */
     public SupplyChainValidationSummary validateSupplyChain(final EndorsementCredential ec,
                                                             final List<PlatformCredential> pcs,
