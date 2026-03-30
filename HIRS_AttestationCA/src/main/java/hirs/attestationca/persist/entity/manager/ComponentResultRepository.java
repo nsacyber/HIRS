@@ -20,28 +20,30 @@ import java.util.UUID;
 public interface ComponentResultRepository extends JpaRepository<ComponentResult, UUID> {
 
     /**
-     * Query based on the device serial number.
+     * Query that retrieves a list of {@link ComponentResult} objects based on the device serial number.
      *
      * @param boardSerialNumber variable holding the device serial number
-     * @return a list of component result.
+     * @return a list of {@link ComponentResult} objects
      */
     List<ComponentResult> findByBoardSerialNumber(String boardSerialNumber);
 
     /**
-     * Query based on the device serial number.
+     * Query that retrieves a list of {@link ComponentResult} objects based on the device serial number and a boolean
+     * value.
      *
      * @param boardSerialNumber variable holding the device serial number
      * @param delta             flag indicating if the component is associated with a delta certificate
-     * @return a list of component result.
+     * @return a list of {@link ComponentResult} objects
      */
     List<ComponentResult> findByBoardSerialNumberAndDelta(String boardSerialNumber, boolean delta);
 
     /**
-     * Query based on certificate serial number and device serial number.
+     * Query that retrieves a list of {@link ComponentResult} objects based on certificate serial number
+     * and device serial number.
      *
      * @param certificateSerialNumber certificate specific serial number
      * @param boardSerialNumber       variable holding the device serial number
-     * @return a list of component result.
+     * @return a list of {@link ComponentResult} objects
      */
     List<ComponentResult> findByCertificateSerialNumberAndBoardSerialNumber(
             String certificateSerialNumber, String boardSerialNumber);

@@ -20,35 +20,35 @@ import java.util.UUID;
 public interface ReferenceDigestValueRepository extends JpaRepository<ReferenceDigestValue, UUID> {
 
     /**
-     * Query that retrieves a list of {@link ReferenceDigestValue} object using the provided associated rim id.
+     * Query that retrieves a list of {@link ReferenceDigestValue} objects using the provided associated rim id.
      *
      * @param associatedRimId uuid representation of the associated rim ID
-     * @return a list of {@link ReferenceDigestValue} object
+     * @return a list of {@link ReferenceDigestValue} objects
      */
     List<ReferenceDigestValue> findValuesByBaseRimId(UUID associatedRimId);
 
     /**
-     * Query that retrieves a list of {@link ReferenceDigestValue} object using the provided support rim id.
+     * Query that retrieves a list of {@link ReferenceDigestValue} objects using the provided support rim id.
      *
      * @param supportRimId uuid representation of the support rim ID
-     * @return a list of {@link ReferenceDigestValue} object
+     * @return a list of {@link ReferenceDigestValue} objects
      */
     List<ReferenceDigestValue> findBySupportRimId(UUID supportRimId);
 
     /**
-     * Query that retrieves a list of {@link ReferenceDigestValue} object using the provided support rim hash.
+     * Query that retrieves a list of {@link ReferenceDigestValue} objects using the provided support rim hash.
      *
      * @param supportRimHash a string representation of the support rim hash
-     * @return a list of {@link ReferenceDigestValue} object
+     * @return a list of {@link ReferenceDigestValue} objects
      */
     List<ReferenceDigestValue> findBySupportRimHash(String supportRimHash);
 
     /**
-     * Query that retrieves a list of {@link ReferenceDigestValue} object using the provided manufacturer and model.
+     * Query that retrieves a list of {@link ReferenceDigestValue} objects using the provided manufacturer and model.
      *
      * @param manufacturer string representation of the manufacturer
      * @param model        string representation of the model
-     * @return a list of {@link ReferenceDigestValue} object
+     * @return a list of {@link ReferenceDigestValue} objects
      */
     List<ReferenceDigestValue> findByManufacturerAndModel(String manufacturer, String model);
 }
