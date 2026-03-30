@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Service class responsible for processing the Provisioner's certificate request.
+ * Service class responsible for processing the Provisioner's Certificate Request.
  */
 @Service
 @Log4j2

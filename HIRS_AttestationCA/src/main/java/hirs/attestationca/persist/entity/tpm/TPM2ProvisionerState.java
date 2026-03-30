@@ -14,7 +14,8 @@ import java.io.IOException;
 import java.util.Date;
 
 /**
- * This class is for saving the Identity Claim and the Nonce between the two passes of the TPM 2.0 Provisioner.
+ * This class is for saving the Identity Claim and the Nonce between the two passes of the
+ * TPM 2.0 Provisioner.
  */
 @Entity
 @NoArgsConstructor
