@@ -64,7 +64,8 @@ public class CredentialParser {
 
     /**
      * Parses C.509 Certificates within a JKS Keystore.
-     * @param jksKeystore
+     *
+     * @param jksKeystore jks keystore
      */
     public void parseJKSCredentials(final String jksKeystore) {
         KeyStore.PrivateKeyEntry privateKeyEntry =
@@ -78,12 +79,12 @@ public class CredentialParser {
 
     /**
      * Parses PEM formatted X.509 Certificates.
-     * @param certificateFile
-     * @param privateKeyFile
-     * @throws Exception
+     *
+     * @param certificateFile certificate file
+     * @param privateKeyFile  private key file
+     * @throws Exception if any issues arise parsing the PEM credentials
      */
-    public void parsePEMCredentials(final String certificateFile, final String privateKeyFile)
-            throws Exception {
+    public void parsePEMCredentials(final String certificateFile, final String privateKeyFile) throws Exception {
         certificate = parsePEMCertificates(certificateFile).get(0);
         if (certificate.getIssuerX500Principal().equals(certificate.getSubjectX500Principal())) {
             throw new CertificateException("Signing certificate cannot be self-signed!");
@@ -118,12 +119,10 @@ public class CredentialParser {
     /**
      * This method returns the X509Certificate object from a PEM certificate file.
      *
-     * @param certificateFile
+     * @param certificateFile certificate file
      * @return list of x509 Certificates
-     * @throws FileNotFoundException
      */
-    public List<X509Certificate> parseCertsFromPEM(final String certificateFile)
-            throws FileNotFoundException {
+    public List<X509Certificate> parseCertsFromPEM(final String certificateFile) {
         return parsePEMCertificates(certificateFile);
     }
 
@@ -180,7 +179,7 @@ public class CredentialParser {
      * Algorithm argument is present to allow handling of multiple encryption algorithms,
      * but for now it is always RSA.
      *
-     * @param filename name of the file holding the key
+     * @param filename  name of the file holding the key
      * @param algorithm algorithm of the key
      * @return private key
      */
@@ -242,7 +241,7 @@ public class CredentialParser {
     /**
      * This method reads a PKCS1 keypair from a PEM file.
      *
-     * @param filename
+     * @param filename file name
      * @return a key pair
      */
     private KeyPair getPKCS1KeyPair(final String filename) throws IOException {
@@ -257,9 +256,9 @@ public class CredentialParser {
     /**
      * This method returns the private key from a JKS keystore.
      *
-     * @param keystoreFile
-     * @param alias
-     * @param password
+     * @param keystoreFile keystore file
+     * @param alias        alias
+     * @param password     password
      * @return KeyStore.PrivateKeyEntry
      */
     private KeyStore.PrivateKeyEntry parseKeystorePrivateKey(final String keystoreFile, final String alias,
@@ -285,7 +284,7 @@ public class CredentialParser {
      * This method returns the authorityInfoAccess from an X509Certificate.
      *
      * @return authority Info Access text
-     * @throws IOException
+     * @throws IOException if any issues arise from retrieving the certificate's authority info access
      */
     public String getCertificateAuthorityInfoAccess() throws IOException {
         StringBuilder sb = new StringBuilder("Authority Info Access:\n");
@@ -309,7 +308,7 @@ public class CredentialParser {
      * This method returns the subjectKeyIdentifier from the local X509Certificate.
      *
      * @return the String representation of the subjectKeyIdentifier
-     * @throws IOException
+     * @throws IOException if any issues arise from retrieving the certificate's subject key identifier
      */
     public String getCertificateSubjectKeyIdentifier() throws IOException {
         String decodedValue = null;
@@ -327,7 +326,7 @@ public class CredentialParser {
      *
      * @param certificate the cert to pull the subjectKeyIdentifier from
      * @return the String representation of the subjectKeyIdentifier
-     * @throws IOException
+     * @throws IOException if any issues arise from retrieving the certificate's subject key identifier
      */
     public String getCertificateSubjectKeyIdentifier(final X509Certificate certificate) throws IOException {
         String decodedValue = null;

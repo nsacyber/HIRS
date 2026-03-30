@@ -140,7 +140,8 @@ public final class CertificateStringMapBuilder {
                     if (publicKey != null) {
                         String keySizeStr;
                         if (publicKey instanceof ECPublicKey ecKey) {
-                            keySizeStr = Integer.toString(ecKey.getParams().getCurve().getField().getFieldSize());
+                            keySizeStr =
+                                    Integer.toString(ecKey.getParams().getCurve().getField().getFieldSize());
                         } else {
                             keySizeStr = String.valueOf(certificate.getPublicKeySize());
                         }
@@ -389,7 +390,8 @@ public final class CertificateStringMapBuilder {
             try {
                 certificate.parseCertificate();
             } catch (IOException e) {
-                throw new RuntimeException("Failed to re-parse Endorsement Credential for details display", e);
+                throw new RuntimeException("Failed to re-parse Endorsement Credential for details display",
+                        e);
             }
             // Add hashmap with TPM information if available
             if (certificate.getTpmSpecification() != null) {

@@ -17,6 +17,8 @@ import java.util.Map;
  */
 @Getter
 public class TcgCompRimCoswidConfig extends CoswidConfig {
+    private final String componentLocator = null;
+    private final String firmwareVersion = null;
     /*
      * Attributes from the TCG Component RIM Binding for SWID and CoSWID specification.
      * Not found in the CoSWID or SWID specifications.
@@ -28,8 +30,6 @@ public class TcgCompRimCoswidConfig extends CoswidConfig {
     private String persistentId = null;
     private String componentManufacturerStr = null;
     private String componentManufacturerID = null;
-    private String componentLocator = null;
-    private String firmwareVersion = null;
     private String supportRimType = null;
     private String supportRimFormat = null;
     private String supportRimUriGlobal = null;
@@ -43,9 +43,10 @@ public class TcgCompRimCoswidConfig extends CoswidConfig {
 
     /**
      * Constructor for the TCG Component Rim Coswid Config.
+     *
      * @param filename TcgComponentRimConfig config created from a json file.
      */
-    public TcgCompRimCoswidConfig(final String filename) throws IOException {
+    public TcgCompRimCoswidConfig(final String filename) {
         super();
         try {
             String errMsg = "";
@@ -109,7 +110,7 @@ public class TcgCompRimCoswidConfig extends CoswidConfig {
                     .path(TcgCompRimCoswid.CRIM_SPDM_MEASUREMENT_RAW_DATA_STR).asText();
         } catch (Exception e) {
             throw new RuntimeException("Error processing TCG Component RIM configuration file "
-                    + filename + ": "  + e.getMessage(), e);
+                    + filename + ": " + e.getMessage(), e);
         }
     }
 }

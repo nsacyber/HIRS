@@ -60,8 +60,8 @@ public class DevicePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Processes the request to retrieve a list of devices and device related information for display on the
-     * devices page.
+     * Processes the request to retrieve a list of {@link Device} and device related information for display on the
+     * Devices page.
      *
      * @param dataTableInput data table input.
      * @return data table of devices
@@ -117,29 +117,31 @@ public class DevicePageController extends PageController<NoPageParams> {
 
 
     /**
-     * Helper method that retrieves a filtered and paginated list of devices based on the provided search criteria.
+     * Helper method that retrieves a filtered and paginated list of {@link Device} objects based on the provided
+     * search criteria.
+     * <p>>
      * The method allows filtering based on a global search term and column-specific search criteria,
      * and returns the result in a paginated format.
-     *
      * <p>
      * The method handles four cases:
      * <ol>
      *     <li>If no global search term and no column-specific search criteria are provided,
-     *         all devices are returned.</li>
+     *         all {@link Device} objects are returned.</li>
      *     <li>If both a global search term and column-specific search criteria are provided,
-     *         it performs filtering on both.</li>
-     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
-     *         criteria.</li>
-     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     *         {@link Device} objects are filtered based on both criteria.</li>
+     *     <li>If only column-specific search criteria are provided, {@link Device} objects
+     *         are filtered according to the column-specific criteria.</li>
+     *     <li>If only a global search term is provided, {@link Device} objects
+     *         are filtered according to the global search term.</li>
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the devices by the
+     * @param globalSearchTerm          A global search term that will be used to filter the {@link Device} by the
      *                                  searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable
-     * @return A {@link FilteredRecordsList} containing the filtered and paginated list of devices,
+     * @return A {@link FilteredRecordsList} containing the filtered and paginated list of {@link Device} objects
      * along with the total number of records and the number of records matching the filter criteria.
      */
     private FilteredRecordsList<Device> getFilteredDeviceList(

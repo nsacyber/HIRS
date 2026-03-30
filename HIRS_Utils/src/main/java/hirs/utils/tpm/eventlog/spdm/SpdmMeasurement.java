@@ -5,14 +5,17 @@ import lombok.Getter;
 
 /**
  * Class to process the SpdmMeasurement.
- * <p>
+ *
+ * <pre>
  * Measurement, defined by SPDM v1.03, Sect 10.11.1, Table 54:
  * DMTF measurement spec format {
  * .     DMTFSpecMeasurementValueType    1 byte;
  * .     DMTFSpecMeasurementValueSize    2 bytes;
- * .     DMTFSpecMeasurementValue        <DMTFSpecMeasurementValueSize> bytes;
+ * .     DMTFSpecMeasurementValue        (DMTFSpecMeasurementValueSize) bytes;
  * }
- * <p>
+ * </pre>
+ *
+ * <pre>
  * DMTFSpecMeasurementValueType[7]
  * .     Indicates how bits [0:6] are represented
  * .     Bit = 0: Digest
@@ -23,7 +26,7 @@ import lombok.Getter;
  * .     Hardware configuration          0x2
  * .     Firmware configuration          0x3
  * .     etc.
- * <p>
+ * </pre>
  */
 public class SpdmMeasurement {
 
@@ -86,6 +89,7 @@ public class SpdmMeasurement {
      * Measurement value (digest).
      */
     private final byte[] dmtfSpecMeasurementValue;
+
     /**
      * Measurement value type (such as mutable firmware, etc).
      */

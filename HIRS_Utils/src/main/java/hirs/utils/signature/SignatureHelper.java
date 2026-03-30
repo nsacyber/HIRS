@@ -16,23 +16,26 @@ public final class SignatureHelper {
      */
     private SignatureHelper() {
     }
+
     /**
      * Extracts the SKID from an X.509 certificate.
      * The TCG PC Client RIM and TCG Component RIM defines the key identifier as the
      * Subject Key identifier (SKID) of the certificate to be used for verification.
      * SKID is usually  a hash of the public key.
+     *
      * @param signCert x.509 certificate
      * @return byte array holding the certificates SKID
      */
-    public static byte[]  getKidFromCert(final X509Certificate signCert) {
-        return  signCert.getExtensionValue("2.5.29.14");
+    public static byte[] getKidFromCert(final X509Certificate signCert) {
+        return signCert.getExtensionValue("2.5.29.14");
     }
 
     /**
      * Extracts the COSE defined algorithm identifier associated with a certificates signing algorithm.
+     *
      * @param signCert X.509 certificate to extract the algorithm identifier from
      * @return a COSE defined algorithm identifier
-     * @throws NoSuchAlgorithmException
+     * @throws NoSuchAlgorithmException if the specified algorithm is not available
      */
     public static int getCoseAlgFromCert(final X509Certificate signCert)
             throws NoSuchAlgorithmException {

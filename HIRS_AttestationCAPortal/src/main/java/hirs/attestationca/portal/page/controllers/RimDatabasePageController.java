@@ -28,7 +28,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.Set;
 
 /**
- * Controller for the TPM Events page.
+ * Controller for the RIM Database page.
  */
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-database")
@@ -61,8 +61,8 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Processes the request to retrieve a list of reference digest values for display
-     * on the rim database page.
+     * Processes the request to retrieve a list of {@link ReferenceDigestValue} objects for display
+     * on the RIM Database page.
      *
      * @param dataTableInput the data tables input
      * @return the data tables response, including the result set and paging
@@ -125,8 +125,9 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
     }
 
     /**
-     * Helper method that retrieves a filtered and paginated list of reference digest values based on the
-     * provided search criteria.
+     * Helper method that retrieves a filtered and paginated list of {@link ReferenceDigestValue} objects based on
+     * the provided search criteria.
+     * <p>
      * The method allows filtering based on a global search term and column-specific search criteria,
      * and returns the result in a paginated format.
      *
@@ -134,23 +135,24 @@ public class RimDatabasePageController extends PageController<NoPageParams> {
      * The method handles four cases:
      * <ol>
      *     <li>If no global search term and no column-specific search criteria are provided,
-     *         all reference digest values are returned.</li>
+     *         all {@link ReferenceDigestValue} objects are returned.</li>
      *     <li>If both a global search term and column-specific search criteria are provided,
-     *         it performs filtering on both.</li>
-     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
-     *         criteria.</li>
-     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     *         {@link ReferenceDigestValue} objects are filtered based on both criteria.</li>
+     *     <li>If only column-specific search criteria are provided, {@link ReferenceDigestValue} objects
+     *         are filtered according to the column-specific criteria.</li>
+     *     <li>If only a global search term is provided, {@link ReferenceDigestValue} objects
+     *         are filtered according to the global search term.</li>
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the endorsement
-     *                                  credentials by the searchable fields.
+     * @param globalSearchTerm          A global search term that will be used to filter the
+     *                                  {@link ReferenceDigestValue} objects by the searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable
      * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
-     * reference digest values , along with the total number of records and the number of records matching the
-     * filter criteria.
+     * {@link ReferenceDigestValue} objects , along with the total number of records and the number of records
+     * matching the filter criteria.
      */
     private FilteredRecordsList<ReferenceDigestValue> getFilteredRDVList(
             final String globalSearchTerm,

@@ -5,13 +5,13 @@ import lombok.Getter;
 /**
  * Class to process DEVICE_SECURITY_EVENT_DATA2.
  * Parses event data per PFP v1.06 Rev52 Table 26.
- * <p>
+ * <pre>
  * typedef struct tdDEVICE_SECURITY_EVENT_DATA2 {
  * .    DEVICE_SECURITY_EVENT_DATA_HEADER2           EventDataHeader;
  * .    DEVICE_SECURITY_EVENT_DATA_SUB_HEADER        EventDataSubHeader;
  * .    DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT    DeviceContext;
  * } DEVICE_SECURITY_EVENT_DATA2;
- * <p>
+ * </pre>
  */
 public class DeviceSecurityEventData2 extends DeviceSecurityEvent {
 

@@ -2,9 +2,9 @@ package hirs.swid.utils;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.File;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * This class validates arguments that take a String path to a file.
@@ -15,9 +15,10 @@ import lombok.extern.log4j.Log4j2;
 public class FileArgumentValidator implements IParameterValidator {
     /**
      * Validates file arguments.
-     * @param name
-     * @param value
-     * @throws ParameterException
+     *
+     * @param name  name
+     * @param value value
+     * @throws ParameterException if any issues arise from validating the file arguments
      */
     public void validate(final String name, final String value) throws ParameterException {
         try {

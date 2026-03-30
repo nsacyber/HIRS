@@ -62,10 +62,12 @@ public class TransformsType {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link TransformType }
+     *
+     * @return list of transform types
      */
     public List<TransformType> getTransform() {
         if (transform == null) {
-            transform = new ArrayList<TransformType>();
+            transform = new ArrayList<>();
         }
         return this.transform;
     }

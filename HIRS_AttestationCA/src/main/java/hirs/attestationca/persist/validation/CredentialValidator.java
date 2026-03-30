@@ -28,6 +28,9 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.ERROR;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.FAIL;
 import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 
+/**
+ * Validator class responsible for validating certificates.
+ */
 @Log4j2
 public class CredentialValidator extends SupplyChainCredentialValidator {
 
@@ -177,6 +180,7 @@ public class CredentialValidator extends SupplyChainCredentialValidator {
      * @param ignoreRevisionAttribute      policy flag to ignore the revision attribute
      * @param ignorePcieVpdAttribute       policy flag to ignore the pcie vpd attribute
      * @return The result of the validation.
+     * @throws IOException if any issues arise while validating platform credential attributes
      */
     public static AppraisalStatus validatePlatformCredentialAttributes(
             final PlatformCredential platformCredential,
