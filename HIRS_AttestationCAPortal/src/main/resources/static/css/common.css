@@ -69,14 +69,14 @@ hr {
   margin: 25px 0;
 }
 
-/* not in bootstrap.css */
-.btn-secondary {
+/* Override default datatable buttons colors and behavior*/
+.aca-data-table .btn-secondary {
   color: #292b2c;
   background-color: #fff;
   border-color: #ccc !important;
 }
 
-.btn-secondary:hover {
+.aca-data-table .btn-secondary:hover {
   background-color: #ddd;
 }
 

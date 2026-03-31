@@ -115,7 +115,7 @@
         <div class="download-upload-section">
             <!-- View application's Trust Chain Certs Details Button -->
             <th:block
-                th:replace="~{fragments/details-viewer :: detailsViewer(id='aca-cert-viewer',
+                th:replace="~{fragments/details-viewer :: detailsViewer(id='aca-cert-viewer', buttonText='View ACA Trust Certificates', toolTipText='Open modal to view the ACA Trust Certificates details',
                 label='ACA Trust Chain Certificates', customButtons=${null}, bodyContent=~{this :: aca-cert-viewer-modal})}">
                 <!-- aca-cert-viewer-modal start -->
                 <th:block th:fragment="aca-cert-viewer-modal">
@@ -342,20 +342,11 @@
         </div>
 
         <div class="download-upload-section">
-            <!-- Download ACA Trust Chain Certs button -->
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download-aca-cert-chain}"
-                class="btn btn-primary"
-                title="Click here to download a ZIP file of the application's Trust Chain Certificates"
-                data-bs-toggle="tooltip">
-                <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
-                Download ACA's Trust Chain Certificates
-            </a>
-
             <!-- Upload Trust Chain Certs button -->
             <form enctype="multipart/form-data" method="POST"
                 th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload}">
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='tc-editor', label='Upload Trust Chain Certificates', bodyContent=~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='tc-editor', buttonText='Trust Certificates',  toolTipText='Open modal to upload Trust Certificates', label='Upload Trust Chain Certificates', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
@@ -363,11 +354,19 @@
             </form>
 
             <!-- Download Trust Chain Certs button -->
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-download}"
-                class="btn btn-primary" title="Click here to download a ZIP file of all stored Trust Chain Certificates"
-                data-bs-toggle="tooltip">
-                <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
-                Download Trust Chain Certificates
+            <a class="btn btn-secondary" data-bs-toggle="tooltip"
+                th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-download}"
+                title="Download ZIP file of all stored Trust Chain Certificates">
+                <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+                Trust Certificates
+            </a>
+
+            <!-- Download ACA Trust Chain Certs button -->
+            <a class="btn btn-secondary" data-bs-toggle="tooltip"
+                th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download-aca-cert-chain}"
+                title="Download ZIP file of the application's Trust Chain Certificates">
+                <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+                ACA Trust Certificates
             </a>
         </div>
 

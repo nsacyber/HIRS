@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{layout}">
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <section layout:fragment="script">
@@ -144,16 +144,16 @@
   <div layout:fragment="content">
     <!-- Download Issued Certificates Button -->
     <div class="download-upload-section">
-      <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}"
-        class="btn btn-primary" title="Click here to download a ZIP file of all Issued Certificates"
-        data-bs-toggle="tooltip">
-        <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
-        Download Issued Certificates
+      <a class="btn btn-secondary" data-bs-toggle="tooltip"
+        th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}"
+        title="Download ZIP file of all Issued Certificates">
+        <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+        Issued Certificates
       </a>
     </div>
 
     <div class="aca-data-table">
-      <table id="issuedTable" class="table table-bordered table-striped table-hover">
+      <table class="table table-bordered table-striped table-hover" id="issuedTable">
         <thead>
           <tr>
             <th rowspan="2"></th>
@@ -162,7 +162,7 @@
             <th rowspan="2">Issuer</th>
             <th rowspan="2">Valid (begin)</th>
             <th rowspan="2">Valid (end)</th>
-            <th colspan="2" class="text-center">Certificates</th>
+            <th class="text-center" colspan="2">Certificates</th>
             <th rowspan="2">Options</th>
           </tr>
           <tr>
@@ -176,7 +176,7 @@
     <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/delete}">
       <div
-        th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Issued Certificate', 
+        th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Issued Certificate',
                 bodyContent=~{this::#deleteIssuedCertConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})}">
 
         <!-- Modal Body Content -->
@@ -187,10 +187,10 @@
 
         <!-- Define custom footer buttons here -->
         <div id="deleteConfirmationFooterButtons">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
           <!-- The issued certificate ID is stored in this hidden field -->
-          <input type="hidden" name="id" id="issuedCertToDeleteId" value="">
-          <button type="submit" class="btn btn-danger">Delete Issued Certificate</button>
+          <input id="issuedCertToDeleteId" name="id" type="hidden" value="">
+          <button class="btn btn-danger" type="submit">Delete Issued Certificate</button>
         </div>
       </div>
     </form>
@@ -199,7 +199,7 @@
     <form method="POST"
       th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-delete}">
       <div
-        th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Issued Certificates', 
+        th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Issued Certificates',
                 bodyContent=~{this::#deleteMultipleIssuedCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})}">
 
         <!-- Modal Body Content -->

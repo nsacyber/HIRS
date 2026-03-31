@@ -24,7 +24,7 @@ public enum Page {
     /**
      * Page to display and manage endorsement key certificates.
      */
-    ENDORSEMENT_KEY_CERTIFICATES("Endorsement Key Certificates", "ic_vpn_key_white_24dp.png",
+    ENDORSEMENT_KEY_CERTIFICATES("Endorsement Key Certificates", "/svg/key-fill-white-30dp.svg",
             "first", "certificate-request/"),
 
     /**
@@ -74,12 +74,12 @@ public enum Page {
     /**
      * Page to display RIM event digest table.
      */
-    RIM_DATABASE("RIM Database", "ic_important_devices_white_24dp.png", "first"),
+    RIM_DATABASE("RIM Database", "/svg/database-white-24dp.svg", "first"),
 
     /**
      * Page that manages Attestation CA Policy.
      */
-    POLICY("Policy", "ic_subtitles_white_24dp.png"),
+    POLICY("Policy Settings", "/svg/gear-fill-white-24dp.svg"),
 
     /**
      * Help page.

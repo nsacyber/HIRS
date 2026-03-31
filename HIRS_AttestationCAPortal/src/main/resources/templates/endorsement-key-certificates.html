@@ -123,7 +123,7 @@
             <form enctype="multipart/form-data" method="POST"
                 th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/upload}">
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='ek-editor', label='Upload Endorsement Certificates',bodyContent= ~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='ek-editor', buttonText='Endorsement Certificates', toolTipText='Open modal to upload Endorsement Certificates', label='Upload Endorsement Certificates',bodyContent= ~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
@@ -132,11 +132,11 @@
             </form>
 
             <!--Download Endorsement Certificates Button-->
-            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/bulk-download}"
-                class="btn btn-primary" title="Click here to download a ZIP file of all Endorsement Certificates"
-                data-bs-toggle="tooltip">
-                <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
-                Download Endorsement Certificates
+            <a class="btn btn-secondary" data-bs-toggle="tooltip"
+                th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates/bulk-download}"
+                title="Download ZIP file of all Endorsement Certificates">
+                <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+                Endorsement Certificates
             </a>
         </div>
 

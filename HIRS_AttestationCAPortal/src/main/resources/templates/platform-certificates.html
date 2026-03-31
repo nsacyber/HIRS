@@ -155,6 +155,8 @@
         th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/upload}">
         <th:block th:replace="~{fragments/file-chooser
                 :: fileChooser(id='platformCertificateEditor',
+                buttonText='Platform Certificates',
+                toolTipText='Open modal to upload Platform Certificates',
                 label='Upload Platform Certificates',
                 bodyContent=~{this :: bodyContent})}">
           <th:block th:fragment="bodyContent">
@@ -164,11 +166,11 @@
       </form>
 
       <!--Download Platform Certificates Button-->
-      <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/bulk-download}"
-        class="btn btn-primary" title="Click here to download a ZIP file of all Platform Certificates"
-        data-bs-toggle="tooltip">
-        <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
-        Download Platform Certificates
+      <a class="btn btn-secondary" data-bs-toggle="tooltip"
+        th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/bulk-download}"
+        title="Download ZIP file of all Platform Certificates">
+        <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+        Platform Certificates
       </a>
     </div>
 

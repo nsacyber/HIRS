@@ -182,7 +182,7 @@ function setDataTables(viewName, id, url, columns, customConfig = {}) {
       selector: "td:first-child",
       headerCheckbox: "select-page",
     },
-    responsive: true,
+    scrollX: true,
     lengthMenu: [
       [10, 25, 50, 75, 100, 250, -1],
       [
@@ -303,7 +303,7 @@ function generateCertificateDetailsLink(
   let fullIconPath = "";
 
   if (isSameCertificatePage) {
-    fullIconPath = `${iconPath}/svg/info-circle-blue-fill-24dp.svg`;
+    fullIconPath = `${iconPath}/ic_assignment_black_24dp.png`;
   } else {
     switch (certificateType) {
       case "issued":
@@ -314,7 +314,7 @@ function generateCertificateDetailsLink(
         break;
       case "endorsement":
       case "idevid":
-        fullIconPath = `${iconPath}/svg/key-fill-24dp.svg`;
+        fullIconPath = `${iconPath}/svg/key-fill-30dp.svg`;
         break;
       default:
         fullIconPath = `${iconPath}/ic_default_black_24dp.png`;
@@ -371,7 +371,7 @@ function generateCertificateDetailsLink(
  */
 function generateRimDetailsLink(rimId) {
   const href = `rim-details?id=${rimId}`;
-  const fullIconPath = `${iconPath}/svg/info-circle-blue-fill-24dp.svg`;
+  const fullIconPath = `${iconPath}/ic_assignment_black_24dp.png`;
   const title = "View RIM Details";
 
   const generatedRimDetailsLink = `

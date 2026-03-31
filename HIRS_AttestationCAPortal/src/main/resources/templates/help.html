@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{layout}">
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <section layout:fragment="script">
@@ -138,18 +138,19 @@
 
     <hr />
 
-    <h2 class="text-center">Attestation Certificate Authority's Logger Management</h2>
+    <h2 class="text-center">ACA Logger Management</h2>
 
     <div class="download-upload-section">
-      <a th:href="@{/HIRS_AttestationCAPortal/portal/help/hirs-logs-download}" class="btn btn-primary"
-        title="Click here to download a ZIP file of the ACA's Log files" data-bs-toggle="tooltip">
-        <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
-        Download ACA's Log Files
+      <a class="btn btn-secondary" data-bs-toggle="tooltip"
+        th:href="@{/HIRS_AttestationCAPortal/portal/help/hirs-logs-download}"
+        title="Download ZIP file of the ACA Log files">
+        <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+        Download ACA Log Files
       </a>
     </div>
 
     <div class="aca-data-table">
-      <table id="loggersTable" class="table table-bordered table-striped table-hover">
+      <table class="table table-bordered table-striped table-hover" id="loggersTable">
         <thead>
           <tr>
             <th>Logger Name</th>
@@ -163,24 +164,24 @@
     <!-- This modal will be triggered when the user selects one of the four log level buttons on the log level change table -->
     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/help/setLogLevel}">
       <div
-        th:replace="~{fragments/modal :: modal(id='logLevelChangeConfirmationModal', label='Confirm Log Level Change', 
+        th:replace="~{fragments/modal :: modal(id='logLevelChangeConfirmationModal', label='Confirm Log Level Change',
                 bodyContent=~{this::#logLvlChangeConfirmationBody}, customFooterButtons=~{this::#logLvlChangeConfirmationFooterButtons})}">
 
         <!-- Modal Body Content -->
         <div id="logLvlChangeConfirmationBody">
-          <p class="text-center fs-5"> <strong>Are you sure you want to change the log level from <span
+          <p class="text-center fs-5"><strong>Are you sure you want to change the log level from <span
                 id="currentLogLevelText"></span> to <span id="newLogLevelText"></span>?</strong>
           </p>
         </div>
 
         <!-- Define custom footer buttons here -->
         <div id="logLvlChangeConfirmationFooterButtons">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
           <!-- The logger name, current log level and log level are stored in the hidden fields -->
-          <input type="hidden" name="currentLogLevel" id="currentLogLevel" value="">
-          <input type="hidden" name="loggerName" id="loggerName" value="">
-          <input type="hidden" name="logLevel" id="logLevel" value="">
-          <button type="submit" class="btn btn-primary">Change Log Level</button>
+          <input id="currentLogLevel" name="currentLogLevel" type="hidden" value="">
+          <input id="loggerName" name="loggerName" type="hidden" value="">
+          <input id="logLevel" name="logLevel" type="hidden" value="">
+          <button class="btn btn-primary" type="submit">Change Log Level</button>
         </div>
       </div>
     </form>

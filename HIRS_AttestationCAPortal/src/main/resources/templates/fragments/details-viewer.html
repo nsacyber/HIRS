@@ -1,8 +1,9 @@
-<th:block th:fragment="detailsViewer(id, label, customButtons, bodyContent)">
+<th:block th:fragment="detailsViewer(id, buttonText, toolTipText, label, customButtons, bodyContent)">
     <!-- Details viewer icon anchor -->
-    <a class="btn btn-primary text-decoration-none" th:href="'#' + ${id}" data-bs-toggle="modal">
-        <img th:src="@{/icons/svg/info-circle-white-24dp.svg}" class="icon-text-spacing" alt="Details Viewer Icon"
-            data-bs-toggle="tooltip" th:title="${label}" /> View [[${label}]] Details
+    <a class="btn btn-secondary text-decoration-none" th:href="'#' + ${id}" data-bs-toggle="modal"
+        th:title="${toolTipText}">
+        <img th:src="@{/icons/svg/info-circle-white-24dp.svg}" class="icon-text-spacing" alt="Details Viewer Icon" />
+        [[${buttonText}]]
     </a>
 
     <!-- Include modal-dialogue fragment -->
