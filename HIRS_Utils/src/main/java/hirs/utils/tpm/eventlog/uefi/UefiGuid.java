@@ -166,6 +166,7 @@ public class UefiGuid {
      * published that represent standards that one can find further
      * information on the configuration table being referenced.
      * Refer to section 4.6 of UEFI spec v 2.8, page 101.
+     * defaultValue – the value to be returned if the requested member is missing
      *
      * @param lookupValue specific value to look up
      * @return A String of major UUID parameters

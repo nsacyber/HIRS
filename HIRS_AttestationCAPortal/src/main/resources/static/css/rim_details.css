@@ -121,3 +121,7 @@
     width: 20rem;
     font-weight: bold;
 }
+
+.error-color {
+    background-color: #FF6164;
+}
