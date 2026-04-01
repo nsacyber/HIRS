@@ -12,35 +12,33 @@ import lombok.Getter;
 @Getter
 public enum CertificateType {
     /**
-     * Represents the request mapping path for the endpoints inside the Platform Credentials Page controller.
+     * Represents the request mapping path for the endpoints inside the Platform Certificates Page controller.
      */
-    PLATFORM_CREDENTIALS("platform-credentials", "PlatformCredential"),
+    PLATFORM_CERTIFICATE("platform-certificates", "PlatformCredential"),
 
     /**
      * Holds the request mapping path and certificate type for the endpoints inside the
-     * Endorsement Key Credentials Page controller.
+     * Endorsement Key Certificates Page controller.
      */
-    ENDORSEMENT_CREDENTIALS("endorsement-key-credentials",
-            "EndorsementCredential"),
+    ENDORSEMENT_CERTIFICATE("endorsement-key-certificates", "EndorsementCredential"),
 
     /**
      * Holds the request mapping path and certificate type for the endpoints inside the
      * IdevId Page controller.
      */
-    IDEVID_CERTIFICATES("idevid-certificates", "IDevIDCertificate"),
+    IDEVID_CERTIFICATE("idevid-certificates", "IDevIDCertificate"),
 
     /**
      * Holds the request mapping path and certificate type for the endpoints inside the
      * Issued Certificates Page controller.
      */
-    ISSUED_CERTIFICATES("issued-certificates",
-            "IssuedAttestationCertificate"),
+    ISSUED_CERTIFICATE("issued-certificates", "IssuedAttestationCertificate"),
 
     /**
      * Holds the request mapping path and certificate type for the endpoints
      * inside the Trust Chains Page controller.
      */
-    TRUST_CHAIN("trust-chain", "CertificateAuthorityCredential");
+    TRUST_CHAIN_CERTIFICATE("trust-chain", "CertificateAuthorityCredential");
 
     /**
      * The path that is used for that specific certificate's controller.

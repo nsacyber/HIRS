@@ -3,6 +3,7 @@
     xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <link rel="stylesheet" th:href="@{/css/trust-chain.css}" />
     <section layout:fragment="script">
         <script th:inline="javascript">
             $(document).ready(function () {
@@ -94,8 +95,8 @@
                         render: function (data, type, full, meta) {
                             let html = "";
                             html += generateCertificateDetailsLink(certificateType, data, true);
-                            html += generateCertificateDownloadLink(viewName, data);
-                            html += generateCertificateDeleteLink(data);
+                            html += generateCertificateDownloadLink(certificateType, viewName, data);
+                            html += generateCertificateDeleteLink(certificateType, data);
                             return html;
                         },
                     },
@@ -110,257 +111,264 @@
 <body>
     <h1 layout:fragment="pageHeaderTitle">Trust Chain Management</h1>
     <div layout:fragment="content">
-        <!-- Details icon and dialog for HIRS ACA Trust Chain Certificates -->
-        <span class="aca-input-box-header">HIRS Attestation Certificate Chain</span>
-        <th:block
-            th:replace="~{fragments/details-viewer :: detailsViewer(id='aca-cert-viewer',
-                label='HIRS Attestation Trust Chain Certificates', customButtons=${null}, bodyContent=~{this :: aca-cert-viewer-modal})}">
-            <!-- aca-cert-viewer-modal start -->
-            <th:block th:fragment="aca-cert-viewer-modal">
-                <div class="container">
-                    <div class="accordion" id="acaTrustChainCertAccordion">
 
-                        <!--Display Root ACA Certificate -->
-                        <div class="accordion-item border rounded mb-2 overflow-hidden">
-                            <h2 class="accordion-header" id="rootAccordionHeader">
-                                <button aria-controls="rootAccordionCollapse" aria-expanded="true"
-                                    class="accordion-button collapsed" data-bs-placement="top"
-                                    data-bs-target="#rootAccordionCollapse" data-bs-toggle="collapse" type="button">
-                                    Root ACA Trust Chain Certificate
-                                </button>
-                            </h2>
-                            <div aria-labelledby="rootAccordionHeader" class="accordion-collapse collapse"
-                                data-bs-parent="#acaTrustChainCertAccordion" id="rootAccordionCollapse">
-                                <div class="accordion-body">
-                                    <div class="container-fluid">
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Issuer</span>
-                                            </div>
-                                            <div class="col col-md-8" id="issuer">
-                                                <span th:text="${rootACACertData.issuer}"></span>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Subject</span>
-                                            </div>
-                                            <div class="col col-md-8" id="subject"><span
-                                                    th:text="${rootACACertData.subject}"></span></div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Serial Number</span>
-                                            </div>
-                                            <div class="col col-md-8" id="serialNumber">
-                                                <span th:text="${rootACACertData.serialNumber}"></span>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Validity</span>
-                                            </div>
-                                            <div class="col col-md-8" id="validity">
-                                                <div>
-                                                    Not Before:&nbsp;<span
-                                                        th:text="${rootACACertData.beginValidity}"></span>
+        <div class="download-upload-section">
+            <!-- View application's Trust Chain Certs Details Button -->
+            <th:block
+                th:replace="~{fragments/details-viewer :: detailsViewer(id='aca-cert-viewer', buttonText='View ACA Certificates', toolTipText='Open modal to view the ACA Trust Certificates details',
+                label='ACA Trust Chain Certificates', customButtons=${null}, bodyContent=~{this :: aca-cert-viewer-modal})}">
+                <!-- aca-cert-viewer-modal start -->
+                <th:block th:fragment="aca-cert-viewer-modal">
+                    <div class="container">
+                        <div class="accordion" id="acaTrustChainCertAccordion">
+
+                            <!--Display Root ACA Certificate -->
+                            <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                <h2 class="accordion-header" id="rootAccordionHeader">
+                                    <button aria-controls="rootAccordionCollapse" aria-expanded="true"
+                                        class="accordion-button collapsed" data-bs-placement="top"
+                                        data-bs-target="#rootAccordionCollapse" data-bs-toggle="collapse" type="button">
+                                        Root ACA Trust Chain Certificate
+                                    </button>
+                                </h2>
+                                <div aria-labelledby="rootAccordionHeader" class="accordion-collapse collapse"
+                                    data-bs-parent="#acaTrustChainCertAccordion" id="rootAccordionCollapse">
+                                    <div class="accordion-body">
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Issuer</span>
                                                 </div>
-                                                <div>Not After:&nbsp;<span
-                                                        th:text="${rootACACertData.endValidity}"></span>
+                                                <div class="col col-md-8" id="issuer">
+                                                    <span th:text="${rootACACertData.issuer}"></span>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Signature</span>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Subject</span>
+                                                </div>
+                                                <div class="col col-md-8" id="subject"><span
+                                                        th:text="${rootACACertData.subject}"></span></div>
                                             </div>
-                                            <div class="col col-md-8" id="rootACASignature"></div>
-                                            <span th:text="${rootACASignature}"></span>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Public Key</span>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Serial Number</span>
+                                                </div>
+                                                <div class="col col-md-8" id="serialNumber">
+                                                    <span th:text="${rootACACertData.serialNumber}"></span>
+                                                </div>
                                             </div>
-                                            <div class="col col-md-8" id="rootACAPublicKey"></div>
-                                            <span th:text="${rootACAPublicKey}"></span>
-                                        </div>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Validity</span>
+                                                </div>
+                                                <div class="col col-md-8" id="validity">
+                                                    <div>
+                                                        Not Before:&nbsp;<span
+                                                            th:text="${rootACACertData.beginValidity}"></span>
+                                                    </div>
+                                                    <div>Not After:&nbsp;<span
+                                                            th:text="${rootACACertData.endValidity}"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Signature</span>
+                                                </div>
+                                                <div class="col col-md-8" id="rootACASignature"></div>
+                                                <span th:text="${rootACASignature}"></span>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Public Key</span>
+                                                </div>
+                                                <div class="col col-md-8" id="rootACAPublicKey"></div>
+                                                <span th:text="${rootACAPublicKey}"></span>
+                                            </div>
 
-                                        <div class="spacer"></div>
+                                            <div class="spacer"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!--Display Intermediate ACA Certificate -->
-                        <div class="accordion-item border rounded mb-2 overflow-hidden">
-                            <h2 class="accordion-header" id="intermediateAccordionHeader">
-                                <button aria-controls="intermediateAccordionCollapse" aria-expanded="true"
-                                    class="accordion-button collapsed" data-bs-placement="top"
-                                    data-bs-target="#intermediateAccordionCollapse" data-bs-toggle="collapse"
-                                    type="button"> Intermediate ACA
-                                    Trust Chain Certificate
-                                </button>
-                            </h2>
-                            <div aria-labelledby="intermediateAccordionHeader" class="accordion-collapse collapse"
-                                data-bs-parent="#acaTrustChainCertAccordion" id="intermediateAccordionCollapse">
-                                <div class="accordion-body">
-                                    <div class="container-fluid">
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Issuer</span>
-                                            </div>
-                                            <div class="col col-md-8" id="issuer">
-                                                <span th:text="${intermediateACACertData.issuer}"></span>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Subject</span>
-                                            </div>
-                                            <div class="col col-md-8" id="subject"><span
-                                                    th:text="${intermediateACACertData.subject}"></span></div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Serial Number</span>
-                                            </div>
-                                            <div class="col col-md-8" id="serialNumber">
-                                                <span th:text="${intermediateACACertData.serialNumber}"></span>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Validity</span>
-                                            </div>
-                                            <div class="col col-md-8" id="validity">
-                                                <div>
-                                                    Not Before:&nbsp;<span
-                                                        th:text="${intermediateACACertData.beginValidity}"></span>
+                            <!--Display Intermediate ACA Certificate -->
+                            <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                <h2 class="accordion-header" id="intermediateAccordionHeader">
+                                    <button aria-controls="intermediateAccordionCollapse" aria-expanded="true"
+                                        class="accordion-button collapsed" data-bs-placement="top"
+                                        data-bs-target="#intermediateAccordionCollapse" data-bs-toggle="collapse"
+                                        type="button"> Intermediate ACA
+                                        Trust Chain Certificate
+                                    </button>
+                                </h2>
+                                <div aria-labelledby="intermediateAccordionHeader" class="accordion-collapse collapse"
+                                    data-bs-parent="#acaTrustChainCertAccordion" id="intermediateAccordionCollapse">
+                                    <div class="accordion-body">
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Issuer</span>
                                                 </div>
-                                                <div>Not After:&nbsp;<span
-                                                        th:text="${intermediateACACertData.endValidity}"></span>
+                                                <div class="col col-md-8" id="issuer">
+                                                    <span th:text="${intermediateACACertData.issuer}"></span>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Signature</span>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Subject</span>
+                                                </div>
+                                                <div class="col col-md-8" id="subject"><span
+                                                        th:text="${intermediateACACertData.subject}"></span></div>
                                             </div>
-                                            <div class="col col-md-8" id="intermediateACASignature"></div>
-                                            <span th:text="${intermediateACASignature}"></span>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Public Key</span>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Serial Number</span>
+                                                </div>
+                                                <div class="col col-md-8" id="serialNumber">
+                                                    <span th:text="${intermediateACACertData.serialNumber}"></span>
+                                                </div>
                                             </div>
-                                            <div class="col col-md-8" id="intermediateACAPublicKey"></div>
-                                            <span th:text="${intermediateACAPublicKey}"></span>
-                                        </div>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Validity</span>
+                                                </div>
+                                                <div class="col col-md-8" id="validity">
+                                                    <div>
+                                                        Not Before:&nbsp;<span
+                                                            th:text="${intermediateACACertData.beginValidity}"></span>
+                                                    </div>
+                                                    <div>Not After:&nbsp;<span
+                                                            th:text="${intermediateACACertData.endValidity}"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Signature</span>
+                                                </div>
+                                                <div class="col col-md-8" id="intermediateACASignature"></div>
+                                                <span th:text="${intermediateACASignature}"></span>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Public Key</span>
+                                                </div>
+                                                <div class="col col-md-8" id="intermediateACAPublicKey"></div>
+                                                <span th:text="${intermediateACAPublicKey}"></span>
+                                            </div>
 
-                                        <div class="spacer"></div>
+                                            <div class="spacer"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!--Display Leaf ACA Certificate -->
-                        <div class="accordion-item border rounded mb-2 overflow-hidden">
-                            <h2 class="accordion-header" id="leafAccordionHeader">
-                                <button aria-controls="leafAccordionCollapse" aria-expanded="true"
-                                    class="accordion-button collapsed" data-bs-placement="top"
-                                    data-bs-target="#leafAccordionCollapse" data-bs-toggle="collapse" type="button">
-                                    Leaf CA3 ACA Trust Chain Certificate
-                                </button>
-                            </h2>
-                            <div aria-labelledby="leafAccordionHeader" class="accordion-collapse collapse"
-                                data-bs-parent="#acaTrustChainCertAccordion" id="leafAccordionCollapse">
-                                <div class="accordion-body">
-                                    <div class="container-fluid">
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Issuer</span>
-                                            </div>
-                                            <div class="col col-md-8" id="issuer">
-                                                <span th:text="${leafACACertData.issuer}"></span>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Subject</span>
-                                            </div>
-                                            <div class="col col-md-8" id="subject"><span
-                                                    th:text="${leafACACertData.subject}"></span></div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Serial Number</span>
-                                            </div>
-                                            <div class="col col-md-8" id="serialNumber">
-                                                <span th:text="${leafACACertData.serialNumber}"></span>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Validity</span>
-                                            </div>
-                                            <div class="col col-md-8" id="validity">
-                                                <div>
-                                                    Not Before:&nbsp;<span
-                                                        th:text="${leafACACertData.beginValidity}"></span>
+                            <!--Display Leaf ACA Certificate -->
+                            <div class="accordion-item border rounded mb-2 overflow-hidden">
+                                <h2 class="accordion-header" id="leafAccordionHeader">
+                                    <button aria-controls="leafAccordionCollapse" aria-expanded="true"
+                                        class="accordion-button collapsed" data-bs-placement="top"
+                                        data-bs-target="#leafAccordionCollapse" data-bs-toggle="collapse" type="button">
+                                        Leaf CA3 ACA Trust Chain Certificate
+                                    </button>
+                                </h2>
+                                <div aria-labelledby="leafAccordionHeader" class="accordion-collapse collapse"
+                                    data-bs-parent="#acaTrustChainCertAccordion" id="leafAccordionCollapse">
+                                    <div class="accordion-body">
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Issuer</span>
                                                 </div>
-                                                <div>Not After:&nbsp;<span
-                                                        th:text="${leafACACertData.endValidity}"></span>
+                                                <div class="col col-md-8" id="issuer">
+                                                    <span th:text="${leafACACertData.issuer}"></span>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Signature</span>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Subject</span>
+                                                </div>
+                                                <div class="col col-md-8" id="subject"><span
+                                                        th:text="${leafACACertData.subject}"></span></div>
                                             </div>
-                                            <div class="col col-md-8" id="leafACASignature"></div>
-                                            <span th:text="${leafACASignature}"></span>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-2 col-md-offset-1">
-                                                <span class="colHeader">Public Key</span>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Serial Number</span>
+                                                </div>
+                                                <div class="col col-md-8" id="serialNumber">
+                                                    <span th:text="${leafACACertData.serialNumber}"></span>
+                                                </div>
                                             </div>
-                                            <div class="col col-md-8" id="leafACAPublicKey"></div>
-                                            <span th:text="${leafACAPublicKey}"></span>
-                                        </div>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Validity</span>
+                                                </div>
+                                                <div class="col col-md-8" id="validity">
+                                                    <div>
+                                                        Not Before:&nbsp;<span
+                                                            th:text="${leafACACertData.beginValidity}"></span>
+                                                    </div>
+                                                    <div>Not After:&nbsp;<span
+                                                            th:text="${leafACACertData.endValidity}"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Signature</span>
+                                                </div>
+                                                <div class="col col-md-8" id="leafACASignature"></div>
+                                                <span th:text="${leafACASignature}"></span>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-2 col-md-offset-1">
+                                                    <span class="colHeader">Public Key</span>
+                                                </div>
+                                                <div class="col col-md-8" id="leafACAPublicKey"></div>
+                                                <span th:text="${leafACAPublicKey}"></span>
+                                            </div>
 
-                                        <div class="spacer"></div>
+                                            <div class="spacer"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </th:block>
-        </th:block> <!-- aca-cert-viewer-modal end -->
+                </th:block>
+            </th:block> <!-- aca-cert-viewer-modal end -->
 
-        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download-aca-cert-chain}">
-            <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
-                title="Download ACA Certificate Chain">
-        </a>
+            <!-- Download ACA Trust Chain Certs button -->
+            <a class="btn btn-secondary" data-bs-toggle="tooltip"
+                th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/download-aca-cert-chain}"
+                title="Download ZIP file of the application's Trust Chain Certificates">
+                <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+                ACA Certificates
+            </a>
+        </div>
 
-        <div class="aca-input-box-header">
+        <div class="download-upload-section">
+            <!-- Upload Trust Chain Certs button -->
             <form enctype="multipart/form-data" method="POST"
                 th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload}">
-                Trust Chain CA Certificates
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='tc-editor', label='Import Trust Chain Certificates', bodyContent=~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='tc-editor', buttonText='Trusted Certificates',  toolTipText='Open modal to upload Trust Certificates', label='Upload Trust Chain Certificates', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
                 </th:block>
-                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-download}">
-                    <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
-                        title="Download All Trust Chain Certificates">
-                </a>
             </form>
-        </div>
 
-        <br>
+            <!-- Download Trust Chain Certs button -->
+            <a class="btn btn-secondary" data-bs-toggle="tooltip"
+                th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/bulk-download}"
+                title="Download ZIP file of all stored Trust Chain Certificates">
+                <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+                Trusted Certificates
+            </a>
+        </div>
 
         <div class="aca-data-table">
             <table class="table table-bordered table-striped table-hover" id="trustChainTable">

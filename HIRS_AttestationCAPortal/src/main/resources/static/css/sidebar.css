@@ -1,19 +1,26 @@
-/* General Transition for sidebar and main */
+/* Sidebar Styling */
 
-nav.sidebar {
+/* Sidebar */
+#sidebar-navbar {
+  width: 220px;
   background-color: darkslategray;
   color: white;
   display: flex;
-  border: 0; /* Remove border from all sides */
-  padding: 0; /* Remove padding from all sides */
-  margin: 0; /* Remove margin from all sides */
-  flex-direction: column; /* Stack items vertically */
-  justify-content: flex-start; /* Ensure the first item is at the top */
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Sidebar content sticks inside the sidebar */
+#sidebar-navbar > ul {
+  position: sticky;
+  top: 0; /* sticks to top of the nav container */
 }
 
 #sidebar-navbar > ul > li > a {
   text-align: start; /* Align text to the left */
-  padding: 12px; /* Add padding for better spacing */
+  padding: 10px; /* Add padding for better spacing */
 }
 
 #sidebar-navbar > ul li:first-child {
@@ -40,101 +47,4 @@ nav.sidebar {
 #sidebar-navbar > ul > li > a:hover span img,
 #sidebar-navbar .active > a > span > img {
   filter: brightness(0.25);
-}
-
-/* Collapsed menu styles for small screens */
-@media (max-width: 765px) {
-  .main {
-    height: calc(100% - 50px); /* Account for header height */
-  }
-
-  nav.sidebar {
-    background-color: #f8f8f8;
-    border-color: #e7e7e7;
-    border-width: 1px;
-    border-style: solid;
-  }
-
-  #sidebar-navbar > ul > li > a {
-    color: #777;
-    background-color: #f8f8f8;
-  }
-
-  #sidebar-navbar > ul > li:hover,
-  #sidebar-navbar > ul > li > a:hover,
-  #sidebar-navbar .active,
-  #sidebar-navbar .active > a {
-    background-color: #e7e7e7;
-    color: #555;
-  }
-
-  .spacer {
-    height: 50px;
-  }
-}
-
-/* Images and main content layout for medium to large screens */
-@media (min-width: 765px) {
-  .main {
-    width: calc(100% - 50px); /* Adjust main width */
-    margin-left: 50px; /* Space for sidebar */
-  }
-
-  nav.sidebar:hover + .main {
-    margin-left: 250px; /* Expand main content on hover */
-  }
-
-  nav.sidebar .navbar-brand,
-  nav.sidebar {
-    text-align: center;
-    width: 100%;
-    margin-left: 0;
-  }
-
-  nav.sidebar a {
-    padding-right: 13px;
-  }
-
-  nav.sidebar .navbar-nav .open .dropdown-menu {
-    width: auto;
-    margin-top: 0;
-    background-color: transparent;
-    border: 0;
-    box-shadow: none;
-  }
-
-  nav.sidebar .navbar-collapse,
-  nav.sidebar .container-fluid {
-    padding: 0;
-  }
-
-  nav.sidebar {
-    width: 250px;
-    height: 100%;
-    margin-left: -210px;
-    float: left;
-    margin-bottom: 0px;
-  }
-
-  nav.sidebar li {
-    width: 100%;
-  }
-
-  nav.sidebar:hover {
-    margin-left: 0px;
-  }
-}
-
-/* Extra-large screens (Desktop) */
-@media (min-width: 1330px) {
-  .main {
-    width: calc(100% - 250px); /* Adjust main content for wide screen */
-    margin-left: 250px;
-  }
-
-  nav.sidebar {
-    margin-left: 0;
-    margin-top: 0;
-    float: left;
-  }
 }

@@ -30,7 +30,7 @@ public class PolicyPageService {
     }
 
     /**
-     * Updates the Endorsement Credential validation policy according to user input.
+     * Updates the Endorsement Certificate Validation policy according to user input.
      *
      * @param isEcValidationOptionEnabled boolean value representation of the current policy option's state
      * @return true if the policy was updated successfully; otherwise, false.
@@ -40,7 +40,7 @@ public class PolicyPageService {
 
         if (!isPolicyValid(isEcValidationOptionEnabled, policySettings.isPcValidationEnabled(),
                 policySettings.isPcAttributeValidationEnabled())) {
-            log.error("To disable Endorsement Credential Validation, Platform Validation"
+            log.error("To disable Endorsement Certificate Validation, Platform Certificate Validation"
                     + " must also be disabled.");
             return false;
         }
@@ -49,8 +49,8 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the endorsement credential "
-                + "validation policy: {}", policySettings);
+        log.debug("Current ACA Policy after updating the Endorsement Certificate "
+                + "Validation policy: {}", policySettings);
 
         return true;
     }
@@ -79,7 +79,7 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the platform credential validation "
+        log.debug("Current ACA Policy after updating the Platform Certificate Validation "
                 + "policy: {}", policySettings);
 
         return true;
@@ -95,10 +95,10 @@ public class PolicyPageService {
     public boolean updatePCAttributeValidationPolicy(final boolean isPcAttributeValidationOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        // If PC Attribute Validation is enabled without PC Validation, disallow change
+        // If Platform Certificate Attribute Validation is enabled without PC Validation, disallow change
         if (!isPolicyValid(policySettings.isEcValidationEnabled(),
                 policySettings.isPcValidationEnabled(), isPcAttributeValidationOptionEnabled)) {
-            log.error("To enable Platform Attribute Validation, Platform Credential Validation"
+            log.error("To enable Platform Certificate Attribute Validation, Platform Certificate Validation"
                     + " must also be enabled.");
             return false;
         }
@@ -112,14 +112,14 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the platform credential "
-                + "attribute credential validation policy: {}", policySettings);
+        log.debug("Current ACA Policy after updating the Platform Certificate "
+                + "Attribute Validation policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the Ignore Revision Attribute policy under the platform credential attribute validation policy
+     * Updates the Ignore Revision Attribute policy under the Platform Certificate Attribute Validation policy
      * setting according to user input.
      *
      * @param isIgnoreRevisionAttributeOptionEnabled boolean value representation of the current policy
@@ -131,7 +131,7 @@ public class PolicyPageService {
 
         if (isIgnoreRevisionAttributeOptionEnabled && !policySettings.isPcAttributeValidationEnabled()) {
             log.error("Ignore Component Revision Attribute cannot be "
-                    + "enabled without PC Attribute validation policy enabled.");
+                    + "enabled without Platform Certificate Attribute Validation policy enabled.");
             return false;
         }
 
@@ -139,14 +139,14 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the ignore component revision attribute"
+        log.debug("Current ACA Policy after updating the Ignore component revision Attribute"
                 + " option policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the Ignore PCIE VPD Attribute policy under the platform credential attribute validation
+     * Updates the Ignore PCIE VPD Attribute policy under the Platform Certificate Attribute Validation
      * policy setting according to user input.
      *
      * @param isIgnorePcieVpdOptionEnabled boolean value representation of the current policy
@@ -157,8 +157,8 @@ public class PolicyPageService {
         PolicySettings policySettings = getDefaultPolicy();
 
         if (isIgnorePcieVpdOptionEnabled && !policySettings.isPcAttributeValidationEnabled()) {
-            log.error("Ignore PCIE VPD Attribute cannot be enabled without PC Attribute "
-                    + "validation policy enabled.");
+            log.error("Ignore PCIE VPD Attribute cannot be enabled without Platform Certificate Attribute "
+                    + "Validation policy enabled.");
             return false;
         }
 
@@ -166,14 +166,13 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the ignore "
-                + "pcie vpd policy: {}", policySettings);
+        log.debug("Current ACA Policy after updating the Ignore PCIE VPD policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the firmware validation policy according to user input.
+     * Updates the Firmware Validation policy according to user input.
      *
      * @param isFirmwareValidationOptionEnabled boolean value representation of the current policy
      *                                          option's state
@@ -182,9 +181,9 @@ public class PolicyPageService {
     public boolean updateFirmwareValidationPolicy(final boolean isFirmwareValidationOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If firmware is enabled without PC attributes, disallow change
+        //If Firmware is enabled without Platform Certificate Attributes, disallow change
         if (isFirmwareValidationOptionEnabled && !policySettings.isPcAttributeValidationEnabled()) {
-            log.error("Firmware validation cannot be enabled without PC Attributes policy enabled.");
+            log.error("Firmware Validation cannot be enabled without Platform Certificate Attributes policy enabled.");
             return false;
         }
 
@@ -199,14 +198,13 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the firmware validation "
-                + " policy: {}", policySettings);
+        log.debug("Current ACA Policy after updating the Firmware Validation policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the ignore IMA policy under the firmware validation policy setting according to user input.
+     * Updates the Ignore IMA policy under the Firmware Validation policy setting according to user input.
      *
      * @param isIgnoreImaOptionEnabled boolean value representation of the current policy option's state
      * @return true if the policy was updated successfully; otherwise, false.
@@ -214,7 +212,7 @@ public class PolicyPageService {
     public boolean updateIgnoreImaPolicy(final boolean isIgnoreImaOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If Ignore IMA is enabled and firmware validation is not enabled, disallow change
+        //If Ignore IMA is enabled and Firmware Validation is not enabled, disallow change
         if (isIgnoreImaOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore IMA cannot be enabled without Firmware Validation policy enabled.");
             return false;
@@ -224,14 +222,14 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the ignore IMA policy:"
+        log.debug("Current ACA Policy after updating the Ignore IMA policy:"
                 + " {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the ignore TBoot policy under the firmware validation policy setting
+     * Updates the Ignore TBoot policy under the Firmware Validation policy setting
      * according to user input.
      *
      * @param isIgnoreTbootOptionEnabled boolean value representation of the current policy option's state
@@ -240,7 +238,7 @@ public class PolicyPageService {
     public boolean updateIgnoreTBootPolicy(final boolean isIgnoreTbootOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If Ignore TBoot is enabled and firmware validation is not enabled, disallow change
+        //If Ignore TBoot is enabled and Firmware Validation is not enabled, disallow change
         if (isIgnoreTbootOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore TBoot cannot be enabled without Firmware Validation policy enabled.");
             return false;
@@ -250,14 +248,14 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the ignore TBoot policy:"
+        log.debug("Current ACA Policy after updating the Ignore TBoot policy:"
                 + " {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the ignore GPT events policy under the firmware validation policy setting
+     * Updates the Ignore GPT events policy under the Firmware Validation policy setting
      * according to user input.
      *
      * @param isIgnoreGptOptionEnabled boolean value representation of the current policy option's state
@@ -266,7 +264,7 @@ public class PolicyPageService {
     public boolean updateIgnoreGptEventsPolicy(final boolean isIgnoreGptOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If Ignore TBoot is enabled and firmware validation is not enabled, disallow change
+        //If Ignore TBoot is enabled and Firmware Validation is not enabled, disallow change
         if (isIgnoreGptOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore GPT Events cannot be enabled without Firmware Validation policy enabled.");
             return false;
@@ -276,14 +274,14 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the ignore GPT events policy:"
+        log.debug("Current ACA Policy after updating the Ignore GPT events policy:"
                 + " {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the ignore OS events policy under the firmware validation policy setting
+     * Updates the Ignore OS events policy under the Firmware Validation policy setting
      * according to user input.
      *
      * @param isIgnoreOSEvtOptionEnabled boolean value representation of the current policy option's state
@@ -292,7 +290,7 @@ public class PolicyPageService {
     public boolean updateIgnoreOSEventsPolicy(final boolean isIgnoreOSEvtOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If Ignore OS events is enabled and firmware validation is not enabled, disallow change
+        //If Ignore OS events is enabled and Firmware Validation is not enabled, disallow change
         if (isIgnoreOSEvtOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore OS Events cannot be enabled without Firmware Validation policy enabled.");
             return false;
@@ -306,7 +304,7 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the ignore OS events policy:"
+        log.debug("Current ACA Policy after updating the Ignore OS events policy:"
                 + " {}", policySettings);
 
         return true;
@@ -329,17 +327,17 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the issued attestation certificate generation "
+        log.debug("Current ACA Policy after updating the issued attestation Certificate generation "
                 + " policy: {}", policySettings);
     }
 
     /**
      * Updates the Attestation Certificate generation expiration date under the generate attestation
-     * certificate policy setting using the provided user input.
+     * Certificate policy setting using the provided user input.
      *
      * @param canGenerateAttestationCertificateOnExpiration boolean value representation of the current
      *                                                      policy option's state
-     * @param attestCertExpirationValue                     attestation certificate expiration value
+     * @param attestCertExpirationValue                     attestation Certificate expiration value
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updateAttestationCertExpirationPolicy(
@@ -349,8 +347,8 @@ public class PolicyPageService {
 
         if (canGenerateAttestationCertificateOnExpiration
                 && !policySettings.isIssueAttestationCertificateEnabled()) {
-            log.error("Cannot set the attestation certificate expiration value when"
-                    + " the attestation certificate generation expiration policy is not enabled.");
+            log.error("Cannot set the attestation Certificate expiration value when"
+                    + " the attestation Certificate generation expiration policy is not enabled.");
             return false;
         }
 
@@ -365,7 +363,7 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the attestation certificate "
+        log.debug("Current ACA Policy after updating the attestation Certificate "
                 + "generation expiration value policy: {}", policySettings);
 
         return true;
@@ -373,7 +371,8 @@ public class PolicyPageService {
 
     /**
      * Updates the Attestation Certificate generation threshold value under the generate attestation
-     * certificate policy setting  using the provided user input.
+     * Certificate policy setting  using the provided user input.
+     * <p>
      *
      * @param canGenerateAttestationCertificateOnExpiration boolean value representation of the current
      *                                                      policy option's state
@@ -387,8 +386,8 @@ public class PolicyPageService {
 
         if (canGenerateAttestationCertificateOnExpiration
                 && !policySettings.isIssueAttestationCertificateEnabled()) {
-            log.error("Cannot set the attestation certificate threshold value when"
-                    + " the attestation certificate generation expiration policy is not enabled.");
+            log.error("Cannot set the attestation Certificate threshold value when"
+                    + " the attestation Certificate generation expiration policy is not enabled.");
             return false;
         }
 
@@ -404,14 +403,14 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the attestation certificate generation "
+        log.debug("Current ACA Policy after updating the attestation Certificate generation "
                 + "threshold policy: {}", policySettings);
 
         return true;
     }
 
     /**
-     * Updates the LDevID validation policy according to user input.
+     * Updates the LDevID Validation policy according to user input.
      *
      * @param isLDevIDOptionEnabled boolean value representation of the current policy option's state
      */
@@ -426,17 +425,17 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the LDevID validation "
+        log.debug("Current ACA Policy after updating the LDevID Validation "
                 + " policy: {}", policySettings);
     }
 
     /**
      * Updates the LDevID Certificate generation expiration date under the generate LDevID
-     * certificate policy setting using the provided user input.
+     * Certificate policy setting using the provided user input.
      *
      * @param canGenerateLDevIDCertificateOnExpiration boolean value representation of the current
      *                                                 policy option's state
-     * @param lDevIDExpirationValue                    LDevID certificate expiration value
+     * @param lDevIDExpirationValue                    LDevID Certificate expiration value
      * @return true if the policy was updated successfully; otherwise, false.
      */
     public boolean updateLDevIDExpirationPolicy(final boolean canGenerateLDevIDCertificateOnExpiration,
@@ -445,8 +444,8 @@ public class PolicyPageService {
 
         if (canGenerateLDevIDCertificateOnExpiration
                 && !policySettings.isIssueDevIdCertificateEnabled()) {
-            log.error("Cannot set the LDevID certificate expiration value when"
-                    + " the LDevID certificate generation expiration policy is not enabled.");
+            log.error("Cannot set the LDevID Certificate expiration value when"
+                    + " the LDevID Certificate generation expiration policy is not enabled.");
             return false;
         }
 
@@ -460,7 +459,7 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the LDevID certificate generation expiration "
+        log.debug("Current ACA Policy after updating the LDevID Certificate generation expiration "
                 + "value policy: {}", policySettings);
 
         return true;
@@ -468,7 +467,7 @@ public class PolicyPageService {
 
     /**
      * Updates the LDevID Certificate generation threshold value under the generate LDevID
-     * certificate policy setting using the provided user input.
+     * Certificate policy setting using the provided user input.
      *
      * @param canGenerateLDevIDCertificateOnExpiration boolean value representation of the current policy option's
      *                                                 state
@@ -481,8 +480,8 @@ public class PolicyPageService {
 
         if (canGenerateLDevIDCertificateOnExpiration
                 && !policySettings.isIssueDevIdCertificateEnabled()) {
-            log.error("Cannot set the LDevID certificate threshold value when"
-                    + " the LDevID certificate generation expiration policy is not enabled.");
+            log.error("Cannot set the LDevID Certificate threshold value when"
+                    + " the LDevID Certificate generation expiration policy is not enabled.");
             return false;
         }
 
@@ -496,7 +495,7 @@ public class PolicyPageService {
 
         policyRepository.saveAndFlush(policySettings);
 
-        log.debug("Current ACA Policy after updating the LDevID certificate generation "
+        log.debug("Current ACA Policy after updating the LDevID Certificate generation "
                 + "threshold policy: {}", policySettings);
 
         return true;
@@ -543,7 +542,7 @@ public class PolicyPageService {
      * @return The default Supply Chain Policy
      */
     public PolicySettings getDefaultPolicy() {
-        PolicySettings defaultSettings = this.policyRepository.findByName("Default");
+        PolicySettings defaultSettings = policyRepository.findByName("Default");
 
         if (defaultSettings == null) {
             defaultSettings = new PolicySettings("Default",
@@ -554,12 +553,12 @@ public class PolicyPageService {
 
     /**
      * Takes in policy setting states and determines if policy configuration is
-     * valid or not. PC Attribute Validation must have PC Validation Enabled PC
+     * valid or not. Platform Certificate Attribute Validation must have PC Validation Enabled PC
      * Validation must have EC Validation enabled
      *
      * @param isEcEnabled    EC Validation Policy State
      * @param isPcEnabled    PC Validation Policy State
-     * @param isPcAttEnabled PC Attribute Validation Policy State
+     * @param isPcAttEnabled Platform Certificate Attribute Validation Policy State
      * @return True if policy combination is valid
      */
     private boolean isPolicyValid(final boolean isEcEnabled, final boolean isPcEnabled,

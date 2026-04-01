@@ -39,6 +39,8 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYS
  * Class to process a TCG_PCR_EVENT.
  * TCG_PCR_EVENT is used when the Event log uses the SHA1 Format as described in the
  * TCG Platform Firmware Profile (PFP) specification.
+ *
+ * <pre>
  * typedef struct {
  * .     TCG_PCRINDEX  PCRIndex;  //PCR Index value that either
  * .                              //matches the PCRIndex of a
@@ -51,10 +53,23 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYS
  * .     UINT32        EventSize; //Size of the event data
  * .     UINT8         Event[EventSize];  //The event data
  * } TCG_PCR_EVENT;
+ * </pre>
  */
 @Log4j2
 public class TpmPcrEvent {
 
+    /**
+     * list of digests from the event log.
+     */
+    protected final ArrayList<EventDigest> hashListFromEvent = new ArrayList<>();
+    /**
+     * list of digests by calculating the hash of the event.
+     */
+    private final ArrayList<EventDigest> hashListCalculated = new ArrayList<>();
+    /**
+     * Description for toString support.
+     */
+    protected String description = "";
     /**
      * Log format. SHA1=1, Crytpo agile=2.
      * this can be refactored out
@@ -62,83 +77,56 @@ public class TpmPcrEvent {
     @Getter
     @Setter(value = AccessLevel.PROTECTED)
     private int logFormat = -1;
-
     /**
      * PCR index.
      */
     @Getter
     private int pcrIndex = -1;
-
     /**
      * Event Type (long).
      */
     @Getter
     private long eventType = 0;
-
     /**
      * Event digest. If more than one digest in the Event, use the strongest one.
      */
     private byte[] strongestDigest = null;
-
-    /**
-     * list of digests from the event log.
-     */
-    protected final ArrayList<EventDigest> hashListFromEvent = new ArrayList<>();
-
-    /**
-     * list of digests by calculating the hash of the event.
-     */
-    private final ArrayList<EventDigest> hashListCalculated = new ArrayList<>();
-
     /**
      * Event hash for SHA1 event logs.
      */
     private byte[] eventDataSha1hash;
-
     /**
      * Event hash for Crypto Agile events.
      */
     private byte[] eventDataSha256hash;
-
     /**
      * Event data (no content).
      */
     private byte[] event;
-
     /**
      * Event content data.
      */
     private byte[] eventContent;
-
     /**
      * TCG Event Log spec version.
      */
     @Getter
     private String specVersion = "Unknown";
-
     /**
      * TCG Event Log errata version.
      */
     @Getter
     private String specErrataVersion = "Unknown";
-
     /**
      * True of the event is a EV_NO_ACTION SpecID event.
      */
     @Getter
     private boolean isNoActionSpecIdEvent = false;
-
     /**
      * True of the event is a EV_NO_ACTION StartupLocality event.
      */
     @Getter
     private boolean isStartupLocalityEvent = false;
-
-    /**
-     * Description for toString support.
-     */
-    protected String description = "";
-
     @Getter
     @Setter
     private int eventNumber;
@@ -256,18 +244,6 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Sets the digest from a TCG_PCR_EVENT digest field.
-     * In the case of multiple digests, set the strongest one.
-     * This can be SHA1 for older event structures or any algorithm for newer structure.
-     *
-     * @param data   cryptographic hash
-     */
-    protected void setEventStrongestDigest(final byte[] data) {
-        strongestDigest = new byte[data.length];
-        System.arraycopy(data, 0, strongestDigest, 0, data.length);
-    }
-
-    /**
      * Retrieves the digest from a TCG Event.
      * This can be SHA1 for older event structures or any algorithm for newer structure.
      *
@@ -277,6 +253,18 @@ public class TpmPcrEvent {
         byte[] digestCopy = new byte[strongestDigest.length];
         System.arraycopy(strongestDigest, 0, digestCopy, 0, strongestDigest.length);
         return digestCopy;
+    }
+
+    /**
+     * Sets the digest from a TCG_PCR_EVENT digest field.
+     * In the case of multiple digests, set the strongest one.
+     * This can be SHA1 for older event structures or any algorithm for newer structure.
+     *
+     * @param data cryptographic hash
+     */
+    protected void setEventStrongestDigest(final byte[] data) {
+        strongestDigest = new byte[data.length];
+        System.arraycopy(data, 0, strongestDigest, 0, data.length);
     }
 
     /**

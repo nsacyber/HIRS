@@ -24,7 +24,7 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
      */
     public static SupplyChainValidation getTestSupplyChainValidation() throws IOException {
         return getTestSupplyChainValidation(
-                SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
+                SupplyChainValidation.ValidationType.ENDORSEMENT_CERTIFICATE,
                 AppraisalStatus.Status.PASS,
                 getAllTestCertificates()
         );
@@ -40,7 +40,7 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
         SupplyChainValidation validation = getTestSupplyChainValidation();
         assertEquals(
                 validation.getValidationType(),
-                SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL
+                SupplyChainValidation.ValidationType.ENDORSEMENT_CERTIFICATE
         );
         assertEquals(
                 validation.getCertificatesUsed(),
@@ -74,7 +74,7 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
     public void testNullCertificates() throws IllegalArgumentException {
         assertThrows(IllegalArgumentException.class, () ->
                 new SupplyChainValidation(
-                        SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
+                        SupplyChainValidation.ValidationType.ENDORSEMENT_CERTIFICATE,
                         AppraisalStatus.Status.PASS,
                         null,
                         VALIDATION_MESSAGE
@@ -89,7 +89,7 @@ class SupplyChainValidationTest extends AbstractUserdefinedEntityTest {
     @Test
     public void testNullMessage() throws IOException {
         new SupplyChainValidation(
-                SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL,
+                SupplyChainValidation.ValidationType.ENDORSEMENT_CERTIFICATE,
                 AppraisalStatus.Status.PASS,
                 getAllTestCertificates(),
                 VALIDATION_MESSAGE

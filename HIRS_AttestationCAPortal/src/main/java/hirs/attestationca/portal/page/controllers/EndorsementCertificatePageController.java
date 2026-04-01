@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page.controllers;
 
-
 import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
 import hirs.attestationca.persist.entity.userdefined.DownloadFile;
 import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
@@ -48,7 +47,7 @@ import java.util.zip.ZipOutputStream;
  * Controller for the Endorsement Key Certificates page.
  */
 @Controller
-@RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates")
 @Log4j2
 public class EndorsementCertificatePageController extends PageController<NoPageParams> {
     private final EndorsementCertificatePageService endorsementCertificatePageService;
@@ -64,7 +63,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
     public EndorsementCertificatePageController(
             final EndorsementCertificatePageService endorsementCertificatePageService,
             final CertificatePageService certificatePageService) {
-        super(Page.ENDORSEMENT_KEY_CREDENTIALS);
+        super(Page.ENDORSEMENT_KEY_CERTIFICATES);
         this.endorsementCertificatePageService = endorsementCertificatePageService;
         this.certificatePageService = certificatePageService;
     }
@@ -78,7 +77,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
      */
     @RequestMapping
     public ModelAndView initPage(final NoPageParams params, final Model model) {
-        return getBaseModelAndView(Page.ENDORSEMENT_KEY_CREDENTIALS);
+        return getBaseModelAndView(Page.ENDORSEMENT_KEY_CERTIFICATES);
     }
 
     /**
@@ -171,7 +170,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CREDENTIALS,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.ENDORSEMENT_CERTIFICATE,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
@@ -185,7 +184,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
      *
      * @param files              the files to process
      * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
-     * @return redirect to the Endorsement Credentials page
+     * @return redirect to the Endorsement Certificates page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
@@ -205,7 +204,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
                     endorsementCertificatePageService.parseEndorsementCertificate(file, errorMessages);
 
             if (parsedEndorsementCertificate != null) {
-                certificatePageService.storeCertificate(CertificateType.ENDORSEMENT_CREDENTIALS,
+                certificatePageService.storeCertificate(CertificateType.ENDORSEMENT_CERTIFICATE,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedEndorsementCertificate);
             }
@@ -215,7 +214,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.ENDORSEMENT_KEY_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -223,7 +222,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
      *
      * @param id                 the UUID of the specified {@link EndorsementCredential} object to delete
      * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
-     * @return redirect to the Endorsement Credentials page
+     * @return redirect to the Endorsement Certificates page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
@@ -251,7 +250,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.ENDORSEMENT_KEY_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -286,7 +285,7 @@ public class EndorsementCertificatePageController extends PageController<NoPageP
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.ENDORSEMENT_KEY_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.ENDORSEMENT_KEY_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**

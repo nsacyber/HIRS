@@ -75,7 +75,7 @@ public class DevicePageService {
      * @param searchableColumnNames list of the searchable column name
      * @param globalSearchTerm      text that was input in the global search textbox
      * @param pageable              pageable
-     * @return page full of devices
+     * @return page full of {@link Device} objects
      */
     public Page<Device> findDevicesByGlobalSearchTerm(
             final Set<String> searchableColumnNames,
@@ -109,11 +109,11 @@ public class DevicePageService {
 
     /**
      * Takes the provided columns that come with a search criteria and attempts to find
-     * {@link Device} objects that match the column's specific search criteria's search value.
+     * devices that match the column's specific search criteria's search value.
      *
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param pageable                  pageable
-     * @return page full of devices
+     * @return page full of {@link Device} objects
      */
     public Page<Device> findDevicesByColumnSpecificSearchTerm(
             final Set<DataTablesColumn> columnsWithSearchCriteria,
@@ -214,17 +214,18 @@ public class DevicePageService {
     /**
      * Retrieves the total number of records stored in the {@link DeviceRepository}.
      *
-     * @return total number of records stored in the {@link DeviceRepository}
+     * @return total number of records stored in the {@link DeviceRepository}.
      */
     public long findDeviceRepositoryCount() {
         return deviceRepository.count();
     }
 
     /**
-     * Returns the list of {@link Device} objects associated with the platform and endorsement certificates.
+     * Returns a map of {@link Device} objects with their associated {@link PlatformCredential} and
+     * {@link EndorsementCredential} objects.
      *
-     * @param deviceList list containing the {@link Device} objects
-     * @return a record list after the device and certificate was mapped together.
+     * @param deviceList a filtered list of {@link Device} objects
+     * @return a filtered map of {@link Device} objects and associated certificates.
      */
     public FilteredRecordsList<HashMap<String, Object>> retrieveDevicesAndAssociatedCertificates(
             final FilteredRecordsList<Device> deviceList) {
@@ -239,7 +240,7 @@ public class DevicePageService {
                 continue;
             }
 
-            // hashmap that uses the certificate type as the key and the set of device associated certificate ids
+            // hashmap that uses the certificate type as the key and the set of device associated certificate IDs
             // as the value
             HashMap<String, Set<UUID>> certificatePropertyMap = new HashMap<>();
 
@@ -267,11 +268,12 @@ public class DevicePageService {
     }
 
     /**
-     * Helper method that attempts to find all the platform certificates that are associated with the provided device
-     * and add a new entry to the device-certificate hash map for platform certificate ids.
+     * Helper method that attempts to find all the {@link PlatformCredential} objects that are associated with the
+     * provided {@link Device} object and add a new entry to the device-certificate hash map for Platform Certificate
+     * IDs.
      *
-     * @param device                 device
-     * @param certificatePropertyMap hash map of the certificate type and list of associated certificate ids
+     * @param device                 {@link Device} object
+     * @param certificatePropertyMap hash map of the certificate type and list of associated certificate IDs
      */
     private void addPlatformCertificateEntryToDeviceMap(final Device device,
                                                         final HashMap<String, Set<UUID>> certificatePropertyMap) {
@@ -279,7 +281,7 @@ public class DevicePageService {
         final List<PlatformCredential> platformCertificateList =
                 platformCertificateRepository.findByDeviceId(device.getId());
 
-        final String platformCertificateIdsKey = PlatformCredential.class.getSimpleName() + "Ids";
+        final String platformCertificateIdsKey = "PlatformCertificateIds";
 
         for (PlatformCredential pc : platformCertificateList) {
             // verify that the platform certificate is associated with this device
@@ -292,11 +294,11 @@ public class DevicePageService {
     }
 
     /**
-     * Helper method that attempts to find all the endorsement certificates that are associated with the provided device
-     * and add a new entry to the device-certificate hash map for endorsement certificate ids.
+     * Helper method that attempts to find all the {@link EndorsementCredential} objects that are associated with the
+     * provided device and add a new entry to the device-certificate hash map for Endorsement Certificate IDs.
      *
-     * @param device                 device
-     * @param certificatePropertyMap hash map of the certificate type and list of associated certificate ids
+     * @param device                 {@link Device} object
+     * @param certificatePropertyMap hash map of the certificate type and list of associated certificate IDs
      */
     private void addEndorsementCertificateEntryToDeviceMap(final Device device,
                                                            final HashMap<String, Set<UUID>> certificatePropertyMap) {
@@ -304,7 +306,7 @@ public class DevicePageService {
         final List<EndorsementCredential> endorsementCertificateList =
                 endorsementCertificateRepository.findByDeviceId(device.getId());
 
-        final String endorsementCertificateIdsKey = EndorsementCredential.class.getSimpleName() + "Ids";
+        final String endorsementCertificateIdsKey = "EndorsementCertificateIds";
 
         for (EndorsementCredential ec : endorsementCertificateList) {
             // verify that the endorsement certificate is associated with this device
@@ -317,11 +319,12 @@ public class DevicePageService {
     }
 
     /**
-     * Helper method that attempts to find all the issued certificates that are associated with the provided device
-     * and add a new entry to the device-certificate hash map for issued certificate ids.
+     * Helper method that attempts to find all the {@link IssuedAttestationCertificate} objects that are associated with
+     * the provided {@link Device} object and add a new entry to the device-certificate hash map for
+     * Issued Certificate IDs.
      *
-     * @param device                 device
-     * @param certificatePropertyMap hash map of the certificate type and list of associated certificate ids
+     * @param device                 {@link Device} object
+     * @param certificatePropertyMap hash map of the certificate type and list of associated certificate IDs
      */
     private void addIssuedCertificateEntryToDeviceMap(final Device device,
                                                       final HashMap<String, Set<UUID>> certificatePropertyMap) {
@@ -329,7 +332,7 @@ public class DevicePageService {
         final List<IssuedAttestationCertificate> issuedCertificateList =
                 issuedCertificateRepository.findByDeviceId(device.getId());
 
-        final String issuedCertificatesIdsKey = IssuedAttestationCertificate.class.getSimpleName() + "Ids";
+        final String issuedCertificatesIdsKey = "IssuedCertificateIds";
 
         for (IssuedAttestationCertificate ic : issuedCertificateList) {
             // verify that the issued certificate is associated with this device

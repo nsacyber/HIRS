@@ -2,6 +2,7 @@ package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
 import lombok.Getter;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -12,6 +13,7 @@ import java.util.List;
 
 /**
  * Class to process a UEFI variable within a TPM Event.
+ * <pre>
  * typedef struct tdUEFI_VARIABLE_DATA{
  * UEFI_GUID VariableName;     (16 bytes)
  * UINT64 UnicodeNameLength;   (8 bytes)
@@ -19,18 +21,19 @@ import java.util.List;
  * CHAR16 UnicodeName[];
  * INT8 VariableData[];
  * } UEFI_VARIABLE_DATA
+ * </pre>
  */
 public class UefiVariable {
 
+    /**
+     * List of Signature lists.
+     */
+    private final List<UefiSignatureList> certSuperList;
     /**
      * UEFI defined variable identifier GUID.
      */
     @Getter
     private UefiGuid uefiVarGuid = null;
-    /**
-     * List of Signature lists.
-     */
-    private final List<UefiSignatureList> certSuperList;
     /**
      * Name of the UEFI variable.
      */
@@ -81,13 +84,13 @@ public class UefiVariable {
      * the class used to parse the data within the "VariableData".
      *
      * @param variableData byte array holding the UEFI Variable.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem
-     *                                                 hashing the certificate.
-     * @throws java.io.IOException                     If there's a problem
-     *                                                 parsing the signature data.
+     * @throws java.security.NoSuchAlgorithmException if there's a problem
+     *                                                hashing the certificate.
+     * @throws java.io.IOException                    If there's a problem
+     *                                                parsing the signature data.
      */
     public UefiVariable(final byte[] variableData)
-            throws  NoSuchAlgorithmException, IOException {
+            throws NoSuchAlgorithmException, IOException {
         certSuperList = new ArrayList<>();
         byte[] guid = new byte[UefiConstants.SIZE_16];
         byte[] nameLength = new byte[UefiConstants.SIZE_8];

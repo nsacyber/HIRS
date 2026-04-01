@@ -1,0 +1,50 @@
+/*index page styling*/
+
+#index-page .col {
+  border: 0px solid black;
+}
+
+#index-page .row {
+  overflow: hidden;
+}
+
+#index-page .page-header {
+  margin: 0;
+}
+
+.index-left-side {
+  background: #d5f2e0;
+  height: 100%;
+}
+
+.index-left-side h1 {
+  background: #567361;
+  text-align: center;
+}
+
+.index-right-side {
+  background: #ffefc1;
+}
+
+.index-right-side h1 {
+  background: #b97042;
+  text-align: center;
+}
+
+.index-left-side h4,
+.index-right-side h4 {
+  padding-left: 30px;
+}
+
+div.row h3 a {
+  text-decoration: none; /* Remove underline from links specifically the links in the index.html page*/
+}
+
+div.row h3 a:hover {
+  color: darkblue;
+  text-decoration: underline; /* Add underline on hover for links specifically the links in the index.html page*/
+}
+
+div.row h3 {
+  margin: 10px; /* Add margin around h3 inside div with class row */
+}

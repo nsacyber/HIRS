@@ -1,0 +1,16 @@
+<th:block th:fragment="sideNavBar(page, pages)">
+    <nav id="sidebar-navbar" role="navigation" th:if="${page?.hasMenu}">
+        <ul class="nav flex-column mb-auto">
+            <li th:each="p : ${pages}" th:if="${p?.inMenu}"
+                th:class="'nav-item ' + ${p?.menuLinkClass != null ? p.menuLinkClass : ''} + (${p?.title} == ${page?.title} ? ' active' : '') ">
+                <a th:href="@{'/HIRS_AttestationCAPortal/portal/' + ${p?.prefixPath} + ${p?.viewName}}"
+                    class="nav-link">
+                    <span>
+                        <img th:src="@{/icons/{icon}(icon=${p?.icon})}" alt="nav icon" />
+                    </span>
+                    <span th:text="${p?.title}">Page Title</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</th:block>

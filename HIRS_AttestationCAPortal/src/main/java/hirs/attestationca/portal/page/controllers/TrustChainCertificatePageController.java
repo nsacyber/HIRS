@@ -286,7 +286,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN_CERTIFICATE,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
@@ -323,7 +323,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
             if (parsedTrustChainCertificate != null) {
                 certificatePageService.storeCertificate(
-                        CertificateType.TRUST_CHAIN,
+                        CertificateType.TRUST_CHAIN_CERTIFICATE,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedTrustChainCertificate);
             }

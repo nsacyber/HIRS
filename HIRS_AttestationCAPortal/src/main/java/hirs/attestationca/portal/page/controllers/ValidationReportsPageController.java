@@ -10,22 +10,24 @@ import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 /**
@@ -49,7 +51,7 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
-     * Returns the path for the view and the data model for the validation reports page.
+     * Returns the path for the view and the data model for the Validation Reports page.
      *
      * @param params The object to map url parameters into.
      * @param model  The data model for the request. Can contain data from redirect.
@@ -62,11 +64,11 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to retrieve a list of supply chain summary records for display
-     * on the validation reports page.
+     * Processes the request to retrieve a list of {@link SupplyChainValidationSummary} objects for display
+     * on the Validation Reports page.
      *
      * @param dataTableInput the data table query.
-     * @return the data table response containing the supply chain summary records
+     * @return the data table response containing the {@link SupplyChainValidationSummary} objects
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -111,18 +113,28 @@ public class ValidationReportsPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to download the selected validation summary report.
+     * Processes the request to download a CSV file of all the {@link SupplyChainValidationSummary} objects.
      *
-     * @param request  http request
      * @param response http response
      * @throws IOException if any issues arise from downloading the validation report.
      */
-    @PostMapping("/download")
-    public void downloadValidationReports(final HttpServletRequest request,
-                                          final HttpServletResponse response)
-            throws IOException {
-        log.info("Received request to download validation summary reports");
-        validationSummaryPageService.downloadValidationReports(request, response);
+    @GetMapping("/download")
+    public void downloadValidationReports(final HttpServletResponse response) throws IOException {
+        log.info("Received request to download all Validation Summary Reports");
+        final String zipFileName = "validation_report.csv";
+
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFileName);
+        response.setContentType("text/csv");
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(
+                new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8))) {
+            validationSummaryPageService.downloadValidationReports(bufferedWriter);
+            bufferedWriter.flush();
+        } catch (Exception exception) {
+            log.error("An exception was thrown while attempting to download a CSV file of the "
+                    + "validation summary reports", exception);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     /**

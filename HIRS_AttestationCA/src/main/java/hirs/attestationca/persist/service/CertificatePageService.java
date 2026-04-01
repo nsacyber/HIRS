@@ -514,7 +514,7 @@ public class CertificatePageService {
                         List<String> moreErrorMessages = new ArrayList<>();
 
                         this.storeCertificate(
-                                CertificateType.TRUST_CHAIN,
+                                CertificateType.TRUST_CHAIN_CERTIFICATE,
                                 file.getOriginalFilename(),
                                 moreSuccessMessages,
                                 moreErrorMessages,

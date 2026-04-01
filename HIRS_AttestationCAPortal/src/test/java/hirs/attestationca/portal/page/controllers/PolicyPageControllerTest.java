@@ -32,7 +32,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     @Autowired
     private PolicyRepository policyRepository;
 
-    // Policy refers to the settings such as whether to validate endorsement credentials, platform credentials
+    // Policy refers to the settings such as whether to validate endorsement certificates, platform certificates
     // , etc
     private PolicySettings policySetting;
 
@@ -95,7 +95,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
      * @throws Exception if test fails
      */
     @Test
-    public void testUpdateEndorsementCredentialValidationPolicyEnable() throws Exception {
+    public void testUpdateEndorsementCertificateValidationPolicyEnable() throws Exception {
         ResultActions actions;
 
         //init the database
@@ -113,7 +113,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("successMessages",
-                                hasItem("Endorsement Credential Validation enabled"))));
+                                hasItem("Endorsement Certificate Validation enabled"))));
 
         policySetting = policyRepository.findByName("Default");
         assertTrue(policySetting.isEcValidationEnabled());
@@ -125,7 +125,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
      * @throws Exception if test fails
      */
     @Test
-    public void testUpdateEndorsementCredentialValidationPolicyDisable() throws Exception {
+    public void testUpdateEndorsementCertificateValidationPolicyDisable() throws Exception {
         ResultActions actions;
 
         //init the database
@@ -144,7 +144,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("successMessages",
-                                hasItem("Endorsement Credential Validation disabled"))));
+                                hasItem("Endorsement Certificate Validation disabled"))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isEcValidationEnabled());
@@ -165,7 +165,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("To disable Endorsement Credential Validation, Platform Validation"
+                                hasItem("To disable Endorsement Certificate Validation, Platform Certificate Validation"
                                         + " must also be disabled."))));
 
         policySetting = policyRepository.findByName("Default");
@@ -220,8 +220,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Unable to update ACA Platform Validation setting due to the current "
-                                        + "policy configuration."))));
+                                hasItem("Unable to update ACA Platform Certificate Validation setting due to the"
+                                        + " current policy configuration."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isPcValidationEnabled());
@@ -274,20 +274,20 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Unable to update ACA Platform Validation setting due to the current"
-                                        + " policy configuration."))));
+                                hasItem("Unable to update ACA Platform Certificate Validation setting due to the "
+                                        + "current policy configuration."))));
 
         policySetting = policyRepository.findByName("Default");
         assertTrue(policySetting.isPcValidationEnabled());
     }
 
     /**
-     * Verifies the rest call for enabling the PC attribute Validation policy setting.
+     * Verifies the rest call for enabling the Platform Certificate Attribute Validation policy setting.
      *
      * @throws Exception if test fails
      */
     @Test
-    public void testUpdatePcAttributeValEnable() throws Exception {
+    public void testUpdatePlatformCertificateAttributeValEnable() throws Exception {
         ResultActions actions;
 
         //init the database
@@ -306,7 +306,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("successMessages",
-                                hasItem("Platform Certificate Attribute validation enabled"))));
+                                hasItem("Platform Certificate Attribute Validation enabled"))));
 
         policySetting = policyRepository.findByName("Default");
         assertTrue(policySetting.isPcAttributeValidationEnabled());
@@ -329,8 +329,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("To enable Platform Attribute Validation,"
-                                        + " Platform Credential Validation must also be enabled."))));
+                                hasItem("To enable Platform Certificate Attribute Validation,"
+                                        + " Platform Certificate Validation must also be enabled."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isPcAttributeValidationEnabled());
@@ -338,15 +338,15 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for disabling the PC attribute validation policy setting.
+     * Verifies the rest call for disabling the Platform Certificate Attribute Validation policy setting.
      *
      * @throws Exception if test fails
      */
     @Test
-    public void testUpdatePcAttributeValDisable() throws Exception {
+    public void testUpdatePlatformCertificateAttributeValDisable() throws Exception {
         ResultActions actions;
         setPolicyAllToFalse();
-        setPolicyPcAttributeToTrue();
+        setPolicyPlatformCertificateAttributeToTrue();
         policyRepository.save(policySetting);
 
         // perform the mock request
@@ -360,14 +360,14 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("successMessages",
-                                hasItem("Platform Certificate Attribute validation disabled"))));
+                                hasItem("Platform Certificate Attribute Validation disabled"))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isPcAttributeValidationEnabled());
     }
 
     /**
-     * Verifies the rest call for enabling the ignore component revision policy setting.
+     * Verifies the rest call for enabling the Ignore Component Revision policy setting.
      *
      * @throws Exception if test fails
      */
@@ -377,7 +377,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         //init the database
         setPolicyAllToFalse();
-        setPolicyPcAttributeToTrue();
+        setPolicyPlatformCertificateAttributeToTrue();
         policySetting.setIgnoreRevisionEnabled(true);
         policyRepository.save(policySetting);
 
@@ -416,8 +416,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Ignore Component Revision Attribute cannot be "
-                                        + "enabled without PC Attribute validation policy enabled."))));
+                                hasItem("Ignore Component Revision Attribute cannot be enabled without Platform "
+                                        + "Certificate Attribute Validation policy enabled."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isIgnoreRevisionEnabled());
@@ -425,7 +425,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for disabling the component revision policy setting.
+     * Verifies the rest call for disabling the Component Revision policy setting.
      *
      * @throws Exception if test fails
      */
@@ -433,7 +433,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     public void testUpdateIgnoreComponentRevisionDisable() throws Exception {
         ResultActions actions;
         setPolicyAllToFalse();
-        setPolicyPcAttributeToTrue();
+        setPolicyPlatformCertificateAttributeToTrue();
         policySetting.setIgnoreRevisionEnabled(true);
         policyRepository.save(policySetting);
 
@@ -455,7 +455,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for enabling the ignore pcie vpd policy setting.
+     * Verifies the rest call for enabling the Ignore pcie vpd policy setting.
      *
      * @throws Exception if test fails
      */
@@ -465,7 +465,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
 
         //init the database
         setPolicyAllToFalse();
-        setPolicyPcAttributeToTrue();
+        setPolicyPlatformCertificateAttributeToTrue();
         policySetting.setIgnorePcieVpdEnabled(true);
         policyRepository.save(policySetting);
 
@@ -504,8 +504,8 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Ignore PCIE VPD Attribute Policy cannot be enabled without PC Attribute"
-                                        + " validation policy enabled."))));
+                                hasItem("Ignore PCIE VPD Attribute Policy cannot be enabled without Platform "
+                                        + "Certificate Attribute Validation policy enabled."))));
 
         policySetting = policyRepository.findByName("Default");
         assertFalse(policySetting.isIgnorePcieVpdEnabled());
@@ -513,7 +513,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for disabling the ignore pcie vpd policy setting.
+     * Verifies the rest call for disabling the Ignore pcie vpd policy setting.
      *
      * @throws Exception if test fails
      */
@@ -521,7 +521,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     public void testUpdateIgnoreIgnorePcieVpdDisable() throws Exception {
         ResultActions actions;
         setPolicyAllToFalse();
-        setPolicyPcAttributeToTrue();
+        setPolicyPlatformCertificateAttributeToTrue();
         policySetting.setIgnorePcieVpdEnabled(true);
         policyRepository.save(policySetting);
 
@@ -543,7 +543,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for enabling the firmware validation policy setting.
+     * Verifies the rest call for enabling the Firmware Validation policy setting.
      *
      * @throws Exception if test fails
      */
@@ -589,7 +589,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
                 // check the messages forwarded to the redirected page
                 .andExpect(flash().attribute(PageController.MESSAGES_ATTRIBUTE,
                         hasProperty("errorMessages",
-                                hasItem("Firmware validation cannot be enabled without PC Attributes "
+                                hasItem("Firmware Validation cannot be enabled without Platform Certificate Attributes "
                                         + "policy enabled."))));
 
         policySetting = policyRepository.findByName("Default");
@@ -598,7 +598,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for disabling the firmware validation policy setting.
+     * Verifies the rest call for disabling the Firmware Validation policy setting.
      *
      * @throws Exception if test fails
      */
@@ -627,7 +627,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for enabling the ignore ima policy setting.
+     * Verifies the rest call for enabling the Ignore ima policy setting.
      *
      * @throws Exception if test fails
      */
@@ -684,7 +684,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for disabling the ignore ima policy setting.
+     * Verifies the rest call for disabling the Ignore ima policy setting.
      *
      * @throws Exception if test fails
      */
@@ -715,7 +715,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for enabling the ignore tboot validation policy setting.
+     * Verifies the rest call for enabling the Ignore tboot Validation policy setting.
      *
      * @throws Exception if test fails
      */
@@ -772,7 +772,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for disabling the ignore tboot policy setting.
+     * Verifies the rest call for disabling the Ignore tboot policy setting.
      *
      * @throws Exception if test fails
      */
@@ -803,7 +803,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for enabling the ignore gpt policy setting.
+     * Verifies the rest call for enabling the Ignore gpt policy setting.
      *
      * @throws Exception if test fails
      */
@@ -860,7 +860,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for disabling the ignore gpt policy setting.
+     * Verifies the rest call for disabling the Ignore gpt policy setting.
      *
      * @throws Exception if test fails
      */
@@ -891,7 +891,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for enabling the ignore os events policy setting.
+     * Verifies the rest call for enabling the Ignore os events policy setting.
      *
      * @throws Exception if test fails
      */
@@ -948,7 +948,7 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Verifies the rest call for disabling the ignore os events policy setting.
+     * Verifies the rest call for disabling the Ignore os events policy setting.
      *
      * @throws Exception if test fails
      */
@@ -1203,20 +1203,20 @@ public class PolicyPageControllerTest extends PageControllerTest {
     }
 
     /**
-     * Helper function to set policy member variable - PC Attribute Validation to True.
-     * Note: to set PC Attribute Validation to true, PC Validation must also be set to true.
+     * Helper function to set policy member variable - Platform Certificate Attribute Validation to True.
+     * Note: to set Platform Certificate Attribute Validation to true, PC Validation must also be set to true.
      */
-    private void setPolicyPcAttributeToTrue() {
+    private void setPolicyPlatformCertificateAttributeToTrue() {
         setPolicyPcToTrue();
         policySetting.setPcAttributeValidationEnabled(true);
     }
 
     /**
      * Helper function to set policy member variable - Firmware Validation to True.
-     * Note: to set Firmware Validation to true, PC Attribute Validation must also be set to true.
+     * Note: to set Firmware Validation to true, Platform Certificate Attribute Validation must also be set to true.
      */
     private void setPolicyFirmwareToTrue() {
-        setPolicyPcAttributeToTrue();
+        setPolicyPlatformCertificateAttributeToTrue();
         policySetting.setFirmwareValidationEnabled(true);
     }
 

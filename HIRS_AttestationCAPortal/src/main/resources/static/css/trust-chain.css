@@ -1,0 +1,17 @@
+/*trust chain page styling*/
+#aca-cert-viewer .row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#aca-cert-viewer .row > [class*="col-"] {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-bottom: 1px solid black;
+}
+
+#aca-cert-viewer .colHeader {
+  font-weight: bold;
+  margin: auto 0;
+}

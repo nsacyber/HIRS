@@ -51,24 +51,24 @@ public final class ValidationService {
     }
 
     /**
-     * Evaluates the provided endorsement credential status.
+     * Evaluates the provided endorsement certificate status.
      *
-     * @param endorsementCredential  endorsement credential
+     * @param endorsementCredential  endorsement certificate
      * @param caCredentialRepository CA Credential repository
      * @param acceptExpiredCerts     whether to accept expired certificates
      * @return a supply chain validation
      */
-    public static SupplyChainValidation evaluateEndorsementCredentialStatus(
+    public static SupplyChainValidation evaluateEndorsementCertificateStatus(
             final EndorsementCredential endorsementCredential,
             final CACredentialRepository caCredentialRepository,
             final boolean acceptExpiredCerts) {
-        final SupplyChainValidation.ValidationType validationType
-                = SupplyChainValidation.ValidationType.ENDORSEMENT_CREDENTIAL;
-        log.info("Validating endorsement credential");
+        final SupplyChainValidation.ValidationType validationType =
+                SupplyChainValidation.ValidationType.ENDORSEMENT_CERTIFICATE;
+        log.info("Validating endorsement certificate");
         if (endorsementCredential == null) {
-            log.error("No endorsement credential to validate");
+            log.error("No endorsement certificate to validate");
             return buildValidationRecord(validationType,
-                    AppraisalStatus.Status.FAIL, "Endorsement credential is missing",
+                    AppraisalStatus.Status.FAIL, "Endorsement certificate is missing",
                     null, Level.ERROR);
         }
 
@@ -86,23 +86,23 @@ public final class ValidationService {
     }
 
     /**
-     * Evaluates the provided platform credential status.
+     * Evaluates the provided platform certificate status.
      *
-     * @param platformCredential          platform credential
+     * @param platformCredential          platform certificate
      * @param trustedCertificateAuthority trusted certificate authority
      * @param acceptExpiredCerts          whether to accept expired certificates
      * @return a supply chain validation
      */
-    public static SupplyChainValidation evaluatePlatformCredentialStatus(
+    public static SupplyChainValidation evaluatePlatformCertificateStatus(
             final PlatformCredential platformCredential,
             final KeyStore trustedCertificateAuthority, final boolean acceptExpiredCerts) {
-        final SupplyChainValidation.ValidationType validationType
-                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL;
+        final SupplyChainValidation.ValidationType validationType =
+                SupplyChainValidation.ValidationType.PLATFORM_CERTIFICATE;
 
         if (platformCredential == null) {
-            log.error("No platform credential to validate while evaluating platform credential status");
+            log.error("No platform certificate to validate while evaluating platform certificate status");
             return buildValidationRecord(validationType,
-                    AppraisalStatus.Status.FAIL, "Empty Platform credential", null,
+                    AppraisalStatus.Status.FAIL, "Empty Platform Certificate", null,
                     Level.ERROR);
         }
 
@@ -124,9 +124,9 @@ public final class ValidationService {
     /**
      * Evaluates PC Attributes status.
      *
-     * @param platformCredential           platform credential
+     * @param platformCredential           platform certificate
      * @param deviceInfoReport             device information report
-     * @param endorsementCredential        endorsement credential
+     * @param endorsementCredential        endorsement certificate
      * @param certificateRepository        certificate repository
      * @param componentResultRepository    component result repository
      * @param componentAttributeRepository component attribute repository
@@ -148,16 +148,16 @@ public final class ValidationService {
             final boolean ignoreRevisionAttribute,
             final boolean ignorePcieVpdAttribute) throws IOException {
         final SupplyChainValidation.ValidationType validationType
-                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
+                = SupplyChainValidation.ValidationType.PLATFORM_CERTIFICATE_ATTRIBUTES;
 
         if (platformCredential == null) {
-            log.error("No platform credential to validate while evaluating platform credential attributes "
+            log.error("No platform certificate to validate while evaluating platform certificate attributes "
                     + "status");
             return buildValidationRecord(validationType,
-                    AppraisalStatus.Status.FAIL, "Platform credential is missing",
+                    AppraisalStatus.Status.FAIL, "Platform Certificate is missing",
                     null, Level.ERROR);
         }
-        log.info("Validating platform credential attributes");
+        log.info("Validating platform certificate attributes");
 
         AppraisalStatus result = CredentialValidator.
                 validatePlatformCredentialAttributes(platformCredential, deviceInfoReport,
@@ -186,7 +186,7 @@ public final class ValidationService {
      * Evaluates delta attributes status.
      *
      * @param deviceInfoReport             device information report
-     * @param base                         base platform credential
+     * @param base                         base platform certificate
      * @param deltaMapping                 delta mapping
      * @param certificateRepository        certificate repository
      * @param componentResultRepository    component result repository
@@ -209,7 +209,7 @@ public final class ValidationService {
             final boolean ignoreRevisionAttribute,
             final boolean ignorePcieVpdAttribute) {
         final SupplyChainValidation.ValidationType validationType
-                = SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL_ATTRIBUTES;
+                = SupplyChainValidation.ValidationType.PLATFORM_CERTIFICATE_ATTRIBUTES;
 
         log.info("Validating delta platform certificate attributes");
         AppraisalStatus result = CredentialValidator.

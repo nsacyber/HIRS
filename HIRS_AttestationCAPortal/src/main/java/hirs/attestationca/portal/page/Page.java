@@ -22,15 +22,15 @@ public enum Page {
             null, "certificate-request/"),
 
     /**
-     * Page to display and manage endorsement key credentials.
+     * Page to display and manage endorsement key certificates.
      */
-    ENDORSEMENT_KEY_CREDENTIALS("Endorsement Key Certificates", "ic_vpn_key_white_24dp.png",
+    ENDORSEMENT_KEY_CERTIFICATES("Endorsement Key Certificates", "/svg/key-fill-white-30dp.svg",
             "first", "certificate-request/"),
 
     /**
-     * Page to display and manage platform credentials.
+     * Page to display and manage platform certificates.
      */
-    PLATFORM_CREDENTIALS("Platform Certificates", "ic_important_devices_white_24dp.png",
+    PLATFORM_CERTIFICATES("Platform Certificates", "ic_important_devices_white_24dp.png",
             null, "certificate-request/"),
 
     /**
@@ -74,12 +74,12 @@ public enum Page {
     /**
      * Page to display RIM event digest table.
      */
-    RIM_DATABASE("RIM Database", "ic_important_devices_white_24dp.png", "first"),
+    RIM_DATABASE("RIM Database", "/svg/database-white-24dp.svg", "first"),
 
     /**
      * Page that manages Attestation CA Policy.
      */
-    POLICY("Policy", "ic_subtitles_white_24dp.png"),
+    POLICY("Policy Settings", "/svg/gear-fill-white-24dp.svg"),
 
     /**
      * Help page.

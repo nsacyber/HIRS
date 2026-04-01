@@ -1,6 +1,5 @@
 package hirs.attestationca.portal.page.controllers;
 
-
 import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
 import hirs.attestationca.persist.entity.userdefined.DownloadFile;
 import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
@@ -49,7 +48,7 @@ import java.util.zip.ZipOutputStream;
  * Controller for the Platform Certificates page.
  */
 @Controller
-@RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates")
 @Log4j2
 public class PlatformCertificatePageController extends PageController<NoPageParams> {
     private final CertificatePageService certificatePageService;
@@ -64,7 +63,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
     @Autowired
     public PlatformCertificatePageController(final CertificatePageService certificatePageService,
                                              final PlatformCertificatePageService platformCertificatePageService) {
-        super(Page.PLATFORM_CREDENTIALS);
+        super(Page.PLATFORM_CERTIFICATES);
         this.certificatePageService = certificatePageService;
         this.platformCertificatePageService = platformCertificatePageService;
     }
@@ -78,7 +77,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
      */
     @RequestMapping
     public ModelAndView initPage(final NoPageParams params, final Model model) {
-        return getBaseModelAndView(Page.PLATFORM_CREDENTIALS);
+        return getBaseModelAndView(Page.PLATFORM_CERTIFICATES);
     }
 
     /**
@@ -184,7 +183,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CREDENTIALS,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.PLATFORM_CERTIFICATE,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the"
@@ -219,7 +218,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
 
             if (parsedPlatformCertificate != null) {
                 certificatePageService.storeCertificate(
-                        CertificateType.PLATFORM_CREDENTIALS,
+                        CertificateType.PLATFORM_CERTIFICATE,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedPlatformCertificate);
             }
@@ -229,7 +228,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.PLATFORM_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -265,7 +264,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.PLATFORM_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**
@@ -300,7 +299,7 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
         }
 
         model.put(MESSAGES_ATTRIBUTE, messages);
-        return redirectTo(Page.PLATFORM_CREDENTIALS, new NoPageParams(), model, redirectAttributes);
+        return redirectTo(Page.PLATFORM_CERTIFICATES, new NoPageParams(), model, redirectAttributes);
     }
 
     /**

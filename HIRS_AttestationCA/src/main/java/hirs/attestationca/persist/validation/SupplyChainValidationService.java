@@ -121,10 +121,10 @@ public class SupplyChainValidationService {
 
         log.info("Beginning Supply Chain Validation...");
 
-        // Validate the Endorsement Credential
+        // Validate the Endorsement Certificate
         if (policySettings.isEcValidationEnabled()) {
-            log.info("Beginning Endorsement Credential Validation...");
-            validations.add(ValidationService.evaluateEndorsementCredentialStatus(ec,
+            log.info("Beginning Endorsement Certificate Validation...");
+            validations.add(ValidationService.evaluateEndorsementCertificateStatus(ec,
                     this.caCredentialRepository, acceptExpiredCerts));
             // store the device with the credential
             if (ec != null) {
@@ -136,15 +136,15 @@ public class SupplyChainValidationService {
 
         // Validate Platform Credential signatures
         if (policySettings.isPcValidationEnabled()) {
-            log.info("Beginning Platform Credential Validation...");
-            // Ensure there are platform credentials to validate
+            log.info("Beginning Platform Certificate Validation...");
+            // Ensure there are platform certificates to validate
             if (pcs == null || pcs.isEmpty()) {
-                log.error("There were no Platform Credentials to validate.");
-                pcErrorMessage = "Platform credential(s) missing\n";
+                log.error("There were no Platform Certificates to validate.");
+                pcErrorMessage = "Platform Certificate(s) missing\n";
             } else {
                 for (PlatformCredential pc : pcs) {
                     KeyStore trustedCa = ValidationService.getCaChain(pc, caCredentialRepository);
-                    platformScv = ValidationService.evaluatePlatformCredentialStatus(
+                    platformScv = ValidationService.evaluatePlatformCertificateStatus(
                             pc, trustedCa, acceptExpiredCerts);
 
                     if (platformScv.getValidationResult() == AppraisalStatus.Status.FAIL) {
@@ -181,8 +181,7 @@ public class SupplyChainValidationService {
                     }
                 } else {
                     // we don't have a base cert, fail
-                    pcErrorMessage = String.format("%s%s%n", pcErrorMessage,
-                            "Base Platform credential missing");
+                    pcErrorMessage = String.format("%s%s%n", pcErrorMessage, "Base Platform Certificate missing");
                 }
             }
 
@@ -191,18 +190,18 @@ public class SupplyChainValidationService {
             } else {
                 List<ArchivableEntity> pcsList = (pcs == null) ? new ArrayList<>() : new ArrayList<>(pcs);
                 validations.add(
-                        new SupplyChainValidation(SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                        new SupplyChainValidation(SupplyChainValidation.ValidationType.PLATFORM_CERTIFICATE,
                                 AppraisalStatus.Status.FAIL,
                                 pcsList,
                                 pcErrorMessage));
             }
         }
 
-        // Validate Platform Credential attributes
+        // Validate Platform Certificate Attributes
         if (policySettings.isPcAttributeValidationEnabled() && pcErrorMessage.isEmpty()) {
-            log.info("Beginning Platform Attributes Validation...");
+            log.info("Beginning Platform Certificate Attributes Validation...");
 
-            // Ensure there are platform credentials to validate
+            // Ensure there are platform certificates to validate
             SupplyChainValidation attributeScv = null;
             String attrErrorMessage = "";
             List<ArchivableEntity> achievableEntities = new ArrayList<>();
@@ -210,9 +209,9 @@ public class SupplyChainValidationService {
             // components of the base
             if (baseCredential == null) {
                 validations.add(ValidationService.buildValidationRecord(
-                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                        SupplyChainValidation.ValidationType.PLATFORM_CERTIFICATE,
                         AppraisalStatus.Status.FAIL,
-                        "Base Platform credential missing. Cannot validate attributes",
+                        "Base Platform Certificate missing. Cannot validate attributes",
                         null, Level.ERROR));
             } else {
                 if (chkDeltas) {
@@ -244,7 +243,7 @@ public class SupplyChainValidationService {
                             policySettings.isIgnoreRevisionEnabled(),
                             policySettings.isIgnorePcieVpdEnabled());
                     validations.add(new SupplyChainValidation(
-                            SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                            SupplyChainValidation.ValidationType.PLATFORM_CERTIFICATE,
                             platformScv.getValidationResult(), achievableEntities, platformScv.getMessage()));
                 }
 
@@ -258,7 +257,7 @@ public class SupplyChainValidationService {
                 //combine platform and platform attributes
                 validations.remove(platformScv);
                 validations.add(new SupplyChainValidation(
-                        SupplyChainValidation.ValidationType.PLATFORM_CREDENTIAL,
+                        SupplyChainValidation.ValidationType.PLATFORM_CERTIFICATE,
                         attributeScv.getValidationResult(), achievableEntities, attributeScv.getMessage()));
             }
         }
