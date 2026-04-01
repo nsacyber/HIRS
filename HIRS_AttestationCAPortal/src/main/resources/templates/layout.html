@@ -80,7 +80,7 @@
         <div th:replace="~{fragments/side-navbar :: sideNavBar(page = ${page}, pages = ${pages})}"></div>
 
         <!-- Main content area with dynamic class -->
-        <div th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
+        <main th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
             <!-- Toast messages fragment -->
             <div th:replace="~{fragments/toast-messages :: toastMessages(messages = ${messages})}"></div>
 
@@ -93,14 +93,8 @@
                 <!-- Page-specific content goes here -->
             </div>
 
-        </div>
+        </main>
     </div>
-
-    <!-- Scroll to Top Button
-    <button id="scrollTopBtn" class="btn btn-primary btn-lg position-fixed" style="bottom: 20px; right: 20px; "
-        aria-label="Scroll to top" data-bs-toggle="tooltip" title="Back to top" type="button">
-        <img th:src="@{/icons/svg/arrow-up-24dp.svg}" alt="Up">
-    </button> -->
 </body>
 
 </html>

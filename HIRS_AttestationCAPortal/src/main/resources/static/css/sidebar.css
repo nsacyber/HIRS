@@ -1,20 +1,21 @@
 /* Sidebar Styling */
 
+/* Sidebar */
 #sidebar-navbar {
+  width: 220px;
   background-color: darkslategray;
   color: white;
   display: flex;
-  border: 0; /* Remove border from all sides */
-  padding: 0; /* Remove padding from all sides */
-  margin: 0; /* Remove margin from all sides */
-  flex-direction: column; /* Stack items vertically */
-  justify-content: flex-start; /* Ensure the first item is at the top */
-  width: 220px; /* fixed width for the sidebar */
-  flex: 0 0 220px;
-  position: sticky; /* keeps the sidebar visible as you scroll */
-  top: 0; /* sticks to the top of the viewport */
-  align-self: flex-start; /* ensures sticky works in flex layout */
-  min-height: 100vh;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Sidebar content sticks inside the sidebar */
+#sidebar-navbar > ul {
+  position: sticky;
+  top: 0; /* sticks to top of the nav container */
 }
 
 #sidebar-navbar > ul > li > a {
