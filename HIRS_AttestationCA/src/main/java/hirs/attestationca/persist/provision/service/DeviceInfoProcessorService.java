@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.provision.service;
 
-
 import com.google.protobuf.ByteString;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
 import hirs.attestationca.persist.entity.manager.ComponentInfoRepository;

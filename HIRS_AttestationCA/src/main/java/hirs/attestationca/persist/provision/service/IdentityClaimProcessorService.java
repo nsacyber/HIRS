@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 import java.util.Objects;
 
@@ -100,8 +99,8 @@ public class IdentityClaimProcessorService {
         }
 
         // parse the EK Public key from the IdentityClaim
-        RSAPublicKey endorsementCredentialPublicKey =
-                ProvisionUtils.parsePublicKey(identityClaim.getEkPublicArea().toByteArray());
+        PublicKey endorsementCredentialPublicKey =
+                ProvisionUtils.parsePublicKeyFromPublicDataSegment(identityClaim.getEkPublicArea().toByteArray());
 
         AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
 
@@ -114,8 +113,8 @@ public class IdentityClaimProcessorService {
         ByteString blobStr = ByteString.copyFrom(new byte[]{});
 
         if (validationResult == AppraisalStatus.Status.PASS) {
-            RSAPublicKey akPub =
-                    ProvisionUtils.parsePublicKey(identityClaim.getAkPublicArea().toByteArray());
+            PublicKey akPub =
+                    ProvisionUtils.parsePublicKeyFromPublicDataSegment(identityClaim.getAkPublicArea().toByteArray());
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
             blobStr = ProvisionUtils.tpm20MakeCredential(endorsementCredentialPublicKey, akPub,
                     nonce);

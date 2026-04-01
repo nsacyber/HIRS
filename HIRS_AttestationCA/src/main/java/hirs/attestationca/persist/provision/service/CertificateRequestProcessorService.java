@@ -43,7 +43,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -149,15 +150,18 @@ public class CertificateRequestProcessorService {
                     ProvisionUtils.parseIdentityClaim(tpm2ProvisionerState.getIdentityClaim());
 
             // Get endorsement public key
-            RSAPublicKey ekPublicKey = ProvisionUtils.parsePublicKey(identityClaim.getEkPublicArea().toByteArray());
+            PublicKey ekPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
+                    identityClaim.getEkPublicArea().toByteArray());
 
             // Get attestation public key
-            RSAPublicKey akPublicKey = ProvisionUtils.parsePublicKey(identityClaim.getAkPublicArea().toByteArray());
+            PublicKey akPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
+                    identityClaim.getAkPublicArea().toByteArray());
 
             // Get LDevID public key if it exists
-            RSAPublicKey ldevidPublicKey = null;
+            PublicKey ldevidPublicKey = null;
             if (identityClaim.hasLdevidPublicArea()) {
-                ldevidPublicKey = ProvisionUtils.parsePublicKey(identityClaim.getLdevidPublicArea().toByteArray());
+                ldevidPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
+                        identityClaim.getLdevidPublicArea().toByteArray());
             }
 
             // Get Endorsement Credential if it exists or was uploaded
@@ -502,7 +506,8 @@ public class CertificateRequestProcessorService {
             // Basic constraints
             x509v3CertificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
 
-            ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").setProvider("BC").build(privateKey);
+            ContentSigner signer =
+                    new JcaContentSignerBuilder(getSignatureAlgorithm()).setProvider("BC").build(privateKey);
 
             X509CertificateHolder holder = x509v3CertificateBuilder.build(signer);
 
@@ -511,5 +516,19 @@ public class CertificateRequestProcessorService {
             throw new CertificateProcessingException("Encountered error while generating "
                     + "identity credential: " + exception.getMessage(), exception);
         }
+    }
+
+    /**
+     * Returns a string representation of the signature algorithm that will be used with the provided private key.
+     *
+     * @return signature algorithm associated with the private key
+     */
+    private String getSignatureAlgorithm() {
+        if (privateKey instanceof RSAPrivateKey) {
+            return "SHA256WithRSA";
+        } else if (privateKey instanceof ECPrivateKey) {
+            return "SHA256withECDSA";
+        }
+        throw new IllegalArgumentException("Unsupported private key type: " + privateKey.getClass().getName());
     }
 }
