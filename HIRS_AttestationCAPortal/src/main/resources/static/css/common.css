@@ -112,6 +112,15 @@ hr {
   width: 900px;
 }
 
+.toast-container-custom-styling {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1100;
+  max-height: 100vh; /* allows scrolling if too many messages */
+  overflow-y: auto;
+}
+
 /* Bootstrap 5 Tooltip Styling*/
 .custom-tooltip-style .tooltip-inner {
   max-width: 500px; /* wider than default 200px */
