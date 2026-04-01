@@ -8,7 +8,7 @@
 
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 OPTION_IN=$1; # per Fedora packing guidelines: $1 = 1 for an upgrade, 0 for a remove
-if [ -z $1 ]; then OPTION_IN="2"; fi  # Set if called by command line
+if [ -z "$1" ]; then OPTION_IN="2"; fi  # Set if called by command line
 case $OPTION_IN in
    "0")
       echo "Package removal requested"
@@ -25,7 +25,6 @@ case $OPTION_IN in
    *) 
      echo "$1 is an unknown parameter for aca_remove_setup"
      exit 1
-     break
     ;;
 esac
 
@@ -48,7 +47,7 @@ if [ ! -d "/opt/hirs" ]; then
 fi
 
 
-source $SCRIPT_DIR/../db/mysql_util.sh
+source "$SCRIPT_DIR"/../db/mysql_util.sh
 
 # Make sure mysql root password is available before continuing...
 check_mariadb_install
@@ -57,9 +56,9 @@ check_mysql_root
 
 # remove the hrs-db and hirs_db user
 if [ $OPTION = "ACA_SET_REMOVE" ] || [ $OPTION = "ACA_PKG_REMOVE" ]; then 
-  pushd $SCRIPT_DIR/../db/  &>/dev/null
-  ./db_drop.sh $DB_ADMIN_PWD
-  popd  &>/dev/null
+  pushd "$SCRIPT_DIR"/../db/  &>/dev/null || echo "Unable to push directory to stack"
+  ./db_drop.sh "$DB_ADMIN_PWD"
+  popd  &>/dev/null || echo "Unable to pop directory from stack"
 fi
 
 # remove pki files and config files if not installed by rpm
@@ -81,5 +80,5 @@ fi
 
 # Remove current ACA process
 echo "Shutting down the aca..."
-ps axf | grep HIRS_AttestationCAPortal.war | grep -v grep | awk '{print "kill " $1}' | sh  >/dev/null 2>&1
+pgrep HIRS_AttestationCAPortal.war | xargs kill >/dev/null 2>&1
 echo "ACA setup removal complete."

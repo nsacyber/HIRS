@@ -320,7 +320,7 @@ public class CredentialManagementService {
                 if (issuedAc.getFirst().getEndValidity().after(currentDate)) {
                     // so the issued AC is not expired
                     // however are we within the threshold
-                    days = ProvisionUtils.daysBetween(currentDate, issuedAc.getFirst().getEndValidity());
+                    days = ProvisionUtils.calculateDaysBetweenDates(currentDate, issuedAc.getFirst().getEndValidity());
                     generateCertificate =
                             days < (ldevID ? policySettings.getDevIdReissueThreshold()
                                     : policySettings.getReissueThreshold());

@@ -7,7 +7,7 @@ LOG_FILE=/dev/null
 DB_ADMIN_PWD=$1
 
 #source /etc/hirs/aca/aca.properties;
-source $SCRIPT_DIR/mysql_util.sh
+source "$SCRIPT_DIR"/mysql_util.sh
 source /etc/os-release 
 
 check_systemd
@@ -19,7 +19,7 @@ if [ "$EUID" -ne 0 ]
 fi
 
 # Setup distro specifc paths and variables
-if [ $ID = "ubuntu" ]; then 
+if [ "$ID" = "ubuntu" ]; then
    DB_SRV_CONF="/etc/mysql/mariadb.conf.d/50-server.cnf"
    DB_CLIENT_CONF="/etc/mysql/mariadb.conf.d/50-client.cnf"
 fi
@@ -32,16 +32,16 @@ fi
 
 echo "dropping hirs_db database"
 
-  mysql -u root --password=$DB_ADMIN_PWD -e "FLUSH HOSTS; FLUSH LOGS; FLUSH STATUS; FLUSH PRIVILEGES; FLUSH USER_RESOURCES"
-  mysql -u root --password=$DB_ADMIN_PWD -e "DROP USER 'hirs_db'@'localhost';"
-  mysql -u root --password=$DB_ADMIN_PWD -e "DROP DATABASE IF EXISTS hirs_db;"
+  mysql -u root --password="$DB_ADMIN_PWD" -e "FLUSH HOSTS; FLUSH LOGS; FLUSH STATUS; FLUSH PRIVILEGES; FLUSH USER_RESOURCES"
+  mysql -u root --password="$DB_ADMIN_PWD" -e "DROP USER 'hirs_db'@'localhost';"
+  mysql -u root --password="$DB_ADMIN_PWD" -e "DROP DATABASE IF EXISTS hirs_db;"
   echo "hirs_db database and hirs_db user removed"
 
 
 # reset the mysql root if the password was left in the properties fiel
-if [ ! -z $DB_ADMIN_PWD ]; then
+if [ -n "$DB_ADMIN_PWD" ]; then
      echo "Resetting mysql root password to empty"
-     mysql -u root --password=$DB_ADMIN_PWD -e "SET PASSWORD FOR "root@localhost" = PASSWORD('');"
+     mysql -u root --password="$DB_ADMIN_PWD" -e "SET PASSWORD FOR "root@localhost" = PASSWORD('');"
      mysql -u "root" -e "FLUSH LOGS;"
    else
      echo "Note root password was NOT reset"

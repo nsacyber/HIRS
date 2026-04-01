@@ -274,7 +274,7 @@ public class AttestationCertificateAuthorityServiceTest {
     }
 
     /**
-     * Tests {@link ProvisionUtils#assemblePublicKey(byte[])} (byte[])}.
+     * Tests {@link ProvisionUtils#assembleRSAPublicKey(byte[]) (byte[])}.
      */
     @Test
     public void testAssembleRSAPublicKeyUsingByteArray() {
@@ -282,7 +282,7 @@ public class AttestationCertificateAuthorityServiceTest {
         final BigInteger modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus();
 
         // perform test
-        RSAPublicKey publicKey = (RSAPublicKey) ProvisionUtils.assemblePublicKey(modulus.toByteArray());
+        RSAPublicKey publicKey = ProvisionUtils.assembleRSAPublicKey(modulus.toByteArray());
 
         // assert that the exponent and the modulus are the same. the exponents should be the well
         // known prime, 101
@@ -303,7 +303,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
         byte[] ekFile = Files.readAllBytes(ekPath);
 
-        RSAPublicKey ek = ProvisionUtils.parsePublicKey(ekFile);
+        RSAPublicKey ek = ProvisionUtils.parseRSAKeyFromPublicDataSegment(ekFile);
         final int radix = 16;
         assertEquals(new BigInteger("010001", radix), ek.getPublicExponent());
 
@@ -331,7 +331,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
         byte[] akFile = Files.readAllBytes(akPath);
 
-        RSAPublicKey ak = ProvisionUtils.parsePublicKey(akFile);
+        RSAPublicKey ak = ProvisionUtils.parseRSAKeyFromPublicDataSegment(akFile);
         final int radix = 16;
         assertEquals(new BigInteger("010001", radix), ak.getPublicExponent());
 

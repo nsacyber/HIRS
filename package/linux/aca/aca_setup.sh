@@ -21,15 +21,16 @@ VENDOR_TABLE='../../../HIRS_Utils/src/main/resources/vendor-table.json'
 
 help () {
   echo "  Setup script for the HIRS ACA"
-  echo "  Syntax: sh aca_setup.sh [-u|h|sb|sp|--skip-db|--skip-pki]"
-  echo "  options:"
-  echo "     -u  | --unattended   Run unattended"
-  echo "     -h  | --help   Print this Help."
-  echo "     -sp | --skip-pki run the setup without pki setup."
-  echo "     -sd | --skip-db run the setup without database setup."
-  echo "     -aa | --aca-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for Attestation Certificates"
-  echo "     -ta | --tls-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for TLS on the ACA portal"
-  echo "     -da | --db-alg specify the ACA's default algorithm (rsa, ecc, or mldsa) for use with maraidb"
+  echo "  Syntax (short form): sh aca_setup.sh [-u|h|sp|sd|aa|ta|da]"
+  echo "  Syntax (long form): sh aca_setup.sh [--unattended|--help|--skip-db|--skip-pki|--aca-alg|--tls-alg|--db-alg]"
+  echo "  Flag options:"
+  echo "     [-u  | --unattended] Runs the script unattended"
+  echo "     [-h  | --help]   Prints this help message."
+  echo "     [-sp | --skip-pki] Skips the pki setup of the setup script."
+  echo "     [-sd | --skip-db] Skips the database setup of the setup script."
+  echo "     [-aa | --aca-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for Attestation Certificates"
+  echo "     [-ta | --tls-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for TLS on the ACA portal"
+  echo "     [-da | --db-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for use with MariaDB"
   echo
 }
 
@@ -82,30 +83,33 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
 # Set default algorithms to rsa
-if [ -z $ARG_ACA_ALG ]; then 
+if [ -z "$ARG_ACA_ALG" ]; then
      ACA_ALG="rsa"
      echo "Using default algorithm ($ACA_ALG) for Attestation Certs"
 fi
-if [ -z $ARG_TLS_ALG ]; then
+
+if [ -z "$ARG_TLS_ALG" ]; then
      TLS_ALG="rsa"
      echo "Using default algorithm ($TLS_ALG) for the ACA portal"
 fi
-if [ -z $ARG_DB_ALG ]; then 
+
+if [ -z "$ARG_DB_ALG" ]; then
      DB_ALG="rsa"
      echo "Using default algorithm ($DB_ALG) for the Database"
 fi
 
 # Check for valid algorithms
-if [ ! $ACA_ALG == "rsa" ] && [ ! $ACA_ALG == "ecc" ] ; then
+if [ ! "$ACA_ALG" == "rsa" ] && [ ! "$ACA_ALG" == "ecc" ] ; then
    echo  "Invalid ACA algorithm $ACA_ALG specified. Valid options are rsa or ecc."
    exit 1;
 fi
-if [ ! $TLS_ALG == "rsa" ] && [ ! $TLS_ALG == "ecc" ] ; then
+if [ ! "$TLS_ALG" == "rsa" ] && [ ! "$TLS_ALG" == "ecc" ] ; then
    echo  "Invalid TLS algorithm $TLS_ALG specified. Valid options are rsa or ecc."
    exit 1;
 fi
-if [ ! $DB_ALG == "rsa" ] && [ ! $DB_ALG == "ecc" ] ; then
+if [ ! "$DB_ALG" == "rsa" ] && [ ! "$DB_ALG" == "ecc" ] ; then
    echo  "Invalid DB algorithm $DB_ALG specified. Valid options are rsa or ecc."
    exit 1;
 fi
@@ -127,7 +131,7 @@ fi
 #fi
  
 # Check for existing installation folders and exist if found
-if [ -z $ARG_UNATTEND ]; then
+if [ -z "$ARG_UNATTEND" ]; then
   if [ -d "/etc/hirs" ]; then
     echo "/etc/hirs exists, aborting install."
     exit 1  
@@ -141,7 +145,7 @@ fi
 mkdir -p $HIRS_CONF_DIR $LOG_DIR $HIRS_JSON_DIR $ACA_OPT_DIR
 touch "$LOG_FILE"
 
-pushd $SCRIPT_DIR &>/dev/null
+pushd "$SCRIPT_DIR" &>/dev/null || echo "Unable to push directory to stack"
 # Check if build environment is being used and set up property files
 if [ -f  $PROP_FILE ]; then
    cp -n $PROP_FILE $HIRS_CONF_DIR/
@@ -163,12 +167,12 @@ if command -v git &> /dev/null; then
    git rev-parse --is-inside-work-tree  &> /dev/null;
    if [ $? -eq 0 ]; then
      jarVersion=$(cat '../../../VERSION').$(date +%s).$(git rev-parse --short  HEAD)
-   echo $jarVersion > $ACA_VERSION_FILE
+   echo "$jarVersion" > $ACA_VERSION_FILE
    fi
 fi
 
 # Set HIRS PKI  password
-if [ -z $HIRS_PKI_PWD ]; then
+if [ -z "$HIRS_PKI_PWD" ]; then
    # Create a 32 character random password
    PKI_PASS=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
    echo "Using randomly generated password for the PKI key password" | tee -a "$LOG_FILE"
@@ -178,7 +182,7 @@ if [ -z $HIRS_PKI_PWD ]; then
 fi
 
 if [ -z "${ARG_SKIP_PKI}" ]; then
-   ../pki/pki_setup.sh $LOG_FILE $PKI_PASS $ARG_UNATTEND
+   ../pki/pki_setup.sh "$LOG_FILE" "$PKI_PASS" "$ARG_UNATTEND"
    if [ $? -eq 0 ]; then 
         echo "ACA PKI  setup complete" | tee -a "$LOG_FILE"
       else
@@ -190,7 +194,7 @@ if [ -z "${ARG_SKIP_PKI}" ]; then
 fi
 
 if [ -z "${ARG_SKIP_DB}" ]; then
-   ../db/db_create.sh $LOG_FILE $PKI_PASS $DB_ALG $ARG_UNATTEND
+   ../db/db_create.sh "$LOG_FILE" "$PKI_PASS" "$DB_ALG" "$ARG_UNATTEND"
    if [ $? -eq 0 ]; then
       echo "ACA database setup complete" | tee -a "$LOG_FILE"
     else
@@ -202,10 +206,12 @@ if [ -z "${ARG_SKIP_DB}" ]; then
 fi
 
 # Update properties file based upon algorithm choices
-echo "Setting algorithm setting for TLS and ACA..."
+echo "Setting public key algorithm for TLS and ACA..."
+
 # remove default config file lines for tomcat ssl aliases
   sed -i '/server.ssl.trust-alias/d' $SPRING_PROP_FILE
   sed -i '/server.ssl.key-alias/d' $SPRING_PROP_FILE
+
 if [ "$TLS_ALG" == "rsa" ]; then
   echo "server.ssl.trust-alias=hirs_aca_tls_rsa_3k_sha384" >> $SPRING_PROP_FILE
   echo "server.ssl.key-alias=hirs_aca_tls_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
@@ -218,17 +224,23 @@ fi
   sed -i '/aca.certificates.leaf-three-key-alias/d' $SPRING_PROP_FILE
   sed -i '/aca.certificates.intermediate-key-alias/d' $SPRING_PROP_FILE
   sed -i '/aca.certificates.root-key-alias/d' $SPRING_PROP_FILE
+  
 if [ "$ACA_ALG" == "rsa" ]; then
-  # Add new lines for aca aliases
-  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
-  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
-  echo "aca.certificates.root-key-alias=HIRS_root_ca_rsa_3k_sha384_key" >> $SPRING_PROP_FILE
+  # Add new lines for aca aliases for the RSA public key algorithm
+  {
+  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_rsa_3k_sha384_key"
+  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_rsa_3k_sha384_key"
+  echo "aca.certificates.root-key-alias=HIRS_root_ca_rsa_3k_sha384_key"
+   } >> $SPRING_PROP_FILE
 elif [ "$ACA_ALG" == "ecc" ]; then
-  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_ecc_512_sha384_key" >> $SPRING_PROP_FILE
-  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_ecc_512_sha384_key" >> $SPRING_PROP_FILE
-  echo "aca.certificates.root-key-alias=HIRS_root_ca_ecc_512_sha384_key" >> $SPRING_PROP_FILE
+  {
+    # Add new lines for aca aliases for the ECC public key algorithm
+  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_ecc_512_sha384_key"
+  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_ecc_512_sha384_key"
+  echo "aca.certificates.root-key-alias=HIRS_root_ca_ecc_512_sha384_key"
+  } >> $SPRING_PROP_FILE
 fi
 
 echo "ACA setup complete" | tee -a "$LOG_FILE"
 
-popd &>/dev/null
+popd &>/dev/null || echo "Unable to pop directory from the stack"

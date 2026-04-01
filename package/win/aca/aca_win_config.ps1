@@ -1,8 +1,8 @@
 # This script is intended to only be run from within a cloned copy of the HIRS repository from GitHub. It is not meant to be deployed.
 # This script swaps configuration files for Windows into place.
 
-$ACA_SCRIPTS_HOME=(Split-Path -parent $PSCommandPath)
-$ACA_COMMON_SCRIPT=(Join-Path $ACA_SCRIPTS_HOME 'aca_common.ps1')
+$ACA_SCRIPTS_HOME = (Split-Path -parent $PSCommandPath)
+$ACA_COMMON_SCRIPT = (Join-Path $ACA_SCRIPTS_HOME 'aca_common.ps1')
 
 # load common script
 . $ACA_COMMON_SCRIPT

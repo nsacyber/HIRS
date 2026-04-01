@@ -73,8 +73,8 @@ public class CredentialManagementServiceTest {
      */
     @Test
     public void processEmptyEndorsementCredential() {
-        assertThrows(IllegalArgumentException.class, () -> credentialManagementService.storeEndorsementCredential(
-                new byte[0], "testName"));
+        assertThrows(IllegalArgumentException.class, () ->
+                credentialManagementService.storeEndorsementCredential(new byte[0], "testName"));
     }
 
     /**
@@ -83,8 +83,8 @@ public class CredentialManagementServiceTest {
     @Test
     public void processInvalidEndorsementCredentialCase1() {
         byte[] ekBytes = new byte[]{1};
-        assertThrows(IllegalArgumentException.class, () -> credentialManagementService.storeEndorsementCredential(
-                ekBytes, "testName"));
+        assertThrows(IllegalArgumentException.class, () ->
+                credentialManagementService.storeEndorsementCredential(ekBytes, "testName"));
     }
 
     /**
@@ -106,6 +106,7 @@ public class CredentialManagementServiceTest {
     @Test
     public void parseUntouchedEndorsementCredential() throws IOException {
         String path = Objects.requireNonNull(CredentialManagementServiceTest.class.getResource(EK_UNTOUCHED)).getPath();
+
         byte[] ekBytes = IOUtils.toByteArray(new FileInputStream(path));
 
         credentialManagementService.storeEndorsementCredential(ekBytes, "testName");

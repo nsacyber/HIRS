@@ -1,4 +1,4 @@
 /**
- * Contains all the service classes used in the provisioning process.
+ * This package includes services that are used to assist with the provisioning process.
  */
 package hirs.attestationca.persist.provision.service;
