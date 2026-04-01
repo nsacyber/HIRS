@@ -183,6 +183,8 @@ function setDataTables(viewName, id, url, columns, customConfig = {}) {
       headerCheckbox: "select-page",
     },
     scrollX: true,
+    scrollY: "80vh", // vertical scroll area height (string with vh unit)
+    scrollCollapse: true, // shrink table if content is smaller than scrollY
     lengthMenu: [
       [10, 25, 50, 75, 100, 250, -1],
       [
