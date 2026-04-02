@@ -12,25 +12,32 @@ import java.security.cert.CertificateException;
 
 /**
  * Class for processing either
- *   1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
- *      used for EFIVariables associated with Secure Boot,
- *      as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
- *      EV_EFI_VARIABLE_DRIVER_CONFIG
- *      EV_EFI_VARIABLE_AUTHORITY
- *   2) the contents of an SPDM devdb,
- *      used for SPDM Device Policy or Device Authority, whose data is an EFIVariable
- *         EFIVariable data for EV_EFI_SPDM_DEVICE_POLICY: UefiSignatureList
- *         EFIVariable data for EV_EFI_SPDM_DEVICE_AUTHORITY : UefiSignatureData only
- *      as defined by PFP v1.06 Rev52, Section 10.4
- * <p>
+ * <ol>
+ * <li>The contents of a Secure Boot PK, KEK, DB or DBX contents,
+ * used for EFIVariables associated with Secure Boot,
+ * as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
+ * <ul>
+ * <li>EV_EFI_VARIABLE_DRIVER_CONFIG</li>
+ * <li>EV_EFI_VARIABLE_AUTHORITY</li>
+ * </ul></li>
+ * <li>The contents of an SPDM devdb,
+ * used for SPDM Device Policy or Device Authority, whose data is an EFIVariable
+ * <ul>
+ * <li>EFIVariable data for EV_EFI_SPDM_DEVICE_POLICY: UefiSignatureList</li>
+ * <li>EFIVariable data for EV_EFI_SPDM_DEVICE_AUTHORITY : UefiSignatureData only</li>
+ * </ul>
+ * as defined by PFP v1.06 Rev52, Section 10.4
+ * </li>
+ * </ol>
  * typedef struct _EFI_SIGNATURE_DATA {
- * EFI_GUID    SignatureOwner;
- * UINT8       SignatureData[...];
+ * <pre>    EFI_GUID    SignatureOwner;</pre>
+ * <pre>    UINT8       SignatureData[...];</pre>
  * } EFI_SIGNATURE_DATA;
  * <p>
  * However page 1729 0f UEFI 2.8 implies that SignatureListType of EFI_CERT_SHA256_GUID
  * will contain the "the SHA-256 hash of the binary".
  * So the Signature Data depends upon the Signature Type from the EFI Signature List.
+ * </p>
  */
 @Log4j2
 public class UefiSignatureData {
@@ -99,14 +106,6 @@ public class UefiSignatureData {
             errorStatus = "Signature List Type has either an unknown GUID or a type that hasn't been implemented yet";
             return;
         }
-//        else if (sigType.isUnknownUUID()) {
-//            //status = "Signature List Type has an unknown GUID: " + efiGuid.toString();
-//            status = "Signature List Type has an unknown GUID";
-//            return;
-//        } else {    // else process as a cert (RH SHIM does this)
-//            processC509Cert(inputStream);
-//            efiVarGuid = sigType;
-//        }
 
         valid = true;
     }

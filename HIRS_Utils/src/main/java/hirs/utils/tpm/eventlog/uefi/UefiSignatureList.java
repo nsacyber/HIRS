@@ -9,38 +9,47 @@ import java.util.ArrayList;
 
 /**
  * Class for processing either
- *   1) the contents of a Secure Boot PK, KEK, DB or DBX contents,
- *      used for EFIVariables associated with Secure Boot,
- *      as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
- *   2) the contents of an SPDM devdb,
- *      used for SPDM Device Policy, whose data is an EFIVariable
- *      as defined by PFP v1.06 Rev52, Section 10.4
+ * <ol>
+ * <li>The contents of a Secure Boot PK, KEK, DB or DBX contents,
+ * used for EFIVariables associated with Secure Boot,
+ * as defined by Section 32.4.1 Signature Database from the UEFI 2.8 specification
+ * </li>
+ * <li>The contents of an SPDM devdb,
+ * used for SPDM Device Policy, whose data is an EFIVariable
+ * as defined by PFP v1.06 Rev52, Section 10.4
+ * </ol>
  * <p>
  * An EFI Signature List is actually a list of Certificates used to verify a Signature.
  * This is mainly found in PCR[7] UEFI variables for either the
- *    - Secure Boot PK, KEK, Db and DBx variables
- *    - or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY).
- * <p>
+ * <ul>
+ * <li>Secure Boot PK, KEK, Db and DBx variables</li>
+ * <li>or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY).</li>
+ * </ul>
  * typedef struct _EFI_SIGNATURE_LIST {
- * EFI_GUID            SignatureType;
- * UINT32              SignatureListSize;
- * UINT32              SignatureHeaderSize;
- * UINT32              SignatureSize;
- * // UINT8               SignatureHeader[SignatureHeaderSize];
- * // EFI_SIGNATURE_DATA  Signatures[...][SignatureSize];
+ * <pre>    EFI_GUID            SignatureType;</pre>
+ * <pre>    UINT32              SignatureListSize;</pre>
+ * <pre>    UINT32              SignatureHeaderSize;</pre>
+ * <pre>    UINT32              SignatureSize;</pre>
+ * <pre>    // UINT8               SignatureHeader[SignatureHeaderSize];</pre>
+ * <pre>    // EFI_SIGNATURE_DATA  Signatures[...][SignatureSize];</pre>
  * } EFI_SIGNATURE_LIST;
- * <p>
  * SignatureListHeader (contents common to any Signature Type)
- *   - SignatureType (SHA256, X509)
- *   - SignatureListSize
- *   - SignatureHeaderSize
- *   - SignatureSize
+ * <ul>
+ * <li>SignatureType (SHA256, X509)</li>
+ * <li>SignatureListSize</li>
+ * <li>SignatureHeaderSize</li>
+ * <li>SignatureSize</li>
+ * </ul>
  * SignatureHeader (contents depend on the SignatureType)
- *   - The format of this header is specified by the SignatureType (SHA256, X509).
+ * <ul>
+ * <li>The format of this header is specified by the SignatureType (SHA256, X509).</li>
+ * </ul>
  * Signatures[][] is an array of signatures.
- *   - Each signature is SignatureSize bytes in length.
- *   - The format of the signature is defined by SignatureType (SHA256, X509).
- * <p>
+ * <ul>
+ * <li>Each signature is SignatureSize bytes in length.</li>
+ * <li>The format of the signature is defined by SignatureType (SHA256, X509).</li>
+ * </ul>
+ * <pre>
  * /                             / |-------------------------| ------- SignatureType
  * /                            /  | Signature List Header   |         SignatureListSize
  * |---------------------|     /   |-------------------------|\        SignatureHeaderSize
@@ -57,6 +66,7 @@ import java.util.ArrayList;
  * |                     |   \     |-------------------------|
  * |                     |     \   |      Signature #n       |
  * |                     |       \ |-------------------------|
+ * </pre>
  */
 public class UefiSignatureList {
     /**
