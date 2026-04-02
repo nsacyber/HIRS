@@ -23,8 +23,9 @@ import java.util.ArrayList;
  * This is mainly found in PCR[7] UEFI variables for either the
  * <ul>
  * <li>Secure Boot PK, KEK, Db and DBx variables</li>
- * <li>or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY).</li>
+ * <li>or the SPDM devdb variable (under EV_EFI_SPDM_DEVICE_POLICY)</li>
  * </ul>
+ * <p>
  * typedef struct _EFI_SIGNATURE_LIST {
  * <pre>    EFI_GUID            SignatureType;</pre>
  * <pre>    UINT32              SignatureListSize;</pre>
@@ -33,13 +34,15 @@ import java.util.ArrayList;
  * <pre>    // UINT8               SignatureHeader[SignatureHeaderSize];</pre>
  * <pre>    // EFI_SIGNATURE_DATA  Signatures[...][SignatureSize];</pre>
  * } EFI_SIGNATURE_LIST;
+ * </p>
+ * <p>
  * SignatureListHeader (contents common to any Signature Type)
  * <ul>
  * <li>SignatureType (SHA256, X509)</li>
  * <li>SignatureListSize</li>
  * <li>SignatureHeaderSize</li>
  * <li>SignatureSize</li>
- * </ul>
+ * </ul></p>
  * SignatureHeader (contents depend on the SignatureType)
  * <ul>
  * <li>The format of this header is specified by the SignatureType (SHA256, X509).</li>
