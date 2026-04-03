@@ -95,8 +95,8 @@ public final class TpmPublicHelper {
         c.readU16(); // Skip nameAlg
         c.readU32(); // Skip objectAttributes
         c.skipTpm2b(); // Skip authPolicy
-        c.readU16(); // Skip symDefObject (some algorithms can add extra bits here; these are skipped for simplicity).
-        c.readU16(); // Skip eccScheme
+        c.readU16(); // Skip symdef object (some algorithms can add extra bits here; these are skipped for simplicity).
+        c.readU16(); // Skip ECC scheme
         TpmEccCurve eccCurve = TpmEccCurve.fromTpmCurveId(c.readU16()).orElseThrow(); // Extract curve family
         c.readU16(); // Skip KDF scheme (as with above, extra bits are skipped for simplicity).
 
@@ -113,7 +113,6 @@ public final class TpmPublicHelper {
     public static ECPublicKey assembleECCPublicKey(final TpmEccCurve curveId, final ECPoint point) {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
-
             // Create an ECPublicKeySpec object using given curve ID and point
             AlgorithmParameters params = AlgorithmParameters.getInstance("EC");
             params.init(new ECGenParameterSpec(curveId.getJavaName()));
