@@ -4,7 +4,7 @@ import hirs.attestationca.persist.enums.TpmEccCurve;
 import hirs.attestationca.persist.exceptions.UnexpectedServerException;
 import hirs.utils.HexUtils;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.codec.binary.Hex;
+
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
@@ -25,13 +25,13 @@ import static hirs.attestationca.persist.provision.helper.ProvisionUtils.DEFAULT
 @Log4j2
 public final class TpmPublicHelper {
     /** The default size for IV blocks. */
-    public static final int DEFAULT_IV_SIZE = 16;
+    public static final int RADIX = 16;
 
     /**
      * Defines the well known exponent.
      * <a href="https://en.wikipedia.org/wiki/65537_(number)#Applications">More information</a>
      */
-    private static final BigInteger EXPONENT = new BigInteger("010001", DEFAULT_IV_SIZE);
+    private static final BigInteger EXPONENT = new BigInteger("010001", RADIX);
 
     /** Prevent instantiation. */
     private TpmPublicHelper() { }
@@ -62,8 +62,7 @@ public final class TpmPublicHelper {
      * @return RSA public key using specific modulus and the well known exponent
      */
     public static RSAPublicKey assembleRSAPublicKey(final byte[] modulus) {
-        final String modulusHexString = Hex.encodeHexString(modulus);
-        return assembleRSAPublicKey(new BigInteger(modulusHexString, DEFAULT_IV_SIZE));
+        return assembleRSAPublicKey(new BigInteger(1, modulus));
     }
 
     /**
@@ -95,10 +94,10 @@ public final class TpmPublicHelper {
         c.readU16(); // Skip nameAlg
         c.readU32(); // Skip objectAttributes
         c.skipTpm2b(); // Skip authPolicy
-        c.readU16(); // Skip symdef object (some algorithms can add extra bits here; these are skipped for simplicity).
-        c.readU16(); // Skip ECC scheme
+        c.readU16(); // Skip symdef object (TODO: extra bits may need to be parsed here).
+        c.readU16(); // Skip ECC scheme (TODO: extra bits may need to be parsed here).
         TpmEccCurve eccCurve = TpmEccCurve.fromTpmCurveId(c.readU16()).orElseThrow(); // Extract curve family
-        c.readU16(); // Skip KDF scheme (as with above, extra bits are skipped for simplicity).
+        c.readU16(); // Skip KDF scheme (TODO: extra bits may need to be parsed here).
 
         ECPoint point = new ECPoint(new BigInteger(1, c.readTpm2b()), new BigInteger(1, c.readTpm2b())); // Extract X/Y
         return assembleECCPublicKey(eccCurve, point);
@@ -147,8 +146,8 @@ public final class TpmPublicHelper {
 
         long readU32() {
             require(4);
-            long v = ((long) (buf[pos] & 0xFF) << 24) | ((long) (buf[pos + 1] & 0xFF) << 18)
-                 | ((long) (buf[pos + 1] & 0xFF) << 8) | ((long) (buf[pos + 3] & 0xFF));
+            long v = ((long) (buf[pos] & 0xFF) << 24) | ((long) (buf[pos + 1] & 0xFF) << 16)
+                 | ((long) (buf[pos + 2] & 0xFF) << 8) | ((long) (buf[pos + 3] & 0xFF));
             pos += 4;
             return v;
         }

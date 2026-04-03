@@ -37,7 +37,7 @@ public enum TpmEccCurve {
     /**
      * Constructs an enum value from a given unsigned integer, corresponding to a TPMI_ECC_CURVE.
      * @param value the unsigned integer pertaining to a TPM EC curve ID
-     * @return a TpmEccCurve constructed from an unsigned integer, or null otherwise
+     * @return an {@link Optional} {@code TpmEccCurve} constructed from an unsigned integer, or null otherwise
      */
     public static Optional<TpmEccCurve> fromTpmCurveId(final int value) {
         return Arrays.stream(values()).filter(v -> v.tpmId == value).findFirst();
@@ -46,7 +46,7 @@ public enum TpmEccCurve {
     /**
      * Constructs an enum value from a given Java name.
      * @param name the Java name of the EC curve
-     * @return a TpmEccCurve constructed from a Java name, or null otherwise
+     * @return an {@link Optional} {@code TpmEccCurve} constructed from a Java name, or null otherwise
      */
     public static Optional<TpmEccCurve> fromJavaName(final String name) {
         return Arrays.stream(values()).filter(v -> v.javaName.equalsIgnoreCase(name)).findFirst();
