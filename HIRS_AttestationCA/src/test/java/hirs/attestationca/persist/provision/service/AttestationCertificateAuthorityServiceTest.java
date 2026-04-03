@@ -115,8 +115,7 @@ public class AttestationCertificateAuthorityServiceTest {
         keyPairGenerator.initialize(keySize);
         keyPair = keyPairGenerator.generateKeyPair();
 
-        // EC key pair generation
-        KeyPairGenerator ecKeyPairGenerator = KeyPairGenerator.getInstance("EC");
+        KeyPairGenerator ecKeyPairGenerator = KeyPairGenerator.getInstance("EC"); // EC key pair generation
         ECGenParameterSpec ecSpec = new ECGenParameterSpec(EC_JAVA_CURVE_NAME);
         ecKeyPairGenerator.initialize(ecSpec);
         ecKeyPair = ecKeyPairGenerator.generateKeyPair();
@@ -314,10 +313,9 @@ public class AttestationCertificateAuthorityServiceTest {
         // obtain the expected curve and point from the existing EC public key
         final EllipticCurve ecCurve = ((ECPublicKey) ecKeyPair.getPublic()).getParams().getCurve();
         final ECPoint ecPoint = ((ECPublicKey) ecKeyPair.getPublic()).getW();
-
-        // perform test
         final TpmEccCurve ecTpmCurve = TpmEccCurve.fromJavaName(EC_JAVA_CURVE_NAME).orElseThrow();
-        ECPublicKey outputPubKey = TpmPublicHelper.assembleECCPublicKey(ecTpmCurve, ecPoint);
+
+        ECPublicKey outputPubKey = TpmPublicHelper.assembleECCPublicKey(ecTpmCurve, ecPoint); // perform test
 
         // assert that the EC family and curve points match
         final ECParameterSpec outputParamSpec = outputPubKey.getParams();
