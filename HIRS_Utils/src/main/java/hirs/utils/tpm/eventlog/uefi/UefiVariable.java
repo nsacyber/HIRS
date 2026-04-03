@@ -15,11 +15,11 @@ import java.util.List;
  * Class to process a UEFI variable within a TPM Event.
  * <pre>
  * typedef struct tdUEFI_VARIABLE_DATA{
- * UEFI_GUID VariableName;     (16 bytes)
- * UINT64 UnicodeNameLength;   (8 bytes)
- * UINT64 VariableDataLength;  (8 bytes)
- * CHAR16 UnicodeName[];
- * INT8 VariableData[];
+ * <pre>    UEFI_GUID VariableName;     (16 bytes)</pre>
+ * <pre>    UINT64 UnicodeNameLength;   (8 bytes)</pre>
+ * <pre>    UINT64 VariableDataLength;  (8 bytes)</pre>
+ * <pre>    CHAR16 UnicodeName[];</pre>
+ * <pre>    INT8 VariableData[];</pre>
  * } UEFI_VARIABLE_DATA
  * </pre>
  */
