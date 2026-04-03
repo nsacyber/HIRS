@@ -89,7 +89,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
     private KeyPair keyPair;
     private KeyPair ecKeyPair;
-    private final String ecJavaCurveName = "secp256r1";
+    private static final String EC_JAVA_CURVE_NAME = "secp256r1";
 
     @InjectMocks
     private AttestationCertificateAuthorityServiceImpl attestationCertificateAuthorityService;
@@ -117,7 +117,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
         // EC key pair generation
         KeyPairGenerator ecKeyPairGenerator = KeyPairGenerator.getInstance("EC");
-        ECGenParameterSpec ecSpec = new ECGenParameterSpec(ecJavaCurveName);
+        ECGenParameterSpec ecSpec = new ECGenParameterSpec(EC_JAVA_CURVE_NAME);
         ecKeyPairGenerator.initialize(ecSpec);
         ecKeyPair = ecKeyPairGenerator.generateKeyPair();
     }
@@ -316,7 +316,7 @@ public class AttestationCertificateAuthorityServiceTest {
         final ECPoint ecPoint = ((ECPublicKey) ecKeyPair.getPublic()).getW();
 
         // perform test
-        final TpmEccCurve ecTpmCurve = TpmEccCurve.fromJavaName(ecJavaCurveName).orElseThrow();
+        final TpmEccCurve ecTpmCurve = TpmEccCurve.fromJavaName(EC_JAVA_CURVE_NAME).orElseThrow();
         ECPublicKey outputPubKey = TpmPublicHelper.assembleECCPublicKey(ecTpmCurve, ecPoint);
 
         // assert that the EC family and curve points match
