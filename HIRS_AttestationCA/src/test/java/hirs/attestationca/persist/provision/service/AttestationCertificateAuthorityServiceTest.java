@@ -1,7 +1,8 @@
 package hirs.attestationca.persist.provision.service;
 
+import hirs.attestationca.persist.enums.TpmEccCurve;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
-import hirs.attestationca.persist.provision.helper.ProvisionUtils;
+import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.utils.HexUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,9 +20,15 @@ import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.EllipticCurve;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -81,6 +88,8 @@ public class AttestationCertificateAuthorityServiceTest {
     private AutoCloseable mocks;
 
     private KeyPair keyPair;
+    private KeyPair ecKeyPair;
+    private final String ecJavaCurveName = "secp256r1";
 
     @InjectMocks
     private AttestationCertificateAuthorityServiceImpl attestationCertificateAuthorityService;
@@ -97,7 +106,7 @@ public class AttestationCertificateAuthorityServiceTest {
      * @throws NoSuchAlgorithmException if issues arise while generating keypair.
      */
     @BeforeEach
-    public void setupTests() throws NoSuchAlgorithmException {
+    public void setupTests() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         // Initializes mocks before each test
         mocks = MockitoAnnotations.openMocks(this);
 
@@ -105,6 +114,12 @@ public class AttestationCertificateAuthorityServiceTest {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(keySize);
         keyPair = keyPairGenerator.generateKeyPair();
+
+        // EC key pair generation
+        KeyPairGenerator ecKeyPairGenerator = KeyPairGenerator.getInstance("EC");
+        ECGenParameterSpec ecSpec = new ECGenParameterSpec(ecJavaCurveName);
+        ecKeyPairGenerator.initialize(ecSpec);
+        ecKeyPair = ecKeyPairGenerator.generateKeyPair();
     }
 
     /**
@@ -274,7 +289,7 @@ public class AttestationCertificateAuthorityServiceTest {
     }
 
     /**
-     * Tests {@link ProvisionUtils#assembleRSAPublicKey(byte[]) (byte[])}.
+     * Tests {@link TpmPublicHelper#assembleRSAPublicKey}.
      */
     @Test
     public void testAssembleRSAPublicKeyUsingByteArray() {
@@ -282,13 +297,32 @@ public class AttestationCertificateAuthorityServiceTest {
         final BigInteger modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus();
 
         // perform test
-        RSAPublicKey publicKey = ProvisionUtils.assembleRSAPublicKey(modulus.toByteArray());
+        RSAPublicKey publicKey = TpmPublicHelper.assembleRSAPublicKey(modulus.toByteArray());
 
         // assert that the exponent and the modulus are the same. the exponents should be the well
         // known prime, 101
         final int radix = 16;
         assertEquals(new BigInteger("010001", radix), publicKey.getPublicExponent());
         assertEquals(publicKey.getModulus(), modulus);
+    }
+
+    /**
+     * Tests {@link TpmPublicHelper#assembleECCPublicKey}.
+     */
+    @Test
+    public void testAssembleECCPublicKeyUsingByteArray() {
+        // obtain the expected curve and point from the existing EC public key
+        final EllipticCurve ecCurve = ((ECPublicKey) ecKeyPair.getPublic()).getParams().getCurve();
+        final ECPoint ecPoint = ((ECPublicKey) ecKeyPair.getPublic()).getW();
+
+        // perform test
+        final TpmEccCurve ecTpmCurve = TpmEccCurve.fromJavaName(ecJavaCurveName).orElseThrow();
+        ECPublicKey outputPubKey = TpmPublicHelper.assembleECCPublicKey(ecTpmCurve, ecPoint);
+
+        // assert that the EC family and curve points match
+        final ECParameterSpec outputParamSpec = outputPubKey.getParams();
+        assertEquals(outputParamSpec.getCurve(), ecCurve);
+        assertEquals(ecPoint, outputPubKey.getW());
     }
 
     /**
@@ -303,7 +337,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
         byte[] ekFile = Files.readAllBytes(ekPath);
 
-        RSAPublicKey ek = ProvisionUtils.parseRSAKeyFromPublicDataSegment(ekFile);
+        RSAPublicKey ek = TpmPublicHelper.parseRSAKeyFromPublicDataSegment(ekFile);
         final int radix = 16;
         assertEquals(new BigInteger("010001", radix), ek.getPublicExponent());
 
@@ -331,7 +365,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
         byte[] akFile = Files.readAllBytes(akPath);
 
-        RSAPublicKey ak = ProvisionUtils.parseRSAKeyFromPublicDataSegment(akFile);
+        RSAPublicKey ak = TpmPublicHelper.parseRSAKeyFromPublicDataSegment(akFile);
         final int radix = 16;
         assertEquals(new BigInteger("010001", radix), ak.getPublicExponent());
 
