@@ -6,7 +6,7 @@ import java.util.Optional;
 
 /**
  * Translates EC curve names from TPM 2.0 specifications to Java curve names.
- * @see <a href="https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part2_Structures_pub.pdf">
+ * @see <a href="https://trustedcomputinggroup.org/resource/tpm-library-specification/">
  *     Trusted Platform Module Library Part 2: Structures (TPM 2.0)</a>
  */
 @Getter
@@ -37,7 +37,7 @@ public enum TpmEccCurve {
     /**
      * Constructs an enum value from a given unsigned integer, corresponding to a TPMI_ECC_CURVE.
      * @param value the unsigned integer pertaining to a TPM EC curve ID
-     * @return an {@link Optional} {@code TpmEccCurve} constructed from an unsigned integer, or null otherwise
+     * @return an {@link Optional} {@code TpmEccCurve} constructed from an unsigned integer
      */
     public static Optional<TpmEccCurve> fromTpmCurveId(final int value) {
         return Arrays.stream(values()).filter(v -> v.tpmId == value).findFirst();
@@ -46,7 +46,7 @@ public enum TpmEccCurve {
     /**
      * Constructs an enum value from a given Java name.
      * @param name the Java name of the EC curve
-     * @return an {@link Optional} {@code TpmEccCurve} constructed from a Java name, or null otherwise
+     * @return an {@link Optional} {@code TpmEccCurve} constructed from a Java name
      */
     public static Optional<TpmEccCurve> fromJavaName(final String name) {
         return Arrays.stream(values()).filter(v -> v.javaName.equalsIgnoreCase(name)).findFirst();

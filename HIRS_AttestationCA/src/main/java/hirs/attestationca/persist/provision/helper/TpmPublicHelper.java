@@ -1,6 +1,7 @@
 package hirs.attestationca.persist.provision.helper;
 
 import hirs.attestationca.persist.enums.TpmEccCurve;
+import hirs.attestationca.persist.enums.PublicKeyAlgorithm;
 import hirs.attestationca.persist.exceptions.UnexpectedServerException;
 import hirs.utils.HexUtils;
 import lombok.extern.log4j.Log4j2;
@@ -21,7 +22,11 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
 import static hirs.attestationca.persist.provision.helper.ProvisionUtils.DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES;
 
-/** Helper class for parsing TPM 2.0 public area structures, and constructing public keys from this data. */
+/**
+ *  Helper class for parsing TPM 2.0 public area structures, and constructing public keys from this data.
+ *  @see <a href="https://trustedcomputinggroup.org/resource/tpm-library-specification/">
+ *  Trusted Platform Module Library Part 2: Structures (TPM 2.0)</a>
+ */
 @Log4j2
 public final class TpmPublicHelper {
     /** The default size for IV blocks. */
@@ -90,14 +95,21 @@ public final class TpmPublicHelper {
      */
     public static ECPublicKey parseECCKeyFromPublicDataSegment(final byte[] publicDataSegment) {
         Cursor c = new Cursor(publicDataSegment);
-        c.readU16(); // Skip type
+
+        int type = c.readU16(); // Read type
+        if (PublicKeyAlgorithm.fromId(type) != PublicKeyAlgorithm.ECC) {
+            throw new UnsupportedOperationException("Expected TPM_ALG_ECC");
+        }
         c.readU16(); // Skip nameAlg
         c.readU32(); // Skip objectAttributes
+
         c.skipTpm2b(); // Skip authPolicy
-        c.readU16(); // Skip symdef object (TODO: extra bits may need to be parsed here).
-        c.readU16(); // Skip ECC scheme (TODO: extra bits may need to be parsed here).
+        c.readSymDefObject(); // Skip symdef object
+        c.readEccScheme(); // Skip ECC scheme
+
         TpmEccCurve eccCurve = TpmEccCurve.fromTpmCurveId(c.readU16()).orElseThrow(); // Extract curve family
-        c.readU16(); // Skip KDF scheme (TODO: extra bits may need to be parsed here).
+
+        c.readKdfScheme(); // Skip KDF scheme
 
         ECPoint point = new ECPoint(new BigInteger(1, c.readTpm2b()), new BigInteger(1, c.readTpm2b())); // Extract X/Y
         return assembleECCPublicKey(eccCurve, point);
@@ -165,6 +177,46 @@ public final class TpmPublicHelper {
             skip(size);
         }
 
+        ParsedSymDefObject readSymDefObject() {
+            int algId = readU16();
+            PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId); // Read algorithm
+            switch (alg) {
+                case NULL -> {
+                    return new ParsedSymDefObject(algId, null, null);
+                }
+                case AES -> {
+                    int keyBits = readU16();
+                    int mode = readU16();
+                    return new ParsedSymDefObject(algId, keyBits, mode);
+                }
+                default -> throw new UnsupportedOperationException("Unsupported TPMT_SYM_DEF_OBJECT alg: " + algId);
+            }
+        }
+
+        ParsedEccScheme readEccScheme() {
+            int algId = readU16();
+            PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId);
+            switch (alg) {
+                case NULL -> {
+                    return new ParsedEccScheme(algId, null);
+                }
+                case ECDSA -> {
+                    int hashAlg = readU16();
+                    return new ParsedEccScheme(algId, hashAlg);
+                }
+                default -> throw new UnsupportedOperationException("Unsupported TPMT_ECC_SCHEME alg: " + algId);
+            }
+        }
+
+        ParsedKdfScheme readKdfScheme() {
+            int algId = readU16();
+            PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId);
+            if (alg.equals(PublicKeyAlgorithm.NULL)) { // TPM_ALG_NULL only supported for now
+                return new ParsedKdfScheme(algId, null);
+            }
+            throw new UnsupportedOperationException("Unsupported TPMT_ECC_SCHEME alg: " + algId);
+        }
+
         void skip(final int n) {
             require(n);
             pos += n;
@@ -176,4 +228,8 @@ public final class TpmPublicHelper {
             }
         }
     }
+
+    private record ParsedSymDefObject(int alg, Integer keyBits, Integer mode) { }
+    private record ParsedEccScheme(int scheme, Integer hashAlg) { }
+    private record ParsedKdfScheme(int scheme, Integer hashAlg) { }
 }
