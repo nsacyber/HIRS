@@ -309,7 +309,7 @@ public class AttestationCertificateAuthorityServiceTest {
      * Tests {@link TpmPublicHelper#assembleECCPublicKey}.
      */
     @Test
-    public void testAssembleECCPublicKeyUsingByteArray() {
+    public void testAssembleECCPublicKey() {
         // obtain the expected curve and point from the existing EC public key
         final EllipticCurve ecCurve = ((ECPublicKey) ecKeyPair.getPublic()).getParams().getCurve();
         final ECPoint ecPoint = ((ECPublicKey) ecKeyPair.getPublic()).getW();

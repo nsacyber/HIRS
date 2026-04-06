@@ -214,7 +214,7 @@ public final class TpmPublicHelper {
             if (alg.equals(PublicKeyAlgorithm.NULL)) { // TPM_ALG_NULL only supported for now
                 return new ParsedKdfScheme(algId, null);
             }
-            throw new UnsupportedOperationException("Unsupported TPMT_ECC_SCHEME alg: " + algId);
+            throw new UnsupportedOperationException("Unsupported TPMT_KDF_SCHEME alg: " + algId);
         }
 
         void skip(final int n) {
