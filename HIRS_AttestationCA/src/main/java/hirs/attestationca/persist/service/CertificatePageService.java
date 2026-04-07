@@ -3,17 +3,17 @@ package hirs.attestationca.persist.service;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
+import hirs.attestationca.persist.entity.userdefined.DownloadFile;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
-import hirs.attestationca.persist.service.util.CertificateType;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
+import hirs.attestationca.persist.enums.CertificateType;
 import hirs.attestationca.persist.service.util.PageServiceUtils;
 import hirs.attestationca.persist.service.util.PredicateFactory;
 import hirs.attestationca.persist.util.CredentialHelper;
-import hirs.attestationca.persist.util.DownloadFile;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TypedQuery;
@@ -78,15 +78,15 @@ public class CertificatePageService {
 
     /**
      * Takes the provided column names, the search term that the user entered and attempts to find
-     * certificates whose field values matches the provided search term.
+     * {@link Certificate} objects whose field values matches the provided search term.
      *
      * @param entityClass           generic certificate entity class
      * @param searchableColumnNames list of the searchable column names
      * @param globalSearchTerm      text that was input in the global search textbox
      * @param archiveFlag           archive flag
      * @param pageable              pageable
-     * @param <T>                   generic entity class that extends from certificate
-     * @return page full of the generic certificates.
+     * @param <T>                   generic entity class that extends from {@link Certificate}
+     * @return page full of the generic {@link Certificate} objects.
      */
     public <T extends Certificate> Page<T> findCertificatesByGlobalSearchTermAndArchiveFlag(
             final Class<T> entityClass,
@@ -124,14 +124,14 @@ public class CertificatePageService {
 
     /**
      * Takes the provided columns that come with a search criteria and attempts to find
-     * certificates that match the column's specific search criteria's search value.
+     * {@link Certificate} objects that match the column's specific search criteria's search value.
      *
      * @param entityClass               generic certificate entity class
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param archiveFlag               archive flag
      * @param pageable                  pageable
-     * @param <T>                       generic entity class that extends from certificate
-     * @return page full of the generic certificates.
+     * @param <T>                       generic entity class that extends from {@link Certificate}
+     * @return page full of the generic {@link Certificate} objects.
      */
     public <T extends Certificate> Page<T> findCertificatesByColumnSpecificSearchTermAndArchiveFlag(
             final Class<T> entityClass,
@@ -167,16 +167,17 @@ public class CertificatePageService {
     }
 
     /**
-     * Finds certificates based on both global search and column-specific search criteria.
+     * Finds {@link Certificate} objects based on both global search and column-specific search criteria.
      * The method applies the provided global search term across all searchable columns
      * and also applies column-specific filters based on the individual column search criteria.
      * The results are returned with pagination support.
      * <p>
      * This method combines the logic of two search functionalities:
-     * - Global search: Searches across all specified columns for a matching term.
-     * - Column-specific search: Filters based on individual column search criteria, such as text
-     * or date searches.
-     * <p>
+     * <ul>
+     * <li> Global search: Searches across all specified columns for a matching term.</li>
+     * <li> Column-specific search: Filters based on individual column search criteria,
+     * such as text or date searches.</li>
+     * </ul>
      *
      * @param entityClass               generic certificate entity class
      * @param searchableColumnNames     list of the searchable column names
@@ -184,8 +185,8 @@ public class CertificatePageService {
      * @param columnsWithSearchCriteria columns that have a search criteria applied to them
      * @param pageable                  pageable
      * @param archiveFlag               archive flag
-     * @param <T>                       generic entity class that extends from certificate
-     * @return page full of the generic certificates.
+     * @param <T>                       generic entity class that extends from {@link Certificate}
+     * @return page full of the generic {@link Certificate} objects.
      */
     public <T extends Certificate> Page<T> findCertificatesByGlobalAndColumnSpecificSearchTerm(
             final Class<T> entityClass,
@@ -230,24 +231,23 @@ public class CertificatePageService {
     }
 
     /**
-     * Attempts to find a certificate whose uuid matches the provided uuid.
+     * Attempts to find a {@link Certificate} object whose uuid matches the provided uuid.
      *
      * @param uuid certificate uuid
-     * @return certificate
+     * @return a {@link Certificate} object
      */
     public Certificate findCertificate(final UUID uuid) {
         return this.certificateRepository.getCertificate(uuid);
     }
 
     /**
-     * Stores the given certificate in the database.
+     * Stores the given {@link Certificate} object in the database.
      *
      * @param certificateType String containing the certificate type
-     * @param fileName        contain the name of the file of the certificate to
-     *                        be stored
+     * @param fileName        contain the name of the file of the certificate to be stored
      * @param successMessages contains any success messages that will be displayed on the page
      * @param errorMessages   contains any error messages that will be displayed on the page
-     * @param certificate     the certificate to store
+     * @param certificate     the {@link Certificate} object to store
      */
     public void storeCertificate(final CertificateType certificateType,
                                  final String fileName,
@@ -348,7 +348,7 @@ public class CertificatePageService {
     }
 
     /**
-     * Soft deletes the provided certificate from the database.
+     * Soft deletes the provided {@link Certificate} object from the database.
      *
      * @param uuid            the UUID of the cert to delete
      * @param successMessages contains any success messages that will be displayed on the page
@@ -393,7 +393,7 @@ public class CertificatePageService {
     }
 
     /**
-     * Bulk deletes the provided list of certificates from the database.
+     * Bulk deletes the provided list of {@link Certificate} objects from the database.
      *
      * @param ids             the list of certificate ids to delete
      * @param successMessages contains any success messages that will be displayed on the page
@@ -412,7 +412,7 @@ public class CertificatePageService {
     }
 
     /**
-     * Packages a collection of certificates into a zip file for download.
+     * Packages a collection of {@link Certificate} objects into a zip file for download.
      *
      * @param zipOut          zip outputs stream
      * @param singleFileName  zip file name
@@ -441,12 +441,12 @@ public class CertificatePageService {
     }
 
     /**
-     * Retrieves a certificate from the database and prepares its contents for download.
+     * Retrieves a {@link Certificate} object from the database and prepares its contents for download.
      *
      * @param certificateClass generic certificate class
      * @param uuid             certificate uuid
      * @param <T>              certificate type
-     * @return download file of a certificate
+     * @return download file of a {@link Certificate} object
      */
     public <T extends Certificate> DownloadFile downloadCertificate(final Class<T> certificateClass,
                                                                     final UUID uuid) {
@@ -514,7 +514,7 @@ public class CertificatePageService {
                         List<String> moreErrorMessages = new ArrayList<>();
 
                         this.storeCertificate(
-                                CertificateType.TRUST_CHAIN,
+                                CertificateType.TRUST_CHAIN_CERTIFICATE,
                                 file.getOriginalFilename(),
                                 moreSuccessMessages,
                                 moreErrorMessages,
@@ -591,7 +591,7 @@ public class CertificatePageService {
      *
      * @param searchableColumnNames the columns to be searched globally
      * @param criteriaBuilder       the criteria builder to construct the predicates
-     * @param certificateRoot       the root entity representing the certificate
+     * @param certificateRoot       the root entity representing the {@link Certificate} object
      * @param globalSearchTerm      the term to search for across columns
      * @param <T>                   the entity type that extends `Certificate`
      * @return a combined `Predicate` representing the global search conditions
@@ -640,7 +640,7 @@ public class CertificatePageService {
      *
      * @param columnsWithSearchCriteria the columns and their associated search criteria
      * @param criteriaBuilder           the criteria builder to construct the predicates
-     * @param certificateRoot           the root entity representing the certificate
+     * @param certificateRoot           the root entity representing the {@link Certificate} object
      * @param <T>                       the entity type that extends `Certificate`
      * @return a combined `Predicate` representing the column-specific search conditions
      */
@@ -687,10 +687,10 @@ public class CertificatePageService {
     }
 
     /**
-     * Retrieves the platform certificate by the platform serial number.
+     * Retrieves the {@link PlatformCredential} object by the platform serial number.
      *
      * @param serialNumber the platform serial number
-     * @return the certificate or null if none is found
+     * @return the list of {@link PlatformCredential} objects or null if none is found
      */
     private List<PlatformCredential> getPlatformCertificateByBoardSN(final String serialNumber) {
         List<PlatformCredential> associatedCertificates = new ArrayList<>();
@@ -702,10 +702,10 @@ public class CertificatePageService {
     }
 
     /**
-     * Helper method that utilizes the components of the provided platform certificate to generate
-     * a collection of component results and subsequently stores these results in the database.
+     * Helper method that utilizes the components of the provided {@link PlatformCredential} object to generate
+     * a list of {@link ComponentResult} objects  and subsequently stores these results in the database.
      *
-     * @param platformCredential certificate
+     * @param platformCredential platform certificate
      */
     private void parseAndSaveComponentResults(final PlatformCredential platformCredential)
             throws IOException {

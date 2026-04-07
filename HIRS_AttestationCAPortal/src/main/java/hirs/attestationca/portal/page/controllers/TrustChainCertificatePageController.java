@@ -1,19 +1,18 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.FilteredRecordsList;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
+import hirs.attestationca.persist.entity.userdefined.DownloadFile;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
+import hirs.attestationca.persist.enums.CertificateType;
 import hirs.attestationca.persist.service.CertificatePageService;
 import hirs.attestationca.persist.service.TrustChainCertificatePageService;
-import hirs.attestationca.persist.service.util.CertificateType;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
-import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.CertificateStringMapBuilder;
@@ -287,7 +286,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
         response.setContentType("application/zip");
 
         try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
-            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN,
+            certificatePageService.bulkDownloadCertificates(zipOut, CertificateType.TRUST_CHAIN_CERTIFICATE,
                     singleFileName);
         } catch (Exception exception) {
             log.error("An exception was thrown while attempting to bulk download all the "
@@ -324,7 +323,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
 
             if (parsedTrustChainCertificate != null) {
                 certificatePageService.storeCertificate(
-                        CertificateType.TRUST_CHAIN,
+                        CertificateType.TRUST_CHAIN_CERTIFICATE,
                         file.getOriginalFilename(),
                         successMessages, errorMessages, parsedTrustChainCertificate);
             }

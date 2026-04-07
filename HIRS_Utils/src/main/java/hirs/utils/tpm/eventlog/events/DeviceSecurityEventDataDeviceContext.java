@@ -8,12 +8,13 @@ import lombok.Getter;
  * DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT is a common SPDM structure which includes the
  * identification of the device, device vendor, subsystem, etc. Device can be either a PCI
  * or USB connection.
- * <p>
+ *
+ * <pre>
  * typedef union tdDEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT {
  * .     DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT       PciContext;
  * .     DEVICE_SECURITY_EVENT_DATA_USB_CONTEXT       UsbContext;
  * } DEVICE_SECURITY_EVENT_DATA_DEVICE_CONTEXT;
- * <p>
+ * </pre>
  */
 @Getter
 public abstract class DeviceSecurityEventDataDeviceContext {
@@ -22,18 +23,22 @@ public abstract class DeviceSecurityEventDataDeviceContext {
      * Device Security Event Data Device Type = no device type.
      */
     public static final int DEVICE_TYPE_NONE = 0;
+
     /**
      * Device Security Event Data Device Type = DEVICE_TYPE_PCI.
      */
     public static final int DEVICE_TYPE_PCI = 1;
+
     /**
      * Device Security Event Data Device Type = DEVICE_TYPE_USB.
      */
     public static final int DEVICE_TYPE_USB = 2;
+
     /**
      * PCI Version.
      */
     private int version = 0;
+
     /**
      * PCI Length.
      */

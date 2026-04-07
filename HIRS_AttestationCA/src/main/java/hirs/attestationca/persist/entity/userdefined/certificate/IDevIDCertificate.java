@@ -1,9 +1,12 @@
 package hirs.attestationca.persist.entity.userdefined.certificate;
 
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateInfo;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateParser;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
+import jakarta.persistence.PostLoad;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -20,12 +23,22 @@ import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Serial;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Represents the IEEE 802.1AR secure Device Identifier (DevID).
+ * <p>
+ * The IDevID is a cryptographic identity bound to a device, used to assert its identity in secure networks.
+ * It is generated during manufacturing (e.g., in factories) and remains valid throughout the device's
+ * lifecycle.  The IDevID, along with the Initial Attestation Key (IAK), provides a unique and
+ * persistent identity for the device, enabling secure authentication and communication within
+ * 802.1AR-compliant networks.
+ */
 @Entity
 @Getter
 @EqualsAndHashCode(callSuper = true)
@@ -46,8 +59,16 @@ public class IDevIDCertificate extends Certificate {
     private static final String POLICY_QUALIFIER_VERIFIED_TPM_FIXED = "2.23.133.11.1.2";
     private static final String POLICY_QUALIFIER_VERIFIED_TPM_RESTRICTED = "2.23.133.11.1.3";
 
+    /**
+     * The raw byte array of the subject alternative name extension, if present.
+     * This will be null if the certificate does not contain a subject alternative name extension.
+     */
     @Transient
     private byte[] subjectAltName;
+
+    /** Parsed DICE attributes from the certificate, if present. */
+    @Transient
+    private transient DiceCertificateInfo diceCertificateInfo;
 
     /**
      * Corresponds to the hwType field found in a Hardware Module Name (if present).
@@ -66,6 +87,10 @@ public class IDevIDCertificate extends Certificate {
      */
     @Column
     private String tpmPolicies;
+
+    /** Serial version UID for serialization. */
+    @Serial
+    private static final long serialVersionUID = 9223372036854775807L;
 
     /**
      * Construct a new IDevIDCertificate given its binary contents. The given
@@ -139,11 +164,21 @@ public class IDevIDCertificate extends Certificate {
         }
 
         // Add to map
-        policyQualifiers.put("verifiedTPMResidency", Boolean.valueOf(verifiedTPMResidency));
-        policyQualifiers.put("verifiedTPMFixed", Boolean.valueOf(verifiedTPMFixed));
-        policyQualifiers.put("verifiedTPMRestricted", Boolean.valueOf(verifiedTPMRestricted));
+        policyQualifiers.put("verifiedTPMResidency", verifiedTPMResidency);
+        policyQualifiers.put("verifiedTPMFixed", verifiedTPMFixed);
+        policyQualifiers.put("verifiedTPMRestricted", verifiedTPMRestricted);
 
         return policyQualifiers;
+    }
+
+    /**
+     * Helper function to parse transient fields after load.
+     * @throws IOException if there is an exception during parsing.
+     */
+    @PostLoad
+    private void parseTransientFields() throws IOException {
+        this.diceCertificateInfo = DiceCertificateParser.parse(this.getX509Certificate());
+        this.subjectAltName = getX509Certificate().getExtensionValue(SUBJECT_ALTERNATIVE_NAME_EXTENSION);
     }
 
     /**

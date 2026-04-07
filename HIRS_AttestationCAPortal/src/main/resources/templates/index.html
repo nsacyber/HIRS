@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout}">
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <title th:text="'Welcome to the HIRS Attestation CA'">Welcome to the HIRS Attestation CA</title>
+    <link rel="stylesheet" th:href="@{/css/index.css}" />
 </head>
 
 <body>
-    <h1 layout:fragment="pageHeaderTitle"> Home Page </h1>
+    <h1 layout:fragment="pageHeaderTitle"> Home </h1>
 
     <section layout:fragment="content">
         <div class="container-fluid" id="index-page">
@@ -20,10 +21,10 @@
                     </div>
                     <h3>
                         <a th:href="@{/HIRS_AttestationCAPortal/portal/policy}">
-                            <img alt="" th:src="@{/icons/ic_store_black_24dp.png}" /> Policy
+                            <img alt="" th:src="@{/icons/svg/gear-fill-24dp.svg}" /> Policy Settings
                         </a>
                     </h3>
-                    <h4>Configure Identity CA and Supply Chain validation policies.</h4>
+                    <h4>Configure Identity CA and Supply Chain Validation policies.</h4>
                     <h3>
                         <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain}">
                             <img alt="" th:src="@{/icons/ic_subtitles_black_24dp.png}" /> Trust Chain
@@ -31,38 +32,38 @@
                         </a>
                     </h3>
                     <h4>
-                        Upload, view and manage CA certificates that complete trust chains
+                        Upload, view and manage CA certificates that complete Trust Chains
                         for hardware credentials.
                     </h4>
                     <h3>
-                        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-credentials}">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates}">
                             <img th:src="@{/icons/ic_important_devices_black_24dp.png}" />
                             Platform Certificates
                         </a>
                     </h3>
-                    <h4>Upload, view and manage platform credentials.</h4>
+                    <h4>Upload, view and manage Platform Certificates.</h4>
                     <h3>
                         <a
-                            th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-credentials}">
-                            <img alt="" th:src="@{/icons/ic_vpn_key_black_24dp.png}" /> Endorsement
+                            th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/endorsement-key-certificates}">
+                            <img alt="" th:src="@{/icons/svg/key-fill-30dp.svg}" /> Endorsement
                             Certificates
                         </a>
                     </h3>
-                    <h4>Upload, view and manage endorsement credentials.</h4>
+                    <h4>Upload, view and manage Endorsement Certificates.</h4>
                     <h3>
                         <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/idevid-certificates}">
                             <img alt="" th:src="@{/icons/ic_important_devices_black_24dp.png}" /> IDevID
                             Certificates
                         </a>
                     </h3>
-                    <h4>Upload, view and manage IDevID certificates.</h4>
+                    <h4>Upload, view and manage IDevID Certificates.</h4>
                     <h3>
                         <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests}">
                             <img alt="" th:src="@{/icons/ic_important_devices_black_24dp.png}" />
                             Reference Integrity Manifests
                         </a>
                     </h3>
-                    <h4>Upload, view and manage reference integrity manifests.</h4>
+                    <h4>Upload, view and manage Reference Integrity Manifests (RIMs).</h4>
                 </div>
 
                 <div class="col-md-6 index-right-side">
@@ -80,7 +81,8 @@
                     <h4>View Certificates issued by this CA</h4>
                     <h3>
                         <a th:href="@{/HIRS_AttestationCAPortal/portal/validation-reports}"><img alt=""
-                                th:src="@{/icons/ic_assignment_black_24dp.png}" /> Validation
+                                th:src="@{/icons/ic_assignment_black_24dp.png}" />
+                            Validation
                             Reports</a>
                     </h3>
                     <h4>View a list of device validations carried out by this CA.</h4>
@@ -91,9 +93,8 @@
                     <h4>View devices covered by this CA for supply chain validation.</h4>
                     <h3>
                         <a th:href="@{/HIRS_AttestationCAPortal/portal/rim-database}"><img alt=""
-                                th:src="@{/icons/ic_devices_black_24dp.png}" />
-                            RIM
-                            Database</a>
+                                th:src="@{/icons/svg/database-24dp.svg}" />
+                            RIM Database</a>
                     </h3>
                     <h4>View a list of Reference Integrity Measurements</h4>
                     <h3>
@@ -103,8 +104,7 @@
                     </h3>
                     <h4>
                         Access the HIRS documentation in the code repository and manage/view the HIRS application
-                        log
-                        levels.
+                        log levels.
                     </h4>
                 </div>
             </div>

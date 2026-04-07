@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <section layout:fragment="script">
+    <script th:inline="javascript">
+      $(document).ready(function () {
+        const viewName = /*[[${ page.viewName }]]*/ '';
+        const url = viewName + "/list";
+
+        // When the "deleteCertificateConfirmationModal" modal is about to be shown:
+        // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
+        // - Set the value of the hidden input field with ID 'pcToDeleteId' to the retrieved platform certificate ID
+        $('#deleteCertificateConfirmationModal').on('show.bs.modal', function (event) {
+          const deleteCertLinkButton = $(event.relatedTarget);  // Link that triggered the modal
+          const platformCertificateId = deleteCertLinkButton.data('id');  // Extract the platform certificate ID from the data-id attribute
+
+          // Set the value of the hidden input to the ID
+          $(this).find('#pcToDeleteId').val(platformCertificateId);
+        });
+
+        // Setup Platform Certificates table columns
+        let columns = [
+          {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: DataTable.render.select()
+          },
+          {
+            name: "deviceName",
+            data: "deviceName",
+            orderable: true,
+            searchable: true,
+            columnControl: ["searchDropdown"]
+          },
+          {
+            name: "issuer",
+            data: "issuer",
+            orderable: true,
+            searchable: true,
+            columnControl: ["searchDropdown"],
+          },
+          {
+            name: "credentialType",
+            data: "credentialType",
+            orderable: true,
+            searchable: false,
+            render: function (data, type, full, meta) {
+              if (full.platformChainType !== "") {
+                return full.platformChainType;
+              } else {
+                return full.credentialType;
+              }
+            },
+          },
+          {
+            name: "manufacturer",
+            data: "manufacturer",
+            orderable: true,
+            searchable: true,
+            columnControl: ["searchDropdown"],
+          },
+          {
+            name: "model",
+            data: "model",
+            orderable: true,
+            searchable: true,
+            columnControl: ["searchDropdown"],
+          },
+          {
+            name: "version",
+            data: "version",
+            orderable: true,
+            searchable: true,
+            columnControl: ["searchDropdown"],
+          },
+          {
+            name: "platformSerial",
+            data: "platformSerial",
+            orderable: true,
+            searchable: true,
+            columnControl: ["searchDropdown"],
+          },
+          {
+            name: "beginValidity",
+            data: "beginValidity",
+            type: "date",
+            orderable: true,
+            searchable: true,
+            columnControl: ["searchDropdown"],
+            render: function (data, type, full, meta) {
+              return formatCertificateDate(data);
+            },
+          },
+          {
+            name: "endValidity",
+            data: "endValidity",
+            type: "date",
+            orderable: true,
+            searchable: true,
+            columnControl: ["searchDropdown"],
+            render: function (data, type, full, meta) {
+              return formatCertificateDate(data);
+            },
+          },
+          {
+            data: "id",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, full, meta) {
+              //Display endorsement certificate
+              if (full.endorsementCredential === null) return "";
+              let html = "";
+
+              let id = full.endorsementCredential.id;
+              html =
+                generateCertificateDetailsLink("endorsement", id, false) + "&nbsp;";
+
+              return html;
+            },
+          },
+          {
+            data: "id",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, full, meta) {
+              let html = "";
+              const thisPageCertificateType = "platform";
+              html += generateCertificateDetailsLink(thisPageCertificateType, data, true);
+              html += generateCertificateDownloadLink(thisPageCertificateType, viewName, data);
+              html += generateCertificateDeleteLink(thisPageCertificateType, data);
+
+              return html;
+            },
+          },
+        ];
+
+        let table = setDataTables(viewName, "#platformTable", url, columns);
+      });
+    </script>
+  </section>
+</head>
+
+<body>
+
+  <h1 layout:fragment="pageHeaderTitle">Platform Certificates</h1>
+
+  <div layout:fragment="content">
+    <div class="download-upload-section">
+
+      <!--Upload Platform Certificates Button-->
+      <form enctype="multipart/form-data" method="POST"
+        th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/upload}">
+        <th:block th:replace="~{fragments/file-chooser
+                :: fileChooser(id='platformCertificateEditor',
+                buttonText='Platform Certificates',
+                toolTipText='Open modal to upload Platform Certificates',
+                label='Upload Platform Certificates',
+                bodyContent=~{this :: bodyContent})}">
+          <th:block th:fragment="bodyContent">
+            <input id="importFile" multiple="multiple" name="file" type="file" />
+          </th:block>
+        </th:block>
+      </form>
+
+      <!--Download Platform Certificates Button-->
+      <a class="btn btn-secondary" data-bs-toggle="tooltip"
+        th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/bulk-download}"
+        title="Download ZIP file of all Platform Certificates">
+        <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+        Platform Certificates
+      </a>
+    </div>
+
+    <div class="aca-data-table">
+      <table class="table table-bordered table-striped table-hover" id="platformTable">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Device</th>
+            <th>Issuer</th>
+            <th>Type</th>
+            <th>Manufacturer</th>
+            <th>Model</th>
+            <th>Version</th>
+            <th>Board SN</th>
+            <th>Valid (begin)</th>
+            <th>Valid (end)</th>
+            <th>Endorsement</th>
+            <th>Options</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+
+    <!-- This modal will be triggered when the user hits the delete link on one of the table rows on one of the table rows on the Platform Certificate page -->
+    <form method="POST"
+      th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/delete}">
+      <div
+        th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Platform Certificate',
+                bodyContent=~{this::#deletePCConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})}">
+
+        <!-- Modal Body Content -->
+        <div id="deletePCConfirmationBody">
+          <p class="text-center text-danger fs-4"><strong>Are you sure you want to delete this Platform
+              Certificate?</strong></p>
+        </div>
+
+        <!-- Define custom footer buttons here -->
+        <div id="deleteConfirmationFooterButtons">
+          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+          <!-- The platform certificate ID is stored in this hidden field -->
+          <input id="pcToDeleteId" name="id" type="hidden" value="">
+          <button class="btn btn-danger" type="submit">Delete Platform Certificate</button>
+        </div>
+      </div>
+    </form>
+
+
+    <!-- This modal will be triggered when the user hits the Delete Selected button on the Platform Certificate page-->
+    <form method="POST"
+      th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates/bulk-delete}">
+      <div
+        th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Platform Certificates',
+                bodyContent=~{this::#deleteMultiplePlatformCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})}">
+        <!-- Modal Body Content -->
+        <div id="deleteMultiplePlatformCertificatesConfirmationBody">
+          <p class="text-center text-danger fs-4">
+            <strong>Are you sure you want to delete <span id="numRecordsToDelete"></span> Platform
+              certificate(s)?</strong>
+          </p>
+        </div>
+
+        <!-- Define custom footer buttons here -->
+        <div id="deleteMultipleConfirmationFooterButtons">
+          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+          <!-- The list of platform certificate ids are stored in this hidden field -->
+          <input id="selectedRecordsToDeleteIds" name="ids" type="hidden" value="">
+          <button class="btn btn-danger" type="submit">Delete Platform Certificate(s)</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+</body>
+
+</html>

@@ -2,7 +2,6 @@ package hirs.attestationca.persist.entity.userdefined;
 
 import hirs.attestationca.persist.entity.ArchivableEntity;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
-import hirs.attestationca.persist.entity.userdefined.certificate.ConformanceCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
@@ -12,10 +11,8 @@ import hirs.attestationca.persist.entity.userdefined.info.NetworkInfo;
 import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
-import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReportTest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,6 +31,7 @@ import java.util.Objects;
 /**
  * Class with definitions and functions common to multiple Userdefined Entity object tests.
  */
+@Log4j2
 public class AbstractUserdefinedEntityTest {
 
     /**
@@ -92,7 +90,6 @@ public class AbstractUserdefinedEntityTest {
      * Location of a test identity certificate.
      */
     private static final String TEST_IDENTITY_CERT = "/tpm/sample_identity_cert.cer";
-    private static final Logger LOGGER = LogManager.getLogger(DeviceInfoReportTest.class);
 
     /**
      * This protected constructor was created to silence one of checkstyle errors.
@@ -137,15 +134,12 @@ public class AbstractUserdefinedEntityTest {
         try {
             certPath = Paths.get(Objects.requireNonNull(
                     AbstractUserdefinedEntityTest.class.getResource(filename)).toURI());
-//            certPath = Paths.get(Objects.requireNonNull(
-//                  CertificateTest.class.getResource(filename)).toURI());
         } catch (URISyntaxException e) {
             throw new IOException("Could not resolve path URI", e);
         }
 
         return switch (certificateClass.getSimpleName()) {
             case "CertificateAuthorityCredential" -> new CertificateAuthorityCredential(certPath);
-            case "ConformanceCredential" -> new ConformanceCredential(certPath);
             case "EndorsementCredential" -> new EndorsementCredential(certPath);
             case "PlatformCredential" -> new PlatformCredential(certPath);
             case "IssuedAttestationCertificate" -> new IssuedAttestationCertificate(certPath,
@@ -190,14 +184,14 @@ public class AbstractUserdefinedEntityTest {
     public static NetworkInfo createTestNetworkInfo() {
         try {
             final String hostname = "test.hostname";
-            final byte[] byteAddress = new byte[] {127, 0, 0, 1};
+            final byte[] byteAddress = new byte[]{127, 0, 0, 1};
             final InetAddress ipAddress =
                     InetAddress.getByAddress(byteAddress);
-            final byte[] macAddress = new byte[] {11, 22, 33, 44, 55, 66};
+            final byte[] macAddress = new byte[]{11, 22, 33, 44, 55, 66};
             return new NetworkInfo(hostname, ipAddress, macAddress);
 
         } catch (UnknownHostException e) {
-            LOGGER.error("error occurred while creating InetAddress");
+            log.error("error occurred while creating InetAddress");
             return null;
         }
     }
@@ -238,7 +232,7 @@ public class AbstractUserdefinedEntityTest {
      *
      * @return TPM information for a fake device
      */
-    public static final TPMInfo createTPMInfo() {
+    public static TPMInfo createTPMInfo() {
         final short num1 = 1;
         final short num2 = 2;
         final short num3 = 3;
@@ -273,7 +267,7 @@ public class AbstractUserdefinedEntityTest {
                 try {
                     istream.close();
                 } catch (IOException e) {
-                    LOGGER.error("test certificate file could not be closed");
+                    log.error("test certificate file could not be closed");
                 }
             }
         }

@@ -497,6 +497,6 @@ public class DigestTest {
     }
 
     private byte[] getEmptySHA1Digest() {
-        return DigestUtils.sha1(new byte[] {});
+        return DigestUtils.sha1(new byte[]{});
     }
 }

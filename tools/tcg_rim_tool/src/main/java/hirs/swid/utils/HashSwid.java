@@ -23,6 +23,7 @@ public class HashSwid {
 
     /**
      * Getter method for the hash that uses 256 bit hash.
+     *
      * @param filepath the file to hash.
      * @return Sha256 hash.
      */
@@ -31,33 +32,15 @@ public class HashSwid {
     }
 
     /**
-     * Getter method for the hash that uses 384 bit hash.
-     * @param filepath the file to hash.
-     * @return sha384 hash.
-     */
-    public String get384Hash(final String filepath) throws Exception {
-        return getHashValue(filepath, SHA384);
-    }
-
-    /**
-     * Getter method for the hash that uses 512 bit hash.
-     * @param filepath the file to hash.
-     * @return sha512 hash.
-     */
-    public String get512Hash(final String filepath) throws Exception {
-        return getHashValue(filepath, SHA512);
-    }
-
-    /**
      * This method creates the hash based on the provided algorithm
      * only accessible through helper methods.
-     *
+     * <p>
      * This method assumes an input file that is small enough to read in its
      * entirety.  Large files should be handled similarly to the public static
      * getHashValue() below.
      *
      * @param filepath file contents to hash
-     * @param sha the algorithm to use for the hash
+     * @param sha      the algorithm to use for the hash
      * @return hash value.
      */
     private static String getHashValue(final String filepath, final String sha) throws Exception {
@@ -75,7 +58,7 @@ public class HashSwid {
             String errorMessage = "Error hashing file " + filepath + ": ";
             if (e instanceof UnsupportedEncodingException
                     || e instanceof NoSuchAlgorithmException) {
-                errorMessage += ((Exception) e).getMessage();
+                errorMessage += e.getMessage();
             } else if (e instanceof IOException) {
                 errorMessage += "error reading file.";
             }
@@ -88,6 +71,7 @@ public class HashSwid {
     /**
      * This method is a public access hash function that operates on a string
      * value and uses default assumptions on the salt and algorithm.
+     *
      * @param value string object to hash
      * @return hash value.
      */
@@ -108,8 +92,8 @@ public class HashSwid {
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException grex) {
             System.out.println(grex.getMessage());
         } catch (IOException ioEx) {
-            System.out.println(String.format("%s: \n%s is not valid...",
-                    ioEx.getMessage(), value));
+            System.out.printf("%s: \n%s is not valid...%n",
+                    ioEx.getMessage(), value);
         } finally {
             try {
                 if (bis != null) {
@@ -124,5 +108,27 @@ public class HashSwid {
         }
 
         return Base64.getEncoder().encodeToString(hash);
+    }
+
+    /**
+     * Getter method for the hash that uses 384 bit hash.
+     *
+     * @param filepath the file to hash.
+     * @return sha384 hash.
+     * @throws Exception if any issues arise trying to retrieve the hash of the provided filepath
+     */
+    public String get384Hash(final String filepath) throws Exception {
+        return getHashValue(filepath, SHA384);
+    }
+
+    /**
+     * Getter method for the hash that uses 512 bit hash.
+     *
+     * @param filepath the file to hash.
+     * @return sha512 hash.
+     * @throws Exception if any issues arise trying to retrieve the hash of the provided filepath
+     */
+    public String get512Hash(final String filepath) throws Exception {
+        return getHashValue(filepath, SHA512);
     }
 }

@@ -11,6 +11,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertifica
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceKeyPurpose;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
@@ -38,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static hirs.utils.specificationLookups.PlatformClass.getPlatClassFromId;
 
@@ -68,6 +70,7 @@ public final class CertificateStringMapBuilder {
         ekuMap.put(TCG_KP_AIK_CERTIFICATE, "tcg-kp-AIKCertificate");
         ekuMap.put(TCG_KP_PLATFORM_KEY_CERTIFICATE, "tcg-kp-PlatformKeyCertificate");
         ekuMap.put(TCG_KP_DELTA_PLATFORM_ATTRIBUTE_CERTIFICATE, "tcg-kp-DeltaPlatformAttributeCertificate");
+        ekuMap.putAll(DiceKeyPurpose.getExtendedKeyUsageMap());
         return ekuMap;
     }
 
@@ -140,7 +143,8 @@ public final class CertificateStringMapBuilder {
                     if (publicKey != null) {
                         String keySizeStr;
                         if (publicKey instanceof ECPublicKey ecKey) {
-                            keySizeStr = Integer.toString(ecKey.getParams().getCurve().getField().getFieldSize());
+                            keySizeStr =
+                                    Integer.toString(ecKey.getParams().getCurve().getField().getFieldSize());
                         } else {
                             keySizeStr = String.valueOf(certificate.getPublicKeySize());
                         }
@@ -159,14 +163,16 @@ public final class CertificateStringMapBuilder {
                 data.put("keyUsage", certificate.getKeyUsage());
             }
 
+            // Parse EKU OIDs into a comma-delimited list
             if (certificate.getExtendedKeyUsage() != null
                     && !certificate.getExtendedKeyUsage().isEmpty()) {
-                String eku = certificate.getExtendedKeyUsage().replaceAll("\\n$", "");
-                if (ekuMap.containsKey(eku)) {
-                    data.put("extendedKeyUsage", eku + " (" + ekuMap.get(eku) + ")");
-                } else {
-                    data.put("extendedKeyUsage", eku + " (Warning: Unexpected OID)");
-                }
+                String[] oids = certificate.getExtendedKeyUsage().split("\\n");
+                String displayNames = Arrays.stream(oids)
+                        .filter(oid -> !oid.isBlank())
+                        .map(oid -> ekuMap.containsKey(oid) ? oid + " (" + ekuMap.get(oid) + ")"
+                                : oid + " (Warning: Unexpected OID)")
+                        .collect(Collectors.joining(", "));
+                data.put("extendedKeyUsage", displayNames);
             }
 
             //Get issuer ID if not self signed
@@ -389,7 +395,8 @@ public final class CertificateStringMapBuilder {
             try {
                 certificate.parseCertificate();
             } catch (IOException e) {
-                throw new RuntimeException("Failed to re-parse Endorsement Credential for details display", e);
+                throw new RuntimeException("Failed to re-parse Endorsement Credential for details display",
+                        e);
             }
             // Add hashmap with TPM information if available
             if (certificate.getTpmSpecification() != null) {
@@ -809,18 +816,11 @@ public final class CertificateStringMapBuilder {
                 }
             }
 
-            if (certificate.getKeyUsage() != null) {
-                data.put("keyUsage", certificate.getKeyUsage());
-            }
-
-            if (certificate.getExtendedKeyUsage() != null
-                    && !certificate.getExtendedKeyUsage().isEmpty()) {
-                String eku = certificate.getExtendedKeyUsage().replaceAll("\\n$", "");
-                if (ekuMap.containsKey(eku)) {
-                    data.put("extendedKeyUsage", eku + " (" + ekuMap.get(eku) + ")");
-                } else {
-                    data.put("extendedKeyUsage", eku + " (Warning: Unexpected OID)");
-                }
+            if (certificate.getDiceCertificateInfo() != null) {
+                data.put("diceProfileType", certificate.getDiceCertificateInfo().getProfileType().toString());
+                data.put("diceHasKeyCertSign", certificate.getDiceCertificateInfo().hasKeyCertSign() ? "Yes" : "No");
+                data.put("diceIsCa", certificate.getDiceCertificateInfo().isCa() ? "Yes" : "No");
+                data.put("diceHasCrlSign", certificate.getDiceCertificateInfo().hasCrlSign() ? "Yes" : "No");
             }
 
             if (certificate.getTpmPolicies() != null) {

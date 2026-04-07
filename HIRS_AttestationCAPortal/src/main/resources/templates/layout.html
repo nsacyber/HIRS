@@ -29,18 +29,24 @@
     <script th:src="@{/lib/bootstrap-5.3.8/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/js/common.js}"></script>
 
-    <!-- Toast initialization script -->
+    <!-- Bootstrap 5 Toast and Tooltips initialization script -->
     <script>
         $(document).ready(function () {
-            const disappearDelayTime = 8000; // Time in milliseconds before the toast disappears
+            const disappearDelayTime = 8000; // Time in milliseconds before the toast message disappears
 
-            // Triggering all toasts to show if present
+            // Show all toasts if present
             const toastElements = document.querySelectorAll('.toast');
             toastElements.forEach(function (toastElement) {
                 const toast = new bootstrap.Toast(toastElement, {
                     delay: disappearDelayTime
                 });
                 toast.show();
+            });
+
+            // Initalize Bootstrap tooltips
+            $('body').tooltip({
+                selector: '[data-bs-toggle="tooltip"]',
+                customClass: 'custom-tooltip-style'
             });
         });
     </script>
@@ -51,7 +57,7 @@
 
 <body>
     <!-- Header -->
-    <nav id="header" class="navbar">
+    <header id="header" class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-3">
@@ -65,16 +71,16 @@
                 </div>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- Content container -->
-    <div id="content" class="container-fluid">
+    <!-- Layout container -->
+    <div id="layout" class="container-fluid">
 
-        <!-- Side navigation fragment -->
-        <div th:replace="~{fragments/page-nav :: pageNav(page = ${page}, pages = ${pages})}"></div>
+        <!-- Sidebar navigation fragment -->
+        <div th:replace="~{fragments/side-navbar :: sideNavBar(page = ${page}, pages = ${pages})}"></div>
 
         <!-- Main content area with dynamic class -->
-        <div th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
+        <main th:class="${page?.hasMenu} ? 'main' : 'main-without-navigation'" role="main">
             <!-- Toast messages fragment -->
             <div th:replace="~{fragments/toast-messages :: toastMessages(messages = ${messages})}"></div>
 
@@ -87,9 +93,7 @@
                 <!-- Page-specific content goes here -->
             </div>
 
-            <div class="extra-spacer"></div>
-            <div class="spacer"></div>
-        </div>
+        </main>
     </div>
 </body>
 

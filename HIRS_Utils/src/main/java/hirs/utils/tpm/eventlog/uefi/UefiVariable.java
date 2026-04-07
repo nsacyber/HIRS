@@ -2,36 +2,38 @@ package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
 import lombok.Getter;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Class to process a UEFI variable within a TPM Event.
+ * <pre>
  * typedef struct tdUEFI_VARIABLE_DATA{
- * UEFI_GUID VariableName;     (16 bytes)
- * UINT64 UnicodeNameLength;   (8 bytes)
- * UINT64 VariableDataLength;  (8 bytes)
- * CHAR16 UnicodeName[];
- * INT8 VariableData[];
+ * <pre>    UEFI_GUID VariableName;     (16 bytes)</pre>
+ * <pre>    UINT64 UnicodeNameLength;   (8 bytes)</pre>
+ * <pre>    UINT64 VariableDataLength;  (8 bytes)</pre>
+ * <pre>    CHAR16 UnicodeName[];</pre>
+ * <pre>    INT8 VariableData[];</pre>
  * } UEFI_VARIABLE_DATA
+ * </pre>
  */
 public class UefiVariable {
 
+    /**
+     * List of Signature lists.
+     */
+    private final List<UefiSignatureList> certSuperList;
     /**
      * UEFI defined variable identifier GUID.
      */
     @Getter
     private UefiGuid uefiVarGuid = null;
-    /**
-     * List of Signature lists.
-     */
-    private final List<UefiSignatureList> certSuperList;
     /**
      * Name of the UEFI variable.
      */
@@ -82,15 +84,13 @@ public class UefiVariable {
      * the class used to parse the data within the "VariableData".
      *
      * @param variableData byte array holding the UEFI Variable.
-     * @throws java.security.cert.CertificateException If there a problem
-     *                                                 parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem
-     *                                                 hashing the certificate.
-     * @throws java.io.IOException                     If there's a problem
-     *                                                 parsing the signature data.
+     * @throws java.security.NoSuchAlgorithmException if there's a problem
+     *                                                hashing the certificate.
+     * @throws java.io.IOException                    If there's a problem
+     *                                                parsing the signature data.
      */
     public UefiVariable(final byte[] variableData)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws NoSuchAlgorithmException, IOException {
         certSuperList = new ArrayList<>();
         byte[] guid = new byte[UefiConstants.SIZE_16];
         byte[] nameLength = new byte[UefiConstants.SIZE_8];
@@ -164,7 +164,7 @@ public class UefiVariable {
      *                                                 parsing the signature data.
      */
     private void processSigList(final byte[] data)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws NoSuchAlgorithmException, IOException {
         ByteArrayInputStream certData = new ByteArrayInputStream(data);
         while (certData.available() > 0) {
             UefiSignatureList list;
@@ -204,7 +204,7 @@ public class UefiVariable {
      * @throws java.io.IOException                     If there's a problem parsing the signature data.
      */
     private void processSigDataX509(final byte[] efiSigData)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws NoSuchAlgorithmException, IOException {
 
         ByteArrayInputStream efiSigDataIS = new ByteArrayInputStream(efiSigData);
         ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
@@ -222,7 +222,7 @@ public class UefiVariable {
             UefiSignatureData tmpSigData = new UefiSignatureData(efiSigDataIS, signatureType);
             if (!tmpSigData.isValid()) {
                 dataValid = false;
-                dataInvalidStatus = tmpSigData.getStatus();
+                dataInvalidStatus = tmpSigData.getErrorStatus();
                 break;
             }
             sigList.add(tmpSigData);

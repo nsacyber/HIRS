@@ -12,10 +12,10 @@
 
                 // When the "deleteRIMConfirmationModal" modal is about to be shown:
                 // - Retrieve the ID from the button that triggered the modal (via data-id attribute)
-                // - Set the value of the hidden input field with ID 'pcToDeleteId' to the retrieved platform credential ID
+                // - Set the value of the hidden input field with ID 'pcToDeleteId' to the retrieved platform certificate ID
                 $('#deleteRIMConfirmationModal').on('show.bs.modal', function (event) {
                     const deleteRIMLinkButton = $(event.relatedTarget);  // Link that triggered the modal
-                    const rimID = deleteRIMLinkButton.data('id');  // Extract the platform credential ID from the data-id attribute
+                    const rimID = deleteRIMLinkButton.data('id');  // Extract the platform certificate ID from the data-id attribute
 
                     // Set the value of the hidden input to the ID
                     $(this).find('#rimToDeleteId').val(rimID);
@@ -87,26 +87,29 @@
 </head>
 
 <body>
-    <h1 layout:fragment="pageHeaderTitle">Reference Integrity Manifests</h1>
+    <h1 layout:fragment="pageHeaderTitle">Reference Integrity Manifests (RIMS)</h1>
 
     <div layout:fragment="content">
-        <div class="aca-input-box-header">
+        <!-- Upload RIMs button -->
+        <div class="download-upload-section">
             <form enctype="multipart/form-data" method="post"
                 th:action="@{/HIRS_AttestationCAPortal/portal/reference-manifests/upload}">
-                Reference Integrity Manifests
                 <th:block
-                    th:replace="~{fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', label='Import RIMs', bodyContent=~{this :: bodyContent})}">
+                    th:replace="~{fragments/file-chooser :: fileChooser(id='referenceManifestsEditor', buttonText='Reference Manifests', toolTipText='Open modal to upload Reference Manifests', label='Upload Reference Manifests', bodyContent=~{this :: bodyContent})}">
                     <th:block th:fragment="bodyContent">
                         <input id="importFile" multiple="multiple" name="file" type="file" />
                     </th:block>
                 </th:block>
-                <a th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}">
-                    <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}" alt="Download Icon">
-                </a>
             </form>
-        </div>
 
-        <br />
+            <!-- Download RIMs button -->
+            <a class="btn btn-secondary" data-bs-toggle="tooltip"
+                th:href="@{/HIRS_AttestationCAPortal/portal/reference-manifests/bulk-download}"
+                title="Download ZIP file of all Reference Manifests">
+                <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+                Reference Manifests
+            </a>
+        </div>
 
         <div class="aca-data-table">
             <table class="table table-bordered table-striped table-hover" id="referenceManifestTable">

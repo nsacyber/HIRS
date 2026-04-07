@@ -12,15 +12,18 @@ import java.util.ArrayList;
 
 /**
  * Class to process the SpdmCertificateChain.
- * <p>
+ *
+ * <pre>
  * Certificate chain format, defined by SPDM v1.03, Sect 10.6.1, Table 33:
  * Certificate chain format {
  * .     Length                          2 bytes;
  * .     Reserved                        2 bytes;
- * .     RootHash                        <H> bytes;
- * .     Certificates                    <Length> - (4 + <H>) bytes;
+ * .     RootHash                        (H) bytes;
+ * .     Certificates                    (Length) - (4 + (H)) bytes;
  * }
- * <p>
+ * </pre>
+ *
+ * <pre>
  * Length: total length of cert chain including all fields in this block
  * H: the output size of the hash algorithm selected by the most recent ALGORITHMS response
  * .  this field shall be in hash byte order
@@ -31,6 +34,7 @@ import java.util.ArrayList;
  * .  the hash algorithm is the DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN SpdmBaseHashAlgo
  * Certificates: Complete cert chain consisting of 1 or more ASN.1 DER-encoded X.509 v3 certs
  * .  this field shall be in Encoded ASN.1 byte order
+ * </pre>
  */
 public class SpdmCertificateChain {
 
@@ -41,19 +45,23 @@ public class SpdmCertificateChain {
     /**
      * Array List of certs found in the chain.
      */
-    private final ArrayList<UefiX509Cert> certList = new ArrayList<UefiX509Cert>();
+    private final ArrayList<UefiX509Cert> certList = new ArrayList<>();
+
     /**
      * Root hash.
      */
     private byte[] rootHash = null;
+
     /**
      * Number of certs in the SPDM cert chain.
      */
     private int numberOfCerts = 0;
+
     /**
      * Human-readable description of any error associated with SPDM base hash alg.
      */
     private String spdmBaseHashAlgoError = "";
+
     /**
      * Human-readable description of any error associated with parsing the X509 certs.
      */

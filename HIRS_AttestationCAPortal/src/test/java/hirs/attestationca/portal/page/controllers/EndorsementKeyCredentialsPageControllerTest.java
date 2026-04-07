@@ -1,6 +1,6 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.entity.manager.EndorsementCredentialRepository;
+import hirs.attestationca.persist.entity.manager.EndorsementCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.portal.page.PageControllerTest;
@@ -20,7 +20,7 @@ import org.springframework.web.servlet.FlashMap;
 import java.io.IOException;
 import java.util.List;
 
-import static hirs.attestationca.portal.page.Page.ENDORSEMENT_KEY_CREDENTIALS;
+import static hirs.attestationca.portal.page.Page.ENDORSEMENT_KEY_CERTIFICATES;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -44,7 +44,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
 
     // Repository manager to handle data access between endorsement certificate entity and data storage in db
     @Autowired
-    private EndorsementCredentialRepository endorsementCredentialRepository;
+    private EndorsementCertificateRepository endorsementCertificateRepository;
 
     // A file that contains a cert that is not an EK Cert. Should be parsable as a general cert,
     // but should (eventually) not be stored as an EK because it isn't one.
@@ -57,7 +57,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
      * Constructor providing the Endorsement Key Credential Page's display and routing specification.
      */
     public EndorsementKeyCredentialsPageControllerTest() {
-        super(ENDORSEMENT_KEY_CREDENTIALS);
+        super(ENDORSEMENT_KEY_CERTIFICATES);
         pagePath = getPagePath();
     }
 
@@ -84,7 +84,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
      */
     @AfterEach
     public void afterEachTest() {
-        this.endorsementCredentialRepository.deleteAll();
+        this.endorsementCertificateRepository.deleteAll();
     }
 
     /**
@@ -116,7 +116,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
 
         // verify the cert was actually stored
         List<EndorsementCredential> records =
-                endorsementCredentialRepository.findAll();
+                endorsementCertificateRepository.findAll();
         assertEquals(1, records.size());
 
         // verify the cert is not yet archived
@@ -129,7 +129,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
                         .param("id", cert.getId().toString()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
-        records = endorsementCredentialRepository.findAll();
+        records = endorsementCertificateRepository.findAll();
         assertEquals(1, records.size());
 
         // verify the cert is now archived
@@ -164,7 +164,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
 
         // verify the cert was not actually stored
         List<EndorsementCredential> records =
-                endorsementCredentialRepository.findAll();
+                endorsementCertificateRepository.findAll();
         assertEquals(0, records.size());
     }
 
@@ -193,7 +193,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
         assertEquals(0, pageMessages.getErrorMessages().size());
 
         // Verify the EK cert has been stored
-        List<EndorsementCredential> records = endorsementCredentialRepository.findAll();
+        List<EndorsementCredential> records = endorsementCertificateRepository.findAll();
         assertEquals(1, records.size());
 
         Certificate cert = records.iterator().next();
@@ -244,7 +244,7 @@ public class EndorsementKeyCredentialsPageControllerTest extends PageControllerT
         assertEquals(0, pageMessages.getErrorMessages().size());
 
         // Verify one EK certificate has been stored
-        List<EndorsementCredential> records = endorsementCredentialRepository.findAll();
+        List<EndorsementCredential> records = endorsementCertificateRepository.findAll();
         assertEquals(1, records.size());
 
         Certificate cert = records.iterator().next();

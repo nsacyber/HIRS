@@ -1,6 +1,5 @@
 package hirs.attestationca.persist.service;
 
-import hirs.attestationca.persist.DBServiceException;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
@@ -12,8 +11,10 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import hirs.attestationca.persist.exceptions.DBServiceException;
+import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
-import hirs.attestationca.persist.validation.SupplyChainValidatorException;
+import hirs.attestationca.persist.validation.ValidationService;
 import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
@@ -131,7 +132,7 @@ public class ReferenceManifestDetailsPageService {
             contentStr = tpe.getEventContentStr();
             // check for specific events
             if (contentStr.contains("CRTM")
-                || contentStr.contains("IBB")) {
+                    || contentStr.contains("IBB")) {
                 coveredEvents.put("crtm", true);
             } else if (contentStr.contains(UefiConstants.UEFI_FIRMWARE_BLOB_LABEL)) {
                 coveredEvents.put("firmwareBlob", true);
@@ -417,6 +418,11 @@ public class ReferenceManifestDetailsPageService {
             }
             data.put("events", tpmPcrEvents);
         } else {
+            for (TpmPcrEvent tpe : logProcessor.getEventList()) {
+                if (tpe.getEventContentStr().contains("Exception")) {
+                    tpe.setError(true);
+                }
+            }
             data.put("events", logProcessor.getEventList());
         }
 

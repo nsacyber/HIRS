@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{layout}">
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <section layout:fragment="script">
@@ -81,7 +81,7 @@
             orderable: false,
             searchable: false,
             render: function (data, type, full, meta) {
-              //Display endorsement credential
+              //Display endorsement certificate
               let html = "";
               if (
                 full.endorsementCredential !== undefined &&
@@ -99,7 +99,7 @@
             orderable: false,
             searchable: false,
             render: function (data, type, full, meta) {
-              //Display platform credential
+              //Display platform certificate
               let html = "";
               if (
                 full.platformCredentials !== undefined &&
@@ -123,9 +123,10 @@
             render: function (data, type, full, meta) {
               // set up link to details page
               let html = "";
-              html += generateCertificateDetailsLink("issued", data, true);
-              html += generateCertificateDownloadLink(viewName, data);
-              html += generateCertificateDeleteLink(data);
+              const thisPageCertificateType = "issued";
+              html += generateCertificateDetailsLink(thisPageCertificateType, data, true);
+              html += generateCertificateDownloadLink(thisPageCertificateType, viewName, data);
+              html += generateCertificateDeleteLink(thisPageCertificateType, data);
               return html;
             },
           },
@@ -141,16 +142,18 @@
   <h1 layout:fragment="pageHeaderTitle">Issued Certificates </h1>
 
   <div layout:fragment="content">
-    <div class="aca-input-box-header">
-      Issued Credentials
-      <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}">
-        <img class="action-icons" th:src="@{/icons/ic_file_download_black_24dp.png}"
-          title="Download All Issued Certificates" alt="Download Icon">
+    <!-- Download Issued Certificates Button -->
+    <div class="download-upload-section">
+      <a class="btn btn-secondary" data-bs-toggle="tooltip"
+        th:href="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-download}"
+        title="Download ZIP file of all Issued Certificates">
+        <img alt="Download Icon" class="icon-text-spacing" th:src="@{/icons/svg/download-white-24dp.svg}">
+        Issued Certificates
       </a>
     </div>
-    <br />
+
     <div class="aca-data-table">
-      <table id="issuedTable" class="table table-bordered table-striped table-hover">
+      <table class="table table-bordered table-striped table-hover" id="issuedTable">
         <thead>
           <tr>
             <th rowspan="2"></th>
@@ -159,7 +162,7 @@
             <th rowspan="2">Issuer</th>
             <th rowspan="2">Valid (begin)</th>
             <th rowspan="2">Valid (end)</th>
-            <th colspan="2" class="text-center">Credentials</th>
+            <th class="text-center" colspan="2">Certificates</th>
             <th rowspan="2">Options</th>
           </tr>
           <tr>
@@ -173,7 +176,7 @@
     <!-- This modal will be triggered when the user hits the delete link on one of the table rows -->
     <form method="POST" th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/delete}">
       <div
-        th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Issued Certificate', 
+        th:replace="~{fragments/modal :: modal(id='deleteCertificateConfirmationModal', label='Confirm Deletion Of Issued Certificate',
                 bodyContent=~{this::#deleteIssuedCertConfirmationBody}, customFooterButtons=~{this::#deleteConfirmationFooterButtons})}">
 
         <!-- Modal Body Content -->
@@ -184,10 +187,10 @@
 
         <!-- Define custom footer buttons here -->
         <div id="deleteConfirmationFooterButtons">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
           <!-- The issued certificate ID is stored in this hidden field -->
-          <input type="hidden" name="id" id="issuedCertToDeleteId" value="">
-          <button type="submit" class="btn btn-danger">Delete Issued Certificate</button>
+          <input id="issuedCertToDeleteId" name="id" type="hidden" value="">
+          <button class="btn btn-danger" type="submit">Delete Issued Certificate</button>
         </div>
       </div>
     </form>
@@ -196,7 +199,7 @@
     <form method="POST"
       th:action="@{/HIRS_AttestationCAPortal/portal/certificate-request/issued-certificates/bulk-delete}">
       <div
-        th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Issued Certificates', 
+        th:replace="~{fragments/modal :: modal(id='deleteMultipleConfirmationModal', label='Confirm Deletion Of Multiple Issued Certificates',
                 bodyContent=~{this::#deleteMultipleIssuedCertificatesConfirmationBody}, customFooterButtons=~{this::#deleteMultipleConfirmationFooterButtons})}">
 
         <!-- Modal Body Content -->

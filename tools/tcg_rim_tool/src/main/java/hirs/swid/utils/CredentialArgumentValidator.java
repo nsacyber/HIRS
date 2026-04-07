@@ -1,20 +1,32 @@
 package hirs.swid.utils;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+
+@Getter
 public class CredentialArgumentValidator {
-    private String truststoreFile;
-    private String certificateFile;
-    private String privateKeyFile;
-    private String format;
-    private boolean isValidating;
-    private String errorMessage;
     private static final String PEM = "PEM";
+
+    private final String truststoreFile;
+
+    private final String certificateFile;
+
+    private final String privateKeyFile;
+
+    @Getter(AccessLevel.NONE)
+    private final boolean isValidating;
+
+    private String format;
+
+    private String errorMessage;
 
     /**
      * Validates Certificate based arguments.
-     * @param truststoreFile
-     * @param certificateFile
-     * @param privateKeyFile
-     * @param isValidating
+     *
+     * @param truststoreFile  trust store file
+     * @param certificateFile certificate file
+     * @param privateKeyFile  private key file
+     * @param isValidating    isValidating
      */
     public CredentialArgumentValidator(final String truststoreFile,
                                        final String certificateFile,
@@ -25,24 +37,6 @@ public class CredentialArgumentValidator {
         this.privateKeyFile = privateKeyFile;
         this.isValidating = isValidating;
         errorMessage = "";
-    }
-
-    /**
-     * Getter for format property.
-     *
-     * @return string
-     */
-    public String getFormat() {
-        return format;
-    }
-
-    /**
-     * Getter for error message.
-     *
-     * @return string
-     */
-    public String getErrorMessage() {
-        return errorMessage;
     }
 
     /**
@@ -67,11 +61,11 @@ public class CredentialArgumentValidator {
                 return true;
             } else {
                 if (certificateFile.isEmpty()) {
-                    errorMessage = "A public certificate must be specified by \'-p\' "
+                    errorMessage = "A public certificate must be specified by '-p' "
                             + "for signing operations.";
                 }
                 if (privateKeyFile.isEmpty()) {
-                    errorMessage = "A private key must be specified by \'-k\' "
+                    errorMessage = "A private key must be specified by '-k' "
                             + "for signing operations.";
                 }
                 return false;

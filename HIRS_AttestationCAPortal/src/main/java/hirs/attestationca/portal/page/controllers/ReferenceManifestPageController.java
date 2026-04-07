@@ -1,17 +1,16 @@
 package hirs.attestationca.portal.page.controllers;
 
-import hirs.attestationca.persist.FilteredRecordsList;
+import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
+import hirs.attestationca.persist.entity.userdefined.DownloadFile;
+import hirs.attestationca.persist.entity.userdefined.FilteredRecordsList;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.service.ReferenceManifestPageService;
-import hirs.attestationca.persist.service.util.DataTablesColumn;
-import hirs.attestationca.persist.util.DownloadFile;
 import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageController;
 import hirs.attestationca.portal.page.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
@@ -84,10 +83,10 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to retrieve a list of RIMs for display on the RIM page.
+     * Processes the request to retrieve a list of {@link ReferenceManifest} objects for display on the RIM page.
      *
      * @param dataTableInput data table input
-     * @return data table of RIMs
+     * @return data table of {@link ReferenceManifest} objects
      */
     @ResponseBody
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -130,11 +129,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to upload one or more reference manifest(s) to the ACA.
+     * Processes the request to upload one or more {@link ReferenceManifest} objects to the ACA.
      *
      * @param files              the files to process
      * @param redirectAttributes RedirectAttributes used to forward data back to the original page.
-     * @return the redirection view
+     * @return a redirect to the Reference Manifest Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/upload")
@@ -212,9 +211,9 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to download the RIM .
+     * Processes the request to download the {@link ReferenceManifest} object.
      *
-     * @param id       the UUID of the rim to download
+     * @param id       the UUID of the {@link ReferenceManifest} object to download
      * @param response the response object (needed to update the header with the
      *                 file name)
      * @throws java.io.IOException when writing to response output stream
@@ -238,7 +237,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to bulk download RIMs .
+     * Processes the request to bulk download {@link ReferenceManifest} objects.
      *
      * @param response the response object (needed to update the header with the
      *                 file name)
@@ -262,12 +261,12 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to archive/soft delete the provided Reference Integrity Manifest.
+     * Processes the request to archive/soft delete the provided {@link ReferenceManifest} object.
      *
-     * @param id                 the UUID of the rim to delete
+     * @param id                 the UUID of the {@link ReferenceManifest} object to delete
      * @param redirectAttributes RedirectAttributes used to forward data back to the original
      *                           page.
-     * @return redirect to this page
+     * @return a redirect to the Reference Manifest Page
      * @throws URISyntaxException if malformed URI
      */
     @PostMapping("/delete")
@@ -297,11 +296,11 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Processes the request to delete multiple RIMs.
+     * Processes the request to delete multiple {@link ReferenceManifest} objects.
      *
-     * @param ids                the list of UUIDs of the RIMs to be deleted
+     * @param ids                the list of UUIDs of the {@link ReferenceManifest} objects to be deleted
      * @param redirectAttributes used to pass data back to the original page after the operation
-     * @return a redirect to the trust chain certificate page
+     * @return a redirect to the reference manifest page
      * @throws URISyntaxException if the URI is malformed
      */
     @PostMapping("/bulk-delete")
@@ -332,7 +331,7 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
     }
 
     /**
-     * Helper method that retrieves a filtered and paginated list of reference manifests based on the
+     * Helper method that retrieves a filtered and paginated list of {@link ReferenceManifest} objects based on the
      * provided search criteria.
      * The method allows filtering based on a global search term and column-specific search criteria,
      * and returns the result in a paginated format.
@@ -341,22 +340,23 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
      * The method handles four cases:
      * <ol>
      *     <li>If no global search term and no column-specific search criteria are provided,
-     *         all reference manifests are returned.</li>
+     *         all {@link ReferenceManifest} objects are returned.</li>
      *     <li>If both a global search term and column-specific search criteria are provided,
-     *         it performs filtering on both.</li>
-     *     <li>If only column-specific search criteria are provided, it filters based on the column-specific
-     *         criteria.</li>
-     *     <li>If only a global search term is provided, it filters based on the global search term.</li>
+     *         {@link ReferenceManifest} objects are filtered based on both criteria.</li>
+     *     <li>If only column-specific search criteria are provided, {@link ReferenceManifest} objects
+     *         are filtered according to the column-specific criteria.</li>
+     *     <li>If only a global search term is provided, {@link ReferenceManifest} objects
+     *         are filtered according to the global search term.</li>
      * </ol>
      * </p>
      *
-     * @param globalSearchTerm          A global search term that will be used to filter the endorsement
-     *                                  credentials by the searchable fields.
+     * @param globalSearchTerm          A global search term that will be used to filter the {@link ReferenceManifest}
+     *                                  objects by the searchable fields.
      * @param columnsWithSearchCriteria A set of columns with specific search criteria entered by the user.
      * @param searchableColumnNames     A set of searchable column names that are  for the global search term.
      * @param pageable                  pageable
      * @return A {@link FilteredRecordsList} containing the filtered and paginated list of
-     * reference manifests, along with the total number of records and the number of records matching the
+     * {@link ReferenceManifest} objects, along with the total number of records and the number of records matching the
      * filter criteria.
      */
     private FilteredRecordsList<ReferenceManifest> getFilteredReferenceManifestList(

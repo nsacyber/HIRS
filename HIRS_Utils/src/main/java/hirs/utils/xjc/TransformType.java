@@ -33,12 +33,12 @@ import java.util.List;
  * <pre>
  * &lt;complexType name="TransformType">
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *     &lt;restriction base="{https://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;choice maxOccurs="unbounded" minOccurs="0">
  *         &lt;any processContents='lax' namespace='##other'/>
- *         &lt;element name="XPath" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="XPath" type="{https://www.w3.org/2001/XMLSchema}string"/>
  *       &lt;/choice>
- *       &lt;attribute name="Algorithm" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
+ *       &lt;attribute name="Algorithm" use="required" type="{https://www.w3.org/2001/XMLSchema}anyURI" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -54,7 +54,7 @@ public class TransformType {
     @XmlMixed
     @XmlAnyElement(lax = true)
     protected List<Object> content;
-    
+
     @Getter
     @Setter
     @XmlAttribute(name = "Algorithm", required = true)
@@ -83,10 +83,12 @@ public class TransformType {
      * {@link String }
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link Object }
+     *
+     * @return list of objects
      */
     public List<Object> getContent() {
         if (content == null) {
-            content = new ArrayList<Object>();
+            content = new ArrayList<>();
         }
         return this.content;
     }
