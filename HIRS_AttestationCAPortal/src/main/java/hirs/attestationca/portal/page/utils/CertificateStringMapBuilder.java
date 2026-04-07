@@ -710,7 +710,6 @@ public final class CertificateStringMapBuilder {
                 }
 
                 data.put("policyReference", ek.getPolicyReference());
-                data.put("crlPoints", ek.getCrlPoints());
                 data.put("credentialType", IssuedAttestationCertificate.AIC_TYPE_LABEL);
             }
             // add platform credential IDs if not empty
