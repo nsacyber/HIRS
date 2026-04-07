@@ -708,8 +708,6 @@ public final class CertificateStringMapBuilder {
                     data.putAll(
                             convertStringToHash(ek.getTpmSecurityAssertions().toString()));
                 }
-
-                data.put("policyReference", ek.getPolicyReference());
                 data.put("credentialType", IssuedAttestationCertificate.AIC_TYPE_LABEL);
             }
             // add platform credential IDs if not empty
