@@ -188,9 +188,12 @@ public final class TpmPublicHelper {
 
         void skip(final int n) {
             try {
-                in.readNBytes(n);
+                byte[] skipBytes = in.readNBytes(n);
+                if (skipBytes.length != n) {
+                    throw new IllegalStateException("Encountered unexpected end of public area segment");
+                }
             } catch (Exception e) {
-                throw new IllegalStateException("Exception encountered when parsing TPM public area data", e);
+                throw new IllegalStateException("Exception encountered when parsing public area segment", e);
             }
         }
 
