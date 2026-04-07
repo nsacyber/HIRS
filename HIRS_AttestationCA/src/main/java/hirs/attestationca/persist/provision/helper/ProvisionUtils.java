@@ -159,7 +159,7 @@ public final class ProvisionUtils {
 
         return switch (publicKeyAlgorithm) {
             case RSA -> TpmPublicHelper.parseRSAKeyFromPublicDataSegment(publicAreaSegment);
-            //case ECC -> TpmPublicHelper.parseECCKeyFromPublicDataSegment(publicAreaSegment); TODO: Enable
+            //case ECC -> TpmPublicHelper.parseECCKeyFromPublicDataSegment(publicAreaSegment); TODO enable
             default -> throw new UnsupportedOperationException("Unsupported or invalid public key algorithm");
         };
     }

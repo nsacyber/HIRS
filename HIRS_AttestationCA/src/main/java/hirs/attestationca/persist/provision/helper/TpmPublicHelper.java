@@ -6,6 +6,8 @@ import hirs.attestationca.persist.exceptions.UnexpectedServerException;
 import hirs.utils.HexUtils;
 import lombok.extern.log4j.Log4j2;
 
+import java.io.DataInputStream;
+import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
@@ -19,7 +21,6 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.Arrays;
 import static hirs.attestationca.persist.provision.helper.ProvisionUtils.DEFAULT_RSA_MODULUS_LENGTH_IN_BYTES;
 
 /**
@@ -144,39 +145,53 @@ public final class TpmPublicHelper {
      * unsigned 32-bit and 16-bit integers, and the TPM2B structure, including the ability to skip reading.
      */
     private static final class Cursor {
-        private final byte[] buf;
-        private int pos;
+        private final DataInputStream in;
 
         Cursor(final byte[] buf) {
-            this.buf = buf;
+            if (buf == null) {
+                throw new IllegalArgumentException("Input public data segment is null.");
+            }
+            this.in = new DataInputStream(new ByteArrayInputStream(buf));
         }
 
         int readU16() {
-            require(2);
-            int v = ((buf[pos] & 0xFF) << 8) | (buf[pos + 1] & 0xFF);
-            pos += 2;
-            return v;
+            try {
+                return in.readUnsignedShort();
+            } catch (Exception e) {
+                throw new IllegalStateException("Exception encountered when parsing public area segment", e);
+            }
         }
 
         long readU32() {
-            require(4);
-            long v = ((long) (buf[pos] & 0xFF) << 24) | ((long) (buf[pos + 1] & 0xFF) << 16)
-                 | ((long) (buf[pos + 2] & 0xFF) << 8) | ((long) (buf[pos + 3] & 0xFF));
-            pos += 4;
-            return v;
+            try {
+                return Integer.toUnsignedLong(in.readInt());
+            } catch (Exception e) {
+                throw new IllegalStateException("Exception encountered when parsing public area segment", e);
+            }
         }
 
         byte[] readTpm2b() {
             int size = readU16();
-            require(size);
-            byte[] out = Arrays.copyOfRange(buf, pos, pos + size);
-            pos += size;
-            return out;
+            byte[] out = new byte[size];
+            try {
+                in.readFully(out);
+                return out;
+            } catch (Exception e) {
+                throw new IllegalStateException("Exception encountered when parsing public area segment", e);
+            }
         }
 
         void skipTpm2b() {
             int size = readU16();
             skip(size);
+        }
+
+        void skip(final int n) {
+            try {
+                in.readNBytes(n);
+            } catch (Exception e) {
+                throw new IllegalStateException("Exception encountered when parsing TPM public area data", e);
+            }
         }
 
         ParsedSymDefObject readSymDefObject() {
@@ -220,17 +235,6 @@ public final class TpmPublicHelper {
             }
             throw new UnsupportedOperationException("Unsupported TPMT_KDF_SCHEME alg: 0x"
                     + Integer.toHexString(algId));
-        }
-
-        void skip(final int n) {
-            require(n);
-            pos += n;
-        }
-
-        void require(final int n) {
-            if (pos + n > buf.length) {
-                throw new IllegalArgumentException("Truncated TPMT_PUBLIC");
-            }
         }
     }
 

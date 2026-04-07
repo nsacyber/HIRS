@@ -54,6 +54,4 @@
     <suppress files="HIRSApplication.java" checks="HideUtilityClassConstructor"/>
     <suppress files="PersistenceConfiguration.java" checks="HideUtilityClassConstructor"/>
     <suppress files="Main.java" checks="HideUtilityClassConstructor"/>
-    <!-- This ignores checking for magic numbers in utility classes in certain files -->
-    <suppress files="TpmPublicHelper.java" checks="MagicNumber"/>
 </suppressions>

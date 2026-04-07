@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Translates EC curve names from TPM 2.0 specifications to Java curve names.
+ * Translates EC curve names from TPM 2.0 specifications to Java curve names. Currently, only NIST curves are supported.
  * @see <a href="https://trustedcomputinggroup.org/resource/tpm-library-specification/">
  *     Trusted Platform Module Library Part 2: Structures (TPM 2.0)</a>
  */
