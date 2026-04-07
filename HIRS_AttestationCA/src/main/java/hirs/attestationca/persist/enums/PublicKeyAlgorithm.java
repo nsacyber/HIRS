@@ -29,8 +29,8 @@ public enum PublicKeyAlgorithm {
     /** ECDSA algorithm. */
     ECDSA(0x0018, "ECDSA"),
 
-    /** ECC Public Key Algorithm. */
-    ECDH(0x0019, "ECC"),
+    /** ECDH algorithm. */
+    ECDH(0x0019, "ECDH"),
 
     /**
      * ECC Public Key Algorithm.
