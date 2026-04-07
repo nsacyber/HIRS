@@ -4,6 +4,7 @@ import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 
+import javax.swing.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -184,16 +185,29 @@ final class Main {
         } catch (IOException i) {
             System.out.print("IO error processing Event Log " + commander.getInFileName()
                     + "\nError was " + i.toString());
+            showFatalErrorPopup(i.getMessage());
             System.exit(1);
         } catch (CertificateException c) {
             System.out.print("Certificate error processing Event Log " + commander.getInFileName()
                     + "\nError was " + c.toString());
+            showFatalErrorPopup(c.getMessage());
             System.exit(1);
         } catch (NoSuchAlgorithmException a) {
             System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
                     + "\nError was " + a.toString());
+            showFatalErrorPopup(a.getMessage());
             System.exit(1);
         }
+    }
+
+    private static void showFatalErrorPopup(String errorMessage) {
+        String message = "A fatal error occurred and the application must close:\n" + errorMessage;
+
+        // Modal dialog: forces user to interact with it
+        JOptionPane.showMessageDialog(null,
+                message,
+                "Fatal Error",
+                JOptionPane.ERROR_MESSAGE);
     }
 
     /**

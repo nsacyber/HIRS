@@ -8,10 +8,12 @@ import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -34,6 +36,7 @@ import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA512_STR;
 /**
  * Class for handling different formats of TCG Event logs.
  */
+@Log4j2
 public final class TCGEventLog {
 
     // The TCG PC Client Platform TPM Profile Specification for TPM 2.0 defines 5 localities
@@ -222,23 +225,37 @@ public final class TCGEventLog {
         int eventNumber = 0;
         ByteArrayInputStream is = new ByteArrayInputStream(rawlog);
 
-        // Process the 1st entry as a SHA1 format (per the spec) and put into the event list
-        TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, eventNumber++);
-        eventList.put(eventNumber, firstEvent);
-        useFirstEventToInitValues(firstEvent);
+        try {
+            // Process the 1st entry as a SHA1 format (per the spec) and put into the event list
+            TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, eventNumber++);
+            eventList.put(eventNumber, firstEvent);
+            useFirstEventToInitValues(firstEvent);
+        } catch (Exception e) {
+            log.error("Error parsing event log at Event #0");
+            throw new IOException("Error parsing event log at Event #0");
+        }
 
         // put the remaining events into the event list
         while (is.available() > 0) {
-            if (bCryptoAgile) {
-                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestEvLogHashAlgName);
-                eventList.put(eventNumber, event2);
-                if (event2.isStartupLocalityEvent()) {
-                    EvNoAction event = new EvNoAction(event2.getEventContent());
-                    startupLocality = event.getStartupLocality();
+            try {
+                if (bCryptoAgile) {
+                    if (eventNumber == 32) {
+                        String hello = "hello";
+                    }
+                    TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestEvLogHashAlgName);
+                    eventList.put(eventNumber, event2);
+                    if (event2.isStartupLocalityEvent()) {
+                        EvNoAction event = new EvNoAction(event2.getEventContent());
+                        startupLocality = event.getStartupLocality();
+                    }
+                } else {
+                    TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
+                    eventList.put(eventNumber, event1);
                 }
-            } else {
-                TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
-                eventList.put(eventNumber, event1);
+            }
+            catch (Exception e) {
+                log.error("Error parsing event log at Event #" + (eventNumber-1));
+                throw new IOException("Error parsing event log at Event #" + (eventNumber-1));
             }
 
             // first check if any previous event has not been able to access vendor-table.json,
@@ -273,6 +290,7 @@ public final class TCGEventLog {
                 pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
             }
         }
+
         calculatePcrValues();
     }
 
