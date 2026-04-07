@@ -185,8 +185,8 @@ public class ReferenceManifestPageController extends PageController<NoPageParams
                     log.info("Uploaded support RIM with manufacturer {} and model {}.",
                             supportReferenceManifest.getPlatformManufacturer(),
                             supportReferenceManifest.getPlatformModel());
-                    String associatedBaseRim = supportReferenceManifest.getAssociatedRim() != null ?
-                            supportReferenceManifest.getAssociatedRim().toString() : "not found";
+                    String associatedBaseRim = supportReferenceManifest.getAssociatedRim() != null
+                            ? supportReferenceManifest.getAssociatedRim().toString() : "not found";
                     log.info("Associated base RIM {}", associatedBaseRim);
                 } else {
                     log.info("Failed to parse support RIM file {}", fileName);

@@ -349,6 +349,7 @@ public class ReferenceManifestPageService {
      * Stores the base and support reference manifests to the reference manifest repository.
      *
      * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages contains any error messages that will be displayed on the page
      * @param baseRims        list of base reference manifests
      * @param supportRims     list of support reference manifests
      */
