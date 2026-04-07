@@ -29,7 +29,7 @@ import static hirs.attestationca.persist.provision.helper.ProvisionUtils.DEFAULT
  */
 @Log4j2
 public final class TpmPublicHelper {
-    /** The default size for IV blocks. */
+    /** Hexadecimal radix used for parsing the RSA public exponent. */
     public static final int RADIX = 16;
 
     /**
@@ -107,7 +107,9 @@ public final class TpmPublicHelper {
         c.readSymDefObject(); // Skip symdef object
         c.readEccScheme(); // Skip ECC scheme
 
-        TpmEccCurve eccCurve = TpmEccCurve.fromTpmCurveId(c.readU16()).orElseThrow(); // Extract curve family
+        int curveId = c.readU16(); // Extract curve family
+        TpmEccCurve eccCurve = TpmEccCurve.fromTpmCurveId(curveId).orElseThrow(() -> new UnsupportedOperationException(
+                "Unsupported TPM ECC curve ID: 0x" + Integer.toHexString(curveId)));
 
         c.readKdfScheme(); // Skip KDF scheme
 
@@ -189,7 +191,8 @@ public final class TpmPublicHelper {
                     int mode = readU16();
                     return new ParsedSymDefObject(algId, keyBits, mode);
                 }
-                default -> throw new UnsupportedOperationException("Unsupported TPMT_SYM_DEF_OBJECT alg: " + algId);
+                default -> throw new UnsupportedOperationException("Unsupported TPMT_SYM_DEF_OBJECT alg: 0x"
+                        + Integer.toHexString(algId));
             }
         }
 
@@ -200,11 +203,12 @@ public final class TpmPublicHelper {
                 case NULL -> {
                     return new ParsedEccScheme(algId, null);
                 }
-                case ECDSA -> {
+                case ECDSA, ECDH -> {
                     int hashAlg = readU16();
                     return new ParsedEccScheme(algId, hashAlg);
                 }
-                default -> throw new UnsupportedOperationException("Unsupported TPMT_ECC_SCHEME alg: " + algId);
+                default -> throw new UnsupportedOperationException("Unsupported TPMT_ECC_SCHEME alg: 0x"
+                        + Integer.toHexString(algId));
             }
         }
 
@@ -214,7 +218,8 @@ public final class TpmPublicHelper {
             if (alg.equals(PublicKeyAlgorithm.NULL)) { // TPM_ALG_NULL only supported for now
                 return new ParsedKdfScheme(algId, null);
             }
-            throw new UnsupportedOperationException("Unsupported TPMT_KDF_SCHEME alg: " + algId);
+            throw new UnsupportedOperationException("Unsupported TPMT_KDF_SCHEME alg: 0x"
+                    + Integer.toHexString(algId));
         }
 
         void skip(final int n) {
