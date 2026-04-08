@@ -8,6 +8,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
@@ -94,27 +95,30 @@ public final class TpmPublicHelper {
      * @param publicDataSegment the public area segment to parse
      * @return the ECC public key of the supplied public data
      */
-    public static ECPublicKey parseECCKeyFromPublicDataSegment(final byte[] publicDataSegment) {
-        Cursor c = new Cursor(publicDataSegment);
+    public static ECPublicKey parseECCKeyFromPublicDataSegment(final byte[] publicDataSegment) throws IOException {
+        if (publicDataSegment == null) {
+            throw new IllegalArgumentException("Input public data segment is null.");
+        }
+        DataInputStream in = new DataInputStream(new ByteArrayInputStream(publicDataSegment));
 
-        int type = c.readU16(); // Read type
+        int type = in.readUnsignedShort(); // Read type
         if (PublicKeyAlgorithm.fromId(type) != PublicKeyAlgorithm.ECC) {
             throw new UnsupportedOperationException("Expected TPM_ALG_ECC");
         }
-        c.readU16(); // Skip nameAlg
-        c.readU32(); // Skip objectAttributes
+        in.skipNBytes(Short.BYTES); // Skip nameAlg
+        in.skipNBytes(Integer.BYTES); // Skip objectAttributes
 
-        c.skipTpm2b(); // Skip authPolicy
-        c.readSymDefObject(); // Skip symdef object
-        c.readEccScheme(); // Skip ECC scheme
+        skipTpm2b(in); // Skip authPolicy
+        skipSymDefObject(in); // Skip symdef object
+        skipEccScheme(in); // Skip ECC scheme
 
-        int curveId = c.readU16(); // Extract curve family
+        int curveId = in.readUnsignedShort(); // Extract curve family
         TpmEccCurve eccCurve = TpmEccCurve.fromTpmCurveId(curveId).orElseThrow(() -> new UnsupportedOperationException(
                 "Unsupported TPM ECC curve ID: 0x" + Integer.toHexString(curveId)));
 
-        c.readKdfScheme(); // Skip KDF scheme
+        skipKdfScheme(in); // Skip KDF scheme
 
-        ECPoint point = new ECPoint(new BigInteger(1, c.readTpm2b()), new BigInteger(1, c.readTpm2b())); // Extract X/Y
+        ECPoint point = new ECPoint(new BigInteger(1, readTpm2b(in)), new BigInteger(1, readTpm2b(in))); // Extract X/Y
         return assembleECCPublicKey(eccCurve, point);
     }
 
@@ -140,108 +144,49 @@ public final class TpmPublicHelper {
         }
     }
 
-    /**
-     * Private utility class to traverse TPMT_PUBLIC structures via a given byte array. These include
-     * unsigned 32-bit and 16-bit integers, and the TPM2B structure, including the ability to skip reading.
-     */
-    private static final class Cursor {
-        private final DataInputStream in;
-
-        Cursor(final byte[] buf) {
-            if (buf == null) {
-                throw new IllegalArgumentException("Input public data segment is null.");
+    private static void skipSymDefObject(final DataInputStream in) throws IOException {
+        int algId = in.readUnsignedShort();
+        PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId); // Read algorithm
+        switch (alg) {
+            case NULL -> { }
+            case AES -> {
+                in.skipNBytes(Short.BYTES); // Skip keyBits
+                in.skipNBytes(Short.BYTES); // Skip mode
             }
-            this.in = new DataInputStream(new ByteArrayInputStream(buf));
+            default -> throw new UnsupportedOperationException("Unsupported TPMT_SYM_DEF_OBJECT alg: 0x"
+                    + Integer.toHexString(algId));
         }
+    }
 
-        int readU16() {
-            try {
-                return in.readUnsignedShort();
-            } catch (Exception e) {
-                throw new IllegalStateException("Exception encountered when parsing public area segment", e);
-            }
+    private static void skipEccScheme(final DataInputStream in) throws IOException {
+        int algId = in.readUnsignedShort();
+        PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId);
+        switch (alg) {
+            case NULL -> { }
+            case ECDSA, ECDH -> in.skipNBytes(Short.BYTES); // Skip hashAlg
+            default -> throw new UnsupportedOperationException("Unsupported TPMT_ECC_SCHEME alg: 0x"
+                    + Integer.toHexString(algId));
         }
+    }
 
-        long readU32() {
-            try {
-                return Integer.toUnsignedLong(in.readInt());
-            } catch (Exception e) {
-                throw new IllegalStateException("Exception encountered when parsing public area segment", e);
-            }
-        }
-
-        byte[] readTpm2b() {
-            int size = readU16();
-            byte[] out = new byte[size];
-            try {
-                in.readFully(out);
-                return out;
-            } catch (Exception e) {
-                throw new IllegalStateException("Exception encountered when parsing public area segment", e);
-            }
-        }
-
-        void skipTpm2b() {
-            int size = readU16();
-            skip(size);
-        }
-
-        void skip(final int n) {
-            try {
-                byte[] skipBytes = in.readNBytes(n);
-                if (skipBytes.length != n) {
-                    throw new IllegalStateException("Encountered unexpected end of public area segment");
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException("Exception encountered when parsing public area segment", e);
-            }
-        }
-
-        ParsedSymDefObject readSymDefObject() {
-            int algId = readU16();
-            PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId); // Read algorithm
-            switch (alg) {
-                case NULL -> {
-                    return new ParsedSymDefObject(algId, null, null);
-                }
-                case AES -> {
-                    int keyBits = readU16();
-                    int mode = readU16();
-                    return new ParsedSymDefObject(algId, keyBits, mode);
-                }
-                default -> throw new UnsupportedOperationException("Unsupported TPMT_SYM_DEF_OBJECT alg: 0x"
-                        + Integer.toHexString(algId));
-            }
-        }
-
-        ParsedEccScheme readEccScheme() {
-            int algId = readU16();
-            PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId);
-            switch (alg) {
-                case NULL -> {
-                    return new ParsedEccScheme(algId, null);
-                }
-                case ECDSA, ECDH -> {
-                    int hashAlg = readU16();
-                    return new ParsedEccScheme(algId, hashAlg);
-                }
-                default -> throw new UnsupportedOperationException("Unsupported TPMT_ECC_SCHEME alg: 0x"
-                        + Integer.toHexString(algId));
-            }
-        }
-
-        ParsedKdfScheme readKdfScheme() {
-            int algId = readU16();
-            PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId);
-            if (alg.equals(PublicKeyAlgorithm.NULL)) { // TPM_ALG_NULL only supported for now
-                return new ParsedKdfScheme(algId, null);
-            }
+    private static void skipKdfScheme(final DataInputStream in) throws IOException {
+        int algId = in.readUnsignedShort();
+        PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId);
+        if (!alg.equals(PublicKeyAlgorithm.NULL)) { // TPM_ALG_NULL only supported for now
             throw new UnsupportedOperationException("Unsupported TPMT_KDF_SCHEME alg: 0x"
                     + Integer.toHexString(algId));
         }
     }
 
-    private record ParsedSymDefObject(int alg, Integer keyBits, Integer mode) { }
-    private record ParsedEccScheme(int scheme, Integer hashAlg) { }
-    private record ParsedKdfScheme(int scheme, Integer hashAlg) { }
+    private static void skipTpm2b(final DataInputStream in) throws IOException {
+        int size = in.readUnsignedShort();
+        in.skipNBytes(size);
+    }
+
+    private static byte[] readTpm2b(final DataInputStream in) throws IOException {
+        int size = in.readUnsignedShort();
+        byte[] result = new byte[size];
+        in.readFully(result);
+        return result;
+    }
 }
