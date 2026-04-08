@@ -704,8 +704,6 @@ public final class CertificateStringMapBuilder {
                     data.putAll(
                             convertStringToHash(ek.getTpmSpecification().toString()));
                 }
-                data.put("policyReference", ek.getPolicyReference());
-                data.put("crlPoints", ek.getCrlPoints());
                 data.put("credentialType", IssuedAttestationCertificate.AIC_TYPE_LABEL);
             }
             // add platform credential IDs if not empty
