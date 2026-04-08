@@ -704,11 +704,6 @@ public final class CertificateStringMapBuilder {
                     data.putAll(
                             convertStringToHash(ek.getTpmSpecification().toString()));
                 }
-                if (ek.getTpmSecurityAssertions() != null) {
-                    data.putAll(
-                            convertStringToHash(ek.getTpmSecurityAssertions().toString()));
-                }
-
                 data.put("policyReference", ek.getPolicyReference());
                 data.put("crlPoints", ek.getCrlPoints());
                 data.put("credentialType", IssuedAttestationCertificate.AIC_TYPE_LABEL);
