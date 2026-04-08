@@ -13,7 +13,6 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -230,14 +229,9 @@ public final class TCGEventLog {
             TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, eventNumber++);
             eventList.put(eventNumber, firstEvent);
             useFirstEventToInitValues(firstEvent);
-        } catch (Exception e) {
-            log.error("Error parsing event log at Event #0");
-            throw new IOException("Error parsing event log at Event #0");
-        }
 
-        // put the remaining events into the event list
-        while (is.available() > 0) {
-            try {
+            // put the remaining events into the event list
+            while (is.available() > 0) {
                 if (bCryptoAgile) {
                     if (eventNumber == 32) {
                         String hello = "hello";
@@ -252,43 +246,55 @@ public final class TCGEventLog {
                     TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
                     eventList.put(eventNumber, event1);
                 }
-            }
-            catch (Exception e) {
-                log.error("Error parsing event log at Event #" + (eventNumber-1));
-                throw new IOException("Error parsing event log at Event #" + (eventNumber-1));
-            }
 
-            // first check if any previous event has not been able to access vendor-table.json,
-            // and if that is the case, the first comparison in the if-statement returns false and
-            // the if-statement is not executed
-            // [previous event file status = guidTableFileStatus]
-            // (ie. keep the file status to reflect that file was not accessible at some point)
-            // next, check if the new event has any status other than the default 'filesystem',
-            // and if that is the case, the 2nd comparison in the if-statement returns true and
-            // the if-statement is executed
-            // [new event file status = eventList.get(eventNumber-1).getGuidTableFileStatus()]
-            // (ie. if the new file status is not-accessible or from-code, then want to update)
-//            if ((guidTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-//                    && (eventList.get(eventNumber - 1).getGuidTableFileStatus()
-//                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-//                guidTableFileStatus = eventList.get(eventNumber - 1).getGuidTableFileStatus();
-//            }
+                // first check if any previous event has not been able to access vendor-table.json,
+                // and if that is the case, the first comparison in the if-statement returns false and
+                // the if-statement is not executed
+                // [previous event file status = guidTableFileStatus]
+                // (ie. keep the file status to reflect that file was not accessible at some point)
+                // next, check if the new event has any status other than the default 'filesystem',
+                // and if that is the case, the 2nd comparison in the if-statement returns true and
+                // the if-statement is executed
+                // [new event file status = eventList.get(eventNumber-1).getGuidTableFileStatus()]
+                // (ie. if the new file status is not-accessible or from-code, then want to update)
+    //            if ((guidTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+    //                    && (eventList.get(eventNumber - 1).getGuidTableFileStatus()
+    //                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+    //                guidTableFileStatus = eventList.get(eventNumber - 1).getGuidTableFileStatus();
+    //            }
 
-            // first check if any previous event has not been able to access pci.ids file,
-            // and if that is the case, the first comparison in the if-statement returns false and
-            // the if-statement is not executed
-            // [previous event file status = pciidsFileStatus]
-            // (ie. keep the file status to reflect that file was not accessible at some point)
-            // next, check if the new event has any status other than the default 'filesystem',
-            // and if that is the case, the 2nd comparison in the if-statement returns true and
-            // the if-statement is executed
-            // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
-            // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                    && (eventList.get(eventNumber - 1).getPciidsFileStatus()
-                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-                pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
+                // first check if any previous event has not been able to access pci.ids file,
+                // and if that is the case, the first comparison in the if-statement returns false and
+                // the if-statement is not executed
+                // [previous event file status = pciidsFileStatus]
+                // (ie. keep the file status to reflect that file was not accessible at some point)
+                // next, check if the new event has any status other than the default 'filesystem',
+                // and if that is the case, the 2nd comparison in the if-statement returns true and
+                // the if-statement is executed
+                // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
+                // (ie. if the new file status is not-accessible or from-code, then want to update)
+                if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+                        && (eventList.get(eventNumber - 1).getPciidsFileStatus()
+                        != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+                    pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
+                }
             }
+        } catch (IOException i) {
+            String error = "IO error parsing event log at Event #" + (eventNumber - 1) + ": " + i;
+            log.error(error);
+            throw new IOException(error);
+        } catch (CertificateException c) {
+            String error = "Certificate error parsing event log at Event#" + (eventNumber - 1) + ": " + c;
+            log.error(error);
+            throw new IOException(error);
+        } catch (NoSuchAlgorithmException a) {
+            String error = "Algorithm error parsing event log at Event #" + (eventNumber - 1) + ": " + a;
+            log.error(error);
+            throw new IOException(error);
+        } catch (RuntimeException r) {
+            String error = "Error parsing event log at Event #" + (eventNumber - 1) + ": " + r;
+            log.error(error);
+            throw new RuntimeException(error);
         }
 
         calculatePcrValues();
