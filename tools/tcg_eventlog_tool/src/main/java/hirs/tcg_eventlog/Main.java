@@ -187,26 +187,6 @@ final class Main {
                     + "\nError was " + e.toString());
             showFatalErrorPopup(e.getMessage());
             System.exit(1);
-//        } catch (IOException i) {
-//            System.out.print("IO error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + i.toString());
-//            showFatalErrorPopup(i.getMessage());
-//            System.exit(1);
-//        } catch (CertificateException c) {
-//            System.out.print("Certificate error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + c.toString());
-//            showFatalErrorPopup(c.getMessage());
-//            System.exit(1);
-//        } catch (NoSuchAlgorithmException a) {
-//            System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + a.toString());
-//            showFatalErrorPopup(a.getMessage());
-//            System.exit(1);
-//        } catch (RuntimeException r) {
-//            System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + r.toString());
-//            showFatalErrorPopup(r.getMessage());
-//            System.exit(1);
         }
     }
 
@@ -316,22 +296,6 @@ final class Main {
                     }
                 }
             }
-//        } catch (IOException i) {
-//            System.out.print("IO error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + i.toString());
-//            System.exit(1);
-//        } catch (CertificateException c) {
-//            System.out.print("Certificate error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + c.toString());
-//            System.exit(1);
-//        } catch (NoSuchAlgorithmException a) {
-//            System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + a.toString());
-//            System.exit(1);
-//        } catch (RuntimeException e) {
-//            System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + e.toString());
-//            System.exit(1);
         } catch (IOException | CertificateException | NoSuchAlgorithmException | RuntimeException e) {
             System.out.print("Error processing Event Log " + commander.getInFileName()
                     + "\nError was " + e.toString());
