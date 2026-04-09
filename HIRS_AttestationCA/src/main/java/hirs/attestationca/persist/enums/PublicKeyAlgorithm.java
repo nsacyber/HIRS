@@ -26,10 +26,22 @@ public enum PublicKeyAlgorithm {
      */
     RSA(0x0001, "RSA"),
 
+    /** ECDSA algorithm. */
+    ECDSA(0x0018, "ECDSA"),
+
+    /** ECDH algorithm. */
+    ECDH(0x0019, "ECDH"),
+
     /**
      * ECC Public Key Algorithm.
      */
     ECC(0x0023, "ECC"),
+
+    /** AES algorithm. */
+    AES(0x0006, "AES"),
+
+    /** NULL algorithm. */
+    NULL(0x0010, "NULL"),
 
     /**
      * Represents an unknown public key algorithm.
