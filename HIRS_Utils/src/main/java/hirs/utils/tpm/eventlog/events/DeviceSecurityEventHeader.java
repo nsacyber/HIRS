@@ -86,7 +86,7 @@ public abstract class DeviceSecurityEventHeader {
      */
     @Getter
     private int deviceType = -1;
-    
+
     /**
      * UEFI Device path.
      */
