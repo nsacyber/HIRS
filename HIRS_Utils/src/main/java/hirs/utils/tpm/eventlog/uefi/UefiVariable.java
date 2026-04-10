@@ -92,37 +92,46 @@ public class UefiVariable {
     public UefiVariable(final byte[] variableData)
             throws NoSuchAlgorithmException, IOException {
         certSuperList = new ArrayList<>();
-        byte[] guid = new byte[UefiConstants.SIZE_16];
-        byte[] nameLength = new byte[UefiConstants.SIZE_8];
-        byte[] nameTemp = null;
-        byte[] dataLength = new byte[UefiConstants.SIZE_8];
-        byte[] name = null;
+        byte[] variableNameGuidBytes = new byte[UefiConstants.SIZE_16];
+        byte[] unicodeNameLengthBytes = new byte[UefiConstants.SIZE_8];
+        byte[] unicodeNameCharBytes = null;
+        byte[] variableDataLengthBytes = new byte[UefiConstants.SIZE_8];
+        byte[] unicodeName = null;
         int variableLength = 0;
 
-        System.arraycopy(variableData, 0, guid, 0, UefiConstants.SIZE_16);
-        uefiVarGuid = new UefiGuid(guid);
-        System.arraycopy(variableData, UefiConstants.SIZE_16, nameLength,
-                0, UefiConstants.SIZE_8);
-        int nlength = HexUtils.leReverseInt(nameLength);
-        System.arraycopy(variableData, UefiConstants.OFFSET_24, dataLength,
-                0, UefiConstants.SIZE_8);
-        nameTemp = new byte[nlength * UefiConstants.SIZE_2];
+        // VariableName (GUID)
+        System.arraycopy(variableData, 0, variableNameGuidBytes, 0, UefiConstants.SIZE_16);
+        uefiVarGuid = new UefiGuid(variableNameGuidBytes);
 
+        // UnicodeNameLength
+        System.arraycopy(variableData, UefiConstants.SIZE_16, unicodeNameLengthBytes,
+                0, UefiConstants.SIZE_8);
+        int unicodeNameLength = HexUtils.leReverseInt(unicodeNameLengthBytes);
+
+        // VariableDataLength
+        System.arraycopy(variableData, UefiConstants.OFFSET_24, variableDataLengthBytes,
+                0, UefiConstants.SIZE_8);
+        variableLength = HexUtils.leReverseInt(variableDataLengthBytes);
+
+        // UnicodeName
+        unicodeNameCharBytes = new byte[unicodeNameLength * UefiConstants.SIZE_2];
         System.arraycopy(variableData, UefiConstants.OFFSET_32,
-                nameTemp, 0, nlength * UefiConstants.SIZE_2);
-        byte[] name1 = UefiDevicePath.convertChar16tobyteArray(nameTemp);
-        name = new byte[nlength];
-        System.arraycopy(name1, 0, name, 0, nlength);
-        variableLength = HexUtils.leReverseInt(dataLength);
+                unicodeNameCharBytes, 0, unicodeNameLength * UefiConstants.SIZE_2);
+        byte[] unicodeNameBytes = UefiDevicePath.convertChar16tobyteArray(unicodeNameCharBytes);
+        unicodeName = new byte[unicodeNameLength];
+        System.arraycopy(unicodeNameBytes, 0, unicodeName, 0, unicodeNameLength);
+        efiVarName = new String(unicodeName, StandardCharsets.UTF_8);
+        String efiVarNameAdjusted = efiVarName;
+        if (efiVarName.contains("Boot00")) {
+            efiVarNameAdjusted = "Boot00";
+        }
+
+        // VariableData
         uefiVariableData = new byte[variableLength];
         System.arraycopy(variableData, UefiConstants.OFFSET_32
-                + nlength * UefiConstants.SIZE_2, uefiVariableData, 0, variableLength);
-        efiVarName = new String(name, StandardCharsets.UTF_8);
-        String tmpName = efiVarName;
-        if (efiVarName.contains("Boot00")) {
-            tmpName = "Boot00";
-        }
-        switch (tmpName) {
+                + unicodeNameLength * UefiConstants.SIZE_2, uefiVariableData, 0, variableLength);
+
+        switch (efiVarNameAdjusted) {
             case "PK":
             case "KEK":
             case "db":

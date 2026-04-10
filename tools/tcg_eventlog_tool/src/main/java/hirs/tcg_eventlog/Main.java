@@ -4,6 +4,8 @@ import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 
+import javax.swing.JOptionPane;
+import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -181,17 +183,10 @@ final class Main {
                     }
                 }
             }
-        } catch (IOException i) {
-            System.out.print("IO error processing Event Log " + commander.getInFileName()
-                    + "\nError was " + i.toString());
-            System.exit(1);
-        } catch (CertificateException c) {
-            System.out.print("Certificate error processing Event Log " + commander.getInFileName()
-                    + "\nError was " + c.toString());
-            System.exit(1);
-        } catch (NoSuchAlgorithmException a) {
-            System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
-                    + "\nError was " + a.toString());
+        } catch (IOException | CertificateException | NoSuchAlgorithmException | RuntimeException e) {
+//            System.out.print("Error processing Event Log " + commander.getInFileName()
+//                    + "\nError was " + e.toString());
+            displayError(e);
             System.exit(1);
         }
     }
@@ -302,17 +297,11 @@ final class Main {
                     }
                 }
             }
-        } catch (IOException i) {
-            System.out.print("IO error processing Event Log " + commander.getInFileName()
-                    + "\nError was " + i.toString());
-            System.exit(1);
-        } catch (CertificateException c) {
-            System.out.print("Certificate error processing Event Log " + commander.getInFileName()
-                    + "\nError was " + c.toString());
-            System.exit(1);
-        } catch (NoSuchAlgorithmException a) {
-            System.out.print("Algorithm error processing Event Log " + commander.getInFileName()
-                    + "\nError was " + a.toString());
+        } catch (IOException | CertificateException | NoSuchAlgorithmException | RuntimeException e) {
+//            System.out.print("Error processing Event Log " + commander.getInFileName()
+//                    + "\nError was " + e.toString());
+//            displayError(e.getMessage());
+            displayError(e);
             System.exit(1);
         }
         return sb.toString();
@@ -378,5 +367,28 @@ final class Main {
         System.out.print("PCR Flag is " + commander.getPCRFlag() + "\n");
         System.out.print("Output File Flag is " + commander.getFileFlag() + "\n");
         System.out.print("Output Flag is " + commander.getOutputFlag() + "\n");
+    }
+
+    /**
+     * Opens a window displaying an error message.
+     *
+     * @param e Error message to be displayed.
+     */
+    private static void displayError(Exception e) {
+//        private static void displayError(final String errorMessage) {
+//        String message = "A fatal error occurred and the application must close:\n" + errorMessage;
+
+        System.out.print("Error processing Event Log " + commander.getInFileName()
+                + "\nError was " + e.toString());
+
+        String message = "A fatal error occurred and the application must close:\n" + e.getMessage();
+
+        if (!GraphicsEnvironment.isHeadless()) {
+            // Modal dialog: forces user to interact with it
+            JOptionPane.showMessageDialog(null,
+                    message,
+                    "Fatal Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

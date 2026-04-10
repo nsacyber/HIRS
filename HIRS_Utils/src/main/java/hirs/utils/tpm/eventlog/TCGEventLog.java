@@ -8,6 +8,7 @@ import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
@@ -34,6 +35,7 @@ import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA512_STR;
 /**
  * Class for handling different formats of TCG Event logs.
  */
+@Log4j2
 public final class TCGEventLog {
 
     // The TCG PC Client Platform TPM Profile Specification for TPM 2.0 defines 5 localities
@@ -222,57 +224,76 @@ public final class TCGEventLog {
         int eventNumber = 0;
         ByteArrayInputStream is = new ByteArrayInputStream(rawlog);
 
-        // Process the 1st entry as a SHA1 format (per the spec) and put into the event list
-        TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, eventNumber++);
-        eventList.put(eventNumber, firstEvent);
-        useFirstEventToInitValues(firstEvent);
+        try {
+            // Process the 1st entry as a SHA1 format (per the spec) and put into the event list
+            TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, eventNumber++);
+            eventList.put(eventNumber, firstEvent);
+            useFirstEventToInitValues(firstEvent);
 
-        // put the remaining events into the event list
-        while (is.available() > 0) {
-            if (bCryptoAgile) {
-                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestEvLogHashAlgName);
-                eventList.put(eventNumber, event2);
-                if (event2.isStartupLocalityEvent()) {
-                    EvNoAction event = new EvNoAction(event2.getEventContent());
-                    startupLocality = event.getStartupLocality();
+            // put the remaining events into the event list
+            while (is.available() > 0) {
+                if (bCryptoAgile) {
+                    TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestEvLogHashAlgName);
+                    eventList.put(eventNumber, event2);
+                    if (event2.isStartupLocalityEvent()) {
+                        EvNoAction event = new EvNoAction(event2.getEventContent());
+                        startupLocality = event.getStartupLocality();
+                    }
+                } else {
+                    TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
+                    eventList.put(eventNumber, event1);
                 }
-            } else {
-                TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
-                eventList.put(eventNumber, event1);
-            }
 
-            // first check if any previous event has not been able to access vendor-table.json,
-            // and if that is the case, the first comparison in the if-statement returns false and
-            // the if-statement is not executed
-            // [previous event file status = guidTableFileStatus]
-            // (ie. keep the file status to reflect that file was not accessible at some point)
-            // next, check if the new event has any status other than the default 'filesystem',
-            // and if that is the case, the 2nd comparison in the if-statement returns true and
-            // the if-statement is executed
-            // [new event file status = eventList.get(eventNumber-1).getGuidTableFileStatus()]
-            // (ie. if the new file status is not-accessible or from-code, then want to update)
-//            if ((guidTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-//                    && (eventList.get(eventNumber - 1).getGuidTableFileStatus()
-//                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-//                guidTableFileStatus = eventList.get(eventNumber - 1).getGuidTableFileStatus();
-//            }
+                // first check if any previous event has not been able to access vendor-table.json,
+                // and if that is the case, the first comparison in the if-statement returns false and
+                // the if-statement is not executed
+                // [previous event file status = guidTableFileStatus]
+                // (ie. keep the file status to reflect that file was not accessible at some point)
+                // next, check if the new event has any status other than the default 'filesystem',
+                // and if that is the case, the 2nd comparison in the if-statement returns true and
+                // the if-statement is executed
+                // [new event file status = eventList.get(eventNumber-1).getGuidTableFileStatus()]
+                // (ie. if the new file status is not-accessible or from-code, then want to update)
+    //            if ((guidTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+    //                    && (eventList.get(eventNumber - 1).getGuidTableFileStatus()
+    //                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+    //                guidTableFileStatus = eventList.get(eventNumber - 1).getGuidTableFileStatus();
+    //            }
 
-            // first check if any previous event has not been able to access pci.ids file,
-            // and if that is the case, the first comparison in the if-statement returns false and
-            // the if-statement is not executed
-            // [previous event file status = pciidsFileStatus]
-            // (ie. keep the file status to reflect that file was not accessible at some point)
-            // next, check if the new event has any status other than the default 'filesystem',
-            // and if that is the case, the 2nd comparison in the if-statement returns true and
-            // the if-statement is executed
-            // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
-            // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                    && (eventList.get(eventNumber - 1).getPciidsFileStatus()
-                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-                pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
+                // first check if any previous event has not been able to access pci.ids file,
+                // and if that is the case, the first comparison in the if-statement returns false and
+                // the if-statement is not executed
+                // [previous event file status = pciidsFileStatus]
+                // (ie. keep the file status to reflect that file was not accessible at some point)
+                // next, check if the new event has any status other than the default 'filesystem',
+                // and if that is the case, the 2nd comparison in the if-statement returns true and
+                // the if-statement is executed
+                // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
+                // (ie. if the new file status is not-accessible or from-code, then want to update)
+                if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+                        && (eventList.get(eventNumber - 1).getPciidsFileStatus()
+                        != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+                    pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
+                }
             }
+        } catch (IOException i) {
+            String error = "IO error parsing event log at Event #" + (eventNumber - 1);
+            log.error(error + ": " + i);
+            throw new IOException(error);
+        } catch (CertificateException c) {
+            String error = "Certificate error parsing event log at Event#" + (eventNumber - 1);
+            log.error(error + ": " + c);
+            throw new CertificateException(error);
+        } catch (NoSuchAlgorithmException a) {
+            String error = "Algorithm error parsing event log at Event #" + (eventNumber - 1);
+            log.error(error + ": " + a);
+            throw new NoSuchAlgorithmException(error);
+        } catch (RuntimeException r) {
+            String error = "Error parsing event log at Event #" + (eventNumber - 1);
+            log.error(error + ": " + r);
+            throw new RuntimeException(error);
         }
+
         calculatePcrValues();
     }
 
