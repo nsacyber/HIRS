@@ -5,6 +5,7 @@ import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 
 import javax.swing.JOptionPane;
+import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -183,9 +184,9 @@ final class Main {
                 }
             }
         } catch (IOException | CertificateException | NoSuchAlgorithmException | RuntimeException e) {
-            System.out.print("Error processing Event Log " + commander.getInFileName()
-                    + "\nError was " + e.toString());
-            showFatalErrorPopup(e.getMessage());
+//            System.out.print("Error processing Event Log " + commander.getInFileName()
+//                    + "\nError was " + e.toString());
+            displayError(e);
             System.exit(1);
         }
     }
@@ -297,9 +298,10 @@ final class Main {
                 }
             }
         } catch (IOException | CertificateException | NoSuchAlgorithmException | RuntimeException e) {
-            System.out.print("Error processing Event Log " + commander.getInFileName()
-                    + "\nError was " + e.toString());
-            showFatalErrorPopup(e.getMessage());
+//            System.out.print("Error processing Event Log " + commander.getInFileName()
+//                    + "\nError was " + e.toString());
+//            displayError(e.getMessage());
+            displayError(e);
             System.exit(1);
         }
         return sb.toString();
@@ -370,15 +372,23 @@ final class Main {
     /**
      * Opens a window displaying an error message.
      *
-     * @param errorMessage Error message to be displayed.
+     * @param e Error message to be displayed.
      */
-    private static void showFatalErrorPopup(final String errorMessage) {
-        String message = "A fatal error occurred and the application must close:\n" + errorMessage;
+    private static void displayError(Exception e) {
+//        private static void displayError(final String errorMessage) {
+//        String message = "A fatal error occurred and the application must close:\n" + errorMessage;
 
-        // Modal dialog: forces user to interact with it
-        JOptionPane.showMessageDialog(null,
-                message,
-                "Fatal Error",
-                JOptionPane.ERROR_MESSAGE);
+        System.out.print("Error processing Event Log " + commander.getInFileName()
+                + "\nError was " + e.toString());
+
+        String message = "A fatal error occurred and the application must close:\n" + e.getMessage();
+
+        if (!GraphicsEnvironment.isHeadless()) {
+            // Modal dialog: forces user to interact with it
+            JOptionPane.showMessageDialog(null,
+                    message,
+                    "Fatal Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 }
