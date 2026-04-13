@@ -184,8 +184,6 @@ final class Main {
                 }
             }
         } catch (IOException | CertificateException | NoSuchAlgorithmException | RuntimeException e) {
-//            System.out.print("Error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + e.toString());
             displayError(e);
             System.exit(1);
         }
@@ -298,9 +296,6 @@ final class Main {
                 }
             }
         } catch (IOException | CertificateException | NoSuchAlgorithmException | RuntimeException e) {
-//            System.out.print("Error processing Event Log " + commander.getInFileName()
-//                    + "\nError was " + e.toString());
-//            displayError(e.getMessage());
             displayError(e);
             System.exit(1);
         }
@@ -349,7 +344,6 @@ final class Main {
         boolean matchFound = false;
         for (TpmPcrEvent event2 : eventLog) {
             if ((event.getPcrIndex() == event2.getPcrIndex())
-//                    && (Arrays.equals(event.getEventDigest(), event2.getEventDigest()))) {
                     && (Arrays.equals(event.getEventStrongestDigest(), event2.getEventStrongestDigest()))) {
                 matchFound = true;
             }
@@ -375,18 +369,16 @@ final class Main {
      * @param e Error message to be displayed.
      */
     private static void displayError(Exception e) {
-//        private static void displayError(final String errorMessage) {
-//        String message = "A fatal error occurred and the application must close:\n" + errorMessage;
 
         System.out.print("Error processing Event Log " + commander.getInFileName()
                 + "\nError was " + e.toString());
 
-        String message = "A fatal error occurred and the application must close:\n" + e.getMessage();
+        String popupMessage = "A fatal error occurred and the application must close:\n" + e.getMessage();
 
         if (!GraphicsEnvironment.isHeadless()) {
             // Modal dialog: forces user to interact with it
             JOptionPane.showMessageDialog(null,
-                    message,
+                    popupMessage,
                     "Fatal Error",
                     JOptionPane.ERROR_MESSAGE);
         }
