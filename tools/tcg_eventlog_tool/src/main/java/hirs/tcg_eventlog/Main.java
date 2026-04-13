@@ -5,7 +5,7 @@ import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 
 import javax.swing.JOptionPane;
-import java.awt.*;
+import java.awt.GraphicsEnvironment;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
