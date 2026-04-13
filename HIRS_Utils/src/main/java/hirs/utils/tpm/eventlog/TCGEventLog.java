@@ -219,25 +219,25 @@ public final class TCGEventLog {
         bEvent = bEventFlag;
         bHexEvent = bHexEventFlag;
 
-        int eventNumber = 0;
         ByteArrayInputStream is = new ByteArrayInputStream(rawlog);
 
         // Process the 1st entry as a SHA1 format (per the spec) and put into the event list
-        TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, eventNumber++);
-        eventList.put(eventNumber, firstEvent);
+        TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, 0);
+        eventList.put(0, firstEvent);
         useFirstEventToInitValues(firstEvent);
 
         // put the remaining events into the event list
+        int eventNumber = 1;
         while (is.available() > 0) {
             if (bCryptoAgile) {
-                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestEvLogHashAlgName);
+                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber, strongestEvLogHashAlgName);
                 eventList.put(eventNumber, event2);
                 if (event2.isStartupLocalityEvent()) {
                     EvNoAction event = new EvNoAction(event2.getEventContent());
                     startupLocality = event.getStartupLocality();
                 }
             } else {
-                TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
+                TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber);
                 eventList.put(eventNumber, event1);
             }
 
@@ -267,11 +267,13 @@ public final class TCGEventLog {
             // the if-statement is executed
             // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
             // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+            if (eventNumber > 1 && (pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
                     && (eventList.get(eventNumber - 1).getPciidsFileStatus()
                     != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
                 pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
             }
+
+            eventNumber++;
         }
         calculatePcrValues();
     }
