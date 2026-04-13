@@ -2,6 +2,7 @@ package hirs.attestationca.persist.provision.service;
 
 import hirs.attestationca.persist.enums.TpmEccCurve;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
+import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.utils.HexUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -294,9 +295,10 @@ public class AttestationCertificateAuthorityServiceTest {
     public void testAssembleRSAPublicKeyUsingByteArray() {
         // obtain the expected modulus from the existing public key
         final BigInteger modulus = ((RSAPublicKey) keyPair.getPublic()).getModulus();
+        final BigInteger exponent = ((RSAPublicKey) keyPair.getPublic()).getPublicExponent();
 
         // perform test
-        RSAPublicKey publicKey = TpmPublicHelper.assembleRSAPublicKey(modulus.toByteArray());
+        RSAPublicKey publicKey = TpmPublicHelper.assembleRSAPublicKey(modulus, exponent);
 
         // assert that the exponent and the modulus are the same. the exponents should be the well
         // known prime, 101
@@ -335,7 +337,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
         byte[] ekFile = Files.readAllBytes(ekPath);
 
-        RSAPublicKey ek = TpmPublicHelper.parseRSAKeyFromPublicDataSegment(ekFile);
+        RSAPublicKey ek = (RSAPublicKey) ProvisionUtils.parsePublicKeyFromPublicDataSegment(ekFile);
         final int radix = 16;
         assertEquals(new BigInteger("010001", radix), ek.getPublicExponent());
 
@@ -363,7 +365,7 @@ public class AttestationCertificateAuthorityServiceTest {
 
         byte[] akFile = Files.readAllBytes(akPath);
 
-        RSAPublicKey ak = TpmPublicHelper.parseRSAKeyFromPublicDataSegment(akFile);
+        RSAPublicKey ak = (RSAPublicKey) ProvisionUtils.parsePublicKeyFromPublicDataSegment(akFile);
         final int radix = 16;
         assertEquals(new BigInteger("010001", radix), ak.getPublicExponent());
 

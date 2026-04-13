@@ -26,6 +26,22 @@ public enum PublicKeyAlgorithm {
      */
     RSA(0x0001, "RSA"),
 
+    /** SHA-256 algorithm. */
+    SHA256(0x000B, "SHA-256"),
+    /** SHA-384 algorithm. */
+    SHA384(0x000C, "SHA-384"),
+    /** SHA-512 algorithm. */
+    SHA512(0x000D, "SHA-512"),
+
+    /** RSASSA algorithm. */
+    RSASSA(0x0014, "RSASSA"),
+    /** RSAES algorithm. */
+    RSAES(0x0015, "RSAES"),
+    /** RSAPSS algorithm. */
+    RSAPSS(0x0016, "RSAPSS"),
+    /** OAEP algorithm. */
+    OAEP(0x0017, "OAEP"),
+
     /** ECDSA algorithm. */
     ECDSA(0x0018, "ECDSA"),
 
