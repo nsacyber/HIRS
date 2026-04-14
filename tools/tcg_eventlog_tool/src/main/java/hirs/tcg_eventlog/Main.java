@@ -368,7 +368,7 @@ final class Main {
      *
      * @param e Error message to be displayed.
      */
-    private static void displayError(Exception e) {
+    private static void displayError(final Exception e) {
 
         System.out.print("Error processing Event Log " + commander.getInFileName()
                 + "\nError was " + e.toString());
