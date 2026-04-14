@@ -56,7 +56,6 @@ public final class TpmPublicHelper {
         }
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(publicArea));
 
-        //in.skipNBytes(Short.BYTES); // Skip size
         final int type = in.readShort(); // Read type
         final PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(type);
 

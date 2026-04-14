@@ -48,39 +48,9 @@ public class AttestationCertificateAuthorityServiceTest {
 
     private static final String AK_NAME_PATH = "/tpm2/ak.name";
 
-    private static final String EK_MODULUS_HEX = "a3 b5 c2 1c 57 be 40 c4  3c 78 90 0d 00 81 01 78"
-            + "13 ca 02 ec b6 75 89 60  ca 60 9b 10 b6 b4 d0 0b"
-            + "4d e4 68 ad 01 a6 91 e2  56 20 5e cf 16 fe 77 ae"
-            + "1f 13 d7 ac a1 91 0b 68  f6 07 cf c2 4b 5e c1 2c"
-            + "4c fe 3a c9 62 7e 10 02  5b 33 c8 c2 1a cd 2e 7f"
-            + "dd 7c 43 ac a9 5f b1 d6  07 56 4f 72 9b 0a 00 6c"
-            + "f6 8d 23 a1 84 ca c1 7f  5a 8b ef 0e 23 11 90 00"
-            + "30 f2 99 e9 94 59 c6 b0  fe b2 5c 0c c7 b4 76 69"
-            + "6c f1 b7 d8 e5 60 d6 61  9f ab 7c 17 ce a4 74 6d"
-            + "8c cd e6 9e 6e bb 64 52  a7 c3 bf ac 07 e8 5e 3e"
-            + "ae eb dc c5 95 37 26 6a  5d a6 a2 12 52 fa 03 43"
-            + "b2 62 2d 87 8c a7 06 8f  d6 3f 63 b6 2d 73 c4 9d"
-            + "9d d6 55 0e bb db b1 eb  dd c5 4b 8f c3 17 cb 3b"
-            + "c3 bf f6 7f 13 44 de 8e  d7 b9 f1 a7 15 56 8f 6c"
-            + "cd f2 4c 86 99 39 19 88  d3 4a 2f 38 c4 c4 37 39"
-            + "85 6f 41 98 19 14 a4 1f  95 bc 04 ef 74 c2 0d f3";
+    private static final String EK_MODULUS_PATH = "/tpm2/ek.mod";
 
-    private static final String AK_MODULUS_HEX = "d7 c9 f0 e3 ac 1b 4a 1e  3c 9d 2d 57 02 e9 2a 93"
-            + "b0 c0 e1 50 af e4 61 11  31 73 a1 96 b8 d6 d2 1c"
-            + "40 40 c8 a6 46 a4 10 4b  d1 06 74 32 f6 e3 8a 55"
-            + "1e 03 c0 3e cc 75 04 c6  44 88 b6 ad 18 c9 45 65"
-            + "0d be c5 45 22 bd 24 ad  32 8c be 83 a8 9b 1b d9"
-            + "e0 c8 d9 ec 14 67 55 1b  fe 68 dd c7 f7 33 e4 cd"
-            + "87 bd ba 9a 07 e7 74 eb  57 ef 80 9c 6d ee f9 35"
-            + "52 67 36 e2 53 98 46 a5  4e 8f 17 41 8d ff eb bb"
-            + "9c d2 b4 df 57 f8 7f 31  ef 2e 2d 6e 06 7f 05 ed"
-            + "3f e9 6f aa b4 b7 5a f9  6d ba ff 2b 5e f7 c1 05"
-            + "90 68 1f b6 4b 38 67 f7  92 d8 73 51 6e 08 19 ad"
-            + "ca 35 48 a7 c1 fb cb 01  9a 28 03 c9 fe bb 49 2f"
-            + "88 3f a1 e7 a8 69 f0 f8  e8 78 db d3 6d c5 80 8d"
-            + "c2 e4 8a af 4b c2 ac 48  2a 44 63 6e 39 b0 8f dd"
-            + "e4 b3 a3 f9 2a b1 c8 d9  3d 6b c4 08 b0 16 c4 e7"
-            + "c7 2f f5 94 c6 43 3e ee  9b 8a da e7 31 d1 54 dd";
+    private static final String AK_MODULUS_PATH = "/tpm2/ak.mod";
 
     private static final String AK_NAME_HEX = "00 0b 6e 8f 79 1c 7e 16  96 1b 11 71 65 9c e0 cd"
             + "ae 0d 4d aa c5 41 be 58  89 74 67 55 96 c2 5e 38"
@@ -334,8 +304,10 @@ public class AttestationCertificateAuthorityServiceTest {
     @Test
     public void testParseEk() throws URISyntaxException, IOException {
         Path ekPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_PUBLIC_KEY_PATH)).toURI());
+        Path ekModPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_MODULUS_PATH)).toURI());
 
         byte[] ekFile = Files.readAllBytes(ekPath);
+        String realMod = Files.readString(ekModPath).replaceAll("\\s+", "");
 
         RSAPublicKey ek = (RSAPublicKey) ProvisionUtils.parsePublicKeyFromPublicDataSegment(ekFile);
         final int radix = 16;
@@ -349,7 +321,6 @@ public class AttestationCertificateAuthorityServiceTest {
             mod = tmp;
         }
         String hex = HexUtils.byteArrayToHexString(mod);
-        String realMod = EK_MODULUS_HEX.replaceAll("\\s+", "");
         assertEquals(realMod, hex);
     }
 
@@ -362,8 +333,10 @@ public class AttestationCertificateAuthorityServiceTest {
     @Test
     public void testParseAk() throws URISyntaxException, IOException {
         Path akPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_PUBLIC_KEY_PATH)).toURI());
+        Path akModPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_MODULUS_PATH)).toURI());
 
         byte[] akFile = Files.readAllBytes(akPath);
+        String realMod = Files.readString(akModPath).replaceAll("\\s+", "");
 
         RSAPublicKey ak = (RSAPublicKey) ProvisionUtils.parsePublicKeyFromPublicDataSegment(akFile);
         final int radix = 16;
@@ -377,7 +350,6 @@ public class AttestationCertificateAuthorityServiceTest {
             mod = tmp;
         }
         String hex = HexUtils.byteArrayToHexString(mod);
-        String realMod = AK_MODULUS_HEX.replaceAll("\\s+", "");
         assertEquals(realMod, hex);
     }
 }
