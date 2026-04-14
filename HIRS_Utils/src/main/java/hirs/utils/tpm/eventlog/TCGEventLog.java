@@ -221,7 +221,6 @@ public final class TCGEventLog {
         bEvent = bEventFlag;
         bHexEvent = bHexEventFlag;
 
-        int eventNumber = 0;
         ByteArrayInputStream is = new ByteArrayInputStream(rawlog);
 
         try {
