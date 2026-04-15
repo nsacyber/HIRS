@@ -73,6 +73,10 @@ public class UefiVariable {
      */
     private final List<UefiSignatureList> certSuperList;
     /**
+     * Was able to process the Variable Data.
+     */
+    private boolean uefiVariableDataProcessed = false;
+    /**
      * Encountered invalid UEFI Signature List.
      */
     private boolean invalidSignatureListEncountered = false;
@@ -161,12 +165,14 @@ public class UefiVariable {
                 switch (unicodeName) {
                     case "SecureBoot":
                         sb = new UefiSecureBoot(uefiVariableData);
+                        uefiVariableDataProcessed = true;
                         break;
                     case "PK":
                     case "KEK":
                     case "db":
                     case "dbx":
                         processSigList(uefiVariableData);
+                        uefiVariableDataProcessed = true;
                         break;
                     default:
                 }
@@ -174,20 +180,25 @@ public class UefiVariable {
             case EvConstants.EV_EFI_VARIABLE_BOOT:
                 if (unicodeName.contains("Boot00")) {
                     bootv = new UefiBootVariable(uefiVariableData);
+                    uefiVariableDataProcessed = true;
                 } else if (unicodeName.equals("BootOrder")) {
                     booto = new UefiBootOrder(uefiVariableData);
+                    uefiVariableDataProcessed = true;
                 }
                 break;
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
                 if (variableNameGuid.getVendorTableReference().equals("EFI_IMAGE_SECURITY_DATABASE_GUID")) {
                     processSigDataX509(uefiVariableData);
+                    uefiVariableDataProcessed = true;
                 }
                 break;
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 processSigList(uefiVariableData);
+                uefiVariableDataProcessed = true;
                 break;
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 processSigDataX509(uefiVariableData);
+                uefiVariableDataProcessed = true;
                 break;
             default:
         }
@@ -304,9 +315,6 @@ public class UefiVariable {
                     if (unicodeName.equals("SecureBoot")) {
                         efiVariable.append(sb.toString());
                     }
-                    else {
-                        efiVariable.append("      Code does not yet process this Uefi Variable\n");
-                    }
                     break;
                 case EvConstants.EV_EFI_VARIABLE_BOOT:
                     if (unicodeName.contains("Boot00")) {
@@ -314,21 +322,17 @@ public class UefiVariable {
                     } else if (unicodeName.equals("BootOrder")) {
                         efiVariable.append(booto.toString());
                     }
-                    else {
-                        efiVariable.append("      Code does not yet process this Uefi Variable\n");
-                    }
                     break;
                 case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-                    if (!variableNameGuid.getVendorTableReference().equals("EFI_IMAGE_SECURITY_DATABASE_GUID")) {
-                        efiVariable.append("      Code does not yet process this Uefi Variable\n");
-                    }
-                    break;
                 case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                     break;
                 default:
-                    efiVariable.append("      Code does not yet process this Uefi Variable\n");
             }
+        }
+
+        if(!uefiVariableDataProcessed) {
+            efiVariable.append("      Code does not yet process this Uefi Variable\n");
         }
 
         // Signature List output (if there are any Signature Lists)
