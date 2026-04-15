@@ -180,18 +180,15 @@ public class UefiVariable {
                 }
                 break;
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
-//                if(!(unicodeName.contains("MokList"))) {
-
-                if(!(unicodeName.contains("MokList") || unicodeName.contains("SbatLevel"))) {
+                if (variableNameGuid.getVendorTableReference().equals("EFI_IMAGE_SECURITY_DATABASE_GUID")) {
                     processSigDataX509(uefiVariableData);
-                }
-                else {
-                    String temph = "temph";
                 }
                 break;
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 processSigList(uefiVariableData);
+                break;
+            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
+                processSigDataX509(uefiVariableData);
                 break;
             default:
         }
@@ -299,27 +296,30 @@ public class UefiVariable {
             efiVariable.append("   UEFI Variable Data => " + "\n");
         }
 
-        switch (eventType) {
-            case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-                if (unicodeName.equals("SecureBoot")) {
-                    efiVariable.append(sb.toString());
-                }
-                break;
-            case EvConstants.EV_EFI_VARIABLE_BOOT:
-                if (unicodeName.contains("Boot00")) {
-                    efiVariable.append(bootv.toString());
-                }
-                else if (unicodeName.equals("BootOrder")) {
-                    efiVariable.append(booto.toString());
-                }
-                break;
-            case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-                if(unicodeName.contains("MokList") || unicodeName.contains("SbatLevel")) {
-                    efiVariable.append(printCert(uefiVariableData, 0));
-                }
-                break;
-            default:
-                efiVariable.append(String.format("      Code does not yet process this Uefi Variable"));
+        // fix shim & moklist once come across an example:
+        if (unicodeName.equals("Shim") || unicodeName.equals("MokList")) {
+            efiVariable.append(printCert(uefiVariableData, 0));
+        } else {
+            switch (eventType) {
+                case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
+                    if (unicodeName.equals("SecureBoot")) {
+                        efiVariable.append(sb.toString());
+                    }
+                    break;
+                case EvConstants.EV_EFI_VARIABLE_BOOT:
+                    if (unicodeName.contains("Boot00")) {
+                        efiVariable.append(bootv.toString());
+                    } else if (unicodeName.equals("BootOrder")) {
+                        efiVariable.append(booto.toString());
+                    }
+                    break;
+                case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+                case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+                case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
+                    break;
+                default:
+                    efiVariable.append(String.format("      Code does not yet process this Uefi Variable\n"));
+            }
         }
 
         // Signature List output (if there are any Signature Lists)

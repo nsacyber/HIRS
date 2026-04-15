@@ -233,7 +233,7 @@ public final class TCGEventLog {
             // put the remaining events into the event list
             while (is.available() > 0) {
                 if (bCryptoAgile) {
-                    if(eventNumber == 32) {
+                    if(eventNumber == 35) {
                         String stop = "stop";
                     }
                     TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber, strongestEvLogHashAlgName);
