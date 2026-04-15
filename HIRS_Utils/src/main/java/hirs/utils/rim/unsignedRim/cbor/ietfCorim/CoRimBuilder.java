@@ -32,10 +32,8 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import hirs.utils.crypto.DefaultCrypto;
-import hirs.utils.signature.SignatureHelper;
 import hirs.utils.signature.cose.CoseAlgorithm;
 import hirs.utils.signature.cose.CoseSignature;
-import hirs.utils.rim.unsignedRim.GenericRim;
 
 /**
  * Class containing the logic used to build out a CoRIM from user input.
@@ -128,14 +126,8 @@ public final class CoRimBuilder {
         // Add payload
         coseSign1Items.add(new CBORByteArray(unsignedCorim));
         // Add signature
-        // Create signature block (Sig_structure) and ToBeSigned
         try {
-            // byte[] toBeSigned = new CoseSignature().createToBeSigned(cert,
-            // unsignedCorim, protectedHeader);
-            final byte[] toBeSigned = new CoseSignature().createToBeSigned(
-                    SignatureHelper.getCoseAlgFromCert(cert), SignatureHelper.getKidFromCert(cert),
-                    unsignedCorim, cert, false, false,
-                    GenericRim.RIMTYPE_CORIM_COMID); // need protectedHeader
+            final byte[] toBeSigned = new CoseSignature().createToBeSigned(unsignedCorim, protectedHeader);
             final byte[] signature = cryptoProvider.sign(toBeSigned);
             coseSign1Items.add(new CBORByteArray(signature));
         } catch (final Exception e) {

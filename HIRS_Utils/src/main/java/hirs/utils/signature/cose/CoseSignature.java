@@ -148,6 +148,35 @@ public class CoseSignature implements SignatureFormat {
     }
 
     /**
+     * Create toBeSigned using an already-constructed protected header.
+     * This ensures that all fields (including corim-meta, etc.)
+     * are preserved exactly as encoded.
+     * This method should be used for CoRIM signing where the protected header
+     * is constructed externally (e.g., via CoRimBuilder).
+     *
+     * @param payload the payload to sign
+     * @param protectedHeader the fully constructed COSE protected header
+     * @return the encoded Sig_structure
+     */
+    public byte[] createToBeSigned(final byte[] payload,
+                                   final COSEProtectedHeader protectedHeader) {
+        if (coseBuilder == null) {
+            coseBuilder = new COSESign1Builder();
+        }
+        CBORByteArray encodedPayload = new CBORByteArray(payload);
+        SigStructure structure = new SigStructureBuilder()
+                .signature1()
+                .bodyAttributes(protectedHeader)
+                .payload(encodedPayload)
+                .build();
+        this.toBeSigned = structure.encode();
+        coseBuilder.payload(encodedPayload);
+        coseBuilder.protectedHeader(protectedHeader);
+        this.payload = payload.clone();
+        return this.toBeSigned.clone();
+    }
+
+    /**
      * Follows the "The steps for verifying a signature are" of section 4.4. of rfc9052 Signing
      * and Verification Process.
      * <a href="https://datatracker.ietf.org/doc/html/rfc9052#section-4.4">rfc9052 Signing
