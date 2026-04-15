@@ -181,13 +181,10 @@ public class ReferenceManifestValidator {
     public void setRim(final String path) {
         File swidtagFile = new File(path);
         try {
-            printToBeSigned(path);
             Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
             this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes using the provided file path: {}", e.getMessage());
-        } catch (ParserConfigurationException e) {
-            log.error("Error setting up to parse XML document: " + e.getMessage());
         }
     }
 
@@ -267,7 +264,7 @@ public class ReferenceManifestValidator {
      *
      * @param fileName input RIM file to modify for output
      */
-    private void printToBeSigned(String fileName) throws ParserConfigurationException {
+    public void printToBeSigned(String fileName) throws ParserConfigurationException {
         String outputFileName = "";
         if (!fileName.isEmpty()) {
             outputFileName = fileName.substring(0, fileName.lastIndexOf("."))

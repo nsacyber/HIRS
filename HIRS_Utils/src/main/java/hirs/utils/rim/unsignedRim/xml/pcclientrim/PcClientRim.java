@@ -14,6 +14,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -42,6 +43,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     private final List<Measurement> measurements = new ArrayList<>();
     private boolean isValid = false;
+    private boolean extract = false;
     private Unmarshaller unmarshaller;
     private Schema schema;
     private Document rim;
@@ -290,5 +292,16 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
             e.printStackTrace();
         }
         return doc;
+    }
+
+    public void extractToBeSigned(final String verifyFile) {
+        ReferenceManifestValidator validator = new ReferenceManifestValidator();
+        validator.setRim(verifyFile);
+        try {
+            validator.printToBeSigned(verifyFile);
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException("Error while setting up to extract to-be-signed from "
+                    + verifyFile + ": " + e);
+        }
     }
 }
