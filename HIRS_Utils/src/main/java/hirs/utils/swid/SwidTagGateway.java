@@ -270,11 +270,7 @@ public class SwidTagGateway {
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             Source source = new DOMSource(swidTag);
-            if (output.isEmpty()) {
-                transformer.transform(source, new StreamResult(System.out));
-            } else {
-                transformer.transform(source, new StreamResult(new FileOutputStream(output)));
-            }
+            transformer.transform(source, new StreamResult(new FileOutputStream(output)));
         } catch (FileNotFoundException e) {
             System.out.println("Unable to write to file: " + e.getMessage());
         } catch (TransformerConfigurationException e) {
