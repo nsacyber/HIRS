@@ -11,6 +11,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.bouncycastle.oer.its.template.ieee1609dot2.basetypes.Ieee1609Dot2BaseTypes.UINT64;
+
 /**
  * Class to process a UEFI variable within a TPM Event.
  * <pre>
@@ -22,23 +24,39 @@ import java.util.List;
  * <pre>    INT8 VariableData[];</pre>
  * } UEFI_VARIABLE_DATA
  * </pre>
+ * <pre>
+ *
+ * Example:
+ *
+ * UEFI_VARIABLE_DATA example{
+ * <pre>    "8be4df61-93ca-11d2-aa0d-00e098032b8c : EFI_Global_Variable"</pre>
+ * <pre>    2</pre>
+ * <pre>    973</pre>
+ * <pre>    PK</pre>
+ * <pre>    < UefiSignatureList > </pre>
+ * }
+ * </pre>
  */
 public class UefiVariable {
 
     /**
-     * List of Signature lists.
-     */
-    private final List<UefiSignatureList> certSuperList;
-    /**
      * UEFI defined variable identifier GUID.
      */
     @Getter
-    private UefiGuid uefiVarGuid = null;
+    private UefiGuid variableNameGuid = null;
     /**
      * Name of the UEFI variable.
      */
     @Getter
-    private String efiVarName = "";
+    private String unicodeName = "";
+    /**
+     * UEFI variable data.
+     */
+    private byte[] uefiVariableData = null;
+    /**
+     * List of Signature lists.
+     */
+    private final List<UefiSignatureList> certSuperList;
     /**
      * Encountered invalid UEFI Signature List.
      */
@@ -60,20 +78,6 @@ public class UefiVariable {
      */
     private UefiSecureBoot sb = null;
     /**
-     * UEFI variable data.
-     */
-    private byte[] uefiVariableData = null;
-
-//    /**
-//     * Track status of vendor-table.json file.
-//     * The default here is that each list correctly grabbed the file from file system.
-//     * If any one list has issues, this overall status will change to reflect the
-//     * problematic list's status.
-//     */
-//    @Getter
-//    private String guidTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
-
-    /**
      * Human-readable description of the data within the SPDM devdc (to be updated with more test data).
      */
     private String spdmDevdcInfo = "";
@@ -89,19 +93,22 @@ public class UefiVariable {
      * @throws java.io.IOException                    If there's a problem
      *                                                parsing the signature data.
      */
-    public UefiVariable(final byte[] variableData)
+    public UefiVariable(final int eventType, final byte[] variableData)
             throws NoSuchAlgorithmException, IOException {
+
         certSuperList = new ArrayList<>();
+
         byte[] variableNameGuidBytes = new byte[UefiConstants.SIZE_16];
         byte[] unicodeNameLengthBytes = new byte[UefiConstants.SIZE_8];
-        byte[] unicodeNameCharBytes = null;
         byte[] variableDataLengthBytes = new byte[UefiConstants.SIZE_8];
-        byte[] unicodeName = null;
-        int variableLength = 0;
+        int variableDataLength = 0;
+        byte[] unicodeNameCharBytes = null;
+        byte[] unicodeNameWithZerosBytes = null;
+        byte[] unicodeNameBytes = null;
 
         // VariableName (GUID)
         System.arraycopy(variableData, 0, variableNameGuidBytes, 0, UefiConstants.SIZE_16);
-        uefiVarGuid = new UefiGuid(variableNameGuidBytes);
+        variableNameGuid = new UefiGuid(variableNameGuidBytes);
 
         // UnicodeNameLength
         System.arraycopy(variableData, UefiConstants.SIZE_16, unicodeNameLengthBytes,
@@ -111,27 +118,27 @@ public class UefiVariable {
         // VariableDataLength
         System.arraycopy(variableData, UefiConstants.OFFSET_24, variableDataLengthBytes,
                 0, UefiConstants.SIZE_8);
-        variableLength = HexUtils.leReverseInt(variableDataLengthBytes);
+        variableDataLength = HexUtils.leReverseInt(variableDataLengthBytes);
 
         // UnicodeName
         unicodeNameCharBytes = new byte[unicodeNameLength * UefiConstants.SIZE_2];
         System.arraycopy(variableData, UefiConstants.OFFSET_32,
                 unicodeNameCharBytes, 0, unicodeNameLength * UefiConstants.SIZE_2);
-        byte[] unicodeNameBytes = UefiDevicePath.convertChar16tobyteArray(unicodeNameCharBytes);
-        unicodeName = new byte[unicodeNameLength];
-        System.arraycopy(unicodeNameBytes, 0, unicodeName, 0, unicodeNameLength);
-        efiVarName = new String(unicodeName, StandardCharsets.UTF_8);
-        String efiVarNameAdjusted = efiVarName;
-        if (efiVarName.contains("Boot00")) {
-            efiVarNameAdjusted = "Boot00";
+        unicodeNameWithZerosBytes = UefiDevicePath.convertChar16tobyteArray(unicodeNameCharBytes);
+        unicodeNameBytes = new byte[unicodeNameLength];
+        System.arraycopy(unicodeNameWithZerosBytes, 0, unicodeNameBytes, 0, unicodeNameLength);
+        unicodeName = new String(unicodeNameBytes, StandardCharsets.UTF_8);
+        String unicodeNameAdjusted = unicodeName;
+        if (unicodeName.contains("Boot00")) {
+            unicodeNameAdjusted = "Boot00";
         }
 
         // VariableData
-        uefiVariableData = new byte[variableLength];
+        uefiVariableData = new byte[variableDataLength];
         System.arraycopy(variableData, UefiConstants.OFFSET_32
-                + unicodeNameLength * UefiConstants.SIZE_2, uefiVariableData, 0, variableLength);
+                + unicodeNameLength * UefiConstants.SIZE_2, uefiVariableData, 0, variableDataLength);
 
-        switch (efiVarNameAdjusted) {
+        switch (unicodeNameAdjusted) {
             case "PK":
             case "KEK":
             case "db":
@@ -258,16 +265,16 @@ public class UefiVariable {
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
 
-        efiVariable.append(String.format("   %s: %s%n", UefiConstants.UEFI_VARIABLE_LABEL, efiVarName));
-        efiVariable.append("   UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
-        if (efiVarName != "") {
+        efiVariable.append(String.format("   %s: %s%n", UefiConstants.UEFI_VARIABLE_LABEL, unicodeName));
+        efiVariable.append("   UEFI Variable Name GUID: " + variableNameGuid.toString() + "\n");
+        if (unicodeName != "") {
             efiVariable.append("   UEFI Variable Contents => " + "\n");
         }
         String tmpName = "";
-        if (efiVarName.contains("Boot00")) {
+        if (unicodeName.contains("Boot00")) {
             tmpName = "Boot00";
         } else {
-            tmpName = efiVarName;
+            tmpName = unicodeName;
         }
         switch (tmpName) {
             case "Shim":
