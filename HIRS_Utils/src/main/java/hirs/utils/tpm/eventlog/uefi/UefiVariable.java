@@ -1,6 +1,7 @@
 package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.events.EvConstants;
 import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
@@ -17,28 +18,44 @@ import static org.bouncycastle.oer.its.template.ieee1609dot2.basetypes.Ieee1609D
  * Class to process a UEFI variable within a TPM Event.
  * <pre>
  * typedef struct tdUEFI_VARIABLE_DATA{
- * <pre>    UEFI_GUID VariableName;     (16 bytes)</pre>
- * <pre>    UINT64 UnicodeNameLength;   (8 bytes)</pre>
- * <pre>    UINT64 VariableDataLength;  (8 bytes)</pre>
- * <pre>    CHAR16 UnicodeName[];</pre>
- * <pre>    INT8 VariableData[];</pre>
- * } UEFI_VARIABLE_DATA
- * </pre>
- * <pre>
+ * &emsp;UEFI_GUID VariableName;     (16 bytes)
+ * &emsp;UINT64 UnicodeNameLength;   (8 bytes)
+ * &emsp;UINT64 VariableDataLength;  (8 bytes)
+ * &emsp;CHAR16 UnicodeName[];
+ * &emsp;INT8 VariableData[];
+ * } UEFI_VARIABLE_DATA<br>
  *
  * Example:
  *
  * UEFI_VARIABLE_DATA example{
- * <pre>    "8be4df61-93ca-11d2-aa0d-00e098032b8c : EFI_Global_Variable"</pre>
- * <pre>    2</pre>
- * <pre>    973</pre>
- * <pre>    PK</pre>
- * <pre>    < UefiSignatureList > </pre>
+ * &emsp;"8be4df61-93ca-11d2-aa0d-00e098032b8c : EFI_Global_Variable"
+ * &emsp;2
+ * &emsp;973
+ * &emsp;PK
+ * &emsp;< UefiSignatureList >
  * }
- * </pre>
+ * </pre><br>
+ * PFP 1.06 Revision 52:<br>
+ * <ul>
+ * <li>For Event Type EV_EFI_VARIABLE_DRIVER_CONFIG: The event field MUST contain a
+ * UEFI_VARIABLE_DATA structure, including
+ * the variable data, the GUID and the Unicode
+ * string.</li>
+ * <li>For Event Type EV_EFI_VARIABLE_AUTHORITY: The event field MUST contain a
+ * UEFI_VARIABLE_DATA structure where the
+ * VariableData field contains the
+ * EFI_SIGNATURE_DATA value from the
+ * EFI_SIGNATURE_LIST used to validate the
+ * loaded image</li>
+ * </ul>
  */
 public class UefiVariable {
 
+    /**
+     * Event Type.
+     */
+    @Getter
+    private int eventType = 0;
     /**
      * UEFI defined variable identifier GUID.
      */
@@ -80,7 +97,8 @@ public class UefiVariable {
     /**
      * Human-readable description of the data within the SPDM devdc (to be updated with more test data).
      */
-    private String spdmDevdcInfo = "";
+//    private String spdmDevdcInfo = "";
+    private String sigDataInfo = "";
 
     /**
      * EFIVariable constructor.
@@ -93,9 +111,10 @@ public class UefiVariable {
      * @throws java.io.IOException                    If there's a problem
      *                                                parsing the signature data.
      */
-    public UefiVariable(final int eventType, final byte[] variableData)
+    public UefiVariable(final int eventTypeIn, final byte[] variableData)
             throws NoSuchAlgorithmException, IOException {
 
+        eventType = eventTypeIn;
         certSuperList = new ArrayList<>();
 
         byte[] variableNameGuidBytes = new byte[UefiConstants.SIZE_16];
@@ -138,31 +157,34 @@ public class UefiVariable {
         System.arraycopy(variableData, UefiConstants.OFFSET_32
                 + unicodeNameLength * UefiConstants.SIZE_2, uefiVariableData, 0, variableDataLength);
 
-        switch (unicodeNameAdjusted) {
-            case "PK":
-            case "KEK":
-            case "db":
-            case "dbx":
-                processSigList(uefiVariableData);
+        switch (eventType) {
+            case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
+                switch (unicodeName) {
+                    case "SecureBoot":
+                        sb = new UefiSecureBoot(uefiVariableData);
+                        break;
+                    case "PK":
+                    case "KEK":
+                    case "db":
+                    case "dbx":
+                        processSigList(uefiVariableData);
+                        break;
+                }
                 break;
-            case "devdb":
-                processSigList(uefiVariableData);
-                break;      // Update when test patterns exist
-            // PFP v1.06 Rev 52, Sec 3.3.4.8
-            // EV_EFI_SPDM_DEVICE_POLICY: EFI_SIGNATURE_LIST
-            // EV_EFI_SPDM_DEVICE_AUTHORITY: EFI_SIGNATURE_DATA
-            // for now, differentiate them by using devdc for ..DEVICE_AUTHORITY
-            case "devdc":
+            case EvConstants.EV_EFI_VARIABLE_BOOT:
+                if (unicodeName.contains("Boot00")) {
+                    bootv = new UefiBootVariable(uefiVariableData);
+                }
+                else if (unicodeName.equals("BootOrder")) {
+                    booto = new UefiBootOrder(uefiVariableData);
+                }
+                break;
+            case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 processSigDataX509(uefiVariableData);
                 break;
-            case "Boot00":
-                bootv = new UefiBootVariable(uefiVariableData);
-                break;
-            case "BootOrder":
-                booto = new UefiBootOrder(uefiVariableData);
-                break;
-            case "SecureBoot":
-                sb = new UefiSecureBoot(uefiVariableData);
+            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+                processSigList(uefiVariableData);
                 break;
             default:
         }
@@ -201,7 +223,6 @@ public class UefiVariable {
 //                guidTableFileStatus = list.getGuidTableFileStatus();
 //            }
 
-//            efiVariableSigListContents += list.toString();
             if (!list.isSignatureTypeValid()) {
                 invalidSignatureListEncountered = true;
                 invalidSignatureListStatus = list.toString();
@@ -224,7 +245,7 @@ public class UefiVariable {
 
         ByteArrayInputStream efiSigDataIS = new ByteArrayInputStream(efiSigData);
         ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
-        spdmDevdcInfo += "";
+        sigDataInfo += "";
 
         // for now, hard-code the signature type for X509
         // in future with more test data, update this (potentially need to look at previous SPDM event)
@@ -244,16 +265,16 @@ public class UefiVariable {
             sigList.add(tmpSigData);
             numberOfCerts++;
         }
-        spdmDevdcInfo += "   Number of X509 Certs in UEFI Signature Data = " + numberOfCerts + "\n";
+        sigDataInfo += "   Number of X509 Certs in UEFI Signature Data = " + numberOfCerts + "\n";
         int certCnt = 0;
         for (int i = 0; i < sigList.size(); i++) {
             certCnt++;
-            spdmDevdcInfo += "   Cert # " + certCnt + " of " + numberOfCerts + ": ------------------\n";
+            sigDataInfo += "   Cert # " + certCnt + " of " + numberOfCerts + ": ------------------\n";
             UefiSignatureData certData = sigList.get(i);
-            spdmDevdcInfo += certData.toString();
+            sigDataInfo += certData.toString();
         }
         if (!dataValid) {
-            spdmDevdcInfo += "   *** Invalid UEFI Signature data encountered: " + dataInvalidStatus + "\n";
+            sigDataInfo += "   *** Invalid UEFI Signature data encountered: " + dataInvalidStatus + "\n";
         }
     }
 
@@ -265,47 +286,34 @@ public class UefiVariable {
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
 
-        efiVariable.append(String.format("   %s: %s%n", UefiConstants.UEFI_VARIABLE_LABEL, unicodeName));
         efiVariable.append("   UEFI Variable Name GUID: " + variableNameGuid.toString() + "\n");
+        efiVariable.append(String.format("   %s: %s%n", UefiConstants.UEFI_VARIABLE_UNICODE_NAME, unicodeName));
         if (unicodeName != "") {
-            efiVariable.append("   UEFI Variable Contents => " + "\n");
+            efiVariable.append("   UEFI Variable Data => " + "\n");
         }
-        String tmpName = "";
-        if (unicodeName.contains("Boot00")) {
-            tmpName = "Boot00";
-        } else {
-            tmpName = unicodeName;
-        }
-        switch (tmpName) {
-            case "Shim":
-            case "MokList":
-                efiVariable.append(printCert(uefiVariableData, 0));
+
+        switch (eventType) {
+            case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
+                if (unicodeName.equals("SecureBoot")) {
+                    efiVariable.append(sb.toString());
+                }
                 break;
-            case "PK":
-            case "KEK":
-            case "db":
-            case "dbx":
-            case "devdb":           // SPDM_DEVICE_POLICY and SPDM_DEVICE_AUTHORITY
-            case "devdc":           // for now use devdb and devdc respectively
-                // (update when more test patterns exist)
-                break;
-            case "Boot00":
-                efiVariable.append(bootv.toString());
-                break;
-            case "BootOrder":
-                efiVariable.append(booto.toString());
-                break;
-            case "SecureBoot":
-                efiVariable.append(sb.toString());
+            case EvConstants.EV_EFI_VARIABLE_BOOT:
+                if (unicodeName.contains("Boot00")) {
+                    efiVariable.append(bootv.toString());
+                }
+                else if (unicodeName.equals("BootOrder")) {
+                    efiVariable.append(booto.toString());
+                }
                 break;
             default:
-                if (!tmpName.isEmpty()) {
-                    efiVariable.append(String.format("      Data not provided for "
-                            + "UEFI variable named %s   ", tmpName));
-                } else {
-                    efiVariable.append("      Data not provided   ");
-                }
+                efiVariable.append(String.format("      Code does not yet process this Uefi Variable"));
         }
+
+//            case "Shim":
+//            case "MokList":
+//                efiVariable.append(printCert(uefiVariableData, 0));
+//                break;
 
         // Signature List output (if there are any Signature Lists)
         if (certSuperList.size() > 0) {
@@ -324,8 +332,8 @@ public class UefiVariable {
         }
 
         // Signature Data output (if there is a Signature Data)
-        if (!spdmDevdcInfo.isEmpty()) {
-            efiVariable.append(spdmDevdcInfo);
+        if (!sigDataInfo.isEmpty()) {
+            efiVariable.append(sigDataInfo);
         }
 
         return efiVariable.toString();

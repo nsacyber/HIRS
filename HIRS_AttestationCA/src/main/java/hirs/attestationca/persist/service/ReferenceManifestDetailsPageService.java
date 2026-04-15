@@ -153,11 +153,11 @@ public class ReferenceManifestDetailsPageService {
                 coveredEvents.put("gptTable", true);
             } else if (contentStr.contains("BootOrder")) {
                 coveredEvents.put("bootOrder", true);
-            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + ": PK")) {
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_UNICODE_NAME + ": PK")) {
                 coveredEvents.put("pk", true);
-            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + ": KEK")) {
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_UNICODE_NAME + ": KEK")) {
                 coveredEvents.put("kek", true);
-            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + ": db")) {
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_UNICODE_NAME + ": db")) {
                 if (contentStr.contains("dbx")) {
                     coveredEvents.put("forbiddenDbx", true);
                 } else {
