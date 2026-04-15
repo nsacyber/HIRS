@@ -15,6 +15,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -35,12 +36,17 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -48,6 +54,8 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -173,10 +181,13 @@ public class ReferenceManifestValidator {
     public void setRim(final String path) {
         File swidtagFile = new File(path);
         try {
+            printToBeSigned(path);
             Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
             this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes using the provided file path: {}", e.getMessage());
+        } catch (ParserConfigurationException e) {
+            log.error("Error setting up to parse XML document: " + e.getMessage());
         }
     }
 
@@ -248,6 +259,50 @@ public class ReferenceManifestValidator {
         }
 
         return false;
+    }
+
+    /**
+     * This method removes the <Signature> block of a signed base RIM
+     * and prints the resulting XML to a file.
+     *
+     * @param fileName input RIM file to modify for output
+     */
+    private void printToBeSigned(String fileName) throws ParserConfigurationException {
+        String outputFileName = "";
+        if (!fileName.isEmpty()) {
+            outputFileName = fileName.substring(0, fileName.lastIndexOf("."))
+                    + "_toBeSigned"
+                    + fileName.substring(fileName.lastIndexOf("."));
+        }
+
+        Document toBeSigned = DocumentBuilderFactory
+                .newInstance()
+                .newDocumentBuilder()
+                .newDocument();
+        toBeSigned.appendChild(toBeSigned.importNode(rim.getDocumentElement(), true));
+        Node signatureNode = toBeSigned.getElementsByTagNameNS(XMLSignature.XMLNS,
+                                                            "Signature").item(0);
+        signatureNode.getParentNode().removeChild(signatureNode);
+
+        try {
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            Source source = new DOMSource(toBeSigned);
+            if (outputFileName.isEmpty()) {
+                transformer.transform(source, new StreamResult(System.out));
+            } else {
+                transformer.transform(source, new StreamResult(new FileOutputStream(outputFileName)));
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Unable to write to file: " + e.getMessage());
+        } catch (TransformerConfigurationException e) {
+            System.out.println("Error instantiating TransformerFactory class: " + e.getMessage());
+        } catch (TransformerException e) {
+            System.out.println("Error instantiating Transformer class: " + e.getMessage());
+        }
+
     }
 
     /**
