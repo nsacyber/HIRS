@@ -233,6 +233,9 @@ public final class TCGEventLog {
             // put the remaining events into the event list
             while (is.available() > 0) {
                 if (bCryptoAgile) {
+                    if(eventNumber == 32) {
+                        String stop = "stop";
+                    }
                     TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber, strongestEvLogHashAlgName);
                     eventList.put(eventNumber++, event2);
                     if (event2.isStartupLocalityEvent()) {
@@ -277,19 +280,19 @@ public final class TCGEventLog {
                 }
             }
         } catch (IOException i) {
-            String error = "IO error parsing event log at Event #" + (eventNumber - 1);
+            String error = "IO error parsing event log at Event #" + (eventNumber);
             log.error(error + ": " + i);
             throw new IOException(error);
         } catch (CertificateException c) {
-            String error = "Certificate error parsing event log at Event#" + (eventNumber - 1);
+            String error = "Certificate error parsing event log at Event#" + (eventNumber);
             log.error(error + ": " + c);
             throw new CertificateException(error);
         } catch (NoSuchAlgorithmException a) {
-            String error = "Algorithm error parsing event log at Event #" + (eventNumber - 1);
+            String error = "Algorithm error parsing event log at Event #" + (eventNumber);
             log.error(error + ": " + a);
             throw new NoSuchAlgorithmException(error);
         } catch (RuntimeException r) {
-            String error = "Error parsing event log at Event #" + (eventNumber - 1);
+            String error = "Error parsing event log at Event #" + (eventNumber);
             log.error(error + ": " + r);
             throw new RuntimeException(error);
         }

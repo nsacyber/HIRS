@@ -181,7 +181,14 @@ public class UefiVariable {
                 break;
             case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
-                processSigDataX509(uefiVariableData);
+//                if(!(unicodeName.contains("MokList"))) {
+
+                if(!(unicodeName.contains("MokList") || unicodeName.contains("SbatLevel"))) {
+                    processSigDataX509(uefiVariableData);
+                }
+                else {
+                    String temph = "temph";
+                }
                 break;
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 processSigList(uefiVariableData);
@@ -248,7 +255,7 @@ public class UefiVariable {
         sigDataInfo += "";
 
         // for now, hard-code the signature type for X509
-        // in future with more test data, update this (potentially need to look at previous SPDM event)
+        // in future with more test data, update this (for SPDM potentially need to look at previous SPDM event)
         byte[] guid = HexUtils.hexStringToByteArray("A159C0A5E494A74A87B5AB155C2BF072");
         UefiGuid signatureType = new UefiGuid(guid);
 
@@ -306,14 +313,14 @@ public class UefiVariable {
                     efiVariable.append(booto.toString());
                 }
                 break;
+            case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+                if(unicodeName.contains("MokList") || unicodeName.contains("SbatLevel")) {
+                    efiVariable.append(printCert(uefiVariableData, 0));
+                }
+                break;
             default:
                 efiVariable.append(String.format("      Code does not yet process this Uefi Variable"));
         }
-
-//            case "Shim":
-//            case "MokList":
-//                efiVariable.append(printCert(uefiVariableData, 0));
-//                break;
 
         // Signature List output (if there are any Signature Lists)
         if (certSuperList.size() > 0) {
