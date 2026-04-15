@@ -427,7 +427,7 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 try {
-                    sb.append(new UefiVariable((int)eventType, eventContent));
+                    sb.append(new UefiVariable((int) eventType, eventContent));
                 } catch (NoSuchAlgorithmException | IOException exception) {
                     log.error(exception);
                     sb.append(exception);

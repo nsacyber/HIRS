@@ -12,8 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.bouncycastle.oer.its.template.ieee1609dot2.basetypes.Ieee1609Dot2BaseTypes.UINT64;
-
 /**
  * Class to process a UEFI variable within a TPM Event.
  * <pre>
@@ -105,6 +103,7 @@ public class UefiVariable {
      * The UEFI_VARIABLE_DATA contains a "VariableName" field which is used to determine
      * the class used to parse the data within the "VariableData".
      *
+     * @param eventTypeIn the event type
      * @param variableData byte array holding the UEFI Variable.
      * @throws java.security.NoSuchAlgorithmException if there's a problem
      *                                                hashing the certificate.
@@ -169,13 +168,13 @@ public class UefiVariable {
                     case "dbx":
                         processSigList(uefiVariableData);
                         break;
+                    default:
                 }
                 break;
             case EvConstants.EV_EFI_VARIABLE_BOOT:
                 if (unicodeName.contains("Boot00")) {
                     bootv = new UefiBootVariable(uefiVariableData);
-                }
-                else if (unicodeName.equals("BootOrder")) {
+                } else if (unicodeName.equals("BootOrder")) {
                     booto = new UefiBootOrder(uefiVariableData);
                 }
                 break;
@@ -305,6 +304,9 @@ public class UefiVariable {
                     if (unicodeName.equals("SecureBoot")) {
                         efiVariable.append(sb.toString());
                     }
+                    else {
+                        efiVariable.append("      Code does not yet process this Uefi Variable\n");
+                    }
                     break;
                 case EvConstants.EV_EFI_VARIABLE_BOOT:
                     if (unicodeName.contains("Boot00")) {
@@ -312,13 +314,20 @@ public class UefiVariable {
                     } else if (unicodeName.equals("BootOrder")) {
                         efiVariable.append(booto.toString());
                     }
+                    else {
+                        efiVariable.append("      Code does not yet process this Uefi Variable\n");
+                    }
                     break;
                 case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+                    if (!variableNameGuid.getVendorTableReference().equals("EFI_IMAGE_SECURITY_DATABASE_GUID")) {
+                        efiVariable.append("      Code does not yet process this Uefi Variable\n");
+                    }
+                    break;
                 case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                     break;
                 default:
-                    efiVariable.append(String.format("      Code does not yet process this Uefi Variable\n"));
+                    efiVariable.append("      Code does not yet process this Uefi Variable\n");
             }
         }
 
