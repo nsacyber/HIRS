@@ -1,11 +1,6 @@
 package hirs.utils.crypto;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -21,6 +16,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.PSSParameterSpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -41,6 +37,8 @@ import com.nimbusds.jose.jwk.JWKSet;
 import hirs.utils.signature.cose.CoseAlgorithm;
 import lombok.Getter;
 import lombok.Setter;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 
 /**
  * Class that provides a default implementation of the {@link CryptoEngine}
@@ -51,8 +49,8 @@ import lombok.Setter;
  */
 public class DefaultCrypto implements CryptoEngine {
     private static final String X509 = "X.509";
-    private static final String PKCS1_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
-    private static final String PKCS1_FOOTER = "-----END RSA PRIVATE KEY-----";
+    private static final String RSA_PRIVATE_KEY_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
+    private static final String RSA_PRIVATE_KEY_FOOTER = "-----END RSA PRIVATE KEY-----";
     private static final String PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
     private static final String PKCS8_FOOTER = "-----END PRIVATE KEY-----";
     private static final String CERTIFICATE_HEADER = "-----BEGIN CERTIFICATE-----";
@@ -61,6 +59,8 @@ public class DefaultCrypto implements CryptoEngine {
     private static final String ECC_KEY_FOOTER = "-----END EC PRIVATE KEY-----";
     private static final String ECC_PARAM_HEADER = "-----BEGIN EC PARAMETERS-----";
     private static final String ECC_PARAM_FOOTER = "-----END EC PARAMETERS-----";
+    private static final String PUBLIC_KEY_HEADER = "-----BEGIN PUBLIC KEY-----";   // From rfc 7468
+    private static final String PUBLIC_KEY_FOOTER = "-----END PUBLIC KEY-----";   // From rfc 7468
     private static final String[] JSON_WEB_KEY_HEADER = {"keys", ":", "{", "}"};
 
     private PrivateKey privateKey = null;
@@ -78,6 +78,41 @@ public class DefaultCrypto implements CryptoEngine {
      */
     public DefaultCrypto() {
 
+    }
+    /**
+     * This method extracts the public key from a  file.
+     * Supports PEM key formats.
+     *
+     * @param pathTokey full file path to the private key to be loaded
+     * @param cert a properly formatted x509 certificate (Optional)
+     * @param pk_algorithm a string representing the algorithm to use if the certificate is null
+     * @return true if the private key was successfully loaded
+     */
+    public boolean loadPublicKey(final String pathTokey, final X509Certificate cert,
+                                 final String pk_algorithm) throws Exception {
+        if (cert != null) {
+            publicKey = cert.getPublicKey();
+        } else if (!pathTokey.isEmpty()) {
+            final File file = new File(pathTokey);
+            final byte[] keyBytes = Files.readAllBytes(file.toPath());
+            String publicKeyStr = new String(keyBytes, StandardCharsets.UTF_8);
+            if (publicKeyStr.contains(PUBLIC_KEY_HEADER)) {
+                try
+                    (PemReader reader = new PemReader(new FileReader(pathTokey))) {
+                        PemObject pemObject = reader.readPemObject();
+                        byte[] content = pemObject.getContent();
+                        X509EncodedKeySpec spec = new X509EncodedKeySpec(content);
+                        KeyFactory kf = KeyFactory.getInstance(pk_algorithm);
+                        publicKey = kf.generatePublic(spec);
+                        algorithm = pk_algorithm;
+                } catch (final Exception e) {
+                    throw new Exception("Failed to extract the Public Key from file " + pathTokey + " : " + e.getMessage());
+                }
+            } else {
+                throw new Exception("Public Key file format for file " + pathTokey + " not supported");
+            }
+        }
+        return true;
     }
 
     /**
@@ -115,7 +150,7 @@ public class DefaultCrypto implements CryptoEngine {
             final File file = new File(pathTokey);
             final byte[] keyBytes = Files.readAllBytes(file.toPath());
             String privateKeyStr = new String(keyBytes, StandardCharsets.UTF_8);
-            if (privateKeyStr.contains(PKCS1_HEADER)) {
+            if (privateKeyStr.contains(RSA_PRIVATE_KEY_HEADER)) {
                 try (PEMParser pemParser = new PEMParser(
                         new InputStreamReader(new FileInputStream(pathTokey), StandardCharsets.UTF_8))) {
                     final JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");

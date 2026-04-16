@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.rmi.RemoteException;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
@@ -19,6 +20,7 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 
+import hirs.utils.crypto.DefaultCrypto;
 import lombok.NoArgsConstructor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -59,12 +61,13 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
      * Validate a PC Client RIM.
      * @param verifyFile RIM to verify
      * @param certificateFile certificate
+     * @param publicKeyFile optional public key file
      * @param rimel RIM event log
      * @param trustStore certificate chain
      * @return true if validated
      */
-    public boolean validate(final String verifyFile, final String certificateFile, final String rimel,
-                            final String trustStore) throws IOException {
+    public boolean validate(final String verifyFile, final String certificateFile, final String publicKeyFile, final String rimel,
+                            final String trustStore) throws Exception {
         boolean valid = false;
         ReferenceManifestValidator validator = new ReferenceManifestValidator();
         validator.setRim(verifyFile);
@@ -125,15 +128,30 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
             measurements.add(measurement);
         }
 
-        if (validator.validateBaseRim(certificateFile)) {
-            valid = true;
-        } else {
-            throw new RuntimeException("Failed to verify " + verifyFile);
+        if (!certificateFile.isEmpty()) {
+            if (validator.validateBaseRim(certificateFile)) {
+                valid = true;
+            } else {
+                throw new RuntimeException("Failed to verify " + verifyFile);
+            }
+        } else if (publicKeyFile != null) {
+            File pkFile = new File(publicKeyFile);
+            DefaultCrypto crypto = new DefaultCrypto();
+            PublicKey publicKey = null;
+            if (crypto.loadPublicKey(publicKeyFile, null, "rsa")) {
+                publicKey = crypto.getPublicKey();
+            }
+
+            if (validator.validateXmlSignature(publicKey, "")) {
+                valid = true;
+            } else {
+                throw new RuntimeException("Failed to verify " + verifyFile);
+            }
+           
         }
         isValid = valid;
         return valid;
     }
-
     /**
      * Get RIM type.
      * @return PC Client RIM
