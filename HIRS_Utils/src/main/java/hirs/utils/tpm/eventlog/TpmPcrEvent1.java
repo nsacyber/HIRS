@@ -39,7 +39,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
      * @throws java.security.cert.CertificateException If a certificate within an event can't be processed.
      */
     public TpmPcrEvent1(final ByteArrayInputStream is, final int eventNumber)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException {
         super(is);
 
         setLogFormat(1);

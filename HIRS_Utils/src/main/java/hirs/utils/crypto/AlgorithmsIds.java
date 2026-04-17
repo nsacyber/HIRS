@@ -1,5 +1,6 @@
 package hirs.utils.crypto;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.NoSuchElementException;
 
@@ -226,11 +227,10 @@ public final class AlgorithmsIds {
      * @param spec int id of specification for original algorithm
      * @param alg string id of algorithm
      * @return row in array if alg found, -1 if not found
-     * @throws NoSuchAlgorithmException if the original algorithm type is
-     * invalid
+     * @throws IllegalArgumentException if any of the parameters are invalid
      */
     public static int findAlgId(final String algType, final int spec, final String alg)
-            throws NoSuchAlgorithmException {
+            throws IllegalArgumentException {
 
         int index = -1;
 
@@ -248,7 +248,7 @@ public final class AlgorithmsIds {
             }
         } else if (algType.compareTo(ALG_TYPE_SIG) == 0) {
             if (spec == SPEC_COSWID_ALG) {
-                throw new NoSuchElementException("There is no COSWID signing algorithm");
+                throw new IllegalArgumentException("There is no COSWID signing algorithm");
             }
             for (int i = 0; i < SIG_ALGORITHMS.length; i++) {
                 if (alg.compareTo(SIG_ALGORITHMS[i][spec]) == 0) {
@@ -256,10 +256,10 @@ public final class AlgorithmsIds {
                 }
             }
         } else {
-            throw new NoSuchAlgorithmException("Invalid algorithm type " + algType);
+            throw new IllegalArgumentException("Invalid algorithm type " + algType);
         }
         if (index == -1) {
-            throw new NoSuchElementException("Algorithm " + algType + " is not defined in "
+            throw new IllegalArgumentException("Algorithm " + algType + " is not defined in "
                     + ALG_TABLES_SPEC_COLUMNS[0][spec] + " spec");
         }
         return index;

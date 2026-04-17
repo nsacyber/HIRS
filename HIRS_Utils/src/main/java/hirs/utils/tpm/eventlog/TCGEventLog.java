@@ -193,12 +193,10 @@ public final class TCGEventLog {
      * Simple constructor for Event Log.
      *
      * @param rawlog data for the event log file.
-     * @throws java.security.NoSuchAlgorithmException  if an unknown algorithm is encountered.
-     * @throws java.security.cert.CertificateException if a certificate in the log cannot be parsed.
      * @throws java.io.IOException                     IO Stream if event cannot be parsed.
      */
     public TCGEventLog(final byte[] rawlog)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws IOException {
         this(rawlog, false, false, false);
     }
 
@@ -209,13 +207,11 @@ public final class TCGEventLog {
      * @param bEventFlag    if true provides human-readable event descriptions.
      * @param bContentFlag  if true provides hex output for Content in the description.
      * @param bHexEventFlag if true provides hex event structure in the description.
-     * @throws java.security.NoSuchAlgorithmException  if an unknown algorithm is encountered.
-     * @throws java.security.cert.CertificateException if a certificate in the log cannot be parsed.
      * @throws java.io.IOException                     IO Stream if event cannot be parsed.
      */
     public TCGEventLog(final byte[] rawlog, final boolean bEventFlag,
                        final boolean bContentFlag, final boolean bHexEventFlag)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws IOException {
 
         bContent = bContentFlag;
         bEvent = bEventFlag;
@@ -280,14 +276,14 @@ public final class TCGEventLog {
             String error = "IO error parsing event log at Event #" + (eventNumber);
             log.error(error + ": " + i);
             throw new IOException(error);
-        } catch (CertificateException c) {
-            String error = "Certificate error parsing event log at Event#" + (eventNumber);
-            log.error(error + ": " + c);
-            throw new CertificateException(error);
-        } catch (NoSuchAlgorithmException a) {
-            String error = "Algorithm error parsing event log at Event #" + (eventNumber);
-            log.error(error + ": " + a);
-            throw new NoSuchAlgorithmException(error);
+//        } catch (CertificateException c) {
+//            String error = "Certificate error parsing event log at Event#" + (eventNumber);
+//            log.error(error + ": " + c);
+//            throw new CertificateException(error);
+//        } catch (NoSuchAlgorithmException a) {
+//            String error = "Algorithm error parsing event log at Event #" + (eventNumber);
+//            log.error(error + ": " + a);
+//            throw new NoSuchAlgorithmException(error);
         } catch (RuntimeException r) {
             String error = "Error parsing event log at Event #" + (eventNumber);
             log.error(error + ": " + r);
@@ -301,12 +297,11 @@ public final class TCGEventLog {
      * If first event is EV_NO_ACTION Spec Id, then the log is crypto agile.
      * Need info from this event about algorithms.
      *
-     * @param firstEvent                                the first event in the log
-     * @throws java.security.NoSuchAlgorithmException   if an unknown algorithm is encountered.
-     * @throws java.io.UnsupportedEncodingException     if EvNoAction input fails to parse.
+     * @param firstEvent               the first event in the log.
+     * @throws java.io.IOException     if first event cannot initialize values.
      */
     private void useFirstEventToInitValues(final TpmPcrEvent1 firstEvent)
-            throws NoSuchAlgorithmException, UnsupportedEncodingException {
+            throws IOException {
 
         // if first event is EV_NO_ACTION Spec Id Event, the log is crypto agile
         if (firstEvent.isNoActionSpecIdEvent()) {
@@ -317,13 +312,17 @@ public final class TCGEventLog {
 
             // find the strongest algorithm used and select that for processing
             String currentStrongestAlg = algList.get(0);
-            int currentStrongestAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, currentStrongestAlg);
-            for (int i = 1; i < algList.size(); i++) {
-                String newAlg = algList.get(i);
-                int newAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, newAlg);
-                if (newAlgRow > currentStrongestAlgRow) {
-                    currentStrongestAlg = newAlg;
+            try {
+                int currentStrongestAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, currentStrongestAlg);
+                for (int i = 1; i < algList.size(); i++) {
+                    String newAlg = algList.get(i);
+                    int newAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, newAlg);
+                    if (newAlgRow > currentStrongestAlgRow) {
+                        currentStrongestAlg = newAlg;
+                    }
                 }
+            } catch (IllegalArgumentException i) {
+                throw new IOException("Could not determine info about algorithm from first event", i);
             }
             strongestEvLogHashAlgName = currentStrongestAlg;
 
@@ -387,7 +386,7 @@ public final class TCGEventLog {
      * Calculates the Expected Values for TPM PCRs based upon Event digests in the Event Log.
      * Uses the algorithm and eventList passed into the constructor.
      */
-    private void calculatePcrValues() throws UnsupportedEncodingException {
+    private void calculatePcrValues() {
         byte[] extendedPCR;
         initPcrList();
         for (TpmPcrEvent currentEvent : eventList.values()) {

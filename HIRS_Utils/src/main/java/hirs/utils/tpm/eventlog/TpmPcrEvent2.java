@@ -74,7 +74,7 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
      * @throws java.security.cert.CertificateException If a certificate within an event can't be processed.
      */
     public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber, final String strongestAlg)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException {
 
         super(is);
         setLogFormat(2);
@@ -123,6 +123,10 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             if(eventSize < 0) {
                 throw new IOException("Event size is a negative value; possibly corrupt byte file.");
             }
+
+
+            // HERE - throw the rest of this into a try/catch and handle all errors
+
             eventContent = new byte[eventSize];
             is.read(eventContent);
             setEventContent(eventContent);
