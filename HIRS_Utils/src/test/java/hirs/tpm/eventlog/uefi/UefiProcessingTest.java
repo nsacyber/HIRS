@@ -3,6 +3,7 @@ package hirs.tpm.eventlog.uefi;
 import com.eclipsesource.json.JsonObject;
 import hirs.utils.HexUtils;
 import hirs.utils.JsonUtils;
+import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiDevicePath;
 import hirs.utils.tpm.eventlog.uefi.UefiFirmware;
 import hirs.utils.tpm.eventlog.uefi.UefiGuid;
@@ -76,9 +77,9 @@ public class UefiProcessingTest {
         String uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(UEFI_VARIABLE_BOOT),
                 StandardCharsets.UTF_8);
         byte[] uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
-        UefiVariable uefiVariable = new UefiVariable(uefiVariableBytes);
-        UefiGuid guid = uefiVariable.getUefiVarGuid();
-        String varName = uefiVariable.getEfiVarName();
+        UefiVariable uefiVariable = new UefiVariable(EvConstants.EV_EFI_VARIABLE_BOOT, uefiVariableBytes);
+        UefiGuid guid = uefiVariable.getVariableNameGuid();
+        String varName = uefiVariable.getUnicodeName();
         JsonObject jsonObject = JsonUtils.getSpecificJsonObject(jsonPath, "VendorTable");
         String guidStr = jsonObject.getString(
                 guid.toStringNoLookup().toLowerCase(), "Unknown GUID reference");
@@ -89,9 +90,9 @@ public class UefiProcessingTest {
                         .getResourceAsStream(UEFI_VARIABLE_BOOT_SECURE_BOOT),
                 StandardCharsets.UTF_8);
         uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
-        uefiVariable = new UefiVariable(uefiVariableBytes);
-        guid = uefiVariable.getUefiVarGuid();
-        varName = uefiVariable.getEfiVarName();
+        uefiVariable = new UefiVariable(EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG, uefiVariableBytes);
+        guid = uefiVariable.getVariableNameGuid();
+        varName = uefiVariable.getUnicodeName();
         guidStr = jsonObject.getString(
                 guid.toStringNoLookup().toLowerCase(), "Unknown GUID reference");
         Assertions.assertEquals("EFI_Global_Variable", guidStr);
@@ -100,8 +101,8 @@ public class UefiProcessingTest {
         uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(
                 UEFI_VARIABLE_BOOT_DRIVER_CONFIG_KEK), StandardCharsets.UTF_8);
         uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
-        uefiVariable = new UefiVariable(uefiVariableBytes);
-        varName = uefiVariable.getEfiVarName();
+        uefiVariable = new UefiVariable(EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG, uefiVariableBytes);
+        varName = uefiVariable.getUnicodeName();
         Assertions.assertEquals("KEK", varName);
     }
 

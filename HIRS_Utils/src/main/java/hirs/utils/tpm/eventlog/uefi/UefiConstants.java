@@ -286,7 +286,7 @@ public final class UefiConstants {
     /**
      * This string is used to assemble strings for output and also to search for events.
      */
-    public static final String UEFI_VARIABLE_LABEL = "UEFI Variable Name";
+    public static final String UEFI_VARIABLE_UNICODE_NAME = "UEFI Unicode Name";
 
     /**
      * This string is used to assemble strings for output and also to search for events.
