@@ -16,7 +16,7 @@ import java.security.cert.CertificateException;
  * TCG Platform Firmware Profile specification.
  * typedef struct {
  * UINT32                   PCRIndex;        //PCR Index value that either
- * .                                        //matches the PCRIndex of a
+ * .                                        //matches the PCR Index of a
  * .                                        //previous extend operation or
  * .                                        //indicates that this Event Log
  * .                                        //entry is not associated with
@@ -55,7 +55,9 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
         int eventSize = 0;
         if (is.available() > UefiConstants.SIZE_32) {
             is.read(rawIndex);
-            setPcrIndex(rawIndex);
+            if(!setPcrIndex(rawIndex)) {
+                throw new IOException("PCR Index out of range; possibly corrupt byte file.");
+            }
             is.read(rawType);
             setEventType(rawType);
             is.read(eventDigest);
@@ -66,6 +68,9 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
 
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
+            if(eventSize < 0) {
+                throw new IOException("Event size is a negative value; possibly corrupt byte file.");
+            }
             eventContent = new byte[eventSize];
             is.read(eventContent);
             setEventContent(eventContent);
@@ -85,7 +90,8 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
             setEventData(event1);
             //System.arraycopy(eventContent, 0, event, offset, eventContent.length);
 
-            this.processEvent(event1, eventContent, eventNumber);
+            this.processEvent(eventContent, eventNumber);
+//            this.processEvent(event1, eventContent, eventNumber);
             description +=  "\ndigest (SHA-1): " + Hex.encodeHexString(eventDigest);
         }
     }

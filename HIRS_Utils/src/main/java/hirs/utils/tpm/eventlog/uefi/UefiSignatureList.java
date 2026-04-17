@@ -161,7 +161,7 @@ public class UefiSignatureList {
      * @throws IOException              If there's a problem in reading he input stream.
      * @throws NoSuchAlgorithmException if there's a problem hashing the certificate.
      */
-    UefiSignatureList(final ByteArrayInputStream lists) throws IOException, NoSuchAlgorithmException {
+    UefiSignatureList(final ByteArrayInputStream lists) throws IOException {
         byte[] guid = new byte[UefiConstants.SIZE_16];
         lists.read(guid);
         signatureType = new UefiGuid(guid);
@@ -198,7 +198,7 @@ public class UefiSignatureList {
      * @throws NoSuchAlgorithmException if there's a problem hashing the certificate.
      * @throws IOException              If there's a problem parsing the signature data.
      */
-    private void processSignatureList(final byte[] efiSigData) throws NoSuchAlgorithmException, IOException {
+    private void processSignatureList(final byte[] efiSigData) throws IOException {
         efiSigDataIS = new ByteArrayInputStream(efiSigData);
         while (efiSigDataIS.available() > 0) {
             UefiSignatureData tmpSigData = new UefiSignatureData(efiSigDataIS, signatureType);

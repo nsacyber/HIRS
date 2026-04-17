@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * This class will only process SHA-256 digests.
  * typedef struct {
  * .    UINT32                 PCRIndex;  //PCR Index value that either
- * .                                      //matches the PCRIndex of a
+ * .                                      //matches the PCR Index of a
  * .                                      //previous extend operation or
  * .                                      //indicates that this Event Log
  * .                                      //entry is not associated with
@@ -29,7 +29,7 @@ import java.util.ArrayList;
  * } TCG_PCR_EVENT2;                     //The event data structure to be added
  * typedef struct {
  * .    UINT32  count;
- * .    TPMT_HA digests[HASH_COUNT];
+ * .    TPMT_HA digests[count];
  * } TPML_DIGEST_VALUES;
  * typedef struct {
  * .    TPMI_ALG_HASH hashAlg;
@@ -92,15 +92,24 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
         //TCG_PCR_EVENT2
         if (is.available() > UefiConstants.SIZE_32) {
             is.read(rawIndex);
-            setPcrIndex(rawIndex);
+            if(!setPcrIndex(rawIndex)) {
+                throw new IOException("PCR Index out of range; possibly corrupt byte file.");
+            }
             is.read(rawType);
             setEventType(rawType);
             // TPML_DIGEST_VALUES (algCount should match 'numberOfAlgorithms' in Spec ID event)
             is.read(algCountBytes);
             algCount = HexUtils.leReverseInt(algCountBytes);
+            if(algCount < 0) {
+                throw new IOException("Number of digests is a negative value; possibly corrupt byte file.");
+            }
             // Process TPMT_HA,
             for (int i = 0; i < algCount; i++) {
-                hashAlg = new TcgTpmtHa(is);
+                try {
+                    hashAlg = new TcgTpmtHa(is);
+                } catch(IOException io) {
+                    throw new IOException("Issue reading hash algorithm and digests; possibly corrupt byte file.", io);
+                }
                 hashName = hashAlg.getHashName();
                 eventDigest = new byte[hashAlg.getHashLength()];
                 hashList.add(hashAlg);
@@ -111,6 +120,9 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             }
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
+            if(eventSize < 0) {
+                throw new IOException("Event size is a negative value; possibly corrupt byte file.");
+            }
             eventContent = new byte[eventSize];
             is.read(eventContent);
             setEventContent(eventContent);
@@ -134,7 +146,8 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             }
             setEventData(event2);
 
-            this.processEvent(event2, eventContent, eventNumber);
+            this.processEvent(eventContent, eventNumber);
+//            this.processEvent(event2, eventContent, eventNumber);
             for (int i = 0; i < algCount; i++) {
                 description +=  "\ndigest (" + hashList.get(i).getHashName() + "): "
                         + Hex.encodeHexString(hashList.get(i).getDigest());

@@ -37,9 +37,12 @@ public class UefiX509Cert {
         } catch (CertificateException e) {
             throw new CertificateException("\n   Error parsing UEFI X509 certificate: " + e.getMessage());
         }
-
-        MessageDigest md = MessageDigest.getInstance("SHA1");
-        md.update(certData);
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            md.update(certData);
+        } catch (NoSuchAlgorithmException e) {
+            throw new NoSuchAlgorithmException("\n   Error getting message digest of X509 Cert", e);
+        }
     }
 
     /**
