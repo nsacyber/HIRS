@@ -210,8 +210,10 @@ public class SwidTagGateway {
 
             //Signature
             if (errorRequiredFields.isEmpty()) {
+                writeSwidTagFile(swidtag, filename + ".toBeSigned", false);
                 Document signedSoftwareIdentity = signXMLDocument(swidtag);
-                writeSwidTagFile(signedSoftwareIdentity, filename);
+                writeSwidTagFile(signedSoftwareIdentity, filename, true);
+                writeSwidTagFile(signedSoftwareIdentity, filename + ".notPretty", false);
             } else {
                 throw new RuntimeException("The following fields cannot be empty or null: "
                         + errorRequiredFields.substring(0, errorRequiredFields.length() - 2));
@@ -262,13 +264,16 @@ public class SwidTagGateway {
      *
      * @param swidTag the XML representing the SWID tag to write
      * @param output  the file path to write the SWID tag to
+     * @param prettyPrint true if the output file should be whitespaced for human readability
      */
-    public void writeSwidTagFile(final Document swidTag, final String output) {
+    public void writeSwidTagFile(final Document swidTag, final String output, final boolean prettyPrint) {
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            if (prettyPrint) {
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            }
             Source source = new DOMSource(swidTag);
             if (output.isEmpty()) {
                 transformer.transform(source, new StreamResult(System.out));
