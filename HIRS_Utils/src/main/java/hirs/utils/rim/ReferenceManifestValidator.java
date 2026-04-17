@@ -284,14 +284,8 @@ public class ReferenceManifestValidator {
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             Source source = new DOMSource(toBeSigned);
-            if (outputFileName.isEmpty()) {
-                transformer.transform(source, new StreamResult(System.out));
-            } else {
-                transformer.transform(source, new StreamResult(new FileOutputStream(outputFileName)));
-            }
+            transformer.transform(source, new StreamResult(new FileOutputStream(outputFileName)));
         } catch (FileNotFoundException e) {
             System.out.println("Unable to write to file: " + e.getMessage());
         } catch (TransformerConfigurationException e) {
