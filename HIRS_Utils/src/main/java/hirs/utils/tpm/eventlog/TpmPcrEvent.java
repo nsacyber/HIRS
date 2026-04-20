@@ -60,10 +60,6 @@ public class TpmPcrEvent {
      */
     protected final ArrayList<EventDigest> hashListFromEvent = new ArrayList<>();
     /**
-     * list of digests by calculating the hash of the event.
-     */
-    private final ArrayList<EventDigest> hashListCalculated = new ArrayList<>();
-    /**
      * Description for toString support.
      */
     protected String description = "";
@@ -88,14 +84,6 @@ public class TpmPcrEvent {
      * Event digest. If more than one digest in the Event, use the strongest one.
      */
     private byte[] strongestDigest = null;
-//    /**
-//     * Event hash for SHA1 event logs.
-//     */
-//    private byte[] eventDataSha1hash;
-//    /**
-//     * Event hash for Crypto Agile events.
-//     */
-//    private byte[] eventDataSha256hash;
     /**
      * Event header data (no content).
      */
@@ -354,7 +342,6 @@ public class TpmPcrEvent {
      */
     protected void setEventContent(final byte[] eventData) {
         eventContent = new byte[eventData.length];
-        //EvPostCode evPostCode = new EvPostCode(eventContent);
         System.arraycopy(eventData, 0, eventContent, 0, eventData.length);
     }
 
@@ -482,12 +469,9 @@ public class TpmPcrEvent {
      *
      * @param content       the byte array holding the event content.
      * @param eventPosition event position within the event log.
-     * @return String description of the event.
      * @throws java.io.IOException      if the event cannot be parsed.
      */
-    public String processEvent(final byte[] content, final int eventPosition)
-//    public String processEvent(final byte[] eventData, final byte[] content,
-//                               final int eventPosition)
+    public void processEvent(final byte[] content, final int eventPosition)
             throws  IOException {
         int eventID = (int) eventType;
         this.eventNumber = eventPosition;
@@ -498,14 +482,6 @@ public class TpmPcrEvent {
         if (eventID != UefiConstants.SIZE_4) {
             description += "\n";
         }
-        // Calculate both the SHA1 and SHA256 on the event since this will equal the digest
-        // field of about half the log messages.
-//        MessageDigest md1 = MessageDigest.getInstance("SHA-1");
-//        md1.update(eventData);
-//        eventDataSha1hash = md1.digest();
-//        MessageDigest md2 = MessageDigest.getInstance("SHA-256");
-//        md2.update(eventData);
-//        eventDataSha256hash = md2.digest();
 
         switch (eventID) {
             case EvConstants.EV_PREBOOT_CERT:
@@ -603,34 +579,7 @@ public class TpmPcrEvent {
             default:
                 description += " Unknown Event found" + "\n";
         }
-        return description;
     }
-
-//    /**
-//     * Human-readable output of a check of input against the current event hash.
-//     *
-//     * @return human-readable string.
-//     */
-//    private String eventHashCheck() {
-//        String result = "";
-//        if (logFormat == 1) {
-//            if (Arrays.equals(strongestDigest, eventDataSha1hash)) {
-//                result
-//                        += "Event digest matched hash of the event data " + "\n";
-//            } else {
-//                result += "Event digest DID NOT match the hash of the event data :"
-//                        + Hex.encodeHexString(getEventStrongestDigest()) + "\n";
-//            }
-//        } else {
-//            if (Arrays.equals(strongestDigest, eventDataSha256hash)) {
-//                result += "Event digest matched hash of the event data " + "\n";
-//            } else {
-//                result += "Event digest DID NOT match the hash of the event data :"
-//                        + Hex.encodeHexString(getEventStrongestDigest()) + "\n";
-//            }
-//        }
-//        return result;
-//    }
 
     /**
      * This method takes in an event and compares the hashes to verify that they match.

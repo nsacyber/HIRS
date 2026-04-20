@@ -166,7 +166,6 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
                 setEventContent(eventContent);
 
                 this.processEvent(eventContent, eventNumber);
-//            this.processEvent(event2, eventContent, eventNumber);
             } catch (RuntimeException r) {
                 throw r;
             } catch (Exception e) {
