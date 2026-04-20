@@ -4,7 +4,6 @@ import hirs.utils.HexUtils;
 import lombok.Getter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 /**
@@ -159,7 +158,6 @@ public class UefiSignatureList {
      *
      * @param lists ByteArrayInputStream containing an EFI Signature list.
      * @throws IOException              If there's a problem in reading he input stream.
-     * @throws NoSuchAlgorithmException if there's a problem hashing the certificate.
      */
     UefiSignatureList(final ByteArrayInputStream lists) throws IOException {
         byte[] guid = new byte[UefiConstants.SIZE_16];
@@ -195,7 +193,6 @@ public class UefiSignatureList {
      * Method for processing the data in an EFI SignatureList (ex. can be one or more X509 certs)
      *
      * @param efiSigData Byte array holding the SignatureList data
-     * @throws NoSuchAlgorithmException if there's a problem hashing the certificate.
      * @throws IOException              If there's a problem parsing the signature data.
      */
     private void processSignatureList(final byte[] efiSigData) throws IOException {

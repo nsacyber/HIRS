@@ -324,7 +324,7 @@ public class UefiVariable {
             }
         }
 
-        if(!uefiVariableDataProcessed) {
+        if (!uefiVariableDataProcessed) {
             efiVariable.append("      Code does not yet process this Uefi Variable\n");
         }
 

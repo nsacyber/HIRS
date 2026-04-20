@@ -27,9 +27,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -100,9 +97,9 @@ public class TpmPcrEvent {
 //     */
 //    private byte[] eventDataSha256hash;
     /**
-     * Event data (no content).
+     * Event header data (no content).
      */
-    private byte[] event;
+    private byte[] eventHeader;
     /**
      * Event content data.
      */
@@ -170,7 +167,7 @@ public class TpmPcrEvent {
      * @param event the event id.
      * @return TCG defined String that represents the event id
      */
-    private static String eventString(final long event) {
+    protected static String eventString(final long event) {
 
         if (event == EvConstants.EV_PREBOOT_CERT) {
             return "EV_PREBOOT_CERT";
@@ -284,10 +281,11 @@ public class TpmPcrEvent {
      * Sets the event PCR index value from a TCG Event.
      *
      * @param eventIndex TCG Event PCR Index as defined in the PFP
+     * @return whether the PCR index was in proper range
      */
     protected boolean setPcrIndex(final byte[] eventIndex) {
         int pcrIndexIn = HexUtils.leReverseInt(eventIndex);
-        if((pcrIndexIn < 0) || (pcrIndexIn > 23)) {
+        if ((pcrIndexIn < 0) || (pcrIndexIn > 23)) {
             return false;
         }
         pcrIndex = HexUtils.leReverseInt(eventIndex);
@@ -322,27 +320,26 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Sets the event data after processing.
+     * Sets the event header data (no event content) after processing.
      *
-     * @param eventData The PFP defined event content
+     * @param eventHeaderData The PFP defined event header data
      */
-    protected void setEventData(final byte[] eventData) {
-        event = new byte[eventData.length];
-        System.arraycopy(eventData, 0, event, 0, eventData.length);
+    protected void setEventHeader(final byte[] eventHeaderData) {
+        eventHeader = new byte[eventHeaderData.length];
+        System.arraycopy(eventHeaderData, 0, eventHeader, 0, eventHeaderData.length);
     }
 
     /**
-     * Gets the Event Data (no event content) for the event.
-     * event log format.
+     * Gets the event header data (no event content) for the event.
      *
      * @return byte array holding the event structure.
      */
-    public byte[] getEvent() {
-        return Arrays.copyOf(event, event.length);
+    public byte[] getEventHeader() {
+        return Arrays.copyOf(eventHeader, eventHeader.length);
     }
 
     /**
-     * Gets the event Content Data (not the entire event structure).
+     * Gets the event content data (not the entire event structure).
      *
      * @return byte array holding the events content field
      */
@@ -351,7 +348,7 @@ public class TpmPcrEvent {
     }
 
     /**
-     * Sets the event content after processing.
+     * Sets the event content data (not the entire event structure) after processing.
      *
      * @param eventData The PFP defined event content
      */
@@ -437,7 +434,7 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 try {
                     sb.append(new UefiVariable((int) eventType, eventContent));
-                } catch ( IOException exception) {
+                } catch (IOException exception) {
                     log.error(exception);
                     sb.append(exception);
                 }
@@ -486,7 +483,6 @@ public class TpmPcrEvent {
      * @param content       the byte array holding the event content.
      * @param eventPosition event position within the event log.
      * @return String description of the event.
-     * @throws NoSuchAlgorithmException if an event contains an unsupported algorithm.
      * @throws java.io.IOException      if the event cannot be parsed.
      */
     public String processEvent(final byte[] content, final int eventPosition)
@@ -678,24 +674,30 @@ public class TpmPcrEvent {
      * Human-readable string representing the contents of the Event Log.
      *
      * @param bEvent    event Flag.
-     * @param bContent  content flag.
-     * @param bHexEvent hex event flag.
+     * @param bHexEventContent  content flag.
+     * @param bHexEventHeader hex event flag.
      * @return Description of the log.
      */
-    public String toString(final boolean bEvent, final boolean bContent, final boolean bHexEvent) {
+    public String toString(final boolean bEvent, final boolean bHexEventHeader, final boolean bHexEventContent) {
         StringBuilder sb = new StringBuilder();
+        // add event human-readable description
         if (bEvent) {
             sb.append(description);
         }
-        if (bHexEvent) {
-            if (bEvent || bContent) {
+        // add hex of event header
+        if (bHexEventHeader) {
+            if (bEvent) {
                 sb.append("\n");
             }
-            byte[] eventData = getEvent();
-            sb.append("Event (Hex no Content) (" + eventData.length + " bytes): "
-                    + Hex.encodeHexString(eventData));
+            byte[] eventHeader = getEventHeader();
+            sb.append("Event header (Hex) (" + eventHeader.length + " bytes): "
+                    + Hex.encodeHexString(eventHeader));
         }
-        if (bContent) {
+        // add hex of event content
+        if (bHexEventContent) {
+            if (bEvent || bHexEventHeader) {
+                sb.append("\n");
+            }
             byte[] evContent = getEventContent();
             sb.append("Event content (Hex) (" + evContent.length + " bytes): "
                     + Hex.encodeHexString(evContent));

@@ -37,7 +37,6 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -643,7 +642,7 @@ public class DeviceInfoProcessorService {
                         }
                     }
                 }
-            } catch (CertificateException | NoSuchAlgorithmException | IOException ex) {
+            } catch (IOException ex) {
                 log.error(ex);
             }
         }

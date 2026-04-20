@@ -1,6 +1,5 @@
 package hirs.utils.crypto;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.NoSuchElementException;
 
@@ -177,10 +176,14 @@ public final class AlgorithmsIds {
      */
     public static String translateAlgId(final String algType, final int originalSpec,
                                         final String originalAlg, final int newSpec)
-            throws NoSuchAlgorithmException {
+            throws IllegalArgumentException, NoSuchElementException {
 
         String newAlgId = "";
 
+        if ((originalSpec != SPEC_TCG_ALG) && (originalSpec != SPEC_XML_ALG) && (originalSpec != SPEC_COSWID_ALG)
+                && (originalSpec != SPEC_COSE_ALG) && (originalSpec != SPEC_X509_ALG)) {
+            throw new IllegalArgumentException("Invalid original spec");
+        }
         if ((newSpec != SPEC_TCG_ALG) && (newSpec != SPEC_XML_ALG) && (newSpec != SPEC_COSWID_ALG)
                 && (newSpec != SPEC_COSE_ALG) && (newSpec != SPEC_X509_ALG)) {
             throw new IllegalArgumentException("Invalid new spec");
@@ -248,7 +251,7 @@ public final class AlgorithmsIds {
             }
         } else if (algType.compareTo(ALG_TYPE_SIG) == 0) {
             if (spec == SPEC_COSWID_ALG) {
-                throw new IllegalArgumentException("There is no COSWID signing algorithm");
+                throw new NoSuchElementException("There is no COSWID signing algorithm");
             }
             for (int i = 0; i < SIG_ALGORITHMS.length; i++) {
                 if (alg.compareTo(SIG_ALGORITHMS[i][spec]) == 0) {
@@ -256,10 +259,10 @@ public final class AlgorithmsIds {
                 }
             }
         } else {
-            throw new IllegalArgumentException("Invalid algorithm type " + algType);
+            throw new NoSuchElementException("Invalid algorithm type " + algType);
         }
         if (index == -1) {
-            throw new IllegalArgumentException("Algorithm " + algType + " is not defined in "
+            throw new NoSuchElementException("Algorithm " + algType + " is not defined in "
                     + ALG_TABLES_SPEC_COLUMNS[0][spec] + " spec");
         }
         return index;
