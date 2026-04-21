@@ -271,7 +271,7 @@ public class TpmPcrEvent {
         if ((pcrIndexIn < 0) || (pcrIndexIn > 23)) {
             return false;
         }
-        pcrIndex = HexUtils.leReverseInt(eventIndex);
+        pcrIndex = pcrIndexIn;
         return true;
     }
 
@@ -333,11 +333,11 @@ public class TpmPcrEvent {
     /**
      * Sets the event content data (not the entire event structure) after processing.
      *
-     * @param eventData The PFP defined event content
+     * @param eventContentData The PFP defined event content
      */
-    protected void setEventContent(final byte[] eventData) {
-        eventContent = new byte[eventData.length];
-        System.arraycopy(eventData, 0, eventContent, 0, eventData.length);
+    protected void setEventContent(final byte[] eventContentData) {
+        eventContent = new byte[eventContentData.length];
+        System.arraycopy(eventContentData, 0, eventContent, 0, eventContentData.length);
     }
 
     /**

@@ -322,7 +322,7 @@ public final class TCGEventLog {
             strongestEvLogHashAlgName = currentStrongestAlg;
 
             //TEMPORARILY use SHA256 until updates on Provisioner are pushed
-            strongestEvLogHashAlgName = "TPM_ALG_SHA256";
+//            strongestEvLogHashAlgName = "TPM_ALG_SHA256";
 
             // if more than one set of PCR banks exists in this log, store the one with strongest algorithm
             switch (strongestEvLogHashAlgName) {

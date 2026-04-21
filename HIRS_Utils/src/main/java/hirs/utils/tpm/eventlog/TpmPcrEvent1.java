@@ -79,7 +79,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
             // track event header length
             int eventHeaderLength = rawIndex.length + rawType.length + eventDigest.length + rawEventSize.length;
 
-            // read event size (size of event data)
+            // read event size (size of event content)
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
             if ((eventSize < 0) || (eventSize > (logFileBytesRemaining - eventHeaderLength))) {

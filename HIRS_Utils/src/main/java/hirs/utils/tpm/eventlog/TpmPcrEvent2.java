@@ -130,22 +130,22 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
                 }
             }
 
-            // track event length
-            int eventLength = rawIndex.length + rawType.length + rawEventSize.length;
+            // track event header length
+            int eventHeaderLength = rawIndex.length + rawType.length + rawEventSize.length;
             for (TcgTpmtHa hash : hashList) {
-                eventLength += hash.getBuffer().length;
+                eventHeaderLength += hash.getBuffer().length;
             }
 
-            // read event size (size of event data)
+            // read event size (size of event content)
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
-            if ((eventSize < 0) || (eventSize > (logFileBytesRemaining - eventLength))) {
+            if ((eventSize < 0) || (eventSize > (logFileBytesRemaining - eventHeaderLength))) {
                 throw new IOException("Event size is not valid; possibly corrupt byte file.");
             }
 
             // copy entire event header into a byte array for processing
             int offset = 0;
-            eventHeader = new byte[eventLength];
+            eventHeader = new byte[eventHeaderLength];
             System.arraycopy(rawIndex, 0, eventHeader, offset, rawIndex.length);
             offset += rawIndex.length;
             System.arraycopy(rawType, 0, eventHeader, offset, rawType.length);
