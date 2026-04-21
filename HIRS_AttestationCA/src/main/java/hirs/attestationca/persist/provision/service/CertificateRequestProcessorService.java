@@ -16,7 +16,9 @@ import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
 import hirs.attestationca.persist.provision.helper.IssuedCertificateAttributeHelper;
+import hirs.attestationca.persist.provision.helper.ParsedTpmPublic;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
+import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.attestationca.persist.validation.SupplyChainValidationService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
@@ -150,23 +152,37 @@ public class CertificateRequestProcessorService {
                     ProvisionUtils.parseIdentityClaim(tpm2ProvisionerState.getIdentityClaim());
 
             // Get endorsement public key
-            PublicKey ekPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
-                    identityClaim.getEkPublicArea().toByteArray());
+            ParsedTpmPublic ekPub;
+            try {
+                ekPub = TpmPublicHelper.parseTpmPublicArea(identityClaim.getEkPublicArea().toByteArray());
+            } catch (Exception e) {
+                log.error("Could not parse EK pub: {}", e.getMessage());
+                throw new IllegalStateException(e.getMessage());
+            }
 
             // Get attestation public key
-            PublicKey akPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
-                    identityClaim.getAkPublicArea().toByteArray());
+            ParsedTpmPublic akPub;
+            try {
+                akPub = TpmPublicHelper.parseTpmPublicArea(identityClaim.getEkPublicArea().toByteArray());
+            } catch (Exception e) {
+                log.error("Could not parse AK pub: {}", e.getMessage());
+                throw new IllegalStateException(e.getMessage());
+            }
 
             // Get LDevID public key if it exists
-            PublicKey ldevidPublicKey = null;
+            ParsedTpmPublic ldevidPub = null;
             if (identityClaim.hasLdevidPublicArea()) {
-                ldevidPublicKey = ProvisionUtils.parsePublicKeyFromPublicDataSegment(
-                        identityClaim.getLdevidPublicArea().toByteArray());
+                try {
+                    ldevidPub = TpmPublicHelper.parseTpmPublicArea(identityClaim.getLdevidPublicArea().toByteArray());
+                } catch (Exception e) {
+                    log.error("Could not parse LDevID pub: {}", e.getMessage());
+                    throw new IllegalStateException(e.getMessage());
+                }
             }
 
             // Get Endorsement Credential if it exists or was uploaded
             EndorsementCredential endorsementCredential =
-                    credentialManagementService.parseEcFromIdentityClaim(identityClaim, ekPublicKey);
+                    credentialManagementService.parseEcFromIdentityClaim(identityClaim, ekPub.publicKey());
 
             // Get Platform Credentials if they exist or were uploaded
             List<PlatformCredential> platformCredentials =
@@ -180,12 +196,12 @@ public class CertificateRequestProcessorService {
 
             if (validationResult == AppraisalStatus.Status.PASS) {
                 // Create signed, attestation certificate
-                X509Certificate attestationCertificate = generateCredential(akPublicKey,
+                X509Certificate attestationCertificate = generateCredential(akPub.publicKey(),
                         endorsementCredential, platformCredentials, device.getName(), acaCertificate);
 
-                if (ldevidPublicKey != null) {
+                if (ldevidPub != null) {
                     // Create signed LDevID certificate
-                    X509Certificate ldevidCertificate = generateCredential(ldevidPublicKey,
+                    X509Certificate ldevidCertificate = generateCredential(ldevidPub.publicKey(),
                             endorsementCredential, platformCredentials, device.getName(), acaCertificate);
                     byte[] derEncodedAttestationCertificate = ProvisionUtils.getDerEncodedCertificate(
                             attestationCertificate);

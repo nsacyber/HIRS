@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.provision.helper;
 
 import hirs.attestationca.persist.enums.TpmEccCurve;
-import hirs.attestationca.persist.enums.PublicKeyAlgorithm;
+import hirs.attestationca.persist.enums.TcgAlgorithm;
 import hirs.attestationca.persist.exceptions.UnexpectedServerException;
 import lombok.extern.log4j.Log4j2;
 
@@ -57,10 +57,10 @@ public final class TpmPublicHelper {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(publicArea));
 
         final int type = in.readShort(); // Read type
-        final PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(type);
+        final TcgAlgorithm alg = TcgAlgorithm.fromId(type);
 
         final int nameAlgInt = in.readShort(); // Read nameAlg
-        final PublicKeyAlgorithm nameAlg = PublicKeyAlgorithm.fromId(nameAlgInt);
+        final TcgAlgorithm nameAlg = TcgAlgorithm.fromId(nameAlgInt);
 
         in.skipNBytes(Integer.BYTES); // Skip objectAttributes
 
@@ -81,7 +81,7 @@ public final class TpmPublicHelper {
      * @return the {@link ParsedTpmPublic} structure containing parsed RSA data
      * @throws IOException if an unexpected parsing issue occurs
      */
-    public static ParsedTpmPublic parsePublicAreaRsa(final byte[] publicArea, final PublicKeyAlgorithm nameAlg,
+    public static ParsedTpmPublic parsePublicAreaRsa(final byte[] publicArea, final TcgAlgorithm nameAlg,
                                                          final DataInputStream in) throws IOException {
         skipSymDefObject(in); // Skip symdef
         skipRsaScheme(in); // Skip RSA scheme
@@ -98,7 +98,7 @@ public final class TpmPublicHelper {
         // Return parsed structure
         ParsedTpmPublic.RsaPublicParameters params = new ParsedTpmPublic.RsaPublicParameters(keyBits,
                 resolvedExponent, modulus);
-        return new ParsedTpmPublic.RsaParsedTpmPublic(PublicKeyAlgorithm.RSA, nameAlg, publicArea.clone(),
+        return new ParsedTpmPublic.RsaParsedTpmPublic(TcgAlgorithm.RSA, nameAlg, publicArea.clone(),
                 publicKey, params);
     }
 
@@ -129,7 +129,7 @@ public final class TpmPublicHelper {
      * @return the {@link ParsedTpmPublic} structure containing parsed ECC data
      * @throws IOException if an unexpected parsing issue occurs
      */
-    public static ParsedTpmPublic parsePublicAreaEcc(final byte[] publicArea, final PublicKeyAlgorithm nameAlg,
+    public static ParsedTpmPublic parsePublicAreaEcc(final byte[] publicArea, final TcgAlgorithm nameAlg,
                                                         final DataInputStream in) throws IOException {
         skipSymDefObject(in); // Skip symdef object
         skipEccScheme(in); // Skip ECC scheme
@@ -145,7 +145,7 @@ public final class TpmPublicHelper {
 
         // Return parsed structure
         ParsedTpmPublic.EccPublicParameters params = new ParsedTpmPublic.EccPublicParameters(eccCurve, point);
-        return new ParsedTpmPublic.EccParsedTpmPublic(PublicKeyAlgorithm.ECC, nameAlg, publicArea.clone(),
+        return new ParsedTpmPublic.EccParsedTpmPublic(TcgAlgorithm.ECC, nameAlg, publicArea.clone(),
                 publicKey, params);
     }
 
@@ -173,7 +173,7 @@ public final class TpmPublicHelper {
 
     private static void skipSymDefObject(final DataInputStream in) throws IOException {
         int algId = in.readShort();
-        PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId); // Read algorithm
+        TcgAlgorithm alg = TcgAlgorithm.fromId(algId); // Read algorithm
         switch (alg) {
             case NULL -> { }
             case AES -> {
@@ -187,7 +187,7 @@ public final class TpmPublicHelper {
 
     private static void skipEccScheme(final DataInputStream in) throws IOException {
         int algId = in.readShort();
-        PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId);
+        TcgAlgorithm alg = TcgAlgorithm.fromId(algId);
         switch (alg) {
             case NULL -> { }
             case ECDSA, ECDH -> in.skipNBytes(Short.BYTES); // Skip hashAlg
@@ -198,7 +198,7 @@ public final class TpmPublicHelper {
 
     private static void skipRsaScheme(final DataInputStream in) throws IOException {
         int algId = in.readShort();
-        PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId);
+        TcgAlgorithm alg = TcgAlgorithm.fromId(algId);
         switch (alg) {
             case RSAES, NULL -> { }
             case RSASSA, RSAPSS, OAEP -> in.skipNBytes(Short.BYTES); // Skip hashAlg
@@ -209,8 +209,8 @@ public final class TpmPublicHelper {
 
     private static void skipKdfScheme(final DataInputStream in) throws IOException {
         int algId = in.readShort();
-        PublicKeyAlgorithm alg = PublicKeyAlgorithm.fromId(algId);
-        if (!alg.equals(PublicKeyAlgorithm.NULL)) { // TPM_ALG_NULL only supported for now
+        TcgAlgorithm alg = TcgAlgorithm.fromId(algId);
+        if (!alg.equals(TcgAlgorithm.NULL)) { // TPM_ALG_NULL only supported for now
             throw new UnsupportedOperationException("Unsupported TPMT_KDF_SCHEME alg: 0x"
                     + Integer.toHexString(algId));
         }

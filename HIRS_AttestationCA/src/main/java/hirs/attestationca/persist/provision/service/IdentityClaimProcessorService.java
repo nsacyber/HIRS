@@ -14,7 +14,10 @@ import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredent
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
+import hirs.attestationca.persist.provision.helper.ParsedTpmPublic;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
+import hirs.attestationca.persist.provision.helper.TpmMakeCredentialHelper;
+import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.attestationca.persist.validation.SupplyChainValidationService;
 import hirs.utils.HexUtils;
 import lombok.extern.log4j.Log4j2;
@@ -99,13 +102,18 @@ public class IdentityClaimProcessorService {
         }
 
         // parse the EK Public key from the IdentityClaim
-        PublicKey endorsementCredentialPublicKey =
-                ProvisionUtils.parsePublicKeyFromPublicDataSegment(identityClaim.getEkPublicArea().toByteArray());
+        ParsedTpmPublic ekPub;
+        try {
+            ekPub = TpmPublicHelper.parseTpmPublicArea(identityClaim.getEkPublicArea().toByteArray());
+        } catch (Exception e) {
+            log.error("Could not parse EK pub: {}", e.getMessage());
+            throw new IllegalStateException(e.getMessage());
+        }
 
         AppraisalStatus.Status validationResult = AppraisalStatus.Status.FAIL;
 
         try {
-            validationResult = doSupplyChainValidation(identityClaim, endorsementCredentialPublicKey);
+            validationResult = doSupplyChainValidation(identityClaim, ekPub.publicKey());
         } catch (Exception ex) {
             log.error(ex.getMessage());
         }
@@ -113,11 +121,15 @@ public class IdentityClaimProcessorService {
         ByteString blobStr = ByteString.copyFrom(new byte[]{});
 
         if (validationResult == AppraisalStatus.Status.PASS) {
-            PublicKey akPub =
-                    ProvisionUtils.parsePublicKeyFromPublicDataSegment(identityClaim.getAkPublicArea().toByteArray());
+            ParsedTpmPublic akPub;
+            try {
+                akPub = TpmPublicHelper.parseTpmPublicArea(identityClaim.getAkPublicArea().toByteArray());
+            } catch (Exception e) {
+                log.error("Could not parse AK pub: {}", e.getMessage());
+                throw new IllegalStateException(e.getMessage());
+            }
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
-            blobStr = ProvisionUtils.tpm20MakeCredential(endorsementCredentialPublicKey, akPub,
-                    nonce);
+            blobStr = TpmMakeCredentialHelper.makeCredential(ekPub, akPub, nonce);
 
             String pcrQuoteMask = PCR_QUOTE_MASK;
 

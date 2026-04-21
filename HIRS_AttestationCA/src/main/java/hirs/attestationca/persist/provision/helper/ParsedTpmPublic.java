@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.provision.helper;
 
-import hirs.attestationca.persist.enums.PublicKeyAlgorithm;
+import hirs.attestationca.persist.enums.TcgAlgorithm;
 import hirs.attestationca.persist.enums.TpmEccCurve;
 
 import java.math.BigInteger;
@@ -17,12 +17,12 @@ public sealed interface ParsedTpmPublic {
      * The public key algorithm.
      * @return the public key algorithm
      */
-    PublicKeyAlgorithm alg();
+    TcgAlgorithm alg();
     /**
      * The name algorithm.
      * @return the name algorithm
      */
-    PublicKeyAlgorithm nameAlg();
+    TcgAlgorithm nameAlg();
     /**
      * Byte array containing the TPM public area.
      * @return the public area byte array
@@ -57,30 +57,30 @@ public sealed interface ParsedTpmPublic {
 
     /**
      * Parsed RSA data for the given TPM public area.
-     * @param alg the {@link PublicKeyAlgorithm} corresponding to the RSA algorithm used
-     * @param nameAlg the {@link PublicKeyAlgorithm} corresponding to the name algorithm
+     * @param alg the {@link TcgAlgorithm} corresponding to the RSA algorithm used
+     * @param nameAlg the {@link TcgAlgorithm} corresponding to the name algorithm
      * @param publicArea a byte array containing the public area contents
      * @param publicKey a {@link PublicKey} containing the constructed RSA key
      * @param params contains RSA-specific {@link RsaPublicParameters}
      */
     record RsaParsedTpmPublic(
-            PublicKeyAlgorithm alg,
-            PublicKeyAlgorithm nameAlg,
+            TcgAlgorithm alg,
+            TcgAlgorithm nameAlg,
             byte[] publicArea,
             PublicKey publicKey,
             RsaPublicParameters params
     ) implements ParsedTpmPublic { }
     /**
      * Parsed ECC data for the given TPM public area.
-     * @param alg the {@link PublicKeyAlgorithm} corresponding to the ECC algorithm used
-     * @param nameAlg the {@link PublicKeyAlgorithm} corresponding to the name algorithm
+     * @param alg the {@link TcgAlgorithm} corresponding to the ECC algorithm used
+     * @param nameAlg the {@link TcgAlgorithm} corresponding to the name algorithm
      * @param publicArea a byte array containing the public area contents
      * @param publicKey a {@link PublicKey} containing the constructed ECC key
      * @param params contains ECC-specific {@link RsaPublicParameters}
      */
     record EccParsedTpmPublic(
-            PublicKeyAlgorithm alg,
-            PublicKeyAlgorithm nameAlg,
+            TcgAlgorithm alg,
+            TcgAlgorithm nameAlg,
             byte[] publicArea,
             PublicKey publicKey,
             EccPublicParameters params
