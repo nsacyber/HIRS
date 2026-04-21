@@ -269,10 +269,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         try {
             logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
             baseline = logProcessor.getExpectedPCRValues();
-//        } catch (CertificateException cEx) {
-//            log.error(cEx);
-//        } catch (NoSuchAlgorithmException noSaEx) {
-//            log.error(noSaEx);
         } catch (IOException ioEx) {
             log.error(ioEx);
         }
@@ -317,10 +313,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         tpmPcrEvents.addAll(pcrValidator.validateTpmEvents(
                                 tcgMeasurementLog, eventValueMap, policySettings));
                     }
-//                } catch (NoSuchAlgorithmException e) {
-//                    log.error(e);
-//                } catch (CertificateException cEx) {
-//                    log.error(cEx);
                 } catch (IOException e) {
                     log.error(e);
                 }

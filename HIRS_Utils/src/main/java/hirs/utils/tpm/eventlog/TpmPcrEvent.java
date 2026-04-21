@@ -120,11 +120,6 @@ public class TpmPcrEvent {
     @Setter
     private boolean error = false;
 
-    /**
-     * An error was found in parsing of Event Content. This should not stop processing.
-     */
-    boolean hasEventContentError = false;
-
 //    /**
 //     * Track status of vendor-table.json file.
 //     * See TCGEventLog for more detail.
