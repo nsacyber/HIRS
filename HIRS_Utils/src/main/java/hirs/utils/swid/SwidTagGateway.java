@@ -264,7 +264,7 @@ public class SwidTagGateway {
      * @param output  the file path to write the SWID tag to
      * @param prettyPrint true if the output file should be whitespaced for human readability
      */
-    public void writeSwidTagFile(final Document swidTag, final String output, final boolean prettyPrint) {
+    public static void writeSwidTagFile(final Document swidTag, final String output, final boolean prettyPrint) {
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
