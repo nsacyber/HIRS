@@ -210,10 +210,8 @@ public class SwidTagGateway {
 
             //Signature
             if (errorRequiredFields.isEmpty()) {
-                writeSwidTagFile(swidtag, filename + ".toBeSigned", false);
                 Document signedSoftwareIdentity = signXMLDocument(swidtag);
-                writeSwidTagFile(signedSoftwareIdentity, filename, true);
-                writeSwidTagFile(signedSoftwareIdentity, filename + ".notPretty", false);
+                writeSwidTagFile(signedSoftwareIdentity, filename, false);
             } else {
                 throw new RuntimeException("The following fields cannot be empty or null: "
                         + errorRequiredFields.substring(0, errorRequiredFields.length() - 2));
