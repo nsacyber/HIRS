@@ -99,6 +99,7 @@ public class ReferenceManifestValidator {
     private static final int LEFT_SHIFT = 0x100;
     private static final int RADIX = 16;
 
+    @Getter
     private Document rim;
     private Unmarshaller unmarshaller;
 
