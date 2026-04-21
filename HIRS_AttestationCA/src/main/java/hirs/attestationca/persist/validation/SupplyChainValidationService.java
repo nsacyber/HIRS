@@ -319,9 +319,10 @@ public class SupplyChainValidationService {
                 if (sRim == null) {
                     fwStatus = new AppraisalStatus(FAIL,
                             String.format("Firmware Quote validation failed: "
-                                            + "No associated Support RIM file "
-                                            + "could be found for %s",
-                                    deviceName));
+                                        + "support RIM with manufacturer %s and model %s not found for %s.",
+                                        device.getDeviceInfo().getHardwareInfo().getManufacturer(),
+                                        device.getDeviceInfo().getHardwareInfo().getProductName(),
+                                        deviceName));
                 } else {
                     ReferenceManifest manifest = referenceManifestRepository
                             .findByHexDecHashAndRimTypeUnarchived(sRim.getEventLogHash(),
@@ -332,9 +333,7 @@ public class SupplyChainValidationService {
                 }
                 if (eventLog == null) {
                     fwStatus = new AppraisalStatus(FAIL,
-                            String.format("Firmware Quote validation failed: "
-                                            + "No associated Client Log file "
-                                            + "could be found for %s",
+                            String.format("Firmware Quote validation failed: verify RIMs for %s",
                                     deviceName));
                 } else {
                     String[] storedPcrs = eventLog.getExpectedPCRList();

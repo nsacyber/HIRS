@@ -377,7 +377,14 @@ public class DeviceInfoProcessorService {
                                 matchedReplacementBaseRIMOptional.get();
                         matchedReplacementBaseRIM.setDeviceName(replacementBaseRIM.getDeviceName());
                         referenceManifestRepository.save(matchedReplacementBaseRIM);
+                        log.info("Base RIM with manufacturer {} and model {} matched by tagId.",
+                                matchedReplacementBaseRIM.getPlatformManufacturer(),
+                                matchedReplacementBaseRIM.getPlatformModel());
                         continue;
+                    } else {
+                        log.error("Unable to locate base RIM with manufacturer {} and product name {}.",
+                                provisionedDeviceInfo.getHw().getManufacturer(),
+                                provisionedDeviceInfo.getHw().getProductName());
                     }
 
                     // otherwise save the replacement base RIM we created
@@ -394,19 +401,32 @@ public class DeviceInfoProcessorService {
                             .findFirst();
 
                     if (matchedUnarchivedBaseRIMOptional.isEmpty()) {
-                        throw new Exception("Unable to locate an unarchived base RIM.");
+                        String errorMessage = String.format("Unable to locate an unarchived base RIM"
+                                + " with manufacturer %s and model %s.",
+                                baseRim.getPlatformManufacturer(),
+                                baseRim.getPlatformModel());
+                        log.error(errorMessage);
+                        throw new Exception(errorMessage);
                     }
 
                     final BaseReferenceManifest matchedUnarchivedBaseRIM = matchedUnarchivedBaseRIMOptional.get();
                     matchedUnarchivedBaseRIM.setDeviceName(deviceHostName);
                     referenceManifestRepository.save(matchedUnarchivedBaseRIM);
+                    log.info("Original base RIM is archived; however a base RIM"
+                                   + " with manufacturer {} and model {} matched by tagId.",
+                            matchedUnarchivedBaseRIM.getPlatformManufacturer(),
+                            matchedUnarchivedBaseRIM.getPlatformModel());
                 } else {
                     baseRim.setDeviceName(deviceHostName);
                     referenceManifestRepository.save(baseRim);
+                    log.info("Base RIM with manufacturer {} and model {} found.",
+                            baseRim.getPlatformManufacturer(),
+                            baseRim.getPlatformModel());
                 }
             } catch (Exception exception) {
-                log.error("Failed to process Base RIM file for device {}: {}", deviceHostName,
-                        exception.getMessage(), exception);
+                log.error("Failed to process Base RIM file for device {}: {}",
+                        deviceHostName,
+                        exception.getMessage());
             }
         }
     }
@@ -455,6 +475,11 @@ public class DeviceInfoProcessorService {
                                     replacementSupportRIM.getHexDecHash().length() - numOfVariables)));
                     replacementSupportRIM.setDeviceName(deviceHostName);
                     referenceManifestRepository.save(replacementSupportRIM);
+                    log.info("Support RIM with manufacturer {} and model {} was not found, "
+                            + "but a replacement was generated from {}'s log file.",
+                            provisionedDeviceInfo.getHw().getManufacturer(),
+                            provisionedDeviceInfo.getHw().getProductName(),
+                            deviceHostName);
                 } else if (supportRim.isArchived()) {
                     /*
                      This block accounts for RIMs that may have been soft-deleted (archived)
@@ -481,8 +506,9 @@ public class DeviceInfoProcessorService {
                     referenceManifestRepository.save(supportRim);
                 }
             } catch (Exception exception) {
-                log.error("Failed to process Support RIM file for device {}: {}", deviceHostName,
-                        exception.getMessage(), exception);
+                log.error("Failed to process Support RIM file for device {}: {}",
+                        deviceHostName,
+                        exception.getMessage());
 
             }
         }
@@ -675,30 +701,36 @@ public class DeviceInfoProcessorService {
                 referenceManifestRepository.save(integrityMeasurements);
             }
 
-            List<BaseReferenceManifest> baseRims = referenceManifestRepository.getBaseByManufacturerModel(
-                    provisionedDeviceInfo.getHw().getManufacturer(),
-                    provisionedDeviceInfo.getHw().getProductName());
-
             provisionedEventLog.setDeviceName(deviceHostName);
             provisionedEventLog.setPlatformManufacturer(provisionedDeviceInfo.getHw().getManufacturer());
             provisionedEventLog.setPlatformModel(provisionedDeviceInfo.getHw().getProductName());
             referenceManifestRepository.save(provisionedEventLog);
 
-            for (BaseReferenceManifest bRim : baseRims) {
-                if (bRim != null) {
-                    // pull the base versions of the swidtag and rimel and set the
-                    // event log hash for use during provision
-                    SupportReferenceManifest sBaseRim =
-                            referenceManifestRepository.getSupportRimEntityById(bRim.getAssociatedRim());
-                    if (sBaseRim != null) {
-                        bRim.setEventLogHash(provisionedEventLog.getHexDecHash());
-                        sBaseRim.setEventLogHash(provisionedEventLog.getHexDecHash());
-                        referenceManifestRepository.save(bRim);
-                        referenceManifestRepository.save(sBaseRim);
-                    } else {
-                        log.warn("Could not locate support RIM associated with base RIM {}", bRim.getId());
+            List<BaseReferenceManifest> baseRims = referenceManifestRepository.getBaseByManufacturerModel(
+                    provisionedDeviceInfo.getHw().getManufacturer(),
+                    provisionedDeviceInfo.getHw().getProductName());
+            if (baseRims.size() > 0) {
+                for (BaseReferenceManifest bRim : baseRims) {
+                    if (bRim != null) {
+                        // pull the base versions of the swidtag and rimel and set the
+                        // event log hash for use during provision
+                        SupportReferenceManifest sBaseRim =
+                                referenceManifestRepository.getSupportRimEntityById(bRim.getAssociatedRim());
+                        if (sBaseRim != null) {
+                            bRim.setEventLogHash(provisionedEventLog.getHexDecHash());
+                            sBaseRim.setEventLogHash(provisionedEventLog.getHexDecHash());
+                            referenceManifestRepository.save(bRim);
+                            referenceManifestRepository.save(sBaseRim);
+                        } else {
+                            log.warn("Could not locate support RIM associated with base RIM {}", bRim.getId());
+                        }
                     }
                 }
+            } else {
+                log.warn("No base RIMs found with manufacturer {} and model {}, "
+                        + "this may cause firmware validation errors.",
+                        provisionedDeviceInfo.getHw().getManufacturer(),
+                        provisionedDeviceInfo.getHw().getProductName());
             }
         } catch (Exception exception) {
             log.error(exception);
