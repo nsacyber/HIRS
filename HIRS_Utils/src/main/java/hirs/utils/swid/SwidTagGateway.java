@@ -212,7 +212,7 @@ public class SwidTagGateway {
             //Signature
             if (errorRequiredFields.isEmpty()) {
                 TransformerFactory tf = TransformerFactory.newInstance();
-                tf.setAttribute("indent-number", 4);
+                tf.setAttribute("indent-number", 2);
                 Transformer prettyPrintTransformer = tf.newTransformer();
                 prettyPrintTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
                 prettyPrintTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
