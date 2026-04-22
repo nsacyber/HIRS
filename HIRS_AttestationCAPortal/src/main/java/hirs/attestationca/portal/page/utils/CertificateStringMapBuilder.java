@@ -710,6 +710,7 @@ public final class CertificateStringMapBuilder {
                     data.put("manufacturer", pc.getManufacturer());
                     data.put("model", pc.getModel());
                     data.put("version", pc.getVersion());
+                    data.put("platformSerial", pc.getPlatformSerial());
                     data.put("majorVersion",
                             Integer.toString(pc.getMajorVersion()));
                     data.put("minorVersion",
