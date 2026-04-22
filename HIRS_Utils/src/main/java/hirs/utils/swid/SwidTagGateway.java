@@ -53,6 +53,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.FileInputStream;
@@ -210,7 +211,12 @@ public class SwidTagGateway {
 
             //Signature
             if (errorRequiredFields.isEmpty()) {
-                Document signedSoftwareIdentity = signXMLDocument(swidtag);
+                Transformer prettyPrintTransformer = TransformerFactory.newInstance().newTransformer();
+                prettyPrintTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                prettyPrintTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+                DOMResult prettySwidTag = new DOMResult();
+                prettyPrintTransformer.transform(new DOMSource(swidtag), prettySwidTag);
+                Document signedSoftwareIdentity = signXMLDocument((Document) prettySwidTag.getNode());
                 writeSwidTagFile(signedSoftwareIdentity, filename, false);
             } else {
                 throw new RuntimeException("The following fields cannot be empty or null: "
