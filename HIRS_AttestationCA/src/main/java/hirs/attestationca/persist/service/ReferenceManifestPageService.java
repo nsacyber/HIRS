@@ -417,7 +417,7 @@ public class ReferenceManifestPageService {
                 messages.addErrorMessages(errorMessagesParse);
             }
         }
-        
+
         this.storeRIMS(successMessagesStore, errorMessagesStore, baseRims, supportRims);
 
         messages.addSuccessMessages(successMessagesStore);
@@ -523,6 +523,7 @@ public class ReferenceManifestPageService {
             final String failMessage = String.format("Failed to read uploaded Support RIM file (%s): ", fileName);
             log.error(failMessage, e);
             errorMessages.add(failMessage + e.getMessage());
+            return null;
         }
 
         try {
