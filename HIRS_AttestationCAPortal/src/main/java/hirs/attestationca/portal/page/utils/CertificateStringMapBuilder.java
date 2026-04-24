@@ -699,11 +699,6 @@ public final class CertificateStringMapBuilder {
                 } else {
                     data.put("endorsementID", "0");
                 }
-                // Add hashmap with TPM information if available
-                if (ek.getTpmSpecification() != null) {
-                    data.putAll(
-                            convertStringToHash(ek.getTpmSpecification().toString()));
-                }
                 data.put("credentialType", IssuedAttestationCertificate.AIC_TYPE_LABEL);
             }
             // add platform credential IDs if not empty
@@ -715,6 +710,7 @@ public final class CertificateStringMapBuilder {
                     data.put("manufacturer", pc.getManufacturer());
                     data.put("model", pc.getModel());
                     data.put("version", pc.getVersion());
+                    data.put("platformSerial", pc.getPlatformSerial());
                     data.put("majorVersion",
                             Integer.toString(pc.getMajorVersion()));
                     data.put("minorVersion",
