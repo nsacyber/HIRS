@@ -32,7 +32,6 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -358,8 +357,9 @@ public class ReferenceManifestPageService {
     public PageMessages processUploads(final MultipartFile[] files) {
 
         PageMessages messages = new PageMessages();
-        List<String> successMessages = new ArrayList<>();
-        List<String> errorMessages = new ArrayList<>();
+        List<String> errorMessagesParse = new ArrayList<>();
+        List<String> errorMessagesStore = new ArrayList<>();
+        List<String> successMessagesStore = new ArrayList<>();
 
         final Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
         final Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
@@ -382,10 +382,10 @@ public class ReferenceManifestPageService {
 
             if (isBaseRim) {
                 final BaseReferenceManifest baseReferenceManifest =
-                        parseBaseRIM(errorMessages, file);
-                baseRims.add(baseReferenceManifest);
-                messages.addErrorMessages(errorMessages);
+                        parseBaseRIM(errorMessagesParse, file);
+                messages.addErrorMessages(errorMessagesParse);
                 if (baseReferenceManifest != null) {
+                    baseRims.add(baseReferenceManifest);
                     log.info("Uploaded base RIM with manufacturer {} and model {}.",
                             baseReferenceManifest.getPlatformManufacturer(),
                             baseReferenceManifest.getPlatformModel());
@@ -394,10 +394,10 @@ public class ReferenceManifestPageService {
                 }
             } else if (isSupportRim) {
                 final SupportReferenceManifest supportReferenceManifest =
-                        parseSupportRIM(errorMessages, file);
-                supportRims.add(supportReferenceManifest);
-                messages.addErrorMessages(errorMessages);
+                        parseSupportRIM(errorMessagesParse, file);
+                messages.addErrorMessages(errorMessagesParse);
                 if (supportReferenceManifest != null) {
+                    supportRims.add(supportReferenceManifest);
                     log.info("Uploaded support RIM with manufacturer {} and model {}.",
                             supportReferenceManifest.getPlatformManufacturer(),
                             supportReferenceManifest.getPlatformModel());
@@ -413,14 +413,15 @@ public class ReferenceManifestPageService {
                         + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
                         + "Please verify your upload and retry.";
                 log.error("File extension in {} not recognized as base or support RIM.", fileName);
-                errorMessages.add(errorString);
+                errorMessagesParse.add(errorString);
+                messages.addErrorMessages(errorMessagesParse);
             }
         }
+        
+        this.storeRIMS(successMessagesStore, errorMessagesStore, baseRims, supportRims);
 
-        this.storeRIMS(successMessages, errorMessages, baseRims, supportRims);
-
-        messages.addSuccessMessages(successMessages);
-        messages.addErrorMessages(errorMessages);
+        messages.addSuccessMessages(successMessagesStore);
+        messages.addErrorMessages(errorMessagesStore);
 
         return messages;
     }

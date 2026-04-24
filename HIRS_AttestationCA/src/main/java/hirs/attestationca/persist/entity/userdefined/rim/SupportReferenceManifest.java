@@ -42,11 +42,21 @@ public class SupportReferenceManifest extends ReferenceManifest {
      * @throws IOException if unable to unmarshal the string
      */
     public SupportReferenceManifest(final String fileName,
-                                    final byte[] rimBytes) throws IOException {
+                                    final byte[] rimBytes) {
         super(rimBytes);
         this.setFileName(fileName);
         this.setRimType(SUPPORT_RIM);
         this.pcrHash = 0;
+
+        // in the future, differentiate between different types of support rims
+        // test if parsing event log passes
+        try {
+            TCGEventLog ev = new TCGEventLog(rimBytes);
+            java.util.Objects.requireNonNull(ev);       // workaround for SpotBugs to see the variable as "used"
+        } catch (Exception ie) {
+            throw new IllegalArgumentException("The only support RIM currently supported "
+                    + "is TCG Event Log. If this is an Event Log, it was not parsable.", ie);
+        }
     }
 
     /**
