@@ -12,8 +12,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -168,7 +166,7 @@ final class Main {
                                 || commander.getPcrNumber() == -1) {
                             if (bHexFlag) {
                                 if (bHexFlag || bHexEvent) {
-                                    writeOut(HexUtils.byteArrayToHexString(event.getEvent())
+                                    writeOut(HexUtils.byteArrayToHexString(event.getEventHeader())
                                             + "\n");
                                 }
                                 if (bContentFlag) {
@@ -183,8 +181,12 @@ final class Main {
                     }
                 }
             }
-        } catch (IOException | CertificateException | NoSuchAlgorithmException | RuntimeException e) {
-            displayError(e);
+        } catch (IOException | RuntimeException e) {
+            displayException(e);
+            System.exit(1);
+        } catch (OutOfMemoryError e) {
+            String error = "FATAL: System ran out of memory. The event log file may be corrupt.";
+            displayError(error, e);
             System.exit(1);
         }
     }
@@ -284,7 +286,7 @@ final class Main {
                 for (TpmPcrEvent error : errors) {
                     if (bHexFlag) {
                         if (bEventFlag || bHexEvent) {
-                            sb.append(HexUtils.byteArrayToHexString(error.getEvent()) + "\n");
+                            sb.append(HexUtils.byteArrayToHexString(error.getEventHeader()) + "\n");
                         }
                         if (bContentFlag) {
                             sb.append(HexUtils.byteArrayToHexString(error.getEventContent())
@@ -295,8 +297,8 @@ final class Main {
                     }
                 }
             }
-        } catch (IOException | CertificateException | NoSuchAlgorithmException | RuntimeException e) {
-            displayError(e);
+        } catch (IOException | RuntimeException e) {
+            displayException(e);
             System.exit(1);
         }
         return sb.toString();
@@ -305,7 +307,7 @@ final class Main {
     /**
      * Compare this event log against a second event log.
      * Returns a String Array of event descriptions in which the digests from the first
-     * did no match the second. Return value is null if all events matched.
+     * did not match the second. Return value is null if all events matched.
      *
      * @param eventList  initial events.
      * @param eventList2 events to compare against.
@@ -368,12 +370,35 @@ final class Main {
      *
      * @param e Error message to be displayed.
      */
-    private static void displayError(final Exception e) {
+    private static void displayException(final Exception e) {
 
         System.out.print("Error processing Event Log " + commander.getInFileName()
                 + "\nError was " + e.toString());
 
-        String popupMessage = "A fatal error occurred and the application must close:\n" + e.getMessage();
+        String popupMessage = "A fatal error occurred and the application must close:\n" + e.getMessage()
+                + "\nPossibly corrupt byte file";
+
+        if (!GraphicsEnvironment.isHeadless()) {
+            // Modal dialog: forces user to interact with it
+            JOptionPane.showMessageDialog(null,
+                    popupMessage,
+                    "Fatal Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Opens a window displaying an error message.
+     *
+     * @param errorStr Error message to be displayed.
+     * @param e Java error object.
+     */
+    private static void displayError(final String errorStr, final Error e) {
+
+        System.out.print("Error processing Event Log " + commander.getInFileName()
+                + "\nError was " + e.toString());
+
+        String popupMessage = errorStr + "\nThe application must close.";
 
         if (!GraphicsEnvironment.isHeadless()) {
             // Modal dialog: forces user to interact with it

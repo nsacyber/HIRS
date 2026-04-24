@@ -12,8 +12,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -81,7 +79,7 @@ public class SupportReferenceManifest extends ReferenceManifest {
             TCGEventLog logProcessor = new TCGEventLog(this.getRimBytes());
             this.pcrHash = Arrays.hashCode(logProcessor.getExpectedPCRValues());
             return logProcessor.getExpectedPCRValues();
-        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+        } catch (IOException exception) {
             log.error(exception);
         }
 
@@ -98,7 +96,7 @@ public class SupportReferenceManifest extends ReferenceManifest {
         try {
             logProcessor = new TCGEventLog(this.getRimBytes());
             return logProcessor.getEventList();
-        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+        } catch (IOException exception) {
             log.error(exception);
         }
 

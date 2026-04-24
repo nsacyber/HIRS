@@ -32,8 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -632,7 +630,7 @@ public class ReferenceManifestPageService {
 
                             referenceDigestValueRepository.save(newRdv);
                         }
-                    } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else {

@@ -110,9 +110,6 @@ public class SpdmCertificateChain {
         ByteArrayInputStream certChainDataIS = new ByteArrayInputStream(certChainData);
         while (certChainDataIS.available() > 0) {
 
-            // java.io.IOException                     If there's a problem parsing the cert chain data.
-            // java.security.cert.CertificateException if there's a problem parsing the X509 certificate.
-            // java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
             try {
                 byte[] certType = new byte[2];
                 certChainDataIS.read(certType);
@@ -128,21 +125,18 @@ public class SpdmCertificateChain {
                 System.arraycopy(certType, 0, certBlob, 0, 2);
                 System.arraycopy(certLength, 0, certBlob, 2, 2);
                 System.arraycopy(certData, 0, certBlob, certBlobStartIndex, cLength);
-                cert = new UefiX509Cert(certBlob);
+                try {
+                    cert = new UefiX509Cert(certBlob);
+                } catch (CertificateException | NoSuchAlgorithmException e) {
+                    certProcessingError += "Error with Cert # " + (numberOfCerts + 1) + "; e";
+                    break;
+                }
+
                 //cert = new X509Certificate(certBlob);
                 certList.add(cert);
                 numberOfCerts++;
             } catch (IOException e) {
-                certProcessingError += "Error with Cert # " + (numberOfCerts + 1)
-                        + ": IOException (error reading cert data)";
-                break;
-            } catch (CertificateException e) {
-                certProcessingError += "Error with Cert # " + (numberOfCerts + 1)
-                        + ": CertificateException";
-                break;
-            } catch (NoSuchAlgorithmException e) {
-                certProcessingError += "Error with Cert # " + (numberOfCerts + 1)
-                        + ": CNoSuchAlgorithmException";
+                certProcessingError += "Error with Cert # " + (numberOfCerts + 1) + "; e";
                 break;
             }
         }

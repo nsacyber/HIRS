@@ -90,7 +90,7 @@ public class UefiSignatureData {
      * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
      */
     UefiSignatureData(final ByteArrayInputStream inputStream, final UefiGuid sigType)
-            throws IOException, NoSuchAlgorithmException {
+            throws IOException {
         signatureType = sigType;
         // UEFI spec section 32.5.3.3 states that SignatureListType of EFI_CERT_SHA256_GUID
         // only contains a hash, not a cert
@@ -115,15 +115,18 @@ public class UefiSignatureData {
      * Default EFISignatureData Constructor.
      *
      * @param data byte array of the EFISignatureData to process
-     * @throws java.security.cert.CertificateException If there a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
      */
-    UefiSignatureData(final byte[] data) throws CertificateException, NoSuchAlgorithmException {
+    UefiSignatureData(final byte[] data) {
         System.arraycopy(data, 0, guid, 0, UefiConstants.SIZE_16);
         sigData = new byte[data.length - UefiConstants.SIZE_16];
         System.arraycopy(data, UefiConstants.OFFSET_16, sigData, 0,
                 data.length - UefiConstants.SIZE_16);
-        cert = new UefiX509Cert(sigData);
+        try {
+            cert = new UefiX509Cert(sigData);
+        } catch (CertificateException | NoSuchAlgorithmException e) {
+            errorStatus = "\n   **** UefiSignatureData Certificate Issue ****: " + e.getMessage();
+            log.warn("UefiSignatureData Certificate Issue: {}", e.getMessage());
+        }
         efiVarGuid = new UefiGuid(guid);
     }
 
@@ -136,7 +139,7 @@ public class UefiSignatureData {
      * @throws java.security.NoSuchAlgorithmException  if there's a problem creating a hash.
      */
     private void processC509Cert(final ByteArrayInputStream inputStream)
-            throws IOException, NoSuchAlgorithmException {
+            throws IOException {
 
         // Read in Type and Length separately so we calculate the rest of the cert size
         byte[] certType = new byte[UefiConstants.SIZE_2];
@@ -152,7 +155,7 @@ public class UefiSignatureData {
         System.arraycopy(certData, 0, certBlob, UefiConstants.OFFSET_4, certDataLength);
         try {
             cert = new UefiX509Cert(certBlob);
-        } catch (CertificateException e) {
+        } catch (CertificateException | NoSuchAlgorithmException e) {
             errorStatus = "\n   **** UefiSignatureData Certificate Issue ****: " + e.getMessage();
             log.warn("UefiSignatureData Certificate Issue: {}", e.getMessage());
         }

@@ -2,12 +2,11 @@ package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 
 /**
@@ -16,20 +15,23 @@ import java.util.ArrayList;
  * TCG Platform Firmware Profile specification.
  * This class will only process SHA-256 digests.
  * typedef struct {
- * .    UINT32                 PCRIndex;  //PCR Index value that either
- * .                                      //matches the PCRIndex of a
- * .                                      //previous extend operation or
- * .                                      //indicates that this Event Log
- * .                                      //entry is not associated with
- * .                                      //an extend operation
- * .    UINT32                EventType; //See Log event types
- * .    TPML_DIGEST_VALUES    digest;    //The hash of the event data
- * .    UINT32                EventSize; //Size of the event data
- * .    BYTE                  Event[1];  //The event data
- * } TCG_PCR_EVENT2;                     //The event data structure to be added
+ * .    UINT32                 pcrIndex;        //PCR Index value that either
+ * .                                            //matches the PCR Index of a
+ * .                                            //previous extend operation or
+ * .                                            //indicates that this Event Log
+ * .                                            //entry is not associated with
+ * .                                            //an extend operation
+ * .    UINT32                eventType;        //See Log event types
+ * .    TPML_DIGEST_VALUES    digest;           //Number & list of tagged digests
+ * .    UINT32                eventSize;        //Size of the event content
+ * .    BYTE                  event[EventSize]; //The event content
+ * } TCG_PCR_EVENT2;                            //The event data structure to be added
+ * In this code:
+ * .   Event header = pcrIndex + eventType + digests + eventSize
+ * .   Event content = event[EventSize]
  * typedef struct {
  * .    UINT32  count;
- * .    TPMT_HA digests[HASH_COUNT];
+ * .    TPMT_HA digests[count];
  * } TPML_DIGEST_VALUES;
  * typedef struct {
  * .    TPMI_ALG_HASH hashAlg;
@@ -52,6 +54,7 @@ import java.util.ArrayList;
  * define TPM_ALG_SHA384         (TPM_ALG_ID)(0x000C)
  * define TPM_ALG_SHA512         (TPM_ALG_ID)(0x000D)
  */
+@Log4j2
 public class TpmPcrEvent2 extends TpmPcrEvent {
     /**
      * algorithms found.
@@ -66,21 +69,21 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
     /**
      * Constructor.
      *
-     * @param is            ByteArrayInputStream holding the TCG Log event
-     * @param eventNumber   event position within the event log.
-     * @param strongestAlg  name of strongest hash algorithm used in the log
+     * @param is                        ByteArrayInputStream holding the TCG Log event
+     * @param logFileBytesRemaining     number of bytes remaining in log file (for error checking)
+     * @param eventNumber               event position within the event log
+     * @param strongestAlg              name of strongest hash algorithm used in the log
      * @throws java.io.IOException                     if an error occurs in parsing the event
-     * @throws java.security.NoSuchAlgorithmException  if an undefined algorithm is encountered.
-     * @throws java.security.cert.CertificateException If a certificate within an event can't be processed.
      */
-    public TpmPcrEvent2(final ByteArrayInputStream is, final int eventNumber, final String strongestAlg)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+    public TpmPcrEvent2(final ByteArrayInputStream is, final long logFileBytesRemaining,
+                        final int eventNumber, final String strongestAlg)
+            throws IOException {
 
         super(is);
         setLogFormat(2);
         // Event data.
         String hashName = "";
-        byte[] event2;
+        byte[] eventHeader;
         byte[] rawIndex = new byte[UefiConstants.SIZE_4];
         byte[] algCountBytes = new byte[UefiConstants.SIZE_4];
         byte[] rawType = new byte[UefiConstants.SIZE_4];
@@ -91,16 +94,33 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
         int eventSize = 0;
         //TCG_PCR_EVENT2
         if (is.available() > UefiConstants.SIZE_32) {
+
+            // read PCR index
             is.read(rawIndex);
-            setPcrIndex(rawIndex);
+            if (!setPcrIndex(rawIndex)) {
+                throw new IOException("PCR Index out of range; possibly corrupt byte file.");
+            }
+            String pcrIndexStr = "Index PCR[" + getPcrIndex() + "]";
+
+            // read event type
             is.read(rawType);
             setEventType(rawType);
-            // TPML_DIGEST_VALUES (algCount should match 'numberOfAlgorithms' in Spec ID event)
+            String eventTypeStr = "Event Type: 0x" + Long.toHexString(getEventType()) + " "
+                    + eventString((int) getEventType());
+
+            // read TPML_DIGEST_VALUES (algCount should match 'numberOfAlgorithms' in Spec ID event)
             is.read(algCountBytes);
             algCount = HexUtils.leReverseInt(algCountBytes);
-            // Process TPMT_HA,
+            if (algCount < 0) {
+                throw new IOException("Number of digests is a negative value; possibly corrupt byte file.");
+            }
+            // Process TPMT_HA
             for (int i = 0; i < algCount; i++) {
-                hashAlg = new TcgTpmtHa(is);
+                try {
+                    hashAlg = new TcgTpmtHa(is);
+                } catch (IOException io) {
+                    throw new IOException("Issue reading hash algorithm and digests; possibly corrupt byte file.", io);
+                }
                 hashName = hashAlg.getHashName();
                 eventDigest = new byte[hashAlg.getHashLength()];
                 hashList.add(hashAlg);
@@ -109,34 +129,52 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
                     setEventStrongestDigest(hashAlg.getDigest());
                 }
             }
+
+            // track event header length
+            int eventHeaderLength = rawIndex.length + rawType.length + rawEventSize.length;
+            for (TcgTpmtHa hash : hashList) {
+                eventHeaderLength += hash.getBuffer().length;
+            }
+
+            // read event size (size of event content)
             is.read(rawEventSize);
             eventSize = HexUtils.leReverseInt(rawEventSize);
-            eventContent = new byte[eventSize];
-            is.read(eventContent);
-            setEventContent(eventContent);
-            int eventLength = rawIndex.length + rawType.length
-                    + rawEventSize.length;
-            int offset = 0;
-            for (TcgTpmtHa hash : hashList) {
-                eventLength += hash.getBuffer().length;
+            if ((eventSize < 0) || (eventSize > (logFileBytesRemaining - eventHeaderLength))) {
+                throw new IOException("Event size is not valid; possibly corrupt byte file.");
             }
-            event2 = new byte[eventLength];
-            System.arraycopy(rawIndex, 0, event2, offset, rawIndex.length);
-            offset += rawIndex.length;
-            System.arraycopy(rawType, 0, event2, offset, rawType.length);
-            offset += rawType.length;
-            System.arraycopy(rawEventSize, 0, event2, offset, rawEventSize.length);
-            offset += rawEventSize.length;
 
+            // copy entire event header into a byte array for processing
+            int offset = 0;
+            eventHeader = new byte[eventHeaderLength];
+            System.arraycopy(rawIndex, 0, eventHeader, offset, rawIndex.length);
+            offset += rawIndex.length;
+            System.arraycopy(rawType, 0, eventHeader, offset, rawType.length);
+            offset += rawType.length;
+            System.arraycopy(rawEventSize, 0, eventHeader, offset, rawEventSize.length);
+            offset += rawEventSize.length;
             for (TcgTpmtHa hash : hashList) {
-                System.arraycopy(hash.getBuffer(), 0, event2, offset, hash.getBuffer().length);
+                System.arraycopy(hash.getBuffer(), 0, eventHeader, offset, hash.getBuffer().length);
                 offset += hash.getBuffer().length;
             }
-            setEventData(event2);
+            setEventHeader(eventHeader);
 
-            this.processEvent(event2, eventContent, eventNumber);
+            // if event content cannot be processed, this is not fatal; log error and continue with attestation
+            try {
+                // read event content
+                eventContent = new byte[eventSize];
+                is.read(eventContent);
+                setEventContent(eventContent);
+
+                this.processEvent(eventContent, eventNumber);
+            } catch (RuntimeException r) {
+                throw r;
+            } catch (Exception e) {
+                String error = "Error parsing event #" + eventNumber + ", " + eventTypeStr + ", " + pcrIndexStr;
+                log.error(error, e);
+            }
+
             for (int i = 0; i < algCount; i++) {
-                description +=  "\ndigest (" + hashList.get(i).getHashName() + "): "
+                description += "\ndigest (" + hashList.get(i).getHashName() + "): "
                         + Hex.encodeHexString(hashList.get(i).getDigest());
             }
         }

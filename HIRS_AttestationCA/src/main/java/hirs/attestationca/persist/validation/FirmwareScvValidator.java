@@ -21,8 +21,6 @@ import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -271,10 +269,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         try {
             logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
             baseline = logProcessor.getExpectedPCRValues();
-        } catch (CertificateException cEx) {
-            log.error(cEx);
-        } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
         } catch (IOException ioEx) {
             log.error(ioEx);
         }
@@ -319,10 +313,6 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         tpmPcrEvents.addAll(pcrValidator.validateTpmEvents(
                                 tcgMeasurementLog, eventValueMap, policySettings));
                     }
-                } catch (NoSuchAlgorithmException e) {
-                    log.error(e);
-                } catch (CertificateException cEx) {
-                    log.error(cEx);
                 } catch (IOException e) {
                     log.error(e);
                 }

@@ -176,10 +176,14 @@ public final class AlgorithmsIds {
      */
     public static String translateAlgId(final String algType, final int originalSpec,
                                         final String originalAlg, final int newSpec)
-            throws NoSuchAlgorithmException {
+            throws IllegalArgumentException, NoSuchElementException {
 
         String newAlgId = "";
 
+        if ((originalSpec != SPEC_TCG_ALG) && (originalSpec != SPEC_XML_ALG) && (originalSpec != SPEC_COSWID_ALG)
+                && (originalSpec != SPEC_COSE_ALG) && (originalSpec != SPEC_X509_ALG)) {
+            throw new IllegalArgumentException("Invalid original spec");
+        }
         if ((newSpec != SPEC_TCG_ALG) && (newSpec != SPEC_XML_ALG) && (newSpec != SPEC_COSWID_ALG)
                 && (newSpec != SPEC_COSE_ALG) && (newSpec != SPEC_X509_ALG)) {
             throw new IllegalArgumentException("Invalid new spec");
@@ -226,11 +230,10 @@ public final class AlgorithmsIds {
      * @param spec int id of specification for original algorithm
      * @param alg string id of algorithm
      * @return row in array if alg found, -1 if not found
-     * @throws NoSuchAlgorithmException if the original algorithm type is
-     * invalid
+     * @throws IllegalArgumentException if any of the parameters are invalid
      */
     public static int findAlgId(final String algType, final int spec, final String alg)
-            throws NoSuchAlgorithmException {
+            throws IllegalArgumentException {
 
         int index = -1;
 
@@ -256,7 +259,7 @@ public final class AlgorithmsIds {
                 }
             }
         } else {
-            throw new NoSuchAlgorithmException("Invalid algorithm type " + algType);
+            throw new NoSuchElementException("Invalid algorithm type " + algType);
         }
         if (index == -1) {
             throw new NoSuchElementException("Algorithm " + algType + " is not defined in "

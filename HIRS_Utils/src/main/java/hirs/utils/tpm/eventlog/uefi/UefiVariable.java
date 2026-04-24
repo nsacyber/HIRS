@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,13 +110,11 @@ public class UefiVariable {
      *
      * @param eventTypeIn the event type
      * @param variableData byte array holding the UEFI Variable.
-     * @throws java.security.NoSuchAlgorithmException if there's a problem
-     *                                                hashing the certificate.
      * @throws java.io.IOException                    If there's a problem
      *                                                parsing the signature data.
      */
     public UefiVariable(final int eventTypeIn, final byte[] variableData)
-            throws NoSuchAlgorithmException, IOException {
+            throws  IOException {
 
         eventType = eventTypeIn;
         certSuperList = new ArrayList<>();
@@ -208,15 +207,11 @@ public class UefiVariable {
      * Processes the data as a list of UEFI defined Signature Lists.
      *
      * @param data the bye array holding one or more Signature Lists.
-     * @throws java.security.cert.CertificateException If there's a problem
-     *                                                 parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem
-     *                                                 hashing the certificate.
      * @throws java.io.IOException                     If there's a problem
      *                                                 parsing the signature data.
      */
     private void processSigList(final byte[] data)
-            throws NoSuchAlgorithmException, IOException {
+            throws  IOException {
         ByteArrayInputStream certData = new ByteArrayInputStream(data);
         while (certData.available() > 0) {
             UefiSignatureList list;
@@ -250,12 +245,10 @@ public class UefiVariable {
      * Method for processing the data in an EFI Signature Data, where the data is known to be an X509 cert.
      *
      * @param efiSigData Byte array holding the SignatureData data
-     * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
      * @throws java.io.IOException                     If there's a problem parsing the signature data.
      */
     private void processSigDataX509(final byte[] efiSigData)
-            throws NoSuchAlgorithmException, IOException {
+            throws IOException {
 
         ByteArrayInputStream efiSigDataIS = new ByteArrayInputStream(efiSigData);
         ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
@@ -331,7 +324,7 @@ public class UefiVariable {
             }
         }
 
-        if(!uefiVariableDataProcessed) {
+        if (!uefiVariableDataProcessed) {
             efiVariable.append("      Code does not yet process this Uefi Variable\n");
         }
 
@@ -377,7 +370,7 @@ public class UefiVariable {
         try {
             UefiX509Cert cert = new UefiX509Cert(certData);
             certInfo = cert.toString();
-        } catch (Exception e) {
+        } catch (CertificateException | NoSuchAlgorithmException e) {
             certInfo = "Error Processing Certificate : " + e.getMessage();
         }
         return (certInfo);
