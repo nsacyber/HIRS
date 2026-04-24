@@ -483,7 +483,7 @@ public class ReferenceManifestPageService {
      * @return base reference manifest
      */
     public BaseReferenceManifest parseBaseRIM(final List<String> errorMessages, final MultipartFile file) {
-        byte[] fileBytes = new byte[0];
+        byte[] fileBytes;
         final String fileName = file.getOriginalFilename();
 
         try {
@@ -492,6 +492,7 @@ public class ReferenceManifestPageService {
             final String failMessage = String.format("Failed to read uploaded Base RIM file (%s): ", fileName);
             log.error(failMessage, e);
             errorMessages.add(failMessage + e.getMessage());
+            return null;
         }
 
         try {
@@ -514,7 +515,7 @@ public class ReferenceManifestPageService {
      */
     public SupportReferenceManifest parseSupportRIM(final List<String> errorMessages,
                                                     final MultipartFile file) {
-        byte[] fileBytes = new byte[0];
+        byte[] fileBytes;
         final String fileName = file.getOriginalFilename();
 
         try {
