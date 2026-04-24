@@ -1,5 +1,6 @@
 package hirs.attestationca.persist.service;
 
+import hirs.attestationca.persist.dto.PageMessages;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
@@ -31,6 +32,7 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -52,6 +55,9 @@ public class ReferenceManifestPageService {
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final EntityManager entityManager;
+
+    private static final String BASE_RIM_FILE_PATTERN = "(\\S+(\\.(?i)swidtag)$)";
+    private static final String SUPPORT_RIM_FILE_PATTERN = "(\\S+(\\.(?i)(rimpcr|rimel|bin|log))$)";
 
     /**
      * Constructor for the Reference Manifest Page Service.
@@ -341,6 +347,82 @@ public class ReferenceManifestPageService {
         for (UUID eachUUID : uuids) {
             deleteRIM(eachUUID, successMessages, errorMessages);
         }
+    }
+
+    /**
+     * Processes the request from controller to upload one or more {@link ReferenceManifest} objects to the ACA.
+     *
+     * @param files     the files to process
+     * @return          a list of error and success messages to the controller
+     */
+    public PageMessages processUploads(final MultipartFile[] files) {
+
+        PageMessages messages = new PageMessages();
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
+
+        final Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
+        final Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
+
+        List<BaseReferenceManifest> baseRims = new ArrayList<>();
+        List<SupportReferenceManifest> supportRims = new ArrayList<>();
+
+        log.info("Uploading {} RIM files", files.length);
+
+        for (MultipartFile file : files) {
+            String fileName = file.getOriginalFilename();
+
+            if (fileName == null || fileName.isEmpty()) {
+                log.warn("File with empty or null name skipped");
+                continue;  // Skip processing this file
+            }
+
+            final boolean isBaseRim = baseRimPattern.matcher(fileName).matches();
+            final boolean isSupportRim = !isBaseRim && supportRimPattern.matcher(fileName).matches();
+
+            if (isBaseRim) {
+                final BaseReferenceManifest baseReferenceManifest =
+                        parseBaseRIM(errorMessages, file);
+                baseRims.add(baseReferenceManifest);
+                messages.addErrorMessages(errorMessages);
+                if (baseReferenceManifest != null) {
+                    log.info("Uploaded base RIM with manufacturer {} and model {}.",
+                            baseReferenceManifest.getPlatformManufacturer(),
+                            baseReferenceManifest.getPlatformModel());
+                } else {
+                    log.info("Failed to parse Base RIM file {}", fileName);
+                }
+            } else if (isSupportRim) {
+                final SupportReferenceManifest supportReferenceManifest =
+                        parseSupportRIM(errorMessages, file);
+                supportRims.add(supportReferenceManifest);
+                messages.addErrorMessages(errorMessages);
+                if (supportReferenceManifest != null) {
+                    log.info("Uploaded support RIM with manufacturer {} and model {}.",
+                            supportReferenceManifest.getPlatformManufacturer(),
+                            supportReferenceManifest.getPlatformModel());
+                    String associatedBaseRim = supportReferenceManifest.getAssociatedRim() != null
+                            ? supportReferenceManifest.getAssociatedRim().toString() : "not found";
+                    log.info("Associated base RIM {}", associatedBaseRim);
+                } else {
+                    log.info("Failed to parse support RIM file {}", fileName);
+                }
+            } else {
+                String errorString = "The file extension of " + fileName + " was not recognized."
+                        + " Base RIMs support the extension \".swidtag\", and support RIMs support "
+                        + "\".rimpcr\", \".rimel\", \".bin\", and \".log\". "
+                        + "Please verify your upload and retry.";
+                log.error("File extension in {} not recognized as base or support RIM.", fileName);
+                errorMessages.add(errorString);
+            }
+        }
+
+        this.storeRIMS(successMessages, errorMessages, baseRims, supportRims);
+
+        messages.addSuccessMessages(successMessages);
+        messages.addErrorMessages(errorMessages);
+
+        return messages;
     }
 
     /**
