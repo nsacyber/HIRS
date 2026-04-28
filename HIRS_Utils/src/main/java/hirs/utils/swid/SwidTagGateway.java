@@ -53,7 +53,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.FileInputStream;
@@ -211,15 +210,12 @@ public class SwidTagGateway {
 
             //Signature
             if (errorRequiredFields.isEmpty()) {
-                TransformerFactory tf = TransformerFactory.newInstance();
-                tf.setAttribute("indent-number", 2);
-                Transformer prettyPrintTransformer = tf.newTransformer();
-                prettyPrintTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                prettyPrintTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-                DOMResult prettySwidTag = new DOMResult();
-                prettyPrintTransformer.transform(new DOMSource(swidtag), prettySwidTag);
-                Document signedSoftwareIdentity = signXMLDocument((Document) prettySwidTag.getNode());
-                writeSwidTagFile(signedSoftwareIdentity, filename, false);
+                String filenamePreDigest = filename.substring(0,filename.lastIndexOf("."))
+                        + ".preDigest" + filename.substring(filename.lastIndexOf("."));
+                printTransformedSwidtag(swidtag, filenamePreDigest);
+                Document signedSoftwareIdentity = signXMLDocument(swidtag);
+                printTransformedSwidtag(signedSoftwareIdentity, filename);
+                //writeSwidTagFile(signedSoftwareIdentity, filename, false);
             } else {
                 throw new RuntimeException("The following fields cannot be empty or null: "
                         + errorRequiredFields.substring(0, errorRequiredFields.length() - 2));
@@ -230,6 +226,49 @@ public class SwidTagGateway {
             throw new RuntimeException("File does not exist or cannot be read: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException("File does not exist or cannot be read: " + e.getMessage());
+        }
+    }
+
+    private void printTransformedSwidtag(final Document doc, final String filename) {
+        String filenamePretty = filename.substring(0,filename.lastIndexOf("."))
+                + ".pretty" + filename.substring(filename.lastIndexOf("."));
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer regularTransformer;
+        try {
+            regularTransformer = tf.newTransformer();
+        } catch (TransformerConfigurationException e) {
+            throw new RuntimeException(
+                    String.format("Can't create regular Transformer: {}", e.getMessage()));
+        }
+
+        tf.setAttribute("indent-number", 2);
+        Transformer prettyPrintTransformer;
+        try {
+            prettyPrintTransformer = tf.newTransformer();
+        } catch (TransformerConfigurationException e) {
+            throw new RuntimeException(
+                    String.format("Can't create pretty Transformer: {}", e.getMessage()));
+        }
+        prettyPrintTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        prettyPrintTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+        try {
+            regularTransformer.transform(new DOMSource(doc), new StreamResult(new FileOutputStream(filename)));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(String.format("Unable to find {}: {}",
+                    filename, e.getMessage()));
+        } catch (TransformerException e) {
+            throw new RuntimeException(String.format("Unrecoverable error while writing to {}: {}",
+                    filename, e.getMessage()));
+        }
+        try {
+            prettyPrintTransformer.transform(new DOMSource(doc), new StreamResult(new FileOutputStream(filenamePretty)));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(String.format("Unable to find {}: {}",
+                    filename + ".prettySigned", e.getMessage()));
+        } catch (TransformerException e) {
+            throw new RuntimeException(String.format("Unrecoverable error while writing to {}: {}",
+                    filename + ".prettySigned", e.getMessage()));
         }
     }
 
