@@ -27,8 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,11 +79,8 @@ public class ReferenceManifestDetailsPageService {
      * @param uuid database reference for the requested RIM.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
      */
-    public HashMap<String, Object> getRimDetailInfo(final UUID uuid) throws IOException, CertificateException,
-            NoSuchAlgorithmException {
+    public HashMap<String, Object> getRimDetailInfo(final UUID uuid) throws IOException {
         HashMap<String, Object> data = new HashMap<>();
 
         BaseReferenceManifest bRim = this.referenceManifestRepository.getBaseRimEntityById(uuid);
@@ -345,11 +340,9 @@ public class ReferenceManifestDetailsPageService {
      * @param supportReferenceManifest established ReferenceManifest Type.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
      */
     private HashMap<String, Object> getSupportRimInfo(final SupportReferenceManifest supportReferenceManifest)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException {
         HashMap<String, Object> data = new HashMap<>();
         EventLogMeasurements measurements;
 
@@ -437,11 +430,9 @@ public class ReferenceManifestDetailsPageService {
      * @param measurements established ReferenceManifest Type.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
      */
     private HashMap<String, Object> getMeasurementsRimInfo(final EventLogMeasurements measurements)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException {
         HashMap<String, Object> data = new HashMap<>();
         LinkedList<TpmPcrEvent> unmatchedAttestationEvents = new LinkedList<>();
         BaseReferenceManifest base;

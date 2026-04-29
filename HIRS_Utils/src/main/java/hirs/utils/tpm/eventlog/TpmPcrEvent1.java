@@ -25,7 +25,7 @@ import java.io.IOException;
  * UINT32                   eventSize;       //Size of the event data
  * UINT8                    event[1];        //The event content
  * } TCG_PCR_EVENT;                          //The event data structure to be added
- *
+ * .
  * In this code:
  * .   Event header = pcrIndex + eventType + digest + eventSize
  * .   Event content = event[1]

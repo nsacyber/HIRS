@@ -41,9 +41,8 @@ public class EventLogMeasurements extends SupportReferenceManifest {
      * Support constructor for the RIM object.
      *
      * @param rimBytes byte array representation of the RIM
-     * @throws java.io.IOException if unable to unmarshal the string
      */
-    public EventLogMeasurements(final byte[] rimBytes) throws IOException {
+    public EventLogMeasurements(final byte[] rimBytes) {
         this("blank.measurement", rimBytes);
     }
 
@@ -52,10 +51,9 @@ public class EventLogMeasurements extends SupportReferenceManifest {
      *
      * @param fileName - string representation of the uploaded file.
      * @param rimBytes byte array representation of the RIM
-     * @throws java.io.IOException if unable to unmarshal the string
      */
     public EventLogMeasurements(final String fileName,
-                                final byte[] rimBytes) throws IOException {
+                                final byte[] rimBytes) {
         super(rimBytes);
         this.setFileName(fileName);
         this.setArchivedDescription("Event Log Measurement");

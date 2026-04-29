@@ -39,7 +39,6 @@ public class SupportReferenceManifest extends ReferenceManifest {
      *
      * @param fileName - string representation of the uploaded file.
      * @param rimBytes byte array representation of the RIM
-     * @throws IOException if unable to unmarshal the string
      */
     public SupportReferenceManifest(final String fileName,
                                     final byte[] rimBytes) {
@@ -64,9 +63,8 @@ public class SupportReferenceManifest extends ReferenceManifest {
      * valid swidtag file and parses the information.
      *
      * @param rimBytes byte array representation of the RIM
-     * @throws IOException if unable to unmarshal the string
      */
-    public SupportReferenceManifest(final byte[] rimBytes) throws IOException {
+    public SupportReferenceManifest(final byte[] rimBytes) {
         this("blank.rimel", rimBytes);
     }
 
