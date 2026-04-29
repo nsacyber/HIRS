@@ -220,12 +220,10 @@ public class SwidTagGateway {
             throw new RuntimeException("Error reading JSON attributes: " + e.getMessage());
         } catch (FileNotFoundException e) {
             throw new RuntimeException("File does not exist or cannot be read: " + e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException("File does not exist or cannot be read: " + e.getMessage());
         }
     }
 
-    private Document assembleCompositePayload(final JsonObject configProperties) throws Exception {
+    private Document assembleCompositePayload(final JsonObject configProperties) {
         //Directory
         Directory directory = createDirectory(
                 configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
@@ -234,11 +232,23 @@ public class SwidTagGateway {
         Document dirDoc = convertToDocument(jaxbDirectory);
 
         //File(s)
-        JsonArray files = configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
-                .getJsonObject(SwidTagConstants.DIRECTORY).getJsonArray(SwidTagConstants.FILE);
+        JsonArray files;
+        try {
+            files = configProperties.getJsonObject(SwidTagConstants.PAYLOAD)
+                    .getJsonObject(SwidTagConstants.DIRECTORY).getJsonArray(SwidTagConstants.FILE);
+        } catch (ClassCastException e) {
+            throw new ClassCastException(
+                    String.format("Please verify in {} that File's value is an [array].",
+                            attributesFile));
+        }
         Iterator itr = files.iterator();
         while (itr.hasNext()) {
-            hirs.utils.xjc.File file = createFile((JsonObject) itr.next());
+            hirs.utils.xjc.File file;
+            try {
+                file = createFile((JsonObject) itr.next());
+            } catch (NoSuchAlgorithmException | IOException e) {
+                throw new JsonException(e.getMessage());
+            }
             JAXBElement<FilesystemItem> jaxbFile = objectFactory.createDirectoryFile(file);
             Document fileDoc = convertToDocument(jaxbFile);
             Node fileNode = dirDoc.importNode(fileDoc.getDocumentElement(), true);
@@ -495,7 +505,8 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return File object created from the properties
      */
-    private hirs.utils.xjc.File createFile(final JsonObject jsonObject) throws Exception {
+    private hirs.utils.xjc.File createFile(final JsonObject jsonObject)
+        throws NoSuchAlgorithmException, IOException {
         hirs.utils.xjc.File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
