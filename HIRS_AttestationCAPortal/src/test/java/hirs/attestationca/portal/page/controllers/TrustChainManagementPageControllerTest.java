@@ -4,7 +4,7 @@ import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.portal.page.PageControllerTest;
-import hirs.attestationca.portal.page.PageMessages;
+import hirs.attestationca.persist.dto.PageMessages;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

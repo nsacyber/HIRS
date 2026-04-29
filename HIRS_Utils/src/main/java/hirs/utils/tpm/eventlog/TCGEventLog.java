@@ -18,10 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 import static hirs.utils.crypto.AlgorithmsIds.ALG_TYPE_HASH;
 import static hirs.utils.crypto.AlgorithmsIds.SPEC_TCG_ALG;
@@ -269,9 +266,9 @@ public final class TCGEventLog {
                 // the if-statement is executed
                 // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
                 // (ie. if the new file status is not-accessible or from-code, then want to update)
-                if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                        && (eventList.get(eventNumber - 1).getPciidsFileStatus()
-                        != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+                if ((!Objects.equals(pciidsFileStatus, UefiConstants.FILESTATUS_NOT_ACCESSIBLE))
+                        && (!Objects.equals(eventList.get(eventNumber - 1).getPciidsFileStatus(),
+                        UefiConstants.FILESTATUS_FROM_FILESYSTEM))) {
                     pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
                 }
             }
