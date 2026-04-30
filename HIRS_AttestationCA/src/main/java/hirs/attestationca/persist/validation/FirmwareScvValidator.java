@@ -158,7 +158,12 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         // verify signatures
         ReferenceManifestValidator referenceManifestValidator =
                 new ReferenceManifestValidator();
-        referenceManifestValidator.setRim(baseReferenceManifest.getRimBytes());
+        try {
+            referenceManifestValidator.setRim(baseReferenceManifest.getRimBytes());
+        } catch (IOException e) {
+            rimSignatureStatus = new AppraisalStatus(FAIL,
+                    "RIM signature validation failed: can't set base RIM.");
+        }
 
         //Validate signing cert
         List<CertificateAuthorityCredential> allCerts = caCredentialRepository.findAll();
