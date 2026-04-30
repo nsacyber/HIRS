@@ -53,7 +53,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.FileInputStream;
@@ -211,12 +210,8 @@ public class SwidTagGateway {
 
             //Signature
             if (errorRequiredFields.isEmpty()) {
-                String filenamePreDigest = filename.substring(0,filename.lastIndexOf("."))
-                        + ".preDigest" + filename.substring(filename.lastIndexOf("."));
-                DOMResult prettySwidtag = printTransformedSwidtag(swidtag, filenamePreDigest, true);
-                Document signedSoftwareIdentity = signXMLDocument((Document) prettySwidtag.getNode());
-                printTransformedSwidtag(signedSoftwareIdentity, filename, false);
-                //writeSwidTagFile(signedSoftwareIdentity, filename, false);
+                Document signedSoftwareIdentity = signXMLDocument(swidtag);
+                writeSwidTagFile(signedSoftwareIdentity, filename, false);
             } else {
                 throw new RuntimeException("The following fields cannot be empty or null: "
                         + errorRequiredFields.substring(0, errorRequiredFields.length() - 2));
@@ -227,46 +222,6 @@ public class SwidTagGateway {
             throw new RuntimeException("File does not exist or cannot be read: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException("File does not exist or cannot be read: " + e.getMessage());
-        }
-    }
-
-    private DOMResult printTransformedSwidtag(final Document doc, final String filename, boolean isPretty) {
-        String transformedFilename = filename;
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer transformer;
-        if (isPretty) {
-            tf.setAttribute("indent-number", 2);
-            transformedFilename = filename.substring(0,filename.lastIndexOf("."))
-                    + ".pretty" + filename.substring(filename.lastIndexOf("."));
-        }
-        try {
-            transformer = tf.newTransformer();
-        } catch (TransformerConfigurationException e) {
-            throw new RuntimeException(
-                    String.format("Can't create transformer: {}", e.getMessage()));
-        }
-        if (isPretty) {
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-        }
-
-        try {
-            transformer.transform(new DOMSource(doc), new StreamResult(new FileOutputStream(transformedFilename)));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(String.format("Unable to find {}: {}",
-                    transformedFilename, e.getMessage()));
-        } catch (TransformerException e) {
-            throw new RuntimeException(String.format("Unrecoverable error while writing to {}: {}",
-                    transformedFilename, e.getMessage()));
-        }
-
-        DOMResult transformedDoc = new DOMResult();
-        try {
-            transformer.transform(new DOMSource(doc), transformedDoc);
-            return transformedDoc;
-        } catch (TransformerException e) {
-            throw new RuntimeException(String.format("Unrecoverable error while transforming XML: {}",
-                    filename, e.getMessage()));
         }
     }
 
