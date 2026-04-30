@@ -5,27 +5,12 @@ import hirs.utils.rim.unsignedRim.GenericRim;
 import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
 import hirs.utils.swid.SwidTagConstants;
 import hirs.utils.swid.SwidTagGateway;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.UnmarshalException;
-import jakarta.xml.bind.Unmarshaller;
 import lombok.NoArgsConstructor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -38,12 +23,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class PcClientRim extends SwidTagGateway implements GenericRim {
 
-    private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
-    private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     private final List<Measurement> measurements = new ArrayList<>();
-    private boolean extract = false;
-    private Unmarshaller unmarshaller;
-    private Schema schema;
     private Document rim;
     // private Measurement measurement = new Measurement();
     private String manufacturer = "";
@@ -52,6 +32,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     private String revision = "";
     private String digest = "";
     private UUID tagUuid = null; // private String tagId = "";
+    private boolean isValid;
 
     /**
      * Validate a PC Client RIM.
@@ -126,6 +107,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
             throw new RuntimeException("Failed to verify " + verifyFile);
         }
 
+        isValid = valid;
         return valid;
     }
 
@@ -216,6 +198,16 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     @Override
     public String getReferencedRims() {
         return "";
+    }
+
+    /**
+      * Default isValid.
+      *
+      * @return n/a
+      */
+    @Override
+    public boolean isValid() {
+        return isValid;
     }
 
     /**
