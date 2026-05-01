@@ -35,6 +35,9 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -91,6 +94,7 @@ public class ReferenceManifestValidator {
     private static final int LEFT_SHIFT = 0x100;
     private static final int RADIX = 16;
 
+    @Getter
     private Document rim;
     private Unmarshaller unmarshaller;
 
@@ -154,13 +158,18 @@ public class ReferenceManifestValidator {
      *
      * @param rimBytes ReferenceManifest object bytes
      */
-    public void setRim(final byte[] rimBytes) {
+    public void setRim(final byte[] rimBytes) throws IOException {
         try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
-                    new ByteArrayInputStream(rimBytes))));
-            this.rim = doc;
+            this.rim = validateSwidtagSchema(convertToDocument(rimBytes));
+        } catch (ParserConfigurationException e) {
+            log.error("Error setting up to parse RIM bytes: {}", e.getMessage());
+            throw new RuntimeException(e);
         } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes using the provided rim bytes: {}", e.getMessage());
+            log.error("Error while reading the RIM bytes: {}", e.getMessage());
+            throw new IOException(e);
+        } catch (SAXException e) {
+            log.error("Error while parsing the RIM bytes: {}", e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -170,13 +179,18 @@ public class ReferenceManifestValidator {
      *
      * @param path String filepath
      */
-    public void setRim(final String path) {
-        File swidtagFile = new File(path);
+    public void setRim(final String path) throws IOException {
         try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
-            this.rim = doc;
+            this.rim = validateSwidtagSchema(convertToDocument(path));
+        } catch (ParserConfigurationException e) {
+            log.error("Error encountered setting up to parse rim bytes: {}", e.getMessage());
+            throw new RuntimeException(e);
         } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes using the provided file path: {}", e.getMessage());
+            log.error("Error while reading {}: {}", path, e.getMessage());
+            throw new IOException(e);
+        } catch (SAXException e) {
+            log.error("Error while parsing {}: {}", path, e.getMessage());
+            throw new IOException(e);
         }
     }
 
@@ -882,6 +896,39 @@ public class ReferenceManifestValidator {
         return doc;
     }
 
+    /**
+     * This method converts a byte array to a Document object.
+     *
+     * @param bytes data in
+     * @return a Document object representing the data in
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
+     */
+    private Document convertToDocument(final byte[] bytes)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = dbf.newDocumentBuilder();
+        ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
+        return builder.parse(bytesIn);
+    }
+
+    /**
+     * This method reads a file from the system and converts it to a Document object.
+     *
+     * @param filename String
+     * @returna Document object representing the file
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
+     */
+    private Document convertToDocument(final String filename)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = dbf.newDocumentBuilder();
+        File fileIn = new File(filename);
+        return builder.parse(fileIn);
+    }
     /**
      * This method strips all whitespace from an xml file, including indents and spaces
      * added for human-readability.
