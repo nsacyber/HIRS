@@ -98,7 +98,7 @@ public final class UefiConstants {
     /**
      * 6 byte offset.
      */
-    public static final int OFFSET_6 = 4;
+    public static final int OFFSET_6 = 6;
     /**
      * 8 byte offset.
      */

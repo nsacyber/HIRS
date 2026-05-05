@@ -56,6 +56,14 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYS
 public class TpmPcrEvent {
 
     /**
+     * PCR Index Min.
+     */
+    public static final int  PCR_INDEX_MIN = 0;
+    /**
+     * PCR Index Max.
+     */
+    public static final int  PCR_INDEX_MAX = 23;
+    /**
      * list of digests from the event log.
      */
     protected final ArrayList<EventDigest> hashListFromEvent = new ArrayList<>();
@@ -268,7 +276,7 @@ public class TpmPcrEvent {
      */
     protected boolean setPcrIndex(final byte[] eventIndex) {
         int pcrIndexIn = HexUtils.leReverseInt(eventIndex);
-        if ((pcrIndexIn < 0) || (pcrIndexIn > 23)) {
+        if ((pcrIndexIn < PCR_INDEX_MIN) || (pcrIndexIn > PCR_INDEX_MAX)) {
             return false;
         }
         pcrIndex = pcrIndexIn;
@@ -633,9 +641,9 @@ public class TpmPcrEvent {
             if (bEvent) {
                 sb.append("\n");
             }
-            byte[] eventHeader = getEventHeader();
-            sb.append("Event header (Hex) (" + eventHeader.length + " bytes): "
-                    + Hex.encodeHexString(eventHeader));
+            byte[] eventHeaderBytes = getEventHeader();
+            sb.append("Event header (Hex) (" + eventHeaderBytes.length + " bytes): "
+                    + Hex.encodeHexString(eventHeaderBytes));
         }
         // add hex of event content
         if (bHexEventContent) {

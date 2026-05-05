@@ -18,7 +18,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
 
 import static hirs.utils.crypto.AlgorithmsIds.ALG_TYPE_HASH;
 import static hirs.utils.crypto.AlgorithmsIds.SPEC_TCG_ALG;
