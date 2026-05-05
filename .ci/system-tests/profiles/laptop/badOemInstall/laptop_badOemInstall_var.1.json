@@ -1,0 +1,53 @@
+{
+        "SoftwareIdentity": {
+                "name": "Dell5580",
+                "version": "0.1",
+                "tagId": "94f6b457-9ac9-4d35-9b3f-78804173b65a",
+                "tagVersion": "1",
+                "patch": false,
+                "supplemental": false
+        },
+	"Entity": {
+                "name": "VAR1",
+                "regid": "www.example.com",
+                "role": "softwareCreator,tagCreator"
+        },
+	"Link": {
+                "href": "hirs.swid.SwidTags.dell5580.oem",
+                "rel": "requires"
+        },
+	"Meta": {
+                "colloquialVersion": "0.1",
+                "edition": "0.1",
+                "product": "Dell 5580",
+                "revision": "0.1",
+                "payloadType": "direct",
+                "platformManufacturerStr": "Dell Inc.",
+                "platformManufacturerId": "00201234",
+                "platformModel": "Latitude 5580",
+                "platformVersion": "01",
+                "firmwareManufacturerStr": "BIOSVendorA",
+                "firmwareManufacturerId": "00213022",
+                "firmwareModel": "A0",
+                "firmwareVersion": "12",
+                "bindingSpec": "PC Client RIM",
+                "bindingSpecVersion": "1.2",
+                "pcURIlocal": "/boot/tcg/manifest/switag/",
+                "pcURIGlobal": "https://Example.com/support/ProductA/"
+        },
+	"Payload": {
+                "supportRIMURIGlobal": "https://Example.com/support/ProductA/firmware/rims/",
+                "supportRIMFormat":"TCG_EventLog_Assertion",
+                "Directory": {
+                        "name": "rim",
+                        "root": "/boot/tcg/manifest/rim/",
+                        "File": [{
+                                "version":"01",
+                                "name": "laptop_badOemInstall_var.1.rimel",
+                                "size": "2613",
+                                "hash": "aad27380fa51f42130057cdc524f16da3e5cd959a59fc2b3574470069b95a15e"
+                                }]
+                }
+        }
+}
+
