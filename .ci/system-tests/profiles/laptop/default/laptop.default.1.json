@@ -1,0 +1,55 @@
+{
+        "SoftwareIdentity": {
+                "name": "Dell5580",
+                "version": "0.1",
+                "tagId": "94f6b457-9ac9-4d35-9b3f-78804173b65as",
+                "tagVersion": "1",
+		"corpus": "false",
+                "patch": false,
+                "supplemental": false
+        },
+	"Entity": {
+                "name": "HIRS",
+                "regid": "http://Example.com",
+                "role": "softwareCreator,tagCreator"
+        },
+	"Link": {
+                "href": "https://Example.com/support/ProductA/firmware/installfiles",
+                "rel": "installationmedia"
+        },
+	"Meta": {
+                "colloquialVersion": "0.1",
+                "edition": "0.1",
+                "product": "Dell 5580",
+                "revision": "0.1",
+                "payloadType": "direct",
+                "platformManufacturerStr": "Example.com",
+                "platformManufacturerId": "00201234",
+                "platformModel": "ProductA",
+                "platformVersion": "01",
+                "firmwareManufacturerStr": "Dell Inc.",
+                "firmwareManufacturerId": "00213022",
+                "firmwareModel": "Latitude 5580",
+                "firmwareVersion": "12",
+                "bindingSpec": "PC Client RIM",
+                "bindingSpecVersion": "1.2",
+                "pcURIlocal": "/boot/tcg/manifest/switag/",
+                "pcURIGlobal": "https://Example.com/support/ProductA/",
+		"rimLinkHash": "88f21d8e44d4271149297404df91caf207130bfa116582408abd04ede6db7f51"
+        },
+	"Payload": {
+                "supportRIMURIGlobal": "https://Example.com/support/ProductA/firmware/rims/",
+                "supportRIMFormat":"TCG_EventLog_Assertion",
+                "Directory": {
+                        "name": "/boot/tcg/rim/support",
+                        "root": "/boot/tcg/manifest/rim/",
+                        "File": [{
+                                "version":"01",
+                                "name": "dell.5580.1.rimel",
+                                "size": "20113",
+                                "hash": "bc120b2d8752bc6eb228b5b433825d766183985cf02d7ab678210901a9730932"
+                                }]
+                }
+        }
+}
+
