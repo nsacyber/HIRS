@@ -56,6 +56,14 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYS
 public class TpmPcrEvent {
 
     /**
+     * PCR Index Min.
+     */
+    public static final int  PCR_INDEX_MIN = 0;
+    /**
+     * PCR Index Max.
+     */
+    public static final int  PCR_INDEX_MAX = 23;
+    /**
      * list of digests from the event log.
      */
     protected final ArrayList<EventDigest> hashListFromEvent = new ArrayList<>();
@@ -79,7 +87,7 @@ public class TpmPcrEvent {
      * Event Type (long).
      */
     @Getter
-    private long eventType = 0;
+    private long eventType = -1;
     /**
      * Event digest. If more than one digest in the Event, use the strongest one.
      */
@@ -223,7 +231,7 @@ public class TpmPcrEvent {
         } else if (event == EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY) {
             return "EV_EFI_SPDM_DEVICE_AUTHORITY";
         } else {
-            return "Unknown Event ID " + event + " encountered";
+            return "Unknown Event Type encountered";
         }
     }
 
@@ -263,12 +271,20 @@ public class TpmPcrEvent {
     /**
      * Sets the event PCR index value from a TCG Event.
      *
-     * @param eventIndex TCG Event PCR Index as defined in the PFP
+     * @param eventPcrIndex TCG Event PCR Index as defined in the PFP
      * @return whether the PCR index was in proper range
      */
-    protected boolean setPcrIndex(final byte[] eventIndex) {
-        int pcrIndexIn = HexUtils.leReverseInt(eventIndex);
-        if ((pcrIndexIn < 0) || (pcrIndexIn > 23)) {
+    protected boolean setPcrIndex(final byte[] eventPcrIndex) {
+        int pcrIndexIn = HexUtils.leReverseInt(eventPcrIndex);
+
+        //if eventType doesn't exist yet, cannot check PCR Index range
+        if (eventType == -1) {
+            return false;
+        }
+
+        // if event is any type other than 3 (EV_NO_ACTION) check PCR Index range
+        // EV_NO_ACTION can have PCR index outside of this range
+        if ((eventType != EvConstants.EV_NO_ACTION) && ((pcrIndexIn < PCR_INDEX_MIN) || (pcrIndexIn > PCR_INDEX_MAX))) {
             return false;
         }
         pcrIndex = pcrIndexIn;
@@ -471,7 +487,7 @@ public class TpmPcrEvent {
         int eventID = (int) eventType;
         this.eventNumber = eventPosition;
         description += "Event# " + eventPosition + ": ";
-        description += "Index PCR[" + getPcrIndex() + "]\n";
+        description += "Index PCR[" + ((getPcrIndex() == -1) ? "N/A" : getPcrIndex()) + "]\n";
         description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
 
         if (eventID != UefiConstants.SIZE_4) {
@@ -633,9 +649,9 @@ public class TpmPcrEvent {
             if (bEvent) {
                 sb.append("\n");
             }
-            byte[] eventHeader = getEventHeader();
-            sb.append("Event header (Hex) (" + eventHeader.length + " bytes): "
-                    + Hex.encodeHexString(eventHeader));
+            byte[] eventHeaderBytes = getEventHeader();
+            sb.append("Event header (Hex) (" + eventHeaderBytes.length + " bytes): "
+                    + Hex.encodeHexString(eventHeaderBytes));
         }
         // add hex of event content
         if (bHexEventContent) {

@@ -56,15 +56,6 @@ import java.util.ArrayList;
  */
 @Log4j2
 public class TpmPcrEvent2 extends TpmPcrEvent {
-    /**
-     * algorithms found.
-     */
-    private int algCount = 0;
-
-    /**
-     * list of digests.
-     */
-    private final ArrayList<TcgTpmtHa> hashList = new ArrayList<>();
 
     /**
      * Constructor.
@@ -81,6 +72,7 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
 
         super(is);
         setLogFormat(2);
+
         // Event data.
         String hashName = "";
         byte[] eventHeader;
@@ -92,15 +84,12 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
         byte[] eventContent = null;
         TcgTpmtHa hashAlg = null;
         int eventSize = 0;
+
         //TCG_PCR_EVENT2
         if (is.available() > UefiConstants.SIZE_32) {
 
             // read PCR index
             is.read(rawIndex);
-            if (!setPcrIndex(rawIndex)) {
-                throw new IOException("PCR Index out of range; possibly corrupt byte file.");
-            }
-            String pcrIndexStr = "Index PCR[" + getPcrIndex() + "]";
 
             // read event type
             is.read(rawType);
@@ -108,13 +97,21 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             String eventTypeStr = "Event Type: 0x" + Long.toHexString(getEventType()) + " "
                     + eventString((int) getEventType());
 
+            // set PCR index (will need event type to run the index check)
+            if (!setPcrIndex(rawIndex)) {
+                throw new IOException("PCR Index out of range; possibly corrupt byte file.");
+            }
+            String pcrIndexStr = "Index PCR[" + ((getPcrIndex() == -1) ? "N/A" : getPcrIndex()) + "]";
+
             // read TPML_DIGEST_VALUES (algCount should match 'numberOfAlgorithms' in Spec ID event)
             is.read(algCountBytes);
-            algCount = HexUtils.leReverseInt(algCountBytes);
+            int algCount = HexUtils.leReverseInt(algCountBytes);
             if (algCount < 0) {
                 throw new IOException("Number of digests is a negative value; possibly corrupt byte file.");
             }
+
             // Process TPMT_HA
+            ArrayList<TcgTpmtHa> hashList = new ArrayList<>();
             for (int i = 0; i < algCount; i++) {
                 try {
                     hashAlg = new TcgTpmtHa(is);

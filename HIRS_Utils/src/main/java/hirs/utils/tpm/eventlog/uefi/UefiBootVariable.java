@@ -11,8 +11,9 @@ import java.util.Arrays;
  * Data is defined using the EFI_LOAD_OptionStructure:
  * typedef struct _EFI_LOAD_OPTION {
  * UINT32  Attributes;
- * UINT16   FilePathListLength;
- * // CHAR16    Description[];
+ * UINT16   FilePathListLength;                 // this is the length in bytes of the FilePathList
+ * // CHAR16    Description[];                  // A user-readable, null-terminated Unicode string (UTF-16)
+ *                                              // that describes the option (e.g., "Windows Boot Manager")
  * // EFI_DEVICE_PATH_PROTOCOL  FilePathList[];
  * // UINT8  OptionalData[];
  * } EFI_LOAD_OPTION;
@@ -29,11 +30,7 @@ public class UefiBootVariable {
     /**
      * Variable attributes.
      */
-    private byte[] attributes = null;
-    /**
-     * Firmware memory blob.
-     */
-    private byte[] blob = null;
+    private byte[] attributesBytes = null;
     /**
      * UEFI Device Path.
      */
@@ -46,30 +43,34 @@ public class UefiBootVariable {
      * @throws java.io.UnsupportedEncodingException if the data fails to parse.
      */
     public UefiBootVariable(final byte[] bootVar) throws UnsupportedEncodingException {
-        attributes = new byte[UefiConstants.SIZE_4];
-        System.arraycopy(bootVar, 0, attributes, 0, UefiConstants.SIZE_4);
-        byte[] blobLen = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(bootVar, UefiConstants.OFFSET_4, blobLen, 0, UefiConstants.SIZE_2);
-        int blobLength = HexUtils.leReverseInt(blobLen);
-        if (blobLength % UefiConstants.SIZE_2 == 0) {
-            blob = new byte[blobLength];
-        } else {
-            blob = new byte[blobLength + 1];
-        }
-        System.arraycopy(bootVar, UefiConstants.OFFSET_6, blob, 0, blobLength);
-        int descLength = getChar16ArrayLength(blob);
-        byte[] desc = new byte[descLength * UefiConstants.SIZE_2];
-        System.arraycopy(bootVar, UefiConstants.OFFSET_6, desc, 0,
-                descLength * UefiConstants.SIZE_2);
-        description = new String(UefiDevicePath.convertChar16tobyteArray(desc),
+
+        // attributes
+        attributesBytes = new byte[UefiConstants.SIZE_4];
+        System.arraycopy(bootVar, 0, attributesBytes, 0, UefiConstants.SIZE_4);
+
+        // file path list length
+        byte[] filePathListLenBytes = new byte[UefiConstants.SIZE_2];
+        System.arraycopy(bootVar, UefiConstants.OFFSET_4, filePathListLenBytes, 0, UefiConstants.SIZE_2);
+        int filePathListLen = HexUtils.leReverseInt(filePathListLenBytes);
+
+        // description
+        int restOfBytesLen = bootVar.length - UefiConstants.OFFSET_6;
+        byte[] restOfBytes = new byte[restOfBytesLen];
+        System.arraycopy(bootVar, UefiConstants.OFFSET_6, restOfBytes, 0, restOfBytesLen);
+        int descriptionLen = getChar16ArrayLength(restOfBytes);
+        byte[] descriptionBytes = new byte[descriptionLen];
+        System.arraycopy(bootVar, UefiConstants.OFFSET_6, descriptionBytes, 0, descriptionLen);
+        description = new String(UefiDevicePath.convertChar16tobyteArray(descriptionBytes),
                 StandardCharsets.UTF_8);
-        // Data following the Description should be EFI Partition Data (EFI_DEVICE_PATH_PROTOCOL)
-        int devPathLength = blobLength;
-        //attributes+bloblength+desc+length+2
-        int devPathOffset = UefiConstants.OFFSET_6 + descLength;
-        byte[] devPath = new byte[devPathLength];
-        System.arraycopy(bootVar, devPathOffset, devPath, 0, devPathLength);
-        efiDevPath = new UefiDevicePath(devPath);
+
+        // filePathList: a packed array of UEFI device paths
+        // The first element (FilePathList[0]) defines the location of the image (e.g., .efi file)
+        int filePathListOffset = UefiConstants.OFFSET_6 + descriptionLen;
+        byte[] filePathListBytes = new byte[filePathListLen];
+        System.arraycopy(bootVar, filePathListOffset, filePathListBytes, 0, filePathListLen);
+        efiDevPath = new UefiDevicePath(filePathListBytes);
+
+        // OptionalData is any remaining bytes, not processed for now
     }
 
     /**
