@@ -494,6 +494,9 @@ public class TpmPcrEvent {
             description += "\n";
         }
 
+        if(eventNumber == 35) {
+            String stop = "stop";
+        }
         switch (eventID) {
             case EvConstants.EV_PREBOOT_CERT:
                 description += " EV_PREBOOT_CERT" + "\n";
