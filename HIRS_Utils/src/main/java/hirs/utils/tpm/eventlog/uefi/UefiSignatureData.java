@@ -134,9 +134,7 @@ public class UefiSignatureData {
      * Processes an x509 Cert used by secure DB or DBx.
      *
      * @param inputStream x509 certificate data.
-     * @throws java.io.IOException                     is there's a problem reading the data.
-     * @throws java.security.cert.CertificateException if there's a problem parsing the certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem creating a hash.
+     * @throws java.io.IOException if there's a problem reading the data.
      */
     private void processC509Cert(final ByteArrayInputStream inputStream)
             throws IOException {

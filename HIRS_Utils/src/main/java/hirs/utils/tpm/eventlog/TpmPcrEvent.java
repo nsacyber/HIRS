@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static hirs.utils.tpm.eventlog.events.EvConstants.EV_NO_ACTION;
 import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYSTEM;
 
 /**
@@ -166,7 +167,7 @@ public class TpmPcrEvent {
             return "EV_POST_CODE";
         } else if (event == EvConstants.EV_UNUSED) {
             return "EV_Unused";
-        } else if (event == EvConstants.EV_NO_ACTION) {
+        } else if (event == EV_NO_ACTION) {
             return "EV_NO_ACTION";
         } else if (event == EvConstants.EV_SEPARATOR) {
             return "EV_SEPARATOR";
@@ -284,7 +285,7 @@ public class TpmPcrEvent {
 
         // if event is any type other than 3 (EV_NO_ACTION) check PCR Index range
         // EV_NO_ACTION can have PCR index outside of this range
-        if ((eventType != 3) && ((pcrIndexIn < PCR_INDEX_MIN) || (pcrIndexIn > PCR_INDEX_MAX))) {
+        if ((eventType != EV_NO_ACTION) && ((pcrIndexIn < PCR_INDEX_MIN) || (pcrIndexIn > PCR_INDEX_MAX))) {
             return false;
         }
         pcrIndex = pcrIndexIn;
@@ -379,7 +380,7 @@ public class TpmPcrEvent {
                  EvConstants.EV_PLATFORM_CONFIG_FLAGS, EvConstants.EV_TABLE_OF_DEVICES,
                  EvConstants.EV_EFI_HCRTM_EVENT:
                 break;
-            case EvConstants.EV_NO_ACTION:
+            case EV_NO_ACTION:
                 EvNoAction noAction = null;
                 try {
                     noAction = new EvNoAction(eventContent);
@@ -494,9 +495,6 @@ public class TpmPcrEvent {
             description += "\n";
         }
 
-        if(eventNumber == 35) {
-            String stop = "stop";
-        }
         switch (eventID) {
             case EvConstants.EV_PREBOOT_CERT:
                 description += " EV_PREBOOT_CERT" + "\n";
@@ -512,7 +510,7 @@ public class TpmPcrEvent {
                  EvConstants.EV_IPL_PARTITION_DATA, EvConstants.EV_PLATFORM_CONFIG_FLAGS,
                  EvConstants.EV_CPU_MICROCODE, EvConstants.EV_TABLE_OF_DEVICES:
                 break;
-            case EvConstants.EV_NO_ACTION:
+            case EV_NO_ACTION:
                 EvNoAction noAction = new EvNoAction(content);
                 description += "Event Content:\n" + noAction;
                 if (noAction.isSpecIdEvent()) {

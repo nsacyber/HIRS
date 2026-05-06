@@ -98,9 +98,12 @@ public class UefiVariable {
      */
     private UefiSecureBoot sb = null;
     /**
-     * Human-readable description of the data within the SPDM devdc (to be updated with more test data).
+     * String to hold the Shim or Moklist data.
      */
-//    private String spdmDevdcInfo = "";
+    private String shimMoklist = "";
+    /**
+     * String to hold the Signature Data info.
+     */
     private String sigDataInfo = "";
 
     /**
@@ -158,6 +161,12 @@ public class UefiVariable {
         uefiVariableData = new byte[variableDataLength];
         System.arraycopy(variableData, UefiConstants.OFFSET_32
                 + unicodeNameLength * UefiConstants.SIZE_2, uefiVariableData, 0, variableDataLength);
+
+        // first check if unicode name is shim or moklist (can exist for different event types)
+        if (unicodeName.equals("Shim") || unicodeName.equals("MokList")) {
+            shimMoklist = printCert(uefiVariableData, 0);
+            uefiVariableDataProcessed = true;
+        }
 
         switch (eventType) {
             case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
@@ -299,29 +308,29 @@ public class UefiVariable {
             efiVariable.append("   UEFI Variable Data => " + "\n");
         }
 
-        // fix shim & moklist once come across an example:
-        if (unicodeName.equals("Shim") || unicodeName.equals("MokList")) {
-            efiVariable.append(printCert(uefiVariableData, 0));
-        } else {
-            switch (eventType) {
-                case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
-                    if (unicodeName.equals("SecureBoot")) {
-                        efiVariable.append(sb.toString());
-                    }
-                    break;
-                case EvConstants.EV_EFI_VARIABLE_BOOT:
-                    if (unicodeName.contains("Boot00")) {
-                        efiVariable.append(bootv.toString());
-                    } else if (unicodeName.equals("BootOrder")) {
-                        efiVariable.append(booto.toString());
-                    }
-                    break;
-                case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
-                case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
-                case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
-                    break;
-                default:
-            }
+        // Shim or Moklist output (if there is any)
+        if (!shimMoklist.isEmpty()) {
+            efiVariable.append(shimMoklist);
+        }
+
+        switch (eventType) {
+            case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
+                if (unicodeName.equals("SecureBoot")) {
+                    efiVariable.append(sb.toString());
+                }
+                break;
+            case EvConstants.EV_EFI_VARIABLE_BOOT:
+                if (unicodeName.contains("Boot00")) {
+                    efiVariable.append(bootv.toString());
+                } else if (unicodeName.equals("BootOrder")) {
+                    efiVariable.append(booto.toString());
+                }
+                break;
+            case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
+                break;
+            default:
         }
 
         if (!uefiVariableDataProcessed) {
@@ -360,19 +369,26 @@ public class UefiVariable {
      * @return human-readable description of a certificate.
      */
     public String printCert(final byte[] data, final int offset) {
+
         String certInfo = "";
-        byte[] certLength = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(data, offset + UefiConstants.OFFSET_2, certLength,
-                0, UefiConstants.SIZE_2);
-        int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
-        byte[] certData = new byte[cLength];
-        System.arraycopy(data, offset, certData, 0, cLength);
+        byte[] certData;
+
+        try {
+            byte[] certLength = new byte[UefiConstants.SIZE_2];
+            System.arraycopy(data, offset + UefiConstants.OFFSET_2, certLength,
+                    0, UefiConstants.SIZE_2);
+            int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
+            certData = new byte[cLength];
+            System.arraycopy(data, offset, certData, 0, cLength);
+        } catch (RuntimeException e) {
+            return ("        Error Processing : expecting certificate but data is undetermined");
+        }
         try {
             UefiX509Cert cert = new UefiX509Cert(certData);
             certInfo = cert.toString();
         } catch (CertificateException | NoSuchAlgorithmException e) {
-            certInfo = "Error Processing Certificate : " + e.getMessage();
+            return ("        Error Processing Certificate : " + e.getMessage());
         }
-        return (certInfo);
+        return certInfo;
     }
 }
