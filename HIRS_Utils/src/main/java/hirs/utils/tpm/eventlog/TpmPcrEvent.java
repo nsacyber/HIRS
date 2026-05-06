@@ -232,7 +232,7 @@ public class TpmPcrEvent {
         } else if (event == EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY) {
             return "EV_EFI_SPDM_DEVICE_AUTHORITY";
         } else {
-            return "Unknown Event ID " + event + " encountered";
+            return "Unknown Event Type encountered";
         }
     }
 
