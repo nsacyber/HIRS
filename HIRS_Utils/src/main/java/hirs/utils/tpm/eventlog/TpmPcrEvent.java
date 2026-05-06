@@ -87,7 +87,7 @@ public class TpmPcrEvent {
      * Event Type (long).
      */
     @Getter
-    private long eventType = 0;
+    private long eventType = -1;
     /**
      * Event digest. If more than one digest in the Event, use the strongest one.
      */
@@ -271,12 +271,20 @@ public class TpmPcrEvent {
     /**
      * Sets the event PCR index value from a TCG Event.
      *
-     * @param eventIndex TCG Event PCR Index as defined in the PFP
+     * @param eventPcrIndex TCG Event PCR Index as defined in the PFP
      * @return whether the PCR index was in proper range
      */
-    protected boolean setPcrIndex(final byte[] eventIndex) {
-        int pcrIndexIn = HexUtils.leReverseInt(eventIndex);
-        if ((pcrIndexIn < PCR_INDEX_MIN) || (pcrIndexIn > PCR_INDEX_MAX)) {
+    protected boolean setPcrIndex(final byte[] eventPcrIndex) {
+        int pcrIndexIn = HexUtils.leReverseInt(eventPcrIndex);
+
+        //if eventType doesn't exist yet, cannot check PCR Index range
+        if (eventType == -1) {
+            return false;
+        }
+
+        // if event is any type other than 3 (EV_NO_ACTION) check PCR Index range
+        // EV_NO_ACTION can have PCR index outside of this range
+        if ((eventType != 3) && ((pcrIndexIn < PCR_INDEX_MIN) || (pcrIndexIn > PCR_INDEX_MAX))) {
             return false;
         }
         pcrIndex = pcrIndexIn;
@@ -479,7 +487,7 @@ public class TpmPcrEvent {
         int eventID = (int) eventType;
         this.eventNumber = eventPosition;
         description += "Event# " + eventPosition + ": ";
-        description += "Index PCR[" + getPcrIndex() + "]\n";
+        description += "Index PCR[" + ((getPcrIndex() == -1) ? "N/A" : getPcrIndex()) + "]\n";
         description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
 
         if (eventID != UefiConstants.SIZE_4) {

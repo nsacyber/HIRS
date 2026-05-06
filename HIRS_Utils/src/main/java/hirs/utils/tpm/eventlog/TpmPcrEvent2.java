@@ -90,16 +90,18 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
 
             // read PCR index
             is.read(rawIndex);
-            if (!setPcrIndex(rawIndex)) {
-                throw new IOException("PCR Index out of range; possibly corrupt byte file.");
-            }
-            String pcrIndexStr = "Index PCR[" + getPcrIndex() + "]";
 
             // read event type
             is.read(rawType);
             setEventType(rawType);
             String eventTypeStr = "Event Type: 0x" + Long.toHexString(getEventType()) + " "
                     + eventString((int) getEventType());
+
+            // set PCR index (will need event type to run the index check)
+            if (!setPcrIndex(rawIndex)) {
+                throw new IOException("PCR Index out of range; possibly corrupt byte file.");
+            }
+            String pcrIndexStr = "Index PCR[" + ((getPcrIndex() == -1) ? "N/A" : getPcrIndex()) + "]";
 
             // read TPML_DIGEST_VALUES (algCount should match 'numberOfAlgorithms' in Spec ID event)
             is.read(algCountBytes);
