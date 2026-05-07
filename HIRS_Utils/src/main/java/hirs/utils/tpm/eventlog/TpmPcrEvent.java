@@ -6,6 +6,7 @@ import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.events.EvEfiBootServicesApp;
 import hirs.utils.tpm.eventlog.events.EvEfiGptPartition;
 import hirs.utils.tpm.eventlog.events.EvEfiHandoffTable;
+import hirs.utils.tpm.eventlog.events.EvEfiHandoffTable2;
 import hirs.utils.tpm.eventlog.events.EvEfiSpdmDeviceSecurityEvent;
 import hirs.utils.tpm.eventlog.events.EvEventTag;
 import hirs.utils.tpm.eventlog.events.EvIPL;
@@ -15,6 +16,7 @@ import hirs.utils.tpm.eventlog.events.EvSCrtmContents;
 import hirs.utils.tpm.eventlog.events.EvSCrtmVersion;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiFirmware;
+import hirs.utils.tpm.eventlog.uefi.UefiFirmware2;
 import hirs.utils.tpm.eventlog.uefi.UefiVariable;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -216,8 +218,12 @@ public class TpmPcrEvent {
             return "EV_EFI_ACTION";
         } else if (event == EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB) {
             return "EV_EFI_PLATFORM_FIRMWARE_BLOB";
+        } else if (event == EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB2) {
+            return "EV_EFI_PLATFORM_FIRMWARE_BLOB2";
         } else if (event == EvConstants.EV_EFI_HANDOFF_TABLES) {
             return "EV_EFI_HANDOFF_TABLES";
+        } else if (event == EvConstants.EV_EFI_HANDOFF_TABLES2) {
+            return "EV_EFI_HANDOFF_TABLES2";
         } else if (event == EvConstants.EV_EFI_HCRTM_EVENT) {
             return "EV_EFI_HCRTM_EVENT";
         } else if (event == EvConstants.EV_EFI_VARIABLE_AUTHORITY) {
@@ -461,8 +467,14 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB:
                 sb.append(new UefiFirmware(eventContent));
                 break;
+            case EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB2:
+                sb.append(new UefiFirmware2(eventContent));
+                break;
             case EvConstants.EV_EFI_HANDOFF_TABLES:
                 sb.append(new EvEfiHandoffTable(eventContent));
+                break;
+            case EvConstants.EV_EFI_HANDOFF_TABLES2:
+                sb.append(new EvEfiHandoffTable2(eventContent));
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
@@ -577,9 +589,17 @@ public class TpmPcrEvent {
                 description += "Event Content:\n"
                         + new UefiFirmware(content);
                 break;
+            case EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB2:
+                description += "Event Content:\n"
+                        + new UefiFirmware2(content);
+                break;
             case EvConstants.EV_EFI_HANDOFF_TABLES:
                 EvEfiHandoffTable efiTable = new EvEfiHandoffTable(content);
                 description += "Event Content:\n" + efiTable;
+                break;
+            case EvConstants.EV_EFI_HANDOFF_TABLES2:
+                EvEfiHandoffTable2 efiTable2 = new EvEfiHandoffTable2(content);
+                description += "Event Content:\n" + efiTable2;
                 break;
             case EvConstants.EV_EFI_SPDM_FIRMWARE_BLOB:
             case EvConstants.EV_EFI_SPDM_FIRMWARE_CONFIG:
