@@ -45,7 +45,7 @@
                         "root": "/boot/tcg/manifest/rim/",
                         "File": [{
                                 "version":"01",
-                                "name": "dell.5580.1.rimel",
+                                "name": "laptop.default.1.rimel",
                                 "size": "20113",
                                 "hash": "bc120b2d8752bc6eb228b5b433825d766183985cf02d7ab678210901a9730932"
                                 }]
