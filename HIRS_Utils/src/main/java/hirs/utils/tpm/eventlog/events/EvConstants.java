@@ -156,6 +156,14 @@ public final class EvConstants {
      */
     public static final int EV_EFI_HANDOFF_TABLES = 0x80000009;
     /**
+     * Platform Firmware Blob2 Event ID.
+     */
+    public static final int EV_EFI_PLATFORM_FIRMWARE_BLOB2 = 0x8000000a;
+    /**
+     *  EFI Handoff Tables2 Event ID.
+     */
+    public static final int EV_EFI_HANDOFF_TABLES2 = 0x8000000b;
+    /**
      * HRCTM Event ID.
      */
     public static final int EV_EFI_HCRTM_EVENT = 0x80000010;
