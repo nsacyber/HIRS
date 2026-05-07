@@ -5,9 +5,7 @@ import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiGuid;
 import lombok.Getter;
 
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
@@ -122,8 +120,8 @@ public class EvEfiHandoffTable2 {
      */
     public String toString() {
         StringBuilder tableInfo = new StringBuilder();
-        tableInfo.append(String.format("   Description: %s\n", tableDescription));
-        tableInfo.append("   Number of UEFI_CONFIGURATION_TABLEs = " + numberOfTables + "\n");
+        tableInfo.append(String.format("   Description: %s%n", tableDescription));
+        tableInfo.append(String.format("   Number of UEFI_CONFIGURATION_TABLEs = " + numberOfTables + "%n"));
         for (int i = 0; i < numberOfTables; i++) {
             UefiGuid currentGuid = vendorGuids.get(i);
             tableInfo.append("      Table " + i + ":\n");

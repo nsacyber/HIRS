@@ -1,7 +1,19 @@
 package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
-import hirs.utils.tpm.eventlog.events.*;
+import hirs.utils.tpm.eventlog.events.EvCompactHash;
+import hirs.utils.tpm.eventlog.events.EvConstants;
+import hirs.utils.tpm.eventlog.events.EvEfiBootServicesApp;
+import hirs.utils.tpm.eventlog.events.EvEfiGptPartition;
+import hirs.utils.tpm.eventlog.events.EvEfiHandoffTable;
+import hirs.utils.tpm.eventlog.events.EvEfiHandoffTable2;
+import hirs.utils.tpm.eventlog.events.EvEfiSpdmDeviceSecurityEvent;
+import hirs.utils.tpm.eventlog.events.EvEventTag;
+import hirs.utils.tpm.eventlog.events.EvIPL;
+import hirs.utils.tpm.eventlog.events.EvNoAction;
+import hirs.utils.tpm.eventlog.events.EvPostCode;
+import hirs.utils.tpm.eventlog.events.EvSCrtmContents;
+import hirs.utils.tpm.eventlog.events.EvSCrtmVersion;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiFirmware;
 import hirs.utils.tpm.eventlog.uefi.UefiFirmware2;

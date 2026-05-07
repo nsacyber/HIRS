@@ -3,7 +3,6 @@ package hirs.utils.tpm.eventlog.uefi;
 import hirs.utils.HexUtils;
 import lombok.Getter;
 
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -85,8 +84,8 @@ public class UefiFirmware2 {
     public String toString() {
         StringBuilder blobInfo = new StringBuilder();
         if (!bError) {
-            blobInfo.append(String.format("   Event: %s\n", UefiConstants.UEFI_FIRMWARE_BLOB2_LABEL));
-            blobInfo.append(String.format("   Description: %s\n", blobDescription));
+            blobInfo.append(String.format("   Event: %s%n", UefiConstants.UEFI_FIRMWARE_BLOB2_LABEL));
+            blobInfo.append(String.format("   Description: %s%n", blobDescription));
             blobInfo.append(String.format("   Address = 0x%s, Length = %d",
                     Integer.toHexString(physicalBlobAddress), blobLength));
         } else {
