@@ -10,6 +10,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -56,7 +61,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
             validator.setSupportRimDirectory(rimel);
         }
 
-        rim = validator.getRim();
+        rim = copyDoc(validator.getRim());
 
         NodeList si = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
                 SwidTagConstants.SOFTWARE_IDENTITY);
@@ -109,6 +114,24 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
 
         isValid = valid;
         return valid;
+    }
+
+    /**
+     * This method clones a Document object's data into a new Document
+     * @param doc to copy from
+     * @return a new, identical doc
+     */
+    private Document copyDoc(Document doc) {
+        try {
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer t = tf.newTransformer();
+            DOMSource originalDoc = new DOMSource(doc);
+            DOMResult newDoc = new DOMResult();
+            t.transform(originalDoc, newDoc);
+            return (Document) newDoc.getNode();
+        } catch (TransformerException e) {
+            throw new RuntimeException("Error while copying XML for validation: " + e.getMessage());
+        }
     }
 
     /**

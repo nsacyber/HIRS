@@ -908,6 +908,7 @@ public class ReferenceManifestValidator {
     private Document convertToDocument(final byte[] bytes)
             throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
         DocumentBuilder builder = dbf.newDocumentBuilder();
         ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
         return builder.parse(bytesIn);
@@ -925,37 +926,10 @@ public class ReferenceManifestValidator {
     private Document convertToDocument(final String filename)
             throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
         DocumentBuilder builder = dbf.newDocumentBuilder();
         File fileIn = new File(filename);
         return builder.parse(fileIn);
-    }
-    /**
-     * This method strips all whitespace from an xml file, including indents and spaces
-     * added for human-readability.
-     *
-     * @param source of the input xml.
-     * @return Document representation of the xml.
-     */
-    private Document removeXMLWhitespace(final StreamSource source) throws IOException {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Source identitySource = new StreamSource(
-                ReferenceManifestValidator.class.getClassLoader()
-                        .getResourceAsStream(IDENTITY_TRANSFORM));
-        Document doc = null;
-        try {
-            Transformer transformer = tf.newTransformer(identitySource);
-            DOMResult result = new DOMResult();
-            transformer.transform(source, result);
-            doc = (Document) result.getNode();
-        } catch (TransformerConfigurationException e) {
-            log.warn("Error configuring transformer!");
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            log.warn("Error transforming input!");
-            e.printStackTrace();
-        }
-
-        return doc;
     }
 
     /**
