@@ -883,32 +883,39 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method strips all whitespace from an xml file, including indents and spaces
-     * added for human-readability.
+     * This method converts a byte array to a Document object.
      *
-     * @param source of the input xml.
-     * @return Document representation of the xml.
+     * @param bytes data in
+     * @return a Document object representing the data in
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
      */
-    private Document removeXMLWhitespace(final StreamSource source) throws IOException {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Source identitySource = new StreamSource(
-                ReferenceManifestValidator.class.getClassLoader()
-                        .getResourceAsStream(IDENTITY_TRANSFORM));
-        Document doc = null;
-        try {
-            Transformer transformer = tf.newTransformer(identitySource);
-            DOMResult result = new DOMResult();
-            transformer.transform(source, result);
-            doc = (Document) result.getNode();
-        } catch (TransformerConfigurationException e) {
-            log.warn("Error configuring transformer!");
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            log.warn("Error transforming input!");
-            e.printStackTrace();
-        }
+    private Document convertToDocument(final byte[] bytes)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        DocumentBuilder builder = dbf.newDocumentBuilder();
+        ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
+        return builder.parse(bytesIn);
+    }
 
-        return doc;
+    /**
+     * This method reads a file from the system and converts it to a Document object.
+     *
+     * @param filename String
+     * @returna Document object representing the file
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
+     */
+    private Document convertToDocument(final String filename)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        DocumentBuilder builder = dbf.newDocumentBuilder();
+        File fileIn = new File(filename);
+        return builder.parse(fileIn);
     }
 
     /**
