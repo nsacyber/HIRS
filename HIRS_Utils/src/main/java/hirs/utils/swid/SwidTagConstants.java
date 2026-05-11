@@ -17,6 +17,10 @@ public final class SwidTagConstants {
     public static final String DEFAULT_ENGLISH = "en";
     public static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
             "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+    public static final String SIGNATURE_ALGORITHM_RSA_SHA384 =
+            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
+    public static final String SIGNATURE_ALGORITHM_RSA_SHA512 =
+            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
     public static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     public static final String SCHEMA_URL = "swid_schema.xsd";
@@ -112,6 +116,8 @@ public final class SwidTagConstants {
             "http://www.w3.org/2001/04/xmlenc#sha256", HASH, "SHA256");
     public static final QName SHA_384_HASH = new QName(
             "http://www.w3.org/2001/04/xmlenc#sha384", HASH, "SHA384");
+    public static final QName SHA_512_HASH = new QName(
+            "http://www.w3.org/2001/04/xmlenc#sha512", HASH, "SHA512");
     public static final QName QNAME_COLLOQUIAL_VERSION = new QName(
             NIST_NS, COLLOQUIAL_VERSION, N8060_PFX);
     public static final QName QNAME_EDITION = new QName(

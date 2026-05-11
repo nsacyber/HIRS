@@ -35,6 +35,7 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -80,13 +81,13 @@ import java.util.stream.Stream;
  */
 @Log4j2
 public class ReferenceManifestValidator {
-    private static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
-            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
     private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
     private static final String SCHEMA_URL = "swid_schema.xsd";
     private static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     private static final String SHA256 = "SHA-256";
+    private static final String SHA384 = "SHA-384";
+    private static final String SHA512 = "SHA-512";
     private static final int EIGHT_BIT_MASK = 0xff;
     private static final int LEFT_SHIFT = 0x100;
     private static final int RADIX = 16;
@@ -410,14 +411,14 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method calculates the SHA256 hash of the input byte array and compares it against
-     * the value passed in.
+     * This method calculates the hash of the input byte array, given the file hash algorithm,
+     * and compares it against the value passed in.
      *
      * @param input    byte array to hash.
      * @param expected value to compare against.
      */
     public void validateSupportRimHash(final byte[] input, final String expected) {
-        String calculatedHash = getHashValue(input, SHA256);
+        String calculatedHash = getHashValue(input, getFileHashAlgorithm());
         supportRimValid = calculatedHash.equals(expected);
         if (!supportRimValid) {
             log.warn("Unmatched support RIM hash! Expected: {}, actual: {}", expected, calculatedHash);
@@ -493,12 +494,13 @@ public class ReferenceManifestValidator {
      * @return algorithm string
      */
     private String parseAlgorithmFromUri(final String uri) {
-        switch (uri) {
-            case "http://www.w3.org/2001/04/xmlenc#sha256":
-                return SwidTagConstants.SHA_256_HASH.getPrefix();
-            default:
-                return "";
-        }
+        if (uri == null) return "";
+        return switch (uri) {
+            case "http://www.w3.org/2001/04/xmlenc#sha512" -> SHA512;
+            case "http://www.w3.org/2001/04/xmlenc#sha384" -> SHA384;
+            case "http://www.w3.org/2001/04/xmlenc#sha256" -> SHA256;
+            default -> "";
+        };
     }
 
     /**
@@ -1016,8 +1018,11 @@ public class ReferenceManifestValidator {
          * @return true if both match, false otherwise
          */
         public boolean areAlgorithmsEqual(final String uri, final String name) {
-            return uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
-                    && name.equalsIgnoreCase("RSA");
+            boolean isRsa = name.equalsIgnoreCase("RSA");
+            boolean isValidSha = uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256) ||
+                    uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA384) ||
+                    uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA512);
+            return isRsa && isValidSha;
         }
 
         /**
@@ -1049,5 +1054,22 @@ public class ReferenceManifestValidator {
                 this.key = key;
             }
         }
+    }
+
+    private String getFileHashAlgorithm() {
+        NodeList fileNodes = getXmlElement("http://standards.iso.org/iso/19770/-2/2015/schema.xsd", "File");
+        if (fileNodes.getLength() == 0) {
+            throw new RuntimeException("No File element found in payload");
+        }
+        Element fileElement = (Element) fileNodes.item(0);
+        QName[] namespaces = {SwidTagConstants.SHA_256_HASH, SwidTagConstants.SHA_384_HASH, SwidTagConstants.SHA_512_HASH};
+        String[] algorithms = {SHA256, SHA384, SHA512};
+        for (int i = 0; i < namespaces.length; i++) {
+            String hash = fileElement.getAttributeNS(namespaces[i].getNamespaceURI(), namespaces[i].getLocalPart());
+            if (!hash.isEmpty()) {
+                return algorithms[i];
+            }
+        }
+        throw new RuntimeException("No compatible File Hash element found in Directory");
     }
 }
