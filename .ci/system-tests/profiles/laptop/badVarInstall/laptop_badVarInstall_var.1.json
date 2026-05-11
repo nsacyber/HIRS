@@ -45,7 +45,7 @@
                         "root": "/boot/tcg/manifest/rim/",
                         "File": [{
                                 "version":"01",
-                                "name": "dell5580_varOSInstall_var.1.rimel",
+                                "name": "laptop_badVarInstall_var.1.rimel",
                                 "size": "2613",
                                 "hash": "d83a6208cc647e6bf42ecfd8bf559d6c7845d352f1e05ca90ffc3048fad1509e"
                                 }]
