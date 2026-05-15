@@ -6,7 +6,7 @@
                 "tagVersion": "0",
 		"corpus": "false",
                 "patch": false,
-                "supplemental": true
+                "supplemental": false
         },
 	"Entity": {
                 "name": "VAR1",
