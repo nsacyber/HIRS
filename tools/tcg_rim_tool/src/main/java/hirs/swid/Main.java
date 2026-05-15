@@ -61,7 +61,12 @@ public class Main {
                 String rimel = commander.getRimEventLog();
                 String certificateFile = commander.getPublicCertificate();
                 String trustStore = commander.getTruststoreFile();
-                validator.setRim(verifyFile);
+                try {
+                    validator.setRim(verifyFile);
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                    exitWithErrorCode(e.getMessage());
+                }
                 if (rimel != null) {
                     validator.setHasSupportRim(true);
                     validator.setSupportRimDirectory(rimel);
