@@ -3,6 +3,7 @@ package hirs.attestationca.persist.provision.helper;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import hirs.attestationca.configuration.provisionerTpm2.ProvisionerTpm2;
+import hirs.attestationca.persist.enums.TcgAlgorithm;
 import hirs.attestationca.persist.exceptions.IdentityProcessingException;
 import hirs.attestationca.persist.exceptions.UnexpectedServerException;
 import hirs.utils.HexUtils;
@@ -19,6 +20,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
@@ -39,6 +41,7 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECPoint;
 import java.security.spec.MGF1ParameterSpec;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -83,6 +86,8 @@ public final class ProvisionUtils {
             "0001000b00050072000000100014000b0800000000000100";
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    private static final int MASK_ALL_BITS = 0xFF;
 
     /**
      * This private constructor was created to silence checkstyle error.
@@ -674,6 +679,170 @@ public final class ProvisionUtils {
         byte[] toReturn = new byte[sizeInBytes];
         System.arraycopy(hmacResult, 0, toReturn, 0, sizeInBytes);
         return toReturn;
+    }
+
+    /**
+     * Replicates the TPM KDFa function for RSA key derivation and exchange.
+     * @param hashAlg the hash algorithm to use
+     * @param key the HMAC key
+     * @param label a string corresponding to usage
+     * @param contextU first context if applicable (TPM nonce)
+     * @param contextV second context if applicable (caller nonce)
+     * @param bits the output length in bits
+     * @return the bytes corresponding to the keying material
+     */
+    public static byte[] cryptKDFa(
+            final TcgAlgorithm hashAlg,
+            final byte[] key,
+            final String label,
+            final byte[] contextU,
+            final byte[] contextV,
+            final int bits) {
+
+        try {
+            if (key == null || key.length == 0) {
+                throw new IllegalArgumentException("KDFa key must not be null or empty");
+            }
+            if (label == null || label.isEmpty()) {
+                throw new IllegalArgumentException("KDFa label must not be null or empty");
+            }
+            if (bits <= 0) {
+                throw new IllegalArgumentException("KDFa bits must be positive");
+            }
+
+            final String hmacName = switch (hashAlg) {
+                case SHA256 -> "HmacSHA256";
+                case SHA384 -> "HmacSHA384";
+                case SHA512 -> "HmacSHA512";
+                default -> throw new IllegalArgumentException("Unsupported KDFa hash algorithm: " + hashAlg);
+            };
+
+            final Mac mac = Mac.getInstance(hmacName);
+            mac.init(new SecretKeySpec(key, hmacName));
+
+            final int digestSizeBytes = mac.getMacLength();
+            final int bytesNeeded = (bits + (Byte.SIZE - 1)) / Byte.SIZE;
+            final int reps = (int) Math.ceil((double) bytesNeeded / digestSizeBytes);
+
+            final byte[] labelBytes = label.getBytes(StandardCharsets.UTF_8);
+            final byte[] bitsBytes = ByteBuffer.allocate(Integer.BYTES).putInt(bits).array();
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream(reps * digestSizeBytes);
+
+            for (int counter = 1; counter <= reps; counter++) {
+                mac.reset();
+                mac.update(ByteBuffer.allocate(Integer.BYTES).putInt(counter).array());
+                mac.update(labelBytes);
+                mac.update((byte) 0x00);
+                if (contextU != null) {
+                    mac.update(contextU);
+                }
+                if (contextV != null) {
+                    mac.update(contextV);
+                }
+                mac.update(bitsBytes);
+                out.write(mac.doFinal());
+            }
+
+            byte[] result = Arrays.copyOf(out.toByteArray(), bytesNeeded);
+
+            int extraBits = (bytesNeeded * Byte.SIZE) - bits;
+            if (extraBits > 0) {
+                result[bytesNeeded - 1] &= (byte) (MASK_ALL_BITS << extraBits);
+            }
+
+            return result;
+        }  catch (IOException | InvalidKeyException | NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Unsupported digest for KDFa: " + hashAlg, e);
+        }
+    }
+
+    /**
+     * Method that reproduces the TPM KDFe algorithm used for ECC public key exchange.
+     * @param hashAlg the hash algorithm to be used
+     * @param z the shared secret
+     * @param label a string corresponding to usage
+     * @param partyUInfo the x coordinate of the ephemeral public key
+     * @param partyVInfo the y coordinate of the ephemeral public key
+     * @param bits the output length in bits
+     * @return the bytes corresponding to the keying material
+     */
+    public static byte[] cryptKDFe(
+            final TcgAlgorithm hashAlg,
+            final byte[] z,
+            final String label,
+            final byte[] partyUInfo,
+            final byte[] partyVInfo,
+            final int bits) {
+
+        try {
+            MessageDigest md = MessageDigest.getInstance(hashAlg.getAlgorithmName());
+            int digestSizeBytes = md.getDigestLength();
+            final int bytesNeeded = (bits + (Byte.SIZE - 1)) / Byte.SIZE;
+            final int reps = (int) Math.ceil((double) bytesNeeded / digestSizeBytes);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] labelBytes = (label + "\0").getBytes(StandardCharsets.UTF_8);
+
+            for (int counter = 1; counter <= reps; counter++) {
+                md.reset();
+                md.update(ByteBuffer.allocate(Integer.BYTES).putInt(counter).array());
+                md.update(z);
+                md.update(labelBytes);
+                if (partyUInfo != null) {
+                    md.update(partyUInfo);
+                }
+                if (partyVInfo != null) {
+                    md.update(partyVInfo);
+                }
+                out.write(md.digest());
+            }
+
+            byte[] result = Arrays.copyOf(out.toByteArray(), bytesNeeded);
+
+            int extraBits = (bytesNeeded * Byte.SIZE) - bits;
+            if (extraBits > 0) {
+                result[bytesNeeded - 1] &= (byte) (MASK_ALL_BITS << extraBits);
+            }
+            return result;
+        } catch (IOException | NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Unsupported digest for KDFe: " + hashAlg, e);
+        }
+    }
+
+    /**
+     * Marshals a Java public EC key to TPM2B_ECC_POINT structure.
+     * @param publicKey the public key to marshal
+     * @return the output TPM2B_ECC_POINT byte array
+     */
+    public static byte[] marshalTpm2bEccPoint(final ECPublicKey publicKey) {
+        int coordSize = ProvisionUtils.getFieldSizeInBytes(publicKey);
+        byte[] x = ProvisionUtils.convertBigIntegerToByteArray(publicKey.getW().getAffineX(), coordSize);
+        byte[] y = ProvisionUtils.convertBigIntegerToByteArray(publicKey.getW().getAffineY(), coordSize);
+
+        ByteBuffer body = ByteBuffer.allocate(2 + x.length + 2 + y.length);
+        body.putShort((short) x.length);
+        body.put(x);
+        body.putShort((short) y.length);
+        body.put(y);
+
+        byte[] bodyBytes = body.array();
+        ByteBuffer out = ByteBuffer.allocate(2 + bodyBytes.length);
+        out.putShort((short) bodyBytes.length);
+        out.put(bodyBytes);
+        return out.array();
+    }
+
+    /**
+     * Method to marshal a TPM2B_ENCRYPTED_SECRET structure from a given byte array.
+     * @param encryptedSecret the encrypted secret bytes to marshal
+     * @return a byte array corresponding to the TPM2B_ENCRYPTED_SECRET structure
+     */
+    public static byte[] marshalTpm2bEncryptedSecret(final byte[] encryptedSecret) {
+        ByteBuffer out = ByteBuffer.allocate(2 + encryptedSecret.length);
+        out.putShort((short) encryptedSecret.length);
+        out.put(encryptedSecret);
+        return out.array();
     }
 
     /**

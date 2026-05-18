@@ -17,6 +17,7 @@ import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.provision.helper.ParsedTpmPublic;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.provision.helper.TpmMakeCredentialHelper;
+import hirs.attestationca.persist.provision.helper.TpmMakeCredentialHelper.TpmCredential;
 import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.attestationca.persist.validation.SupplyChainValidationService;
 import hirs.utils.HexUtils;
@@ -118,7 +119,7 @@ public class IdentityClaimProcessorService {
             log.error(ex.getMessage());
         }
 
-        ByteString blobStr = ByteString.copyFrom(new byte[]{});
+        TpmCredential tpmCredential = new TpmCredential(ByteString.empty(), ByteString.empty());
 
         if (validationResult == AppraisalStatus.Status.PASS) {
             ParsedTpmPublic akPub;
@@ -129,7 +130,7 @@ public class IdentityClaimProcessorService {
                 throw new IllegalStateException(e.getMessage());
             }
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
-            blobStr = TpmMakeCredentialHelper.makeCredential(ekPub, akPub, nonce);
+            tpmCredential = TpmMakeCredentialHelper.makeCredential(ekPub, akPub, nonce);
 
             String pcrQuoteMask = PCR_QUOTE_MASK;
 
@@ -147,8 +148,9 @@ public class IdentityClaimProcessorService {
             // Package response
             ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
-                    .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
+                    .setCredentialBlob(tpmCredential.credentialBlobTpm2b()).setPcrMask(pcrQuoteMask)
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
+                    .setEncryptedSecret(tpmCredential.secretTpm2b())
                     .build();
 
             String identityClaimResponseJsonStringAfterSuccess = "";
@@ -184,8 +186,9 @@ public class IdentityClaimProcessorService {
             // empty response
             ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
-                    .setCredentialBlob(blobStr)
+                    .setCredentialBlob(tpmCredential.credentialBlobTpm2b())
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
+                    .setEncryptedSecret(tpmCredential.secretTpm2b())
                     .build();
 
             String identityClaimResponseJsonStringAfterFailure = "";
