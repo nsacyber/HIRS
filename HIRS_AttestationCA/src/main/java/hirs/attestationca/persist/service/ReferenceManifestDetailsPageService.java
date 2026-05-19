@@ -209,15 +209,18 @@ public class ReferenceManifestDetailsPageService {
         data.put("entityThumbprint", baseRim.getEntityThumbprint());
 
         // Link
-        data.put("linkHref", baseRim.getLinkHref());
+        String linkHref = baseRim.getLinkHref();
+        data.put("linkHref", linkHref);
         data.put("linkHrefLink", "");
 
-        List<BaseReferenceManifest> baseReferenceManifests =
-                this.referenceManifestRepository.findAllBaseRims();
-
-        for (BaseReferenceManifest bRim : baseReferenceManifests) {
-            if (baseRim.getLinkHref().contains(bRim.getTagId())) {
-                data.put("linkHrefLink", bRim.getId());
+        if (linkHref != null && !linkHref.isEmpty()) {
+            List<BaseReferenceManifest> baseReferenceManifests =
+                    this.referenceManifestRepository.findAllBaseRims();
+            for (BaseReferenceManifest bRim : baseReferenceManifests) {
+                if (bRim.getTagId() != null && linkHref.contains(bRim.getTagId())) {
+                    data.put("linkHrefLink", bRim.getId());
+                    break;
+                }
             }
         }
 
