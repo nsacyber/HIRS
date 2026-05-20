@@ -655,7 +655,7 @@ public class ReferenceManifestValidator {
             }
         } while (isChainCertValid);
 
-        log.error("CA chain validation failed to validate {}, {}",
+        log.debug("Current  trust store did not validate CA chain for {}, {}.",
                 chainCert.getSubjectX500Principal().getName(), errorMessage);
         return false;
     }
