@@ -290,8 +290,8 @@ public final class CertificateStringMapBuilder {
                 issuerResult = certificate.isIssuer(issuerCert);
                 if (issuerResult.isEmpty()) {
                     //Check if it's root certificate
-                    if (BouncyCastleUtils.x500NameCompare(issuerCert.getIssuerSorted(),
-                            issuerCert.getSubjectSorted())) {
+                    if (BouncyCastleUtils.x500NameCompare(issuerCert.getIssuer(),
+                            issuerCert.getSubject())) {
                         return null;
                     }
                     return containsAllChain(issuerCert, caCredentialRepository);
