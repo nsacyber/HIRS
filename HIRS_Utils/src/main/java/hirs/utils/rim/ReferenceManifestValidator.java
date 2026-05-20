@@ -1,5 +1,6 @@
 package hirs.utils.rim;
 
+import hirs.utils.BouncyCastleUtils;
 import hirs.utils.swid.SwidTagConstants;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -18,7 +19,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.security.auth.x500.X500Principal;
 import javax.xml.XMLConstants;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.KeySelector;
@@ -82,6 +82,8 @@ import java.util.stream.Stream;
 public class ReferenceManifestValidator {
     private static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
             "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+    private static final String SIGNATURE_ALGORITHM_RSA_SHA384 =
+            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
     private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
     private static final String SCHEMA_URL = "swid_schema.xsd";
     private static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
@@ -687,8 +689,9 @@ public class ReferenceManifestValidator {
         if (cert == null || issuer == null) {
             throw new Exception("Cannot verify issuer, null certificate received");
         }
-        X500Principal issuerDN = new X500Principal(cert.getIssuerX500Principal().getName());
-        return issuer.getSubjectX500Principal().equals(issuerDN);
+        return BouncyCastleUtils.x500NameCompare(
+                cert.getIssuerX500Principal().getName(),
+                issuer.getSubjectX500Principal().getName());
     }
 
     /**
@@ -967,8 +970,9 @@ public class ReferenceManifestValidator {
                         }
                         if (object instanceof X509Certificate embeddedCert) {
                             try {
-                                if (embeddedCert.getSubjectX500Principal().getName().equals(subjectName)
-                                        || isCertChainValid(embeddedCert)) {
+                                if ((subjectName.isEmpty() || BouncyCastleUtils.x500NameCompare(
+                                        embeddedCert.getSubjectX500Principal().getName(), subjectName))
+                                        && isCertChainValid(embeddedCert)) {
                                     publicKey = embeddedCert.getPublicKey();
                                     signingCert = embeddedCert;
                                     log.info("Certificate chain valid.");
@@ -1016,7 +1020,8 @@ public class ReferenceManifestValidator {
          * @return true if both match, false otherwise
          */
         public boolean areAlgorithmsEqual(final String uri, final String name) {
-            return uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
+            return (uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
+                    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA384))
                     && name.equalsIgnoreCase("RSA");
         }
 
