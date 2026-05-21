@@ -1,0 +1,121 @@
+site_name: HIRS
+site_url: https://gitlab.evoforge.org/HIRS/HIRS
+repo_url: https://gitlab.evoforge.org/HIRS/HIRS
+repo_name: HIRS/HIRSDev
+nav:
+  - Home:
+      - index.md
+      - hirs-aca.md
+      - hirs-provisioner.md
+  - Getting Started:
+      - started/index.md
+      - started/gs1-checklist.md
+      - started/gs2-aca-install.md
+      - started/gs3-hirs-config.md
+      - started/gs4-artifacts.md
+      - started/gs5-prov-install.md
+      - started/gs6-prov-run.md
+      - started/gs7-results.md
+  - Installation:
+      - install/index.md
+      - install/aca-install.md
+      - install/prov-install.md
+      - install/prov-config.md
+      - install/prov-run.md
+      - <u>Logs</u>:
+          - install/logs/aca-logs.md
+          - install/logs/prov-logs.md
+      - install/downloads.md
+  - Web Portal:
+      - webportal/index.md
+      - webportal/portal-homepage.md
+      - webportal/portal-policy.md
+      - webportal/portal-trust-chain.md
+      - webportal/portal-endorsement-certs.md
+      - webportal/portal-platform-certs.md
+      - webportal/portal-rims.md
+      - webportal/portal-rimdb.md
+      - webportal/portal-issued-certs.md
+      - webportal/portal-validation-reports.md
+      - webportal/portal-devices.md
+      - webportal/portal-help.md
+  - Tools:
+      - tools/index.md
+      - tools/paccor.md
+      - tools/rimtool.md
+      - tools/eventlogtool.md
+  - Behind the Scenes:
+      - Supply Chain Validation: background/index.md
+      - Validation Inputs:
+          - background/inputs/index.md
+          - background/inputs/endorsement-cert.md
+          - background/inputs/platform-cert.md
+          - background/inputs/rim.md
+      - Operational Flow of HIRS:
+          - background/operation/index.md
+          - background/operation/op1-manufacture.md
+          - background/operation/op2-hirs-setup.md
+          - background/operation/op3-boot-capture.md
+          - background/operation/op4-validation.md
+      - Validation Outputs:
+          - background/outputs/index.md
+          - background/outputs/ac.md
+          - background/outputs/ldevid.md
+  - Glossary: glossary.md
+  - About:
+      - about/index.md
+      - about/license.md
+theme:
+  name: material
+  favicon: images/hirs-favicon.png
+  custom_dir: overrides
+  logo: images/hirs-favicon.png
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - content.code.copy
+    - navigation.indexes
+    - navigation.expand
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://gitlab.evoforge.org/HIRS/HIRS
+  links:
+    external:
+      target: _blank
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - footnotes
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+        #plugins:
+        # - to-pdf
+
