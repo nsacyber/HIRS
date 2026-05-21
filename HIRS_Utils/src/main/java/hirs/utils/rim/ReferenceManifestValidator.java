@@ -84,6 +84,8 @@ public class ReferenceManifestValidator {
             "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
     private static final String SIGNATURE_ALGORITHM_RSA_SHA384 =
             "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
+    private static final String SIGNATURE_ALGORITHM_RSA_SHA512 =
+	    "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
     private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
     private static final String SCHEMA_URL = "swid_schema.xsd";
     private static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
@@ -1021,7 +1023,8 @@ public class ReferenceManifestValidator {
          */
         public boolean areAlgorithmsEqual(final String uri, final String name) {
             return (uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
-                    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA384))
+                    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA384)
+		    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA512))
                     && name.equalsIgnoreCase("RSA");
         }
 
