@@ -1,10 +1,6 @@
 package hirs.utils.rim;
 
 import hirs.utils.swid.SwidTagConstants;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.UnmarshalException;
-import jakarta.xml.bind.Unmarshaller;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -16,10 +12,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import javax.security.auth.x500.X500Principal;
-import javax.xml.XMLConstants;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.KeySelector;
 import javax.xml.crypto.KeySelectorException;
@@ -35,22 +29,12 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -82,22 +66,15 @@ import java.util.stream.Stream;
 public class ReferenceManifestValidator {
     private static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
             "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
-    private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
-    private static final String SCHEMA_URL = "swid_schema.xsd";
-    private static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
-    private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     private static final String SHA256 = "SHA-256";
     private static final int EIGHT_BIT_MASK = 0xff;
     private static final int LEFT_SHIFT = 0x100;
     private static final int RADIX = 16;
 
     private Document rim;
-    private Unmarshaller unmarshaller;
 
     @Getter
     private PublicKey publicKey;
-
-    private Schema schema;
 
     @Getter
     private String subjectKeyIdentifier;
@@ -128,24 +105,16 @@ public class ReferenceManifestValidator {
      * time during validation calls later.
      */
     public ReferenceManifestValidator() {
-        try {
-            Security.addProvider(new BouncyCastleProvider());
-            InputStream is = ReferenceManifestValidator.class
-                    .getClassLoader().getResourceAsStream(SCHEMA_URL);
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
-            schema = schemaFactory.newSchema(new StreamSource(is));
-            rim = null;
-            hasSupportRim = false;
-            signatureValid = false;
-            supportRimValid = false;
-            supportRimDirectory = "";
-            publicKey = null;
-            trustStoreFile = null;
-            trustStore = null;
-            subjectKeyIdentifier = "(not found)";
-        } catch (SAXException e) {
-            log.warn("Error setting schema for validation!");
-        }
+        Security.addProvider(new BouncyCastleProvider());
+        rim = null;
+        hasSupportRim = false;
+        signatureValid = false;
+        supportRimValid = false;
+        supportRimDirectory = "";
+        publicKey = null;
+        trustStoreFile = null;
+        trustStore = null;
+        subjectKeyIdentifier = "(not found)";
     }
 
     /**
@@ -156,9 +125,8 @@ public class ReferenceManifestValidator {
      */
     public void setRim(final byte[] rimBytes) {
         try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(
+            this.rim = SwidTagParser.validateSwidtagSchema(SwidTagParser.removeXMLWhitespace(new StreamSource(
                     new ByteArrayInputStream(rimBytes))));
-            this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes using the provided rim bytes: {}", e.getMessage());
         }
@@ -173,7 +141,7 @@ public class ReferenceManifestValidator {
     public void setRim(final String path) {
         File swidtagFile = new File(path);
         try {
-            Document doc = validateSwidtagSchema(removeXMLWhitespace(new StreamSource(swidtagFile)));
+            Document doc = SwidTagParser.validateSwidtagSchema(SwidTagParser.removeXMLWhitespace(new StreamSource(swidtagFile)));
             this.rim = doc;
         } catch (IOException e) {
             log.error("Error while unmarshalling rim bytes using the provided file path: {}", e.getMessage());
@@ -209,7 +177,7 @@ public class ReferenceManifestValidator {
 
             NodeList certElement = getXmlElement(XMLSignature.XMLNS, "X509Certificate");
             if (certElement.getLength() > 0) {
-                X509Certificate embeddedCert = parseCertFromPEMString(
+                X509Certificate embeddedCert = SwidTagParser.parseCertFromPEMString(
                         certElement.item(0).getTextContent());
                 if (embeddedCert != null) {
                     if (isCertChainValid(embeddedCert)) {
@@ -737,32 +705,6 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method extracts certificate bytes from a string. The bytes are assumed to be
-     * PEM format, and a header and footer are concatenated with the input string to
-     * facilitate proper parsing.
-     *
-     * @param pemString the input string
-     * @return an X509Certificate created from the string, or null
-     */
-    private X509Certificate parseCertFromPEMString(final String pemString) {
-        String certificateHeader = "-----BEGIN CERTIFICATE-----";
-        String certificateFooter = "-----END CERTIFICATE-----";
-        try {
-            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            InputStream inputStream = new ByteArrayInputStream((certificateHeader
-                    + System.lineSeparator()
-                    + pemString
-                    + System.lineSeparator()
-                    + certificateFooter).getBytes(StandardCharsets.UTF_8));
-            return (X509Certificate) factory.generateCertificate(inputStream);
-        } catch (CertificateException e) {
-            log.warn("Error creating CertificateFactory instance: {}", e.getMessage());
-        }
-
-        return null;
-    }
-
-    /**
      * This method returns the X509Certificates found in a PEM file.
      * Unchecked type case warnings are suppressed because the CertificateFactory
      * implements X509Certificate objects explicitly.
@@ -857,58 +799,6 @@ public class ReferenceManifestValidator {
         }
 
         return xmlElement;
-    }
-
-    /**
-     * This method validates the Document against the schema.
-     *
-     * @param doc of the input swidtag.
-     * @return document validated against the schema.
-     */
-    private Document validateSwidtagSchema(final Document doc) {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
-            unmarshaller = jaxbContext.createUnmarshaller();
-            unmarshaller.setSchema(schema);
-            unmarshaller.unmarshal(doc);
-        } catch (UnmarshalException e) {
-            log.warn("Error validating swidtag file!");
-        } catch (IllegalArgumentException e) {
-            log.warn("Input file empty.");
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-
-        return doc;
-    }
-
-    /**
-     * This method strips all whitespace from an xml file, including indents and spaces
-     * added for human-readability.
-     *
-     * @param source of the input xml.
-     * @return Document representation of the xml.
-     */
-    private Document removeXMLWhitespace(final StreamSource source) throws IOException {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Source identitySource = new StreamSource(
-                ReferenceManifestValidator.class.getClassLoader()
-                        .getResourceAsStream(IDENTITY_TRANSFORM));
-        Document doc = null;
-        try {
-            Transformer transformer = tf.newTransformer(identitySource);
-            DOMResult result = new DOMResult();
-            transformer.transform(source, result);
-            doc = (Document) result.getNode();
-        } catch (TransformerConfigurationException e) {
-            log.warn("Error configuring transformer!");
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            log.warn("Error transforming input!");
-            e.printStackTrace();
-        }
-
-        return doc;
     }
 
     /**

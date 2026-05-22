@@ -3,7 +3,9 @@ package hirs.attestationca.portal.page.utils;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
+import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
@@ -15,6 +17,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.Dice
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
+import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
@@ -316,15 +319,44 @@ public final class CertificateStringMapBuilder {
     public static HashMap<String, String>
     getCertificateAuthorityInformation(final UUID uuid,
                                        final CertificateRepository certificateRepository,
-                                       final CACredentialRepository caCertificateRepository) {
+                                       final CACredentialRepository caCertificateRepository,
+                                       final ReferenceManifestRepository referenceManifestRepository) {
 
-        if (!caCertificateRepository.existsById(uuid)) {
-            return new HashMap<>();
+        CertificateAuthorityCredential certificate = null;
+
+        if (caCertificateRepository.existsById(uuid)) {
+            certificate = caCertificateRepository.getReferenceById(uuid);
         }
-        CertificateAuthorityCredential certificate = caCertificateRepository.getReferenceById(uuid);
 
+        if (certificate == null) {
+            Iterable<ReferenceManifest> rims = referenceManifestRepository.findAll();
+            for (ReferenceManifest rim : rims) {
+                if (!rim.isBase()) {
+                    continue;
+                }
+                BaseReferenceManifest baseRim = (BaseReferenceManifest) rim;
+                List<CertificateAuthorityCredential> embeddedCerts =
+                        baseRim.getEmbeddedCertificates();
+                if (embeddedCerts == null || embeddedCerts.isEmpty()) {
+                    continue;
+                }
+                for (CertificateAuthorityCredential embeddedCert : embeddedCerts) {
+                    UUID certId = embeddedCert.getId();
+                    if (certId != null && certId.equals(uuid)) {
+                        certificate = caCertificateRepository
+                                .findBySubjectKeyIdStringAndArchiveFlag(
+                                        embeddedCert.getSubjectKeyIdString(), false);
+                        if (certificate != null) {
+                            break;
+                        }
+                    }
+                }
+                if (certificate != null) {
+                    break;
+                }
+            }
+        }
         final String notFoundMessage = "Unable to find Certificate Authority Credential with ID: " + uuid;
-
         return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository,
                 certificate,
                 notFoundMessage);

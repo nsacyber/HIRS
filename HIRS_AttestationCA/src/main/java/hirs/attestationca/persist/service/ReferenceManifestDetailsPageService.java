@@ -317,7 +317,16 @@ public class ReferenceManifestDetailsPageService {
                 }
             }
         }
-
+        List<CertificateAuthorityCredential> embeddedCertificates = baseRim.getEmbeddedCertificates();
+        if (embeddedCertificates != null && !embeddedCertificates.isEmpty()) {
+            List<String> embeddedCertIds = new ArrayList<>();
+            for (CertificateAuthorityCredential embeddedCert : embeddedCertificates) {
+                if (embeddedCert != null && embeddedCert.getId() != null) {
+                    embeddedCertIds.add(embeddedCert.getId().toString());
+                }
+            }
+            data.put("embeddedCertIds", embeddedCertIds);
+        }
         data.put("skID", referenceManifestValidator.getSubjectKeyIdentifier());
         try {
             if (referenceManifestValidator.getPublicKey() != null) {
