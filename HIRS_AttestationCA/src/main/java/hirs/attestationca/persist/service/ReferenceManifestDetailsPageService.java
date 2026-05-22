@@ -17,6 +17,7 @@ import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.persist.validation.ValidationService;
 import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
+import hirs.utils.rim.SwidTagParser;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
@@ -24,9 +25,13 @@ import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
 
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -317,12 +322,25 @@ public class ReferenceManifestDetailsPageService {
                 }
             }
         }
-        List<CertificateAuthorityCredential> embeddedCertificates = baseRim.getEmbeddedCertificates();
-        if (embeddedCertificates != null && !embeddedCertificates.isEmpty()) {
-            List<String> embeddedCertIds = new ArrayList<>();
-            for (CertificateAuthorityCredential embeddedCert : embeddedCertificates) {
-                if (embeddedCert != null && embeddedCert.getId() != null) {
-                    embeddedCertIds.add(embeddedCert.getId().toString());
+
+        List<CertificateAuthorityCredential> embeddedCertificates = new ArrayList<>();
+        List<X509Certificate> rawEmbeddedCertificates = SwidTagParser.getEmbeddedCertificates(
+                SwidTagParser.validateSwidtagSchema(SwidTagParser.removeXMLWhitespace(
+                        new StreamSource(new ByteArrayInputStream(baseRim.getRimBytes())))));
+        List<String> embeddedCertIds = new ArrayList<>();
+        if (rawEmbeddedCertificates != null && !rawEmbeddedCertificates.isEmpty()) {
+            for (X509Certificate rawEmbeddedCertificate : rawEmbeddedCertificates) {
+                try {
+                    CertificateAuthorityCredential embeddedCertificate =
+                            new CertificateAuthorityCredential(rawEmbeddedCertificate.getEncoded());
+                    embeddedCertificate.setId(UUID.randomUUID());
+                    embeddedCertificates.add(embeddedCertificate);
+                    baseRim.setEmbeddedCertificates(embeddedCertificates);
+                    referenceManifestRepository.save(baseRim);
+                    embeddedCertIds.add(embeddedCertificate.getId().toString());
+                } catch (CertificateEncodingException | IOException e) {
+                    log.error("Error creating CertificateAuthorityCredential from embedded X509"
+                            + "Certificate: {}", e.getMessage());
                 }
             }
             data.put("embeddedCertIds", embeddedCertIds);

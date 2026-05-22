@@ -19,6 +19,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.C
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
+import hirs.attestationca.persist.service.ReferenceManifestDetailsPageService;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.PciIds;
@@ -314,6 +315,7 @@ public final class CertificateStringMapBuilder {
      * @param uuid                    ID for the certificate.
      * @param certificateRepository   the certificate manager for retrieving certs.
      * @param caCertificateRepository CA Certificate repository
+     * @param referenceManifestRepository rim repository
      * @return a hash map with the certificate authority credential information.
      */
     public static HashMap<String, String>

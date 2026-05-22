@@ -42,6 +42,7 @@ public class CertificateDetailsPageController extends PageController<Certificate
      * @param certificateRepository     the certificate repository
      * @param componentResultRepository the component result repository
      * @param caCredentialRepository    the ca credential manager
+     * @param referenceManifestRepository the rim repository
      */
     @Autowired
     public CertificateDetailsPageController(final CertificateRepository certificateRepository,

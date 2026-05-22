@@ -147,20 +147,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
             parseSoftwareMeta(meta);
             parseEntity(entity);
             parseLink(link);
-            List<X509Certificate> rawEmbeddedCertificates = SwidTagParser.getEmbeddedCertificates(document);
-            if (rawEmbeddedCertificates != null && !rawEmbeddedCertificates.isEmpty()) {
-                for (X509Certificate embeddedCert : rawEmbeddedCertificates) {
-                    try {
-                        CertificateAuthorityCredential cert = new CertificateAuthorityCredential(
-                                embeddedCert.getEncoded());
-                        cert.setId(UUID.randomUUID());
-                        embeddedCertificates.add(cert);
-                    } catch (CertificateEncodingException | IOException e){
-                        log.error("Error creating CertificateAuthorityCredential from embedded X509" +
-                                "Certificate: {}", e.getMessage());
-                    }
-                }
-            }
         }
     }
 
