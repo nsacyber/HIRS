@@ -22,11 +22,14 @@ import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -326,9 +329,17 @@ public class ReferenceManifestDetailsPageService {
         }
 
         List<CertificateAuthorityCredential> embeddedCertificates = new ArrayList<>();
-        List<X509Certificate> rawEmbeddedCertificates = SwidTagParser.getEmbeddedCertificates(
-                SwidTagParser.validateSwidtagSchema(SwidTagParser.removeXMLWhitespace(
-                        new StreamSource(new ByteArrayInputStream(baseRim.getRimBytes())))));
+        List<X509Certificate> rawEmbeddedCertificates = null;
+        try {
+            rawEmbeddedCertificates = SwidTagParser.getEmbeddedCertificates(
+                    SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(baseRim.getRimBytes())));
+        } catch (ParserConfigurationException e) {
+            log.error("Error while reading RIM: {}", e.getMessage());
+            throw new IOException(e);
+        } catch (SAXException | UnmarshalException e) {
+            log.error("Error while parsing RIM: {}", e.getMessage());
+            throw new IOException(e);
+        }
         List<String> embeddedCertIds = new ArrayList<>();
         if (rawEmbeddedCertificates != null && !rawEmbeddedCertificates.isEmpty()) {
             for (X509Certificate rawEmbeddedCertificate : rawEmbeddedCertificates) {

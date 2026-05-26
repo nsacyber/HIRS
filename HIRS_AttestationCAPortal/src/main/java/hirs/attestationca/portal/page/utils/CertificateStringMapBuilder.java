@@ -330,8 +330,14 @@ public final class CertificateStringMapBuilder {
             certificate = caCertificateRepository.getReferenceById(uuid);
         }
 
-        if (certificate == null) {
-            Iterable<ReferenceManifest> rims = referenceManifestRepository.findAll();
+        if (certificate == null && referenceManifestRepository != null) {
+            Iterable<ReferenceManifest> rims;
+            try {
+                rims = referenceManifestRepository.findAll();
+            } catch (Exception e) {
+                log.warn("RIM repository unavailable during embedded cert lookup");
+                rims = Collections.emptyList();
+            }
             for (ReferenceManifest rim : rims) {
                 if (!rim.isBase()) {
                     continue;
@@ -345,12 +351,8 @@ public final class CertificateStringMapBuilder {
                 for (CertificateAuthorityCredential embeddedCert : embeddedCerts) {
                     UUID certId = embeddedCert.getId();
                     if (certId != null && certId.equals(uuid)) {
-                        certificate = caCertificateRepository
-                                .findBySubjectKeyIdStringAndArchiveFlag(
-                                        embeddedCert.getSubjectKeyIdString(), false);
-                        if (certificate != null) {
-                            break;
-                        }
+                        certificate = embeddedCert;
+                        break;
                     }
                 }
                 if (certificate != null) {

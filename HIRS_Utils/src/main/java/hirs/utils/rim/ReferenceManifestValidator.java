@@ -2,6 +2,7 @@ package hirs.utils.rim;
 
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.swid.SwidTagConstants;
+import jakarta.xml.bind.UnmarshalException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -15,8 +16,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
-import javax.security.auth.x500.X500Principal;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.KeySelector;
 import javax.xml.crypto.KeySelectorException;
@@ -32,19 +31,8 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -76,16 +64,6 @@ import java.util.stream.Stream;
  */
 @Log4j2
 public class ReferenceManifestValidator {
-    private static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
-            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
-    private static final String SIGNATURE_ALGORITHM_RSA_SHA384 =
-            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
-    private static final String SIGNATURE_ALGORITHM_RSA_SHA512 =
-	    "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
-    private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
-    private static final String SCHEMA_URL = "swid_schema.xsd";
-    private static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
-    private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     private static final String SHA256 = "SHA-256";
     private static final int EIGHT_BIT_MASK = 0xff;
     private static final int LEFT_SHIFT = 0x100;
@@ -153,7 +131,7 @@ public class ReferenceManifestValidator {
         } catch (IOException e) {
             log.error("Error while reading the RIM bytes: {}", e.getMessage());
             throw new IOException(e);
-        } catch (SAXException e) {
+        } catch (SAXException | UnmarshalException e) {
             log.error("Error while parsing the RIM bytes: {}", e.getMessage());
             throw new RuntimeException(e);
         }
@@ -174,7 +152,7 @@ public class ReferenceManifestValidator {
         } catch (IOException e) {
             log.error("Error while reading {}: {}", path, e.getMessage());
             throw new IOException(e);
-        } catch (SAXException e) {
+        } catch (SAXException | UnmarshalException e) {
             log.error("Error while parsing {}: {}", path, e.getMessage());
             throw new IOException(e);
         }
@@ -941,8 +919,8 @@ public class ReferenceManifestValidator {
          */
         public boolean areAlgorithmsEqual(final String uri, final String name) {
             return (uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
-                    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA384)
-		    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA512))
+                    || uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA384)
+		            || uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA512))
                     && name.equalsIgnoreCase("RSA");
         }
 

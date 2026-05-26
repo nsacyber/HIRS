@@ -11,12 +11,15 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -38,17 +41,23 @@ public class SwidTagParser {
      * @param doc of the input swidtag.
      * @return document validated against the schema.
      */
-    public static Document validateSwidtagSchema(final Document doc) {
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
+    public static Document validateSwidtagSchema(final Document doc) throws UnmarshalException {
+
         try (InputStream is = SwidTagParser.class.getClassLoader().getResourceAsStream(
                 SwidTagConstants.SCHEMA_URL)) {
+            if (is == null) {
+                log.error("Schema resource not found");
+                return null;
+            }
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
             Schema schema = schemaFactory.newSchema(new StreamSource(is));
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             unmarshaller.setSchema(schema);
             unmarshaller.unmarshal(doc);
+            return doc;
         } catch (UnmarshalException e) {
-            log.warn("Error validating swidtag file!");
+            throw new UnmarshalException("Error parsing Base RIM: " + e.getCause());
         } catch (IllegalArgumentException e) {
             log.warn("Input file empty.");
         } catch (JAXBException | SAXException e) {
@@ -56,7 +65,7 @@ public class SwidTagParser {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-        return doc;
+        return null;
     }
 
     /**
@@ -116,30 +125,38 @@ public class SwidTagParser {
     }
 
     /**
-     * This method strips all whitespace from an xml file, including indents and spaces
-     * added for human-readability.
+     * This method converts a byte array to a Document object.
      *
-     * @param source of the input xml.
-     * @return Document representation of the xml.
+     * @param bytes data in
+     * @return a Document object representing the data in
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
      */
-    public static Document removeXMLWhitespace(final StreamSource source) throws IOException {
-        Document doc = null;
-        try {
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Source identitySource = new StreamSource(
-                    ReferenceManifestValidator.class.getClassLoader()
-                            .getResourceAsStream(SwidTagConstants.IDENTITY_TRANSFORM));
-            Transformer transformer = tf.newTransformer(identitySource);
-            DOMResult result = new DOMResult();
-            transformer.transform(source, result);
-            doc = (Document) result.getNode();
-        } catch (TransformerConfigurationException e) {
-            log.warn("Error configuring transformer!");
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            log.warn("Error transforming input!");
-            e.printStackTrace();
-        }
-        return doc;
+    public static Document convertToDocument(final byte[] bytes)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        DocumentBuilder builder = dbf.newDocumentBuilder();
+        ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
+        return builder.parse(bytesIn);
+    }
+
+    /**
+     * This method reads a file from the system and converts it to a Document object.
+     *
+     * @param filename String
+     * @return Document object representing the file
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
+     */
+    public static Document convertToDocument(final String filename)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        DocumentBuilder builder = dbf.newDocumentBuilder();
+        File fileIn = new File(filename);
+        return builder.parse(fileIn);
     }
 }

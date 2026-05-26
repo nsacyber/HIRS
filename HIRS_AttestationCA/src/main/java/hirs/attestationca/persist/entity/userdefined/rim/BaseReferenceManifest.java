@@ -7,6 +7,7 @@ import hirs.utils.rim.SwidTagParser;
 import hirs.utils.swid.SwidTagConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.xml.bind.UnmarshalException;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -16,15 +17,13 @@ import lombok.extern.log4j.Log4j2;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  *
@@ -100,7 +99,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * @param rimBytes - the file content of the uploaded file.
      * @throws IOException - thrown if file cannot be read.
      */
-    public BaseReferenceManifest(final byte[] rimBytes) throws IOException {
+    public BaseReferenceManifest(final byte[] rimBytes) throws IOException, ParserConfigurationException, SAXException, UnmarshalException {
         this("", rimBytes);
     }
 
@@ -113,12 +112,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * @throws IOException if unable to read file
      */
     public BaseReferenceManifest(final String fileName, final byte[] rimBytes)
-            throws IOException {
+            throws IOException, ParserConfigurationException, SAXException, UnmarshalException {
         super(rimBytes);
         this.setRimType(BASE_RIM);
         this.setFileName(fileName);
-        Document document = SwidTagParser.validateSwidtagSchema(SwidTagParser.removeXMLWhitespace(new StreamSource(
-                new ByteArrayInputStream(rimBytes))));
+        Document document = SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(rimBytes));
         Element softwareIdentity;
         Element meta;
         Element entity;
@@ -238,10 +236,15 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private Element getDirectoryTag(final ByteArrayInputStream byteArrayInputStream) {
         Document document = null;
         try {
-            document = SwidTagParser.validateSwidtagSchema(SwidTagParser.removeXMLWhitespace(
-                    new StreamSource(byteArrayInputStream)));
+            document = SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(
+                    byteArrayInputStream.readAllBytes()));
         } catch (IOException e) {
             log.error(e.getMessage());
+        } catch (ParserConfigurationException e) {
+            log.error("Error encountered setting up to parse rim bytes: {}", e.getMessage());
+            throw new RuntimeException(e);
+        } catch (SAXException | UnmarshalException e) {
+            log.error("Error while parsing Base RIM: {}", e.getMessage());
         }
         if (document != null) {
             Element softwareIdentity =

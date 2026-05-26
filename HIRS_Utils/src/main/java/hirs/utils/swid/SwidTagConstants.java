@@ -17,6 +17,10 @@ public final class SwidTagConstants {
     public static final String DEFAULT_ENGLISH = "en";
     public static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
             "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+    public static final String SIGNATURE_ALGORITHM_RSA_SHA384 =
+            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
+    public static final String SIGNATURE_ALGORITHM_RSA_SHA512 =
+            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
     public static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     public static final String SCHEMA_URL = "swid_schema.xsd";
