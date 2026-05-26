@@ -5,27 +5,17 @@ import hirs.utils.rim.unsignedRim.GenericRim;
 import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
 import hirs.utils.swid.SwidTagConstants;
 import hirs.utils.swid.SwidTagGateway;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.UnmarshalException;
-import jakarta.xml.bind.Unmarshaller;
 import lombok.NoArgsConstructor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import java.io.ByteArrayInputStream;
-import java.io.File;
+import javax.xml.transform.dom.DOMSource;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -38,12 +28,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class PcClientRim extends SwidTagGateway implements GenericRim {
 
-    private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
-    private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     private final List<Measurement> measurements = new ArrayList<>();
-    private boolean isValid = false;
-    private Unmarshaller unmarshaller;
-    private Schema schema;
     private Document rim;
     // private Measurement measurement = new Measurement();
     private String manufacturer = "";
@@ -52,6 +37,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     private String revision = "";
     private String digest = "";
     private UUID tagUuid = null; // private String tagId = "";
+    private boolean isValid;
 
     /**
      * Validate a PC Client RIM.
@@ -65,7 +51,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
      */
     public boolean validate(final String verifyFile, final String certificateFile, final String rimel,
                             final String trustStore) throws IOException {
-        boolean valid = false;
+        boolean valid;
         ReferenceManifestValidator validator = new ReferenceManifestValidator();
         validator.setRim(verifyFile);
         validator.setTrustStoreFile(trustStore);
@@ -75,12 +61,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
             validator.setSupportRimDirectory(rimel);
         }
 
-        File rimFile = new File(verifyFile);
-
-        byte[] rimBytes = Files.readAllBytes(rimFile.toPath());
-
-        rim = validateSwidtagSchema(
-                removeXMLWhitespace(new StreamSource(new ByteArrayInputStream(rimBytes))));
+        rim = copyDoc(validator.getRim());
 
         NodeList si = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
                 SwidTagConstants.SOFTWARE_IDENTITY);
@@ -130,8 +111,27 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
         } else {
             throw new RuntimeException("Failed to verify " + verifyFile);
         }
+
         isValid = valid;
         return valid;
+    }
+
+    /**
+     * This method clones a Document object's data into a new Document
+     * @param doc to copy from
+     * @return a new, identical doc
+     */
+    private Document copyDoc(Document doc) {
+        try {
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer t = tf.newTransformer();
+            DOMSource originalDoc = new DOMSource(doc);
+            DOMResult newDoc = new DOMResult();
+            t.transform(originalDoc, newDoc);
+            return (Document) newDoc.getNode();
+        } catch (TransformerException e) {
+            throw new RuntimeException("Error while copying XML for validation: " + e.getMessage());
+        }
     }
 
     /**
@@ -204,16 +204,6 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     }
 
     /**
-     * Default isValid.
-     *
-     * @return n/a
-     */
-    @Override
-    public boolean isValid() {
-        return isValid;
-    }
-
-    /**
      * Default getReferenceMeasurements.
      *
      * @return n/a
@@ -234,6 +224,16 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     }
 
     /**
+      * Default isValid.
+      *
+      * @return n/a
+      */
+    @Override
+    public boolean isValid() {
+        return isValid;
+    }
+
+    /**
      * Default toString.
      *
      * @return n/a
@@ -241,54 +241,5 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     @Override
     public String toString() {
         return "";
-    }
-
-    /**
-     * This method validates the Document against the schema.
-     *
-     * @param doc of the input swidtag.
-     * @return document validated against the schema.
-     */
-    private Document validateSwidtagSchema(final Document doc) {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
-            unmarshaller = jaxbContext.createUnmarshaller();
-            unmarshaller.setSchema(schema);
-            unmarshaller.unmarshal(doc);
-        } catch (UnmarshalException e) {
-            // log.warn("Error validating swidtag file!");
-        } catch (IllegalArgumentException e) {
-            // log.warn("Input file empty.");
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-        return doc;
-    }
-
-    /**
-     * This method strips all whitespace from an xml file, including indents and spaces
-     * added for human-readability.
-     *
-     * @param source of the input xml.
-     * @return Document representation of the xml.
-     */
-    private Document removeXMLWhitespace(final StreamSource source) {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Source identitySource = new StreamSource(
-                ReferenceManifestValidator.class.getClassLoader().getResourceAsStream(IDENTITY_TRANSFORM));
-        Document doc = null;
-        try {
-            Transformer transformer = tf.newTransformer(identitySource);
-            DOMResult result = new DOMResult();
-            transformer.transform(source, result);
-            doc = (Document) result.getNode();
-        } catch (TransformerConfigurationException e) {
-//log.warn("Error configuring transformer!");
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            // log.warn("Error transforming input!");
-            e.printStackTrace();
-        }
-        return doc;
     }
 }

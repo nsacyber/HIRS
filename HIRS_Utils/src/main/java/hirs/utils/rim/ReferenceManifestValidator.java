@@ -1,5 +1,6 @@
 package hirs.utils.rim;
 
+import hirs.utils.BouncyCastleUtils;
 import hirs.utils.swid.SwidTagConstants;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +13,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.security.auth.x500.X500Principal;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.KeySelector;
@@ -29,6 +32,15 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -66,11 +78,20 @@ import java.util.stream.Stream;
 public class ReferenceManifestValidator {
     private static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
             "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+    private static final String SIGNATURE_ALGORITHM_RSA_SHA384 =
+            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
+    private static final String SIGNATURE_ALGORITHM_RSA_SHA512 =
+	    "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
+    private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
+    private static final String SCHEMA_URL = "swid_schema.xsd";
+    private static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+    private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     private static final String SHA256 = "SHA-256";
     private static final int EIGHT_BIT_MASK = 0xff;
     private static final int LEFT_SHIFT = 0x100;
     private static final int RADIX = 16;
 
+    @Getter
     private Document rim;
 
     @Getter
@@ -123,12 +144,18 @@ public class ReferenceManifestValidator {
      *
      * @param rimBytes ReferenceManifest object bytes
      */
-    public void setRim(final byte[] rimBytes) {
+    public void setRim(final byte[] rimBytes) throws IOException {
         try {
-            this.rim = SwidTagParser.validateSwidtagSchema(SwidTagParser.removeXMLWhitespace(new StreamSource(
-                    new ByteArrayInputStream(rimBytes))));
+            this.rim = SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(rimBytes));
+        } catch (ParserConfigurationException e) {
+            log.error("Error setting up to parse RIM bytes: {}", e.getMessage());
+            throw new RuntimeException(e);
         } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes using the provided rim bytes: {}", e.getMessage());
+            log.error("Error while reading the RIM bytes: {}", e.getMessage());
+            throw new IOException(e);
+        } catch (SAXException e) {
+            log.error("Error while parsing the RIM bytes: {}", e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -138,13 +165,18 @@ public class ReferenceManifestValidator {
      *
      * @param path String filepath
      */
-    public void setRim(final String path) {
-        File swidtagFile = new File(path);
+    public void setRim(final String path) throws IOException {
         try {
-            Document doc = SwidTagParser.validateSwidtagSchema(SwidTagParser.removeXMLWhitespace(new StreamSource(swidtagFile)));
-            this.rim = doc;
+            this.rim = SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(path));
+        } catch (ParserConfigurationException e) {
+            log.error("Error encountered setting up to parse rim bytes: {}", e.getMessage());
+            throw new RuntimeException(e);
         } catch (IOException e) {
-            log.error("Error while unmarshalling rim bytes using the provided file path: {}", e.getMessage());
+            log.error("Error while reading {}: {}", path, e.getMessage());
+            throw new IOException(e);
+        } catch (SAXException e) {
+            log.error("Error while parsing {}: {}", path, e.getMessage());
+            throw new IOException(e);
         }
     }
 
@@ -621,7 +653,7 @@ public class ReferenceManifestValidator {
             }
         } while (isChainCertValid);
 
-        log.error("CA chain validation failed to validate {}, {}",
+        log.debug("Current  trust store did not validate CA chain for {}, {}.",
                 chainCert.getSubjectX500Principal().getName(), errorMessage);
         return false;
     }
@@ -655,8 +687,9 @@ public class ReferenceManifestValidator {
         if (cert == null || issuer == null) {
             throw new Exception("Cannot verify issuer, null certificate received");
         }
-        X500Principal issuerDN = new X500Principal(cert.getIssuerX500Principal().getName());
-        return issuer.getSubjectX500Principal().equals(issuerDN);
+        return BouncyCastleUtils.x500NameCompare(
+                cert.getIssuerX500Principal().getName(),
+                issuer.getSubjectX500Principal().getName());
     }
 
     /**
@@ -857,8 +890,9 @@ public class ReferenceManifestValidator {
                         }
                         if (object instanceof X509Certificate embeddedCert) {
                             try {
-                                if (embeddedCert.getSubjectX500Principal().getName().equals(subjectName)
-                                        || isCertChainValid(embeddedCert)) {
+                                if ((subjectName.isEmpty() || BouncyCastleUtils.x500NameCompare(
+                                        embeddedCert.getSubjectX500Principal().getName(), subjectName))
+                                        && isCertChainValid(embeddedCert)) {
                                     publicKey = embeddedCert.getPublicKey();
                                     signingCert = embeddedCert;
                                     log.info("Certificate chain valid.");
@@ -906,7 +940,9 @@ public class ReferenceManifestValidator {
          * @return true if both match, false otherwise
          */
         public boolean areAlgorithmsEqual(final String uri, final String name) {
-            return uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
+            return (uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
+                    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA384)
+		    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA512))
                     && name.equalsIgnoreCase("RSA");
         }
 

@@ -55,7 +55,7 @@ public class TestSwidTagGateway {
      * Sets the variables used for the test.
      */
     @BeforeAll
-    public static void setUp() {
+    public static void setUp(){
         gateway = new SwidTagGateway();
         gateway.setRimEventLog(SUPPORT_RIM_FILE);
         gateway.setAttributesFile(ATTRIBUTES_FILE);
@@ -81,7 +81,7 @@ public class TestSwidTagGateway {
      * where RimSignCert.pem has the AIA extension.
      */
     @Test
-    public void testCreateBaseUserCertNotEmbedded() {
+    public void testCreateBaseUserCertNotEmbedded() throws IOException {
         gateway.setDefaultCredentials(false);
         gateway.setPemCertificateFile(signingCertFile);
         gateway.setPemPrivateKeyFile(privateKeyFile);
@@ -101,7 +101,7 @@ public class TestSwidTagGateway {
      * -v [base RIM] -l TpmLog.bin -t RimCertChain.pem
      */
     @Test
-    public void testCreateBaseUserCertEmbedded() {
+    public void testCreateBaseUserCertEmbedded() throws IOException  {
         gateway.setDefaultCredentials(false);
         gateway.setPemCertificateFile(signingCertFile);
         gateway.setPemPrivateKeyFile(privateKeyFile);
@@ -120,7 +120,7 @@ public class TestSwidTagGateway {
      * -c base -l TpmLog.bin -d
      */
     @Test
-    public void testCreateBaseDefaultCert() {
+    public void testCreateBaseDefaultCert() throws IOException {
         gateway.setDefaultCredentials(true);
         gateway.setJksTruststoreFile(jksKeystoreFile);
         gateway.generateSwidTag(defaultOutput);
@@ -137,7 +137,7 @@ public class TestSwidTagGateway {
      * -c base -l TpmLog.bin -d --timestamp rfc3339 2023-01-01T00:00:00Z
      */
     @Test
-    public void testCreateTimestampRfc3339() {
+    public void testCreateTimestampRfc3339() throws IOException {
         gateway.setDefaultCredentials(true);
         gateway.setJksTruststoreFile(jksKeystoreFile);
         gateway.setTimestampFormat("RFC3339");
@@ -156,7 +156,7 @@ public class TestSwidTagGateway {
      * -c base -l TpmLog.bin -d --timestamp rfc3852 countersignature.file
      */
     @Test
-    public void testCreateTimestampRfc3852() {
+    public void testCreateTimestampRfc3852() throws IOException {
         gateway.setDefaultCredentials(true);
         gateway.setJksTruststoreFile(jksKeystoreFile);
         gateway.setTimestampFormat("RFC3852");
@@ -174,7 +174,7 @@ public class TestSwidTagGateway {
      * This test corresponds to the arguments -v <path>.
      */
     @Test
-    public void testValidateSwidtagFile() {
+    public void testValidateSwidtagFile() throws IOException {
         final String filepath = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
                 .getResource(baseUserCert)).getPath();
         System.out.println("Validating file at " + filepath);

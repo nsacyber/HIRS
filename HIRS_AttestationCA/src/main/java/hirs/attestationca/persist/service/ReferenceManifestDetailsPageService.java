@@ -299,10 +299,12 @@ public class ReferenceManifestDetailsPageService {
             caCert = (CertificateAuthorityCredential) certificate;
             KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
             try {
+                Set<CertificateAuthorityCredential> caChain = ValidationService.getCaChainRec(caCert,
+                        Collections.emptySet(),
+                        caCertificateRepository);
+                caChain.add(caCert);
                 List<X509Certificate> truststore =
-                        convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
-                                Collections.emptySet(),
-                                caCertificateRepository));
+                        convertCACsToX509Certificates(caChain);
                 referenceManifestValidator.setTrustStore(truststore);
             } catch (IOException e) {
                 log.error("Error building CA chain for {}: {}", caCert.getSubjectKeyIdentifier(),
