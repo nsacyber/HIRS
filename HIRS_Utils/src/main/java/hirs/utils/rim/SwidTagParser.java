@@ -32,7 +32,7 @@ import java.util.List;
  * This class handles parsing and validation Swidtag files.
  */
 @Log4j2
-public class SwidTagParser {
+public final class SwidTagParser {
 
     /**
      * Private constructor for utility class.

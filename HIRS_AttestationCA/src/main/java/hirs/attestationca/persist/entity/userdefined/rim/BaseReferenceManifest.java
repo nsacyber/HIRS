@@ -99,7 +99,8 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * @param rimBytes - the file content of the uploaded file.
      * @throws IOException - thrown if file cannot be read.
      */
-    public BaseReferenceManifest(final byte[] rimBytes) throws IOException, ParserConfigurationException, SAXException, UnmarshalException {
+    public BaseReferenceManifest(final byte[] rimBytes) throws IOException, ParserConfigurationException,
+            SAXException, UnmarshalException {
         this("", rimBytes);
     }
 

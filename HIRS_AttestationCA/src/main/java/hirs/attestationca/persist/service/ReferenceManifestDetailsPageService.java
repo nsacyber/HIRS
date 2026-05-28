@@ -332,7 +332,8 @@ public class ReferenceManifestDetailsPageService {
             KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
             try {
                 for (CertificateAuthorityCredential embedded : embeddedCertificates) {
-                    keystore.setCertificateEntry("embedded-" + Arrays.toString(embedded.getSubjectKeyIdentifier()), embedded.getX509Certificate());
+                    keystore.setCertificateEntry("embedded-" + Arrays.toString(
+                            embedded.getSubjectKeyIdentifier()), embedded.getX509Certificate());
                 }
             } catch (KeyStoreException e) {
                 log.error("Error adding embedded certificates to keystore: {}", e.getMessage());
@@ -373,8 +374,8 @@ public class ReferenceManifestDetailsPageService {
             if (signingCert != null) {
                 for (Certificate certificate : certificates) {
                     caCert = (CertificateAuthorityCredential) certificate;
-                    if (caCert.getX509Certificate() != null &&
-                            Arrays.equals(
+                    if (caCert.getX509Certificate() != null
+                            && Arrays.equals(
                                     caCert.getX509Certificate().getEncoded(),
                                     signingCert.getEncoded()
                             )) {
