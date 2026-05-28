@@ -543,7 +543,6 @@ public class ReferenceManifestValidator {
             if (isValid) {
                 String successMessage = "XML signature verified.";
                 log.info(successMessage);
-                System.out.println(successMessage);
                 return true;
             } else {
                 whySignatureInvalid(signature, context);
