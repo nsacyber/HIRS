@@ -14,7 +14,6 @@ import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -74,7 +73,7 @@ public class SwidTagParser {
      *
      * @return the embedded X509Certificate if present, null otherwise.
      */
-    public static List<X509Certificate> getEmbeddedCertificates(Document rim) {
+    public static List<X509Certificate> getEmbeddedX509Certificates(Document rim) {
         if (rim == null) {
             log.warn("Cannot extract embedded certificate; RIM Document is null.");
             return null;

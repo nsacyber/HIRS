@@ -51,6 +51,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -99,6 +100,9 @@ public class ReferenceManifestValidator {
     @Getter
     private String validationErrorMessage;
 
+    @Getter
+    private X509Certificate signingCertificate;
+
     /**
      * This default constructor creates the Schema object from SCHEMA_URL immediately to save
      * time during validation calls later.
@@ -110,7 +114,6 @@ public class ReferenceManifestValidator {
         signatureValid = false;
         supportRimValid = false;
         supportRimDirectory = "";
-        publicKey = null;
         trustStoreFile = null;
         trustStore = null;
         subjectKeyIdentifier = "(not found)";
@@ -164,7 +167,6 @@ public class ReferenceManifestValidator {
      * or the RIM's subject key identifier.  If the cert is matched then validation proceeds,
      * otherwise validation ends.
      *
-     * @param publicKey          public key from the CA credential
      * @param subjectKeyIdString string version of the subjet key id of the CA credential
      * @return true if the signature element is validated, false otherwise
      */
@@ -187,15 +189,23 @@ public class ReferenceManifestValidator {
 
             NodeList certElement = getXmlElement(XMLSignature.XMLNS, "X509Certificate");
             if (certElement.getLength() > 0) {
-                X509Certificate embeddedCert = SwidTagParser.parseCertFromPEMString(
-                        certElement.item(0).getTextContent());
-                if (embeddedCert != null) {
-                    if (isCertChainValid(embeddedCert)) {
-                        context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
-                        subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
-                    } else {
-                        validationErrorMessage += "embedded cert chain invalid.";
+                List<X509Certificate> embeddedCerts =
+                        SwidTagParser.getEmbeddedX509Certificates(rim);
+                if (embeddedCerts != null && !embeddedCerts.isEmpty()) {
+                    for (X509Certificate embeddedCert : embeddedCerts) {
+                        if (isCertChainValid(embeddedCert)) {
+                            context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
+                            subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
+                            validationErrorMessage = "";
+                            this.publicKey = publicKey;
+                            signatureValid = validateSignedXMLDocument(context);
+                            if (signatureValid) {
+                                signingCertificate = embeddedCert;
+                                return true;
+                            }
+                        }
                     }
+                    validationErrorMessage += "embedded certs present but signature validation failed";
                 } else {
                     validationErrorMessage += "embedded cert is null.";
                 }
@@ -869,8 +879,7 @@ public class ReferenceManifestValidator {
                         if (object instanceof X509Certificate embeddedCert) {
                             try {
                                 if ((subjectName.isEmpty() || BouncyCastleUtils.x500NameCompare(
-                                        embeddedCert.getSubjectX500Principal().getName(), subjectName))
-                                        && isCertChainValid(embeddedCert)) {
+                                        embeddedCert.getSubjectX500Principal().getName(), subjectName))) {
                                     publicKey = embeddedCert.getPublicKey();
                                     signingCert = embeddedCert;
                                     log.info("Certificate chain valid.");

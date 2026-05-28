@@ -89,7 +89,8 @@ public final class CertificateStringMapBuilder {
     public static HashMap<String, String> getGeneralCertificateInfo(
             final Certificate certificate,
             final CertificateRepository certificateRepository,
-            final CACredentialRepository caCertificateRepository) {
+            final CACredentialRepository caCertificateRepository,
+            final List<CertificateAuthorityCredential> embeddedCertificates) {
         HashMap<String, String> data = new HashMap<>();
         Map<String, String> ekuMap = getExtendedKeyUsageMap();
 
@@ -184,7 +185,7 @@ public final class CertificateStringMapBuilder {
                 //Get the missing certificate chain for not self sign
                 Certificate missingCert = null;
                 try {
-                    missingCert = containsAllChain(certificate, caCertificateRepository);
+                    missingCert = containsAllChain(certificate, caCertificateRepository, embeddedCertificates);
                 } catch (NonUniqueSKIException e) {
                     data.put("missingChainIssuer",
                             "Chain contains Root CA whose SKI is non-unique within CA repository.");
@@ -197,10 +198,11 @@ public final class CertificateStringMapBuilder {
                 }
 
                 // Match AKI against SKI
+                CertificateAuthorityCredential keyIdMatch = null;
                 if (certificate.getAuthorityKeyIdentifier() != null
                         && !certificate.getAuthorityKeyIdentifier().isEmpty()) {
                     try {
-                        CertificateAuthorityCredential keyIdMatch = caCertificateRepository
+                        keyIdMatch = caCertificateRepository
                                 .findBySubjectKeyIdStringAndArchiveFlag(
                                         certificate.getAuthorityKeyIdentifier(), false);
                         if (keyIdMatch != null) {
@@ -211,11 +213,28 @@ public final class CertificateStringMapBuilder {
                         log.error("Duplicate Root CA SKI detected while matching AKI to SKI: {}",
                                 certificate.getAuthorityKeyIdentifier(), e);
                     }
+                    if (keyIdMatch == null && embeddedCertificates != null) {
+                        keyIdMatch = embeddedCertificates.stream()
+                                .filter(cert -> certificate.getAuthorityKeyIdentifier().equals(cert.getSubjectKeyIdString()))
+                                .findFirst()
+                                .orElse(null);
+                    }
+                    if (keyIdMatch != null && keyIdMatch.getId() != null) {
+                        data.put("issuerID", keyIdMatch.getId().toString());
+                        return data;
+                    }
                 }
 
                 // If no AKI SKI match found, fall back on DN match
                 List<Certificate> certificates = certificateRepository.findBySubjectSorted(
                         certificate.getIssuerSorted(), "CertificateAuthorityCredential");
+                if (embeddedCertificates != null) {
+                    embeddedCertificates.stream()
+                            .filter(cert -> certificate.getIssuerSorted() != null
+                                    ? certificate.getIssuerSorted().equals(cert.getSubjectSorted())
+                                    : certificate.getIssuer().equals(cert.getSubject()))
+                            .forEach(certificates::add);
+                }
                 //Find all certificates that could be the issuer certificate based on subject name
                 for (Certificate issuerCert : certificates) {
                     try {
@@ -250,7 +269,8 @@ public final class CertificateStringMapBuilder {
      */
     public static Certificate containsAllChain(
             final Certificate certificate,
-            final CACredentialRepository caCredentialRepository) {
+            final CACredentialRepository caCredentialRepository,
+            final List<CertificateAuthorityCredential> embeddedCertificates) {
         List<CertificateAuthorityCredential> issuerCertificates = new ArrayList<>();
         CertificateAuthorityCredential skiCA = null;
         String issuerResult;
@@ -268,6 +288,12 @@ public final class CertificateStringMapBuilder {
                         "Duplicate Root CA SKI detected in CA Credential Repository: "
                                 + certificate.getAuthorityKeyIdentifier(), e);
             }
+            if (skiCA == null && embeddedCertificates != null) {
+                skiCA = embeddedCertificates.stream()
+                        .filter(cert -> certificate.getAuthorityKeyIdentifier().equals(cert.getSubjectKeyIdString()))
+                        .findFirst()
+                        .orElse(null);
+            }
         } else {
             log.error("Certificate ({}) for {} has no authority key identifier.",
                     certificate.getClass(), certificate.getSubject());
@@ -279,10 +305,20 @@ public final class CertificateStringMapBuilder {
                 //Get certificates by subject
                 issuerCertificates =
                         caCredentialRepository.findBySubjectAndArchiveFlag(certificate.getIssuer(), false);
+                if (embeddedCertificates != null) {
+                    embeddedCertificates.stream()
+                            .filter(cert -> certificate.getIssuer().equals(cert.getSubject()))
+                            .forEach(issuerCertificates::add);
+                }
             } else {
                 //Get certificates by subject organization
                 issuerCertificates = caCredentialRepository.findBySubjectSortedAndArchiveFlag(
                         certificate.getIssuerSorted(), false);
+                if (embeddedCertificates != null) {
+                    embeddedCertificates.stream()
+                            .filter(cert -> certificate.getIssuerSorted().equals(cert.getSubjectSorted()))
+                            .forEach(issuerCertificates::add);
+                }
             }
         } else {
             issuerCertificates.add(skiCA);
@@ -298,7 +334,7 @@ public final class CertificateStringMapBuilder {
                             issuerCert.getSubject())) {
                         return null;
                     }
-                    return containsAllChain(issuerCert, caCredentialRepository);
+                    return containsAllChain(issuerCert, caCredentialRepository, embeddedCertificates);
                 }
             } catch (IOException ioEx) {
                 log.error(ioEx);
@@ -361,9 +397,25 @@ public final class CertificateStringMapBuilder {
             }
         }
         final String notFoundMessage = "Unable to find Certificate Authority Credential with ID: " + uuid;
+        List<CertificateAuthorityCredential> embeddedCertificates = Collections.emptyList();
+        if (referenceManifestRepository != null) {
+            for (ReferenceManifest rim : referenceManifestRepository.findAll()) {
+                if (!(rim instanceof BaseReferenceManifest baseRim)) {
+                    continue;
+                }
+                List<CertificateAuthorityCredential> possibleEmbeddedCerts = baseRim.getEmbeddedCertificates();
+                if (possibleEmbeddedCerts == null || possibleEmbeddedCerts.isEmpty()) {
+                    continue;
+                }
+                boolean contains = possibleEmbeddedCerts.stream()
+                        .anyMatch(c -> uuid.equals(c.getId()));
+                if (contains) {
+                    embeddedCertificates = possibleEmbeddedCerts;
+                }
+            }
+        }
         return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository,
-                certificate,
-                notFoundMessage);
+                certificate, embeddedCertificates, notFoundMessage);
     }
 
     /**
@@ -379,6 +431,7 @@ public final class CertificateStringMapBuilder {
             final CertificateRepository certificateRepository,
             final CACredentialRepository caCertificateRepository,
             final CertificateAuthorityCredential certificateAuthorityCredential,
+            final List<CertificateAuthorityCredential> embeddedCertificates,
             final String notFoundMessage) {
 
         if (certificateAuthorityCredential == null) {
@@ -388,7 +441,7 @@ public final class CertificateStringMapBuilder {
 
         HashMap<String, String> data =
                 new HashMap<>(getGeneralCertificateInfo(certificateAuthorityCredential, certificateRepository,
-                        caCertificateRepository));
+                        caCertificateRepository, embeddedCertificates));
 
         data.put("subjectKeyIdentifier", Arrays.toString(certificateAuthorityCredential.getSubjectKeyIdentifier()));
         //x509 credential version
@@ -415,8 +468,8 @@ public final class CertificateStringMapBuilder {
                 (EndorsementCredential) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
-            data.putAll(
-                    getGeneralCertificateInfo(certificate, certificateRepository, caCertificateRepository));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository,
+                    caCertificateRepository, Collections.emptyList()));
             // Set extra fields
             data.put("manufacturer", certificate.getManufacturer());
             data.put("model", certificate.getModel());
@@ -484,8 +537,8 @@ public final class CertificateStringMapBuilder {
         PlatformCredential certificate = (PlatformCredential) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
-            data.putAll(
-                    getGeneralCertificateInfo(certificate, certificateRepository, caCertificateRepository));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository,
+                            caCertificateRepository, Collections.emptyList()));
             data.put("credentialType", certificate.getCredentialType());
             data.put("platformType", certificate.getPlatformChainType());
             data.put("manufacturer", certificate.getManufacturer());
@@ -724,8 +777,8 @@ public final class CertificateStringMapBuilder {
                 (IssuedAttestationCertificate) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
-            data.putAll(
-                    getGeneralCertificateInfo(certificate, certificateRepository, caCredentialRepository));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository,
+                    caCredentialRepository, Collections.emptyList()));
 
             // add endorsement credential ID if not null
             if (certificate.getEndorsementCredential() != null) {
@@ -791,8 +844,8 @@ public final class CertificateStringMapBuilder {
         IDevIDCertificate certificate = (IDevIDCertificate) certificateRepository.getCertificate(uuid);
 
         if (certificate != null) {
-            data.putAll(
-                    getGeneralCertificateInfo(certificate, certificateRepository, caCredentialRepository));
+            data.putAll(getGeneralCertificateInfo(certificate, certificateRepository,
+                    caCredentialRepository, Collections.emptyList()));
 
             if (certificate.getHwType() != null) {
                 data.put("hwType", certificate.getHwType());

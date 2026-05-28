@@ -26,14 +26,12 @@ import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.stream.StreamSource;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -291,47 +289,10 @@ public class ReferenceManifestDetailsPageService {
             data.put("pcrList", support.getExpectedPCRList());
         }
 
-        List<Certificate> certificates = certificateRepository.findByType("CertificateAuthorityCredential");
-
-        CertificateAuthorityCredential caCert;
-
-        //Report invalid signature unless referenceManifestValidator validates it and cert path is valid
-        data.put("signatureValid", false);
-
-        for (Certificate certificate : certificates) {
-            caCert = (CertificateAuthorityCredential) certificate;
-            KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
-            try {
-                Set<CertificateAuthorityCredential> caChain = ValidationService.getCaChainRec(caCert,
-                        Collections.emptySet(),
-                        caCertificateRepository);
-                caChain.add(caCert);
-                List<X509Certificate> truststore =
-                        convertCACsToX509Certificates(caChain);
-                referenceManifestValidator.setTrustStore(truststore);
-            } catch (IOException e) {
-                log.error("Error building CA chain for {}: {}", caCert.getSubjectKeyIdentifier(),
-                        e.getMessage());
-            }
-
-            if (referenceManifestValidator.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
-                    caCert.getSubjectKeyIdString())) {
-                try {
-                    if (SupplyChainCredentialValidator.verifyCertificate(
-                            caCert.getX509Certificate(), keystore)) {
-                        data.replace("signatureValid", true);
-                        break;
-                    }
-                } catch (SupplyChainValidatorException scvEx) {
-                    log.error("Error verifying cert chain: {}", scvEx.getMessage());
-                }
-            }
-        }
-
         List<CertificateAuthorityCredential> embeddedCertificates = new ArrayList<>();
-        List<X509Certificate> rawEmbeddedCertificates = null;
+        List<X509Certificate> rawEmbeddedCertificates;
         try {
-            rawEmbeddedCertificates = SwidTagParser.getEmbeddedCertificates(
+            rawEmbeddedCertificates = SwidTagParser.getEmbeddedX509Certificates(
                     SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(baseRim.getRimBytes())));
         } catch (ParserConfigurationException e) {
             log.error("Error while reading RIM: {}", e.getMessage());
@@ -357,15 +318,78 @@ public class ReferenceManifestDetailsPageService {
                 }
             }
             data.put("embeddedCertIds", embeddedCertIds);
+
         }
+        List<Certificate> certificates = new ArrayList<>(
+                certificateRepository.findByType("CertificateAuthorityCredential"));
+        certificates.addAll(embeddedCertificates);
+
+        //Report invalid signature unless referenceManifestValidator validates it and cert path is valid
+        data.put("signatureValid", false);
+        CertificateAuthorityCredential caCert;
+        for (Certificate certificate : certificates) {
+            caCert = (CertificateAuthorityCredential) certificate;
+            KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
+            try {
+                for (CertificateAuthorityCredential embedded : embeddedCertificates) {
+                    keystore.setCertificateEntry("embedded-" + Arrays.toString(embedded.getSubjectKeyIdentifier()), embedded.getX509Certificate());
+                }
+            } catch (KeyStoreException e) {
+                log.error("Error adding embedded certificates to keystore: {}", e.getMessage());
+            }
+            try {
+                Set<CertificateAuthorityCredential> caChain = ValidationService.getCaChainRec(caCert,
+                        Collections.emptySet(),
+                        caCertificateRepository);
+                caChain.add(caCert);
+                List<X509Certificate> truststore =
+                        convertCACsToX509Certificates(caChain);
+                if (rawEmbeddedCertificates != null) {
+                    truststore.addAll(rawEmbeddedCertificates);
+                }
+                referenceManifestValidator.setTrustStore(truststore);
+            } catch (IOException e) {
+                log.error("Error building CA chain for {}: {}", caCert.getSubjectKeyIdentifier(),
+                        e.getMessage());
+            }
+
+            if (referenceManifestValidator.validateXmlSignature(caCert.getX509Certificate().getPublicKey(),
+                    caCert.getSubjectKeyIdString())) {
+                try {
+                    if (SupplyChainCredentialValidator.verifyCertificate(
+                            caCert.getX509Certificate(), keystore)) {
+                        data.replace("signatureValid", true);
+                        break;
+                    }
+                } catch (SupplyChainValidatorException scvEx) {
+                    log.error("Error verifying cert chain: {}", scvEx.getMessage());
+                }
+            }
+        }
+
         data.put("skID", referenceManifestValidator.getSubjectKeyIdentifier());
         try {
-            if (referenceManifestValidator.getPublicKey() != null) {
+            X509Certificate signingCert = referenceManifestValidator.getSigningCertificate();
+            if (signingCert != null) {
                 for (Certificate certificate : certificates) {
                     caCert = (CertificateAuthorityCredential) certificate;
-                    if (Arrays.equals(caCert.getEncodedPublicKey(),
-                            referenceManifestValidator.getPublicKey().getEncoded())) {
+                    if (caCert.getX509Certificate() != null &&
+                            Arrays.equals(
+                                    caCert.getX509Certificate().getEncoded(),
+                                    signingCert.getEncoded()
+                            )) {
                         data.put("issuerID", caCert.getId().toString());
+                        break;
+                    }
+                }
+            } else {
+                if (referenceManifestValidator.getPublicKey() != null) {
+                    for (Certificate certificate : certificates) {
+                        caCert = (CertificateAuthorityCredential) certificate;
+                        if (Arrays.equals(caCert.getEncodedPublicKey(),
+                                referenceManifestValidator.getPublicKey().getEncoded())) {
+                            data.put("issuerID", caCert.getId().toString());
+                        }
                     }
                 }
             }
