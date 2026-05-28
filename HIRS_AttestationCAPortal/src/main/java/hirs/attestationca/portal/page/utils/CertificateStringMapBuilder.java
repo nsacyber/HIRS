@@ -19,7 +19,6 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.C
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
-import hirs.attestationca.persist.service.ReferenceManifestDetailsPageService;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.PciIds;
@@ -84,6 +83,7 @@ public final class CertificateStringMapBuilder {
      * @param certificate             certificate to get the general information.
      * @param caCertificateRepository CA Certificate repository
      * @param certificateRepository   the certificate repository for retrieving certs.
+     * @param embeddedCertificates    embedded certificates extracted from a rim
      * @return a hash map with the general certificate information.
      */
     public static HashMap<String, String> getGeneralCertificateInfo(
@@ -215,9 +215,8 @@ public final class CertificateStringMapBuilder {
                     }
                     if (keyIdMatch == null && embeddedCertificates != null) {
                         keyIdMatch = embeddedCertificates.stream()
-                                .filter(cert -> certificate.getAuthorityKeyIdentifier().equals(cert.getSubjectKeyIdString()))
-                                .findFirst()
-                                .orElse(null);
+                                .filter(cert -> certificate.getAuthorityKeyIdentifier()
+                                        .equals(cert.getSubjectKeyIdString())).findFirst().orElse(null);
                     }
                     if (keyIdMatch != null && keyIdMatch.getId() != null) {
                         data.put("issuerID", keyIdMatch.getId().toString());
@@ -265,6 +264,7 @@ public final class CertificateStringMapBuilder {
      *
      * @param certificate            certificate to get the issuer
      * @param caCredentialRepository CA Certificate repository
+     * @param embeddedCertificates   certificates extracted from a rim
      * @return a boolean indicating if it has the full chain or not.
      */
     public static Certificate containsAllChain(
@@ -361,30 +361,28 @@ public final class CertificateStringMapBuilder {
                                        final ReferenceManifestRepository referenceManifestRepository) {
 
         CertificateAuthorityCredential certificate = null;
-
+        Iterable<ReferenceManifest> rims = Collections.emptyList();
+        List<CertificateAuthorityCredential> embeddedCertificates = Collections.emptyList();
         if (caCertificateRepository.existsById(uuid)) {
             certificate = caCertificateRepository.getReferenceById(uuid);
         }
 
         if (certificate == null && referenceManifestRepository != null) {
-            Iterable<ReferenceManifest> rims;
             try {
                 rims = referenceManifestRepository.findAll();
             } catch (Exception e) {
                 log.warn("RIM repository unavailable during embedded cert lookup");
-                rims = Collections.emptyList();
             }
             for (ReferenceManifest rim : rims) {
                 if (!rim.isBase()) {
                     continue;
                 }
                 BaseReferenceManifest baseRim = (BaseReferenceManifest) rim;
-                List<CertificateAuthorityCredential> embeddedCerts =
-                        baseRim.getEmbeddedCertificates();
-                if (embeddedCerts == null || embeddedCerts.isEmpty()) {
+                embeddedCertificates = baseRim.getEmbeddedCertificates();
+                if (embeddedCertificates == null || embeddedCertificates.isEmpty()) {
                     continue;
                 }
-                for (CertificateAuthorityCredential embeddedCert : embeddedCerts) {
+                for (CertificateAuthorityCredential embeddedCert : embeddedCertificates) {
                     UUID certId = embeddedCert.getId();
                     if (certId != null && certId.equals(uuid)) {
                         certificate = embeddedCert;
@@ -393,27 +391,12 @@ public final class CertificateStringMapBuilder {
                 }
                 if (certificate != null) {
                     break;
+                } else {
+                    embeddedCertificates = Collections.emptyList();
                 }
             }
         }
         final String notFoundMessage = "Unable to find Certificate Authority Credential with ID: " + uuid;
-        List<CertificateAuthorityCredential> embeddedCertificates = Collections.emptyList();
-        if (referenceManifestRepository != null) {
-            for (ReferenceManifest rim : referenceManifestRepository.findAll()) {
-                if (!(rim instanceof BaseReferenceManifest baseRim)) {
-                    continue;
-                }
-                List<CertificateAuthorityCredential> possibleEmbeddedCerts = baseRim.getEmbeddedCertificates();
-                if (possibleEmbeddedCerts == null || possibleEmbeddedCerts.isEmpty()) {
-                    continue;
-                }
-                boolean contains = possibleEmbeddedCerts.stream()
-                        .anyMatch(c -> uuid.equals(c.getId()));
-                if (contains) {
-                    embeddedCertificates = possibleEmbeddedCerts;
-                }
-            }
-        }
         return getCertificateAuthorityInfoHelper(certificateRepository, caCertificateRepository,
                 certificate, embeddedCertificates, notFoundMessage);
     }
@@ -425,6 +408,7 @@ public final class CertificateStringMapBuilder {
      * @param caCertificateRepository        CA Certificate repository
      * @param certificateAuthorityCredential certificate authority credential
      * @param notFoundMessage                error message
+     * @param embeddedCertificates           certificates extracted from a rim
      * @return a hash map with the certificate authority credential information.
      */
     public static HashMap<String, String> getCertificateAuthorityInfoHelper(

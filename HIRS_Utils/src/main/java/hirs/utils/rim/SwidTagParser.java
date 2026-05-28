@@ -35,6 +35,12 @@ import java.util.List;
 public class SwidTagParser {
 
     /**
+     * Private constructor for utility class.
+     */
+    private SwidTagParser() {
+    }
+
+    /**
      * This method validates the Document against the schema.
      *
      * @param doc of the input swidtag.
@@ -71,9 +77,10 @@ public class SwidTagParser {
      * Retrieves the embedded X509Certificate structure(s)
      * after the RIM document has been set and unmarshalled.
      *
+     * @param rim the RIM document to extract embedded certs from.
      * @return the embedded X509Certificate if present, null otherwise.
      */
-    public static List<X509Certificate> getEmbeddedX509Certificates(Document rim) {
+    public static List<X509Certificate> getEmbeddedX509Certificates(final Document rim) {
         if (rim == null) {
             log.warn("Cannot extract embedded certificate; RIM Document is null.");
             return null;

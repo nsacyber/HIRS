@@ -51,7 +51,6 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -167,6 +166,7 @@ public class ReferenceManifestValidator {
      * or the RIM's subject key identifier.  If the cert is matched then validation proceeds,
      * otherwise validation ends.
      *
+     * @param publicKey          public key from the CA credential
      * @param subjectKeyIdString string version of the subjet key id of the CA credential
      * @return true if the signature element is validated, false otherwise
      */
@@ -929,7 +929,7 @@ public class ReferenceManifestValidator {
         public boolean areAlgorithmsEqual(final String uri, final String name) {
             return (uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
                     || uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA384)
-		            || uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA512))
+                    || uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA512))
                     && name.equalsIgnoreCase("RSA");
         }
 
