@@ -11,8 +11,7 @@ This tutorial will walk you through a validation.
 2. [Install the ACA server](gs2-aca-install.md)
 3. [Configure validation policy (via the ACA Web Portal)](gs3-hirs-config.md)
 4. [Ensure you have the necessary artifacts](gs4-artifacts.md)
-5. [Install the Provisioner on the client computer](gs5-prov-install.md)
-6. [Configure the Provisioner](gs6-prov-config.md)
+5. [Install and configure the Provisioner](gs5-prov-install.md)
 7. [Run the Provisioner](gs6-prov-run.md)
 8. [View the results](gs7-results.md)
 

@@ -31,7 +31,7 @@ the [Getting Started](../started/index.md) page.
 !!! note
 
     If the TPM auto detection is turned off, additional command line options are necessary. See the 
-    [Detailed Configuration Options](prov-config.md#detailed-configuration-options) section for details on this.
+    [Configuration Options](prov-config.md) section for details on this.
 
 ## Troubleshooting
 

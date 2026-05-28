@@ -12,7 +12,7 @@ For details on how to install the ACA, refer to
 the [ACA Installation](../install/aca-install.md) page. If there are issues with 
 installation, the [ACA Logs](../install/logs/aca-logs.md) can be helpful.
 
-Installation of the ACA should deploy the [ACA Web Portal](../../userguide/portal/index.md), which
+Installation of the ACA should deploy the [ACA Web Portal](../webportal/index.md), which
 can be accessed at
 
 ```shell
