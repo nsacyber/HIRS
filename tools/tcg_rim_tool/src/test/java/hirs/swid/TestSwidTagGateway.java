@@ -55,7 +55,7 @@ public class TestSwidTagGateway {
      * Sets the variables used for the test.
      */
     @BeforeAll
-    public static void setUp(){
+    public static void setUp() {
         gateway = new SwidTagGateway();
         gateway.setRimEventLog(SUPPORT_RIM_FILE);
         gateway.setAttributesFile(ATTRIBUTES_FILE);

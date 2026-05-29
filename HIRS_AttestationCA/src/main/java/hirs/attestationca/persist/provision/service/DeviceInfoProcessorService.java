@@ -418,8 +418,8 @@ public class DeviceInfoProcessorService {
                 }
 
                 if (provisionedDeviceInfo.getHw().getManufacturer().equals(
-                        baseRim.getPlatformManufacturer()) &&
-                        provisionedDeviceInfo.getHw().getProductName().equals(
+                        baseRim.getPlatformManufacturer())
+                         && provisionedDeviceInfo.getHw().getProductName().equals(
                                 baseRim.getPlatformModel())) {
                     log.info("Base RIM with manufacturer {} and model {} received from {}.",
                             baseRim.getPlatformManufacturer(),
