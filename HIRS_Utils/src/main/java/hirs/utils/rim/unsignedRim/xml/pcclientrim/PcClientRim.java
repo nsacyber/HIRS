@@ -117,11 +117,11 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     }
 
     /**
-     * This method clones a Document object's data into a new Document
+     * This method clones a Document object's data into a new Document.
      * @param doc to copy from
      * @return a new, identical doc
      */
-    private Document copyDoc(Document doc) {
+    private Document copyDoc(final Document doc) {
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer t = tf.newTransformer();

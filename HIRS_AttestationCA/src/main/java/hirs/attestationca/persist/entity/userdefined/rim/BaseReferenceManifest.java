@@ -1,14 +1,13 @@
 package hirs.attestationca.persist.entity.userdefined.rim;
 
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.utils.SwidResource;
+import hirs.utils.rim.SwidTagParser;
 import hirs.utils.swid.SwidTagConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
-import jakarta.xml.bind.Unmarshaller;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,18 +19,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,8 +39,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
      * Holds the name of the 'base64Hash' field.
      */
     public static final String BASE_64_HASH_FIELD = "base64Hash";
-
-    private static JAXBContext jaxbContext;
 
     @Column
     private String swidName = null;
@@ -103,13 +91,16 @@ public class BaseReferenceManifest extends ReferenceManifest {
 
     private String linkRel = null;
 
+    private List<CertificateAuthorityCredential> embeddedCertificates = new ArrayList<>();
+
     /**
      * Support constructor for the RIM object.
      *
      * @param rimBytes - the file content of the uploaded file.
-     * @throws UnmarshalException - thrown if the file is invalid.
+     * @throws IOException - thrown if file cannot be read.
      */
-    public BaseReferenceManifest(final byte[] rimBytes) throws UnmarshalException {
+    public BaseReferenceManifest(final byte[] rimBytes) throws IOException, ParserConfigurationException,
+            SAXException, UnmarshalException {
         this("", rimBytes);
     }
 
@@ -119,14 +110,14 @@ public class BaseReferenceManifest extends ReferenceManifest {
      *
      * @param fileName - string representation of the uploaded file.
      * @param rimBytes byte array representation of the RIM
-     * @throws UnmarshalException if unable to unmarshal the string
+     * @throws IOException if unable to read file
      */
     public BaseReferenceManifest(final String fileName, final byte[] rimBytes)
-            throws UnmarshalException {
+            throws IOException, ParserConfigurationException, SAXException, UnmarshalException {
         super(rimBytes);
         this.setRimType(BASE_RIM);
         this.setFileName(fileName);
-        Document document = unmarshallSwidTag(new ByteArrayInputStream(rimBytes));
+        Document document = SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(rimBytes));
         Element softwareIdentity;
         Element meta;
         Element entity;
@@ -246,9 +237,15 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private Element getDirectoryTag(final ByteArrayInputStream byteArrayInputStream) {
         Document document = null;
         try {
-            document = unmarshallSwidTag(byteArrayInputStream);
-        } catch (UnmarshalException e) {
-            log.error("Error while parsing Directory tag: {}", e.getMessage());
+            document = SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(
+                    byteArrayInputStream.readAllBytes()));
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        } catch (ParserConfigurationException e) {
+            log.error("Error encountered setting up to parse rim bytes: {}", e.getMessage());
+            throw new RuntimeException(e);
+        } catch (SAXException | UnmarshalException e) {
+            log.error("Error while parsing Base RIM: {}", e.getMessage());
         }
         if (document != null) {
             Element softwareIdentity =
@@ -299,82 +296,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
         }
 
         return validHashes;
-    }
-
-    /**
-     * This method unmarshalls the swidtag found at [path] into a Document object
-     * and validates it according to the schema.
-     *
-     * @param byteArrayInputStream to the input swidtag
-     * @return the Document element at the root of the swidtag
-     */
-    private Document unmarshallSwidTag(final ByteArrayInputStream byteArrayInputStream)
-            throws UnmarshalException {
-        InputStream is = null;
-        Document document = null;
-        Unmarshaller unmarshaller = null;
-        try {
-            document = removeXMLWhitespace(byteArrayInputStream);
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
-            is = getClass().getClassLoader().getResourceAsStream(SwidTagConstants.SCHEMA_URL);
-            Schema schema = schemaFactory.newSchema(new StreamSource(is));
-            if (jaxbContext == null) {
-                jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
-            }
-            unmarshaller = jaxbContext.createUnmarshaller();
-            unmarshaller.setSchema(schema);
-            unmarshaller.unmarshal(document);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        } catch (SAXException e) {
-            log.error("Error setting schema for validation!");
-        } catch (UnmarshalException e) {
-            throw new UnmarshalException("Error unmarshalling swidtag file: " + e.getCause());
-        } catch (IllegalArgumentException e) {
-            log.error("Input file empty.");
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    System.out.println("Error closing input stream");
-                }
-            }
-        }
-
-        return document;
-    }
-
-    /**
-     * This method strips all whitespace from an xml file, including indents and spaces
-     * added for human-readability.
-     *
-     * @param byteArrayInputStream to the xml file
-     * @return Document object without whitespace
-     */
-    private Document removeXMLWhitespace(final ByteArrayInputStream byteArrayInputStream) throws IOException {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Source source = new StreamSource(
-                getClass().getClassLoader().getResourceAsStream("identity_transform.xslt"));
-        Document document = null;
-        if (byteArrayInputStream.available() > 0) {
-            try {
-                Transformer transformer = tf.newTransformer(source);
-                DOMResult result = new DOMResult();
-                transformer.transform(new StreamSource(byteArrayInputStream), result);
-                document = (Document) result.getNode();
-            } catch (TransformerConfigurationException tcEx) {
-                log.error("Error configuring transformer!");
-            } catch (TransformerException tEx) {
-                log.error("Error transforming input!");
-            }
-        } else {
-            throw new IOException("Input file is empty!");
-        }
-
-        return document;
     }
 
     /**

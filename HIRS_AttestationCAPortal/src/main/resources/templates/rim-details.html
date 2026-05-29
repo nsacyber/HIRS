@@ -617,8 +617,16 @@
                         th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
                         Signing certificate
                     </a>
-                    <span th:text="${'Subject Key Identifier: ' + initialData.get('skID')}"
-                        th:if="${not #strings.isEmpty(initialData.get('skID'))}" />
+                    <div class="col col-md-8">
+                        <div th:each="id, iterStat : ${initialData.get('embeddedCertIds')}">
+                            <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details(id=${id}, type='certificateauthority')}">
+                                Embedded Certificate <span th:text="${iterStat.index + 1}"></span>
+                            </a>
+                        </div>
+                        <div th:if="${#lists.isEmpty(initialData.get('embeddedCertIds')) and not #strings.isEmpty(initialData.get('skID'))}">
+                            <span th:text="${'Subject Key Identifier: ' + initialData.get('skID')}"></span>
+                        </div>
+                    </div>
                 </div><!--signature-->
             </div><!--signature row-->
         </th:block><!--Base RIM-->

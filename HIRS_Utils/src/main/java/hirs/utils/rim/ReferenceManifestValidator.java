@@ -2,10 +2,7 @@ package hirs.utils.rim;
 
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.swid.SwidTagConstants;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
-import jakarta.xml.bind.Unmarshaller;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -19,7 +16,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.KeySelector;
 import javax.xml.crypto.KeySelectorException;
@@ -35,25 +31,10 @@ import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -83,16 +64,6 @@ import java.util.stream.Stream;
  */
 @Log4j2
 public class ReferenceManifestValidator {
-    private static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
-            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
-    private static final String SIGNATURE_ALGORITHM_RSA_SHA384 =
-            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
-    private static final String SIGNATURE_ALGORITHM_RSA_SHA512 =
-	    "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
-    private static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
-    private static final String SCHEMA_URL = "swid_schema.xsd";
-    private static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
-    private static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     private static final String SHA256 = "SHA-256";
     private static final int EIGHT_BIT_MASK = 0xff;
     private static final int LEFT_SHIFT = 0x100;
@@ -100,12 +71,9 @@ public class ReferenceManifestValidator {
 
     @Getter
     private Document rim;
-    private Unmarshaller unmarshaller;
 
     @Getter
     private PublicKey publicKey;
-
-    private Schema schema;
 
     @Getter
     private String subjectKeyIdentifier;
@@ -131,29 +99,23 @@ public class ReferenceManifestValidator {
     @Getter
     private String validationErrorMessage;
 
+    @Getter
+    private X509Certificate signingCertificate;
+
     /**
      * This default constructor creates the Schema object from SCHEMA_URL immediately to save
      * time during validation calls later.
      */
     public ReferenceManifestValidator() {
-        try {
-            Security.addProvider(new BouncyCastleProvider());
-            InputStream is = ReferenceManifestValidator.class
-                    .getClassLoader().getResourceAsStream(SCHEMA_URL);
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(SCHEMA_LANGUAGE);
-            schema = schemaFactory.newSchema(new StreamSource(is));
-            rim = null;
-            hasSupportRim = false;
-            signatureValid = false;
-            supportRimValid = false;
-            supportRimDirectory = "";
-            publicKey = null;
-            trustStoreFile = null;
-            trustStore = null;
-            subjectKeyIdentifier = "(not found)";
-        } catch (SAXException e) {
-            log.warn("Error setting schema for validation!");
-        }
+        Security.addProvider(new BouncyCastleProvider());
+        rim = null;
+        hasSupportRim = false;
+        signatureValid = false;
+        supportRimValid = false;
+        supportRimDirectory = "";
+        trustStoreFile = null;
+        trustStore = null;
+        subjectKeyIdentifier = "(not found)";
     }
 
     /**
@@ -164,14 +126,14 @@ public class ReferenceManifestValidator {
      */
     public void setRim(final byte[] rimBytes) throws IOException {
         try {
-            this.rim = validateSwidtagSchema(convertToDocument(rimBytes));
+            this.rim = SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(rimBytes));
         } catch (ParserConfigurationException e) {
             log.error("Error setting up to parse RIM bytes: {}", e.getMessage());
             throw new RuntimeException(e);
         } catch (IOException e) {
             log.error("Error while reading the RIM bytes: {}", e.getMessage());
             throw new IOException(e);
-        } catch (SAXException e) {
+        } catch (SAXException | UnmarshalException e) {
             log.error("Error while parsing the RIM bytes: {}", e.getMessage());
             throw new RuntimeException(e);
         }
@@ -185,14 +147,14 @@ public class ReferenceManifestValidator {
      */
     public void setRim(final String path) throws IOException {
         try {
-            this.rim = validateSwidtagSchema(convertToDocument(path));
+            this.rim = SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(path));
         } catch (ParserConfigurationException e) {
             log.error("Error encountered setting up to parse rim bytes: {}", e.getMessage());
             throw new RuntimeException(e);
         } catch (IOException e) {
             log.error("Error while reading {}: {}", path, e.getMessage());
             throw new IOException(e);
-        } catch (SAXException e) {
+        } catch (SAXException | UnmarshalException e) {
             log.error("Error while parsing {}: {}", path, e.getMessage());
             throw new IOException(e);
         }
@@ -227,15 +189,23 @@ public class ReferenceManifestValidator {
 
             NodeList certElement = getXmlElement(XMLSignature.XMLNS, "X509Certificate");
             if (certElement.getLength() > 0) {
-                X509Certificate embeddedCert = parseCertFromPEMString(
-                        certElement.item(0).getTextContent());
-                if (embeddedCert != null) {
-                    if (isCertChainValid(embeddedCert)) {
-                        context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
-                        subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
-                    } else {
-                        validationErrorMessage += "embedded cert chain invalid.";
+                List<X509Certificate> embeddedCerts =
+                        SwidTagParser.getEmbeddedX509Certificates(rim);
+                if (embeddedCerts != null && !embeddedCerts.isEmpty()) {
+                    for (X509Certificate embeddedCert : embeddedCerts) {
+                        if (isCertChainValid(embeddedCert)) {
+                            context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
+                            subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
+                            validationErrorMessage = "";
+                            this.publicKey = publicKey;
+                            signatureValid = validateSignedXMLDocument(context);
+                            if (signatureValid) {
+                                signingCertificate = embeddedCert;
+                                return true;
+                            }
+                        }
                     }
+                    validationErrorMessage += "embedded certs present but signature validation failed";
                 } else {
                     validationErrorMessage += "embedded cert is null.";
                 }
@@ -573,7 +543,6 @@ public class ReferenceManifestValidator {
             if (isValid) {
                 String successMessage = "XML signature verified.";
                 log.info(successMessage);
-                System.out.println(successMessage);
                 return true;
             } else {
                 whySignatureInvalid(signature, context);
@@ -756,32 +725,6 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method extracts certificate bytes from a string. The bytes are assumed to be
-     * PEM format, and a header and footer are concatenated with the input string to
-     * facilitate proper parsing.
-     *
-     * @param pemString the input string
-     * @return an X509Certificate created from the string, or null
-     */
-    private X509Certificate parseCertFromPEMString(final String pemString) {
-        String certificateHeader = "-----BEGIN CERTIFICATE-----";
-        String certificateFooter = "-----END CERTIFICATE-----";
-        try {
-            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            InputStream inputStream = new ByteArrayInputStream((certificateHeader
-                    + System.lineSeparator()
-                    + pemString
-                    + System.lineSeparator()
-                    + certificateFooter).getBytes(StandardCharsets.UTF_8));
-            return (X509Certificate) factory.generateCertificate(inputStream);
-        } catch (CertificateException e) {
-            log.warn("Error creating CertificateFactory instance: {}", e.getMessage());
-        }
-
-        return null;
-    }
-
-    /**
      * This method returns the X509Certificates found in a PEM file.
      * Unchecked type case warnings are suppressed because the CertificateFactory
      * implements X509Certificate objects explicitly.
@@ -879,65 +822,6 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method validates the Document against the schema.
-     *
-     * @param doc of the input swidtag.
-     * @return document validated against the schema.
-     */
-    private Document validateSwidtagSchema(final Document doc) {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(SCHEMA_PACKAGE);
-            unmarshaller = jaxbContext.createUnmarshaller();
-            unmarshaller.setSchema(schema);
-            unmarshaller.unmarshal(doc);
-        } catch (UnmarshalException e) {
-            log.warn("Error validating swidtag file!");
-        } catch (IllegalArgumentException e) {
-            log.warn("Input file empty.");
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-
-        return doc;
-    }
-
-    /**
-     * This method converts a byte array to a Document object.
-     *
-     * @param bytes data in
-     * @return a Document object representing the data in
-     * @throws ParserConfigurationException
-     * @throws IOException
-     * @throws SAXException
-     */
-    private Document convertToDocument(final byte[] bytes)
-            throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        DocumentBuilder builder = dbf.newDocumentBuilder();
-        ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
-        return builder.parse(bytesIn);
-    }
-
-    /**
-     * This method reads a file from the system and converts it to a Document object.
-     *
-     * @param filename String
-     * @returna Document object representing the file
-     * @throws ParserConfigurationException
-     * @throws IOException
-     * @throws SAXException
-     */
-    private Document convertToDocument(final String filename)
-            throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        DocumentBuilder builder = dbf.newDocumentBuilder();
-        File fileIn = new File(filename);
-        return builder.parse(fileIn);
-    }
-
-    /**
      * This method logs an error message and returns a false to signal failed validation.
      *
      * @param errorMessage String description of what went wrong
@@ -994,8 +878,7 @@ public class ReferenceManifestValidator {
                         if (object instanceof X509Certificate embeddedCert) {
                             try {
                                 if ((subjectName.isEmpty() || BouncyCastleUtils.x500NameCompare(
-                                        embeddedCert.getSubjectX500Principal().getName(), subjectName))
-                                        && isCertChainValid(embeddedCert)) {
+                                        embeddedCert.getSubjectX500Principal().getName(), subjectName))) {
                                     publicKey = embeddedCert.getPublicKey();
                                     signingCert = embeddedCert;
                                     log.info("Certificate chain valid.");
@@ -1044,8 +927,8 @@ public class ReferenceManifestValidator {
          */
         public boolean areAlgorithmsEqual(final String uri, final String name) {
             return (uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256)
-                    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA384)
-		    || uri.equals(SIGNATURE_ALGORITHM_RSA_SHA512))
+                    || uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA384)
+                    || uri.equals(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA512))
                     && name.equalsIgnoreCase("RSA");
         }
 
