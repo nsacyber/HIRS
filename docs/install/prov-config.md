@@ -9,14 +9,19 @@ It will also use a bundled version of [PACCOR](../tools/paccor.md) to collect ha
 
 ## Config file: appsettings.json
 
-Settings are captured in a json file ```appsettings.json```, located in the Provisioner 
-installation directory. Use the format:
+Settings shown on this page are captured in a json file ```appsettings.json```, located in the Provisioner 
+installation directory:
+
+=== "Windows"
+    C:\Program Files\(x86)\HIRS_Provisioner.NET
+=== "Linux"
+    /usr/share/hirs
+
+To update values in this json file, use the format:
 
 ```shell
 <scheme>://<value>
 ```
-
-The configuration options shown on this page can be set in ```appsettings.json```.
 
 ## Primary configuration options
 

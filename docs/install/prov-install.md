@@ -127,7 +127,17 @@ Steps to Build
         dotnet zip -r linux-x64 -c Release   
         ```
 
-!!! note
-    After building, you can find the generated file(s) in the relative path (from above): 
-    /bin/Release/net8.0/<platform>/HIRS_Provisioner.NET.*
+    !!! note
+        After building, you can find the generated file(s) in the relative path (from above): 
+        /bin/Release/net8.0/< platform >/HIRS_Provisioner.NET.*
+
+## Installation Directory
+
+The Provisioner is installed to the following directory:
+
+=== "Windows"
+    C:\Program Files\(x86)\HIRS_Provisioner.NET
+=== "Linux"
+    /usr/share/hirs
+
 
