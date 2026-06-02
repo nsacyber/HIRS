@@ -12,10 +12,10 @@ It will also use a bundled version of [PACCOR](../tools/paccor.md) to collect ha
 Settings shown on this page are captured in a json file ```appsettings.json```, located in the Provisioner 
 installation directory:
 
-=== "Windows"
-    C:\Program Files\(x86)\HIRS_Provisioner.NET
 === "Linux"
     /usr/share/hirs
+=== "Windows"
+    C:\Program Files\(x86)\HIRS_Provisioner.NET
 
 To update values in this json file, use the format:
 
@@ -23,7 +23,7 @@ To update values in this json file, use the format:
 <scheme>://<value>
 ```
 
-## Primary configuration options
+## Most common configuration options
 
 ### `aca_address_port`
 
@@ -73,6 +73,31 @@ to the server running the HIRS ACA.
         If this key is not set in the appsettings file, the HIRS .NET Provisioner
         will attempt to retrieve the TCG Event Log from the standard location if it is made
         available from the Linux kernel.
+
+### `path`
+
+* This value specifies the name of the Provisioner log file and the directory
+where it will be placed. The default location is the current installation directory, 
+and the default name is:
+    ```shell
+    hirs.log
+    ```
+
+* A common option is to change this to the ACA log directory:
+    ```shell
+    /var/log/hirs/hirs.log
+    ```
+
+    !!! note
+
+        The Provisioner will add a date to the end of the log file. For instance,
+        if you have configured your log file path to be 
+        <br>
+        &emsp;&emsp;/var/log/hirs/hirs.log
+        <br>
+        the actual log file will look like 
+        <br>
+        &emsp;&emsp;/var/log/hirs/hirs< date >.log.
 
 ## Other configuration options
 
