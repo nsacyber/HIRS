@@ -96,9 +96,12 @@ command line arguments.
 * This can be set to a comma-separated list of plugins that implement paccor’s
 IHardwareManifest interface. These plugins will collect hardware information
 according to different Component Class Registries. Plugins must be installed in
-a ```plugins``` folder under the installation directory. The current default plugin is
-called ```paccor_scripts```. If this setting is not changed in ```appsettings.json```, hardware
-information will be collected using paccor’s shell scripts on Windows or Linux.
+a ```plugins``` folder under the installation directory. The current default setting
+includes all Component Class Registries 
+```paccor_scripts,paccor.pcie,paccor.smbios,paccor.storage```. If this setting
+is not changed in ```appsettings.json```, hardware information will be collected
+using paccor’s shell scripts on Windows or Linux and according to the specifications
+for each Component Class Registry.
 
 ### `paccor_output_file`
 
@@ -106,6 +109,8 @@ information will be collected using paccor’s shell scripts on Windows or Linux
 is set in ```appsettings.json```, the HIRS .NET Provisioner will attempt to read it
 as a file. The contents will be sent to the ACA. The JSON format is described in
 paccor’s readme file. Example format can be reviewed after running paccor’s ```allcomponents.sh``` script.
+
+* __NOTE:__ If ```hardware_manifest_collectors``` is set, the ```paccor_output_file``` setting will be ignored.
 
 ### `Linux platform descriptor files`
 
@@ -128,3 +133,11 @@ Within the ACA these values are used in database lookups to match records.
           The location of the system product_version file.
         - **linux_product_serial_file**  
           The location of the system product_serial file.
+
+### `Logging`
+
+* The HIRS .NET Provisioner uses Serilog for logging. A standard configuration is defined in the
+  appsettings.json file. In this standard configuration, the log file will appear in the directory that
+  the HIRS .NET Provisioner is executed from. The log file contains detailed information about the
+  HIRS provisioning process.
+  Additional configuration options can be found in Serilog documentation. See [Serilog settings configuration :fontawesome-solid-external-link:](https://github.com/serilog/serilog-settings-configuration){:target="_blank"}.
