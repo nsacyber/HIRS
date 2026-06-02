@@ -14,6 +14,9 @@ can view should something during installation or operation not work.
 If you are new to HIRS and want a step-by-step tutorial, it is best to start with 
 the [Getting Started](../started/index.md) page.
 
+If you are interested in building from source, check out the bottom of the
+installation pages for the ACA or the provisioner.
+
 !!! info
 
     The project can be found on [GitHub :fontawesome-solid-external-link:](https://github.com/nsacyber/HIRS){:target="_blank"}.

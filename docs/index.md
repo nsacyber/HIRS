@@ -21,7 +21,9 @@ Quick Links:
 
 * [Getting Started](started/index.md)
 * [ACA Installation](install/aca-install.md)
+     * [Building the HIRS ACA from Source :fontawesome-solid-external-link:](https://github.com/nsacyber/HIRS/wiki/Hirs-build-guide#building-the-hirs-aca-from-source) 
 * [Provisioner Installation](install/prov-install.md)
+     * [Building the HIRS Provisioner from Source](<install/prov-install.md#option-2-build-from-source>) 
 * [Artifacts](started/gs4-artifacts.md)
 * [ACA Portal Guide](webportal/index.md)
 * [Tools](tools/index.md)

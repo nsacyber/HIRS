@@ -45,7 +45,7 @@ The HIRS .NET Provisioner is self-contained. No dependencies should be needed to
    If you see the following, for example on Linux Redhat:
    ```text
    Downloading Packages:
-   Public key for HIRS_Provisioner.NET.3.0.6.linux-x64.rpm is not installed
+   Public key for HIRS_Provisioner.NET.3.2.0.linux-x64.rpm is not installed
    Error: GPG check FAILED
    ```
    Try installing with the gpg check disabled. For instance for Linux Redhat:
@@ -58,7 +58,7 @@ The HIRS .NET Provisioner is self-contained. No dependencies should be needed to
 
 The HIRS .NET Provisioner requires the 
 [.NET SDK :fontawesome-solid-external-link:](https://learn.microsoft.com/en-us/dotnet/core/install/){:target="_blank"}
-version 6 or later. Please follow the instructions from Microsoft for installing the .NET SDK on your system.
+version 10 or later. Please follow the instructions from Microsoft for installing the .NET SDK on your system.
 
 !!! note
 
@@ -108,7 +108,7 @@ Steps to Build
 
     === "MSI"
         ```shell
-        dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=net8.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release 
+        dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=net10.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release 
         ```
     === "RPM"
         ```shell
@@ -129,7 +129,7 @@ Steps to Build
 
     !!! note
         After building, you can find the generated file(s) in the relative path (from above): 
-        /bin/Release/net8.0/< platform >/HIRS_Provisioner.NET.*
+        /bin/Release/net10.0/< platform >/HIRS_Provisioner.NET.*
 
 ## Installation Directory
 
