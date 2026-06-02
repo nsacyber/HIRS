@@ -14,6 +14,12 @@ import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -46,7 +52,7 @@ public final class SwidTagParser {
      * @param doc of the input swidtag.
      * @return document validated against the schema.
      */
-    public static Document validateSwidtagSchema(final Document doc) throws UnmarshalException {
+    public static Document validateSwidtagSchema(Document doc) throws UnmarshalException {
 
         try (InputStream is = SwidTagParser.class.getClassLoader().getResourceAsStream(
                 SwidTagConstants.SCHEMA_URL)) {
@@ -54,6 +60,7 @@ public final class SwidTagParser {
                 log.error("Schema resource not found");
                 return null;
             }
+            doc = removeXMLWhitespace(doc);
             SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
             Schema schema = schemaFactory.newSchema(new StreamSource(is));
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
@@ -69,6 +76,8 @@ public final class SwidTagParser {
             e.printStackTrace();
         } catch (IOException e) {
             log.error(e.getMessage());
+        } catch (TransformerException e) {
+            log.error("Error transforming input: " + e.getCause());
         }
         return null;
     }
@@ -164,5 +173,24 @@ public final class SwidTagParser {
         DocumentBuilder builder = dbf.newDocumentBuilder();
         File fileIn = new File(filename);
         return builder.parse(fileIn);
+    }
+
+    /**
+     * This method strips all whitespace from an xml file, including indents and spaces
+     * added for human-readability.
+     *
+     * @param document of the xml file
+     * @return Document object without whitespace
+     */
+    private static Document removeXMLWhitespace(final Document document) throws TransformerException {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Source source = new StreamSource(
+                SwidTagParser.class.getClassLoader().getResourceAsStream(
+                        SwidTagConstants.IDENTITY_TRANSFORM)
+        );
+        Transformer transformer = tf.newTransformer(source);
+        DOMResult result = new DOMResult();
+        transformer.transform(new DOMSource(document), result);
+        return (Document) result.getNode();
     }
 }
