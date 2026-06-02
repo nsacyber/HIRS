@@ -45,7 +45,7 @@ The HIRS .NET Provisioner is self-contained. No dependencies should be needed to
    If you see the following, for example on Linux Redhat:
    ```text
    Downloading Packages:
-   Public key for HIRS_Provisioner.NET.3.0.6.linux-x64.rpm is not installed
+   Public key for HIRS_Provisioner.NET.3.2.0.linux-x64.rpm is not installed
    Error: GPG check FAILED
    ```
    Try installing with the gpg check disabled. For instance for Linux Redhat:

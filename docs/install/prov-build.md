@@ -6,7 +6,7 @@ title: Provisioner Build from Source
 
 The HIRS .NET Provisioner requires the
 [.NET SDK :fontawesome-solid-external-link:](https://learn.microsoft.com/en-us/dotnet/core/install/){:target="_blank"}
-version 6 or later. Please follow the instructions from Microsoft for installing the .NET SDK on your system.
+version 10 or later. Please follow the instructions from Microsoft for installing the .NET SDK on your system.
 
 !!! note
 
@@ -17,7 +17,7 @@ Most of the build commands work the same way whether they are run from Windows o
 Location of where these commands are run matters. The directory the command should be run
 from is included in each section below.
 
-Steps to Build
+## Steps to Build
 
 1. Checkout HIRS from Github
    ```shell
@@ -36,18 +36,18 @@ Steps to Build
    Depending on your choice below, you might need to install a packaging library. This step is not
    needed to build an MSI installer.
 
-   === "RPM"
-   ```shell
-   dotnet tool install --global dotnet-rpm
-   ```
-   === "DEB"
-   ```shell
-   dotnet tool install --global dotnet-deb
-   ```
-   === "ZIP"
-   ```shell
-   dotnet tool install --global dotnet-zip
-   ```
+    === "RHEL/Rocky"
+        ```shell
+        dotnet tool install --global dotnet-rpm --allow-roll-forward
+        ```
+    === "Ubuntu"
+        ```shell
+        dotnet tool install --global dotnet-deb --allow-roll-forward
+        ```
+    === "Windows ZIP"
+        ```shell
+        dotnet tool install --global dotnet-zip --allow-roll-forward
+        ```
 
 5. `cd` to the directory
    ```shell
@@ -55,37 +55,42 @@ Steps to Build
    ```
 6. Create installation package(s)
 
-   === "MSI"
-   ```shell
-   dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=net8.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release 
-   ```
-   === "RPM"
-   ```shell
-   dotnet rpm -r linux-x64 -c Release  
-   ```
-   === "DEB"
-   ```shell
-   dotnet deb -r linux-x64 -c Release   
-   ```
-   === "ZIP (Windows bin)"
-   ```shell
-   dotnet zip -r win-x64 -c Release  
-   ```
-   === "ZIP (Linux bin)"
-   ```shell
-   dotnet zip -r linux-x64 -c Release   
-   ```
+    === "RHEL/Rocky"
+        ```shell
+        dotnet rpm install
+        dotnet rpm -r linux-x64 -c Release  
+        ```
+    === "Ubuntu"
+        ```shell
+        dotnet deb install
+        dotnet deb -r linux-x64 -c Release   
+        ```
+    === "Linux ZIP"
+        ```shell
+        dotnet zip install
+        dotnet zip -r linux-x64 -c Release   
+        ```
+    === "Windows"
+        ```shell
+        dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=net10.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release 
+        ```
+    === "Windows ZIP"
+        ```shell
+        dotnet zip install
+        dotnet zip -r win-x64 -c Release  
+        ```
 
-   !!! note
-   After building, you can find the generated file(s) in the relative path (from above):
-   /bin/Release/net8.0/< platform >/HIRS_Provisioner.NET.*
+!!! note
+
+    After building, you can find the generated file(s) in the relative path (from above):
+    /bin/Release/net10.0/< platform >/HIRS_Provisioner.NET.*
 
 ## Installation Directory
 
 The Provisioner is installed to the following directory:
 
 === "Windows"
-C:\Program Files\(x86)\HIRS_Provisioner.NET
+    C:\Program Files\(x86)\HIRS_Provisioner.NET
 === "Linux"
-/usr/share/hirs
+    /usr/share/hirs
 

@@ -16,18 +16,18 @@ Together, the HIRS ACA and HIRS Provisioner comprise the complete validation ser
 
 <img src= "images/home-index-diagram-aca-prov.jpg" alt="HIRS Test Picture" style="float: right; width: 55%; margin-left: 20px; border: 1px solid grey;">
 
-<br>
 Quick Links:
 
 * [Getting Started](started/index.md)
 * [ACA Installation](install/aca-install.md)
+* [Building the ACA from Source](install/aca-build.md)
 * [Provisioner Installation](install/prov-install.md)
+* [Building the Provisioner from Source](install/prov-build.md)
 * [Validation Run](install/validation-run.md)
 * [Artifacts](started/gs4-artifacts.md)
 * [ACA Portal Guide](webportal/index.md)
 * [Tools](tools/index.md)
 * [Downloads](install/downloads.md)
-<br>
 <br>
 <br>
 <br>
