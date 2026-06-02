@@ -89,15 +89,15 @@ Steps to Build
 
     === "RPM"
         ```shell
-        dotnet tool install --global dotnet-rpm
+        dotnet tool install --global dotnet-rpm --allow-roll-forward
         ```
     === "DEB"
         ```shell
-        dotnet tool install --global dotnet-deb
+        dotnet tool install --global dotnet-deb --allow-roll-forward
         ```
     === "ZIP"
         ```shell
-        dotnet tool install --global dotnet-zip
+        dotnet tool install --global dotnet-zip --allow-roll-forward
         ```
 
 5. `cd` to the directory
@@ -106,26 +106,31 @@ Steps to Build
    ```
 6. Create installation package(s)
 
-    === "MSI"
-        ```shell
-        dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=net10.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release 
-        ```
     === "RPM"
         ```shell
+        dotnet rpm install
         dotnet rpm -r linux-x64 -c Release  
         ```
     === "DEB"
         ```shell
+        dotnet deb install
         dotnet deb -r linux-x64 -c Release   
-        ```
-    === "ZIP (Windows bin)"
-        ```shell
-        dotnet zip -r win-x64 -c Release  
         ```
     === "ZIP (Linux bin)"
         ```shell
+        dotnet zip install
         dotnet zip -r linux-x64 -c Release   
         ```
+    === "ZIP (Windows bin)"
+        ```shell
+        dotnet zip install
+        dotnet zip -r win-x64 -c Release  
+        ```
+    === "MSI (Windows only)"
+        ```shell
+        dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=net10.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release 
+        ```
+
 
     !!! note
         After building, you can find the generated file(s) in the relative path (from above): 
