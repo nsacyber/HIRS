@@ -6,9 +6,10 @@ title: Installation Overview
 
 To use HIRS, you will need to install the HIRS ACA server, the HIRS Provisioner, and 
 any related tools you may need. There are different ways to install these services
-which are shown on each specific installation page.
+which are shown on each specific installation page.  You will also 
+need to configure the ACA and the Provisioner.
 
-The installation of these services also creates log files that you 
+The installation and running of these services creates log files that you 
 can view should something during installation or operation not work.
 
 If you are new to HIRS and want a step-by-step tutorial, it is best to start with 

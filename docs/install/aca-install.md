@@ -1,12 +1,12 @@
 ---
-title: ACA Install
+title: ACA Package Install
 ---
 
 # ACA Install
 
-On Linux and Windows devices you can install the HIRS Attestation Certificate Authority (ACA) 
+On Linux and Windows devices you can install the HIRS ACA 
 via Docker (the preferred method). Alternatively, on Linux only, you can install the ACA 
-via a release package or by building from source.
+via a release package.
 
 ## Option 1: Install ACA via Docker (Linux or Windows)
 
@@ -18,7 +18,7 @@ To run the ACA from a Docker container:
 docker run --name=aca -p 8443:8443 ghcr.io/nsacyber/hirs/aca:latest
 ```
 
-## Option 2: Install ACA via package (Linux only)
+## Option 2: Install ACA via Package (Linux only)
 
 ### Supported Platforms
 
@@ -44,7 +44,7 @@ The ACA currently supports package based installation on
     sudo apt-get install java-25-openjdk java-25-openjdk-devel git tpm2-tools mariadb-server
     ```
 
-### 2a. Install ACA via Release Package
+### Install ACA via Release Package
 
 To install the ACA on Linux, download the latest package for your selected OS from the 
 [release page :fontawesome-solid-external-link:](https://github.com/nsacyber/HIRS/releases){:target="_blank"}, 
@@ -58,12 +58,3 @@ then run the command
     ``` shell
     sudo apt-get install HIRS_AttestationCA*.deb
     ```
-
-### 2b. Install ACA via Source
-
-To install the ACA from source, see 
-[Building the HIRS ACA from Source :fontawesome-solid-external-link:](https://github.com/nsacyber/HIRS/wiki/Hirs-build-guide#building-the-hirs-aca-from-source){:target="_blank"}.
-
-## View ACA Portal
-
-Once the ACA is installed, you can view the ACA on the [ACA Web Portal](../webportal/index.md).

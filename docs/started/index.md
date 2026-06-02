@@ -12,7 +12,7 @@ This tutorial will walk you through a validation.
 3. [Configure validation policy (via the ACA Web Portal)](gs3-hirs-config.md)
 4. [Ensure you have the necessary artifacts](gs4-artifacts.md)
 5. [Install and configure the Provisioner](gs5-prov-install.md)
-7. [Run the Provisioner](gs6-prov-run.md)
+7. [Run the Validation](gs6-validation-run.md)
 8. [View the results](gs7-results.md)
 
 !!! info

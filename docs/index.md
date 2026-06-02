@@ -22,6 +22,7 @@ Quick Links:
 * [Getting Started](started/index.md)
 * [ACA Installation](install/aca-install.md)
 * [Provisioner Installation](install/prov-install.md)
+* [Validation Run](install/validation-run.md)
 * [Artifacts](started/gs4-artifacts.md)
 * [ACA Portal Guide](webportal/index.md)
 * [Tools](tools/index.md)

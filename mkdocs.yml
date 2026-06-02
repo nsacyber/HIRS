@@ -14,14 +14,17 @@ nav:
       - started/gs3-hirs-config.md
       - started/gs4-artifacts.md
       - started/gs5-prov-install.md
-      - started/gs6-prov-run.md
+      - started/gs6-validation-run.md
       - started/gs7-results.md
-  - Installation:
+  - Install/Run:
       - install/index.md
       - install/aca-install.md
+      - install/aca-build.md
+      - install/aca-config.md
       - install/prov-install.md
+      - install/prov-build.md
       - install/prov-config.md
-      - install/prov-run.md
+      - install/validation-run.md
       - <u>Logs</u>:
           - install/logs/aca-logs.md
           - install/logs/prov-logs.md

@@ -53,7 +53,7 @@ Ensure the following outputs are configured as follows:
 
 In this case you can skip the [artifacts](../started/gs4-artifacts.md) stage.
 After the [Provisioner install](../started/gs5-prov-install.md) stage and 
-[Provisioner run](../started/gs6-prov-run.md) stage, the 
+[Provisioner run](gs6-validation-run.md) stage, the 
 [validation result](gs7-results.md) should be 
 successful if the software was installed properly.
 
