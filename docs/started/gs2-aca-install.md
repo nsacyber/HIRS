@@ -9,7 +9,7 @@ Typically in a real-world scenario the ACA server would be installed on a separa
 but for testing purposes it can be run on the same device as the Provisioner.
 
 For details on how to install the ACA, refer to 
-the [ACA Installation](../install/aca-install.md) page. If there are issues with 
+the [ACA Installation](../install/aca/aca-install.md) page. If there are issues with 
 installation, the [ACA Logs](../install/logs/aca-logs.md) can be helpful.
 
 Installation of the ACA should deploy the [ACA Web Portal](../webportal/index.md), which

@@ -6,7 +6,7 @@ title: Web Portal
 
 The HIRS ACA features a Web Portal that contains support for managing trust chains, setting
 validation policy, and viewing validation reports. After 
-[installation of the ACA](../install/aca-install.md), the
+[installation of the ACA](../install/aca/aca-install.md), the
 ACA portal can be accessed via a URL in a browser:
 
 ```shell

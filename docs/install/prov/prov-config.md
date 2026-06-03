@@ -5,7 +5,7 @@ title: Provisioner Configuration
 # Provisioner Configuration
 
 By default, the HIRS .NET Provisioner is configured to auto-detect a discrete or firmware TPM.
-It will also use a bundled version of [PACCOR](../tools/paccor.md) to collect hardware information.
+It will also use a bundled version of [PACCOR](../../tools/paccor.md) to collect hardware information.
 
 ## Config file: appsettings.json
 

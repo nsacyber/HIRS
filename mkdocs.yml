@@ -18,17 +18,21 @@ nav:
       - started/gs7-results.md
   - Install/Run:
       - install/index.md
-      - install/aca-install.md
-      - install/aca-build.md
-      - install/aca-config.md
-      - install/prov-install.md
-      - install/prov-build.md
-      - install/prov-config.md
-      - install/validation-run.md
+      - <u>ACA</u>:
+          - install/aca/aca-install.md
+          - install/aca/aca-build.md
+          - install/aca/aca-config.md
+      - <u>Provisioner</u>:
+          - install/prov/prov-install.md
+          - install/prov/prov-build.md
+          - install/prov/prov-config.md
+      - <u>Validation</u>:
+          - install/validation/validation-run.md
       - <u>Logs</u>:
           - install/logs/aca-logs.md
           - install/logs/prov-logs.md
-      - install/downloads.md
+      - <u>Downloads</u>:
+          - install/downloads/downloads.md
   - Web Portal:
       - webportal/index.md
       - webportal/portal-homepage.md

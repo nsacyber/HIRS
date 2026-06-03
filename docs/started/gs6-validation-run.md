@@ -19,7 +19,7 @@ same network.
 ## Run Provisioner software
 
 For details on running the Provisioner,
-refer to the [Provisioner Run](../install/validation-run.md) page. 
+refer to the [Provisioner Run](../install/validation/validation-run.md) page. 
 
 As the Provisioner runs, it will print information in the shell 
 that displays the various stages of the process, which helps to identify 

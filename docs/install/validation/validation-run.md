@@ -6,7 +6,7 @@ title: Validation Run
 
 Running the Provisioner is the same thing as running the Validation.
 If you are new to HIRS and want a step-by-step tutorial, it is best to start with
-the [Getting Started](../started/index.md) page.
+the [Getting Started](../../started/index.md) page.
 
 !!! note
 

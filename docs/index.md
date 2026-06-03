@@ -8,9 +8,10 @@ template: home.html
     }
 </style>
 
-The [HIRS ACA](hirs-aca.md) (Attestation Certificate Authority) is a web-based application 
+The [HIRS ACA](hirs-aca.md) (Host Integrity at Runtime and Startup Attestation Certificate 
+Authority) is a web-based application 
 which processes requests from one or more [HIRS Provisioner](hirs-provisioner.md) applications. 
-Together, the HIRS ACA and HIRS Provisioner comprise the complete validation service HIRS.
+Together, the HIRS ACA and HIRS Provisioner comprise the complete verification service HIRS.
 <br>
 <br>
 
@@ -19,15 +20,15 @@ Together, the HIRS ACA and HIRS Provisioner comprise the complete validation ser
 Quick Links:
 
 * [Getting Started](started/index.md)
-* [ACA Installation](install/aca-install.md)
-* [Building the ACA from Source](install/aca-build.md)
-* [Provisioner Installation](install/prov-install.md)
-* [Building the Provisioner from Source](install/prov-build.md)
-* [Validation Run](install/validation-run.md)
+* [ACA Installation](install/aca/aca-install.md)
+* [Building the ACA from Source](install/aca/aca-build.md)
+* [Provisioner Installation](install/prov/prov-install.md)
+* [Building the Provisioner from Source](install/prov/prov-build.md)
+* [Validation Run](install/validation/validation-run.md)
 * [Artifacts](started/gs4-artifacts.md)
 * [ACA Portal Guide](webportal/index.md)
 * [Tools](tools/index.md)
-* [Downloads](install/downloads.md)
+* [Downloads](install/downloads/downloads.md)
 <br>
 <br>
 <br>

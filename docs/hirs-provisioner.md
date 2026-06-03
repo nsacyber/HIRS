@@ -25,11 +25,13 @@ keys and corresponding certificates based upon interactions with the HIRS ACA. H
 dictates which keys are created on the TPM and what certificates are issued to the device by 
 the [HIRS ACA](hirs-aca.md). 
 
-As part of this process, the Provisioner gathers device info from the client platform and sends 
+As part of this process, the Provisioner gathers
+[device info](background/operation/op4-validation.md/#provisioner-collects-data)
+from the client platform and sends 
 this to the ACA. Device info includes the platform manufacturer and model, serial number, 
 platform security attributes, a reference to the associated TPM, device 
 component info, and more.
 
-For setup details, refer to the [Provisioner Installation](install/prov-install.md) section.
+For setup details, refer to the [Provisioner Installation](install/prov/prov-install.md) section.
 For installation requirements, see the [HIRS release page :fontawesome-solid-external-link:](https://github.com/nsacyber/HIRS/releases){:target="_blank"}
 for OS- or distribution-specific packages. 

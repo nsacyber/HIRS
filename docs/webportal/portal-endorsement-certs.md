@@ -2,7 +2,7 @@
 title: Endorsement Key Certificates
 ---
 
-# ACA Portal: Endorsement Key Credential Page
+# ACA Portal: Endorsement Key Certificates Page
 
 The **Endorsement Certificates** page is used to upload, download, delete, and view Endorsement Certificates.
 
@@ -12,7 +12,7 @@ The EK Credential must contain:
 
 * TPM public key
 * TPM manufacturer, TPM model, and TPM version
-* TPM security assertions (Optional)
+* TPM security assertions (optional)
 
 The EK Credential is required for TPM provisioning and supply chain confirmation. The ACA 
 requires that the EK Credential's certificate chain is uploaded via the Trust Chain 

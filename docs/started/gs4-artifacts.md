@@ -36,7 +36,7 @@ require the Endorsement Certificate and its certificate chain.
 
 ### Endorsement Certificate
 
-Depending on the [Provisioner Configuration](../install/prov-config.md), the
+Depending on the [Provisioner Configuration](../install/prov/prov-config.md), the
 Provisioner will search for a TPM in specific locations. If the Provisioner 
 is able to find the TPM and retrieve the Endorsement 
 Certificate, then you will not need to upload an Endorsement Certificate.
@@ -68,24 +68,22 @@ Some TPM manufacturers have TPM CA certificates available on the web
 If you do not know the TPM information such as manufacturer, you can determine 
 this via command line:
 
-Run in a terminal:
-
 === "Linux"
-```shell
-tpm2_getcap properties-fixed
-```
+    Run in a terminal:
+    ```shell
+        tpm2_getcap properties-fixed
+    ```
+    Typical output:<br>
+        &emsp;TPM2_PT_MANUFACTURER:<br>
+        &emsp;raw: 0x49465800<br>
+        &emsp;value: "IFX"<br>
+    Where the value can be found in the
+    [TCG Vendor ID Registry :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/vendor-id-registry/).
+=== "Windows"
+    The TPM Management Tool can be used to find information.<br>
+    You can type 'tpm.msc' into the Windows search bar to get to the tool.
 
-Typical output: 
-
-=== "Linux"
-```shell
-TPM2_PT_MANUFACTURER:
-  raw: 0x49465800
-  value: "IFX"
-```
-
-Where the value can be found in the 
-[TCG Vendor ID Registry :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/vendor-id-registry/).
+<hr style="border: none; height: 1px; background-color: #e7eaed; width: 100%;">
 
 ## Configuration with the Platform Certificate
 
@@ -160,3 +158,9 @@ will need to obtain it from the RIM manufacturer and upload it to the
 If you cannot obtain a manufacturer TCG Event Log, you can create one for testing purposes. See the
 [Rim-Tool Getting Started :fontawesome-solid-external-link:](https://nsacyber.github.io/RIM-Tool/getting-started/){:target="_blank"}
 page in the RIM-Tool project for instructions.
+
+<style>
+.md-typeset .tabbed-content {
+  min-height: 290px !important; /* Forces the box to always stay at least this tall */
+}
+</style>

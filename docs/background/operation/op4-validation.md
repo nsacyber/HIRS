@@ -19,7 +19,7 @@ and LDevID certificate.
 ### Run Provisioner
 
 User runs the Provisioner script on the Client device. For details on setup,
-refer to the [Provisioner Installation](../../install/prov-install.md) section.
+refer to the [Provisioner Installation](../../install/prov/prov-install.md) section.
 
 ### Provisioner collects data
 
