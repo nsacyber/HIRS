@@ -186,6 +186,7 @@ public class ReferenceManifestDetailsPageService {
         // Software Identity
         data.put("swidName", baseRim.getSwidName());
         data.put("swidVersion", baseRim.getSwidVersion());
+        data.put("swidVersionScheme", baseRim.getSwidVersionScheme());
         data.put("swidTagVersion", baseRim.getSwidTagVersion());
 
         if (baseRim.getSwidCorpus() == 1) {
@@ -242,6 +243,10 @@ public class ReferenceManifestDetailsPageService {
         data.put("revision", baseRim.getRevision());
         data.put("bindingSpec", baseRim.getBindingSpec());
         data.put("bindingSpecVersion", baseRim.getBindingSpecVersion());
+        data.put("firmwareManufacturer", baseRim.getFirmwareManufacturer());
+        data.put("firmwareManufacturerId", baseRim.getFirmwareManufacturerId());
+        data.put("firmwareModel", baseRim.getFirmwareModel());
+        data.put("firmwareVersion", baseRim.getFirmwareVersion());
         data.put("pcUriGlobal", baseRim.getPcURIGlobal());
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());

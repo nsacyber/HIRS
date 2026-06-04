@@ -34,12 +34,15 @@ public class SwidResource {
     private String hashValue;
 
     @Getter
+    @Setter
     private String rimFormat;
 
     @Getter
+    @Setter
     private String rimType;
 
     @Getter
+    @Setter
     private String rimUriGlobal;
     //    private TpmWhiteListBaseline tpmWhiteList;
     private DigestAlgorithm digest = DigestAlgorithm.SHA1;
@@ -78,13 +81,13 @@ public class SwidResource {
         for (Map.Entry<QName, String> entry
                 : file.getOtherAttributes().entrySet()) {
             switch (entry.getKey().getLocalPart()) {
-                case "supportRIMFormat":
+                case "supportRimFormat":
                     this.rimFormat = entry.getValue();
                     break;
-                case "supportRIMType":
+                case "supportRimType":
                     this.rimType = entry.getValue();
                     break;
-                case "supportRIMURIGlobal":
+                case "supportRimUriGlobal":
                     this.rimUriGlobal = entry.getValue();
                     break;
                 case "hash":

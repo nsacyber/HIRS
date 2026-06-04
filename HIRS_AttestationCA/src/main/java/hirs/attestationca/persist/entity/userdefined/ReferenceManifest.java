@@ -106,6 +106,9 @@ public class ReferenceManifest extends ArchivableEntity {
     private String swidVersion = null;
 
     @Column
+    private String swidVersionScheme = null;
+
+    @Column
     private String platformModel = null;
 
     @Column(nullable = false)
