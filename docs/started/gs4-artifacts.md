@@ -47,21 +47,14 @@ will need to obtain it from the TPM manufacturer and upload it to the
 
 ### Endorsement Certificate Trust Chain
 
-You will need to download the TPM manufacturer's root and intermediate 
+You will need to obtain the TPM manufacturer's root and intermediate 
 certificates and then upload the (non-zipped) certificates to the
-[Trust Chain Management](../webportal/portal-trust-chain.md) page.
-
-The best single source for TPM manufacturer CA (Certificate Authority) certificates is 
-kept by Microsoft: 
+[Trust Chain Management](../webportal/portal-trust-chain.md) page. You must obtain these from the TPM manufacturer, 
+or possibly you can obtain them from a few recognized websites:
 
 * [TPM Root Certificates :fontawesome-solid-external-link:](https://docs.microsoft.com/en-us/windows-server/virtualization/guarded-fabric-shielded-vm/guarded-fabric-install-trusted-tpm-root-certificates){:target="_blank"}
-
-Some TPM manufacturers have TPM CA certificates available on the web 
-(not a complete list):
-
 * [Infineon CA Certificates :fontawesome-solid-external-link:](https://www.infineon.com/cms/en/product/promopages/optiga_tpm_certificates/#SLB9670xx2.0){:target="_blank"}
 * [ST Microelectronics :fontawesome-solid-external-link:](https://www.st.com/resource/en/technical_note/tn1330-st-trusted-platform-module-tpm-endorsement-key-ek-certificates-stmicroelectronics.pdf){:target="_blank"}
-(document which lists the URL for the certificates)
 
 ### TPM Manufacturer Information
 
@@ -97,10 +90,11 @@ require
 ### Platform Certificate
 
 The Provisioner will search for a Platform Certificate in the directory specified by the
-Provisioner's configuration file ```appsettings.json``` under the scheme
-[```efi_prefix```](http://hirs-dlat-ro-03:8000/HIRS/HIRS/install/prov-config/#efi_prefix).
+Provisioner's configuration file 
+[appsettings.json](../install/prov/prov-config.md/#config-file-appsettingsjson) under the scheme
+[efi_prefix](../install/prov/prov-config.md/#efi_prefix).
 If the Provisioner cannot retrieve the Platform Certificate, you
-will need to obtain it from the Platform manufacturer and upload it to the
+will need to obtain it from the Platform manufacturer and manually upload it to the
 [Platform Certificates](../webportal/portal-platform-certs.md) page.
 
 If you cannot obtain a manufacturer Platform Certificate, you can create one for 
@@ -110,9 +104,9 @@ page in the PACCOR project for instructions.
 
 ### Platform Certificate Trust Chain
 
-You will need to download the platform manufacturer's root and intermediate
+You will need to obtain the platform manufacturer's root and intermediate
 certificates and then upload the (non-zipped) certificates to the
-[Trust Chain Management](../webportal/portal-trust-chain.md) page.
+[Trust Chain Management](../webportal/portal-trust-chain.md) page. You must obtain these from the platform manufacturer.
 
 ## Configuration with the RIM
 
