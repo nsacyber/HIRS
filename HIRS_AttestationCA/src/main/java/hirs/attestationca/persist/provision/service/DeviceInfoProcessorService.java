@@ -529,7 +529,7 @@ public class DeviceInfoProcessorService {
      * @param provisionedDeviceInfo provisioned Device Info
      */
     private void updateBaseSupportRIMSUsingDeviceInfo(final ProvisionerTpm2.DeviceInfo provisionedDeviceInfo) {
-        final String supportRimFilePattern = "(\\S+(\\.(?i)(rimpcr|rimel|bin|log))$)";
+        final String supportRimFilePattern = "[^/\\\\]+(\\.(?i)(rimpcr|rimel|bin|log))$";
         final Pattern supportRimPattern = Pattern.compile(supportRimFilePattern);
 
         final List<ByteString> swidfileList = provisionedDeviceInfo.getSwidfileList();
