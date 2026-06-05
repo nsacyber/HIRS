@@ -121,7 +121,7 @@ page is enabled, the validation will require
 ### RIM
 
 The Provisioner will search for a RIM in the directory specified by the
-Provisioner's configuration file ```appsettings.json``` under the scheme
+Provisioner's configuration file appsettings.json under the scheme
 [```efi_prefix```](http://hirs-dlat-ro-03:8000/HIRS/HIRS/install/prov-config/#efi_prefix).
 If the Provisioner cannot retrieve the RIM, you
 will need to obtain it from the RIM manufacturer and upload it to the
@@ -143,7 +143,7 @@ certificates and then upload the (non-zipped) certificates to the
 Validation of a platform's firmware requires the TCG Event Log as a support RIM. 
 
 The Provisioner will search for a TCG Event Log in the directory specified by the
-Provisioner's configuration file ```appsettings.json``` under the scheme
+Provisioner's configuration file appsettings.json under the scheme
 [```event_log_file```](http://hirs-dlat-ro-03:8000/HIRS/HIRS/install/prov-config/#event_log_file).
 If the Provisioner cannot retrieve the TCG Event Log, you
 will need to obtain it from the RIM manufacturer and upload it to the

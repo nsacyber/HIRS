@@ -17,7 +17,7 @@ https://hostname:8443/
 
 Any output validation certificates specified during the 
 [HIRS Configuration](gs3-hirs-config.md/#select-the-output-configuration) stage are located in the 
-directory specified by the Provisioner configuration file ```appsettings.json``` under the scheme 
+directory specified by the Provisioner configuration file appsettings.json under the scheme 
 [```certificate_output_directory```](http://hirs-dlat-ro-03:8000/HIRS/HIRS/install/prov-config/#certificate_output_directory).
 
 ## Successful validation

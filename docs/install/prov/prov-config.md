@@ -9,8 +9,8 @@ It will also use a bundled version of [PACCOR](../../tools/paccor.md) to collect
 
 ## Config file: appsettings.json
 
-Settings shown on this page are captured in a json file ```appsettings.json```, located in the Provisioner 
-installation directory:
+Settings shown on this page are captured in a json file called appsettings.json, 
+located in the Provisioner installation directory:
 
 === "Linux"
     /usr/share/hirs
@@ -46,10 +46,10 @@ to the server running the HIRS ACA.
     * Recommended setting on **Windows**  
         The ESP can be mounted to any open drive path.
         1. mountvol P: /S
-        2. Set the ```“efi_prefix”: “P:”```
+        2. Set ```“efi_prefix”: “P:”```
     * Recommended setting on **Linux**
         1. The ESP is loaded to a directory by the Linux kernel by default.
-        2. Set the ```“efi_prefix”: “/boot/efi”```
+        2. Set ```“efi_prefix”: “/boot/efi”```
 
 ### `certificate_output_directory`
 
@@ -68,9 +68,9 @@ to the server running the HIRS ACA.
     === "Windows" 
         By default, the HIRS .NET Provisioner will ask the Windows API to provide
         the latest TCG Event Log. Alternatively, you may want to set this key in
-        ```appsettings.json``` to a specific path.
+        appsettings.json to a specific path.
     === "Linux"
-        If this key is not set in the appsettings file, the HIRS .NET Provisioner
+        If this key is not set in the appsettings.json file, the HIRS .NET Provisioner
         will attempt to retrieve the TCG Event Log from the standard location if it is made
         available from the Linux kernel.
 
@@ -121,19 +121,19 @@ command line arguments.
 * This can be set to a comma-separated list of plugins that implement paccor’s
 IHardwareManifest interface. These plugins will collect hardware information
 according to different Component Class Registries. Plugins must be installed in
-a ```plugins``` folder under the installation directory. The current default setting
+a plugins folder under the installation directory. The current default setting
 includes all Component Class Registries
 ```paccor_scripts,paccor.pcie,paccor.smbios,paccor.storage```. If this setting
-is not changed in ```appsettings.json```, hardware information will be collected
+is not changed in appsettings.json, hardware information will be collected
 using paccor’s shell scripts on Windows or Linux and according to the specifications
 for each Component Class Registry.
 
 ### `paccor_output_file`
 
 * Alternatively, hardware information can be read from a JSON file. If this option
-is set in ```appsettings.json```, the HIRS .NET Provisioner will attempt to read it
+is set in appsettings.json, the HIRS .NET Provisioner will attempt to read it
 as a file. The contents will be sent to the ACA. The JSON format is described in
-paccor’s readme file. Example format can be reviewed after running paccor’s ```allcomponents.sh``` script.
+paccor’s readme file. Example format can be reviewed after running paccor’s allcomponents.sh script.
 
 * __NOTE:__ If ```hardware_manifest_collectors``` is set, the 
 ```paccor_output_file``` setting will be ignored.

@@ -31,13 +31,13 @@ the [Getting Started](../../started/index.md) page.
 !!! note
 
     If the TPM auto detection is turned off, additional command line options are necessary. See the 
-    [Configuration Options](prov-config.md) section for details on this.
+    [Provisioner Configuration: audo_detect_tpm](../prov/prov-config.md/#auto_detect_tpm) section for details on this.
 
 ## Troubleshooting
 
 - Nothing prints to the terminal when run:  
-  Check that ```appsettings.json``` is a valid JSON file. Search “JSON validator” on a preferred
-  internet search engine, then copy-and-paste the ```appsettings.json``` file into the validator. This 
+  Check that appsettings.json is a valid JSON file. Search “JSON validator” on a preferred
+  internet search engine, then copy-and-paste the appsettings.json file into the validator. This 
   will help find any structural errors in this file. 
 
 
