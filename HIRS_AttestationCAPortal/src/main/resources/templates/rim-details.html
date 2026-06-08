@@ -485,7 +485,9 @@
                                                         class="accordion-header">
                                                         <span data-toggle="tooltip" data-placement="top"
                                                             title="Resource File">
-                                                            <button class="accordion-button collapsed" type="button"
+                                                            <button class="accordion-button collapsed"
+                                                                th:classappend="${#strings.isEmpty(resource.id)} ? 'error-color'"
+                                                                type="button"
                                                                 data-bs-toggle="collapse"
                                                                 th:data-bs-target="${'#filesCollapse' + resourceStat.count}"
                                                                 aria-expanded="false"
@@ -542,6 +544,9 @@
                                                                 <span class="fieldHeader">URI Global:</span>
                                                                 <span class="fieldValue"
                                                                     th:text="${resource.rimUriGlobal}" /><br />
+                                                            </th:block>
+                                                            <th:block th:if="${#strings.isEmpty(resource.id)}">
+                                                                <span style="color: red">Resource file not found.</span>
                                                             </th:block>
                                                             <th:block th:if="${#strings.equalsIgnoreCase(resource.rimType, 'Support')}">
                                                                 <th:block th:if="${#arrays.isEmpty(initialData.get('pcrList'))}
