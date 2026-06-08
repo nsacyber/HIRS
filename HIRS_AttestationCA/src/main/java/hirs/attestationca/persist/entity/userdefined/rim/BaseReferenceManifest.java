@@ -71,9 +71,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private String platformVersion = null;
 
     @Column
-    private String payloadType = null;
-
-    @Column
     private String firmwareManufacturer = null;
 
     @Column
@@ -182,7 +179,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
                     softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MANUFACTURER_FULL_STR));
             this.setPlatformModel(softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MODEL_STR));
             this.platformVersion = softwareMeta.getAttribute(SwidTagConstants.PLATFORM_VERSION_STR);
-            this.payloadType = softwareMeta.getAttribute(SwidTagConstants.PAYLOAD_TYPE_STR);
+            this.setPayloadType(softwareMeta.getAttribute(SwidTagConstants.PAYLOAD_TYPE_STR));
             this.firmwareManufacturer = softwareMeta.getAttribute(SwidTagConstants.FIRMWARE_MANUFACTURER_FULL_STR);
             this.firmwareManufacturerId = softwareMeta.getAttribute(SwidTagConstants.FIRMWARE_MANUFACTURER_ID_STR);
             this.firmwareModel = softwareMeta.getAttribute(SwidTagConstants.FIRMWARE_MODEL_STR);

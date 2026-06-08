@@ -131,6 +131,9 @@ public class ReferenceManifest extends ArchivableEntity {
     @JsonIgnore
     private String base64Hash = "";
 
+    @Column
+    private String payloadType = null;
+
     /**
      * Default constructor necessary for Hibernate.
      */
