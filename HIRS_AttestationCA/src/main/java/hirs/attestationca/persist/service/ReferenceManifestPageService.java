@@ -56,7 +56,7 @@ public class ReferenceManifestPageService {
     private final EntityManager entityManager;
 
     private static final String BASE_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)swidtag)$";
-    private static final String SUPPORT_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)(rimpcr|rimel|bin|log))$";
+    public static final String SUPPORT_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)(rimpcr|rimel|bin|log))$";
 
     /**
      * Constructor for the Reference Manifest Page Service.

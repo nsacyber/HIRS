@@ -454,10 +454,10 @@
                         th:if="${#strings.isEmpty(initialData.get('rimLinkId'))}" />
                     <th:block th:unless="${#strings.isEmpty(initialData.get('rimLinkId'))}">
                         <div>Rim Link Hash:
-                            <a
-                                href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.get('rimLinkId')})">
+                            <a href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.get('rimLinkId')})">
                                 <span>${initialData.get('rimLinkHash')}</span>
                             </a>
+                        </div>
                     </th:block>
                     <th:block th:if="${not #strings.isEmpty(initialData.get('rimLinkHash'))}">
                         <span>
@@ -496,41 +496,36 @@
                                                         class="accordion-header">
                                                         <span data-toggle="tooltip" data-placement="top"
                                                             title="Resource File">
-                                                            <th:block
-                                                                th:if="${not #strings.isEmpty(initialData.get('associatedRim'))}">
-                                                                <button class="accordion-button collapsed" type="button"
-                                                                    data-bs-toggle="collapse"
-                                                                    th:data-bs-target="${'#filesCollapse' + resourceStat.count}"
-                                                                    aria-expanded="false"
-                                                                    th:aria-controls="${'filesCollapse' + resourceStat.count}">
-                                                                    <a
-                                                                        th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${initialData.get('associatedRim')})}">
-                                                                        <span th:text="${resource.name}">Associated
-                                                                            RIM</span>
-                                                                    </a>
+                                                            <button class="accordion-button collapsed"
+                                                                th:classappend="${#strings.isEmpty(resource.id)} ? 'error-color'"
+                                                                type="button"
+                                                                data-bs-toggle="collapse"
+                                                                th:data-bs-target="${'#filesCollapse' + resourceStat.count}"
+                                                                aria-expanded="false"
+                                                                th:aria-controls="${'filesCollapse' + resourceStat.count}">
+                                                                <th:block th:if="${#strings.isEmpty(resource.id)}">
+                                                                    <span th:text="${resource.name}">Resource File</span>
+                                                                </th:block>
+                                                                <th:block th:unless="${#strings.isEmpty(resource.id)}">
+                                                                <a
+                                                                    th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${resource.id})}">
+                                                                    <span th:text="${resource.name}">Resource File</span>
+                                                                </a>
+                                                                </th:block>
+                                                                <th:block
+                                                                    th:if="${#strings.equalsIgnoreCase(resource.rimType, 'Support')}">
                                                                     <th:block
-                                                                        th:if="${not #strings.isEmpty(initialData.get('supportRimHashValid'))}">
+                                                                        th:if="${#strings.isEmpty(initialData.get('supportRimHashValid'))}">
+                                                                        <img th:src="@{/icons/ic_error_red_24dp.png}"
+                                                                             title="Support RIM hash not valid!" />
+                                                                    </th:block>
+                                                                    <th:block
+                                                                        th:unless="${#strings.isEmpty(initialData.get('supportRimHashValid'))}">
                                                                         <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}"
                                                                             title="Support RIM hash valid" />
                                                                     </th:block>
-                                                                    <th:block
-                                                                        th:unless="${not #strings.isEmpty(initialData.get('supportRimHashValid'))}">
-                                                                        <img th:src="@{/icons/ic_error_red_24dp.png}"
-                                                                            title="Support RIM hash not valid!" />
-                                                                    </th:block>
-                                                                </button>
-                                                            </th:block>
-                                                            <th:block
-                                                                th:unless="${not #strings.isEmpty(initialData.get('associatedRim'))}">
-                                                                <button class="accordion-button collapsed" type="button"
-                                                                    data-bs-toggle="collapse"
-                                                                    th:data-bs-target="${'#filesCollapse' + resourceStat.count}"
-                                                                    aria-expanded="false"
-                                                                    th:aria-controls="${'filesCollapse' + resourceStat.count}">
-                                                                    <span th:text="${resource.name}">Associated
-                                                                        RIM</span>
-                                                                </button>
-                                                            </th:block>
+                                                                </th:block>
+                                                            </button>
                                                         </span><!-- Tooltip -->
                                                     </h3>
                                                     <div th:id="${'filesCollapse' + resourceStat.count}"
@@ -561,45 +556,50 @@
                                                                 <span class="fieldValue"
                                                                     th:text="${resource.rimUriGlobal}" /><br />
                                                             </th:block>
-                                                            <th:block
-                                                                th:if="${not #arrays.isEmpty(initialData.get('pcrList'))}">
-                                                                <div th:id="${'pcrAccordion' + resourceStat.count}"
-                                                                    class="accordion">
-                                                                    <div
-                                                                        class="accordion-item border rounded mb-2 overflow-hidden">
-                                                                        <h3 class="accordion-header"
-                                                                            th:id="${'pcrHeader' + resourceStat.count}">
-                                                                            <button class="accordion-button collapsed"
-                                                                                type="button" data-bs-toggle="collapse"
-                                                                                th:data-bs-target="${'#pcrCollapse' + resourceStat.count}"
-                                                                                aria-expanded="false"
-                                                                                th:aria-controls="${'pcrCollapse' + resourceStat.count}">
-                                                                                Expected PCR Values
-                                                                            </button>
-                                                                        </h3>
-                                                                        <div class="accordion-collapse collapse"
-                                                                            th:id="${'pcrCollapse' + resourceStat.count}"
-                                                                            th:aria-labelledby="${'pcrHeader' + resourceStat.count}"
-                                                                            aria-expanded="false"
-                                                                            th:data-bs-parent="${'#pcrAccordion' + resourceStat.count}">
-                                                                            <div class="accordion-body">
-                                                                                <th:block
-                                                                                    th:each="pcr, pcrStat : ${initialData.get('pcrList')}">
-                                                                                    <span
-                                                                                        th:text="${'PCR' + pcrStat.index + ': '}" />
-                                                                                    <span
-                                                                                        style="overflow-wrap: break-word"
-                                                                                        th:text="${pcr}"></span><br />
-                                                                                </th:block>
-                                                                            </div><!--accordion body-->
-                                                                        </div><!--accordion collapse-->
-                                                                    </div><!--accordion item-->
-                                                                </div><!--pcrAccordion-->
+                                                            <th:block th:if="${#strings.isEmpty(resource.id)}">
+                                                                <span style="color: red">Resource file not found.</span>
                                                             </th:block>
-                                                            <th:block th:if="${#arrays.isEmpty(initialData.get('pcrList'))}
-                                                                        and not ${initialData.get('swidPatch')}
-                                                                        and not ${initialData.get('swidSupplemental')}">
-                                                                <span style="color: red">PCR values not found.</span>
+                                                            <th:block th:if="${#strings.equalsIgnoreCase(resource.rimType, 'Support')}">
+                                                                <th:block th:if="${#arrays.isEmpty(initialData.get('pcrList'))}
+                                                                            and not ${initialData.get('swidPatch')}
+                                                                            and not ${initialData.get('swidSupplemental')}">
+                                                                    <span style="color: red">Support RIM not found.</span>
+                                                                </th:block>
+                                                                <th:block
+                                                                    th:if="${not #arrays.isEmpty(initialData.get('pcrList'))}">
+                                                                    <div th:id="${'pcrAccordion' + resourceStat.count}"
+                                                                        class="accordion">
+                                                                        <div
+                                                                            class="accordion-item border rounded mb-2 overflow-hidden">
+                                                                            <h3 class="accordion-header"
+                                                                                th:id="${'pcrHeader' + resourceStat.count}">
+                                                                                <button class="accordion-button collapsed"
+                                                                                    type="button" data-bs-toggle="collapse"
+                                                                                    th:data-bs-target="${'#pcrCollapse' + resourceStat.count}"
+                                                                                    aria-expanded="false"
+                                                                                    th:aria-controls="${'pcrCollapse' + resourceStat.count}">
+                                                                                    Expected PCR Values
+                                                                                </button>
+                                                                            </h3>
+                                                                            <div class="accordion-collapse collapse"
+                                                                                th:id="${'pcrCollapse' + resourceStat.count}"
+                                                                                th:aria-labelledby="${'pcrHeader' + resourceStat.count}"
+                                                                                aria-expanded="false"
+                                                                                th:data-bs-parent="${'#pcrAccordion' + resourceStat.count}">
+                                                                                <div class="accordion-body">
+                                                                                    <th:block
+                                                                                        th:each="pcr, pcrStat : ${initialData.get('pcrList')}">
+                                                                                        <span
+                                                                                            th:text="${'PCR' + pcrStat.index + ': '}" />
+                                                                                        <span
+                                                                                            style="overflow-wrap: break-word"
+                                                                                            th:text="${pcr}"></span><br />
+                                                                                    </th:block>
+                                                                                </div><!--accordion body-->
+                                                                            </div><!--accordion collapse-->
+                                                                        </div><!--accordion item-->
+                                                                    </div><!--pcrAccordion-->
+                                                                </th:block>
                                                             </th:block>
                                                         </div><!--accordion body-->
                                                     </div><!--accordion collapse-->

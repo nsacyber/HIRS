@@ -121,3 +121,22 @@
   width: 20rem;
   font-weight: bold;
 }
+
+.error-color {
+  background-color: #FF6164;
+  color: #FFFFFF;
+}
+
+.accordion-button.error-color.collapsed {
+  background-color: #FF6164;
+  color: #FFFFFF;
+}
+
+.accordion-button.error-color:not(.collapsed) {
+  background-color: #FF6164;
+  color: #FFFFFF;
+}
+
+.accordion-button.error-color:focus {
+  box-shadow: none;
+}

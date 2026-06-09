@@ -19,6 +19,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
+import hirs.attestationca.persist.service.ReferenceManifestPageService;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.utils.HexUtils;
 import hirs.utils.SwidResource;
@@ -529,8 +530,7 @@ public class DeviceInfoProcessorService {
      * @param provisionedDeviceInfo provisioned Device Info
      */
     private void updateBaseSupportRIMSUsingDeviceInfo(final ProvisionerTpm2.DeviceInfo provisionedDeviceInfo) {
-        final String supportRimFilePattern = "(\\S+(\\.(?i)(rimpcr|rimel|bin|log))$)";
-        final Pattern supportRimPattern = Pattern.compile(supportRimFilePattern);
+        final Pattern supportRimPattern = Pattern.compile(ReferenceManifestPageService.SUPPORT_RIM_FILE_PATTERN);
 
         final List<ByteString> swidfileList = provisionedDeviceInfo.getSwidfileList();
 
