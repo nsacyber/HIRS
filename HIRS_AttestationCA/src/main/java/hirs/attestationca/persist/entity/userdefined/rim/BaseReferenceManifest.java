@@ -71,7 +71,16 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private String platformVersion = null;
 
     @Column
-    private String payloadType = null;
+    private String firmwareManufacturer = null;
+
+    @Column
+    private String firmwareManufacturerId = null;
+
+    @Column
+    private String firmwareModel = null;
+
+    @Column
+    private String firmwareVersion = null;
 
     @Column
     private String pcURIGlobal = null;
@@ -84,8 +93,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
     private String entityRegId = null;
 
     private String entityRole = null;
-
-    private String entityThumbprint = null;
 
     private String linkHref = null;
 
@@ -142,7 +149,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
                     Boolean.parseBoolean(softwareIdentity.getAttribute(SwidTagConstants.SUPPLEMENTAL)));
             this.setSwidVersion(softwareIdentity.getAttribute(SwidTagConstants.VERSION));
             this.setSwidTagVersion(softwareIdentity.getAttribute(SwidTagConstants.TAGVERSION));
-
+            this.setSwidVersionScheme(softwareIdentity.getAttribute(SwidTagConstants.VERSION_SCHEME));
             parseSoftwareMeta(meta);
             parseEntity(entity);
             parseLink(link);
@@ -170,7 +177,11 @@ public class BaseReferenceManifest extends ReferenceManifest {
                     softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MANUFACTURER_FULL_STR));
             this.setPlatformModel(softwareMeta.getAttribute(SwidTagConstants.PLATFORM_MODEL_STR));
             this.platformVersion = softwareMeta.getAttribute(SwidTagConstants.PLATFORM_VERSION_STR);
-            this.payloadType = softwareMeta.getAttribute(SwidTagConstants.PAYLOAD_TYPE_STR);
+            this.setPayloadType(softwareMeta.getAttribute(SwidTagConstants.PAYLOAD_TYPE_STR));
+            this.firmwareManufacturer = softwareMeta.getAttribute(SwidTagConstants.FIRMWARE_MANUFACTURER_FULL_STR);
+            this.firmwareManufacturerId = softwareMeta.getAttribute(SwidTagConstants.FIRMWARE_MANUFACTURER_ID_STR);
+            this.firmwareModel = softwareMeta.getAttribute(SwidTagConstants.FIRMWARE_MODEL_STR);
+            this.firmwareVersion = softwareMeta.getAttribute(SwidTagConstants.FIRMWARE_VERSION_STR);
             this.pcURIGlobal = softwareMeta.getAttribute(SwidTagConstants.PC_URI_GLOBAL_STR);
             this.pcURILocal = softwareMeta.getAttribute(SwidTagConstants.PC_URI_LOCAL_STR);
         } else {
@@ -189,7 +200,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
             this.entityName = entity.getAttribute(SwidTagConstants.NAME);
             this.entityRegId = entity.getAttribute(SwidTagConstants.REGID);
             this.entityRole = entity.getAttribute(SwidTagConstants.ROLE);
-            this.entityThumbprint = entity.getAttribute(SwidTagConstants.THUMBPRINT);
         } else {
             log.warn("Entity Tag not found.");
         }
@@ -292,6 +302,18 @@ public class BaseReferenceManifest extends ReferenceManifest {
             swidResource.setSize(file.getAttribute(SwidTagConstants.SIZE));
             swidResource.setHashValue(file.getAttribute(SwidTagConstants.SHA_256_HASH.getPrefix() + ":"
                     + SwidTagConstants.SHA_256_HASH.getLocalPart()));
+            swidResource.setRimFormat(
+                    file.getAttributeNS(
+                            SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT.getNamespaceURI(),
+                            SwidTagConstants.QNAME_SUPPORT_RIM_FORMAT.getLocalPart()));
+            swidResource.setRimType(
+                    file.getAttributeNS(
+                            SwidTagConstants.QNAME_SUPPORT_RIM_TYPE.getNamespaceURI(),
+                            SwidTagConstants.QNAME_SUPPORT_RIM_TYPE.getLocalPart()));
+            swidResource.setRimUriGlobal(
+                    file.getAttributeNS(
+                            SwidTagConstants.QNAME_SUPPORT_RIM_URI_GLOBAL.getNamespaceURI(),
+                            SwidTagConstants.QNAME_SUPPORT_RIM_URI_GLOBAL.getLocalPart()));
             validHashes.add(swidResource);
         }
 

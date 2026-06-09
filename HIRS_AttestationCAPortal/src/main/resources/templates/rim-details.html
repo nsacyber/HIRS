@@ -369,6 +369,7 @@
                 <div id="softwareIdentity" class="col col-md-8">
                     <span th:text="${'SWID Name: ' + initialData.get('swidName')}" />
                     <span th:text="${'SWID Version: ' + initialData.get('swidVersion')}" />
+                    <span th:text="${'SWID Version Scheme: ' + initialData.get('swidVersionScheme')}" />
                     <span th:text="${'SWID Tag ID: ' + initialData.get('swidTagId')}" />
                     <span th:text="${'SWID Tag Version: ' + initialData.get('swidTagVersion')}" />
                     <span th:if="${initialData.get('swidCorpus')}">
@@ -397,7 +398,6 @@
                     <span th:text="${'Entity Reg ID: ' + initialData.entityRegId}"
                         th:if="${not #strings.isEmpty(initialData.entityRegId)}" />
                     <span th:text="${'Entity Role: ' + initialData.entityRole}" />
-                    <span th:text="${'Entity Thumbprint: ' + initialData.entityThumbprint}" />
                 </div>
             </div><!--entity row-->
             <div class="rimrow">
@@ -424,21 +424,32 @@
                     <span class="colHeader">Meta</span>
                 </div>
                 <div id="meta" class="col col-md-8">
-                    <span th:text="${'Platform Manufacturer ID: ' + initialData.get('platformManufacturerId')}" />
+                    <span th:text="${'Colloquial Version: ' + initialData.get('colloquialVersion')}"
+                          th:if="${not #strings.isEmpty(initialData.get('colloquialVersion'))}" />
+                    <span th:text="${'Edition: ' + initialData.get('edition')}"
+                          th:if="${not #strings.isEmpty(initialData.get('edition'))}" />
+                    <span th:text="${'Product: ' + initialData.get('product')}"
+                          th:if="${not #strings.isEmpty(initialData.get('product'))}" />
+                    <span th:text="${'Revision: ' + initialData.get('revision')}"
+                          th:if="${not #strings.isEmpty(initialData.get('revision'))}" />
+                    <span th:text="${'Payload Type: ' + initialData.get('payloadType')}" />
                     <span th:text="${'Platform Manufacturer: ' + initialData.get('platformManufacturer')}" />
+                    <span th:text="${'Platform Manufacturer ID: ' + initialData.get('platformManufacturerId')}" />
                     <span th:text="${'Platform Model: ' + initialData.get('platformModel')}" />
                     <span th:text="${'Platform Version: ' + initialData.get('platformVersion')}"
                         th:if="${not #strings.isEmpty(initialData.get('platformVersion'))}" />
-                    <span th:text="${'Colloquial Version: ' + initialData.get('colloquialVersion')}" />
-                    <span th:text="${'Edition: ' + initialData.edition}" />
-                    <span th:text="${'Product: ' + initialData.get('product')}" />
-                    <span th:text="${'Revision: ' + initialData.get('revision')}" />
-                    <span th:text="${'Payload Type: ' + initialData.get('payloadType')}"
-                        th:if="${not #strings.isEmpty(initialData.get('payloadType'))}" />
+                    <span th:text="${'Firmware Manufacturer: ' + initialData.get('firmwareManufacturer')}"
+                          th:if="${not #strings.isEmpty(initialData.get('firmwareManufacturer'))}" />
+                    <span th:text="${'Firmware Manufacturer ID: ' + initialData.get('firmwareManufacturerId')}"
+                          th:if="${not #strings.isEmpty(initialData.get('firmwareManufacturerId'))}" />
+                    <span th:text="${'Firmware Model: ' + initialData.get('firmwareModel')}"
+                          th:if="${not #strings.isEmpty(initialData.get('firmwareModel'))}" />
+                    <span th:text="${'Firmware Version: ' + initialData.get('firmwareVersion')}"
+                          th:if="${not #strings.isEmpty(initialData.get('firmwareVersion'))}" />
                     <span th:text="${'Binding Spec: ' + initialData.get('bindingSpec')}" />
-                    <span th:text="${'Binding Spec Version: ' +initialData.get('bindingSpecVersion')}" />
-                    <span th:text="${'PC URI Global: ' + initialData.get('pcUriGlobal')}"
-                        th:if="${not #strings.isEmpty(initialData.get('pcUriGlobal'))}" />
+                    <span th:text="${'Binding Spec Version: ' + initialData.get('bindingSpecVersion')}" />
+                    <span th:text="${'PC URI Local: ' + initialData.get('pcUriLocal')}" />
+                    <span th:text="${'PC URI Global: ' + initialData.get('pcUriGlobal')}" />
                     <span th:text="${'Rim Link Hash: ' + initialData.get('rimLinkHash')}"
                         th:if="${#strings.isEmpty(initialData.get('rimLinkId'))}" />
                     <th:block th:unless="${#strings.isEmpty(initialData.get('rimLinkId'))}">
@@ -535,18 +546,18 @@
                                                                 style="overflow-wrap: break-word">[none]</span><br />
                                                             <th:block
                                                                 th:if="${not #strings.isEmpty(resource.rimFormat)}">
-                                                                <span class="fieldHeader">RIM Format:</span>
+                                                                <span class="fieldHeader">Support RIM Format:</span>
                                                                 <span class="fieldValue"
                                                                     th:text="${resource.rimFormat}" /><br />
                                                             </th:block>
                                                             <th:block th:if="${not #strings.isEmpty(resource.rimType)}">
-                                                                <span class="fieldHeader">RIM Type:</span>
+                                                                <span class="fieldHeader">Support RIM Type:</span>
                                                                 <span class="fieldValue"
                                                                     th:text="${resource.rimType}" /><br />
                                                             </th:block>
                                                             <th:block
                                                                 th:if="${not #strings.isEmpty(resource.rimUriGlobal)}">
-                                                                <span class="fieldHeader">URI Global:</span>
+                                                                <span class="fieldHeader">Support URI Global:</span>
                                                                 <span class="fieldValue"
                                                                     th:text="${resource.rimUriGlobal}" /><br />
                                                             </th:block>
