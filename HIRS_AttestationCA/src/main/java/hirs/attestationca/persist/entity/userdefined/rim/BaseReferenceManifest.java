@@ -94,8 +94,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
 
     private String entityRole = null;
 
-    private String entityThumbprint = null;
-
     private String linkHref = null;
 
     private String linkRel = null;
@@ -202,7 +200,6 @@ public class BaseReferenceManifest extends ReferenceManifest {
             this.entityName = entity.getAttribute(SwidTagConstants.NAME);
             this.entityRegId = entity.getAttribute(SwidTagConstants.REGID);
             this.entityRole = entity.getAttribute(SwidTagConstants.ROLE);
-            this.entityThumbprint = entity.getAttribute(SwidTagConstants.THUMBPRINT);
         } else {
             log.warn("Entity Tag not found.");
         }

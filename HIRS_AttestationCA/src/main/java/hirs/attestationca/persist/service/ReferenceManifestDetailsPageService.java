@@ -213,7 +213,6 @@ public class ReferenceManifestDetailsPageService {
         data.put("entityName", baseRim.getEntityName());
         data.put("entityRegId", baseRim.getEntityRegId());
         data.put("entityRole", baseRim.getEntityRole());
-        data.put("entityThumbprint", baseRim.getEntityThumbprint());
 
         // Link
         String linkHref = baseRim.getLinkHref();
