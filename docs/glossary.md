@@ -4,6 +4,14 @@ Terms used repeatedly across HIRS, ACA, Provisioner and the TCG specification do
 
 ## A
 
+**Artifact (Digital)**
+:   An information-bearing object that is, or is encoded to be used with, a digital computer system.
+
+**Attester**
+:   A computing entity whose trustworthiness can be evaluated. The Attester implements attestation 
+functions (e.g., collects claims, protects claims, and conveys Evidence to a Verifier). 
+The Attester is sometimes referred to as device or client.
+
 **Attestation Certificate (AC)**
 :   An X.509 certificate issued by the HIRS Verifier to provide device identity and validation of the device hardware and software load.
 
@@ -12,10 +20,18 @@ Terms used repeatedly across HIRS, ACA, Provisioner and the TCG specification do
 
 ## E
 
+**Endorsement**
+:   A type of verifiable Artifact that makes claims about an Attester,
+that are authenticatable, that are supplied by an Endorser.
+
 **Endorsement Key (EK) Credential**
-:   An X.509 certificate, signed by a TPM manufacturer's CA, that 
-binds a TPM to a manufacturer and provides proof of authenticity for a TPM's 
-Endorsement Key. Also commonly referred to as EK Certificate.
+:   An X.509 v3 certificate that contains the public EK. 
+Also commonly referred to as EK Certificate.
+
+**Endorser**
+:   An entity that describes trustworthiness properties of an Attester that typically do not
+appear in Evidence. An Endorser Role refers to functionality that creates, provisions,
+or conveys trustworthiness properties, i.e., Endorsements, to Verifiers.
 
 ## H
 

@@ -17,7 +17,7 @@ about components on a host and the security standards met by the platform manufa
 
 !!! info
 
-    The [PACCOR webpage :fontawesome-solid-external-link:](https://nsacyber.github.io/paccor/index.html){:target="_blank"}
+    The [PACCOR help page :fontawesome-solid-external-link:](https://nsacyber.github.io/paccor/index.html){:target="_blank"}
     has tutorials for using the tool.
 
 !!! info

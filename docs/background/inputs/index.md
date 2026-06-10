@@ -27,7 +27,7 @@ These artifacts include:
 | Artifact Input                                  | Creator                                          | Usage                                                                                                                                 |
 |-------------------------------------------------|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
 | [**EK Credential**](endorsement-cert.md)        | :factory: TPM Manufacturer                       | Validates that the TPM was manufactured by the TPM vendor and meets the TPM vendor's documented features                              |
-| [**Platform Certificate**](platform-cert.md)    | :computer: Motherboard Manufacturer              | Validates that the platform was manufactured by the specified vendor and meets their documented features                              |
+| [**Platform Certificate**](platform-cert.md)    | :computer: Manufacturers, VARs, System Integrators, and Maintenance Organizations              | Validates that the platform was manufactured by the specified vendor and meets their documented features                              |
 | [**Reference Integrity Manifest**](rim.md)      | :scroll: Manufacturers, VARs, System Integrators | - If `XML`: Validates PC firmware<br>- If `CBOR`: Validates platform components (hardware and firmware)     |
 
 The EK Credential and Platform Certificate are X.509 Certificates. The Platform Certificate 
