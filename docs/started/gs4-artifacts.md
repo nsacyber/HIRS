@@ -108,6 +108,12 @@ testing purposes. See the
 [PACCOR Getting Started :fontawesome-solid-external-link:](https://nsacyber.github.io/paccor/getting-started.html){:target="_blank"}
 page in the PACCOR project for instructions.
 
+!!! note
+
+    **At this time you will need to use 
+    [paccor v1.5.1](https://github.com/nsacyber/paccor/releases/tag/v1.5.1). The
+    latest version of paccor will not work with the current version of the ACA.**
+
 ### Platform Certificate Trust Chain
 
 You will need to obtain the platform manufacturer's root and intermediate

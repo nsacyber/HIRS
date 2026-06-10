@@ -50,7 +50,11 @@ nav:
       - tools/index.md
       - tools/paccor.md
       - tools/rimtool.md
-      - tools/eventlogtool.md
+      - Event Log Tool:
+          - tools/eventlogtool/index.md
+          - tools/eventlogtool/elt-install.md
+          - tools/eventlogtool/elt-use.md
+          - tools/eventlogtool/elt-test-patterns.md
   - Behind the Scenes:
       - Supply Chain Validation: background/index.md
       - Validation Inputs:

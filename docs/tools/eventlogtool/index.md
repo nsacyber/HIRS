@@ -17,5 +17,3 @@ which specifies the use of the TPM Event Log as a Support RIM type. This tool:
 
     The source code can be found on 
     [GitHub :fontawesome-solid-external-link:](https://github.com/nsacyber/HIRS/tree/main/tools/tcg_eventlog_tool){:target="_blank"}.
-    For more details on the installation and usage of the tool, see the 
-    [Event Log Tool Readme :fontawesome-solid-external-link:](https://github.com/nsacyber/HIRS/blob/master/tools/tcg_eventlog_tool/README.md){:target="_blank"}. 

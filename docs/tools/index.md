@@ -8,7 +8,7 @@ The HIRS project has several "helper" tools. These include:
 
 - [PACCOR](paccor.md)
 - [RIM-Tool](rimtool.md)
-- [Event Log Tool](eventlogtool.md)
+- [Event Log Tool](eventlogtool/index.md)
 
 !!! note
 
