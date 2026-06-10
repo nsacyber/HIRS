@@ -9,12 +9,14 @@ you selected during the HIRS [Configuration](../started/gs3-hirs-config.md) stag
 
 !!! note
 
-    Based on your input configuration (whether you checked endorsement, hardware, 
-    and/or firmware), if you know that you have the relevant artifacts in their 
-    proper folders, to include their trust chains, you can skip the particular 
-    section on this page for those particular artifacts.
+    Based on your HIRS configuration (whether you checked endorsement, hardware, 
+    and/or firmware), if you know that an artifact that you need for your configuration
+    is already in a place where the Provisioner will look and find it,
+    to include that artifact's full trust chain, you can skip the particular 
+    section on this page for that particular artifact.
     For instance, if you have configured the ACA to check endorsement, hardware, and
-    firmware, and you have all of the following
+    firmware, and you know that the following are all in places where the Provisioner will
+    look and find them:
     
     1. Endorsement Certificate
     2. Platform Certificate
@@ -22,6 +24,10 @@ you selected during the HIRS [Configuration](../started/gs3-hirs-config.md) stag
     4. All associated trust chains
 
     then you can skip this entire section and move on to [Install the Provisioner](gs5-prov-install.md).
+
+    If you don't know where the Provisioner is supposed to find the artifact you need, or you don't know
+    which artifact you need, or you don't understand this note, please continue the steps on this page.
+    
 
 ## 'Blank' configuration - software install check
 
