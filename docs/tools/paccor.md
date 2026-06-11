@@ -10,10 +10,9 @@ and testing Platform Certificates according to the
 
 !!! note
 
-    **At this time, if you are using paccor to create platform certificates
-    for HIRS ACA validation runs, you will need to use 
-    [paccor v1.5.1](https://github.com/nsacyber/paccor/releases/tag/v1.5.1). The
-    latest version of paccor will not work with the current version of the ACA.**
+    **At this time, the current ACA is not compatible with Platform Certificate v2.0. 
+    If you are using paccor to create platform certificates for HIRS ACA validation runs,
+    be sure to create a Platform Certificate v1.1.**
 
 A Platform Certificate is an X.509 Attribute Certificate which encapsulates details 
 about components on a host and the security standards met by the platform manufacturer. This tool: 

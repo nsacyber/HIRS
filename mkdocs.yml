@@ -54,7 +54,7 @@ nav:
           - tools/eventlogtool/index.md
           - tools/eventlogtool/elt-install.md
           - tools/eventlogtool/elt-use.md
-          - tools/eventlogtool/elt-test-patterns.md
+          - tools/eventlogtool/elt-output.md
   - Behind the Scenes:
       - Supply Chain Validation: background/index.md
       - Validation Inputs:

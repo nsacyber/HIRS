@@ -95,21 +95,112 @@ The PFP uses upper case labels to reference the events (e.g. event type 0x000000
 
 ### Displaying All Events
 
+In order to display all events within a specified log file, you will need an Event Log file.
+Typically the filetype would be a .bin. See [] for an example test patterns.
+
+Once you have this file, you can input it into this command for results:
+
+``` shell
+elt -f TpmLog.bin -e
+```
+
+** pic
+
 ### Displaying Only One Event
 
+If you would like to display only one event from an Event Log, you can use:
+
+   ``` shell
+   elt -f TpmLog.bin -e 1
+   ```
+
+For this example, Event #1 was used.
+
+** pic
+
 ## Outputting Event Log Information to a File
+
+If you would like to output information from the tcg_eventlog_tool to an external file for 
+use later, you can use the -o option as below:
+
+   ``` shell
+   elt -f TpmLog.bin -p 0 -o example.txt
+   ```
+
+In this case, the query information about the TpmLog.bin file was saved to a new text 
+file named example.txt.
+
+Using cat example.txt shows that the information queried above from elt –f 
+TpmLog.bin -p 0 was saved to the example.txt file that was created:
+
+** pic
 
 ## Displaying Information in Hex Format
 
 ### Displaying An Event in Hex Format
 
+If you would like to display an event from the tcg_eventlog_tool in a hex format, you 
+can use the –x option like this:
+
+   ``` shell
+   elt -f TpmLog.bin -e 1 –x
+   ```
+
+In this example, Event #1 is transcribed into hex format:
+
+** pic
+
 ### Displaying An Event in Hex Format With Additional Context
+
+If you would like to display an event in hex format with additional context but no 
+content information, you can use the -ex option like this:
+
+   ``` shell
+   elt -f TpmLog.bin -e 1 -ex
+   ```
+
+In this example, Event #1 is transcribed into hex format:
+
+** pic
 
 ### Displaying Event Content in Hex Format With Additional Context
 
+If you would like to display an event with content information in hex format with 
+additional context, you can use the -ec option like this:
+
+   ``` shell
+   elt -f TpmLog.bin -e 1 -ec
+   ```
+
+In this example, Event #1 and its content have been transcribed into hex format:
+
+** pic
+
 ## Displaying Expected PCR Values
+
+If you would like to view all expected PCR Values of an Event Log, you can use 
+the -p option as below:
+
+   ``` shell
+   elt -f TpmLog.bin -p
+   ```
+
+** pic
 
 ## Comparing Event Log Files
 
-## 
+If you would like to compare Event Log files to see where certain events may have 
+failed comparison, you can use this command:
+
+   ``` shell
+   elt -d TpmLog.bin TPMLog_Altered.bin -p
+   ```
+
+The two files being compared in this example are TpmLog.bin and TPMLog_Altered.bin.
+
+** pic
+
+As you can see above, the Event Logs had 2 event mismatches. Since a mismatch has 
+occurred, this could mean that the digest values within the Event Log are not 
+verifiable and may have been tampered with. 
 
