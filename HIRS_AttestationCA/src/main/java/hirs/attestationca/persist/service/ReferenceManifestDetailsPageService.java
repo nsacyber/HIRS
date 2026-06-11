@@ -276,7 +276,8 @@ public class ReferenceManifestDetailsPageService {
                         swidRes.getHashValue(), ReferenceManifest.BASE_RIM);
             }
 
-            if (referenceManifest != null && swidRes.getHashValue().equalsIgnoreCase(referenceManifest.getHexDecHash())) {
+            if (referenceManifest != null && swidRes.getHashValue().equalsIgnoreCase(
+                    referenceManifest.getHexDecHash())) {
                 swidRes.setId(referenceManifest.getId());
                 swidRes.setRimType(referenceManifest.getRimType());
                 if (referenceManifest.getRimType().equals(ReferenceManifest.SUPPORT_RIM)) {
