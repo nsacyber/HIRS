@@ -271,7 +271,8 @@ public class ReferenceManifestDetailsPageService {
             ReferenceManifest referenceManifest = this.referenceManifestRepository.findByHexDecHash(
                     swidRes.getHashValue());
 
-            if (referenceManifest != null && swidRes.getHashValue().equalsIgnoreCase(referenceManifest.getHexDecHash())) {
+            if (referenceManifest != null
+                    && swidRes.getHashValue().equalsIgnoreCase(referenceManifest.getHexDecHash())) {
                 swidRes.setId(referenceManifest.getId());
                 swidRes.setRimType(referenceManifest.getRimType());
                 if (referenceManifest.getRimType().equals(ReferenceManifest.SUPPORT_RIM)) {

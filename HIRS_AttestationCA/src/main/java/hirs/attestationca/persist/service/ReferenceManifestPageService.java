@@ -56,6 +56,9 @@ public class ReferenceManifestPageService {
     private final EntityManager entityManager;
 
     private static final String BASE_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)swidtag)$";
+    /**
+     * This pattern string is used to match support RIM file extensions.
+     */
     public static final String SUPPORT_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)(rimpcr|rimel|bin|log))$";
 
     /**

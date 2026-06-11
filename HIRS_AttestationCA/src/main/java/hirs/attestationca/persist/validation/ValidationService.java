@@ -373,17 +373,21 @@ public final class ValidationService {
         if (credential.getAuthorityKeyIdentifier() != null
                 && !credential.getAuthorityKeyIdentifier().isEmpty()) {
             byte[] bytes = Hex.decode(credential.getAuthorityKeyIdentifier());
-            skiCA = caCredentialRepository.findBySubjectKeyIdentifier(bytes);
+            skiCA = caCredentialRepository.findBySubjectKeyIdentifierAndArchiveFlag(bytes, false);
         }
 
         if (skiCA == null) {
             if (credential.getIssuerSorted() == null
                     || credential.getIssuerSorted().isEmpty()) {
-                certAuthsWithMatchingIssuer = caCredentialRepository.findBySubject(credential.getIssuer());
+                certAuthsWithMatchingIssuer =
+                        caCredentialRepository.findBySubjectAndArchiveFlag(credential.getIssuer(),
+                                                                false);
             } else {
                 //Get certificates by subject organization
                 certAuthsWithMatchingIssuer =
-                        caCredentialRepository.findBySubjectSorted(credential.getIssuerSorted());
+                        caCredentialRepository.findBySubjectSortedAndArchiveFlag(
+                                credential.getIssuerSorted(),
+                                false);
             }
         } else {
             certAuthsWithMatchingIssuer.add(skiCA);
