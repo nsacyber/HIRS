@@ -51,6 +51,7 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates")
 @Log4j2
 public class PlatformCertificatePageController extends PageController<NoPageParams> {
+    private static final int SUPPORTED_TCG_CREDENTIAL_MAJOR_VERSION = 1; // Currently do not support V2.X certificates
     private final CertificatePageService certificatePageService;
     private final PlatformCertificatePageService platformCertificatePageService;
 
@@ -217,10 +218,18 @@ public class PlatformCertificatePageController extends PageController<NoPagePara
                     platformCertificatePageService.parsePlatformCertificate(file, errorMessages);
 
             if (parsedPlatformCertificate != null) {
-                certificatePageService.storeCertificate(
-                        CertificateType.PLATFORM_CERTIFICATE,
-                        file.getOriginalFilename(),
-                        successMessages, errorMessages, parsedPlatformCertificate);
+                if (parsedPlatformCertificate.getTcgCredentialMajorVersion()
+                        > SUPPORTED_TCG_CREDENTIAL_MAJOR_VERSION) {
+                    errorMessages.add(String.format("Unsupported TCG credential major version (%d) "
+                                    + "for uploaded platform certificate file (%s)",
+                            parsedPlatformCertificate.getTcgCredentialMajorVersion(),
+                            file.getOriginalFilename()));
+                } else {
+                    certificatePageService.storeCertificate(
+                            CertificateType.PLATFORM_CERTIFICATE,
+                            file.getOriginalFilename(),
+                            successMessages, errorMessages, parsedPlatformCertificate);
+                }
             }
 
             messages.addSuccessMessages(successMessages);
