@@ -52,7 +52,7 @@ public final class SwidTagParser {
      * @param doc of the input swidtag.
      * @return document validated against the schema.
      */
-    public static Document validateSwidtagSchema(Document doc) throws UnmarshalException {
+    public static Document validateSwidtagSchema(final Document doc) throws UnmarshalException {
 
         try (InputStream is = SwidTagParser.class.getClassLoader().getResourceAsStream(
                 SwidTagConstants.SCHEMA_URL)) {
@@ -60,14 +60,14 @@ public final class SwidTagParser {
                 log.error("Schema resource not found");
                 return null;
             }
-            doc = removeXMLWhitespace(doc);
+            Document validatedDoc = removeXMLWhitespace(doc);
             SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
             Schema schema = schemaFactory.newSchema(new StreamSource(is));
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             unmarshaller.setSchema(schema);
-            unmarshaller.unmarshal(doc);
-            return doc;
+            unmarshaller.unmarshal(validatedDoc);
+            return validatedDoc;
         } catch (UnmarshalException e) {
             throw new UnmarshalException("Error parsing Base RIM: " + e.getCause());
         } catch (IllegalArgumentException e) {

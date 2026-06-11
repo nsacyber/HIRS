@@ -55,9 +55,14 @@ public class ReferenceManifestPageService {
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final EntityManager entityManager;
 
-    private static final String BASE_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)swidtag)$";
     /**
-     * This pattern string is used to match support RIM file extensions.
+     * Regex pattern used to identify base RIM files with a `.swidtag` extension.
+     */
+    public static final String BASE_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)swidtag)$";
+
+    /**
+     * Regex pattern used to identify supported RIM-related files, with extensions
+     * including: .rimpcr, .rimel, .bin. .log.
      */
     public static final String SUPPORT_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)(rimpcr|rimel|bin|log))$";
 

@@ -268,11 +268,16 @@ public class ReferenceManifestDetailsPageService {
         // to get the id to make the link
         referenceManifestValidator.setRim(baseRim.getRimBytes());
         for (SwidResource swidRes : resources) {
-            ReferenceManifest referenceManifest = this.referenceManifestRepository.findByHexDecHash(
-                    swidRes.getHashValue());
+            ReferenceManifest referenceManifest = this.referenceManifestRepository.findByHexDecHashAndRimType(
+                    swidRes.getHashValue(), ReferenceManifest.SUPPORT_RIM);
 
-            if (referenceManifest != null
-                    && swidRes.getHashValue().equalsIgnoreCase(referenceManifest.getHexDecHash())) {
+            if (referenceManifest == null) {
+                referenceManifest = this.referenceManifestRepository.findByHexDecHashAndRimType(
+                        swidRes.getHashValue(), ReferenceManifest.BASE_RIM);
+            }
+
+            if (referenceManifest != null && swidRes.getHashValue().equalsIgnoreCase(
+                    referenceManifest.getHexDecHash())) {
                 swidRes.setId(referenceManifest.getId());
                 swidRes.setRimType(referenceManifest.getRimType());
                 if (referenceManifest.getRimType().equals(ReferenceManifest.SUPPORT_RIM)) {

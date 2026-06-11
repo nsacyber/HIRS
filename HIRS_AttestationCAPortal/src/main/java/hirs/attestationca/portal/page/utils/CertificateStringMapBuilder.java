@@ -552,7 +552,9 @@ public final class CertificateStringMapBuilder {
             data.put("holderIssuer", certificate.getHolderIssuer());
             if (certificate.isPlatformBase()) {
                 EndorsementCredential ekCertificate = (EndorsementCredential) certificateRepository
-                        .findBySerialNumber(certificate.getHolderSerialNumber(),
+                        .findBySerialNumberAndIssuer(
+                                certificate.getHolderSerialNumber(),
+                                certificate.getHolderIssuer(),
                                 "EndorsementCredential");
 
                 if (ekCertificate != null) {
