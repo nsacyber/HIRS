@@ -56,9 +56,9 @@ and functions.
 
 ### -p: --pcr
 
-* Output expected PCR value calculated from the TCG Log (for PCR Replay).
+* Output expected PCR value calculated from the TPM Event Log (for PCR Replay).
 * The following parameter MAY be a PCR number used to specify a single PCR.
-* No following parameters will display all PCRs.
+* If there are no following parameters, it will display all PCRs.
 
 ### -v: --version
 
@@ -68,7 +68,7 @@ and functions.
 
 * Displays an event in hex format. Use with -ec to get content.
 * Use -e -ec and -ex options to filter output.
-* If not present, all output will be human-readable form.
+* If this option is not present, all output will be human-readable form.
 
 ## Event Log Structure
 
@@ -95,8 +95,8 @@ The PFP uses upper case labels to reference the events (e.g. event type 0x000000
 
 !!! note
 
-    In HIRS, the Event# is not part of the TPM Event Log but is useful to display for 
-    identification purposes.
+    In HIRS, the Event# is not part of the TPM Event Log, but it is displayed because it
+    is useful for identification purposes.
 
 ## Displaying Events
 
@@ -108,7 +108,7 @@ Typically the filetype would be a .bin. See [Example Output](elt-output.md) for 
 Once you have this file, you can input the filename into this command for results:
 
 ``` shell
-elt -f TpmLog.bin -e
+elt -f binary_bios_measurements.bin -e
 ```
 
 <img src= "../../../images/elt-all-events.png" alt="ELT All Events Pic" class="center">
@@ -120,7 +120,7 @@ The tool will list every event. In this example, there are 89 events in all.
 If you would like to display only one event from an Event Log, you can use:
 
    ``` shell
-   elt -f TpmLog.bin -e 2
+   elt -f binary_bios_measurements.bin -e 2
    ```
 
 For this example, Event #2 was used.
@@ -133,14 +133,11 @@ If you would like to output information from the tcg_eventlog_tool to an externa
 use later, you can use the -o option as below:
 
    ``` shell
-   elt -f TpmLog.bin -p 0 -o example.txt
+   elt -f binary_bios_measurements.bin -p 0 -o example.txt
    ```
 
-In this case, the query information about the TpmLog.bin file was saved to a new text 
-file named example.txt.
-
-Using cat example.txt shows that the information queried above from elt –f 
-TpmLog.bin -p 0 was saved to the example.txt file that was created:
+In this case, the query information about the binary_bios_measurements.bin file was saved to a new text 
+file named example.txt, which now contains:
 
 <img src= "../../../images/elt-pcr-0-outfile.png" alt="ELT PCR 0 With Output File Pic" class="center">
 
@@ -152,7 +149,7 @@ If you would like to display an event from the tcg_eventlog_tool in a hex format
 can use the –x option like this:
 
    ``` shell
-   elt -f TpmLog.bin -e 2 –x
+   elt -f binary_bios_measurements.bin -e 2 –x
    ```
 
 In this example, Event #2 is transcribed into hex format:
@@ -165,7 +162,7 @@ If you would like to display an event in hex format with additional context but 
 content information, you can use the -ex option like this:
 
    ``` shell
-   elt -f TpmLog.bin -e 2 -ex
+   elt -f binary_bios_measurements.bin -e 2 -ex
    ```
 
 In this example, Event #2 is transcribed into hex format:
@@ -178,7 +175,7 @@ If you would like to display an event with content information in hex format wit
 additional context, you can use the -ec option like this:
 
    ``` shell
-   elt -f TpmLog.bin -e 2 -ec
+   elt -f binary_bios_measurements.bin -e 2 -ec
    ```
 
 In this example, Event #2 and its content have been transcribed into hex format:
@@ -191,7 +188,7 @@ If you would like to view all expected PCR Values of an Event Log, you can use
 the -p option as below:
 
    ``` shell
-   elt -f TpmLog.bin -p
+   elt -f binary_bios_measurements.bin -p
    ```
 
 <img src= "../../../images/elt-expected-pcrs.png" alt="ELT Expected PCRs Pic" class="center">
@@ -202,10 +199,11 @@ If you would like to compare Event Log files to see where certain events may hav
 failed comparison, you can use this command:
 
    ``` shell
-   elt -d TpmLog.bin TPMLog_Altered.bin -p
+   elt -d binary_bios_measurements.bin binary_bios_measurements_altered.bin -p
    ```
 
-The two files being compared in this example are TpmLog.bin and TPMLog_Altered.bin.
+The two files being compared in this example are binary_bios_measurements.bin and 
+binary_bios_measurements_altered.bin.
 
 <img src= "../../../images/elt-compare-logs.png" alt="ELT Compare Logs Pic" class="center">
 
