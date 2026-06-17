@@ -212,7 +212,9 @@ public class ReferenceManifestValidator {
                 return false;
             }
 
-            if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
+            if (trustStoreFile == null || trustStoreFile.isEmpty()) {
+                log.warn("No truststore file given, unable to validate cert chain.");
+            } else {
                 trustStore = parseCertificatesFromPem(trustStoreFile);
             }
 
