@@ -65,14 +65,14 @@ to the server running the HIRS ACA.
 
 * The TCG Event Log must be retrieved when performing RIM validation:
 
-    === "Windows" 
-        By default, the HIRS .NET Provisioner will ask the Windows API to provide
-        the latest TCG Event Log. Alternatively, you may want to set this key in
-        appsettings.json to a specific path.
     === "Linux"
         If this key is not set in the appsettings.json file, the HIRS .NET Provisioner
         will attempt to retrieve the TCG Event Log from the standard location if it is made
         available from the Linux kernel.
+    === "Windows" 
+        By default, the HIRS .NET Provisioner will ask the Windows API to provide
+        the latest TCG Event Log. Alternatively, you may want to set this key in
+        appsettings.json to a specific path.
 
 ### `path`
 

@@ -2,6 +2,15 @@
 title: User Guide (Linux)
 ---
 
+<style>
+.center {
+display: block;
+margin-left: auto;
+margin-right: auto;
+width: 90%;
+}
+</style>
+
 # Event Log Tool User Guide (Linux)
 
 The Event Log Tool rpm install will create a command line shortcut. This can be invoked from a command 
@@ -19,8 +28,9 @@ and functions.
 ### -f: --file
 
 * Use a specific Event Log file. The following parameter MUST be a path and file name.
-* The local Event Log file will be used if this option is not present.
-* Note: Access to the local Event Log may require admin privileges.
+* If this option is not present, the tool will look for the Event Log file in the 
+[default location](index.md/#event-log-default-location).
+* Note: Access to the log at the default location may require admin privileges.
 
 ### -e: --event
 
@@ -62,16 +72,13 @@ and functions.
 
 ## Event Log Structure
 
-!!! note
+!!! info
 
-    The default location for the TPM Event Log is:
+    The TPM Event Log default location is shown 
+    [here](index.md/#event-log-default-location).
 
-    === "Linux"
-        /sys/kernel/security/tpm0/ with a default name of "binary_bios_measurements"
-    === "Windows"
-        C:\Windows\Logs\MeasuredBoot\ 
-
-The format of the Event Log file is as follows:
+The format of the Event Log file is as follows (see 
+[Example Output](elt-output.md) for an example):
 
 * **pcrIndex**: The PCR Register number, typically shown in documentation as PCR[0], where 0 is the pcrIndex.
 
@@ -96,27 +103,29 @@ The PFP uses upper case labels to reference the events (e.g. event type 0x000000
 ### Displaying All Events
 
 In order to display all events within a specified log file, you will need an Event Log file.
-Typically the filetype would be a .bin. See [] for an example test patterns.
+Typically the filetype would be a .bin. See [Example Output](elt-output.md) for an example.
 
-Once you have this file, you can input it into this command for results:
+Once you have this file, you can input the filename into this command for results:
 
 ``` shell
 elt -f TpmLog.bin -e
 ```
 
-** pic
+<img src= "../../../images/elt-all-events.png" alt="ELT All Events Pic" class="center">
+
+The tool will list every event. In this example, there are 89 events in all.
 
 ### Displaying Only One Event
 
 If you would like to display only one event from an Event Log, you can use:
 
    ``` shell
-   elt -f TpmLog.bin -e 1
+   elt -f TpmLog.bin -e 2
    ```
 
-For this example, Event #1 was used.
+For this example, Event #2 was used.
 
-** pic
+<img src= "../../../images/elt-event-2.png" alt="ELT Specific Event Pic" class="center">
 
 ## Outputting Event Log Information to a File
 
@@ -133,7 +142,7 @@ file named example.txt.
 Using cat example.txt shows that the information queried above from elt –f 
 TpmLog.bin -p 0 was saved to the example.txt file that was created:
 
-** pic
+<img src= "../../../images/elt-pcr-0-outfile.png" alt="ELT PCR 0 With Output File Pic" class="center">
 
 ## Displaying Information in Hex Format
 
@@ -143,12 +152,12 @@ If you would like to display an event from the tcg_eventlog_tool in a hex format
 can use the –x option like this:
 
    ``` shell
-   elt -f TpmLog.bin -e 1 –x
+   elt -f TpmLog.bin -e 2 –x
    ```
 
-In this example, Event #1 is transcribed into hex format:
+In this example, Event #2 is transcribed into hex format:
 
-** pic
+<img src= "../../../images/elt-event-2-hex.png" alt="ELT Event Hex Pic" class="center">
 
 ### Displaying An Event in Hex Format With Additional Context
 
@@ -156,12 +165,12 @@ If you would like to display an event in hex format with additional context but 
 content information, you can use the -ex option like this:
 
    ``` shell
-   elt -f TpmLog.bin -e 1 -ex
+   elt -f TpmLog.bin -e 2 -ex
    ```
 
-In this example, Event #1 is transcribed into hex format:
+In this example, Event #2 is transcribed into hex format:
 
-** pic
+<img src= "../../../images/elt-event-2-hex-context.png" alt="ELT Event Hex, With Content Pic" class="center">
 
 ### Displaying Event Content in Hex Format With Additional Context
 
@@ -169,12 +178,12 @@ If you would like to display an event with content information in hex format wit
 additional context, you can use the -ec option like this:
 
    ``` shell
-   elt -f TpmLog.bin -e 1 -ec
+   elt -f TpmLog.bin -e 2 -ec
    ```
 
-In this example, Event #1 and its content have been transcribed into hex format:
+In this example, Event #2 and its content have been transcribed into hex format:
 
-** pic
+<img src= "../../../images/elt-event-2-content-hex-context.png" alt="ELT Event Content Hex, With Context Pic" class="center">
 
 ## Displaying Expected PCR Values
 
@@ -185,7 +194,7 @@ the -p option as below:
    elt -f TpmLog.bin -p
    ```
 
-** pic
+<img src= "../../../images/elt-expected-pcrs.png" alt="ELT Expected PCRs Pic" class="center">
 
 ## Comparing Event Log Files
 
@@ -198,7 +207,7 @@ failed comparison, you can use this command:
 
 The two files being compared in this example are TpmLog.bin and TPMLog_Altered.bin.
 
-** pic
+<img src= "../../../images/elt-compare-logs.png" alt="ELT Compare Logs Pic" class="center">
 
 As you can see above, the Event Logs had 2 event mismatches. Since a mismatch has 
 occurred, this could mean that the digest values within the Event Log are not 

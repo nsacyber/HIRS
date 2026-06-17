@@ -53,7 +53,8 @@ nav:
       - Event Log Tool:
           - tools/eventlogtool/index.md
           - tools/eventlogtool/elt-install.md
-          - tools/eventlogtool/elt-use.md
+          - tools/eventlogtool/elt-use-linux.md
+          - tools/eventlogtool/elt-use-windows.md
           - tools/eventlogtool/elt-output.md
   - Behind the Scenes:
       - Supply Chain Validation: background/index.md

@@ -4,6 +4,8 @@ title: Example Output
 
 # Event Log Example Output
 
+The following is an example output of a TPM Event Log from a laptop:
+
 <!-- 
 
 [TPM Event Log (TpmLog.bin) :fontawesome-solid-external-link:](https://github.com/nsacyber/HIRS/blob/main/tools/tcg_rim_tool/src/test/resources/TpmLog.bin){:target="_blank"}
