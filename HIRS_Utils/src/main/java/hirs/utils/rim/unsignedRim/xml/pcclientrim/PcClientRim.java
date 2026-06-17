@@ -1,6 +1,7 @@
 package hirs.utils.rim.unsignedRim.xml.pcclientrim;
 
 import hirs.utils.rim.ReferenceManifestValidator;
+import hirs.utils.rim.SwidTagParser;
 import hirs.utils.rim.unsignedRim.GenericRim;
 import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
 import hirs.utils.swid.SwidTagConstants;
@@ -17,6 +18,7 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
@@ -107,6 +109,28 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
         }
 
         if (validator.validateBaseRim(certificateFile)) {
+            valid = true;
+        } else {
+            throw new RuntimeException("Failed to verify " + verifyFile);
+        }
+
+        isValid = valid;
+        return valid;
+    }
+
+    /**
+     * This validate method takes just a public key to verify the input file (rimel optional).
+     *
+     * @param verifyFile to be verified
+     * @param publicKeyFile PK to verify with
+     * @param rimel optional
+     * @return true if valid, false if not
+     */
+    public boolean validate(final String verifyFile, final String publicKeyFile, final String rimel) {
+        boolean valid;
+        PublicKey pk = SwidTagParser.parsePublicKeyFromPem(publicKeyFile, "SHA256");
+        ReferenceManifestValidator validator = new ReferenceManifestValidator();
+        if (validator.validateXmlSignature(pk, "")) {
             valid = true;
         } else {
             throw new RuntimeException("Failed to verify " + verifyFile);
