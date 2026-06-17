@@ -17,18 +17,22 @@ import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.persist.validation.ValidationService;
 import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
+import hirs.utils.rim.SwidTagParser;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
+import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,11 +85,8 @@ public class ReferenceManifestDetailsPageService {
      * @param uuid database reference for the requested RIM.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
      */
-    public HashMap<String, Object> getRimDetailInfo(final UUID uuid) throws IOException, CertificateException,
-            NoSuchAlgorithmException {
+    public HashMap<String, Object> getRimDetailInfo(final UUID uuid) throws IOException {
         HashMap<String, Object> data = new HashMap<>();
 
         BaseReferenceManifest bRim = this.referenceManifestRepository.getBaseRimEntityById(uuid);
@@ -153,11 +154,11 @@ public class ReferenceManifestDetailsPageService {
                 coveredEvents.put("gptTable", true);
             } else if (contentStr.contains("BootOrder")) {
                 coveredEvents.put("bootOrder", true);
-            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + ": PK")) {
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_UNICODE_NAME + ": PK")) {
                 coveredEvents.put("pk", true);
-            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + ": KEK")) {
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_UNICODE_NAME + ": KEK")) {
                 coveredEvents.put("kek", true);
-            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_LABEL + ": db")) {
+            } else if (contentStr.contains(UefiConstants.UEFI_VARIABLE_UNICODE_NAME + ": db")) {
                 if (contentStr.contains("dbx")) {
                     coveredEvents.put("forbiddenDbx", true);
                 } else {
@@ -214,15 +215,18 @@ public class ReferenceManifestDetailsPageService {
         data.put("entityThumbprint", baseRim.getEntityThumbprint());
 
         // Link
-        data.put("linkHref", baseRim.getLinkHref());
+        String linkHref = baseRim.getLinkHref();
+        data.put("linkHref", linkHref);
         data.put("linkHrefLink", "");
 
-        List<BaseReferenceManifest> baseReferenceManifests =
-                this.referenceManifestRepository.findAllBaseRims();
-
-        for (BaseReferenceManifest bRim : baseReferenceManifests) {
-            if (baseRim.getLinkHref().contains(bRim.getTagId())) {
-                data.put("linkHrefLink", bRim.getId());
+        if (linkHref != null && !linkHref.isEmpty()) {
+            List<BaseReferenceManifest> baseReferenceManifests =
+                    this.referenceManifestRepository.findAllBaseRims();
+            for (BaseReferenceManifest bRim : baseReferenceManifests) {
+                if (bRim.getTagId() != null && linkHref.contains(bRim.getTagId())) {
+                    data.put("linkHrefLink", bRim.getId());
+                    break;
+                }
             }
         }
 
@@ -285,21 +289,65 @@ public class ReferenceManifestDetailsPageService {
             data.put("pcrList", support.getExpectedPCRList());
         }
 
-        List<Certificate> certificates = certificateRepository.findByType("CertificateAuthorityCredential");
+        List<CertificateAuthorityCredential> embeddedCertificates = new ArrayList<>();
+        List<X509Certificate> rawEmbeddedCertificates;
+        try {
+            rawEmbeddedCertificates = SwidTagParser.getEmbeddedX509Certificates(
+                    SwidTagParser.validateSwidtagSchema(SwidTagParser.convertToDocument(baseRim.getRimBytes())));
+        } catch (ParserConfigurationException e) {
+            log.error("Error while reading RIM: {}", e.getMessage());
+            throw new IOException(e);
+        } catch (SAXException | UnmarshalException e) {
+            log.error("Error while parsing RIM: {}", e.getMessage());
+            throw new IOException(e);
+        }
+        List<String> embeddedCertIds = new ArrayList<>();
+        if (rawEmbeddedCertificates != null && !rawEmbeddedCertificates.isEmpty()) {
+            for (X509Certificate rawEmbeddedCertificate : rawEmbeddedCertificates) {
+                try {
+                    CertificateAuthorityCredential embeddedCertificate =
+                            new CertificateAuthorityCredential(rawEmbeddedCertificate.getEncoded());
+                    embeddedCertificate.setId(UUID.randomUUID());
+                    embeddedCertificates.add(embeddedCertificate);
+                    baseRim.setEmbeddedCertificates(embeddedCertificates);
+                    referenceManifestRepository.save(baseRim);
+                    embeddedCertIds.add(embeddedCertificate.getId().toString());
+                } catch (CertificateEncodingException | IOException e) {
+                    log.error("Error creating CertificateAuthorityCredential from embedded X509"
+                            + "Certificate: {}", e.getMessage());
+                }
+            }
+            data.put("embeddedCertIds", embeddedCertIds);
 
-        CertificateAuthorityCredential caCert;
+        }
+        List<Certificate> certificates = new ArrayList<>(
+                certificateRepository.findByType("CertificateAuthorityCredential"));
+        certificates.addAll(embeddedCertificates);
 
         //Report invalid signature unless referenceManifestValidator validates it and cert path is valid
         data.put("signatureValid", false);
-
+        CertificateAuthorityCredential caCert;
         for (Certificate certificate : certificates) {
             caCert = (CertificateAuthorityCredential) certificate;
             KeyStore keystore = ValidationService.getCaChain(caCert, caCertificateRepository);
             try {
+                for (CertificateAuthorityCredential embedded : embeddedCertificates) {
+                    keystore.setCertificateEntry("embedded-" + Arrays.toString(
+                            embedded.getSubjectKeyIdentifier()), embedded.getX509Certificate());
+                }
+            } catch (KeyStoreException e) {
+                log.error("Error adding embedded certificates to keystore: {}", e.getMessage());
+            }
+            try {
+                Set<CertificateAuthorityCredential> caChain = ValidationService.getCaChainRec(caCert,
+                        Collections.emptySet(),
+                        caCertificateRepository);
+                caChain.add(caCert);
                 List<X509Certificate> truststore =
-                        convertCACsToX509Certificates(ValidationService.getCaChainRec(caCert,
-                                Collections.emptySet(),
-                                caCertificateRepository));
+                        convertCACsToX509Certificates(caChain);
+                if (rawEmbeddedCertificates != null) {
+                    truststore.addAll(rawEmbeddedCertificates);
+                }
                 referenceManifestValidator.setTrustStore(truststore);
             } catch (IOException e) {
                 log.error("Error building CA chain for {}: {}", caCert.getSubjectKeyIdentifier(),
@@ -322,12 +370,27 @@ public class ReferenceManifestDetailsPageService {
 
         data.put("skID", referenceManifestValidator.getSubjectKeyIdentifier());
         try {
-            if (referenceManifestValidator.getPublicKey() != null) {
+            X509Certificate signingCert = referenceManifestValidator.getSigningCertificate();
+            if (signingCert != null) {
                 for (Certificate certificate : certificates) {
                     caCert = (CertificateAuthorityCredential) certificate;
-                    if (Arrays.equals(caCert.getEncodedPublicKey(),
-                            referenceManifestValidator.getPublicKey().getEncoded())) {
+                    if (caCert.getX509Certificate() != null
+                            && Arrays.equals(
+                                    caCert.getX509Certificate().getEncoded(),
+                                    signingCert.getEncoded()
+                            )) {
                         data.put("issuerID", caCert.getId().toString());
+                        break;
+                    }
+                }
+            } else {
+                if (referenceManifestValidator.getPublicKey() != null) {
+                    for (Certificate certificate : certificates) {
+                        caCert = (CertificateAuthorityCredential) certificate;
+                        if (Arrays.equals(caCert.getEncodedPublicKey(),
+                                referenceManifestValidator.getPublicKey().getEncoded())) {
+                            data.put("issuerID", caCert.getId().toString());
+                        }
                     }
                 }
             }
@@ -345,11 +408,9 @@ public class ReferenceManifestDetailsPageService {
      * @param supportReferenceManifest established ReferenceManifest Type.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
      */
     private HashMap<String, Object> getSupportRimInfo(final SupportReferenceManifest supportReferenceManifest)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException {
         HashMap<String, Object> data = new HashMap<>();
         EventLogMeasurements measurements;
 
@@ -437,11 +498,9 @@ public class ReferenceManifestDetailsPageService {
      * @param measurements established ReferenceManifest Type.
      * @return mapping of the RIM information from the database.
      * @throws java.io.IOException      error for reading file bytes.
-     * @throws NoSuchAlgorithmException If an unknown Algorithm is encountered.
-     * @throws CertificateException     if a certificate doesn't parse.
      */
     private HashMap<String, Object> getMeasurementsRimInfo(final EventLogMeasurements measurements)
-            throws IOException, CertificateException, NoSuchAlgorithmException {
+            throws IOException {
         HashMap<String, Object> data = new HashMap<>();
         LinkedList<TpmPcrEvent> unmatchedAttestationEvents = new LinkedList<>();
         BaseReferenceManifest base;

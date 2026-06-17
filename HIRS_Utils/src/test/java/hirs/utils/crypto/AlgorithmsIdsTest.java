@@ -59,7 +59,7 @@ public class AlgorithmsIdsTest {
     @Test
     public final void testTranslateAlgIdInvalidAlgType() {
 
-        assertThrows(NoSuchAlgorithmException.class, () ->
+        assertThrows(NoSuchElementException.class, () ->
                 AlgorithmsIds.translateAlgId(INVALID_ALG_TYPE,
                         AlgorithmsIds.SPEC_TCG_ALG, HASH_ALG_TCG_SHA512, AlgorithmsIds.SPEC_XML_ALG)
         );

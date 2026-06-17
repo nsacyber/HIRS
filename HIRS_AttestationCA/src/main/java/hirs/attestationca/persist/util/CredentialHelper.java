@@ -3,6 +3,8 @@ package hirs.attestationca.persist.util;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVariables;
 import lombok.extern.log4j.Log4j2;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
@@ -205,32 +207,48 @@ public final class CredentialHelper {
 
     /**
      * This method is to take the DNs from certificates and sort them in an order
-     * that will be used to lookup issuer certificates.  This will not be stored in
-     * the certificate, just the DB for lookup.
+     * that will be used to lookup issuer certificates.
      *
      * @param distinguishedName the original DN string.
      * @return a modified string of sorted DNs
      */
     public static String parseSortDNs(final String distinguishedName) {
         StringBuilder sb = new StringBuilder();
-        String dnsString;
 
         if (distinguishedName == null || distinguishedName.isEmpty()) {
             sb.append("BLANK");
         } else {
-            dnsString = distinguishedName.trim();
-            dnsString = dnsString.toLowerCase();
-            List<String> dnValArray = Arrays.asList(dnsString.split(","));
-            Collections.sort(dnValArray);
-            ListIterator<String> dnListIter = dnValArray.listIterator();
-            while (dnListIter.hasNext()) {
-                sb.append(dnListIter.next());
-                if (dnListIter.hasNext()) {
-                    sb.append(",");
-                }
-            }
+            sb.append(sortParsedDistinguishedName(distinguishedName));
         }
 
+        return sb.toString();
+    }
+
+    private static String sortParsedDistinguishedName(final String distinguishedName) {
+        String dnsString;
+        List<String> dnValArray = new ArrayList<>();
+
+        try {
+            X500Name x500Name = new X500Name(distinguishedName.trim());
+            for (RDN rdn : x500Name.getRDNs()) {
+                dnValArray.add(new X500Name(new RDN[]{rdn}).toString().toLowerCase());
+            }
+        } catch (IllegalArgumentException iaEx) {
+            log.error("Unable to parse distinguished name for sorting: {}", distinguishedName, iaEx);
+            dnsString = distinguishedName.trim();
+            dnsString = dnsString.toLowerCase();
+            dnValArray = Arrays.asList(dnsString.split(","));
+        }
+
+        Collections.sort(dnValArray);
+        ListIterator<String> dnListIter = dnValArray.listIterator();
+        StringBuilder sb = new StringBuilder();
+        while (dnListIter.hasNext()) {
+            sb.append(dnListIter.next());
+            if (dnListIter.hasNext()) {
+                sb.append(",");
+            }
+        }
         return sb.toString();
     }
 }

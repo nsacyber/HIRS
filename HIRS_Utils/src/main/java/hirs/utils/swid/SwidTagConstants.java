@@ -17,9 +17,14 @@ public final class SwidTagConstants {
     public static final String DEFAULT_ENGLISH = "en";
     public static final String SIGNATURE_ALGORITHM_RSA_SHA256 =
             "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+    public static final String SIGNATURE_ALGORITHM_RSA_SHA384 =
+            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
+    public static final String SIGNATURE_ALGORITHM_RSA_SHA512 =
+            "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
     public static final String SCHEMA_PACKAGE = "hirs.utils.xjc";
     public static final String SCHEMA_LANGUAGE = XMLConstants.W3C_XML_SCHEMA_NS_URI;
     public static final String SCHEMA_URL = "swid_schema.xsd";
+    public static final String IDENTITY_TRANSFORM = "identity_transform.xslt";
     public static final String SWIDTAG_NAMESPACE = "http://standards.iso.org/iso/19770/-2/2015/schema.xsd";
     public static final String SOFTWARE_IDENTITY = "SoftwareIdentity";
     public static final String ENTITY = "Entity";

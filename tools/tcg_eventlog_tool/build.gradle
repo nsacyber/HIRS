@@ -47,6 +47,9 @@ ospackage {
     }
 
     into('/opt/eltool/scripts') {
+        filePermissions {
+           unix(0755)
+        }
         from('scripts') {
             exclude {
                 FileTreeElement details ->

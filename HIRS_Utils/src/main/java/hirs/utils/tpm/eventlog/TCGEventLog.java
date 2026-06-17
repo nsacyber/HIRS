@@ -8,6 +8,7 @@ import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
@@ -15,14 +16,13 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 
 import static hirs.utils.crypto.AlgorithmsIds.ALG_TYPE_HASH;
 import static hirs.utils.crypto.AlgorithmsIds.SPEC_TCG_ALG;
@@ -34,6 +34,7 @@ import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA512_STR;
 /**
  * Class for handling different formats of TCG Event logs.
  */
+@Log4j2
 public final class TCGEventLog {
 
     // The TCG PC Client Platform TPM Profile Specification for TPM 2.0 defines 5 localities
@@ -140,7 +141,7 @@ public final class TCGEventLog {
     /**
      * Content Output Flag use.
      */
-    private boolean bContent = false;
+    private boolean bHexContent = false;
     /**
      * Event Output Flag use.
      */
@@ -150,7 +151,7 @@ public final class TCGEventLog {
      */
     private boolean bEvent = false;
     /**
-     * Event Output Flag use.
+     * Flag to indicate whether event is crypto agile.
      */
     @Getter
     private boolean bCryptoAgile = false;
@@ -191,88 +192,100 @@ public final class TCGEventLog {
      * Simple constructor for Event Log.
      *
      * @param rawlog data for the event log file.
-     * @throws java.security.NoSuchAlgorithmException  if an unknown algorithm is encountered.
-     * @throws java.security.cert.CertificateException if a certificate in the log cannot be parsed.
      * @throws java.io.IOException                     IO Stream if event cannot be parsed.
      */
     public TCGEventLog(final byte[] rawlog)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+            throws IOException {
         this(rawlog, false, false, false);
     }
 
     /**
      * Default constructor for just the rawlog that'll set up SHA1 Log.
      *
-     * @param rawlog        data for the event log file.
-     * @param bEventFlag    if true provides human-readable event descriptions.
-     * @param bContentFlag  if true provides hex output for Content in the description.
-     * @param bHexEventFlag if true provides hex event structure in the description.
-     * @throws java.security.NoSuchAlgorithmException  if an unknown algorithm is encountered.
-     * @throws java.security.cert.CertificateException if a certificate in the log cannot be parsed.
+     * @param rawlog            data for the event log file.
+     * @param bEventFlag        if true provides human-readable event descriptions.
+     * @param bHexContentFlag   if true provides hex output for Content in the description.
+     * @param bHexEventFlag     if true provides hex event structure in the description.
      * @throws java.io.IOException                     IO Stream if event cannot be parsed.
      */
     public TCGEventLog(final byte[] rawlog, final boolean bEventFlag,
-                       final boolean bContentFlag, final boolean bHexEventFlag)
-            throws CertificateException, NoSuchAlgorithmException, IOException {
+                       final boolean bHexContentFlag, final boolean bHexEventFlag)
+            throws IOException {
 
-        bContent = bContentFlag;
         bEvent = bEventFlag;
+        bHexContent = bHexContentFlag;
         bHexEvent = bHexEventFlag;
 
         int eventNumber = 0;
         ByteArrayInputStream is = new ByteArrayInputStream(rawlog);
+        long logFileBytesRemaining = rawlog.length;
 
-        // Process the 1st entry as a SHA1 format (per the spec) and put into the event list
-        TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, eventNumber++);
-        eventList.put(eventNumber, firstEvent);
-        useFirstEventToInitValues(firstEvent);
+        try {
+            // Process the 1st entry as a SHA1 format (per the spec) and put into the event list
+            TpmPcrEvent1 firstEvent = new TpmPcrEvent1(is, logFileBytesRemaining, eventNumber);
+            eventList.put(eventNumber++, firstEvent);
+            logFileBytesRemaining -= (firstEvent.getEventHeader().length + firstEvent.getEventContent().length);
+            useFirstEventToInitValues(firstEvent);
 
-        // put the remaining events into the event list
-        while (is.available() > 0) {
-            if (bCryptoAgile) {
-                TpmPcrEvent2 event2 = new TpmPcrEvent2(is, eventNumber++, strongestEvLogHashAlgName);
-                eventList.put(eventNumber, event2);
-                if (event2.isStartupLocalityEvent()) {
-                    EvNoAction event = new EvNoAction(event2.getEventContent());
-                    startupLocality = event.getStartupLocality();
+            // put the remaining events into the event list
+            while (is.available() > 0) {
+                if (bCryptoAgile) {
+                    TpmPcrEvent2 event2 =
+                            new TpmPcrEvent2(is, logFileBytesRemaining, eventNumber, strongestEvLogHashAlgName);
+                    eventList.put(eventNumber++, event2);
+                    logFileBytesRemaining -= (event2.getEventHeader().length + event2.getEventContent().length);
+                    if (event2.isStartupLocalityEvent()) {
+                        EvNoAction event = new EvNoAction(event2.getEventContent());
+                        startupLocality = event.getStartupLocality();
+                    }
+                } else {
+                    TpmPcrEvent1 event1 = new TpmPcrEvent1(is, logFileBytesRemaining, eventNumber);
+                    eventList.put(eventNumber++, event1);
+                    logFileBytesRemaining -= (event1.getEventHeader().length + event1.getEventContent().length);
                 }
-            } else {
-                TpmPcrEvent1 event1 = new TpmPcrEvent1(is, eventNumber++);
-                eventList.put(eventNumber, event1);
-            }
 
-            // first check if any previous event has not been able to access vendor-table.json,
-            // and if that is the case, the first comparison in the if-statement returns false and
-            // the if-statement is not executed
-            // [previous event file status = guidTableFileStatus]
-            // (ie. keep the file status to reflect that file was not accessible at some point)
-            // next, check if the new event has any status other than the default 'filesystem',
-            // and if that is the case, the 2nd comparison in the if-statement returns true and
-            // the if-statement is executed
-            // [new event file status = eventList.get(eventNumber-1).getGuidTableFileStatus()]
-            // (ie. if the new file status is not-accessible or from-code, then want to update)
-//            if ((guidTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-//                    && (eventList.get(eventNumber - 1).getGuidTableFileStatus()
-//                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-//                guidTableFileStatus = eventList.get(eventNumber - 1).getGuidTableFileStatus();
-//            }
+                // first check if any previous event has not been able to access vendor-table.json,
+                // and if that is the case, the first comparison in the if-statement returns false and
+                // the if-statement is not executed
+                // [previous event file status = guidTableFileStatus]
+                // (ie. keep the file status to reflect that file was not accessible at some point)
+                // next, check if the new event has any status other than the default 'filesystem',
+                // and if that is the case, the 2nd comparison in the if-statement returns true and
+                // the if-statement is executed
+                // [new event file status = eventList.get(eventNumber-1).getGuidTableFileStatus()]
+                // (ie. if the new file status is not-accessible or from-code, then want to update)
+    //            if ((guidTableFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
+    //                    && (eventList.get(eventNumber - 1).getGuidTableFileStatus()
+    //                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
+    //                guidTableFileStatus = eventList.get(eventNumber - 1).getGuidTableFileStatus();
+    //            }
 
-            // first check if any previous event has not been able to access pci.ids file,
-            // and if that is the case, the first comparison in the if-statement returns false and
-            // the if-statement is not executed
-            // [previous event file status = pciidsFileStatus]
-            // (ie. keep the file status to reflect that file was not accessible at some point)
-            // next, check if the new event has any status other than the default 'filesystem',
-            // and if that is the case, the 2nd comparison in the if-statement returns true and
-            // the if-statement is executed
-            // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
-            // (ie. if the new file status is not-accessible or from-code, then want to update)
-            if ((pciidsFileStatus != UefiConstants.FILESTATUS_NOT_ACCESSIBLE)
-                    && (eventList.get(eventNumber - 1).getPciidsFileStatus()
-                    != UefiConstants.FILESTATUS_FROM_FILESYSTEM)) {
-                pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
+                // first check if any previous event has not been able to access pci.ids file,
+                // and if that is the case, the first comparison in the if-statement returns false and
+                // the if-statement is not executed
+                // [previous event file status = pciidsFileStatus]
+                // (ie. keep the file status to reflect that file was not accessible at some point)
+                // next, check if the new event has any status other than the default 'filesystem',
+                // and if that is the case, the 2nd comparison in the if-statement returns true and
+                // the if-statement is executed
+                // [new event file status = eventList.get(eventNumber-1).getPciidsFileStatus()]
+                // (ie. if the new file status is not-accessible or from-code, then want to update)
+                if ((!Objects.equals(pciidsFileStatus, UefiConstants.FILESTATUS_NOT_ACCESSIBLE))
+                        && (!Objects.equals(eventList.get(eventNumber - 1).getPciidsFileStatus(),
+                        UefiConstants.FILESTATUS_FROM_FILESYSTEM))) {
+                    pciidsFileStatus = eventList.get(eventNumber - 1).getPciidsFileStatus();
+                }
             }
+        } catch (IOException i) {
+            String error = "IO error parsing event log at Event #" + (eventNumber);
+            log.error(error + ": " + i);
+            throw new IOException(error);
+        } catch (RuntimeException r) {
+            String error = "Error parsing event log at Event #" + (eventNumber);
+            log.error(error + ": " + r);
+            throw new RuntimeException(error);
         }
+
         calculatePcrValues();
     }
 
@@ -280,12 +293,11 @@ public final class TCGEventLog {
      * If first event is EV_NO_ACTION Spec Id, then the log is crypto agile.
      * Need info from this event about algorithms.
      *
-     * @param firstEvent                                the first event in the log
-     * @throws java.security.NoSuchAlgorithmException   if an unknown algorithm is encountered.
-     * @throws java.io.UnsupportedEncodingException     if EvNoAction input fails to parse.
+     * @param firstEvent               the first event in the log.
+     * @throws java.io.IOException     if first event cannot initialize values.
      */
     private void useFirstEventToInitValues(final TpmPcrEvent1 firstEvent)
-            throws NoSuchAlgorithmException, UnsupportedEncodingException {
+            throws IOException {
 
         // if first event is EV_NO_ACTION Spec Id Event, the log is crypto agile
         if (firstEvent.isNoActionSpecIdEvent()) {
@@ -296,18 +308,22 @@ public final class TCGEventLog {
 
             // find the strongest algorithm used and select that for processing
             String currentStrongestAlg = algList.get(0);
-            int currentStrongestAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, currentStrongestAlg);
-            for (int i = 1; i < algList.size(); i++) {
-                String newAlg = algList.get(i);
-                int newAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, newAlg);
-                if (newAlgRow > currentStrongestAlgRow) {
-                    currentStrongestAlg = newAlg;
+            try {
+                int currentStrongestAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, currentStrongestAlg);
+                for (int i = 1; i < algList.size(); i++) {
+                    String newAlg = algList.get(i);
+                    int newAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, newAlg);
+                    if (newAlgRow > currentStrongestAlgRow) {
+                        currentStrongestAlg = newAlg;
+                    }
                 }
+            } catch (IllegalArgumentException i) {
+                throw new IOException("Could not determine info about algorithm from first event", i);
             }
             strongestEvLogHashAlgName = currentStrongestAlg;
 
             //TEMPORARILY use SHA256 until updates on Provisioner are pushed
-            strongestEvLogHashAlgName = "TPM_ALG_SHA256";
+//            strongestEvLogHashAlgName = "TPM_ALG_SHA256";
 
             // if more than one set of PCR banks exists in this log, store the one with strongest algorithm
             switch (strongestEvLogHashAlgName) {
@@ -366,7 +382,7 @@ public final class TCGEventLog {
      * Calculates the Expected Values for TPM PCRs based upon Event digests in the Event Log.
      * Uses the algorithm and eventList passed into the constructor.
      */
-    private void calculatePcrValues() throws UnsupportedEncodingException {
+    private void calculatePcrValues() {
         byte[] extendedPCR;
         initPcrList();
         for (TpmPcrEvent currentEvent : eventList.values()) {
@@ -463,7 +479,7 @@ public final class TCGEventLog {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (TpmPcrEvent event : eventList.values()) {
-            sb.append(event.toString(bEvent, bHexEvent, bContent));
+            sb.append(event.toString(bEvent, bHexEvent, bHexContent));
         }
         sb.append("Event Log processing completed.\n");
         return sb.toString();
@@ -482,7 +498,7 @@ public final class TCGEventLog {
                            final boolean content) {
         this.bEvent = event;
         this.bHexEvent = hexEvent;
-        this.bContent = content;
+        this.bHexContent = content;
 
         return this.toString();
     }

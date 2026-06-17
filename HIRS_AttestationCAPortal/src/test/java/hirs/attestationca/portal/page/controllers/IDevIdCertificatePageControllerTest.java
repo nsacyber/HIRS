@@ -5,7 +5,7 @@ import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.PageControllerTest;
-import hirs.attestationca.portal.page.PageMessages;
+import hirs.attestationca.persist.dto.PageMessages;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

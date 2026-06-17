@@ -1,6 +1,7 @@
 package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
+import hirs.utils.tpm.eventlog.events.EvConstants;
 import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,30 +17,66 @@ import java.util.List;
  * Class to process a UEFI variable within a TPM Event.
  * <pre>
  * typedef struct tdUEFI_VARIABLE_DATA{
- * <pre>    UEFI_GUID VariableName;     (16 bytes)</pre>
- * <pre>    UINT64 UnicodeNameLength;   (8 bytes)</pre>
- * <pre>    UINT64 VariableDataLength;  (8 bytes)</pre>
- * <pre>    CHAR16 UnicodeName[];</pre>
- * <pre>    INT8 VariableData[];</pre>
- * } UEFI_VARIABLE_DATA
- * </pre>
+ * &emsp;UEFI_GUID VariableName;     (16 bytes)
+ * &emsp;UINT64 UnicodeNameLength;   (8 bytes)
+ * &emsp;UINT64 VariableDataLength;  (8 bytes)
+ * &emsp;CHAR16 UnicodeName[];
+ * &emsp;INT8 VariableData[];
+ * } UEFI_VARIABLE_DATA<br>
+ *
+ * Example:
+ *
+ * UEFI_VARIABLE_DATA example{
+ * &emsp;"8be4df61-93ca-11d2-aa0d-00e098032b8c : EFI_Global_Variable"
+ * &emsp;2
+ * &emsp;973
+ * &emsp;PK
+ * &emsp;< UefiSignatureList >
+ * }
+ * </pre><br>
+ * PFP 1.06 Revision 52:<br>
+ * <ul>
+ * <li>For Event Type EV_EFI_VARIABLE_DRIVER_CONFIG: The event field MUST contain a
+ * UEFI_VARIABLE_DATA structure, including
+ * the variable data, the GUID and the Unicode
+ * string.</li>
+ * <li>For Event Type EV_EFI_VARIABLE_AUTHORITY: The event field MUST contain a
+ * UEFI_VARIABLE_DATA structure where the
+ * VariableData field contains the
+ * EFI_SIGNATURE_DATA value from the
+ * EFI_SIGNATURE_LIST used to validate the
+ * loaded image</li>
+ * </ul>
  */
 public class UefiVariable {
 
+    /**
+     * Event Type.
+     */
+    @Getter
+    private int eventType = 0;
+    /**
+     * UEFI defined variable identifier GUID.
+     */
+    @Getter
+    private UefiGuid variableNameGuid = null;
+    /**
+     * Name of the UEFI variable.
+     */
+    @Getter
+    private String unicodeName = "";
+    /**
+     * UEFI variable data.
+     */
+    private byte[] uefiVariableData = null;
     /**
      * List of Signature lists.
      */
     private final List<UefiSignatureList> certSuperList;
     /**
-     * UEFI defined variable identifier GUID.
+     * Was able to process the Variable Data.
      */
-    @Getter
-    private UefiGuid uefiVarGuid = null;
-    /**
-     * Name of the UEFI variable.
-     */
-    @Getter
-    private String efiVarName = "";
+    private boolean uefiVariableDataProcessed = false;
     /**
      * Encountered invalid UEFI Signature List.
      */
@@ -60,93 +98,115 @@ public class UefiVariable {
      */
     private UefiSecureBoot sb = null;
     /**
-     * UEFI variable data.
+     * String to hold the Shim or Moklist data.
      */
-    private byte[] uefiVariableData = null;
-
-//    /**
-//     * Track status of vendor-table.json file.
-//     * The default here is that each list correctly grabbed the file from file system.
-//     * If any one list has issues, this overall status will change to reflect the
-//     * problematic list's status.
-//     */
-//    @Getter
-//    private String guidTableFileStatus = FILESTATUS_FROM_FILESYSTEM;
-
+    private String shimMoklist = "";
     /**
-     * Human-readable description of the data within the SPDM devdc (to be updated with more test data).
+     * String to hold the Signature Data info.
      */
-    private String spdmDevdcInfo = "";
+    private String sigDataInfo = "";
 
     /**
      * EFIVariable constructor.
      * The UEFI_VARIABLE_DATA contains a "VariableName" field which is used to determine
      * the class used to parse the data within the "VariableData".
      *
+     * @param eventTypeIn the event type
      * @param variableData byte array holding the UEFI Variable.
-     * @throws java.security.NoSuchAlgorithmException if there's a problem
-     *                                                hashing the certificate.
      * @throws java.io.IOException                    If there's a problem
      *                                                parsing the signature data.
      */
-    public UefiVariable(final byte[] variableData)
-            throws NoSuchAlgorithmException, IOException {
+    public UefiVariable(final int eventTypeIn, final byte[] variableData)
+            throws  IOException {
+
+        eventType = eventTypeIn;
         certSuperList = new ArrayList<>();
-        byte[] guid = new byte[UefiConstants.SIZE_16];
-        byte[] nameLength = new byte[UefiConstants.SIZE_8];
-        byte[] nameTemp = null;
-        byte[] dataLength = new byte[UefiConstants.SIZE_8];
-        byte[] name = null;
-        int variableLength = 0;
 
-        System.arraycopy(variableData, 0, guid, 0, UefiConstants.SIZE_16);
-        uefiVarGuid = new UefiGuid(guid);
-        System.arraycopy(variableData, UefiConstants.SIZE_16, nameLength,
-                0, UefiConstants.SIZE_8);
-        int nlength = HexUtils.leReverseInt(nameLength);
-        System.arraycopy(variableData, UefiConstants.OFFSET_24, dataLength,
-                0, UefiConstants.SIZE_8);
-        nameTemp = new byte[nlength * UefiConstants.SIZE_2];
+        byte[] variableNameGuidBytes = new byte[UefiConstants.SIZE_16];
+        byte[] unicodeNameLengthBytes = new byte[UefiConstants.SIZE_8];
+        byte[] variableDataLengthBytes = new byte[UefiConstants.SIZE_8];
+        int variableDataLength = 0;
+        byte[] unicodeNameCharBytes = null;
+        byte[] unicodeNameWithZerosBytes = null;
+        byte[] unicodeNameBytes = null;
 
+        // VariableName (GUID)
+        System.arraycopy(variableData, 0, variableNameGuidBytes, 0, UefiConstants.SIZE_16);
+        variableNameGuid = new UefiGuid(variableNameGuidBytes);
+
+        // UnicodeNameLength
+        System.arraycopy(variableData, UefiConstants.SIZE_16, unicodeNameLengthBytes,
+                0, UefiConstants.SIZE_8);
+        int unicodeNameLength = HexUtils.leReverseInt(unicodeNameLengthBytes);
+
+        // VariableDataLength
+        System.arraycopy(variableData, UefiConstants.OFFSET_24, variableDataLengthBytes,
+                0, UefiConstants.SIZE_8);
+        variableDataLength = HexUtils.leReverseInt(variableDataLengthBytes);
+
+        // UnicodeName
+        unicodeNameCharBytes = new byte[unicodeNameLength * UefiConstants.SIZE_2];
         System.arraycopy(variableData, UefiConstants.OFFSET_32,
-                nameTemp, 0, nlength * UefiConstants.SIZE_2);
-        byte[] name1 = UefiDevicePath.convertChar16tobyteArray(nameTemp);
-        name = new byte[nlength];
-        System.arraycopy(name1, 0, name, 0, nlength);
-        variableLength = HexUtils.leReverseInt(dataLength);
-        uefiVariableData = new byte[variableLength];
-        System.arraycopy(variableData, UefiConstants.OFFSET_32
-                + nlength * UefiConstants.SIZE_2, uefiVariableData, 0, variableLength);
-        efiVarName = new String(name, StandardCharsets.UTF_8);
-        String tmpName = efiVarName;
-        if (efiVarName.contains("Boot00")) {
-            tmpName = "Boot00";
+                unicodeNameCharBytes, 0, unicodeNameLength * UefiConstants.SIZE_2);
+        unicodeNameWithZerosBytes = UefiDevicePath.convertChar16tobyteArray(unicodeNameCharBytes);
+        unicodeNameBytes = new byte[unicodeNameLength];
+        System.arraycopy(unicodeNameWithZerosBytes, 0, unicodeNameBytes, 0, unicodeNameLength);
+        unicodeName = new String(unicodeNameBytes, StandardCharsets.UTF_8);
+        String unicodeNameAdjusted = unicodeName;
+        if (unicodeName.contains("Boot00")) {
+            unicodeNameAdjusted = "Boot00";
         }
-        switch (tmpName) {
-            case "PK":
-            case "KEK":
-            case "db":
-            case "dbx":
-                processSigList(uefiVariableData);
+
+        // VariableData
+        uefiVariableData = new byte[variableDataLength];
+        System.arraycopy(variableData, UefiConstants.OFFSET_32
+                + unicodeNameLength * UefiConstants.SIZE_2, uefiVariableData, 0, variableDataLength);
+
+        // first check if unicode name is shim or moklist (can exist for different event types)
+        if (unicodeName.equals("Shim") || unicodeName.equals("MokList")) {
+            shimMoklist = printCert(uefiVariableData, 0);
+            uefiVariableDataProcessed = true;
+        }
+
+        switch (eventType) {
+            case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
+                switch (unicodeName) {
+                    case "SecureBoot":
+                        sb = new UefiSecureBoot(uefiVariableData);
+                        uefiVariableDataProcessed = true;
+                        break;
+                    case "PK":
+                    case "KEK":
+                    case "db":
+                    case "dbx":
+                        processSigList(uefiVariableData);
+                        uefiVariableDataProcessed = true;
+                        break;
+                    default:
+                }
                 break;
-            case "devdb":
+            case EvConstants.EV_EFI_VARIABLE_BOOT:
+                if (unicodeName.contains("Boot00")) {
+                    bootv = new UefiBootVariable(uefiVariableData);
+                    uefiVariableDataProcessed = true;
+                } else if (unicodeName.equals("BootOrder")) {
+                    booto = new UefiBootOrder(uefiVariableData);
+                    uefiVariableDataProcessed = true;
+                }
+                break;
+            case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+                if (variableNameGuid.getVendorTableReference().equals("EFI_IMAGE_SECURITY_DATABASE_GUID")) {
+                    processSigDataX509(uefiVariableData);
+                    uefiVariableDataProcessed = true;
+                }
+                break;
+            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
                 processSigList(uefiVariableData);
-                break;      // Update when test patterns exist
-            // PFP v1.06 Rev 52, Sec 3.3.4.8
-            // EV_EFI_SPDM_DEVICE_POLICY: EFI_SIGNATURE_LIST
-            // EV_EFI_SPDM_DEVICE_AUTHORITY: EFI_SIGNATURE_DATA
-            // for now, differentiate them by using devdc for ..DEVICE_AUTHORITY
-            case "devdc":
+                uefiVariableDataProcessed = true;
+                break;
+            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 processSigDataX509(uefiVariableData);
-                break;
-            case "Boot00":
-                bootv = new UefiBootVariable(uefiVariableData);
-                break;
-            case "BootOrder":
-                booto = new UefiBootOrder(uefiVariableData);
-                break;
-            case "SecureBoot":
-                sb = new UefiSecureBoot(uefiVariableData);
+                uefiVariableDataProcessed = true;
                 break;
             default:
         }
@@ -156,15 +216,11 @@ public class UefiVariable {
      * Processes the data as a list of UEFI defined Signature Lists.
      *
      * @param data the bye array holding one or more Signature Lists.
-     * @throws java.security.cert.CertificateException If there's a problem
-     *                                                 parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem
-     *                                                 hashing the certificate.
      * @throws java.io.IOException                     If there's a problem
      *                                                 parsing the signature data.
      */
     private void processSigList(final byte[] data)
-            throws NoSuchAlgorithmException, IOException {
+            throws  IOException {
         ByteArrayInputStream certData = new ByteArrayInputStream(data);
         while (certData.available() > 0) {
             UefiSignatureList list;
@@ -185,7 +241,6 @@ public class UefiVariable {
 //                guidTableFileStatus = list.getGuidTableFileStatus();
 //            }
 
-//            efiVariableSigListContents += list.toString();
             if (!list.isSignatureTypeValid()) {
                 invalidSignatureListEncountered = true;
                 invalidSignatureListStatus = list.toString();
@@ -199,19 +254,17 @@ public class UefiVariable {
      * Method for processing the data in an EFI Signature Data, where the data is known to be an X509 cert.
      *
      * @param efiSigData Byte array holding the SignatureData data
-     * @throws java.security.cert.CertificateException If there's a problem parsing the X509 certificate.
-     * @throws java.security.NoSuchAlgorithmException  if there's a problem hashing the certificate.
      * @throws java.io.IOException                     If there's a problem parsing the signature data.
      */
     private void processSigDataX509(final byte[] efiSigData)
-            throws NoSuchAlgorithmException, IOException {
+            throws IOException {
 
         ByteArrayInputStream efiSigDataIS = new ByteArrayInputStream(efiSigData);
         ArrayList<UefiSignatureData> sigList = new ArrayList<UefiSignatureData>();
-        spdmDevdcInfo += "";
+        sigDataInfo += "";
 
         // for now, hard-code the signature type for X509
-        // in future with more test data, update this (potentially need to look at previous SPDM event)
+        // in future with more test data, update this (for SPDM potentially need to look at previous SPDM event)
         byte[] guid = HexUtils.hexStringToByteArray("A159C0A5E494A74A87B5AB155C2BF072");
         UefiGuid signatureType = new UefiGuid(guid);
 
@@ -228,16 +281,16 @@ public class UefiVariable {
             sigList.add(tmpSigData);
             numberOfCerts++;
         }
-        spdmDevdcInfo += "   Number of X509 Certs in UEFI Signature Data = " + numberOfCerts + "\n";
+        sigDataInfo += "   Number of X509 Certs in UEFI Signature Data = " + numberOfCerts + "\n";
         int certCnt = 0;
         for (int i = 0; i < sigList.size(); i++) {
             certCnt++;
-            spdmDevdcInfo += "   Cert # " + certCnt + " of " + numberOfCerts + ": ------------------\n";
+            sigDataInfo += "   Cert # " + certCnt + " of " + numberOfCerts + ": ------------------\n";
             UefiSignatureData certData = sigList.get(i);
-            spdmDevdcInfo += certData.toString();
+            sigDataInfo += certData.toString();
         }
         if (!dataValid) {
-            spdmDevdcInfo += "   *** Invalid UEFI Signature data encountered: " + dataInvalidStatus + "\n";
+            sigDataInfo += "   *** Invalid UEFI Signature data encountered: " + dataInvalidStatus + "\n";
         }
     }
 
@@ -249,46 +302,39 @@ public class UefiVariable {
     public String toString() {
         StringBuilder efiVariable = new StringBuilder();
 
-        efiVariable.append(String.format("   %s: %s%n", UefiConstants.UEFI_VARIABLE_LABEL, efiVarName));
-        efiVariable.append("   UEFI Variable GUID: " + uefiVarGuid.toString() + "\n");
-        if (efiVarName != "") {
-            efiVariable.append("   UEFI Variable Contents => " + "\n");
+        efiVariable.append("   UEFI Variable Name GUID: " + variableNameGuid.toString() + "\n");
+        efiVariable.append(String.format("   %s: %s%n", UefiConstants.UEFI_VARIABLE_UNICODE_NAME, unicodeName));
+        if (unicodeName != "") {
+            efiVariable.append("   UEFI Variable Data => " + "\n");
         }
-        String tmpName = "";
-        if (efiVarName.contains("Boot00")) {
-            tmpName = "Boot00";
-        } else {
-            tmpName = efiVarName;
+
+        // Shim or Moklist output (if there is any)
+        if (!shimMoklist.isEmpty()) {
+            efiVariable.append(shimMoklist);
         }
-        switch (tmpName) {
-            case "Shim":
-            case "MokList":
-                efiVariable.append(printCert(uefiVariableData, 0));
+
+        switch (eventType) {
+            case EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG:
+                if (unicodeName.equals("SecureBoot")) {
+                    efiVariable.append(sb.toString());
+                }
                 break;
-            case "PK":
-            case "KEK":
-            case "db":
-            case "dbx":
-            case "devdb":           // SPDM_DEVICE_POLICY and SPDM_DEVICE_AUTHORITY
-            case "devdc":           // for now use devdb and devdc respectively
-                // (update when more test patterns exist)
+            case EvConstants.EV_EFI_VARIABLE_BOOT:
+                if (unicodeName.contains("Boot00")) {
+                    efiVariable.append(bootv.toString());
+                } else if (unicodeName.equals("BootOrder")) {
+                    efiVariable.append(booto.toString());
+                }
                 break;
-            case "Boot00":
-                efiVariable.append(bootv.toString());
-                break;
-            case "BootOrder":
-                efiVariable.append(booto.toString());
-                break;
-            case "SecureBoot":
-                efiVariable.append(sb.toString());
+            case EvConstants.EV_EFI_VARIABLE_AUTHORITY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_POLICY:
+            case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 break;
             default:
-                if (!tmpName.isEmpty()) {
-                    efiVariable.append(String.format("      Data not provided for "
-                            + "UEFI variable named %s   ", tmpName));
-                } else {
-                    efiVariable.append("      Data not provided   ");
-                }
+        }
+
+        if (!uefiVariableDataProcessed) {
+            efiVariable.append("      Code does not yet process this Uefi Variable\n");
         }
 
         // Signature List output (if there are any Signature Lists)
@@ -308,8 +354,8 @@ public class UefiVariable {
         }
 
         // Signature Data output (if there is a Signature Data)
-        if (!spdmDevdcInfo.isEmpty()) {
-            efiVariable.append(spdmDevdcInfo);
+        if (!sigDataInfo.isEmpty()) {
+            efiVariable.append(sigDataInfo);
         }
 
         return efiVariable.toString();
@@ -323,19 +369,26 @@ public class UefiVariable {
      * @return human-readable description of a certificate.
      */
     public String printCert(final byte[] data, final int offset) {
+
         String certInfo = "";
-        byte[] certLength = new byte[UefiConstants.SIZE_2];
-        System.arraycopy(data, offset + UefiConstants.OFFSET_2, certLength,
-                0, UefiConstants.SIZE_2);
-        int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
-        byte[] certData = new byte[cLength];
-        System.arraycopy(data, offset, certData, 0, cLength);
+        byte[] certData;
+
+        try {
+            byte[] certLength = new byte[UefiConstants.SIZE_2];
+            System.arraycopy(data, offset + UefiConstants.OFFSET_2, certLength,
+                    0, UefiConstants.SIZE_2);
+            int cLength = new BigInteger(certLength).intValue() + UefiConstants.SIZE_4;
+            certData = new byte[cLength];
+            System.arraycopy(data, offset, certData, 0, cLength);
+        } catch (RuntimeException e) {
+            return ("        Error Processing : expecting certificate but data is undetermined");
+        }
         try {
             UefiX509Cert cert = new UefiX509Cert(certData);
             certInfo = cert.toString();
-        } catch (Exception e) {
-            certInfo = "Error Processing Certificate : " + e.getMessage();
+        } catch (CertificateException | NoSuchAlgorithmException e) {
+            return ("        Error Processing Certificate : " + e.getMessage());
         }
-        return (certInfo);
+        return certInfo;
     }
 }
