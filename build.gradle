@@ -4,10 +4,11 @@ import java.util.concurrent.TimeUnit
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
+    id 'com.github.ben-manes.versions' version '0.54.0'
     id 'application'
-    id 'com.github.spotbugs' version '6.4.8' apply false
-    id 'org.owasp.dependencycheck' version '12.2.0'
-    id 'com.palantir.git-version' version '4.3.0'
+    id 'com.github.spotbugs' version '6.5.6' apply false
+    id 'org.owasp.dependencycheck' version '12.2.2'
+    id 'com.palantir.git-version' version '5.0.0'
 }
 
 // Global checkstyle file
