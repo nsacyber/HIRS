@@ -126,9 +126,10 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
      * @param rimel optional
      * @return true if valid, false if not
      */
-    public boolean validate(final String verifyFile, final String publicKeyFile, final String rimel) {
+    public boolean validate(final String verifyFile, final String publicKeyFile, final String rimel)
+                            throws IOException {
         boolean valid;
-        PublicKey pk = SwidTagParser.parsePublicKeyFromPem(publicKeyFile, "SHA256");
+        PublicKey pk = SwidTagParser.parsePublicKeyFromPem(publicKeyFile, "RSA");
         ReferenceManifestValidator validator = new ReferenceManifestValidator();
         if (validator.validateXmlSignature(pk, "")) {
             valid = true;
