@@ -26,12 +26,24 @@ The Reference Integrity Information Model
 defines structures that a Verifier uses to validate expected values (Assertions) against actual 
 values (Evidence). 
 
+<br>
+<br>
+<br>
+<br>
+<br>
 For PC Clients, there are two types of RIM files, collectively called the **RIM Bundle**:
 
 - **Base RIM**:
     - Complies with the ISO 19770-2 Software Identity (SWID) standard.
     - Provides a verifiable identity of the RIM creator and integrity information for associated Support RIMs.
     - Can be stored on the device in the boot partition or made available via a Uniform Resource Identifier (URI).
+    - Tag Types
+        - **Primary Tag**: Establishes the initial baseline and contains the complete set of reference measurements.
+          This is an independent baseline RIM.
+        - **Patch Tag**: Updates an existing manifest and contains only the modified reference values.
+          This replaces values in the Primary Tag.
+        - **Supplemental Tag**: Augments an existing manifest and contains added components or config metadata.
+          This adds values to the Primary Tag.
 - **Support RIM**:
     - Provides additional information required for verification.
     - For PC Clients, the TCG Event Log generated during the boot process is a required Support RIM.

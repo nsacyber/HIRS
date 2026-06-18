@@ -58,3 +58,12 @@ then run the command
     ``` shell
     sudo apt-get install HIRS_AttestationCA*.deb
     ```
+
+### Check for Operation Status
+
+If the ACA has been installed via an rpm or deb package, you can check the ACA operational status by 
+running the command:
+
+``` shell
+sudo systemctl status hirs-aca
+```

@@ -62,7 +62,7 @@ successful if the software was installed properly.
 To configure the inputs that the ACA will validate, select one of the 
 following options and follow the instructions.
 
-### Configuration with only the Endorsement Certificate
+### Configuration with the Endorsement Check Enabled
 
 The Endorsement Certificate is used as an assertion of identity and authenticity 
 of the TPM. The TPM is the sole entity with the private key that matches the 
@@ -83,10 +83,9 @@ On the [Policy](../webportal/portal-policy.md) page, ensure the following:
 </td></tr>
 </table>
 
-### Configuration with the Endorsement and Platform Certificates
+### Configuration with the Platform Check Enabled
 
-To validate the hardware but not include checks of the firmware, 
-you will need to enable the Platform check. The Platform
+To validate the hardware, you will need to enable the Platform check. The Platform
 Certificate is used as the `Assertion` for the measured `Evidence` 
 of the hardware. This check also requires that you have Endorsement 
 checked, as the hardware validation requires a validated TPM. 
@@ -105,11 +104,12 @@ Firmware Validation: Disabled
     For more information on the specific options under Platform Certificate Validation, 
     see the [Portal Policy Guide](../../webportal/portal-policy).
 
-### Configuration with the Endorsement and Platform Certificates and the RIM
+### Configuration with the Firmware Check Enabled
 
 This configuration is the recommended report policy for supply chain validation 
-as it checks the validity of the TPM, the hardware, and the firmware. The RIM is 
-used as the `Assertion` for the measured `Evidence` of the firmware.
+as it checks the validity of the firmware in addition to the TPM and platform hardware. The RIM is 
+used as the `Assertion` for the measured `Evidence` of the firmware. This check also 
+requires that you have Endorsement and Platform checked.
 
 On the [Policy](../webportal/portal-policy.md) page, ensure the following:
 
