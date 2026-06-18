@@ -41,6 +41,14 @@
                         data: "rimType",
                         orderable: true,
                         searchable: true,
+                        render: function (data, type, row) {
+                            const rimType = data || "";
+                            const payload = row.payloadType;
+                            if (!payload) {
+                                return rimType;
+                            }
+                            return rimType + "-" + payload;
+                        },
                         columnControl: ["searchDropdown"],
                     },
                     {
@@ -117,7 +125,7 @@
                     <tr>
                         <th></th>
                         <th>Tag Id</th>
-                        <th>Type</th>
+                        <th>Rim Type</th>
                         <th>Manufacturer</th>
                         <th>Model</th>
                         <th>Version</th>

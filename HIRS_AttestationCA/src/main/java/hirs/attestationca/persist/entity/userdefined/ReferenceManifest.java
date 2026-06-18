@@ -106,6 +106,9 @@ public class ReferenceManifest extends ArchivableEntity {
     private String swidVersion = null;
 
     @Column
+    private String swidVersionScheme = null;
+
+    @Column
     private String platformModel = null;
 
     @Column(nullable = false)
@@ -127,6 +130,9 @@ public class ReferenceManifest extends ArchivableEntity {
     @Column
     @JsonIgnore
     private String base64Hash = "";
+
+    @Column
+    private String payloadType = null;
 
     /**
      * Default constructor necessary for Hibernate.

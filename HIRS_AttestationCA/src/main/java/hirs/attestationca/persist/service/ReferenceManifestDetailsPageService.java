@@ -186,6 +186,7 @@ public class ReferenceManifestDetailsPageService {
         // Software Identity
         data.put("swidName", baseRim.getSwidName());
         data.put("swidVersion", baseRim.getSwidVersion());
+        data.put("swidVersionScheme", baseRim.getSwidVersionScheme());
         data.put("swidTagVersion", baseRim.getSwidTagVersion());
 
         if (baseRim.getSwidCorpus() == 1) {
@@ -212,7 +213,6 @@ public class ReferenceManifestDetailsPageService {
         data.put("entityName", baseRim.getEntityName());
         data.put("entityRegId", baseRim.getEntityRegId());
         data.put("entityRole", baseRim.getEntityRole());
-        data.put("entityThumbprint", baseRim.getEntityThumbprint());
 
         // Link
         String linkHref = baseRim.getLinkHref();
@@ -242,6 +242,10 @@ public class ReferenceManifestDetailsPageService {
         data.put("revision", baseRim.getRevision());
         data.put("bindingSpec", baseRim.getBindingSpec());
         data.put("bindingSpecVersion", baseRim.getBindingSpecVersion());
+        data.put("firmwareManufacturer", baseRim.getFirmwareManufacturer());
+        data.put("firmwareManufacturerId", baseRim.getFirmwareManufacturerId());
+        data.put("firmwareModel", baseRim.getFirmwareModel());
+        data.put("firmwareVersion", baseRim.getFirmwareVersion());
         data.put("pcUriGlobal", baseRim.getPcURIGlobal());
         data.put("pcUriLocal", baseRim.getPcURILocal());
         data.put("rimLinkHash", baseRim.getRimLinkHash());
@@ -258,36 +262,46 @@ public class ReferenceManifestDetailsPageService {
         data.put("rimType", baseRim.getRimType());
 
         List<SwidResource> resources = baseRim.getFileResources();
-        SupportReferenceManifest support = null;
-
         ReferenceManifestValidator referenceManifestValidator = new ReferenceManifestValidator();
 
         // going to have to pull the filename and grab that from the DB
         // to get the id to make the link
         referenceManifestValidator.setRim(baseRim.getRimBytes());
         for (SwidResource swidRes : resources) {
-            support = (SupportReferenceManifest) this.referenceManifestRepository.findByHexDecHashAndRimType(
+            ReferenceManifest referenceManifest = this.referenceManifestRepository.findByHexDecHashAndRimType(
                     swidRes.getHashValue(), ReferenceManifest.SUPPORT_RIM);
 
-            if (support != null && swidRes.getHashValue().equalsIgnoreCase(support.getHexDecHash())) {
-                baseRim.setAssociatedRim(support.getId());
-                referenceManifestValidator.validateSupportRimHash(support.getRimBytes(),
-                        swidRes.getHashValue());
-                if (referenceManifestValidator.isSupportRimValid()) {
-                    data.put("supportRimHashValid", true);
-                } else {
-                    data.put("supportRimHashValid", false);
+            if (referenceManifest == null) {
+                referenceManifest = this.referenceManifestRepository.findByHexDecHashAndRimType(
+                        swidRes.getHashValue(), ReferenceManifest.BASE_RIM);
+            }
+
+            if (referenceManifest != null && swidRes.getHashValue().equalsIgnoreCase(
+                    referenceManifest.getHexDecHash())) {
+                swidRes.setId(referenceManifest.getId());
+                swidRes.setRimType(referenceManifest.getRimType());
+                if (referenceManifest.getRimType().equals(ReferenceManifest.SUPPORT_RIM)) {
+                    SupportReferenceManifest supportRim = (SupportReferenceManifest) referenceManifest;
+                    baseRim.setAssociatedRim(supportRim.getId());
+                    data.put("associatedRim", baseRim.getAssociatedRim());
+                    referenceManifestValidator.validateSupportRimHash(supportRim.getRimBytes(),
+                            swidRes.getHashValue());
+                    if (referenceManifestValidator.isSupportRimValid()) {
+                        data.put("supportRimHashValid", true);
+                    } else {
+                        data.put("supportRimHashValid", false);
+                    }
+                    if (!baseRim.isSwidSupplemental() && !baseRim.isSwidPatch()) {
+                        data.put("pcrList", supportRim.getExpectedPCRList());
+                    }
                 }
-                break;
+            } else {
+                log.warn("Unable to locate resource file {} with size {} and hash {}.",
+                        swidRes.getName(), swidRes.getSize(), swidRes.getHashValue());
             }
         }
 
-        data.put("associatedRim", baseRim.getAssociatedRim());
         data.put("swidFiles", resources);
-        if (support != null && (!baseRim.isSwidSupplemental()
-                && !baseRim.isSwidPatch())) {
-            data.put("pcrList", support.getExpectedPCRList());
-        }
 
         List<CertificateAuthorityCredential> embeddedCertificates = new ArrayList<>();
         List<X509Certificate> rawEmbeddedCertificates;

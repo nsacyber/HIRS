@@ -31,8 +31,10 @@ namespace hirs {
                         .WithParsed(parsed => cli = parsed)
                         .WithNotParsed(HandleParseError);
 
-                if (cliParseResult.Tag == ParserResultType.NotParsed) {
-                    // Help text requested, or parsing failed. Exit.
+                if (cliParseResult.Tag == ParserResultType.NotParsed
+                    && !cliParseResult.Errors.IsHelp()
+                    && !cliParseResult.Errors.IsVersion()) {
+                    // Parsing failed. Exit.
                     Log.Warning("Could not parse command line arguments. Set --tcp --sim, --tcp <ip>:<port>, --nix, or --win. See documentation for further assistance.");
                 } else {
                     Provisioner p = new(settings, cli);
@@ -51,8 +53,16 @@ namespace hirs {
         }
 
         private static void HandleParseError(IEnumerable<Error> errs) {
+            IEnumerable<Error> enumerable = errs.ToList();
+            if (enumerable.IsHelp() || enumerable.IsVersion()) 
+            {
+                return;
+            }
+            
             //handle errors
-            Log.Error("There was a CLI error: " + errs.ToString());
+            foreach (Error err in enumerable) {
+                Log.Error($"There was a CLI error: {err.Tag}");
+            }
         }
 
         private static bool IsRunningAsAdmin() {
