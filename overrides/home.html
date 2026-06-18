@@ -1,0 +1,25 @@
+{% extends "main.html" %}
+
+{% block hero %}
+<section class="md-hero">
+    <div class="md-hero__inner md-grid">
+        <!-- Your Hero Content -->
+        <h1>Welcome to My Site</h1>
+        <p>Custom subtitle here</p>
+    </div>
+</section>
+
+<style>
+    /* Style to make the hirs banner image span the top */
+    .md-hero {
+      background-color: #2c3e50;
+      background-image: url('images/home-index-topbanner.png');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      padding: 4rem 1rem;
+      text-align: center;
+      border-bottom: 2px solid #F4F4F4;
+    }
+</style>
+{% endblock %}
