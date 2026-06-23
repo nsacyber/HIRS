@@ -46,6 +46,8 @@
                             const payload = row.payloadType;
                             if (!payload) {
                                 return rimType;
+                            } else if (payload.toLowerCase() === "hybrid") {
+                                return "Composite";
                             }
                             return rimType + "-" + payload;
                         },
