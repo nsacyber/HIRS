@@ -1,7 +1,7 @@
 site_name: HIRS
-site_url: https://gitlab.evoforge.org/HIRS/HIRS
-repo_url: https://gitlab.evoforge.org/HIRS/HIRS
-repo_name: HIRS/HIRSDev
+site_url: https://github.com/nsacyber/HIRS/
+repo_url: https://github.com/nsacyber/HIRS/
+repo_name: HIRS
 nav:
   - Home:
       - index.md
