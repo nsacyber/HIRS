@@ -25,15 +25,16 @@ organizations procuring enterprise servers, desktops, and laptops.
 ## Features
 
 The HIRS ACA is a web based server which processes Attestation Identity Requests.
-The ACA provides a “provisioner” application to be installed on all devices which will be requesting Attestation Certificates.
+The ACA provides a Provisioner application to be installed on all devices which will be requesting Attestation Certificates.
 
 ### Attestation Certificate Authority (ACA)
 <div style="text-align: center;">
   <img src=images/ACA_ValidationReport_PC_Policy.jpg alt="ACA_ValidationReport_PC_Policy pic" width="95%" >
+  <br>
 </div>
 
-* [Issues Attestation Certificates](http://localhost:8000/HIRS/HIRS/userguide/portal/portal-issued-certs/) or TPM
-  based [Local Device ID (LDevID) certificates](http://localhost:8000/HIRS/HIRS/userguide/portal/portal-issued-certs/) to validated devices
+* Issues [ Attestation Certificates](https://nsacyber.github.io/HIRS/webportal/portal-issued-certs/) or TPM
+  based [Local Device ID (LDevID) Certificates](http://localhost:8000/HIRS/HIRS/userguide/portal/portal-issued-certs/) to validated devices
   holding a TPM
 * [Configures policies](http://localhost:8000/HIRS/HIRS/userguide/portal/portal-policy/) for enabling/disabling validation procedures
 * Performs [TCG-based Supply Chain Validation](http://localhost:8000/HIRS/HIRS/userguide/portal/portal-validation-reports/) of connecting clients
