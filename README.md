@@ -16,6 +16,8 @@ known as an Acceptance Test discussed in the
 <a href="https://media.defense.gov/2023/Sep/28/2003310132/-1/-1/0/CSI_PROCUREMENT_ACCEPTANCE_TESTING_GUIDE.PDF" target="_blank" rel="noopener noreferrer">Procurement and Acceptance Testing Guide</a>
 organizations procuring enterprise servers, desktops, and laptops.
 
+[![Procurement and Acceptance Testing Guide](https://shields.io)](https://media.defense.gov/2023/Sep/28/2003310132/-1/-1/0/CSI_PROCUREMENT_ACCEPTANCE_TESTING_GUIDE.PDF)
+test
 <div style="text-align: center;">
   <img src=images/TCG_AcceptanceTest.png alt="TCG_AcceptanceTest pic" width="95%" >
 </div>
