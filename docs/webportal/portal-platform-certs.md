@@ -4,7 +4,8 @@ title: Platform Certificates
 
 # ACA Portal: Platform Certificates Page
 
-The **Platform Certificates** page is used to upload, download, delete, and view Platform Certificates.
+The **Platform Certificates** page is used to upload, download, delete, and view 
+[Platform Certificates](../background/inputs/platform-cert.md).
 
 <img src= "../../images/portal-plat.png" alt="Portal Platform Cert page" style="border: 2px solid grey;">
 

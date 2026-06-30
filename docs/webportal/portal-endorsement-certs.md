@@ -4,7 +4,8 @@ title: Endorsement Key Certificates
 
 # ACA Portal: Endorsement Key Certificates Page
 
-The **Endorsement Certificates** page is used to upload, download, delete, and view Endorsement Certificates.
+The **Endorsement Certificates** page is used to upload, download, delete, and view 
+[Endorsement Certificates](../background/inputs/endorsement-cert.md).
 
 <img src= "../../images/portal-endorse.png" alt="Portal Endorsement Cert page" style="border: 2px solid grey;">
 
