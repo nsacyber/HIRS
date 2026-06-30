@@ -1,17 +1,24 @@
 <h1>Host Integrity at Runtime and Start-up (HIRS) <br></h1>
 
-| HIRS System Tests | HIRS ACA Tests | HIRS Provisioner Tests| Information                                                                                       | 
-| ------ | ------ | ------ |---------------------------------------------------------------------------------------------------|
-| [![System Test Status](https://github.com/nsacyber/HIRS/actions/workflows/system_test.yml/badge.svg)](https://github.com/nsacyber/HIRS/actions/workflows/system_test.yml)  | [![System Test Status](https://github.com/nsacyber/HIRS/actions/workflows/hirs_unit_tests.yml/badge.svg)](https://github.com/nsacyber/HIRS/actions/workflows/hirs_unit_tests.yml)|[![System Test Status](https://github.com/nsacyber/HIRS/actions/workflows/dotnet_provisioner_unit_tests.yml/badge.svg)](https://github.com/nsacyber/HIRS/actions/workflows/dotnet_provisioner_unit_tests.yml)| [![helpdocs pic](images/Helpdocs_Book.png){width=100 height=75}](http://localhost:8000/HIRS/HIRS/) |
+| HIRS System Tests | HIRS ACA Tests | HIRS Provisioner Tests| Information                                                                                                              | 
+| ------ | ------ | ------ |--------------------------------------------------------------------------------------------------------------------------|
+| [![System Test Status](https://github.com/nsacyber/HIRS/actions/workflows/system_test.yml/badge.svg)](https://github.com/nsacyber/HIRS/actions/workflows/system_test.yml)  | [![System Test Status](https://github.com/nsacyber/HIRS/actions/workflows/hirs_unit_tests.yml/badge.svg)](https://github.com/nsacyber/HIRS/actions/workflows/hirs_unit_tests.yml)|[![System Test Status](https://github.com/nsacyber/HIRS/actions/workflows/dotnet_provisioner_unit_tests.yml/badge.svg)](https://github.com/nsacyber/HIRS/actions/workflows/dotnet_provisioner_unit_tests.yml)| [<center><img src=images/Helpdocs_Book.png alt="Help docs pic" width="70%" ></center>](http://localhost:8000/HIRS/HIRS/) |
 
 
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
-Host Integrity at Runtime and Start-up (HIRS) is a Proof of Concept - Prototype intended to spur interest and adoption of [Trusted Computing](https://trustedcomputinggroup.org) based concepts. It's intended for testing and development purposes only and is not intended for production.
+Host Integrity at Runtime and Start-up (HIRS) is a Proof of Concept Prototype intended to spur interest and adoption of [Trusted Computing](https://trustedcomputinggroup.org) based concepts. It's intended for testing and development purposes only and is not intended for production.
 
-HIRS is composed of an Attestation Certificate Authority (ACA) web based application and a corresponding, client-side, Provisioner application. The ACA can be configured to validate the platform's configuration and firmware against a set of OEM provided artifacts. This illustrates a supply chain validation capability known as an Acceptance Test discussed in the  [Procurement and Acceptance Testing Guide](https://media.defense.gov/2023/Sep/28/2003310132/-1/-1/0/CSI_PROCUREMENT_ACCEPTANCE_TESTING_GUIDE.PDF) for organizations procuring enterprise servers, desktops, and laptops.
+HIRS is composed of an Attestation Certificate Authority (ACA) web based application and a corresponding, 
+client-side, Provisioner application. The ACA can be configured to validate the platform's configuration 
+and firmware against a set of OEM provided artifacts. This illustrates a supply chain validation capability 
+known as an Acceptance Test discussed in the 
+[Procurement and Acceptance Testing Guide](https://media.defense.gov/2023/Sep/28/2003310132/-1/-1/0/CSI_PROCUREMENT_ACCEPTANCE_TESTING_GUIDE.PDF){:target="_blank"} for 
+organizations procuring enterprise servers, desktops, and laptops.
 
-![TCG_AcceptanceTest pic](images/TCG_AcceptanceTest.png){width=880 height=230}
+<div style="text-align: center;">
+  <img src=images/TCG_AcceptanceTest.png alt="TCG_AcceptanceTest pic" width="95%" >
+</div>
 
 **Notice:** Github Discussions have been enabled for this repo. Please refer to the [HIRS Discussions](https://github.com/nsacyber/HIRS/discussions) for development and support notifications.
 
@@ -21,8 +28,9 @@ The HIRS ACA is a web based server which processes Attestation Identity Requests
 The ACA provides a “provisioner” application to be installed on all devices which will be requesting Attestation Certificates.
 
 ### Attestation Certificate Authority (ACA)
-![ACA_ValidationReport_PC_Policy pic](images/ACA_ValidationReport_PC_Policy.jpg){width=664 height=194}
-![TCG_AcceptanceTest pic](images/TCG_AcceptanceTest.png){width=880 height=230}
+<div style="text-align: center;">
+  <img src=images/ACA_ValidationReport_PC_Policy.jpg alt="ACA_ValidationReport_PC_Policy pic" width="95%" >
+</div>
 
 * [Issues Attestation Certificates](http://localhost:8000/HIRS/HIRS/userguide/portal/portal-issued-certs/) or TPM
   based [Local Device ID (LDevID) certificates](http://localhost:8000/HIRS/HIRS/userguide/portal/portal-issued-certs/) to validated devices
