@@ -12,8 +12,8 @@ Host Integrity at Runtime and Start-up (HIRS) is a Proof of Concept Prototype in
 HIRS is composed of an Attestation Certificate Authority (ACA) web based application and a corresponding, 
 client-side, Provisioner application. The ACA can be configured to validate the platform's configuration 
 and firmware against a set of OEM provided artifacts. This illustrates a supply chain validation capability 
-known as an Acceptance Test discussed in the 
-[Procurement and Acceptance Testing Guide](https://media.defense.gov/2023/Sep/28/2003310132/-1/-1/0/CSI_PROCUREMENT_ACCEPTANCE_TESTING_GUIDE.PDF){:target="_blank"} for 
+known as an Acceptance Test discussed in the
+<a href="https://media.defense.gov/2023/Sep/28/2003310132/-1/-1/0/CSI_PROCUREMENT_ACCEPTANCE_TESTING_GUIDE.PDF" target="_blank" rel="noopener noreferrer">Procurement and Acceptance Testing Guide</a>
 organizations procuring enterprise servers, desktops, and laptops.
 
 <div style="text-align: center;">
