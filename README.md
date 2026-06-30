@@ -1,4 +1,4 @@
-<h1><center>Host Integrity at Runtime and Start-up (HIRS) <BR\></center></h1>
+<h1>Host Integrity at Runtime and Start-up (HIRS) <br></h1>
 
 | HIRS System Tests | HIRS ACA Tests | HIRS Provisioner Tests| Information                                                                                       | 
 | ------ | ------ | ------ |---------------------------------------------------------------------------------------------------|
@@ -11,9 +11,8 @@ Host Integrity at Runtime and Start-up (HIRS) is a Proof of Concept - Prototype 
 
 HIRS is composed of an Attestation Certificate Authority (ACA) web based application and a corresponding, client-side, Provisioner application. The ACA can be configured to validate the platform's configuration and firmware against a set of OEM provided artifacts. This illustrates a supply chain validation capability known as an Acceptance Test discussed in the  [Procurement and Acceptance Testing Guide](https://media.defense.gov/2023/Sep/28/2003310132/-1/-1/0/CSI_PROCUREMENT_ACCEPTANCE_TESTING_GUIDE.PDF) for organizations procuring enterprise servers, desktops, and laptops.
 
-<p align="center">
 ![TCG_AcceptanceTest pic](images/TCG_AcceptanceTest.png){width=880 height=230}
-</p>
+
 **Notice:** Github Discussions have been enabled for this repo. Please refer to the [HIRS Discussions](https://github.com/nsacyber/HIRS/discussions) for development and support notifications.
 
 ## Features
@@ -23,6 +22,7 @@ The ACA provides a “provisioner” application to be installed on all devices 
 
 ### Attestation Certificate Authority (ACA)
 ![ACA_ValidationReport_PC_Policy pic](images/ACA_ValidationReport_PC_Policy.jpg){width=664 height=194}
+![TCG_AcceptanceTest pic](images/TCG_AcceptanceTest.png){width=880 height=230}
 
 * [Issues Attestation Certificates](http://localhost:8000/HIRS/HIRS/userguide/portal/portal-issued-certs/) or TPM
   based [Local Device ID (LDevID) certificates](http://localhost:8000/HIRS/HIRS/userguide/portal/portal-issued-certs/) to validated devices
