@@ -7,7 +7,6 @@ on:
       - '**/*.md'       # Ignores all Markdown files
       - '**/*.png'      # Ignores all PNG images
       - '**/*.jpg'      # Ignores all JPG images
-      - '**/*.jpeg'     # Ignores all JPEG images
       - 'mkdocs.yml'    # Ignores the MkDocs config
 env:
   DOTNET_VERSION: 10.0.x
