@@ -63,6 +63,7 @@ nav:
           - background/inputs/endorsement-cert.md
           - background/inputs/platform-cert.md
           - background/inputs/rim.md
+          - background/inputs/component.md
       - Operational Flow of HIRS:
           - background/operation/index.md
           - background/operation/op1-manufacture.md
