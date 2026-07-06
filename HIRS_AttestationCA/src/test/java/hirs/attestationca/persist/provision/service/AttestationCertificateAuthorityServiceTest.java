@@ -2,7 +2,7 @@ package hirs.attestationca.persist.provision.service;
 
 import hirs.attestationca.persist.enums.TpmEccCurve;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
-import hirs.attestationca.persist.provision.helper.ProvisionUtils;
+import hirs.attestationca.persist.provision.helper.ParsedTpmPublic;
 import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.utils.HexUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -309,7 +309,8 @@ public class AttestationCertificateAuthorityServiceTest {
         byte[] ekFile = Files.readAllBytes(ekPath);
         String realMod = Files.readString(ekModPath).replaceAll("\\s+", "");
 
-        RSAPublicKey ek = (RSAPublicKey) ProvisionUtils.parsePublicKeyFromPublicDataSegment(ekFile);
+        ParsedTpmPublic ekPub = TpmPublicHelper.parseTpmPublicArea(ekFile);
+        RSAPublicKey ek = (RSAPublicKey) ekPub.publicKey();
         final int radix = 16;
         assertEquals(new BigInteger("010001", radix), ek.getPublicExponent());
 
@@ -338,7 +339,8 @@ public class AttestationCertificateAuthorityServiceTest {
         byte[] akFile = Files.readAllBytes(akPath);
         String realMod = Files.readString(akModPath).replaceAll("\\s+", "");
 
-        RSAPublicKey ak = (RSAPublicKey) ProvisionUtils.parsePublicKeyFromPublicDataSegment(akFile);
+        ParsedTpmPublic akPub = TpmPublicHelper.parseTpmPublicArea(akFile);
+        RSAPublicKey ak = (RSAPublicKey) akPub.publicKey();
         final int radix = 16;
         assertEquals(new BigInteger("010001", radix), ak.getPublicExponent());
 

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 /**
- * Enum representing public key algorithms for asymmetric cryptography.
+ * Enum representing TCG algorithms for cryptography.
  * <p>
  * This enum currently includes:
  * <ul>
@@ -20,7 +20,7 @@ import lombok.ToString;
 @Getter
 @AllArgsConstructor
 @ToString
-public enum PublicKeyAlgorithm {
+public enum TcgAlgorithm {
     /**
      * RSA Public Key Algorithm.
      */
@@ -81,8 +81,8 @@ public enum PublicKeyAlgorithm {
      * @param algorithmId algorithm ID
      * @return ENUM representation of the public key algorithm
      */
-    public static PublicKeyAlgorithm fromId(final int algorithmId) {
-        for (PublicKeyAlgorithm algo : values()) {
+    public static TcgAlgorithm fromId(final int algorithmId) {
+        for (TcgAlgorithm algo : values()) {
             if (algo.getAlgorithmId() == algorithmId) {
                 return algo;
             }
